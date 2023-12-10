@@ -104,6 +104,9 @@ export default {
                 "docker-hosts": {
                     title: this.$t("Docker Hosts"),
                 },
+                "remote-browsers": {
+                    title: this.$t("Remote Browsers"),
+                },
                 security: {
                     title: this.$t("Security"),
                 },
@@ -166,10 +169,6 @@ export default {
 
                 if (this.settings.nscd === undefined) {
                     this.settings.nscd = true;
-                }
-
-                if (this.settings.dnsCache === undefined) {
-                    this.settings.dnsCache = false;
                 }
 
                 if (this.settings.keepDataPeriodDays === undefined) {

@@ -144,6 +144,30 @@
                                 </div>
                             </div>
 
+                            <!-- Remote Browser -->
+                            <div v-if="monitor.type === 'real-browser'" class="my-3">
+                                <!-- Toggle -->
+                                <div class="my-3 form-check">
+                                    <input id="toggle" v-model="remoteBrowsersToggle" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="toggle">
+                                        {{ $t("useRemoteBrowser") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("remoteBrowserToggle") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="remoteBrowsersToggle">
+                                    <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
+                                    <ActionSelect
+                                        v-model="monitor.remote_browser"
+                                        :options="remoteBrowsersOptions"
+                                        icon="plus"
+                                        :action="() => $refs.remoteBrowserDialog.show()"
+                                    />
+                                </div>
+                            </div>
+
                             <!-- Json Query -->
                             <div v-if="monitor.type === 'json-query'" class="my-3">
                                 <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
@@ -291,7 +315,9 @@
                                 <div class="mb-3">
                                     <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
                                     <ActionSelect
+                                        id="docker-host"
                                         v-model="monitor.docker_host"
+                                        :action-aria-label="$t('openModalTo', $t('Setup Docker Host'))"
                                         :options="dockerHostOptionsList"
                                         :disabled="$root.dockerHostList == null || $root.dockerHostList.length === 0"
                                         :icon="'plus'"
@@ -323,11 +349,33 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="mqttSuccessMessage" class="form-label">MQTT {{ $t("successMessage") }}</label>
-                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
+                                    <label for="mqttCheckType" class="form-label">MQTT {{ $t("Check Type") }}</label>
+                                    <select id="mqttCheckType" v-model="monitor.mqttCheckType" class="form-select" required>
+                                        <option value="keyword">{{ $t("Keyword") }}</option>
+                                        <option value="json-query">{{ $t("Json Query") }}</option>
+                                    </select>
+                                </div>
+
+                                <div v-if="monitor.mqttCheckType === 'keyword'" class="my-3">
+                                    <label for="mqttSuccessKeyword" class="form-label">MQTT {{ $t("successKeyword") }}</label>
+                                    <input id="mqttSuccessKeyword" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
                                     <div class="form-text">
-                                        {{ $t("successMessageExplanation") }}
+                                        {{ $t("successKeywordExplanation") }}
                                     </div>
+                                </div>
+
+                                <!-- Json Query -->
+                                <div v-if="monitor.mqttCheckType === 'json-query'" class="my-3">
+                                    <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
+
+                                    <!-- eslint-disable-next-line vue/no-v-html -->
+                                    <div class="form-text" v-html="$t('jsonQueryDescription')">
+                                    </div>
+                                    <br>
+
+                                    <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                                 </div>
                             </template>
 
@@ -368,11 +416,20 @@
                                     <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
                                 </div>
                             </template>
+
+                            <template v-if="monitor.type === 'mysql'">
+                                <div class="my-3">
+                                    <label for="mysql-password" class="form-label">{{ $t("Password") }}</label>
+                                    <!-- TODO: Rename monitor.radiusPassword to monitor.password for general use -->
+                                    <HiddenInput id="mysql-password" v-model="monitor.radiusPassword" autocomplete="false"></HiddenInput>
+                                </div>
+                            </template>
+
                             <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
-                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'select getdate()' ])" required></textarea>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'SELECT 1' ])"></textarea>
                                 </div>
                             </template>
 
@@ -492,9 +549,11 @@
 
                             <!-- Parent Monitor -->
                             <div class="my-3">
-                                <label for="parent" class="form-label">{{ $t("Monitor Group") }}</label>
+                                <label for="monitorGroupSelector" class="form-label">{{ $t("Monitor Group") }}</label>
                                 <ActionSelect
+                                    id="monitorGroupSelector"
                                     v-model="monitor.parent"
+                                    :action-aria-label="$t('openModalTo', 'setup a new monitor group')"
                                     :options="parentMonitorOptionsList"
                                     :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
                                     :icon="'plus'"
@@ -825,6 +884,7 @@
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
+            <RemoteBrowserDialog ref="remoteBrowserDialog" @added="addedRemoteBrowser" />
         </div>
     </transition>
 </template>
@@ -837,11 +897,12 @@ import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
+import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
+import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
-import { sleep } from "../util";
+import HiddenInput from "../components/HiddenInput.vue";
 
 const toast = useToast;
 
@@ -856,7 +917,7 @@ const monitorDefaults = {
     interval: 60,
     retryInterval: 60,
     resendInterval: 0,
-    maxretries: 1,
+    maxretries: 0,
     timeout: 48,
     notificationIDList: {},
     ignoreTls: false,
@@ -874,6 +935,7 @@ const monitorDefaults = {
     mqttPassword: "",
     mqttTopic: "",
     mqttSuccessMessage: "",
+    mqttCheckType: "keyword",
     authMethod: null,
     oauth_auth_method: "client_secret_basic",
     httpBodyEncoding: "json",
@@ -882,17 +944,21 @@ const monitorDefaults = {
         mechanism: "None",
     },
     kafkaProducerSsl: false,
+    kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
+    remote_browser: null
 };
 
 export default {
     components: {
+        HiddenInput,
         ActionSelect,
         ProxyDialog,
         CopyableInput,
         CreateGroupDialog,
         NotificationDialog,
         DockerHostDialog,
+        RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
     },
@@ -920,6 +986,7 @@ export default {
                 "mongodb": "mongodb://username:password@host:port/database",
             },
             draftGroupName: null,
+            remoteBrowsersEnabled: false,
         };
     },
 
@@ -943,7 +1010,31 @@ export default {
             }
             return this.$t(name);
         },
-
+        remoteBrowsersOptions() {
+            return this.$root.remoteBrowserList.map(browser => {
+                return {
+                    label: browser.name,
+                    value: browser.id,
+                };
+            });
+        },
+        remoteBrowsersToggle: {
+            get() {
+                return this.remoteBrowsersEnabled || this.monitor.remote_browser != null;
+            },
+            set(value) {
+                if (value) {
+                    this.remoteBrowsersEnabled = true;
+                    if (this.monitor.remote_browser == null && this.$root.remoteBrowserList.length > 0) {
+                        // set a default remote browser if there is one. Otherwise, the user will have to select one manually.
+                        this.monitor.remote_browser = this.$root.remoteBrowserList[0].id;
+                    }
+                } else {
+                    this.remoteBrowsersEnabled = false;
+                    this.monitor.remote_browser = null;
+                }
+            }
+        },
         isAdd() {
             return this.$route.path === "/add";
         },
