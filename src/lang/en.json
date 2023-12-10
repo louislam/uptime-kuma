@@ -323,6 +323,7 @@
     "Accept characters:": "Accept characters:",
     "startOrEndWithOnly": "Start or end with {0} only",
     "No consecutive dashes": "No consecutive dashes",
+    "statusPageSpecialSlugDesc": "Special slug {0}: this page will be shown when no slug is provided",
     "Next": "Next",
     "The slug is already taken. Please choose another slug.": "The slug is already taken. Please choose another slug.",
     "No Proxy": "No Proxy",
