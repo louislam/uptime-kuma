@@ -1022,7 +1022,7 @@ class Monitor extends BeanModel {
              * Make a single attempt to obtain an new access token in the event that
              * the recent api request failed for authentication purposes
              */
-            if (this.auth_method === "oauth2-cc" && error.response.status === 401 && !options.isReattempt) {
+            if (this.auth_method === "oauth2-cc" && error.response.status === 401 && !finalCall) {
                 this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
                 let oauth2AuthHeader = {
                     "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
@@ -1030,7 +1030,7 @@ class Monitor extends BeanModel {
                 options.headers = { ...(options.headers),
                     ...(oauth2AuthHeader)
                 };
-                options.isReattempt = true;
+
                 return this.makeAxiosRequest(options, true);
             }
 
@@ -1553,7 +1553,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<object>} OAuthProvider client
      */
     async makeOidcTokenClientCredentialsRequest() {
-        log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
+        log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new token`);
         const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
         if (this.oauthAccessToken?.expires_at) {
             log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken?.expires_at * 1000)}`);
