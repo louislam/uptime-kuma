@@ -99,40 +99,38 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
         UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
 
+        // Allow all CORS origins (polling) in development
+        let cors = undefined;
+        if (isDev) {
+            cors = {
+                origin: "*",
+            };
+        }
+
         this.io = new Server(this.httpServer, {
-            transports: [ "websocket", "polling" ],
-            allowRequest: (req, callback) => {
-                let isOriginValid = true;
-                const bypass = isDev || process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass";
-
-                if (!bypass) {
-                    let host = req.headers.host;
-
-                    // If this is set, it means the request is from the browser
-                    let origin = req.headers.origin;
-
-                    // If this is from the browser, check if the origin is allowed
-                    if (origin) {
-                        try {
-                            let originURL = new URL(origin);
-
-                            if (host !== originURL.host) {
-                                isOriginValid = false;
-                                log.error("auth", `Origin (${origin}) does not match host (${host}), IP: ${req.socket.remoteAddress}`);
-                            }
-                        } catch (e) {
-                            // Invalid origin url, probably not from browser
-                            isOriginValid = false;
-                            log.error("auth", `Invalid origin url (${origin}), IP: ${req.socket.remoteAddress}`);
-                        }
-                    } else {
-                        log.info("auth", `Origin is not set, IP: ${req.socket.remoteAddress}`);
-                    }
-                } else {
-                    log.debug("auth", "Origin check is bypassed");
+            cors,
+            allowRequest: async (req, callback) => {
+                let transport;
+                // It should be always true, but just in case, because this property is not documented
+                if (req._query) {
+                    transport = req._query.transport;
                 }
 
-                callback(null, isOriginValid);
+                const clientIP = await this.getClientIPwithProxy(req.connection.remoteAddress, req.headers);
+                log.info("socket", `New ${transport} connection, IP = ${clientIP}`);
+
+                // The following check is only for websocket connections, polling connections are already protected by CORS
+                if (transport === "polling") {
+                    callback(null, true);
+                } else if (transport === "websocket") {
+                    const bypass = process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass";
+                    if (bypass) {
+                        log.info("auth", "WebSocket Origin check is bypassed");
+                    } else {
+                        log.info("auth", "Direct WebSocket connection is not allowed, please use `polling` then upgrade to `websocket` or set UPTIME_KUMA_WS_ORIGIN_CHECK to `bypass`");
+                    }
+                    callback(null, bypass);
+                }
             }
         });
     }
@@ -269,20 +267,28 @@ class UptimeKumaServer {
     /**
      * Get the IP of the client connected to the socket
      * @param {Socket} socket
-     * @returns {string}
+     * @returns {Promise<string>}
      */
-    async getClientIP(socket) {
-        let clientIP = socket.client.conn.remoteAddress;
+    getClientIP(socket) {
+        return this.getClientIPwithProxy(socket.client.conn.remoteAddress, socket.client.conn.request.headers);
+    }
 
+    /**
+     *
+     * @param {string} clientIP
+     * @param {IncomingHttpHeaders} headers
+     * @returns {Promise<string>}
+     */
+    async getClientIPwithProxy(clientIP, headers) {
         if (clientIP === undefined) {
             clientIP = "";
         }
 
         if (await Settings.get("trustProxy")) {
-            const forwardedFor = socket.client.conn.request.headers["x-forwarded-for"];
+            const forwardedFor = headers["x-forwarded-for"];
 
             return (typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : null)
-                || socket.client.conn.request.headers["x-real-ip"]
+                || headers["x-real-ip"]
                 || clientIP.replace(/^::ffff:/, "");
         } else {
             return clientIP.replace(/^::ffff:/, "");

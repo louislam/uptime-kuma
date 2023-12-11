@@ -100,12 +100,10 @@ export default {
             } else if (env === "development" || localStorage.dev === "dev") {
                 wsHost = protocol + location.hostname + ":3001";
             } else {
-                wsHost = protocol + location.host;
+                wsHost = undefined;
             }
 
-            socket = io(wsHost, {
-                transports: [ "websocket", "polling" ],
-            });
+            socket = io(wsHost);
 
             socket.on("info", (info) => {
                 this.info = info;
