@@ -125,9 +125,11 @@ class UptimeKumaServer {
                 } else if (transport === "websocket") {
                     const bypass = process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass";
                     if (bypass) {
-                        log.info("auth", "WebSocket Origin check is bypassed");
+                        log.info("auth", "WebSocket origin check is bypassed");
+                    } else if (!req.headers.origin) {
+                        log.info("auth", "WebSocket with no origin is allowed");
                     } else {
-                        log.info("auth", "Direct WebSocket connection is not allowed, please use `polling` then upgrade to `websocket` or set UPTIME_KUMA_WS_ORIGIN_CHECK to `bypass`");
+                        log.info("auth", "Direct WebSocket connection from browser is not allowed anymore, please use `polling` then upgrade to `websocket` or set UPTIME_KUMA_WS_ORIGIN_CHECK to `bypass`");
                     }
                     callback(null, bypass);
                 }
