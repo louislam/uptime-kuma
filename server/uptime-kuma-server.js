@@ -114,6 +114,9 @@ class UptimeKumaServer {
                 // It should be always true, but just in case, because this property is not documented
                 if (req._query) {
                     transport = req._query.transport;
+                } else {
+                    log.error("socket", "Ops!!! Cannot get transport type, assume that it is polling");
+                    transport = "polling";
                 }
 
                 const clientIP = await this.getClientIPwithProxy(req.connection.remoteAddress, req.headers);
