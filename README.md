@@ -98,6 +98,27 @@ If you need more options or need to browse via a reverse proxy, please read:
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
 
+
+### Key Notes on Bulk Upload Monitors
+
+Allow File type : CSV, JSON
+
+Steps 1: Open Bulk upload accordion.
+
+Steps 2: Download sample CSV or JSON file and modified it and upload it.
+
+
+Note: In CSV file If you would like to add more status code then field or key name you have to add
+like accepted_statuscodes/0 , accepted_statuscodes/1  
+
+Example: 
+
+
+
+Keys | accepted_statuscodes/0 | accepted_statuscodes/1 | accepted_statuscodes/2 | accepted_statuscodes/N |
+--- | --- | --- | --- | --- |
+Value | 100-199 | 200-299 | 300-399 | any status codes 
+
 ## 🆙 How to Update
 
 Please read:
