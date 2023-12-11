@@ -742,12 +742,8 @@ let needSetup = false;
                     //csv
                     itsType = ".csv";
                 }
-                let dir = "./server/public/";
-                if (!fs.existsSync(dir)) {
-                    fs.mkdirSync(dir);
-                }
                 let saveFileName = Date.now() + itsType;
-                let uploadPath = "./server/public/" + saveFileName;
+                let uploadPath = "data/" + saveFileName;
 
                 fs.writeFile(uploadPath, uploadedFile[0], (err) => {
                     callback({ message: err ? "failure" : "success" });
