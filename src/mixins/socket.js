@@ -104,7 +104,7 @@ export default {
             }
 
             socket = io(wsHost, {
-                transports: [ "websocket" ],
+                transports: [ "websocket", "polling" ],
             });
 
             socket.on("info", (info) => {
