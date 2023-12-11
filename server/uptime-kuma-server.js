@@ -134,8 +134,26 @@ class UptimeKumaServer {
                         log.info("auth", "WebSocket with no origin is allowed");
                         callback(null, true);
                     } else {
-                        log.info("auth", "Direct WebSocket connection from browser is not allowed anymore, please use `polling` then upgrade to `websocket` or set UPTIME_KUMA_WS_ORIGIN_CHECK to `bypass`");
-                        callback(null, false);
+                        try {
+                            let host = req.headers.host;
+                            let origin = req.headers.origin;
+                            let originURL = new URL(origin);
+                            let xForwardedFor;
+                            if (await Settings.get("trustProxy")) {
+                                xForwardedFor = req.headers["x-forwarded-for"];
+                            }
+
+                            if (host !== originURL.host && xForwardedFor !== originURL.host) {
+                                callback(null, false);
+                                log.error("auth", `Origin (${origin}) does not match host (${host}), IP: ${clientIP}`);
+                            } else {
+                                callback(null, true);
+                            }
+                        } catch (e) {
+                            // Invalid origin url, probably not from browser
+                            callback(null, false);
+                            log.error("auth", `Invalid origin url (${origin}), IP: ${clientIP}`);
+                        }
                     }
                 }
             }
