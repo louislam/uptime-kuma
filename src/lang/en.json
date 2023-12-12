@@ -880,5 +880,10 @@
     "useRemoteBrowser": "Use a Remote Browser",
     "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
     "GrafanaOncallUrl": "Grafana Oncall URL",
-    "Browser Screenshot": "Browser Screenshot"
+    "Browser Screenshot": "Browser Screenshot",
+    "wayToGetSevenIOApiKey": "Visit the dashboard under app.seven.io > developer > api key > the green add button",
+    "senderSevenIO": "Sending number or name",
+    "receiverSevenIO": "Receiving number",
+    "receiverInfoSevenIO": "If receiving number is not located in germany you have to add the country code in front of the number, eg: 4917612121212",
+    "apiKeySevenIO": "SevenIO API Key"
 }
