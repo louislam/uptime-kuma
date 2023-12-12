@@ -1083,5 +1083,6 @@
     "Enable Kafka Producer Auto Topic Creation": "",
     "Kafka SASL Options": "",
     "CopyToClipboardError": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
