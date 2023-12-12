@@ -1043,5 +1043,7 @@
     "Maintenance": "",
     "Unknown": "",
     "Pause": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
