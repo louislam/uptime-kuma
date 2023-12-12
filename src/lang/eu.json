@@ -1071,5 +1071,7 @@
     "Reconnecting...": "",
     "Enable DNS Cache": "",
     "backupOutdatedWarning": "",
-    "trustProxyDescription": ""
+    "trustProxyDescription": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
