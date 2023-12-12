@@ -1037,5 +1037,7 @@
     "General Monitor Type": "",
     "Cannot connect to the socket server": "",
     "Reconnecting...": "",
-    "high": ""
+    "high": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
