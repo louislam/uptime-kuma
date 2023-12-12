@@ -1061,5 +1061,7 @@
     "alertaRecoverState": "",
     "Enter the list of brokers": "",
     "Reverse Proxy": "",
-    "plugin": ""
+    "plugin": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
