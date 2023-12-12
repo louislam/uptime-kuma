@@ -1061,5 +1061,7 @@
     "Pick a SASL Mechanism...": "",
     "backupOutdatedWarning": "",
     "trustProxyDescription": "",
-    "Enable DNS Cache": ""
+    "Enable DNS Cache": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
