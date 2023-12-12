@@ -1055,5 +1055,7 @@
     "pagertreeCritical": "",
     "ntfyPriorityHelptextAllEvents": "",
     "Pick a SASL Mechanism...": "",
-    "high": ""
+    "high": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
