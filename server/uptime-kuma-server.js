@@ -134,9 +134,10 @@ class UptimeKumaServer {
                         log.info("auth", "WebSocket with no origin is allowed");
                         callback(null, true);
                     } else {
+                        let host = req.headers.host;
+                        let origin = req.headers.origin;
+
                         try {
-                            let host = req.headers.host;
-                            let origin = req.headers.origin;
                             let originURL = new URL(origin);
                             let xForwardedFor;
                             if (await Settings.get("trustProxy")) {
