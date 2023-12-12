@@ -9,7 +9,7 @@
 
     <div class="mb-3">
         <label for="sevenio-sender" class="form-label">{{ $t("senderSevenIO") }}</label>
-        <input id="sevenio-sender" v-model="$parent.notification.sevenioSender" type="text" class="form-control" autocomplete="false" placeholder="Uptime Kuma" >
+        <input id="sevenio-sender" v-model="$parent.notification.sevenioSender" type="text" class="form-control" autocomplete="false" placeholder="Uptime Kuma">
     </div>
 
     <div class="mb-3">
