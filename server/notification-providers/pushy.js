@@ -5,6 +5,9 @@ class Pushy extends NotificationProvider {
 
     name = "pushy";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 

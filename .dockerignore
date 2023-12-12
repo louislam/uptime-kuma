@@ -1,6 +1,6 @@
 /.idea
 /node_modules
-/data
+/data*
 /cypress
 /out
 /test
@@ -30,7 +30,6 @@ SECURITY.md
 tsconfig.json
 .env
 /tmp
-/babel.config.js
 /ecosystem.config.js
 /extra/healthcheck.exe
 /extra/healthcheck

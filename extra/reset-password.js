@@ -14,8 +14,12 @@ const rl = readline.createInterface({
 });
 
 const main = async () => {
+    if ("dry-run" in args) {
+        console.log("Dry run mode, no changes will be made.");
+    }
+
     console.log("Connecting the database");
-    Database.init(args);
+    Database.initDataDir(args);
     await Database.connect(false, false, true);
 
     try {
@@ -29,18 +33,29 @@ const main = async () => {
             console.log("Found user: " + user.username);
 
             while (true) {
-                let password = await question("New Password: ");
-                let confirmPassword = await question("Confirm New Password: ");
+                let password;
+                let confirmPassword;
+
+                // When called with "--new-password" argument for unattended modification (e.g. npm run reset-password -- --new_password=secret)
+                if ("new-password" in args) {
+                    console.log("Using password from argument");
+                    console.warn("\x1b[31m%s\x1b[0m", "Warning: the password might be stored, in plain text, in your shell's history");
+                    password = confirmPassword = args["new-password"] + "";
+                } else {
+                    password = await question("New Password: ");
+                    confirmPassword = await question("Confirm New Password: ");
+                }
 
                 if (password === confirmPassword) {
-                    await User.resetPassword(user.id, password);
+                    if (!("dry-run" in args)) {
+                        await User.resetPassword(user.id, password);
 
-                    // Reset all sessions by reset jwt secret
-                    await initJWTSecret();
+                        // Reset all sessions by reset jwt secret
+                        await initJWTSecret();
 
-                    // Disconnect all other socket clients of the user
-                    await disconnectAllSocketClients(user.username, password);
-
+                        // Disconnect all other socket clients of the user
+                        await disconnectAllSocketClients(user.username, password);
+                    }
                     break;
                 } else {
                     console.log("Passwords do not match, please try again.");
@@ -72,6 +87,12 @@ function question(question) {
     });
 }
 
+/**
+ * Disconnect all socket clients of the user
+ * @param {string} username Username
+ * @param {string} password Password
+ * @returns {Promise<void>} Promise
+ */
 function disconnectAllSocketClients(username, password) {
     return new Promise((resolve) => {
         console.log("Connecting to " + localWebSocketURL + " to disconnect all other socket clients");

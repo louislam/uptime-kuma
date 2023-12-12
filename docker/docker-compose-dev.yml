@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  uptime-kuma:
+    container_name: uptime-kuma-dev
+    image: louislam/uptime-kuma:nightly2
+    volumes:
+      #- ./data:/app/data
+      - ../server:/app/server
+      - ../db:/app/db
+    ports:
+      - "3001:3001"  # <Host Port>:<Container Port>
+      - "3307:3306"
+

@@ -45,7 +45,10 @@ export default {
 
     },
     methods: {
-        /** Go back 1 in browser history */
+        /**
+         * Go back 1 in browser history
+         * @returns {void}
+         */
         goBack() {
             history.back();
         }

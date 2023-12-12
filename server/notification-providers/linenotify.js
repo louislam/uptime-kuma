@@ -7,6 +7,9 @@ class LineNotify extends NotificationProvider {
 
     name = "LineNotify";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {

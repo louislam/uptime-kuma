@@ -1,21 +1,34 @@
 // Generate on GitHub
 const input = `
-* Add Korean translation by @Alanimdeo in https://github.com/louislam/dockge/pull/86
+* Rebse #4213 by @louislam in https://github.com/louislam/uptime-kuma/pull/4215
+* Smoothing the update for origin check by @louislam in https://github.com/louislam/uptime-kuma/pull/4216
 `;
 
 const template = `
+
+> [!WARNING]
+>
+
 ### 🆕 New Features
+-
 
-### 💇‍♀️ Improvements
+### ⬆️ Improvements
+-
 
-### 🐞 Bug Fixes
-
-### ⬆️ Security Fixes
+### 🐛 Bug Fixes
+-
 
 ### 🦎 Translation Contributions
+-
+
+### ⬆️ Security Fixes
+-
 
 ### Others
 - Other small changes, code refactoring and comment/doc updates in this repo:
+-
+
+Please let me know if your username is missing, if your pull request has been merged in this version, or your commit has been included in one of the pull requests.
 `;
 
 const lines = input.split("\n").filter((line) => line.trim() !== "");
@@ -39,6 +52,12 @@ for (const line of lines) {
     }
 
     message = message.split("* ").pop();
-    console.log("-", pullRequestID, message, `(Thanks ${username})`);
+
+    let thanks = "";
+    if (username != "@louislam") {
+        thanks = `(Thanks ${username})`;
+    }
+
+    console.log(pullRequestID, message, thanks);
 }
 console.log(template);

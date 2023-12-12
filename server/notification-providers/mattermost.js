@@ -6,6 +6,9 @@ class Mattermost extends NotificationProvider {
 
     name = "mattermost";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
@@ -75,12 +78,12 @@ class Mattermost extends NotificationProvider {
                     {
                         fallback:
                             "Your " +
-                            monitorJSON.name +
+                            monitorJSON.pathName +
                             " service went " +
                             statusText,
                         color: color,
                         title:
-                            monitorJSON.name +
+                            monitorJSON.pathName +
                             " service went " +
                             statusText,
                         title_link: monitorJSON.url,

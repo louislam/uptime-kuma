@@ -1,10 +1,10 @@
 const axios = require("axios");
 const { R } = require("redbean-node");
-const version = require("../package.json").version;
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const Database = require("./database");
+const { axiosAbortSignal } = require("./util-server");
 
 class DockerHost {
 
@@ -14,10 +14,10 @@ class DockerHost {
 
     /**
      * Save a docker host
-     * @param {Object} dockerHost Docker host to save
+     * @param {object} dockerHost Docker host to save
      * @param {?number} dockerHostID ID of the docker host to update
      * @param {number} userID ID of the user who adds the docker host
-     * @returns {Promise<Bean>}
+     * @returns {Promise<Bean>} Updated docker host
      */
     static async save(dockerHost, dockerHostID, userID) {
         let bean;
@@ -64,16 +64,17 @@ class DockerHost {
 
     /**
      * Fetches the amount of containers on the Docker host
-     * @param {Object} dockerHost Docker host to check for
+     * @param {object} dockerHost Docker host to check for
      * @returns {number} Total amount of containers on the host
      */
     static async testDockerHost(dockerHost) {
         const options = {
             url: "/containers/json?all=true",
+            timeout: 5000,
             headers: {
                 "Accept": "*/*",
-                "User-Agent": "Uptime-Kuma/" + version
             },
+            signal: axiosAbortSignal(6000),
         };
 
         if (dockerHost.dockerType === "socket") {
@@ -83,31 +84,40 @@ class DockerHost {
             options.httpsAgent = new https.Agent(DockerHost.getHttpsAgentOptions(dockerHost.dockerType, options.baseURL));
         }
 
-        let res = await axios.request(options);
+        try {
+            let res = await axios.request(options);
 
-        if (Array.isArray(res.data)) {
+            if (Array.isArray(res.data)) {
 
-            if (res.data.length > 1) {
+                if (res.data.length > 1) {
 
-                if ("ImageID" in res.data[0]) {
-                    return res.data.length;
+                    if ("ImageID" in res.data[0]) {
+                        return res.data.length;
+                    } else {
+                        throw new Error("Invalid Docker response, is it Docker really a daemon?");
+                    }
+
                 } else {
-                    throw new Error("Invalid Docker response, is it Docker really a daemon?");
+                    return res.data.length;
                 }
 
             } else {
-                return res.data.length;
+                throw new Error("Invalid Docker response, is it Docker really a daemon?");
             }
-
-        } else {
-            throw new Error("Invalid Docker response, is it Docker really a daemon?");
+        } catch (e) {
+            if (e.code === "ECONNABORTED" || e.name === "CanceledError") {
+                throw new Error("Connection to Docker daemon timed out.");
+            } else {
+                throw e;
+            }
         }
-
     }
 
     /**
      * Since axios 0.27.X, it does not accept `tcp://` protocol.
      * Change it to `http://` on the fly in order to fix it. (https://github.com/louislam/uptime-kuma/issues/2165)
+     * @param {any} url URL to fix
+     * @returns {any} URL with tcp:// replaced by http://
      */
     static patchDockerURL(url) {
         if (typeof url === "string") {
@@ -129,11 +139,10 @@ class DockerHost {
      * 'data/docker-tls/example.com/' would be searched for certificate files),
      * then 'ca.pem', 'key.pem' and 'cert.pem' files are included in the agent options.
      * File names can also be overridden via 'DOCKER_TLS_FILE_NAME_(CA|KEY|CERT)'.
-     *
-     * @param {String} dockerType i.e. "tcp" or "socket"
-     * @param {String} url The docker host URL rewritten to https://
-     * @return {Object}
-     * */
+     * @param {string} dockerType i.e. "tcp" or "socket"
+     * @param {string} url The docker host URL rewritten to https://
+     * @returns {object} HTTP agent options
+     */
     static getHttpsAgentOptions(dockerType, url) {
         let baseOptions = {
             maxCachedSessions: 0,
