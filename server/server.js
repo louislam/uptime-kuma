@@ -53,7 +53,10 @@ if (!process.env.UPTIME_KUMA_WS_ORIGIN_CHECK) {
 
 log.info("server", "Env: " + process.env.NODE_ENV);
 log.debug("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
-log.info("server", "WebSocket Origin Check: " + process.env.UPTIME_KUMA_WS_ORIGIN_CHECK);
+
+if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
+    log.warn("server", "WebSocket Origin Check: " + process.env.UPTIME_KUMA_WS_ORIGIN_CHECK);
+}
 
 const checkVersion = require("./check-version");
 log.info("server", "Uptime Kuma Version: " + checkVersion.version);

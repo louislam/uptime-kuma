@@ -99,7 +99,6 @@ function disconnectAllSocketClients(username, password) {
 
         // Disconnect all socket connections
         const socket = io(localWebSocketURL, {
-            transports: [ "websocket" ],
             reconnection: false,
             timeout: 5000,
         });
