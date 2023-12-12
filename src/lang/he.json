@@ -1045,5 +1045,7 @@
     "Scifi": "",
     "Clear": "",
     "Custom sound to override default notification sound": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
