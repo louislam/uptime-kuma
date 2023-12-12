@@ -1056,5 +1056,7 @@
     "Pick a SASL Mechanism...": "",
     "Enable DNS Cache": "",
     "wayToGetDiscordURL": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
