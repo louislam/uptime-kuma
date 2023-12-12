@@ -1043,5 +1043,7 @@
     "Current": "",
     "Uptime": "",
     "Cert Exp.": "",
-    "Theme": ""
+    "Theme": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
