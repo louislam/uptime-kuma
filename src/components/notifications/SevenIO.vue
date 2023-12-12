@@ -14,7 +14,7 @@
 
     <div class="mb-3">
         <label for="sevenio-receiver" class="form-label">{{ $t("receiverSevenIO") }}</label>
-        <input id="sevenio-receiver" v-model="$parent.notification.sevenioReceiver" type="text" class="form-control" autocomplete="false" placeholder="0123456789">
+        <input id="sevenio-receiver" v-model="$parent.notification.sevenioReceiver" type="text" class="form-control" required autocomplete="false" placeholder="0123456789">
         <div class="form-text">
             {{ $t("receiverInfoSevenIO") }}
         </div>
