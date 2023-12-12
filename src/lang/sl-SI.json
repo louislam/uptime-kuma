@@ -1066,5 +1066,7 @@
     "pushoversounds bike": "",
     "pushoversounds bugle": "",
     "promosmsAllowLongSMS": "",
-    "alertaApiEndpoint": ""
+    "alertaApiEndpoint": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
