@@ -27,7 +27,7 @@ class SevenIO extends NotificationProvider {
         });
 
         try {
-            // If heartbeatJSON is null, assume we're testing.
+            // testing or certificate expiry notification
             if (heartbeatJSON == null) {
                 await axios.post("sms", data);
                 return okMsg;
@@ -57,17 +57,12 @@ class SevenIO extends NotificationProvider {
             if (heartbeatJSON["status"] === DOWN) {
                 data.text = `Your service ${monitorJSON["name"]} (${address}) went down at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}). Error: ${heartbeatJSON["msg"]}`;
-
-                await axios.post("sms", data);
-                return okMsg;
-
             } else if (heartbeatJSON["status"] === UP) {
                 data.text = `Your service ${monitorJSON["name"]} (${address}) went back up at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}).`;
-
-                await axios.post("sms", data);
-                return okMsg;
             }
+            await axios.post("sms", data);
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

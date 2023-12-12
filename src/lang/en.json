@@ -884,6 +884,6 @@
     "wayToGetSevenIOApiKey": "Visit the dashboard under app.seven.io > developer > api key > the green add button",
     "senderSevenIO": "Sending number or name",
     "receiverSevenIO": "Receiving number",
-    "receiverInfoSevenIO": "If receiving number is not located in germany you have to add the country code in front of the number, eg: 4917612121212",
+    "receiverInfoSevenIO": "If receiving number is not located in germany you have to add the country code in front of the number, eg for the country code 1 from the us: 117612121212 (instead of 017612121212)",
     "apiKeySevenIO": "SevenIO API Key"
 }
