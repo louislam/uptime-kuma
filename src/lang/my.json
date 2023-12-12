@@ -1044,5 +1044,7 @@
     "upsideDownModeDescription": "",
     "maxRedirectDescription": "",
     "Upside Down Mode": "",
-    "Max. Redirects": ""
+    "Max. Redirects": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
