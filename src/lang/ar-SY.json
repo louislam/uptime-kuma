@@ -1099,5 +1099,6 @@
     "setupDatabaseEmbeddedMariaDB": "",
     "Pick a SASL Mechanism...": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
