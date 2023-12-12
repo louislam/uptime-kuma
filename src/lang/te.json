@@ -1052,5 +1052,7 @@
     "setupDatabaseChooseDatabase": "",
     "setupDatabaseEmbeddedMariaDB": "",
     "Pick a SASL Mechanism...": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
