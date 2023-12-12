@@ -1041,5 +1041,7 @@
     "checkEverySecond": "",
     "resendEveryXTimes": "",
     "resendDisabled": "",
-    "upsideDownModeDescription": ""
+    "upsideDownModeDescription": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
