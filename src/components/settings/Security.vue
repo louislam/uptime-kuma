@@ -173,8 +173,10 @@ export default {
                             this.password.repeatNewPassword = "";
 
                             // Update token of the current session
-                            this.$root.storage().token = res.token;
-                            this.$root.socket.token = res.token;
+                            if (res.token) {
+                                this.$root.storage().token = res.token;
+                                this.$root.socket.token = res.token;
+                            }
                         }
                     });
             }
