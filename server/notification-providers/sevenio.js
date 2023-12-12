@@ -49,7 +49,11 @@ class SevenIO extends NotificationProvider {
                     }
                     break;
                 default:
-                    address = monitorJSON["url"];
+                    if (![ "https://", "http://" ].includes(monitorJSON["url"])) {
+                        address = monitorJSON["url"];
+                    } else {
+                        address = "n/a";
+                    }
                     break;
             }
 
