@@ -1072,5 +1072,6 @@
     "pushoversounds bugle": "",
     "Guild ID": "",
     "nostrRecipientsHelp": "",
-    "showCertificateExpiry": ""
+    "showCertificateExpiry": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
