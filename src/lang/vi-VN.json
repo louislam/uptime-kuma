@@ -1070,5 +1070,7 @@
     "Edit Tag": "",
     "Steam Game Server": "",
     "Most likely causes:": "",
-    "telegramMessageThreadID": ""
+    "telegramMessageThreadID": "",
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
