@@ -1,4 +1,9 @@
-const { defineConfig, devices } = require("@playwright/test");
+import { defineConfig, devices } from "@playwright/test";
+
+const port = 30001;
+const url = `http://localhost:${port}`;
+
+console.log("Port: ", port);
 
 export default defineConfig({
     // Look for test files in the "tests" directory, relative to this configuration file.
@@ -23,7 +28,7 @@ export default defineConfig({
 
     use: {
         // Base URL to use in actions like `await page.goto('/')`.
-        baseURL: "http://127.0.0.1:3001",
+        baseURL: url,
 
         // Collect trace when retrying the failed test.
         trace: "on-first-retry",
@@ -41,8 +46,9 @@ export default defineConfig({
     ],
     // Run your local dev server before starting the tests.
     webServer: {
-        command: "npm run start",
-        url: "http://127.0.0.1:3001",
+        command: `node server/server.js --port=${port} --data-dir=./data/playwright-test`,
+        url,
         reuseExistingServer: !process.env.CI,
+        cwd: "../",
     },
 });
