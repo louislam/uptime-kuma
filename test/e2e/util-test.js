@@ -1,6 +1,6 @@
 /**
- * @param testInfo Test info
- * @param page Page
+ * @param {TestInfo} testInfo Test info
+ * @param {Page} page Page
  * @returns {Promise<void>}
  */
 export async function screenshot(testInfo, page) {

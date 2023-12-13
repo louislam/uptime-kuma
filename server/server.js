@@ -127,7 +127,6 @@ const twoFAVerifyOptions = {
  * @type {boolean}
  */
 const testMode = !!args["test"] || false;
-const e2eTestMode = !!args["e2e"] || false;
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");

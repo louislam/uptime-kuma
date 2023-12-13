@@ -4,7 +4,6 @@ const { R } = require("redbean-node");
 const { log, genSecret, badgeConstants } = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
-const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const chroma = require("chroma-js");
