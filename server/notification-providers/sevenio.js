@@ -33,7 +33,7 @@ class SevenIO extends NotificationProvider {
                 return okMsg;
             }
 
-            let address;
+            let address = "";
 
             switch (monitorJSON["type"]) {
                 case "ping":
@@ -49,20 +49,22 @@ class SevenIO extends NotificationProvider {
                     }
                     break;
                 default:
-                    if (![ "https://", "http://" ].includes(monitorJSON["url"])) {
+                    if (![ "https://", "http://", "" ].includes(monitorJSON["url"])) {
                         address = monitorJSON["url"];
-                    } else {
-                        address = "n/a";
                     }
                     break;
             }
 
+            if (address !== "") {
+                address = `(${address}) `;
+            }
+
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
-                data.text = `Your service ${monitorJSON["name"]} (${address}) went down at ${heartbeatJSON["localDateTime"]} ` +
+                data.text = `Your service ${monitorJSON["name"]} ${address}went down at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}). Error: ${heartbeatJSON["msg"]}`;
             } else if (heartbeatJSON["status"] === UP) {
-                data.text = `Your service ${monitorJSON["name"]} (${address}) went back up at ${heartbeatJSON["localDateTime"]} ` +
+                data.text = `Your service ${monitorJSON["name"]} ${address}went back up at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}).`;
             }
             await axios.post("sms", data);
