@@ -46,6 +46,7 @@ export default {
             tlsInfoList: {},
             notificationList: [],
             dockerHostList: [],
+            remoteBrowserList: [],
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
@@ -174,6 +175,10 @@ export default {
                 this.dockerHostList = data;
             });
 
+            socket.on("remoteBrowserList", (data) => {
+                this.remoteBrowserList = data;
+            });
+
             socket.on("heartbeat", (data) => {
                 if (! (data.monitorID in this.heartbeatList)) {
                     this.heartbeatList[data.monitorID] = [];
@@ -282,6 +287,10 @@ export default {
 
             socket.on("initServerTimezone", () => {
                 socket.emit("initServerTimezone", dayjs.tz.guess());
+            });
+
+            socket.on("refresh", () => {
+                location.reload();
             });
         },
 

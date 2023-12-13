@@ -46,7 +46,7 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 Uptime Kuma is now running on http://localhost:3001
 
 > [!WARNING]
-> **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume. 
+> File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
 
 ### 💪🏻 Non-Docker
 
@@ -136,28 +136,33 @@ Telegram Notification Sample:
 
 ## Motivation
 
-- I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the close ones is statping. Unfortunately, it is not stable and no longer maintained.
-- Want to build a fancy UI.
+- I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the closest ones is statping. Unfortunately, it is not stable and no longer maintained.
+- Wanted to build a fancy UI.
 - Learn Vue 3 and vite.js.
 - Show the power of Bootstrap 5.
-- Try to use WebSocket with SPA instead of REST API.
+- Try to use WebSocket with SPA instead of a REST API.
 - Deploy my first Docker image to Docker Hub.
 
-If you love this project, please consider giving me a ⭐.
+If you love this project, please consider giving it a ⭐.
 
 ## 🗣️ Discussion / Ask for Help
 
-⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not respond if you asked such questions.
+⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not respond if you ask questions there.
 
-I recommend using Google, GitHub Issues, or Uptime Kuma's Subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
+I recommend using Google, GitHub Issues, or Uptime Kuma's subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
 
 - [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
-- [Subreddit r/Uptime kuma](https://www.reddit.com/r/UptimeKuma/)
+- [Subreddit (r/UptimeKuma)](https://www.reddit.com/r/UptimeKuma/)
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam).
-You can mention me if you ask a question on Reddit.
+My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam)
+You can mention me if you ask a question on the subreddit.
 
-## Contribute
+## Contributions
+
+### Create Pull Requests
+
+We DO NOT accept all types of pull requests and do not want to waste your time. Please be sure that you have read and follow pull request rules:
+[CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)
 
 ### Test Pull Requests
 
@@ -181,8 +186,6 @@ If you want to translate Uptime Kuma into your language, please visit [Weblate R
 ### Spelling & Grammar
 
 Feel free to correct the grammar in the documentation or code.
-My mother language is not english and my grammar is not that great.
+My mother language is not English and my grammar is not that great.
 
-### Create Pull Requests
 
-If you want to modify Uptime Kuma, please read this guide and follow the rules here: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md

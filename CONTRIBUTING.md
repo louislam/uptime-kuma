@@ -1,14 +1,14 @@
 # Project Info
 
-First of all, I want to thank everyone who made pull requests for Uptime Kuma. I never thought the GitHub Community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
+First of all, I want to thank everyone who have made pull requests for Uptime Kuma. I never thought the GitHub community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
 
-The project was created with vite.js (vue3). Then I created a subdirectory called "server" for the server part. Both frontend and backend share the same package.json.
+The project was created with vite.js (vue3). Then I created a subdirectory called "server" for the server part. Both frontend and backend share the same `package.json`.
 
 The frontend code builds into "dist" directory. The server (express.js) exposes the "dist" directory as the root of the endpoint. This is how production is working.
 
 ## Key Technical Skills
 
-- Node.js (You should know about promise, async/await and arrow function etc.)
+- Node.js (You should know about promises, async/await, arrow functions, etc.)
 - Socket.io
 - SCSS
 - Vue.js
@@ -62,7 +62,7 @@ Here are some references:
 
 The above cases may not cover all possible situations.
 
-I (@louislam) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spend on it. Therefore, it is essential to have a discussion beforehand.
+I ([@louislam](https://github.com/louislam)) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spent on it. Therefore, it is essential to have a discussion beforehand.
 
 I will assign your pull request to a [milestone](https://github.com/louislam/uptime-kuma/milestones), if I plan to review and merge it.
 
@@ -73,15 +73,14 @@ Also, please don't rush or ask for an ETA, because I have to understand the pull
 Before deep into coding, discussion first is preferred. Creating an empty pull request for discussion would be recommended.
 
 1. Fork the project
-1. Clone your fork repo to local
-1. Create a new branch
-1. Create an empty commit
-   `git commit -m "[empty commit] pull request for <YOUR TASK NAME>" --allow-empty`
-1. Push to your fork repo
-1. Create a pull request: https://github.com/louislam/uptime-kuma/compare
-1. Write a proper description
-1. Click "Change to draft"
-1. Discussion
+2. Clone your fork repo to local
+3. Create a new branch
+4. Create an empty commit: `git commit -m "<YOUR TASK NAME>" --allow-empty`
+5. Push to your fork repo
+6. Prepare a pull request: https://github.com/louislam/uptime-kuma/compare
+7. Write a proper description. You can mention @louislam in it, so @louislam will get the notification.
+8. Create your pull request as a Draft
+9. Wait for the discussion
 
 ## Project Styles
 
@@ -114,9 +113,9 @@ I personally do not like something that requires so many configurations before y
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
 - A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
 
-### GitHub Codespace
+### GitHub Codespaces
 
-If you don't want to setup an local environment, you can now develop on GitHub Codespace, read more:
+If you don't want to setup an local environment, you can now develop on GitHub Codespaces, read more:
 
 https://github.com/louislam/uptime-kuma/tree/master/.devcontainer
 
@@ -231,9 +230,9 @@ If for security / bug / other reasons, a library must be updated, breaking chang
 
 ## Translations
 
-Please add **all** the strings which are translatable to `src/lang/en.json` (If translation keys are omitted, they can not be translated).
+Please add **all** the strings which are translatable to `src/lang/en.json` (if translation keys are omitted, they can not be translated.)
 
-**Don't include any other languages in your initial Pull-Request** (even if this is your mother tongue), to avoid merge-conflicts between weblate and `master`.
+**Don't include any other languages in your initial pull request** (even if this is your mother tongue), to avoid merge-conflicts between weblate and `master`.
 The translations can then (after merging a PR into `master`) be translated by awesome people donating their language skills.
 
 If you want to help by translating Uptime Kuma into your language, please visit the [instructions on how to translate using weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
@@ -245,7 +244,7 @@ My mother language is not English and my grammar is not that great.
 
 ## Wiki
 
-Since there is no way to make a pull request to wiki's repo, I have set up another repo to do that.
+Since there is no way to make a pull request to the wiki, I have set up another repo to do that.
 
 https://github.com/louislam/uptime-kuma-wiki
 

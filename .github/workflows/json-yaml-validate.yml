@@ -6,7 +6,7 @@ on:
   pull_request:
     branches:
       - master
-      - 2.0.X
+      - 1.23.X
   workflow_dispatch:
 
 permissions:
@@ -17,11 +17,11 @@ jobs:
   json-yaml-validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: json-yaml-validate
         id: json-yaml-validate
-        uses: GrantBirki/json-yaml-validate@v1.3.0
+        uses: GrantBirki/json-yaml-validate@v2.4.0
         with:
           comment: "true" # enable comment mode
           exclude_file: ".github/config/exclude.txt" # gitignore style file for exclusions

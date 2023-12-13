@@ -16,7 +16,10 @@
                     </a>
                     <form>
                         <input
-                            v-model="searchText" class="form-control search-input" :placeholder="$t('Search...')"
+                            v-model="searchText"
+                            class="form-control search-input"
+                            :placeholder="$t('Search...')"
+                            :aria-label="$t('Search monitored sites')"
                             autocomplete="off"
                         />
                     </form>
@@ -51,11 +54,12 @@
                 v-for="(item, index) in sortedMonitorList"
                 :key="index"
                 :monitor="item"
-                :showPathName="filtersActive"
                 :isSelectMode="selectMode"
                 :isSelected="isSelected"
                 :select="select"
                 :deselect="deselect"
+                :filter-func="filterFunc"
+                :sort-func="sortFunc"
             />
         </div>
     </div>
@@ -126,75 +130,16 @@ export default {
             let result = Object.values(this.$root.monitorList);
 
             result = result.filter(monitor => {
-                // filter by search text
-                // finds monitor name, tag name or tag value
-                let searchTextMatch = true;
-                if (this.searchText !== "") {
-                    const loweredSearchText = this.searchText.toLowerCase();
-                    searchTextMatch =
-                        monitor.name.toLowerCase().includes(loweredSearchText)
-                        || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
-                            || tag.value?.toLowerCase().includes(loweredSearchText));
+                // The root list does not show children
+                if (monitor.parent !== null) {
+                    return false;
                 }
-
-                // filter by status
-                let statusMatch = true;
-                if (this.filterState.status != null && this.filterState.status.length > 0) {
-                    if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
-                        monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
-                    }
-                    statusMatch = this.filterState.status.includes(monitor.status);
-                }
-
-                // filter by active
-                let activeMatch = true;
-                if (this.filterState.active != null && this.filterState.active.length > 0) {
-                    activeMatch = this.filterState.active.includes(monitor.active);
-                }
-
-                // filter by tags
-                let tagsMatch = true;
-                if (this.filterState.tags != null && this.filterState.tags.length > 0) {
-                    tagsMatch = monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
-                        .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
-                        .length > 0;
-                }
-
-                // Hide children if not filtering
-                let showChild = true;
-                if (this.filterState.status == null && this.filterState.active == null && this.filterState.tags == null && this.searchText === "") {
-                    if (monitor.parent !== null) {
-                        showChild = false;
-                    }
-                }
-
-                return searchTextMatch && statusMatch && activeMatch && tagsMatch && showChild;
+                return true;
             });
 
-            // Filter result by active state, weight and alphabetical
-            result.sort((m1, m2) => {
-                if (m1.active !== m2.active) {
-                    if (m1.active === false) {
-                        return 1;
-                    }
+            result = result.filter(this.filterFunc);
 
-                    if (m2.active === false) {
-                        return -1;
-                    }
-                }
-
-                if (m1.weight !== m2.weight) {
-                    if (m1.weight > m2.weight) {
-                        return -1;
-                    }
-
-                    if (m1.weight < m2.weight) {
-                        return 1;
-                    }
-                }
-
-                return m1.name.localeCompare(m2.name);
-            });
+            result.sort(this.sortFunc);
 
             return result;
         },
@@ -361,6 +306,85 @@ export default {
 
             this.cancelSelectMode();
         },
+        /**
+         * Whether a monitor should be displayed based on the filters
+         * @param {object} monitor Monitor to check
+         * @returns {boolean} Should the monitor be displayed
+         */
+        filterFunc(monitor) {
+            // Group monitors bypass filter if at least 1 of children matched
+            if (monitor.type === "group") {
+                const children = Object.values(this.$root.monitorList).filter(m => m.parent === monitor.id);
+                if (children.some((child, index, children) => this.filterFunc(child))) {
+                    return true;
+                }
+            }
+
+            // filter by search text
+            // finds monitor name, tag name or tag value
+            let searchTextMatch = true;
+            if (this.searchText !== "") {
+                const loweredSearchText = this.searchText.toLowerCase();
+                searchTextMatch =
+                    monitor.name.toLowerCase().includes(loweredSearchText)
+                    || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
+                        || tag.value?.toLowerCase().includes(loweredSearchText));
+            }
+
+            // filter by status
+            let statusMatch = true;
+            if (this.filterState.status != null && this.filterState.status.length > 0) {
+                if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
+                    monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
+                }
+                statusMatch = this.filterState.status.includes(monitor.status);
+            }
+
+            // filter by active
+            let activeMatch = true;
+            if (this.filterState.active != null && this.filterState.active.length > 0) {
+                activeMatch = this.filterState.active.includes(monitor.active);
+            }
+
+            // filter by tags
+            let tagsMatch = true;
+            if (this.filterState.tags != null && this.filterState.tags.length > 0) {
+                tagsMatch = monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
+                    .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
+                    .length > 0;
+            }
+
+            return searchTextMatch && statusMatch && activeMatch && tagsMatch;
+        },
+        /**
+         * Function used in Array.sort to order monitors in a list.
+         * @param {*} m1 monitor 1
+         * @param {*} m2 monitor 2
+         * @returns {number} -1, 0 or 1
+         */
+        sortFunc(m1, m2) {
+            if (m1.active !== m2.active) {
+                if (m1.active === false) {
+                    return 1;
+                }
+
+                if (m2.active === false) {
+                    return -1;
+                }
+            }
+
+            if (m1.weight !== m2.weight) {
+                if (m1.weight > m2.weight) {
+                    return -1;
+                }
+
+                if (m1.weight < m2.weight) {
+                    return 1;
+                }
+            }
+
+            return m1.name.localeCompare(m2.name);
+        }
     },
 };
 </script>
@@ -458,5 +482,4 @@ export default {
     align-items: center;
     gap: 10px;
 }
-
 </style>
