@@ -45,7 +45,7 @@
                                     class="col-md-12"
                                     style="text-align: center;"
                                 >
-                                    <label><a href="/sample.csv" download="samplefile.json">Click here</a>
+                                    <label><a href="/sample.csv" download="samplefile.csv">Click here</a>
                                         for download sample CSV file
                                     </label>
                                 </div>
@@ -967,9 +967,8 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
+import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
-import { sleep } from "../util";
 import HiddenInput from "../components/HiddenInput.vue";
 
 const toast = useToast;

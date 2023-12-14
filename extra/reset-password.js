@@ -5,6 +5,8 @@ const { R } = require("redbean-node");
 const readline = require("readline");
 const { initJWTSecret } = require("../server/util-server");
 const User = require("../server/model/user");
+const { io } = require("socket.io-client");
+const { localWebSocketURL } = require("../server/config");
 const args = require("args-parser")(process.argv);
 const rl = readline.createInterface({
     input: process.stdin,
@@ -50,6 +52,9 @@ const main = async () => {
 
                         // Reset all sessions by reset jwt secret
                         await initJWTSecret();
+
+                        // Disconnect all other socket clients of the user
+                        await disconnectAllSocketClients(user.username, password);
                     }
                     break;
                 } else {
@@ -57,6 +62,7 @@ const main = async () => {
                 }
             }
             console.log("Password reset successfully.");
+
         }
     } catch (e) {
         console.error("Error: " + e.message);
@@ -77,6 +83,50 @@ function question(question) {
     return new Promise((resolve) => {
         rl.question(question, (answer) => {
             resolve(answer);
+        });
+    });
+}
+
+/**
+ * Disconnect all socket clients of the user
+ * @param {string} username Username
+ * @param {string} password Password
+ * @returns {Promise<void>} Promise
+ */
+function disconnectAllSocketClients(username, password) {
+    return new Promise((resolve) => {
+        console.log("Connecting to " + localWebSocketURL + " to disconnect all other socket clients");
+
+        // Disconnect all socket connections
+        const socket = io(localWebSocketURL, {
+            reconnection: false,
+            timeout: 5000,
+        });
+        socket.on("connect", () => {
+            socket.emit("login", {
+                username,
+                password,
+            }, (res) => {
+                if (res.ok) {
+                    console.log("Logged in.");
+                    socket.emit("disconnectOtherSocketClients");
+                } else {
+                    console.warn("Login failed.");
+                    console.warn("Please restart the server to disconnect all sessions.");
+                }
+                socket.close();
+            });
+        });
+
+        socket.on("connect_error", function () {
+            // The localWebSocketURL is not guaranteed to be working for some complicated Uptime Kuma setup
+            // Ask the user to restart the server manually
+            console.warn("Failed to connect to " + localWebSocketURL);
+            console.warn("Please restart the server to disconnect all sessions manually.");
+            resolve();
+        });
+        socket.on("disconnect", () => {
+            resolve();
         });
     });
 }
