@@ -8,11 +8,13 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 */
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
-exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = void 0;
+exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
+exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = void 0;
 const dayjs = require("dayjs");
 exports.isDev = process.env.NODE_ENV === "development";
+exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
@@ -75,6 +77,24 @@ const consoleLevelColors = {
     "WARN": exports.CONSOLE_STYLE_FgYellow,
     "ERROR": exports.CONSOLE_STYLE_FgRed,
     "DEBUG": exports.CONSOLE_STYLE_FgGray,
+};
+exports.badgeConstants = {
+    naColor: "#999",
+    defaultUpColor: "#66c20a",
+    defaultWarnColor: "#eed202",
+    defaultDownColor: "#c2290a",
+    defaultPendingColor: "#f8a306",
+    defaultMaintenanceColor: "#1747f5",
+    defaultPingColor: "blue",
+    defaultStyle: "flat",
+    defaultPingValueSuffix: "ms",
+    defaultPingLabelSuffix: "h",
+    defaultUptimeValueSuffix: "%",
+    defaultUptimeLabelSuffix: "h",
+    defaultCertExpValueSuffix: " days",
+    defaultCertExpLabelSuffix: "h",
+    defaultCertExpireWarnDays: "14",
+    defaultCertExpireDownDays: "7"
 };
 function flipStatus(s) {
     if (s === exports.UP) {
@@ -140,40 +160,67 @@ class Logger {
         }
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
-        let timePart = exports.CONSOLE_STYLE_FgCyan + now + exports.CONSOLE_STYLE_Reset;
-        let modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
-        let levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
-        if (level === "INFO") {
-            console.info(timePart, modulePart, levelPart, msg);
-        }
-        else if (level === "WARN") {
-            console.warn(timePart, modulePart, levelPart, msg);
-        }
-        else if (level === "ERROR") {
-            let msgPart;
-            if (typeof msg === "string") {
-                msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
+        let timePart;
+        let modulePart;
+        let levelPart;
+        let msgPart;
+        if (exports.isNode) {
+            switch (level) {
+                case "DEBUG":
+                    timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
+                    break;
+                default:
+                    timePart = exports.CONSOLE_STYLE_FgCyan + now + exports.CONSOLE_STYLE_Reset;
+                    break;
             }
-            else {
-                msgPart = msg;
-            }
-            console.error(timePart, modulePart, levelPart, msgPart);
-        }
-        else if (level === "DEBUG") {
-            if (exports.isDev) {
-                timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
-                let msgPart;
-                if (typeof msg === "string") {
-                    msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
-                }
-                else {
+            modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
+            levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
+            switch (level) {
+                case "ERROR":
+                    if (typeof msg === "string") {
+                        msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
+                    }
+                    else {
+                        msgPart = msg;
+                    }
+                    break;
+                case "DEBUG":
+                    if (typeof msg === "string") {
+                        msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
+                    }
+                    else {
+                        msgPart = msg;
+                    }
+                    break;
+                default:
                     msgPart = msg;
-                }
-                console.debug(timePart, modulePart, levelPart, msgPart);
+                    break;
             }
         }
         else {
-            console.log(timePart, modulePart, msg);
+            timePart = now;
+            modulePart = `[${module}]`;
+            levelPart = `${level}:`;
+            msgPart = msg;
+        }
+        switch (level) {
+            case "ERROR":
+                console.error(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "WARN":
+                console.warn(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "INFO":
+                console.info(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "DEBUG":
+                if (exports.isDev) {
+                    console.debug(timePart, modulePart, levelPart, msgPart);
+                }
+                break;
+            default:
+                console.log(timePart, modulePart, levelPart, msgPart);
+                break;
         }
     }
     info(module, msg) {

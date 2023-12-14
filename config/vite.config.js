@@ -2,7 +2,6 @@ import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
-import commonjs from "vite-plugin-commonjs";
 
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
@@ -21,7 +20,6 @@ export default defineConfig({
         "CODESPACE_NAME": JSON.stringify(process.env.CODESPACE_NAME),
     },
     plugins: [
-        commonjs(),
         vue(),
         visualizer({
             filename: "tmp/dist-stats.html"

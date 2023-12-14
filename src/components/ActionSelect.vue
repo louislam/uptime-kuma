@@ -3,7 +3,7 @@
         <select :id="id" ref="select" v-model="model" class="form-select" :disabled="disabled" :required="required">
             <option v-for="option in options" :key="option" :value="option.value" :disabled="option.disabled">{{ option.label }}</option>
         </select>
-        <button class="btn btn-outline-primary" :class="{ disabled: actionDisabled }" :aria-label="actionAriaLabel" @click="action()">
+        <button type="button" class="btn btn-outline-primary" :class="{ disabled: actionDisabled }" :aria-label="actionAriaLabel" @click="action()">
             <font-awesome-icon :icon="icon" aria-hidden="true" />
         </button>
     </div>
