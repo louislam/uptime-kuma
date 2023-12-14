@@ -167,11 +167,11 @@ export default {
                     && (!moment(this.report.startDate).isSame(moment().format("YYYY-MM-DD")))) {
                 } else {
                     if (!moment(this.report.startDate).isBefore(moment(this.report.endDate))) {
-                        message = "Please select valid end date1";
+                        message = "Please select valid end date";
                     }
                 }
                 if (moment(this.report.endDate, "YYYY-MM-DD").isAfter(moment())) {
-                    message = "Please select valid end date2";
+                    message = "Please select valid end date";
                 }
             }
 
