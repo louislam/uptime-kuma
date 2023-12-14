@@ -24,6 +24,32 @@
                             </select>
                         </div>
                         <div class="mb-4">
+                            <div class="d-flex flex-row align-items-center">
+                                <div class="col-6">
+                                    <label class="form-label">{{ $t("From Date") }}</label>
+                                    <datepicker
+                                        v-model="report.startDate"
+                                        :dark="$root.isDark"
+                                        :monthChangeOnScroll="false"
+                                        format="yyyy-MM-dd"
+                                        @update:model-value="handleDateChange"
+                                        modelType="yyyy-MM-dd 00:00:00"
+                                    />
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">{{ $t("To Date") }}</label>
+                                    <datepicker
+                                        v-model="report.endDate"
+                                        :dark="$root.isDark"
+                                        :monthChangeOnScroll="false"
+                                        :minDate="minEndDate"
+                                        format="yyyy-MM-dd"
+                                        modelType="yyyy-MM-dd 23:59:59"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
                             <div>
                                 <button class="btn btn-primary" :disabled="processing" type="submit">
                                     {{ $t("Export") }}
@@ -44,16 +70,25 @@
 
 import { getResBaseURL } from "../util-frontend";
 import { useToast } from "vue-toastification";
+import Datepicker from "@vuepic/vue-datepicker";
 const toast = useToast();
+import moment from "moment";
 
 export default {
     components: {
-
+        Datepicker
     },
     data() {
         return {
-            report: { monitor: "" },
+            report: {
+                monitor: "",
+                startDate: "",
+                endDate: ""
+            },
+            minEndDate: "",
             processing: false,
+            selectedDate: null,
+            fetchedData: null
         };
     },
     computed: {
@@ -99,12 +134,13 @@ export default {
         }
     },
     mounted() {
-
     },
     methods: {
         init() {
             this.report = {
-                monitor: ""
+                monitor: "",
+                startDate: "",
+                endDate: ""
             };
         },
 
@@ -114,7 +150,36 @@ export default {
                 toast.error("Please select monitor");
                 return this.processing = false;
             }
-            this.$root.generateReports(this.report.monitor, async (res) => {
+            let message = "";
+            if (this.report.startDate !== "" && this.report.startDate.length !== 0) {
+                if (this.report.endDate === "" || this.report.endDate === null) {
+                    message = "Please select end date";
+                }
+            }
+            if (this.report.endDate !== "" && this.report.startDate.length !== 0) {
+                if (this.report.startDate === "" || this.report.startDate === null) {
+                    message = "Please select start date";
+                }
+            }
+
+            if(message.length === 0 && this.report.endDate && this.report.startDate) {
+                if (moment(this.report.startDate).isSame(this.report.endDate) 
+                    && (!moment(this.report.startDate).isSame(moment().format("YYYY-MM-DD")))) {
+                } else {
+                    if (!moment(this.report.startDate).isBefore(moment(this.report.endDate))) {
+                        message = "Please select valid end date1";
+                    }
+                }
+                if (moment(this.report.endDate, "YYYY-MM-DD").isAfter(moment())) {
+                    message = "Please select valid end date2";
+                }
+            }
+
+            if (message.length > 0) {
+                toast.error(message);
+                return this.processing = false;
+            }
+            this.$root.generateReports(this.report, async (res) => {
                 if (res.ok) {
                     this.processing = false;
                     const fileUrl = res.data.filePath;
@@ -151,7 +216,11 @@ export default {
             } else {
                 return getResBaseURL() + icon;
             }
-        }
+        },
+
+        handleDateChange(date) {
+            this.minEndDate = date;
+        },
     },
 };
 </script>
@@ -206,6 +275,39 @@ export default {
 
             &.active {
                 background-color: $dark-bg2;
+            }
+        }
+    }
+
+    .weekday-picker {
+        display: flex;
+        gap: 10px;
+
+        & > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40px;
+
+            .form-check-inline {
+                margin-right: 0;
+            }
+        }
+    }
+
+    .day-picker {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+
+        & > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40px;
+
+            .form-check-inline {
+                margin-right: 0;
             }
         }
     }

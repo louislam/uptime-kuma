@@ -20,6 +20,7 @@ const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { apiAuth } = require("../auth");
+const moment = require("moment");
 
 let router = express.Router();
 
@@ -634,11 +635,53 @@ router.get("/api/reports", apiAuth, async (request, response) => {
     let result = { };
 
     let paramMonitor = request.query.monitor ? request.query.monitor : null;
+    let startDate = request.query.startDate ? request.query.startDate : "";
+    let endDate = request.query.endDate ? request.query.endDate : "";
+    let message = "";
+
     if (paramMonitor === null || paramMonitor === "0") {
         response.json({
             "data": "",
             "message": "Invalid monitor param"
         });
+    }
+    if (startDate !== "" && startDate.length !== 0) {
+        if (endDate === "") {
+            message = "Please enter end date";
+        }
+        if (!moment(startDate, 'YYYY-MM-DD',true).isValid() || isNaN(new Date(startDate))) {
+            message = "Invalid start date";
+        }
+    }
+
+    if (endDate !== "" && endDate.length !== 0) {
+        if (startDate === "") {
+            message = "Please enter start date";
+        }
+        if (!moment(endDate, 'YYYY-MM-DD',true).isValid() || isNaN(new Date(endDate))) {
+            message = "Invalid end date";
+
+        }
+    }
+    if(message.length === 0 && startDate && endDate){
+        if (moment(startDate).isSame(endDate) 
+            && (!moment(startDate).isSame(moment().format("YYYY-MM-DD")))) {
+        } else {
+            if (!moment(startDate).isBefore(moment(endDate))) {
+                message = "Please select valid end date";
+            }
+        }
+        if (moment(endDate, "YYYY-MM-DD").isAfter(moment())) {
+            message = "Select date before current date";
+        }
+    }
+
+    if (message.length > 0) {
+        response.json({
+            "data": "",
+            "message": message
+        });
+        return
     }
 
     let queryString = "";
@@ -652,6 +695,18 @@ router.get("/api/reports", apiAuth, async (request, response) => {
     if (monitor.length === 0) {
         result.message = "Invalid monitor details";
     } else {
+        if (moment(endDate).isBefore(monitor[0].created_date)) {
+            callback({
+                ok: false,
+                msg: "Monitor Not Created Within Selected Date Range",
+            });
+        }
+        monitor.customRange = false;
+        if (startDate && endDate) {
+            monitor.customRange = true;
+        }
+        monitor.startDate = startDate;
+        monitor.endDate = endDate;
         let pdfData = await Monitor.generatePDF(monitor);
         result.data = {
             filePath: request.protocol + "://" + request.headers.host + "/" + pdfData.filePath,

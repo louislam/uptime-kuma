@@ -10,7 +10,7 @@ const dayjs = require("dayjs");
 dayjs.extend(require("dayjs/plugin/utc"));
 dayjs.extend(require("./modules/dayjs/plugin/timezone"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
-
+const moment = require("moment");
 // Load environment variables from `.env`
 require("dotenv").config();
 
@@ -1688,8 +1688,9 @@ let needSetup = false;
             }
         });
 
-        socket.on("generateReports", async (monitorID, callback) => {
+        socket.on("generateReports", async (reportParam, callback) => {
             try {
+                let monitorID = reportParam.monitor
                 checkLogin(socket);
 
                 log.info("monitor", `Generate Monitor Report: ${monitorID} User ID: ${socket.userID}`);
@@ -1701,6 +1702,18 @@ let needSetup = false;
                         msg: "Invalid Monitor request",
                     });
                 } else {
+                    if (moment(reportParam.endDate).isBefore(monitor[0].created_date)) {
+                        callback({
+                            ok: false,
+                            msg: "Monitor Not Created Within Selected Date Range",
+                        });
+                    }
+                    monitor.customRange = false;
+                    if (reportParam.startDate && reportParam.endDate) {
+                       monitor.customRange = true; 
+                    }
+                    monitor.startDate = reportParam.startDate;
+                    monitor.endDate = reportParam.endDate;
                     let response = await Monitor.generatePDF(monitor);
                     callback({
                         ok: true,

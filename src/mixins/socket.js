@@ -697,8 +697,8 @@ export default {
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */
-        generateReports(monitorID, callback) {
-            socket.emit("generateReports", monitorID, callback);
+        generateReports(reportParam, callback) {
+            socket.emit("generateReports", reportParam, callback);
         },
 
         /**

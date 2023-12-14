@@ -1631,22 +1631,30 @@ class Monitor extends BeanModel {
      */
     static async generatePDF(monitor) {
         let monitorId = monitor[0].id;
+        let startDate = monitor.startDate;
+        let endDate = monitor.endDate;
         let monitorDetails = monitor[0];
         let pingTime = await Monitor.getCurrentPingTime(monitorDetails);
         let avgPing = await Monitor.getAvgPing(24, monitorId);
         let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorId);
         let upTime = await uptimeCalculator.get24Hour();
-        let monthUpTime = await uptimeCalculator.get30Day();
+        let chartUptime = upTime.uptime;
+        let customRange;
         let weekUpTime = await uptimeCalculator.get7Day();
+        let monthUpTime = await uptimeCalculator.get30Day();
+        if (monitor.customRange) {
+            customRange = await uptimeCalculator.getDataByDateRange(startDate, endDate, monitorId);
+            chartUptime = customRange.uptime;
+        }
         let tlsInfo = JSON.parse(await Monitor.getCertInfo(monitorId));
         let formattedDate = moment().format("MM-DD-YYYY_HH:mm:ss");
         let fileName = monitorDetails.name + "_" + formattedDate + ".pdf";
         let filePath = "data/report/" + fileName;
 
         const pieChartData = {
-            labels: [ "UpTime(" + (upTime.uptime * 100).toFixed(2) + ")", "DownTime(" + (100 - (upTime.uptime * 100)).toFixed(2) + ")" ],
+            labels: [ "UpTime(" + (chartUptime * 100).toFixed(2) + ")", "DownTime(" + (100 - (chartUptime * 100)).toFixed(2) + ")" ],
             datasets: [{
-                data: [ (upTime.uptime * 100).toFixed(2), (100 - (upTime.uptime * 100).toFixed(2)) ],
+                data: [ (chartUptime * 100).toFixed(2), (100 - (chartUptime * 100).toFixed(2)) ],
                 backgroundColor: [ "#FF6384", "#36A2EB" ],
             }]
         };
@@ -1700,7 +1708,15 @@ class Monitor extends BeanModel {
                         <h4>Uptime</h4>
                         <p>(30 days)</p>
                         <p>${(monthUpTime.uptime * 100).toFixed(2)}%</p>
-                    </td><td>
+                    </td>`;
+                    if (monitor.customRange) {
+                        htmlContent += `<td>
+                            <h4>Uptime</h4>
+                            <p>(${moment(startDate).format("MM-DD-YYYY")} -<br> ${moment(endDate).format("MM-DD-YYYY")})</p>
+                            <p>${(customRange.uptime * 100).toFixed(2)}%</p>
+                        </td>`;
+                    }
+                    htmlContent += `<td>
                         <h3>Cert Exp.</h3>
                         <p>(${ moment(tlsInfo.certInfo.validTo).format("MM-DD-YYYY")})</p>
                         <p>${tlsInfo.certInfo.daysRemaining} days</p>

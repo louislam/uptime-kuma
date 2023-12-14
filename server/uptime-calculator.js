@@ -3,6 +3,7 @@ const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
 const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
 const { R } = require("redbean-node");
+const moment = require("moment");
 
 /**
  * Calculates the uptime of a monitor.
@@ -432,6 +433,47 @@ class UptimeCalculator {
         } else {
             throw new Error("Invalid duration");
         }
+    }
+
+    /**
+     * Get uptime data by custom date range
+     * @param { startDate } startDate 
+     * @param { endTime } endTime 
+     * @returns {UptimeDataResult} UptimeDataResult
+     */
+    getDataByDateRange(startDate, endDate) {
+        var startTime = moment(startDate).unix();
+        var endTime = moment(endDate).unix();
+        let key = this.getDailyKey(endTime);
+        let total = {
+            up: 0,
+            down: 0,
+        };
+        let totalPing = 0;
+        let endTimestamp = startTime;
+        console.log(this.dailyUptimeDataList);
+        while (key >= endTimestamp) {
+            let data;
+            data = this.dailyUptimeDataList[key];
+            if (data) {
+                total.up += data.up;
+                total.down += data.down;
+                totalPing += data.avgPing * data.up;
+            }
+            key -= 86400;
+        }
+        
+        let uptimeData = new UptimeDataResult();
+        let avgPing;
+        if (total.up === 0) {
+            avgPing = 0;
+        } else {
+            avgPing = totalPing / total.up;
+        }
+
+        uptimeData.uptime = total.up === 0 ? 1 : (total.up / (total.up + total.down));
+        uptimeData.avgPing = avgPing;
+        return uptimeData;
     }
 
     /**
