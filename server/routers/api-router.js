@@ -695,10 +695,11 @@ router.get("/api/reports", apiAuth, async (request, response) => {
         result.message = "Invalid monitor details";
     } else {
         if (moment(endDate).isBefore(monitor[0].created_date)) {
-            callback({
-                ok: false,
-                msg: "Monitor Not Created Within Selected Date Range",
+            response.json({
+                "data": "",
+                "message": "Monitor Not Created Within Selected Date Range"
             });
+            return
         }
         monitor.customRange = false;
         if (startDate && endDate) {

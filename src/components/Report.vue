@@ -151,12 +151,12 @@ export default {
                 return this.processing = false;
             }
             let message = "";
-            if (this.report.startDate !== "" && this.report.startDate.length !== 0) {
+            if (this.report.startDate !== "" && (this.report.startDate && this.report.startDate.length !== 0)) {
                 if (this.report.endDate === "" || this.report.endDate === null) {
                     message = "Please select end date";
                 }
             }
-            if (this.report.endDate !== "" && this.report.startDate.length !== 0) {
+            if (this.report.endDate !== "" && (this.report.endDate && this.report.endDate.length !== 0)) {
                 if (this.report.startDate === "" || this.report.startDate === null) {
                     message = "Please select start date";
                 }
