@@ -3,11 +3,19 @@ description: "Submit a proposal for a new feature"
 #title: "[Feature] "
 labels: [feature-request]
 body:
+  - type: textarea
+    id: related-issues
+    validations:
+      required: true
+    attributes:
+      label: "📑 I have found these related issues/pull requests"
+      description: "Search related issues and explain what the difference between them by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
+      placeholder: "Related to #1 by also touching the ... system. They should not be merged because ..."
   - type: checkboxes
     id: no-duplicate-issues
     attributes:
       label: "⚠️ Please verify that this feature request has NOT been suggested before."
-      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
+      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=). Duplicates only create immortal zombies and are really hard to issue-manage"
       options:
         - label: "I checked and didn't find similar feature request"
           required: true
@@ -18,10 +26,17 @@ body:
       description: "What kind of feature request is this?"
       multiple: true
       options:
-        - API
-        - New Notification
-        - New Monitor
-        - UI Feature
+        - API / automation options
+        - New notification-provider
+        - Change to existing notification-provider
+        - New monitor
+        - Change to existing monitor
+        - Dashboard
+        - Status-page
+        - Maintenance
+        - Deployment
+        - Settings
+        - Settings
         - Other
     validations:
       required: true
