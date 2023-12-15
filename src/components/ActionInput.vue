@@ -8,9 +8,9 @@
             :placeholder="placeholder"
             :disabled="!enabled"
         >
-        <a class="btn btn-outline-primary" @click="action()">
+        <button type="button" class="btn btn-outline-primary" :aria-label="actionAriaLabel" @click="action()">
             <font-awesome-icon :icon="icon" />
-        </a>
+        </button>
     </div>
 </template>
 
@@ -66,6 +66,13 @@ export default {
         action: {
             type: Function,
             default: () => {},
+        },
+        /**
+         * The aria-label of the action button
+         */
+        actionAriaLabel: {
+            type: String,
+            required: true,
         }
     },
     emits: [ "update:modelValue" ],

@@ -75,12 +75,12 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 1. Fork the project
 2. Clone your fork repo to local
 3. Create a new branch
-4. Create an empty commit: `git commit -m "[empty commit] pull request for <YOUR TASK NAME>" --allow-empty`
+4. Create an empty commit: `git commit -m "<YOUR TASK NAME>" --allow-empty`
 5. Push to your fork repo
-6. Create a pull request: https://github.com/louislam/uptime-kuma/compare
-7. Write a proper description
-8. Click "Change to draft"
-9. Discussion
+6. Prepare a pull request: https://github.com/louislam/uptime-kuma/compare
+7. Write a proper description. You can mention @louislam in it, so @louislam will get the notification.
+8. Create your pull request as a Draft
+9. Wait for the discussion
 
 ## Project Styles
 

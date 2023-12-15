@@ -1,11 +1,10 @@
-const https = require("https");
 const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
-const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
+const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
 } = require("../util-server");
 const { R } = require("redbean-node");
@@ -16,13 +15,16 @@ const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
-const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { CookieJar } = require("tough-cookie");
+const { HttpsCookieAgent } = require("http-cookie-agent/http");
+const https = require("https");
+const http = require("http");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -133,6 +135,7 @@ class Monitor extends BeanModel {
             maintenance: await Monitor.isUnderMaintenance(this.id),
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
+            mqttCheckType: this.mqttCheckType,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
             slowResponseNotification: this.isEnabledSlowResponseNotification(),
@@ -160,6 +163,7 @@ class Monitor extends BeanModel {
             kafkaProducerAllowAutoTopicCreation: this.getKafkaProducerAllowAutoTopicCreation(),
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
+            remote_browser: this.remote_browser,
         };
 
         if (includeSensitiveData) {
@@ -523,7 +527,12 @@ class Monitor extends BeanModel {
                     }
 
                     if (!options.httpsAgent) {
-                        options.httpsAgent = new https.Agent(httpsAgentOptions);
+                        let jar = new CookieJar();
+                        let httpsCookieAgentOptions = {
+                            ...httpsAgentOptions,
+                            cookies: { jar }
+                        };
+                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
                     }
 
                     if (this.auth_method === "mtls") {
@@ -675,12 +684,12 @@ class Monitor extends BeanModel {
                         headers: {
                             "Accept": "*/*",
                         },
-                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
+                        httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
                             secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                         }),
-                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                        httpAgent: new http.Agent({
                             maxCachedSessions: 0,
                         }),
                         maxRedirects: this.maxredirects,
@@ -727,12 +736,12 @@ class Monitor extends BeanModel {
                         headers: {
                             "Accept": "*/*",
                         },
-                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
+                        httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
                             secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                         }),
-                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                        httpAgent: new http.Agent({
                             maxCachedSessions: 0,
                         }),
                     };
@@ -747,7 +756,7 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
-                        options.httpsAgent = CacheableDnsHttpAgent.getHttpsAgent(
+                        options.httpsAgent = new https.Agent(
                             DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
                         );
                     }
@@ -766,14 +775,6 @@ class Monitor extends BeanModel {
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
                     }
-                } else if (this.type === "mqtt") {
-                    bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
-                        port: this.port,
-                        username: this.mqttUsername,
-                        password: this.mqttPassword,
-                        interval: this.interval,
-                    });
-                    bean.status = UP;
                 } else if (this.type === "sqlserver") {
                     let startTime = dayjs().valueOf();
 
