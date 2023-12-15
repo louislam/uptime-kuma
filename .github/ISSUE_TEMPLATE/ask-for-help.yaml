@@ -56,16 +56,20 @@ body:
       placeholder: "Ex. Google Chrome 95.0.4638.69"
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: deployment-info
     attributes:
       label: "🖥️ The system is deployed as such"
-      description: "Knowing more about how you have deployed"
-      render: shell
+      description: |
+        examples:
+          - **Runtime**: Docker 20.10.9 / nodejs 14.18.0 / K8S via ... v1.3.3 / ..
+          - **Database**: sqlite/embedded mariadb/external mariadb
+          - **Filesystem used to store the database on**: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
+          - **number of monitors**: 42
       value: |
-        deployed via: Docker 20.10.9 / K8S / nodejs 14.18.0 / ..
-        database used as storage: sqlite/embedded mariadb/external mariadb
-        filesystem used to store the db on: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
-        number of monitors: 42
+        - Runtime: 
+        - Database: 
+        - Filesystem used to store the database on: 
+        - number of monitors: 
     validations:
       required: true
