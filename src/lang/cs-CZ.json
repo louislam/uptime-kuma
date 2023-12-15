@@ -870,5 +870,22 @@
     "programmingLanguages": "Programovací jazyky",
     "monitorToastMessagesLabel": "Upozornění Monitor Toast",
     "monitorToastMessagesDescription": "Upozornění Toast zmizí po uplynutí nastaveného času. Časový limit vypnete nastavením -1. Upozornění vypnete nastavením 0.",
-    "pushViewCode": "Jak používat Push monitor? (Zobrazit kód)"
+    "pushViewCode": "Jak používat Push monitor? (Zobrazit kód)",
+    "liquidIntroduction": "Šablony je možné vytvářet pomocí jazyka Liquid. Pokyny k použití naleznete v {0}. Toto jsou dostupné proměnné:",
+    "templateMsg": "zpráva upozornění",
+    "emailCustomisableContent": "Přizpůsobitelný obsah",
+    "GrafanaOncallUrl": "URL pro volání do Grafana",
+    "Reset Token": "Vynulovat token",
+    "noDockerHostMsg": "Není k dispozici. Nejprve nastavte hostitele Docker.",
+    "DockerHostRequired": "Nastavte prosím hostitele nástroje Docker pro tento dohled.",
+    "smtpLiquidIntroduction": "Následující dvě pole lze šablonovat pomocí jazyka Liquid. Pokyny k použití naleznete v {0}. Jedná se o dostupné proměnné:",
+    "leave blank for default subject": "ponechte prázdné pro výchozí předmět",
+    "emailCustomBody": "Vlastní tělo",
+    "leave blank for default body": "ponechte prázdné, pokud chcete použít výchozí tělo",
+    "emailTemplateServiceName": "Název služby",
+    "emailTemplateHostnameOrURL": "Název hostitele nebo adresa URL",
+    "emailTemplateStatus": "Stav",
+    "emailTemplateMsg": "text oznámení",
+    "templateHeartbeatJSON": "objekt popisující funkčnost systému (heartbeat)",
+    "templateLimitedToUpDownCertNotifications": "dostupné pouze pro oznámení Běží/neběží/stav certifikátu"
 }
