@@ -657,10 +657,12 @@
     "onebotUserOrGroupId": "Gruppo/ID utente",
     "Badge Color": "Colore badge",
     "Monitor Group": "Gruppo monitor",
-    "setupDatabaseEmbeddedMariaDB": "Non devi impostare niente. Questa immagine di Docker include un MariaDB già configurato e pronto all'uso. Uptime Kuma si collegherà a questo database attraverso l'unix socket.",
+    "setupDatabaseEmbeddedMariaDB": "Non devi impostare niente. Questa immagine Docker include un MariaDB già configurato e pronto all'uso. Uptime Kuma si collegherà a questo database attraverso l'unix socket.",
     "dbName": "Nome Database",
     "Group": "Gruppo",
     "pushOthers": "Altro",
     "programmingLanguages": "Linguaggi di programmazione",
-    "promosmsAllowLongSMS": "Permetti SMS lunghi"
+    "promosmsAllowLongSMS": "Permetti SMS lunghi",
+    "liquidIntroduction": "La templatabilità è ottenuta attraverso il linguaggio di templating Liquid. Consulta {0} per le istruzioni d'uso. Queste sono le variabili disponibili:",
+    "templateMsg": "Messaggio della notifica"
 }
