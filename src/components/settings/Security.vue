@@ -93,10 +93,16 @@
         <TwoFADialog ref="TwoFADialog" />
 
         <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('I understand, please disable')" :no-text="$t('Leave')" @yes="disableAuth">
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <p v-html="$t('disableauth.message1')"></p>
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <p v-html="$t('disableauth.message2')"></p>
+            <i18n-t tag="p" keypath="disableauth.message1">
+                <template #disableAuth>
+                    <strong>{{ $t('disable authentication') }}</strong>
+                </template>
+            </i18n-t>
+            <i18n-t tag="p" keypath="disableauth.message2">
+                <template #intendThirdPartyAuth>
+                    <strong>{{ $t('intend to implement third-party authentication') }}</strong>
+                </template>
+            </i18n-t>
             <p>{{ $t("Please use this option carefully!") }}</p>
 
             <div class="mb-3">
