@@ -185,6 +185,30 @@ async function sendDockerHostList(socket) {
     return list;
 }
 
+/**
+ * Send list of docker hosts to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<Bean[]>} List of docker hosts
+ */
+async function sendRemoteBrowserList(socket) {
+    const timeLogger = new TimeLogger();
+
+    let result = [];
+    let list = await R.find("remote_browser", " user_id = ? ", [
+        socket.userID,
+    ]);
+
+    for (let bean of list) {
+        result.push(bean.toJSON());
+    }
+
+    io.to(socket.userID).emit("remoteBrowserList", result);
+
+    timeLogger.print("Send Remote Browser List");
+
+    return list;
+}
+
 module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
@@ -192,5 +216,6 @@ module.exports = {
     sendProxyList,
     sendAPIKeyList,
     sendInfo,
-    sendDockerHostList
+    sendDockerHostList,
+    sendRemoteBrowserList,
 };

@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
-const childProcess = require("child_process");
+const childProcessAsync = require("promisify-child-process");
 
 /**
  * A TailscalePing class extends the MonitorType.
@@ -37,12 +37,9 @@ class TailscalePing extends MonitorType {
      */
     async runTailscalePing(hostname, interval) {
         let timeout = interval * 1000 * 0.8;
-        let res = childProcess.spawnSync("tailscale", [ "ping", hostname ], {
+        let res = await childProcessAsync.spawn("tailscale", [ "ping", "--c", "1", hostname ], {
             timeout: timeout
         });
-        if (res.error) {
-            throw new Error(`Execution error: ${res.error.message}`);
-        }
         if (res.stderr && res.stderr.toString()) {
             throw new Error(`Error in output: ${res.stderr.toString()}`);
         }

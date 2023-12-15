@@ -157,7 +157,12 @@ I recommend using Google, GitHub Issues, or Uptime Kuma's subreddit for finding 
 My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam)
 You can mention me if you ask a question on the subreddit.
 
-## Contribute
+## Contributions
+
+### Create Pull Requests
+
+We DO NOT accept all types of pull requests and do not want to waste your time. Please be sure that you have read and follow pull request rules:
+[CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)
 
 ### Test Pull Requests
 
@@ -183,6 +188,4 @@ If you want to translate Uptime Kuma into your language, please visit [Weblate R
 Feel free to correct the grammar in the documentation or code.
 My mother language is not English and my grammar is not that great.
 
-### Create Pull Requests
 
-If you want to modify Uptime Kuma, please read this guide and follow the rules here: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md
