@@ -96,7 +96,6 @@ body:
         Database:
         Filesystem used to store the database on:
         number of monitors:
-      render: markdown
     validations:
       required: true
   - type: textarea
