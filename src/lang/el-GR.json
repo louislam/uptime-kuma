@@ -695,5 +695,12 @@
     "Free Mobile API Key": "Free Mobile API Key",
     "smseaglePriority": "Προτεραιότητα μηνύματος (0-9, προεπιλογή = 0)",
     "statusPageRefreshIn": "Ανανέωση σε {0}",
-    "Add New Tag": "Πρόσθεσε νέα ετικέτα"
+    "Add New Tag": "Πρόσθεσε νέα ετικέτα",
+    "setupDatabaseMariaDB": "Συνδεθείτε με εξωτερική βάση δεδομένων MariaDB. Θα πρέπει να ορίσετε τα στοιχεία σύνδεσης της βάσης δεδομένων.",
+    "setupDatabaseChooseDatabase": "Ποια βάση δεδομένων θέλετε να χρησιμοποιήσετε;",
+    "setupDatabaseEmbeddedMariaDB": "Δεν χρειάζεται να ρυθμίσετε τίποτε. Η εικόνα Docker έχει ενσωματώσει και ρυθμίσει μια βάση δεδομένων MariaDB για εσάς αυτόματα. Το Uptime Kuma θα συνδεθεί με την βάση δεδομένων μέσω unix socket.",
+    "setupDatabaseSQLite": "Ένα απλό αρχείο βάσης δεδομένων, προτεινόμενο για εγκαταστάσεις μικρής κλίμακας. Πρίν από την έκδοση 2.0.0, το Uptime Kuma χρησιμοποιούσε το SQLite ως την προεπιλεγμένη βάση δεδομένων.",
+    "Cannot connect to the socket server": "Δεν είναι δυνατή η σύνδεση με τον διακομιστή socket",
+    "Reconnecting...": "Επανασύνδεση",
+    "Home": "Αρχική"
 }
