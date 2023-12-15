@@ -35,7 +35,7 @@ body:
         - Status-page
         - Maintenance
         - Deployment
-        - Settings
+        - Certificate expiry
         - Settings
         - Other
     validations:
