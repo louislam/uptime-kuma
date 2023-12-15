@@ -747,7 +747,7 @@
     "twilioAccountSID": "Account SID",
     "twilioFromNumber": "Absender",
     "twilioToNumber": "Empfänger",
-    "twilioAuthToken": "Auth Token / Api Key Secret",
+    "twilioAuthToken": "Auth Token / API Key Secret",
     "statusPageRefreshIn": "Aktualisierung in: {0}",
     "sameAsServerTimezone": "Gleiche Zeitzone wie Server",
     "startDateTime": "Start Datum/Uhrzeit",
