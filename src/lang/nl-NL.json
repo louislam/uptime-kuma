@@ -893,5 +893,6 @@
     "successDisabled": "Succesvol uitgeschakeld.",
     "successEnabled": "Succesvol ingeschakeld.",
     "tagNotFound": "Tag niet gevonden.",
-    "foundChromiumVersion": "Chromium/Chrome gevonden. Versie {0}"
+    "foundChromiumVersion": "Chromium/Chrome gevonden. Versie {0}",
+    "Browser Screenshot": "Browser Screenshot"
 }
