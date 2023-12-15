@@ -13,8 +13,8 @@ describe("Test i18n.js", () => {
                 writable: true
             });
         }
-
         setLanguage('en-EN');
+
         expect(currentLocale()).equal("en");
 
         setLanguage('zh-HK');
