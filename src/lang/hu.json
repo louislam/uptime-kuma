@@ -516,5 +516,10 @@
     "promosmsPassword": "API Jelszó",
     "wayToGetKookBotToken": "Hozz létre egy app-ot és szerezz egy tokent itt: {0}",
     "wayToGetKookGuildID": "Válts át 'Developer Mode'-ra a Kook beállításoknál majd jobb klikkelve a guildra megtalálod az ID-jét",
-    "Resend Notification if Down X times consecutively": "Értesítés Újraküldése ha X-szer nem válaszol"
+    "Resend Notification if Down X times consecutively": "Értesítés Újraküldése ha X-szer nem válaszol",
+    "Authentication": "Hitelesítés",
+    "Passive Monitor Type": "Passzív megfigyelési típus",
+    "General Monitor Type": "Általános megfigyelési típus",
+    "Specific Monitor Type": "Specifikus megfigyelési típus",
+    "Reconnecting...": "Újracsatlakozás..."
 }
