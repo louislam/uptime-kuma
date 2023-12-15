@@ -872,5 +872,6 @@
     "2faAlreadyEnabled": "2FA 已经启用。",
     "foundChromiumVersion": "已找到 Chromium/Chrome。版本：{0}",
     "successAuthChangePassword": "已成功更新密码。",
-    "authIncorrectCreds": "错误的用户名或密码。"
+    "authIncorrectCreds": "错误的用户名或密码。",
+    "Reset Token": "重置令牌"
 }
