@@ -4,7 +4,7 @@ const fs = require("fs");
 const http = require("http");
 const { Server } = require("socket.io");
 const { R } = require("redbean-node");
-const { log } = require("../src/util");
+const { log, isDev } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
 const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
@@ -12,6 +12,7 @@ const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const childProcessAsync = require("promisify-child-process");
 const path = require("path");
+const { isSSL, sslKey, sslCert, sslKeyPassphrase } = require("./config");
 // DO NOT IMPORT HERE IF THE MODULES USED `UptimeKumaServer.getInstance()`, put at the bottom of this file instead.
 
 /**
@@ -62,22 +63,17 @@ class UptimeKumaServer {
      */
     jwtSecret = null;
 
-    static getInstance(args) {
+    static getInstance() {
         if (UptimeKumaServer.instance == null) {
-            UptimeKumaServer.instance = new UptimeKumaServer(args);
+            UptimeKumaServer.instance = new UptimeKumaServer();
         }
         return UptimeKumaServer.instance;
     }
 
-    constructor(args) {
-        // SSL
-        const sslKey = args["ssl-key"] || process.env.UPTIME_KUMA_SSL_KEY || process.env.SSL_KEY || undefined;
-        const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.env.SSL_CERT || undefined;
-        const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
-
+    constructor() {
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
-        if (sslKey && sslCert) {
+        if (isSSL) {
             log.info("server", "Server Type: HTTPS");
             this.httpServer = https.createServer({
                 key: fs.readFileSync(sslKey),
@@ -103,7 +99,66 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
         UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
 
-        this.io = new Server(this.httpServer);
+        // Allow all CORS origins (polling) in development
+        let cors = undefined;
+        if (isDev) {
+            cors = {
+                origin: "*",
+            };
+        }
+
+        this.io = new Server(this.httpServer, {
+            cors,
+            allowRequest: async (req, callback) => {
+                let transport;
+                // It should be always true, but just in case, because this property is not documented
+                if (req._query) {
+                    transport = req._query.transport;
+                } else {
+                    log.error("socket", "Ops!!! Cannot get transport type, assume that it is polling");
+                    transport = "polling";
+                }
+
+                const clientIP = await this.getClientIPwithProxy(req.connection.remoteAddress, req.headers);
+                log.info("socket", `New ${transport} connection, IP = ${clientIP}`);
+
+                // The following check is only for websocket connections, polling connections are already protected by CORS
+                if (transport === "polling") {
+                    callback(null, true);
+                } else if (transport === "websocket") {
+                    const bypass = process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass";
+                    if (bypass) {
+                        log.info("auth", "WebSocket origin check is bypassed");
+                        callback(null, true);
+                    } else if (!req.headers.origin) {
+                        log.info("auth", "WebSocket with no origin is allowed");
+                        callback(null, true);
+                    } else {
+                        let host = req.headers.host;
+                        let origin = req.headers.origin;
+
+                        try {
+                            let originURL = new URL(origin);
+                            let xForwardedFor;
+                            if (await Settings.get("trustProxy")) {
+                                xForwardedFor = req.headers["x-forwarded-for"];
+                            }
+
+                            if (host !== originURL.host && xForwardedFor !== originURL.host) {
+                                callback(null, false);
+                                log.error("auth", `Origin (${origin}) does not match host (${host}), IP: ${clientIP}`);
+                            } else {
+                                callback(null, true);
+                            }
+                        } catch (e) {
+                            // Invalid origin url, probably not from browser
+                            callback(null, false);
+                            log.error("auth", `Invalid origin url (${origin}), IP: ${clientIP}`);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     /** Initialise app after the database has been set up */
@@ -238,20 +293,28 @@ class UptimeKumaServer {
     /**
      * Get the IP of the client connected to the socket
      * @param {Socket} socket
-     * @returns {string}
+     * @returns {Promise<string>}
      */
-    async getClientIP(socket) {
-        let clientIP = socket.client.conn.remoteAddress;
+    getClientIP(socket) {
+        return this.getClientIPwithProxy(socket.client.conn.remoteAddress, socket.client.conn.request.headers);
+    }
 
+    /**
+     *
+     * @param {string} clientIP
+     * @param {IncomingHttpHeaders} headers
+     * @returns {Promise<string>}
+     */
+    async getClientIPwithProxy(clientIP, headers) {
         if (clientIP === undefined) {
             clientIP = "";
         }
 
         if (await Settings.get("trustProxy")) {
-            const forwardedFor = socket.client.conn.request.headers["x-forwarded-for"];
+            const forwardedFor = headers["x-forwarded-for"];
 
             return (typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : null)
-                || socket.client.conn.request.headers["x-real-ip"]
+                || headers["x-real-ip"]
                 || clientIP.replace(/^::ffff:/, "");
         } else {
             return clientIP.replace(/^::ffff:/, "");
@@ -385,6 +448,25 @@ class UptimeKumaServer {
                 await childProcessAsync.exec("sudo service nscd stop");
             } catch (e) {
                 log.info("services", "Failed to stop nscd");
+            }
+        }
+    }
+
+    /**
+     * Force connected sockets of a user to refresh and disconnect.
+     * Used for resetting password.
+     * @param {string} userID
+     * @param {string?} currentSocketID
+     */
+    disconnectAllSocketClients(userID, currentSocketID = undefined) {
+        for (const socket of this.io.sockets.sockets.values()) {
+            if (socket.userID === userID && socket.id !== currentSocketID) {
+                try {
+                    socket.emit("refresh");
+                    socket.disconnect();
+                } catch (e) {
+
+                }
             }
         }
     }

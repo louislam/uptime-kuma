@@ -11,12 +11,11 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log } = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { UptimeCacheList } = require("../uptime-cache-list");
 const { makeBadge } = require("badge-maker");
-const { badgeConstants } = require("../config");
 const { Prometheus } = require("../prometheus");
 
 let router = express.Router();

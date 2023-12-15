@@ -29,10 +29,10 @@ export default {
     },
     computed: {
         startDateTime() {
-            return dayjs(this.maintenance.timeslotList[0].startDate).tz(this.maintenance.timezone).format(SQL_DATETIME_FORMAT_WITHOUT_SECOND);
+            return dayjs(this.maintenance.timeslotList[0].startDate).tz(this.maintenance.timezone, true).format(SQL_DATETIME_FORMAT_WITHOUT_SECOND);
         },
         endDateTime() {
-            return dayjs(this.maintenance.timeslotList[0].endDate).tz(this.maintenance.timezone).format(SQL_DATETIME_FORMAT_WITHOUT_SECOND);
+            return dayjs(this.maintenance.timeslotList[0].endDate).tz(this.maintenance.timezone, true).format(SQL_DATETIME_FORMAT_WITHOUT_SECOND);
         }
     },
 };
