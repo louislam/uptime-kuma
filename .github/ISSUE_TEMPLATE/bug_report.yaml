@@ -81,7 +81,7 @@ body:
       placeholder: "Ex. Google Chrome 95.0.4638.69"
     validations:
       required: true
-  - type: input
+  - type: textarea
     id: deployment-info
     attributes:
       label: "🖥️ The system is deployed as such"
@@ -92,10 +92,10 @@ body:
           - **Filesystem used to store the database on**: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
           - **number of monitors**: 42
       value: |
-        Runtime:
-        Database:
-        Filesystem used to store the database on:
-        number of monitors:
+        - Runtime:  
+        - Database:  
+        - Filesystem used to store the database on:  
+        - number of monitors:
     validations:
       required: true
   - type: textarea
