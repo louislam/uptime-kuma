@@ -889,5 +889,8 @@
     "templateMsg": "wiadomość powiadomienia",
     "templateHeartbeatJSON": "obiekt opisujący bicie serca",
     "templateMonitorJSON": "obiekt opisujący monitor",
-    "templateLimitedToUpDownNotifications": "dostępne tylko dla powiadomień UP/DOWN"
+    "templateLimitedToUpDownNotifications": "dostępne tylko dla powiadomień UP/DOWN",
+    "Browser Screenshot": "Zrzut ekranu przeglądarki",
+    "noDockerHostMsg": "Niedostępne. Najpierw skonfiguruj host Dockera.",
+    "DockerHostRequired": "Ustaw host Dockera dla tego monitora."
 }
