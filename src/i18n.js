@@ -57,10 +57,16 @@ for (let lang in languageList) {
 
 const rtlLangs = [ "fa", "ar-SY", "ur" ];
 
-export const currentLocale = () => localStorage.locale
-    || languageList[navigator.language] && navigator.language
-    || languageList[navigator.language.substring(0, 2)] && navigator.language.substring(0, 2)
-    || "en";
+/**
+ * Find the best matching locale to display
+ * If no locale can be matched, the default is "en"
+ * @returns {string} the locale that should be displayed
+ */
+export function currentLocale() {
+    const potentialLocales = [ localStorage.locale, navigator.language, ...navigator.languages ];
+    const availableLocales = potentialLocales.filter(l => languageList[l]);
+    return availableLocales[0] || "en";
+}
 
 export const localeDirection = () => {
     return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr";
