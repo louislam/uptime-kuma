@@ -3,8 +3,6 @@ import { defineConfig, devices } from "@playwright/test";
 const port = 30001;
 const url = `http://localhost:${port}`;
 
-console.log("Port: ", port);
-
 export default defineConfig({
     // Look for test files in the "tests" directory, relative to this configuration file.
     testDir: "../test/e2e",
@@ -50,5 +48,6 @@ export default defineConfig({
         url,
         reuseExistingServer: !process.env.CI,
         cwd: "../",
+
     },
 });
