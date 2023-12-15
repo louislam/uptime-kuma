@@ -91,7 +91,7 @@ body:
         database used as storage: sqlite/embedded mariadb/external mariadb
         filesystem used to store the db on: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
         number of monitors: 42
-      render: raw
+      render: shell
     validations:
       required: true
   - type: textarea
