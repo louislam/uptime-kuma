@@ -887,5 +887,10 @@
     "emailTemplateStatus": "Stav",
     "emailTemplateMsg": "text oznámení",
     "templateHeartbeatJSON": "objekt popisující funkčnost systému (heartbeat)",
-    "templateLimitedToUpDownCertNotifications": "dostupné pouze pro oznámení Běží/neběží/stav certifikátu"
+    "templateLimitedToUpDownCertNotifications": "dostupné pouze pro oznámení Běží/neběží/stav certifikátu",
+    "emailTemplateMonitorJSON": "objekt popisující dohled",
+    "emailTemplateHeartbeatJSON": "objekt popisující heartbeat",
+    "emailTemplateLimitedToUpDownNotification": "dostupné pouze pro heatbeaty BĚŽÍ/NEBĚŽÍ, jinak null",
+    "templateMonitorJSON": "objekt popisující dohled",
+    "templateLimitedToUpDownNotifications": "dostupné pouze pro oznámení BĚŽÍ/NEBĚŽÍ"
 }
