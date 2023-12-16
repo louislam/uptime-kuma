@@ -9,16 +9,8 @@ body:
       required: true
     attributes:
       label: "📑 I have found these related issues/pull requests"
-      description: "Search related issues and explain what the difference between them by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
+      description: "Search related issues by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=) and explain what the difference between them or explain that you are unable to find any related issues"
       placeholder: "Related to #1 by also touching the ... system. They should not be merged because ..."
-  - type: checkboxes
-    id: no-duplicate-issues
-    attributes:
-      label: "⚠️ Please verify that this bug has NOT been raised before."
-      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=). Duplicates only create immortal zombies and are really hard to issue-manage"
-      options:
-        - label: "I checked and didn't find similar issue"
-          required: true
   - type: checkboxes
     attributes:
       label: "🛡️ Security Policy"
