@@ -59,7 +59,7 @@ body:
   - type: textarea
     id: deployment-info
     attributes:
-      label: "🖥️ The system is deployed as such"
+      label: "🖥️ Deployment Environment"
       description: |
         examples:
           - **Runtime**: Docker 20.10.9 / nodejs 14.18.0 / K8S via ... v1.3.3 / ..
