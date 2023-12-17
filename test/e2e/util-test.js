@@ -1,5 +1,3 @@
-import { test, expect } from "@playwright/test";
-
 /**
  * @param {TestInfo} testInfo Test info
  * @param {Page} page Page
@@ -14,7 +12,8 @@ export async function screenshot(testInfo, page) {
 }
 
 /**
- * @param {Page} page
+ * @param {Page} page Page
+ * @returns {Promise<void>}
  */
 export async function login(page) {
     // Login
