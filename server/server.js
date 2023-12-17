@@ -90,7 +90,7 @@ const Monitor = require("./model/monitor");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, startE2eTests, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -130,7 +130,6 @@ const twoFAVerifyOptions = {
  * @type {boolean}
  */
 const testMode = !!args["test"] || false;
-const e2eTestMode = !!args["e2e"] || false;
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");
@@ -1550,10 +1549,6 @@ let needSetup = false;
         }
         startMonitors();
         checkVersion.startInterval();
-
-        if (e2eTestMode) {
-            startE2eTests();
-        }
     });
 
     await initBackgroundJobs();
