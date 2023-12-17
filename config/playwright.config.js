@@ -6,9 +6,9 @@ const url = `http://localhost:${port}`;
 export default defineConfig({
     // Look for test files in the "tests" directory, relative to this configuration file.
     testDir: "../test/e2e",
-
-    // Run all tests in parallel.
-    fullyParallel: true,
+    outputDir: "../private/playwright-test-results",
+    fullyParallel: false,
+    locale: "en-US",
 
     // Fail the build on CI if you accidentally left test.only in the source code.
     forbidOnly: !!process.env.CI,
@@ -17,11 +17,16 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
 
     // Opt out of parallel tests on CI.
-    workers: process.env.CI ? 1 : undefined,
+    workers: 1,
 
     // Reporter to use
     reporter: [
-        [ "html" ],
+        [
+            "html", {
+                outputFolder: "../private/playwright-report",
+                open: "never",
+            }
+        ],
     ],
 
     use: {
@@ -31,23 +36,25 @@ export default defineConfig({
         // Collect trace when retrying the failed test.
         trace: "on-first-retry",
     },
+
     // Configure projects for major browsers.
     projects: [
         {
             name: "chromium",
             use: { ...devices["Desktop Chrome"] },
         },
+        /*
         {
             name: "firefox",
             use: { browserName: "firefox" }
-        },
+        },*/
     ],
+
     // Run your local dev server before starting the tests.
     webServer: {
-        command: `node server/server.js --port=${port} --data-dir=./data/playwright-test`,
+        command: `node extra/remove-playwright-test-data.js && node server/server.js --port=${port} --data-dir=./data/playwright-test`,
         url,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         cwd: "../",
-
     },
 });

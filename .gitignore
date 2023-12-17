@@ -15,9 +15,6 @@ dist-ssr
 /tmp
 .env
 
-cypress/videos
-cypress/screenshots
-
 /extra/healthcheck.exe
 /extra/healthcheck
 /extra/healthcheck-armv7
@@ -27,6 +24,3 @@ extra/exe-builder/obj
 
 .vs
 .vscode
-/test-results/
-/playwright-report/
-/playwright/.cache/
