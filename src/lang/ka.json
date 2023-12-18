@@ -17,5 +17,7 @@
     "List": "სია",
     "Add": "დამატება",
     "Add New Monitor": "ახალი მონიტორის დამატება",
-    "Down": "დაბლა"
+    "Down": "დაბლა",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
