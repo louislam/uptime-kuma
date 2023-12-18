@@ -1046,5 +1046,7 @@
     "pushViewCode": "",
     "CopyToClipboardError": "",
     "Enable DNS Cache": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
