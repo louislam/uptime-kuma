@@ -1051,5 +1051,6 @@
     "WeCom Bot Key": "",
     "Setup Proxy": "",
     "Proxy Server": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
