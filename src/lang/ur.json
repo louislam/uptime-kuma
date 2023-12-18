@@ -1056,5 +1056,7 @@
     "Messaging API": "",
     "pushoversounds magic": "",
     "Pick a SASL Mechanism...": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
