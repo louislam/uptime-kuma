@@ -1047,5 +1047,7 @@
     "styleElapsedTimeShowWithLine": "",
     "Event data:": "",
     "Optional": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
