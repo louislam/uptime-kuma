@@ -1082,5 +1082,6 @@
     "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "",
     "tailscalePingWarning": "",
     "Server URL should not contain the nfty topic": "",
-    "Badge Type": ""
+    "Badge Type": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
