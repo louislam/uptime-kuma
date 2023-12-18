@@ -1043,5 +1043,7 @@
     "pauseDashboardHome": "",
     "Name": "",
     "CopyToClipboardError": "",
-    "Enable DNS Cache": ""
+    "Enable DNS Cache": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
