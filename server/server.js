@@ -1270,6 +1270,7 @@ let needSetup = false;
 
                 callback({
                     ok: true,
+                    token: User.createJWT(user, server.jwtSecret),
                     msg: "successAuthChangePassword",
                     msgi18n: true,
                 });
