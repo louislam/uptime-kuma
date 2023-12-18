@@ -1043,5 +1043,7 @@
     "recurringIntervalMessage": "",
     "affectedMonitorsDescription": "",
     "setupDatabaseEmbeddedMariaDB": "",
-    "ignoreTLSError": ""
+    "ignoreTLSError": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
