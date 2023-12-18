@@ -1075,5 +1075,7 @@
     "apiKey-inactive": "",
     "pagertreeIntegrationUrl": "",
     "pagertreeSilent": "",
-    "pagertreeLow": ""
+    "pagertreeLow": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
