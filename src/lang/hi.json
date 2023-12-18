@@ -1046,5 +1046,7 @@
     "Expected Value": "",
     "Enable DNS Cache": "",
     "CopyToClipboardError": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
