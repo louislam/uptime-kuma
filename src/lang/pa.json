@@ -1047,5 +1047,7 @@
     "Can be found on:": "",
     "The phone number of the recipient in E.164 format.": "",
     "ignoreTLSError": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
