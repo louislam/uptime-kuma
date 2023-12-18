@@ -1042,5 +1042,7 @@
     "Enable DNS Cache": "",
     "Search...": "",
     "trustProxyDescription": "",
-    "high": ""
+    "high": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
