@@ -1044,5 +1044,7 @@
     "AccessKeyId": "",
     "TemplateCode": "",
     "promosmsPhoneNumber": "",
-    "setupDatabaseChooseDatabase": ""
+    "setupDatabaseChooseDatabase": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
