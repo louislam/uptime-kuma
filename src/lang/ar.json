@@ -1051,5 +1051,6 @@
     "endDateTime": "",
     "cronExpression": "",
     "cronSchedule": "",
-    "chromeExecutable": ""
+    "chromeExecutable": "",
+    "ntfyPriorityHelptextAllExceptDown": ""
 }
