@@ -1047,5 +1047,7 @@
     "ntfyPriorityHelptextAllEvents": "",
     "CopyToClipboardError": "",
     "setupDatabaseEmbeddedMariaDB": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "grpcMethodDescription": ""
 }
