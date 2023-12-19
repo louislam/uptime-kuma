@@ -171,10 +171,6 @@ export default {
                     this.settings.nscd = true;
                 }
 
-                if (this.settings.dnsCache === undefined) {
-                    this.settings.dnsCache = false;
-                }
-
                 if (this.settings.keepDataPeriodDays === undefined) {
                     this.settings.keepDataPeriodDays = 180;
                 }
