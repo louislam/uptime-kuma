@@ -155,7 +155,7 @@ export default {
         },
         chartData() {
 
-            if (this.chartPeriodHrs === 0) {
+            if (this.chartPeriodHrs === "0") {
                 // Render chart using heartbeatList
                 let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
                 let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
@@ -328,7 +328,7 @@ export default {
         // Load chart period from storage if saved
         let period = this.$root.storage()[`chart-period-${this.monitorId}`];
         if (period != null) {
-            this.chartPeriodHrs = Math.min(period, 6);
+            this.chartPeriodHrs = period;
         }
     },
     methods: {
