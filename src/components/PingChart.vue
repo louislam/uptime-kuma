@@ -20,7 +20,7 @@
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import "chartjs-adapter-dayjs-4";
 import { Line } from "vue-chartjs";
-import { DOWN, PENDING, MAINTENANCE } from "../util.ts";
+import { UP, DOWN, PENDING, MAINTENANCE } from "../util.ts";
 
 Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
 
@@ -39,7 +39,7 @@ export default {
             loading: false,
 
             // Configurable filtering on top of the returned data
-            chartPeriodHrs: 0,
+            chartPeriodHrs: "0",
 
             chartPeriodOptions: {
                 0: this.$t("recent"),
@@ -168,7 +168,7 @@ export default {
                         const x = this.$root.datetime(beat.time);
                         pingData.push({
                             x,
-                            y: beat.ping,
+                            y: beat.status === UP ? beat.ping : null,
                         });
                         downData.push({
                             x,
@@ -221,20 +221,18 @@ export default {
                     const x = this.$root.unixToDateTime(datapoint.timestamp);
 
                     // Show ping values if it was up in this period
-                    if (datapoint.up > 0) {
-                        avgPingData.push({
-                            x,
-                            y: datapoint.avgPing,
-                        });
-                        minPingData.push({
-                            x,
-                            y: datapoint.minPing,
-                        });
-                        maxPingData.push({
-                            x,
-                            y: datapoint.maxPing,
-                        });
-                    }
+                    avgPingData.push({
+                        x,
+                        y: datapoint.up > 0 ? datapoint.avgPing : null,
+                    });
+                    minPingData.push({
+                        x,
+                        y: datapoint.up > 0 ? datapoint.minPing : null,
+                    });
+                    maxPingData.push({
+                        x,
+                        y: datapoint.up > 0 ? datapoint.maxPing : null,
+                    });
 
                     downData.push({
                         x,
@@ -328,6 +326,10 @@ export default {
         // Load chart period from storage if saved
         let period = this.$root.storage()[`chart-period-${this.monitorId}`];
         if (period != null) {
+            // Has this ever been not a string?
+            if (typeof period !== "string") {
+                period = period.toString();
+            }
             this.chartPeriodHrs = period;
         }
     },
