@@ -36,10 +36,11 @@
 
                 <div class="my-3">
                     <label for="auto-refresh-interval" class="form-label">{{ $t("Refresh Interval") }}</label>
-                    <input
-                        id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number"
-                        class="form-control" :min="5"
-                    >
+                    <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number"
+                        class="form-control" :min="5">
+                    <div class="form-text">
+                        {{ $t("Refresh Interval Description", [config.autoRefreshInterval]) }}
+                    </div>
                 </div>
 
                 <div class="my-3">
@@ -717,7 +718,6 @@ export default {
             this.loading = false;
 
             // Configure auto-refresh loop
-            this.updateHeartbeatList();
             feedInterval = setInterval(() => {
                 this.updateHeartbeatList();
             }, (this.config.autoRefreshInterval + 10) * 1000);
@@ -729,6 +729,8 @@ export default {
             }
             console.log(error);
         });
+
+        this.updateHeartbeatList();
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
