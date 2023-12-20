@@ -23,8 +23,6 @@ module.exports.chartSocketHandler = (socket) => {
                 data = uptimeCalculator.getDataArray(period / 24, "day");
             }
 
-            console.log(data);
-
             callback({
                 ok: true,
                 data,
