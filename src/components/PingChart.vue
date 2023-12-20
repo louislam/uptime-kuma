@@ -50,9 +50,7 @@ export default {
                 168: "1w",
             },
 
-            // A heartbeatList for 3h, 6h, 24h, 1w
-            // Uses the $root.heartbeatList when value is null
-            heartbeatList: null
+            chartRawData: null
         };
     },
     computed: {
@@ -157,62 +155,143 @@ export default {
             };
         },
         chartData() {
-            let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-            let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
-            let colorData = []; // Color Data for Bar Chart
 
-            let heartbeatList = this.heartbeatList ||
-             (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) ||
-             [];
+            if (this.chartPeriodHrs === 0) {
+                // Render chart using heartbeatList
+                let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+                let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
+                let colorData = []; // Color Data for Bar Chart
 
-            heartbeatList
-                .filter(
-                    // Filtering as data gets appended
-                    // not the most efficient, but works for now
-                    (beat) => dayjs.utc(beat.time).tz(this.$root.timezone).isAfter(
-                        dayjs().subtract(Math.max(this.chartPeriodHrs, 6), "hours")
-                    )
-                )
-                .map((beat) => {
-                    const x = this.$root.datetime(beat.time);
-                    pingData.push({
-                        x,
-                        y: beat.ping,
+                let heartbeatList = (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
+
+                heartbeatList
+                    .map((beat) => {
+                        const x = this.$root.datetime(beat.time);
+                        pingData.push({
+                            x,
+                            y: beat.ping,
+                        });
+                        downData.push({
+                            x,
+                            y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
+                        });
+                        colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"));
                     });
+
+                return {
+                    datasets: [
+                        {
+                        // Line Chart
+                            data: pingData,
+                            fill: "origin",
+                            tension: 0.2,
+                            borderColor: "#5CDD8B",
+                            backgroundColor: "#5CDD8B38",
+                            yAxisID: "y",
+                            label: "ping",
+                        },
+                        {
+                        // Bar Chart
+                            type: "bar",
+                            data: downData,
+                            borderColor: "#00000000",
+                            backgroundColor: colorData,
+                            yAxisID: "y1",
+                            barThickness: "flex",
+                            barPercentage: 1,
+                            categoryPercentage: 1,
+                            inflateAmount: 0.05,
+                            label: "status",
+                        },
+                    ],
+                };
+            } else {
+                // Render chart using UptimeCalculator data
+                let avgPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+                let minPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+                let maxPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+                let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
+                let colorData = []; // Color Data for Bar Chart
+
+                this.chartRawData?.map((datapoint) => {
+                    // Empty datapoints are ignored
+                    if (datapoint.up === 0 && datapoint.down === 0) {
+                        return;
+                    }
+
+                    const x = this.$root.unixToDateTime(datapoint.timestamp);
+
+                    // Show ping values if it was up in this period
+                    if (datapoint.up > 0) {
+                        avgPingData.push({
+                            x,
+                            y: datapoint.avgPing,
+                        });
+                        minPingData.push({
+                            x,
+                            y: datapoint.minPing,
+                        });
+                        maxPingData.push({
+                            x,
+                            y: datapoint.maxPing,
+                        });
+                    }
+
                     downData.push({
                         x,
-                        y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
+                        y: datapoint.down,
                     });
-                    colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"));
+                    colorData.push(this.getBarColorForDatapoint(datapoint));
                 });
 
-            return {
-                datasets: [
-                    {
-                        // Line Chart
-                        data: pingData,
-                        fill: "origin",
-                        tension: 0.2,
-                        borderColor: "#5CDD8B",
-                        backgroundColor: "#5CDD8B38",
-                        yAxisID: "y",
-                        label: "ping",
-                    },
-                    {
+                return {
+                    datasets: [
+                        {
+                        // average ping chart
+                            data: avgPingData,
+                            fill: "origin",
+                            tension: 0.2,
+                            borderColor: "#5CDD8B",
+                            backgroundColor: "#5CDD8B08",
+                            yAxisID: "y",
+                            label: "avg-ping",
+                        },
+                        {
+                        // minimum ping chart
+                            data: minPingData,
+                            fill: "origin",
+                            tension: 0.2,
+                            borderColor: "#3CBD6B55",
+                            backgroundColor: "#5CDD8B08",
+                            yAxisID: "y",
+                            label: "min-ping",
+                        },
+                        {
+                        // maximum ping chart
+                            data: maxPingData,
+                            fill: "origin",
+                            tension: 0.2,
+                            borderColor: "#7CBD6B55",
+                            backgroundColor: "#5CDD8B08",
+                            yAxisID: "y",
+                            label: "max-ping",
+                        },
+                        {
                         // Bar Chart
-                        type: "bar",
-                        data: downData,
-                        borderColor: "#00000000",
-                        backgroundColor: colorData,
-                        yAxisID: "y1",
-                        barThickness: "flex",
-                        barPercentage: 1,
-                        categoryPercentage: 1,
-                        inflateAmount: 0.05,
-                        label: "status",
-                    },
-                ],
-            };
+                            type: "bar",
+                            data: downData,
+                            borderColor: "#00000000",
+                            backgroundColor: colorData,
+                            yAxisID: "y1",
+                            barThickness: "flex",
+                            barPercentage: 1,
+                            categoryPercentage: 1,
+                            inflateAmount: 0.05,
+                            label: "status",
+                        },
+                    ],
+                };
+            }
         },
     },
     watch: {
@@ -226,11 +305,19 @@ export default {
             } else {
                 this.loading = true;
 
-                this.$root.getMonitorBeats(this.monitorId, newPeriod, (res) => {
+                let period;
+                try {
+                    period = parseInt(newPeriod);
+                } catch (e) {
+                    // Invalid period
+                    period = 24;
+                }
+
+                this.$root.getMonitorChartData(this.monitorId, period, (res) => {
                     if (!res.ok) {
                         this.$root.toastError(res.msg);
                     } else {
-                        this.heartbeatList = res.data;
+                        this.chartRawData = res.data;
                         this.$root.storage()[`chart-period-${this.monitorId}`] = newPeriod;
                     }
                     this.loading = false;
@@ -239,28 +326,25 @@ export default {
         }
     },
     created() {
-        // Setup Watcher on the root heartbeatList,
-        // And mirror latest change to this.heartbeatList
-        this.$watch(() => this.$root.heartbeatList[this.monitorId],
-            (heartbeatList) => {
-
-                log.debug("ping_chart", `this.chartPeriodHrs type ${typeof this.chartPeriodHrs}, value: ${this.chartPeriodHrs}`);
-
-                // eslint-disable-next-line eqeqeq
-                if (this.chartPeriodHrs != "0") {
-                    const newBeat = heartbeatList.at(-1);
-                    if (newBeat && dayjs.utc(newBeat.time) > dayjs.utc(this.heartbeatList.at(-1)?.time)) {
-                        this.heartbeatList.push(heartbeatList.at(-1));
-                    }
-                }
-            },
-            { deep: true }
-        );
-
         // Load chart period from storage if saved
         let period = this.$root.storage()[`chart-period-${this.monitorId}`];
         if (period != null) {
             this.chartPeriodHrs = Math.min(period, 6);
+        }
+    },
+    methods: {
+        getBarColorForDatapoint(datapoint) {
+            if (datapoint.down === 0) {
+                // Target is up
+                return "#FFFFFFFF";
+            } else if (datapoint.up === 0) {
+                return "#DC354568";
+            } else {
+                return "rgba(245,182,23,0.41)";
+            }
+
+            // TODO: handle maintenance status
+            // return "rgba(23,71,245,0.41)"
         }
     }
 };
