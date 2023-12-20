@@ -42,6 +42,15 @@ export default {
         },
 
         /**
+         * Converts a Unix timestamp to a formatted date and time string.
+         * @param {number} value - The Unix timestamp to convert.
+         * @returns {string} The formatted date and time string.
+         */
+        unixToDateTime(value) {
+            return dayjs.unix(value).tz(this.timezone).format("YYYY-MM-DD HH:mm:ss");
+        },
+
+        /**
          * Get time for maintenance
          * @param {string | number | Date | dayjs.Dayjs} value Time to
          * format
