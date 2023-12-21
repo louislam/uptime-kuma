@@ -38,7 +38,7 @@ export default {
 
             loading: false,
 
-            // Configurable filtering on top of the returned data
+            // Time period for the chart to display, in hours
             chartPeriodHrs: "0",
 
             chartPeriodOptions: {
