@@ -36,10 +36,7 @@
 
                 <div class="my-3">
                     <label for="auto-refresh-interval" class="form-label">{{ $t("Refresh Interval") }}</label>
-                    <input
-                        id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number"
-                        class="form-control" :min="5"
-                    >
+                    <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number" class="form-control" :min="5">
                     <div class="form-text">
                         {{ $t("Refresh Interval Description", [config.autoRefreshInterval]) }}
                     </div>
