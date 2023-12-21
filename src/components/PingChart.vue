@@ -209,37 +209,42 @@ export default {
                 let avgPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
                 let minPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
                 let maxPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-                let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
+                let downData = [];  // Down Data for Bar Chart, y-axis is number of down datapoints in this period
                 let colorData = []; // Color Data for Bar Chart
 
-                this.chartRawData?.map((datapoint) => {
-                    // Empty datapoints are ignored
-                    if (datapoint.up === 0 && datapoint.down === 0) {
-                        return;
+                const period = parseInt(this.chartPeriodHrs);
+                let aggregatePoints = period > 6 ? 10 : 5;
+
+                let aggregateBuffer = [];
+
+                if (this.chartRawData) {
+                    for (const datapoint of this.chartRawData) {
+                        // Empty datapoints are ignored
+                        if (datapoint.up === 0 && datapoint.down === 0) {
+                            continue;
+                        }
+
+                        if (datapoint.down > 0) {
+                            // Clear the aggregate buffer
+                            if (aggregateBuffer.length > 0) {
+                                const average = this.getAverage(aggregateBuffer);
+                                this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                                aggregateBuffer = [];
+                            }
+
+                            this.pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData);
+                        } else {
+                            // Only aggregate up datapoints
+                            aggregateBuffer.push(datapoint);
+
+                            if (aggregateBuffer.length === aggregatePoints) {
+                                const average = this.getAverage(aggregateBuffer);
+                                this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                                aggregateBuffer = [];
+                            }
+                        }
                     }
-
-                    const x = this.$root.unixToDateTime(datapoint.timestamp);
-
-                    // Show ping values if it was up in this period
-                    avgPingData.push({
-                        x,
-                        y: datapoint.up > 0 ? datapoint.avgPing : null,
-                    });
-                    minPingData.push({
-                        x,
-                        y: datapoint.up > 0 ? datapoint.minPing : null,
-                    });
-                    maxPingData.push({
-                        x,
-                        y: datapoint.up > 0 ? datapoint.maxPing : null,
-                    });
-
-                    downData.push({
-                        x,
-                        y: datapoint.down,
-                    });
-                    colorData.push(this.getBarColorForDatapoint(datapoint));
-                });
+                }
 
                 return {
                     datasets: [
@@ -249,7 +254,7 @@ export default {
                             fill: "origin",
                             tension: 0.2,
                             borderColor: "#5CDD8B",
-                            backgroundColor: "#5CDD8B08",
+                            backgroundColor: "#5CDD8B06",
                             yAxisID: "y",
                             label: "avg-ping",
                         },
@@ -258,8 +263,8 @@ export default {
                             data: minPingData,
                             fill: "origin",
                             tension: 0.2,
-                            borderColor: "#3CBD6B55",
-                            backgroundColor: "#5CDD8B08",
+                            borderColor: "#3CBD6B38",
+                            backgroundColor: "#5CDD8B06",
                             yAxisID: "y",
                             label: "min-ping",
                         },
@@ -268,8 +273,8 @@ export default {
                             data: maxPingData,
                             fill: "origin",
                             tension: 0.2,
-                            borderColor: "#7CBD6B55",
-                            backgroundColor: "#5CDD8B08",
+                            borderColor: "#7CBD6B38",
+                            backgroundColor: "#5CDD8B06",
                             yAxisID: "y",
                             label: "max-ping",
                         },
@@ -334,6 +339,7 @@ export default {
         }
     },
     methods: {
+        // Get color of bar chart for this datapoint
         getBarColorForDatapoint(datapoint) {
             if (datapoint.down === 0) {
                 // Target is up
@@ -346,7 +352,55 @@ export default {
 
             // TODO: handle maintenance status
             // return "rgba(23,71,245,0.41)"
-        }
+        },
+        // push datapoint to chartData
+        pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData) {
+            const x = this.$root.unixToDateTime(datapoint.timestamp);
+
+            // Show ping values if it was up in this period
+            avgPingData.push({
+                x,
+                y: datapoint.up > 0 ? datapoint.avgPing : null,
+            });
+            minPingData.push({
+                x,
+                y: datapoint.up > 0 ? datapoint.minPing : null,
+            });
+            maxPingData.push({
+                x,
+                y: datapoint.up > 0 ? datapoint.maxPing : null,
+            });
+
+            downData.push({
+                x,
+                y: datapoint.down,
+            });
+
+            colorData.push(this.getBarColorForDatapoint(datapoint));
+        },
+        // get the average of a set of datapoints
+        getAverage(datapoints) {
+            const totalUp = datapoints.reduce((total, current) => total + current.up, 0);
+            const totalDown = datapoints.reduce((total, current) => total + current.down, 0);
+            const totalPing = datapoints.reduce((total, current) => total + current.avgPing * current.up, 0);
+            const minPing = datapoints.reduce((min, current) => Math.min(min, current.minPing), Infinity);
+            const maxPing = datapoints.reduce((max, current) => Math.max(max, current.maxPing), 0);
+
+            // Find the middle timestamp to use
+            let midpoint = 0;
+            if (datapoints.length > 1) {
+                midpoint = Math.floor(datapoints.length / 2);
+            }
+
+            return {
+                timestamp: datapoints[midpoint].timestamp,
+                up: totalUp,
+                down: totalDown,
+                avgPing: totalPing / totalUp,
+                minPing,
+                maxPing,
+            };
+        },
     }
 };
 </script>
