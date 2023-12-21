@@ -6,7 +6,7 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li v-for="(item, key) in chartPeriodOptions" :key="key">
-                    <a class="dropdown-item" :class="{ active: chartPeriodHrs == key }" href="#" @click="chartPeriodHrs = key">{{ item }}</a>
+                    <button role="button" class="dropdown-item" :class="{ active: chartPeriodHrs == key }" @click="chartPeriodHrs = key">{{ item }}</button>
                 </li>
             </ul>
         </div>
