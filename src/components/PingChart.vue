@@ -213,7 +213,7 @@ export default {
                 let colorData = []; // Color Data for Bar Chart
 
                 const period = parseInt(this.chartPeriodHrs);
-                let aggregatePoints = period > 6 ? 10 : 5;
+                let aggregatePoints = period > 6 ? 12 : 4;
 
                 let aggregateBuffer = [];
 
@@ -224,7 +224,17 @@ export default {
                             continue;
                         }
 
-                        if (datapoint.down > 0) {
+                        if (datapoint.up > 0) {
+                            // Aggregate Up data using a sliding window
+                            aggregateBuffer.push(datapoint);
+
+                            if (aggregateBuffer.length === aggregatePoints) {
+                                const average = this.getAverage(aggregateBuffer);
+                                this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                                aggregateBuffer = aggregateBuffer.slice(Math.floor(aggregatePoints / 2));
+                            }
+                        } else {
+                            // datapoint is fully down, no need to aggregate
                             // Clear the aggregate buffer
                             if (aggregateBuffer.length > 0) {
                                 const average = this.getAverage(aggregateBuffer);
@@ -233,15 +243,6 @@ export default {
                             }
 
                             this.pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData);
-                        } else {
-                            // Only aggregate up datapoints
-                            aggregateBuffer.push(datapoint);
-
-                            if (aggregateBuffer.length === aggregatePoints) {
-                                const average = this.getAverage(aggregateBuffer);
-                                this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
-                                aggregateBuffer = [];
-                            }
                         }
                     }
                 }
