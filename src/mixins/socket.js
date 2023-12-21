@@ -685,7 +685,7 @@ export default {
         /**
          * Retrieves monitor chart data.
          * @param {string} monitorID - The ID of the monitor.
-         * @param {string} period - The time period for the chart data.
+         * @param {number} period - The time period for the chart data, in hours.
          * @param {socketCB} callback - The callback function to handle the chart data.
          * @returns {void}
          */
