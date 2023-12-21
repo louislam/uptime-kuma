@@ -150,23 +150,6 @@ module.exports = {
             }
         },
 
-        // Override for jest puppeteer
-        {
-            "files": [
-                "**/*.spec.js",
-                "**/*.spec.jsx"
-            ],
-            env: {
-                jest: true,
-            },
-            globals: {
-                page: true,
-                browser: true,
-                context: true,
-                jestPuppeteer: true,
-            },
-        },
-
         // Override for TypeScript
         {
             "files": [

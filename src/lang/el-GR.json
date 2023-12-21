@@ -104,8 +104,10 @@
     "Update Password": "Ενημέρωση κωδικού πρόσβασης",
     "Disable Auth": "Απενεργοποίηση ελέγχου ταυτότητας",
     "Enable Auth": "Ενεργοποίηση ελέγχου ταυτότητας",
-    "disableauth.message1": "Είστε βέβαιοι ότι θέλετε να <strong>απενεργοποιήσετε τον έλεγχο ταυτότητας</strong>;",
-    "disableauth.message2": "Έχει σχεδιαστεί για σενάρια <strong>όπου σκοπεύετε να εφαρμόσετε έλεγχο ταυτότητας τρίτου μέρους</strong> μπροστά από το Uptime Kuma, όπως το Cloudflare Access, Authelia ή άλλους μηχανισμούς ελέγχου ταυτότητας.",
+    "disableauth.message1": "Είστε βέβαιοι ότι θέλετε να {disableAuth};",
+    "disable authentication": "απενεργοποιήσετε τον έλεγχο ταυτότητας",
+    "disableauth.message2": "Έχει σχεδιαστεί για σενάρια {intendThirdPartyAuth} μπροστά από το Uptime Kuma, όπως το Cloudflare Access, Authelia ή άλλους μηχανισμούς ελέγχου ταυτότητας.",
+    "where you intend to implement third-party authentication": "όπου σκοπεύετε να εφαρμόσετε έλεγχο ταυτότητας τρίτου μέρους",
     "Please use this option carefully!": "Χρησιμοποιήστε αυτή την επιλογή προσεκτικά!",
     "Logout": "Αποσύνδεση",
     "Leave": "Φύγετε",
@@ -695,5 +697,12 @@
     "Free Mobile API Key": "Free Mobile API Key",
     "smseaglePriority": "Προτεραιότητα μηνύματος (0-9, προεπιλογή = 0)",
     "statusPageRefreshIn": "Ανανέωση σε {0}",
-    "Add New Tag": "Πρόσθεσε νέα ετικέτα"
+    "Add New Tag": "Πρόσθεσε νέα ετικέτα",
+    "setupDatabaseMariaDB": "Συνδεθείτε με εξωτερική βάση δεδομένων MariaDB. Θα πρέπει να ορίσετε τα στοιχεία σύνδεσης της βάσης δεδομένων.",
+    "setupDatabaseChooseDatabase": "Ποια βάση δεδομένων θέλετε να χρησιμοποιήσετε;",
+    "setupDatabaseEmbeddedMariaDB": "Δεν χρειάζεται να ρυθμίσετε τίποτε. Η εικόνα Docker έχει ενσωματώσει και ρυθμίσει μια βάση δεδομένων MariaDB για εσάς αυτόματα. Το Uptime Kuma θα συνδεθεί με την βάση δεδομένων μέσω unix socket.",
+    "setupDatabaseSQLite": "Ένα απλό αρχείο βάσης δεδομένων, προτεινόμενο για εγκαταστάσεις μικρής κλίμακας. Πρίν από την έκδοση 2.0.0, το Uptime Kuma χρησιμοποιούσε το SQLite ως την προεπιλεγμένη βάση δεδομένων.",
+    "Cannot connect to the socket server": "Δεν είναι δυνατή η σύνδεση με τον διακομιστή socket",
+    "Reconnecting...": "Επανασύνδεση",
+    "Home": "Αρχική"
 }
