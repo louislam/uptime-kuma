@@ -224,17 +224,18 @@ export default {
                             continue;
                         }
 
-                        if (datapoint.up > 0) {
+                        if (datapoint.up > 0 && this.chartRawData.length > aggregatePoints * 2) {
                             // Aggregate Up data using a sliding window
                             aggregateBuffer.push(datapoint);
 
                             if (aggregateBuffer.length === aggregatePoints) {
                                 const average = this.getAverage(aggregateBuffer);
                                 this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                                // Remove the first half of the buffer
                                 aggregateBuffer = aggregateBuffer.slice(Math.floor(aggregatePoints / 2));
                             }
                         } else {
-                            // datapoint is fully down, no need to aggregate
+                            // datapoint is fully down or too few datapoints, no need to aggregate
                             // Clear the aggregate buffer
                             if (aggregateBuffer.length > 0) {
                                 const average = this.getAverage(aggregateBuffer);
@@ -244,6 +245,12 @@ export default {
 
                             this.pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData);
                         }
+                    }
+                    // Clear the aggregate buffer if there are still datapoints
+                    if (aggregateBuffer.length > 0) {
+                        const average = this.getAverage(aggregateBuffer);
+                        this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                        aggregateBuffer = [];
                     }
                 }
 
