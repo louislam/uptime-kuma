@@ -436,6 +436,7 @@ export default {
 
             .dark & {
                 background: $dark-bg;
+                color: $dark-font-color;
             }
 
             .dark &:hover {
