@@ -2,7 +2,7 @@ exports.up = function (knex) {
     return knex.schema
         .createTable("stat_hourly", function (table) {
             table.increments("id");
-            table.comment("This table contains the minutely aggregate statistics for each monitor");
+            table.comment("This table contains the hourly aggregate statistics for each monitor");
             table.integer("monitor_id").unsigned().notNullable()
                 .references("id").inTable("monitor")
                 .onDelete("CASCADE")
