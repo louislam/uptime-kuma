@@ -729,7 +729,7 @@ class UptimeCalculator {
      * @returns {UptimeDataResult} UptimeDataResult
      */
     get7Day() {
-        return this.getData(7);
+        return this.getData(168, "hour");
     }
 
     /**
