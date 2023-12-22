@@ -19,6 +19,8 @@ module.exports.chartSocketHandler = (socket) => {
 
             if (period <= 24) {
                 data = uptimeCalculator.getDataArray(period * 60, "minute");
+            } else if (period <= 720) {
+                data = uptimeCalculator.getDataArray(period, "hour");
             } else {
                 data = uptimeCalculator.getDataArray(period / 24, "day");
             }
