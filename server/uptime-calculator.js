@@ -582,25 +582,29 @@ class UptimeCalculator {
                     if (this.lastDailyUptimeData) {
                         total = this.lastDailyUptimeData;
                         totalPing = total.avgPing * total.up;
+                    } else {
+                        return uptimeData;
                     }
                     break;
                 case "hour":
                     if (this.lastHourlyUptimeData) {
                         total = this.lastHourlyUptimeData;
                         totalPing = total.avgPing * total.up;
+                    } else {
+                        return uptimeData;
                     }
                     break;
                 case "minute":
                     if (this.lastUptimeData) {
                         total = this.lastUptimeData;
                         totalPing = total.avgPing * total.up;
+                    } else {
+                        return uptimeData;
                     }
                     break;
                 default:
                     throw new Error("Invalid type");
             }
-
-            return uptimeData;
         }
 
         let avgPing;
