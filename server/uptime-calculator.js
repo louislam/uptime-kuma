@@ -146,7 +146,7 @@ class UptimeCalculator {
         // Load daily data from database (recent 365 days only)
         let dailyStatBeans = await R.find("stat_daily", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
             monitorID,
-            this.getDailyKey(now.subtract(365, "day").unix()),
+            this.getDailyKey(now.subtract(365, "day")),
         ]);
 
         for (let bean of dailyStatBeans) {
@@ -183,7 +183,7 @@ class UptimeCalculator {
 
         let divisionKey = this.getMinutelyKey(date);
         let hourlyKey = this.getHourlyKey(date);
-        let dailyKey = this.getDailyKey(divisionKey);
+        let dailyKey = this.getDailyKey(date);
 
         let minutelyData = this.minutelyUptimeDataList[divisionKey];
         let hourlyData = this.hourlyUptimeDataList[hourlyKey];
@@ -423,12 +423,10 @@ class UptimeCalculator {
 
     /**
      * Convert timestamp to daily key
-     * @param {number} timestamp Timestamp
+     * @param {dayjs.Dayjs} date The heartbeat date
      * @returns {number} Timestamp
      */
-    getDailyKey(timestamp) {
-        let date = dayjs.unix(timestamp);
-
+    getDailyKey(date) {
         // Truncate value to start of day (e.g. 2021-01-01 12:34:56 -> 2021-01-01 00:00:00)
         // Considering if the user keep changing could affect the calculation, so use UTC time to avoid this problem.
         date = date.utc().startOf("day");
@@ -459,7 +457,7 @@ class UptimeCalculator {
         // Get the stats key based on the type
         switch (type) {
             case "day":
-                key = this.getDailyKey(datetime.unix());
+                key = this.getDailyKey(datetime);
                 break;
             case "hour":
                 key = this.getHourlyKey(datetime);
@@ -507,7 +505,7 @@ class UptimeCalculator {
             throw new Error("The maximum number of minutes is 1440");
         }
 
-        // Get the stats key based on the type
+        // Get the current time period key based on the type
         let key = this.getKey(this.getCurrentDate(), type);
 
         let total = {
@@ -635,7 +633,7 @@ class UptimeCalculator {
             throw new Error("The maximum number of minutes is 1440");
         }
 
-        // Get the stats key based on the type
+        // Get the current time period key based on the type
         let key = this.getKey(this.getCurrentDate(), type);
 
         let result = [];
