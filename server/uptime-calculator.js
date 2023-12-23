@@ -35,7 +35,7 @@ class UptimeCalculator {
     minutelyUptimeDataList = new LimitQueue(24 * 60);
 
     /**
-     * Recent 20-day uptime, each item is a 1-hour interval
+     * Recent 30-day uptime, each item is a 1-hour interval
      * Key: {number} DivisionKey
      * @type {LimitQueue<number,string>}
      */
@@ -62,7 +62,7 @@ class UptimeCalculator {
      * @returns {Promise<UptimeCalculator>} UptimeCalculator
      */
     static async getUptimeCalculator(monitorID) {
-        if (monitorID === undefined || monitorID === null) {
+        if (monitorID === undefined || monitorID == null) {
             throw new Error("Monitor ID is required");
         }
 
