@@ -166,7 +166,7 @@
                 <div v-if="showCertInfoBox" class="shadow-box big-padding text-center">
                     <div class="row">
                         <div class="col">
-                            <certificate-info :certInfo="tlsInfo.certInfo" :valid="tlsInfo.valid" />
+                            <certificate-info :tlsInfo="tlsInfo" />
                         </div>
                     </div>
                 </div>
