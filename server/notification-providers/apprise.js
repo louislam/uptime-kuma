@@ -14,7 +14,9 @@ class Apprise extends NotificationProvider {
             args.push("-t");
             args.push(notification.title);
         }
-        const s = await childProcessAsync.spawn("apprise", args);
+        const s = await childProcessAsync.spawn("apprise", args, {
+            encoding: "utf8",
+        });
 
         const output = (s.stdout) ? s.stdout.toString() : "ERROR: maybe apprise not found";
 
