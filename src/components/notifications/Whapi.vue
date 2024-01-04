@@ -11,7 +11,7 @@
 
     <div class="mb-3">
         <label for="whapi-to-number" class="form-label">{{ $t("Phone number") }}</label>
-        <input id="whapi-to-number" v-model="$parent.notification.whapiToNumber" type="text" pattern="^[\d-]{10,31}(@[\w\.]{1,})?$" class="form-control" required>
+        <input id="whapi-to-number" v-model="$parent.notification.whapiToNumber" type="text" pattern="^[\d-]{10,31}$" class="form-control" required>
         <i18n-t tag="div" keypath="wayToWriteWhapiPhoneNumber" class="form-text"></i18n-t>
     </div>
 
