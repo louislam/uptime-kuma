@@ -453,23 +453,16 @@ class UptimeCalculator {
      * @throws {Error} If the type is invalid
      */
     getKey(datetime, type) {
-        let key;
-        // Get the stats key based on the type
         switch (type) {
             case "day":
-                key = this.getDailyKey(datetime);
-                break;
+                return this.getDailyKey(datetime);
             case "hour":
-                key = this.getHourlyKey(datetime);
-                break;
+                return this.getHourlyKey(datetime);
             case "minute":
-                key = this.getMinutelyKey(datetime);
-                break;
+                return this.getMinutelyKey(datetime);
             default:
                 throw new Error("Invalid type");
         }
-
-        return key;
     }
 
     /**
