@@ -62,7 +62,7 @@ class UptimeCalculator {
      * @returns {Promise<UptimeCalculator>} UptimeCalculator
      */
     static async getUptimeCalculator(monitorID) {
-        if (monitorID === undefined || monitorID == null) {
+        if (!monitorID) {
             throw new Error("Monitor ID is required");
         }
 
