@@ -4,8 +4,11 @@
             <router-link v-if="group !== ''" :to="monitorURL(monitor.parent)"> {{ group }}</router-link>
             <h1> {{ monitor.name }}</h1>
             <p v-if="monitor.description">{{ monitor.description }}</p>
-            <div class="tags">
-                <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
+            <div class="d-flex">
+                <span class="me-2 my-1 monitor-id">ID: {{ monitor.id }}</span>
+                <div class="tags">
+                    <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
+                </div>
             </div>
             <p class="url">
                 <a v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'mp-health' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ filterPassword(monitor.url) }}</a>
@@ -800,6 +803,10 @@ table {
 
 .tags > div:first-child {
     margin-left: 0 !important;
+}
+
+.monitor-id {
+    font-size: 0.8rem;
 }
 
 </style>
