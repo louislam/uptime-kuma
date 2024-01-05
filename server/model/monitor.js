@@ -233,7 +233,15 @@ class Monitor extends BeanModel {
      * @returns {string}
      */
     encodeBase64(user, pass) {
-        return Buffer.from(user + ":" + pass).toString("base64");
+        if (!user) {
+            return Buffer.from(`:${pass}`).toString("base64");
+        }
+
+        if (!pass) {
+            return Buffer.from(`${user}:`).toString("base64");
+        }
+
+        return Buffer.from(`${user}:${pass}`).toString("base64");
     }
 
     /**
