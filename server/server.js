@@ -1492,10 +1492,7 @@ let needSetup = false;
 
                 await R.exec("DELETE FROM heartbeat");
                 await R.exec("DELETE FROM stat_daily");
-
-                // TODO
-                // await R.exec("DELETE FROM stat_hourly");
-
+                await R.exec("DELETE FROM stat_hourly");
                 await R.exec("DELETE FROM stat_minutely");
 
                 // Restart all monitors to reset the stats
