@@ -223,8 +223,10 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
-            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
+            const uptime = overrideValue ?? await Monitor.calcUptime(
+                requestedDuration,
+                requestedMonitorId
+            );
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
             const cleanUptime = (uptime * 100).toPrecision(4);
