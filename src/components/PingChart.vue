@@ -366,18 +366,20 @@ export default {
             const x = this.$root.unixToDateTime(datapoint.timestamp);
 
             // Show ping values if it was up in this period
+            if (datapoint.up > 0 && datapoint.avgPing > 0) {
             avgPingData.push({
                 x,
-                y: datapoint.up > 0 ? datapoint.avgPing : null,
+                    y: datapoint.avgPing,
             });
             minPingData.push({
                 x,
-                y: datapoint.up > 0 ? datapoint.minPing : null,
+                    y: datapoint.minPing,
             });
             maxPingData.push({
                 x,
-                y: datapoint.up > 0 ? datapoint.maxPing : null,
+                    y: datapoint.maxPing,
             });
+            }
 
             downData.push({
                 x,
