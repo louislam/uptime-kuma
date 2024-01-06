@@ -1,16 +1,24 @@
 <template>
     <div>
         <div class="period-options">
-            <button type="button" class="btn btn-light dropdown-toggle btn-period-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <button
+                type="button" class="btn btn-light dropdown-toggle btn-period-toggle" data-bs-toggle="dropdown"
+                aria-expanded="false"
+            >
                 {{ chartPeriodOptions[chartPeriodHrs] }}&nbsp;
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li v-for="(item, key) in chartPeriodOptions" :key="key">
-                    <button role="button" class="dropdown-item" :class="{ active: chartPeriodHrs == key }" @click="chartPeriodHrs = key">{{ item }}</button>
+                    <button
+                        role="button" class="dropdown-item" :class="{ active: chartPeriodHrs == key }"
+                        @click="chartPeriodHrs = key"
+                    >
+                        {{ item }}
+                    </button>
                 </li>
             </ul>
         </div>
-        <div class="chart-wrapper" :class="{ loading : loading}">
+        <div class="chart-wrapper" :class="{ loading: loading }">
             <Line :data="chartData" :options="chartOptions" />
         </div>
     </div>
@@ -180,7 +188,7 @@ export default {
                 return {
                     datasets: [
                         {
-                        // Line Chart
+                            // Line Chart
                             data: pingData,
                             fill: "origin",
                             tension: 0.2,
@@ -190,7 +198,7 @@ export default {
                             label: "ping",
                         },
                         {
-                        // Bar Chart
+                            // Bar Chart
                             type: "bar",
                             data: downData,
                             borderColor: "#00000000",
@@ -257,7 +265,7 @@ export default {
                 return {
                     datasets: [
                         {
-                        // average ping chart
+                            // average ping chart
                             data: avgPingData,
                             fill: "origin",
                             tension: 0.2,
@@ -267,7 +275,7 @@ export default {
                             label: "avg-ping",
                         },
                         {
-                        // minimum ping chart
+                            // minimum ping chart
                             data: minPingData,
                             fill: "origin",
                             tension: 0.2,
@@ -277,7 +285,7 @@ export default {
                             label: "min-ping",
                         },
                         {
-                        // maximum ping chart
+                            // maximum ping chart
                             data: maxPingData,
                             fill: "origin",
                             tension: 0.2,
@@ -287,7 +295,7 @@ export default {
                             label: "max-ping",
                         },
                         {
-                        // Bar Chart
+                            // Bar Chart
                             type: "bar",
                             data: downData,
                             borderColor: "#00000000",
@@ -367,18 +375,18 @@ export default {
 
             // Show ping values if it was up in this period
             if (datapoint.up > 0 && datapoint.avgPing > 0) {
-            avgPingData.push({
-                x,
+                avgPingData.push({
+                    x,
                     y: datapoint.avgPing,
-            });
-            minPingData.push({
-                x,
+                });
+                minPingData.push({
+                    x,
                     y: datapoint.minPing,
-            });
-            maxPingData.push({
-                x,
+                });
+                maxPingData.push({
+                    x,
                     y: datapoint.maxPing,
-            });
+                });
             }
 
             downData.push({
