@@ -57,7 +57,8 @@ export default {
                 168: "1w",
             },
 
-            chartRawData: null
+            chartRawData: null,
+            chartDataFetchInterval: null,
         };
     },
     computed: {
@@ -315,6 +316,10 @@ export default {
     watch: {
         // Update chart data when the selected chart period changes
         chartPeriodHrs: function (newPeriod) {
+            if (this.chartDataFetchInterval) {
+                clearInterval(this.chartDataFetchInterval);
+                this.chartDataFetchInterval = null;
+            }
 
             // eslint-disable-next-line eqeqeq
             if (newPeriod == "0") {
@@ -340,6 +345,14 @@ export default {
                     }
                     this.loading = false;
                 });
+
+                this.chartDataFetchInterval = setInterval(() => {
+                    this.$root.getMonitorChartData(this.monitorId, period, (res) => {
+                        if (res.ok) {
+                            this.chartRawData = res.data;
+                        }
+                    });
+                }, 5 * 60 * 1000);
             }
         }
     },
@@ -352,6 +365,11 @@ export default {
                 period = period.toString();
             }
             this.chartPeriodHrs = period;
+        }
+    },
+    beforeUnmount() {
+        if (this.chartDataFetchInterval) {
+            clearInterval(this.chartDataFetchInterval);
         }
     },
     methods: {
