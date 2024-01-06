@@ -1725,11 +1725,11 @@ async function afterLogin(socket, user) {
     }
 
     for (let monitorID in monitorList) {
-        await Monitor.sendStats(io, monitorID, user.id, true);
+        await sendImportantHeartbeatList(socket, monitorID);
     }
 
     for (let monitorID in monitorList) {
-        await sendImportantHeartbeatList(socket, monitorID);
+        await Monitor.sendStats(io, monitorID, user.id, true);
     }
 
     // Set server timezone from client browser if not set
