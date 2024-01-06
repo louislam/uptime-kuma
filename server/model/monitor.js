@@ -1179,15 +1179,18 @@ class Monitor extends BeanModel {
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
      * @param {number} userID ID of user to send to
+     * @param {number} sendCertInfo Whether the Cert Info should be sent as well
      */
-    static async sendStats(io, monitorID, userID) {
+    static async sendStats(io, monitorID, userID, sendCertInfo) {
         const hasClients = getTotalClientInRoom(io, userID) > 0;
 
         if (hasClients) {
             await Monitor.sendAvgPing(24, io, monitorID, userID);
             await Monitor.sendUptime(24, io, monitorID, userID);
             await Monitor.sendUptime(24 * 30, io, monitorID, userID);
-            await Monitor.sendCertInfo(io, monitorID, userID);
+            if (sendCertInfo) {
+                await Monitor.sendCertInfo(io, monitorID, userID);
+            }
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
         }
