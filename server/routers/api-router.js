@@ -62,7 +62,13 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
+        if (monitor.isUpsideDown()) {
+            status = flipStatus(status);
+        }
+
         let isFirstBeat = true;
+        let previousStatus = status;
+        let duration = 0;
 
         let bean = R.dispense("heartbeat");
         bean.time = R.isoDateTimeMillis(dayjs.utc());
@@ -92,13 +98,18 @@ router.get("/api/push/:pushToken", async (request, response) => {
         await R.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
-
+        UptimeCacheList.clearCache(monitor.id);
         Monitor.sendStats(io, monitor.id, monitor.user_id, false);
         new Prometheus(monitor).update(bean, undefined);
 
         response.json({
             ok: true,
         });
+
+        if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
+            await Monitor.sendNotification(isFirstBeat, monitor, bean);
+        }
+
     } catch (e) {
         response.status(404).json({
             ok: false,

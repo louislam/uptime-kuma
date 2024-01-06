@@ -1728,6 +1728,10 @@ async function afterLogin(socket, user) {
         await Monitor.sendStats(io, monitorID, user.id, true);
     }
 
+    for (let monitorID in monitorList) {
+        await sendImportantHeartbeatList(socket, monitorID);
+    }
+
     // Set server timezone from client browser if not set
     // It should be run once only
     if (! await Settings.get("initServerTimezone")) {
