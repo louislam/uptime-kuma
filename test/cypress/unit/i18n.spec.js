@@ -4,9 +4,13 @@ describe("Test i18n.js", () => {
 
     it("currentLocale()", () => {
         const setLanguage = (language) => {
-            Object.defineProperty(window.navigator, 'language', { 
-                value: language, 
-                writable: true 
+            Object.defineProperty(window.navigator, 'language', {
+                value: language,
+                writable: true
+            });
+            Object.defineProperty(window.navigator, 'languages', {
+                value: [language],
+                writable: true
             });
         }
         setLanguage('en-EN');
