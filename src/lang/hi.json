@@ -1048,5 +1048,6 @@
     "CopyToClipboardError": "",
     "ntfyPriorityHelptextAllEvents": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "grpcMethodDescription": ""
+    "grpcMethodDescription": "",
+    "Pick a SASL Mechanism...": ""
 }
