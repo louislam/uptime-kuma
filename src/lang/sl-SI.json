@@ -1068,5 +1068,6 @@
     "promosmsAllowLongSMS": "",
     "alertaApiEndpoint": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "Pick a SASL Mechanism...": ""
 }
