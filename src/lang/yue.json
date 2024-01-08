@@ -1046,5 +1046,6 @@
     "Create your admin account": "",
     "ntfyPriorityHelptextAllEvents": "",
     "CopyToClipboardError": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "Pick a SASL Mechanism...": ""
 }
