@@ -1047,5 +1047,6 @@
     "grpcMethodDescription": "",
     "wayToGetDiscordURL": "",
     "pushViewCode": "",
-    "setupDatabaseChooseDatabase": ""
+    "setupDatabaseChooseDatabase": "",
+    "Pick a SASL Mechanism...": ""
 }
