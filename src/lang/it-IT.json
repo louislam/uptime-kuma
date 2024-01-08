@@ -1076,5 +1076,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "high": ""
+    "high": "",
+    "Pick a SASL Mechanism...": ""
 }
