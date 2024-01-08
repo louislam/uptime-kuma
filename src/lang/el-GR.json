@@ -1084,5 +1084,6 @@
     "Badge Label Color": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "Pick a SASL Mechanism...": ""
 }
