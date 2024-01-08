@@ -1045,5 +1045,6 @@
     "Cert Exp.": "",
     "Theme": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "Pick a SASL Mechanism...": ""
 }
