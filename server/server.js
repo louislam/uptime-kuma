@@ -1491,6 +1491,14 @@ let needSetup = false;
                 log.info("manage", `Clear Statistics User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat");
+                await R.exec("DELETE FROM stat_daily");
+                await R.exec("DELETE FROM stat_hourly");
+                await R.exec("DELETE FROM stat_minutely");
+
+                // Restart all monitors to reset the stats
+                for (let monitorID in server.monitorList) {
+                    await restartMonitor(socket.userID, monitorID);
+                }
 
                 callback({
                     ok: true,
