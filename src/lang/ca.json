@@ -1047,5 +1047,6 @@
     "User ID": "",
     "Notification Sound": "",
     "enableGRPCTls": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Pick a SASL Mechanism...": ""
 }
