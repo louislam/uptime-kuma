@@ -1042,5 +1042,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
     "setupDatabaseChooseDatabase": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "Pick a SASL Mechanism...": ""
 }
