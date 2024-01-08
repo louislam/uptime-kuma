@@ -1050,5 +1050,6 @@
     "Can be found on:": "",
     "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "",
     "setupDatabaseChooseDatabase": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "Pick a SASL Mechanism...": ""
 }
