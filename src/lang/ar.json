@@ -1053,5 +1053,6 @@
     "cronSchedule": "",
     "chromeExecutable": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "Pick a SASL Mechanism...": ""
 }
