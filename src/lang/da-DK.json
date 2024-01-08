@@ -1073,5 +1073,6 @@
     "CopyToClipboardError": "",
     "pushViewCode": "",
     "backupOutdatedWarning": "",
-    "trustProxyDescription": ""
+    "trustProxyDescription": "",
+    "Pick a SASL Mechanism...": ""
 }
