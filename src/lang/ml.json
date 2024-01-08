@@ -1050,5 +1050,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "grpcMethodDescription": "",
     "setupDatabaseEmbeddedMariaDB": "",
-    "ignoreTLSError": ""
+    "ignoreTLSError": "",
+    "Pick a SASL Mechanism...": ""
 }
