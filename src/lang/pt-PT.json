@@ -1052,5 +1052,6 @@
     "wayToGetLineChannelToken": "",
     "jsonQueryDescription": "",
     "Notify Channel": "",
-    "From Name/Number": ""
+    "From Name/Number": "",
+    "Pick a SASL Mechanism...": ""
 }
