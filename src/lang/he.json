@@ -1044,5 +1044,6 @@
     "Money": "",
     "Scifi": "",
     "Clear": "",
-    "Custom sound to override default notification sound": ""
+    "Custom sound to override default notification sound": "",
+    "Pick a SASL Mechanism...": ""
 }
