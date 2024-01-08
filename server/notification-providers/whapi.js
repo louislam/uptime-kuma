@@ -12,26 +12,22 @@ class Whapi extends NotificationProvider {
 
         let okMsg = "Sent Successfully.";
 
-        let apiUrl = notification.whapiApiUrl;
-        let apiToken = notification.whapiAuthToken;
-        let toNumber = notification.whapiToNumber;
-
         try {
 
-            let config = {
+            const config = {
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + apiToken,
+                    "Authorization": "Bearer " + notification.whapiAuthToken,
                 }
             };
 
             let data = {
-                "to": toNumber + "@s.whatsapp.net",
+                "to": notification.whapiRecipient,
                 "body": msg,
             };
 
-            let url = apiUrl + "/messages/text";
+            let url = notification.whapiApiUrl + "/messages/text";
 
             await axios.post(url, data, config);
 

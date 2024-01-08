@@ -6,18 +6,28 @@
 
     <div class="mb-3">
         <label for="whapi-auth-token" class="form-label">{{ $t("Token") }}</label>
-        <input id="whapi-auth-token" v-model="$parent.notification.whapiAuthToken" type="text" class="form-control" required>
-    </div>
-
-    <div class="mb-3">
-        <label for="whapi-to-number" class="form-label">{{ $t("Phone number") }}</label>
-        <input id="whapi-to-number" v-model="$parent.notification.whapiToNumber" type="text" pattern="^[\d-]{10,31}$" class="form-control" required>
-        <i18n-t tag="div" keypath="wayToWriteWhapiPhoneNumber" class="form-text"></i18n-t>
-    </div>
-
-    <div class="mb-3">
-        <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
-            <a href="https://whapi.cloud/" target="_blank">https://whapi.cloud/</a>
+        <HiddenInput id="whapi-auth-token" v-model="$parent.notification.whapiAuthToken" :required="true" autocomplete="new-password"></HiddenInput>
+        <i18n-t tag="div" keypath="wayToGetWhapiUrlAndToken" class="form-text">
+            <a href="https://panel.whapi.cloud/dashboard" target="_blank">https://panel.whapi.cloud/dashboard</a>
         </i18n-t>
     </div>
+
+    <div class="mb-3">
+        <label for="whapi-recipient" class="form-label">{{ $t("whapiRecipient") }}</label>
+        <input id="whapi-recipient" v-model="$parent.notification.whapiRecipient" type="text" pattern="^[\d-]{10,31}(@[\w\.]{1,})?$" class="form-control" required>
+        <div class="form-text">{{ $t("wayToWriteWhapiRecipient", ["00117612345678", "00117612345678@s.whatsapp.net", "123456789012345678@g.us"]) }}</div>
+    </div>
+
+    <i18n-t tag="div" keypath="More info on:" class="mb-3 form-text">
+        <a href="https://whapi.cloud/" target="_blank">https://whapi.cloud/</a>
+    </i18n-t>
 </template>
+<script>
+import HiddenInput from "../HiddenInput.vue";
+
+export default {
+    components: {
+        HiddenInput,
+    }
+};
+</script>
