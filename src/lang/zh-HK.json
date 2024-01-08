@@ -1082,5 +1082,6 @@
     "Enable Kafka SSL": "",
     "Enable Kafka Producer Auto Topic Creation": "",
     "Kafka SASL Options": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "Pick a SASL Mechanism...": ""
 }
