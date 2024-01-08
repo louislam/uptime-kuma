@@ -1047,5 +1047,6 @@
     "setupDatabaseChooseDatabase": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "grpcMethodDescription": "",
-    "Enable DNS Cache": ""
+    "Enable DNS Cache": "",
+    "Pick a SASL Mechanism...": ""
 }
