@@ -1050,5 +1050,6 @@
     "CopyToClipboardError": "",
     "pushViewCode": "",
     "setupDatabaseChooseDatabase": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Pick a SASL Mechanism...": ""
 }
