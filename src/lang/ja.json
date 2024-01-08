@@ -1053,5 +1053,6 @@
     "pagertreeLow": "",
     "pagertreeMedium": "",
     "pagertreeCritical": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Pick a SASL Mechanism...": ""
 }
