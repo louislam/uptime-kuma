@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="whapi-api-url" class="form-label">{{ $t("API URL") }}</label>
-        <input id="whapi-api-url" v-model="$parent.notification.whapiApiUrl" type="text" class="form-control" required>
+        <input id="whapi-api-url" v-model="$parent.notification.whapiApiUrl" placeholder="https://gate.whapi.cloud/" type="text" class="form-control">
     </div>
 
     <div class="mb-3">
