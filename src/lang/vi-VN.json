@@ -1074,5 +1074,6 @@
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "high": ""
+    "high": "",
+    "Pick a SASL Mechanism...": ""
 }
