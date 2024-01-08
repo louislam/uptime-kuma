@@ -1085,5 +1085,6 @@
     "Notify Channel": "",
     "CopyToClipboardError": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Pick a SASL Mechanism...": ""
 }
