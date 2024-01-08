@@ -1080,5 +1080,6 @@
     "grpcMethodDescription": "",
     "pushViewCode": "",
     "CopyToClipboardError": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Pick a SASL Mechanism...": ""
 }
