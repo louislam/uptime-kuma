@@ -1084,5 +1084,6 @@
     "Server URL should not contain the nfty topic": "",
     "Badge Type": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Pick a SASL Mechanism...": ""
 }
