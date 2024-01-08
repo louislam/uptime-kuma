@@ -1052,5 +1052,6 @@
     "Setup Proxy": "",
     "Proxy Server": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "Pick a SASL Mechanism...": ""
 }
