@@ -1069,5 +1069,6 @@
     "Enable DNS Cache": "",
     "trustProxyDescription": "",
     "backupOutdatedWarning": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "Pick a SASL Mechanism...": ""
 }
