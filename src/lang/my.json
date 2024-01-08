@@ -1047,5 +1047,6 @@
     "Max. Redirects": "",
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "Pick a SASL Mechanism...": ""
 }
