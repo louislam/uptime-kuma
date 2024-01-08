@@ -1096,5 +1096,6 @@
     "Cannot connect to the socket server": "",
     "Reconnecting...": "",
     "pushViewCode": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "Pick a SASL Mechanism...": ""
 }
