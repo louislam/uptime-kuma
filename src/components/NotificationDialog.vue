@@ -152,7 +152,7 @@ export default {
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
                 "ZohoCliq": "ZohoCliq",
-                "whapi": "Whapi",
+                "whapi": "WhatsApp (Whapi)",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
