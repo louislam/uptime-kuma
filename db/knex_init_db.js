@@ -73,6 +73,7 @@ async function createTables() {
             .onUpdate("CASCADE");
         table.integer("interval").notNullable().defaultTo(20);
         table.text("url");
+        table.text("restart_url");
         table.string("type", 20);
         table.integer("weight").defaultTo(2000);
         table.string("hostname", 255);

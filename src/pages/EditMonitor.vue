@@ -99,6 +99,12 @@
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" required>
                             </div>
 
+                            <!-- Restart Url -->
+                            <div class="my-3">
+                                <label for="restartUrl" class="form-label">{{ $t("Restart url") }}</label>
+                                <input id="restartUrl" v-model="monitor.restartUrl" type="text" class="form-control" required>
+                            </div>
+
                             <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
@@ -914,6 +920,7 @@ const monitorDefaults = {
     name: "",
     parent: null,
     url: "https://",
+    restartUrl: null,
     method: "GET",
     interval: 60,
     retryInterval: 60,
