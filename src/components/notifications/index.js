@@ -52,6 +52,7 @@ import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
+import Whapi from "./Whapi.vue";
 
 /**
  * Manage all notification form.
@@ -111,7 +112,8 @@ const NotificationFormList = {
     "WeCom": WeCom,
     "GoAlert": GoAlert,
     "ServerChan": ServerChan,
-    "ZohoCliq": ZohoCliq
+    "ZohoCliq": ZohoCliq,
+    "whapi": Whapi,
 };
 
 export default NotificationFormList;
