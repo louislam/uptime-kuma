@@ -18,7 +18,7 @@ const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
-
+const axios = require("axios");
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -42,6 +42,42 @@ router.get("/api/entry-page", async (request, response) => {
         result.entryPage = server.entryPage;
     }
     response.json(result);
+});
+
+router.post("/api/monitor/:id/restart", async (request, response) => {
+    allowDevAllOrigin(response);
+    const monitorId = request.params.id;
+    const monitor = await R.findOne("monitor", " id = ? ", [
+        monitorId
+    ]);
+    log.debug("router", `/api/monitor/${monitorId}/restart called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+    if (!monitor) {
+        response.status(404).json({
+            ok: false,
+            msg: "Monitor not found"
+        });
+        return;
+    }
+    const restartUrl = monitor.restartUrl;
+    if (!restartUrl) {
+        response.status(404).json({
+            ok: false,
+            msg: "Restart URL not found"
+        });
+        return;
+    }
+    try {
+        await axios.get(restartUrl);
+        response.json({
+            ok: true,
+        });
+    } catch (e) {
+        response.status(503).json({
+            ok: false,
+            msg: "Service to restart is not available"
+        });
+        return;
+    }
 });
 
 router.get("/api/push/:pushToken", async (request, response) => {

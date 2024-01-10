@@ -36,6 +36,9 @@
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
+                <template v-if="monitor.restartUrl">
+                    <button type="button" class="btn btn-warning btn-sm" @click="restartMonitor(monitor.id)">Restart</button>
+                </template>
             </router-link>
         </div>
 
@@ -60,6 +63,7 @@ import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Tag from "../components/Tag.vue";
 import Uptime from "../components/Uptime.vue";
 import { getMonitorRelativeURL } from "../util.ts";
+import axios from "axios";
 
 export default {
     name: "MonitorListItem",
@@ -166,6 +170,15 @@ export default {
         this.isCollapsed = storageObject[`monitor_${this.monitor.id}`];
     },
     methods: {
+        restartMonitor(id) {
+            axios.post(`/api/monitor/${id}/restart`)
+                .then(response => {
+                    this.$root.toastSuccess("Monitor restarted.");
+                })
+                .catch(error => {
+                    this.$root.toastError(error.msg);
+                });
+        },
         /**
          * Changes the collapsed value of the current monitor and saves
          * it to local storage

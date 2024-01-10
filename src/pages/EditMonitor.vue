@@ -102,7 +102,7 @@
                             <!-- Restart Url -->
                             <div class="my-3">
                                 <label for="restartUrl" class="form-label">{{ $t("Restart url") }}</label>
-                                <input id="restartUrl" v-model="monitor.restartUrl" type="text" class="form-control" required>
+                                <input id="restartUrl" v-model="monitor.restartUrl" type="text" class="form-control">
                             </div>
 
                             <!-- URL -->

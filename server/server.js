@@ -755,6 +755,7 @@ let needSetup = false;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
+                bean.restartUrl = monitor.restartUrl;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
                 bean.headers = monitor.headers;
