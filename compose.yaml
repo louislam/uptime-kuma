@@ -1,9 +1,17 @@
 services:
   uptime-kuma:
-    image: louislam/uptime-kuma:1
+    image: uptimekuma
     volumes:
       - ./data:/app/data
     ports:
       # <Host Port>:<Container Port>
       - 3001:3001
     restart: unless-stopped
+    networks:
+      - anpr_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  anpr_network:
+    driver: bridge
