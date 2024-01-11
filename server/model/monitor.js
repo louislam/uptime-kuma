@@ -105,6 +105,7 @@ class Monitor extends BeanModel {
             childrenIDs: await Monitor.getAllChildrenIDs(this.id),
             url: this.url,
             restartUrl: this.restartUrl,
+            restartInterval: this.restartInterval,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
@@ -359,6 +360,19 @@ class Monitor extends BeanModel {
                 if (previousBeat) {
                     retries = previousBeat.retries;
                 }
+            }
+
+            // Restart the monitor if restartInterval is exceeded
+            const downSeconds = this.interval * previousBeat?.retries || 0;
+            if (this.restartUrl && this.restartInterval && this.restartUrl.length > 0 && downSeconds >= this.restartInterval) {
+                log.info("monitor", `[${this.name}] Restarting monitor`);
+                axios.get(this.restartUrl)
+                    .then(() => {
+                        log.info("monitor", `[${this.name}] Restarted monitor`);
+                    })
+                    .catch((error) => {
+                        log.error("monitor", `[${this.name}] Failed to restart monitor: ${error.message}`);
+                    });
             }
 
             const isFirstBeat = !previousBeat;

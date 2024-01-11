@@ -697,6 +697,7 @@ let needSetup = false;
                 await server.sendMonitorList(socket);
 
                 if (monitor.active !== false) {
+                    log.debug("monitor", "Start Monitor: " + bean.id);
                     await startMonitor(socket.userID, bean.id);
                 }
 
@@ -756,6 +757,7 @@ let needSetup = false;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.restartUrl = monitor.restartUrl;
+                bean.restartInterval = monitor.restartInterval;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
                 bean.headers = monitor.headers;
@@ -1753,7 +1755,7 @@ async function startMonitors() {
     for (let monitor of list) {
         server.monitorList[monitor.id] = monitor;
     }
-
+    log.debug("server", "Start all monitors");
     for (let monitor of list) {
         monitor.start(io);
         // Give some delays, so all monitors won't make request at the same moment when just start the server.

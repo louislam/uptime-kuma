@@ -74,6 +74,7 @@ async function createTables() {
         table.integer("interval").notNullable().defaultTo(20);
         table.text("url");
         table.text("restart_url");
+        table.integer("restart_interval");
         table.string("type", 20);
         table.integer("weight").defaultTo(2000);
         table.string("hostname", 255);
