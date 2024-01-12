@@ -44,6 +44,32 @@ router.get("/api/entry-page", async (request, response) => {
     response.json(result);
 });
 
+router.post("/api/monitor/:name/heartbeats", async (request, response) => {
+    allowAllOrigin(response);
+    const name = request.params.name;
+    const monitor = await R.findOne("monitor", "description = ? ", [
+        name
+    ]);
+    if (!monitor) {
+        response.status(404).json({
+            ok: false,
+            msg: "Monitor not found"
+        });
+        return;
+    }
+    const oneHourAgo = dayjs().subtract(1, "hour").format();
+    log.info("monitor", `onehourago ${oneHourAgo}`);
+    const heartbeats = await R.find("heartbeat", "monitor_id = ? AND time >= ? ORDER BY time DESC", [
+        monitor.id,
+        oneHourAgo
+    ]);
+
+    response.json({
+        ok: true,
+        data: heartbeats
+    });
+});
+
 router.post("/api/monitor/:id/restart", async (request, response) => {
     allowDevAllOrigin(response);
     const monitorId = request.params.id;
