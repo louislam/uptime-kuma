@@ -882,5 +882,6 @@
     "useRemoteBrowser": "Use a Remote Browser",
     "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
     "GrafanaOncallUrl": "Grafana Oncall URL",
-    "Browser Screenshot": "Browser Screenshot"
+    "Browser Screenshot": "Browser Screenshot",
+    "What is a Remote Browser?": "What is a Remote Browser?"
 }
