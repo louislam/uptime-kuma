@@ -2,10 +2,15 @@
     <transition name="slide-fade" appear>
         <div v-if="monitor">
             <router-link v-if="group !== ''" :to="monitorURL(monitor.parent)"> {{ group }}</router-link>
-            <h1> {{ monitor.name }}</h1>
+            <h1>
+                {{ monitor.name }}
+                <div class="monitor-id">
+                    <div class="hash">#</div>
+                    <div>{{ monitor.id }}</div>
+                </div>
+            </h1>
             <p v-if="monitor.description">{{ monitor.description }}</p>
             <div class="d-flex">
-                <span class="me-2 my-1 monitor-id">ID: {{ monitor.id }}</span>
                 <div class="tags">
                     <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
                 </div>
@@ -720,7 +725,7 @@ export default {
 }
 
 .word {
-    color: #aaa;
+    color: $secondary-text;
     font-size: 14px;
 }
 
@@ -734,7 +739,7 @@ table {
 
 .stats p {
     font-size: 13px;
-    color: #aaa;
+    color: $secondary-text;
 }
 
 .stats {
@@ -806,7 +811,19 @@ table {
 }
 
 .monitor-id {
-    font-size: 0.8rem;
-}
+    display: inline-flex;
+    font-size: 0.7em;
+    margin-left: 0.3em;
+    color: $secondary-text;
+    flex-direction: row;
+    flex-wrap: nowrap;
 
+    .hash {
+        user-select: none;
+    }
+
+    .dark & {
+        opacity: 0.7;
+    }
+}
 </style>
