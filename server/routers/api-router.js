@@ -11,7 +11,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants, genSecret } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -67,6 +67,98 @@ router.post("/api/monitor/:name/heartbeats", async (request, response) => {
     response.json({
         ok: true,
         data: heartbeats
+    });
+});
+const pushTokenLength = 32;
+
+router.post("/api/monitor/add", async (request, response) => {
+    allowAllOrigin(response);
+    const userId = 1;
+    const { name, restart_url, restart_interval } = request.body;
+    const monitor = {
+        type: "http",
+        name: "",
+        parent: null,
+        url: "https://",
+        restartUrl: null,
+        restartInterval: null,
+        method: "GET",
+        interval: 60,
+        retryInterval: 60,
+        resendInterval: 0,
+        maxretries: 0,
+        timeout: 48,
+        ignoreTls: false,
+        upsideDown: false,
+        packetSize: 56,
+        expiryNotification: false,
+        maxredirects: 10,
+        accepted_statuscodes: [ "200-299" ],
+        dns_resolve_type: "A",
+        dns_resolve_server: "1.1.1.1",
+        docker_container: "",
+        docker_host: null,
+        proxyId: null,
+        mqttUsername: "",
+        mqttPassword: "",
+        mqttTopic: "",
+        mqttSuccessMessage: "",
+        mqttCheckType: "keyword",
+        authMethod: null,
+        oauth_auth_method: "client_secret_basic",
+        httpBodyEncoding: "json",
+        kafkaProducerBrokers: [],
+        kafkaProducerSaslOptions: {
+            mechanism: "None",
+        },
+        kafkaProducerSsl: false,
+        kafkaProducerAllowAutoTopicCreation: false,
+        gamedigGivenPortOnly: true,
+        remote_browser: null
+    };
+
+    const bean = R.dispense("monitor");
+
+    monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
+    delete monitor.accepted_statuscodes;
+
+    monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
+    monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
+
+    bean.import(monitor);
+    bean.name = name;
+    bean.restartUrl = restart_url;
+    bean.userId = userId;
+    bean.restartInterval = restart_interval;
+    bean.type = "push";
+    bean.retryInterval = 50;
+    bean.interval = 50;
+    bean.weight = 2000;
+    bean.pushToken = genSecret(pushTokenLength);
+    bean.method = "GET";
+
+    bean.validate();
+
+    await R.store(bean);
+
+    if(bean.active !== false) {
+        const list = await server.getMonitorJSONList(userId);
+        io.to(userId).emit("monitorList", list);
+        let monitor = await R.findOne("monitor", " id = ? ", [
+            bean.id,
+        ]);
+
+        if (monitor.id in server.monitorList) {
+            server.monitorList[monitor.id].stop();
+        }
+
+        server.monitorList[monitor.id] = monitor;
+        monitor.start(io);
+    }
+
+    response.json({
+        ok: true,
+        data: bean.toJSON(false)
     });
 });
 
