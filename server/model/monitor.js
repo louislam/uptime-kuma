@@ -383,8 +383,8 @@ class Monitor extends BeanModel {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
                 } else if (this.type === "group") {
-                    let failChild = "";
-                    let failCount = 0;
+                    let downChildName = "";
+                    let failureCount = 0;
                     const children = await Monitor.getChildren(this.id);
 
                     if (children.length > 0) {
@@ -403,21 +403,21 @@ class Monitor extends BeanModel {
                                 bean.status = PENDING;
                             } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
                                 bean.status = lastBeat.status;
-                                failChild = child.name;
+                                downChildName = child.name;
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
-                                failChild = child.name;
+                                downChildName = child.name;
                             }
                             if (lastBeat.status === DOWN) {
-                                failCount++;
+                                failureCount++;
                             }
                         }
 
                         if (bean.status !== UP) {
-                            if (failCount <= 1) {
-                                bean.msg = `Child '${failChild}' inaccessible`;
+                            if (failureCount <= 1) {
+                                bean.msg = `Child '${downChildName}' inaccessible`;
                             } else {
-                                bean.msg = `Child '${failChild}' and ${failCount - 1} others inaccessible`;
+                                bean.msg = `Child '${downChildName}' and ${failureCount - 1} others inaccessible`;
                             }
                         }
                     } else {
