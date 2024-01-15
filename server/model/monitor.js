@@ -383,8 +383,8 @@ class Monitor extends BeanModel {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
                 } else if (this.type === "group") {
-                    let fail_child = "";
-                    let fail_count = 0;
+                    let failChild = "";
+                    let failCount = 0;
                     const children = await Monitor.getChildren(this.id);
 
                     if (children.length > 0) {
@@ -403,19 +403,21 @@ class Monitor extends BeanModel {
                                 bean.status = PENDING;
                             } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
                                 bean.status = lastBeat.status;
-                                fail_child = child.name;
+                                failChild = child.name;
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
-                                fail_child = child.name;
+                                failChild = child.name;
                             }
-                            if (lastBeat.status == DOWN) fail_count++;
+                            if (lastBeat.status === DOWN) {
+                                failCount++;
+                            }
                         }
 
                         if (bean.status !== UP) {
-                            if (fail_count <= 1) {
-                                bean.msg = "Child '" + fail_child + "' inaccessible";
+                            if (failCount <= 1) {
+                                bean.msg = "Child '" + failChild + "' inaccessible";
                             } else {
-                                bean.msg = "Child '" + fail_child + "' and " + (fail_count-1) + " others inaccessible";
+                                bean.msg = "Child '" + failChild + "' and " + (failCount - 1) + " others inaccessible";
                             }
                         }
                     } else {
@@ -980,13 +982,13 @@ class Monitor extends BeanModel {
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
             } else {
-                let group_text = '';
-                if (this.type != 'group' && this.parent != '') {
+                let groupText = "";
+                if (this.type !== "group" && this.parent !== "") {
                     let parentName = await this.getParentName();
-                    group_text = ` under group '${parentName}'`;
+                    groupText = ` under group '${parentName}'`;
                 }
-                
-                log.warn("monitor", `Monitor #${this.id} '${this.name}'${group_text}: Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
+
+                log.warn("monitor", `Monitor #${this.id} '${this.name}'${groupText}: Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 
             // Calculate uptime
@@ -1546,7 +1548,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<string>} Name of this monitor's parent
      */
     async getParentName() {
-        let name = '';
+        let name = "";
 
         if (this.parent === null) {
             return name;
@@ -1557,7 +1559,6 @@ class Monitor extends BeanModel {
 
         return name;
     }
-
 
     /**
      * Gets Full Path-Name (Groups and Name)
