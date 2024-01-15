@@ -50,7 +50,7 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
-            type: this.type
+            type: this.type,
         };
 
         if (this.sendUrl) {
