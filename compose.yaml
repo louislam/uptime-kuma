@@ -1,6 +1,6 @@
 services:
   uptime-kuma:
-    image: uptimekuma
+    image: uptime-kuma
     volumes:
       - ./data:/app/data
     ports:
@@ -13,6 +13,21 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  mysql:
+    image: mysql
+    ports:
+      - 3306:3306
+    restart: unless-stopped
+    container_name: mysql
+    networks:
+      - anpr_network
+    environment:
+      MYSQL_ROOT_PASSWORD: A1Rook1es@123
+      MYSQL_DATABASE: uptimekuma
+      MYSQL_USER: uptimekuma
+      MYSQL_PASSWORD: AiRook1es@123
+  
+
 networks:
   anpr_network:
-    external: true
+      driver: bridge
