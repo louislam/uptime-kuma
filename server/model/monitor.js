@@ -1548,16 +1548,12 @@ class Monitor extends BeanModel {
      * @returns {Promise<string>} Name of this monitor's parent
      */
     async getParentName() {
-        let name = "";
-
         if (this.parent === null) {
-            return name;
+            return "";
         }
 
         let parent = await Monitor.getParent(this.id);
-        name = `${parent.name}`;
-
-        return name;
+        return parent.name;
     }
 
     /**
