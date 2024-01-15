@@ -50,7 +50,7 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             sendUrl: this.sendUrl,
-            type: this.type,
+            type: this.type
         };
 
         if (this.sendUrl) {
@@ -383,6 +383,8 @@ class Monitor extends BeanModel {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
                 } else if (this.type === "group") {
+                    let fail_child = "";
+                    let fail_count = 0;
                     const children = await Monitor.getChildren(this.id);
 
                     if (children.length > 0) {
@@ -395,19 +397,26 @@ class Monitor extends BeanModel {
                             }
                             const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
 
-                            // Only change state if the monitor is in worse conditions then the ones before
+                            // Only change state if the monitor is in worse conditions than the ones before
                             // lastBeat.status could be null
                             if (!lastBeat) {
                                 bean.status = PENDING;
                             } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
                                 bean.status = lastBeat.status;
+                                fail_child = child.name;
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
+                                fail_child = child.name;
                             }
+                            if (lastBeat.status == DOWN) fail_count++;
                         }
 
                         if (bean.status !== UP) {
-                            bean.msg = "Child inaccessible";
+                            if (fail_count <= 1) {
+                                bean.msg = "Child '" + fail_child + "' inaccessible";
+                            } else {
+                                bean.msg = "Child '" + fail_child + "' and " + (fail_count-1) + " others inaccessible";
+                            }
                         }
                     } else {
                         // Set status pending if group is empty
@@ -971,7 +980,13 @@ class Monitor extends BeanModel {
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
             } else {
-                log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
+                let group_text = '';
+                if (this.type != 'group' && this.parent != '') {
+                    let parentName = await this.getParentName();
+                    group_text = ` under group '${parentName}'`;
+                }
+                
+                log.warn("monitor", `Monitor #${this.id} '${this.name}'${group_text}: Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 
             // Calculate uptime
@@ -1525,6 +1540,24 @@ class Monitor extends BeanModel {
             monitorID,
         ]);
     }
+
+    /**
+     * Gets Parent name
+     * @returns {Promise<string>} Name of this monitor's parent
+     */
+    async getParentName() {
+        let name = '';
+
+        if (this.parent === null) {
+            return name;
+        }
+
+        let parent = await Monitor.getParent(this.id);
+        name = `${parent.name}`;
+
+        return name;
+    }
+
 
     /**
      * Gets Full Path-Name (Groups and Name)
