@@ -415,9 +415,9 @@ class Monitor extends BeanModel {
 
                         if (bean.status !== UP) {
                             if (failCount <= 1) {
-                                bean.msg = "Child '" + failChild + "' inaccessible";
+                                bean.msg = `Child '${failChild}' inaccessible`;
                             } else {
-                                bean.msg = "Child '" + failChild + "' and " + (failCount - 1) + " others inaccessible";
+                                bean.msg = `Child '${failChild}' and ${failCount - 1} others inaccessible`;
                             }
                         }
                     } else {
