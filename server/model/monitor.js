@@ -1,8 +1,7 @@
 const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
-const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT
+const { log, UP, DOWN, PENDING, MAINTENANCE, NOMINAL, SLOW, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
@@ -34,6 +33,9 @@ const rootCertificates = rootCertificatesFingerprints();
  *      1 = UP
  *      2 = PENDING
  *      3 = MAINTENANCE
+ *  pingStatus:
+ *      4 = SLOW
+ *      5 = NOMINAL
  */
 class Monitor extends BeanModel {
 
@@ -1565,7 +1567,7 @@ class Monitor extends BeanModel {
         // Create stats to append to messages/logs
         const methodDescription = [ "average", "max" ].includes(method) ? `${method} of last ${windowDuration}s` : method;
         let msgStats = `Response: ${actualResponseTime}ms (${methodDescription}) | Threshold: ${threshold}ms (${thresholdDescription})`;
-        // Add window duration for methods that make sense
+        let pingMsg = `${actualResponseTime}ms resp. (${methodDescription})`;
 
         // Verify valid response time was calculated
         if (actualResponseTime === 0 || !Number.isInteger(actualResponseTime)) {
@@ -1579,8 +1581,11 @@ class Monitor extends BeanModel {
             return;
         }
 
+        bean.pingThreshold = threshold;
+
         // Responding normally
         if (actualResponseTime < threshold) {
+            bean.pingStatus = NOMINAL;
             if (bean.slowResponseCount === 0) {
                 log.debug("monitor", `[${this.name}] Responding normally. No need to send slow response notification | ${msgStats}`);
             } else {
@@ -1588,6 +1593,11 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] Returned to normal response time | ${msgStats}`);
                 let msg = `[${this.name}] Returned to Normal Response Time \n${msgStats}`;
                 Monitor.sendSlowResponseNotification(monitor, bean, msg);
+
+                // Mark important (SLOW -> NOMINAL)
+                pingMsg += ` < ${threshold}ms`;
+                bean.pingImportant = true;
+                bean.pingMsg = pingMsg;
             }
 
             // Reset slow response count
@@ -1595,6 +1605,7 @@ class Monitor extends BeanModel {
 
         // Responding slowly
         } else {
+            bean.pingStatus = SLOW;
             ++bean.slowResponseCount;
 
             // Always send first notification
@@ -1602,6 +1613,12 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] Responded slowly, sending notification | ${msgStats}`);
                 let msg = `[${this.name}] Responded Slowly \n${msgStats}`;
                 Monitor.sendSlowResponseNotification(monitor, bean, msg);
+
+                // Mark important (NOMINAL -> SLOW)
+                pingMsg += ` > ${threshold}ms`;
+                bean.pingImportant = true;
+                bean.pingMsg = pingMsg;
+
             // Send notification every x times
             } else if (this.slowResponseNotificationResendInterval > 0) {
                 if (((bean.slowResponseCount) % this.slowResponseNotificationResendInterval) === 0) {

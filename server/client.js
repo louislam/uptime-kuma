@@ -54,7 +54,7 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
         monitorID,
     ]);
 
-    let result = list.reverse();
+    let result = R.convertToBeans("heartbeat", list.reverse());
 
     if (toUser) {
         io.to(socket.userID).emit("heartbeatList", monitorID, result, overwrite);

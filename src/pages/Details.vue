@@ -71,7 +71,8 @@
                         <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
                     </div>
                     <div class="col-md-4 text-center">
-                        <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
+                        <span class="badge rounded-pill m-1" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
+                        <span v-if="pingStatus" class="badge rounded-pill m-1" :class=" 'bg-' + pingStatus.color " style="font-size: 30px;">{{ pingStatus.text }}</span>
                     </div>
                 </div>
             </div>
@@ -219,9 +220,15 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px;">
-                            <td><Status :status="beat.status" /></td>
+                            <td>
+                                <div v-if="beat.important"><Status :status="beat.status" /></div>
+                                <div v-if="beat.pingImportant"><Status :status="beat.pingStatus" /></div>
+                            </td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0">
+                                <div v-if="beat.important">{{ beat.msg }}</div>
+                                <div v-if="beat.pingImportant">{{ beat.pingMsg }}</div>
+                            </td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
@@ -361,6 +368,14 @@ export default {
         status() {
             if (this.$root.statusList[this.monitor.id]) {
                 return this.$root.statusList[this.monitor.id];
+            }
+
+            return { };
+        },
+
+        pingStatus() {
+            if (this.$root.pingStatusList[this.monitor.id]) {
+                return this.$root.pingStatusList[this.monitor.id];
             }
 
             return { };

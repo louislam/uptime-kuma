@@ -5,7 +5,7 @@ import Favico from "favico.js";
 import dayjs from "dayjs";
 import mitt from "mitt";
 
-import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+import { DOWN, MAINTENANCE, PENDING, UP, SLOW, NOMINAL } from "../util.ts";
 import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
@@ -190,6 +190,10 @@ export default {
                 }
 
                 // Add to important list if it is important
+                if (data.important || data.pingImportant) {
+                    this.emitter.emit("newImportantHeartbeat", data);
+                }
+
                 // Also toast
                 if (data.important) {
 
@@ -206,8 +210,23 @@ export default {
                             toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                         }
                     }
+                }
 
-                    this.emitter.emit("newImportantHeartbeat", data);
+                if (data.pingImportant) {
+
+                    if (this.monitorList[data.monitorID] !== undefined) {
+                        if (data.pingStatus === SLOW) {
+                            toast.warning(`[${this.monitorList[data.monitorID].name}] [SLOW] ${data.pingMsg}`, {
+                                timeout: getToastErrorTimeout(),
+                            });
+                        } else if (data.pingStatus === NOMINAL) {
+                            toast.success(`[${this.monitorList[data.monitorID].name}] [NOMINAL] ${data.pingMsg}`, {
+                                timeout: getToastSuccessTimeout(),
+                            });
+                        } else {
+                            toast(`[${this.monitorList[data.monitorID].name}] ${data.pingMsg}`);
+                        }
+                    }
                 }
             });
 
@@ -745,11 +764,30 @@ export default {
             return result;
         },
 
+        pingStatusList() {
+            let result = {};
+
+            for (let monitorID in this.lastHeartbeatList) {
+                let lastHeartBeat = this.lastHeartbeatList[monitorID];
+
+                if (lastHeartBeat?.status === UP) {
+                    if (lastHeartBeat.pingStatus === SLOW) {
+                        result[monitorID] = {
+                            text: this.$t("Slow"),
+                            color: "warning",
+                        };
+                    }
+                }
+            }
+            return result;
+        },
+
         stats() {
             let result = {
                 active: 0,
                 up: 0,
                 down: 0,
+                slow: 0,
                 maintenance: 0,
                 pending: 0,
                 unknown: 0,
@@ -774,6 +812,10 @@ export default {
                         result.maintenance++;
                     } else {
                         result.unknown++;
+                    }
+
+                    if (beat.pingStatus === SLOW) {
+                        result.slow++;
                     }
                 } else {
                     result.unknown++;
