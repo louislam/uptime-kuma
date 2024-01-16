@@ -451,9 +451,7 @@ class Monitor extends BeanModel {
                     if (this.auth_method === "oauth2-cc") {
                         try {
                             if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
-                                log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
-                                this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
-                                log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
                             }
                             oauth2AuthHeader = {
                                 "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
@@ -1089,18 +1087,35 @@ class Monitor extends BeanModel {
             }
 
             return res;
-        } catch (e) {
+        } catch (error) {
+
+            /**
+             * Make a single attempt to obtain an new access token in the event that
+             * the recent api request failed for authentication purposes
+             */
+            if (this.auth_method === "oauth2-cc" && error.response.status === 401 && !finalCall) {
+                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
+                let oauth2AuthHeader = {
+                    "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                };
+                options.headers = { ...(options.headers),
+                    ...(oauth2AuthHeader)
+                };
+
+                return this.makeAxiosRequest(options, true);
+            }
+
             // Fix #2253
             // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
-            if (!finalCall && typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
+            if (!finalCall && typeof error.message === "string" && error.message.includes("maxContentLength size of -1 exceeded")) {
                 log.debug("monitor", "makeAxiosRequest with gzip");
                 options.headers["Accept-Encoding"] = "gzip, deflate";
                 return this.makeAxiosRequest(options, true);
             } else {
-                if (typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
-                    e.message = "response timeout: incomplete response within a interval";
+                if (typeof error.message === "string" && error.message.includes("maxContentLength size of -1 exceeded")) {
+                    error.message = "response timeout: incomplete response within a interval";
                 }
-                throw e;
+                throw error;
             }
         }
     }
@@ -1810,6 +1825,23 @@ class Monitor extends BeanModel {
         const parentActive = await Monitor.isParentActive(parent.id);
         return parent.active && parentActive;
     }
+
+    /**
+     * Obtains a new Oidc Token
+     * @returns {Promise<object>} OAuthProvider client
+     */
+    async makeOidcTokenClientCredentialsRequest() {
+        log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new token`);
+        const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+        if (this.oauthAccessToken?.expires_at) {
+            log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken?.expires_at * 1000)}`);
+        } else {
+            log.debug("monitor", `[${this.name}] Obtained oauth access-token. Time until expiry was not provided`);
+        }
+
+        return oAuthAccessToken;
+    }
+
 }
 
 module.exports = Monitor;

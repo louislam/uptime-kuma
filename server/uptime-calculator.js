@@ -35,15 +35,24 @@ class UptimeCalculator {
     minutelyUptimeDataList = new LimitQueue(24 * 60);
 
     /**
+     * Recent 30-day uptime, each item is a 1-hour interval
+     * Key: {number} DivisionKey
+     * @type {LimitQueue<number,string>}
+     */
+    hourlyUptimeDataList = new LimitQueue(30 * 24);
+
+    /**
      * Daily uptime data,
      * Key: {number} DailyKey
      */
     dailyUptimeDataList = new LimitQueue(365);
 
-    lastDailyUptimeData = null;
     lastUptimeData = null;
+    lastHourlyUptimeData = null;
+    lastDailyUptimeData = null;
 
     lastDailyStatBean = null;
+    lastHourlyStatBean = null;
     lastMinutelyStatBean = null;
 
     /**
@@ -53,6 +62,10 @@ class UptimeCalculator {
      * @returns {Promise<UptimeCalculator>} UptimeCalculator
      */
     static async getUptimeCalculator(monitorID) {
+        if (!monitorID) {
+            throw new Error("Monitor ID is required");
+        }
+
         if (!UptimeCalculator.list[monitorID]) {
             UptimeCalculator.list[monitorID] = new UptimeCalculator();
             await UptimeCalculator.list[monitorID].init(monitorID);
@@ -108,13 +121,32 @@ class UptimeCalculator {
                 up: bean.up,
                 down: bean.down,
                 avgPing: bean.ping,
+                minPing: bean.pingMin,
+                maxPing: bean.pingMax,
+            });
+        }
+
+        // Load hourly data from database (recent 30 days only)
+        let hourlyStatBeans = await R.find("stat_hourly", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
+            monitorID,
+            this.getHourlyKey(now.subtract(30, "day")),
+        ]);
+
+        for (let bean of hourlyStatBeans) {
+            let key = bean.timestamp;
+            this.hourlyUptimeDataList.push(key, {
+                up: bean.up,
+                down: bean.down,
+                avgPing: bean.ping,
+                minPing: bean.pingMin,
+                maxPing: bean.pingMax,
             });
         }
 
         // Load daily data from database (recent 365 days only)
         let dailyStatBeans = await R.find("stat_daily", " monitor_id = ? AND timestamp > ? ORDER BY timestamp", [
             monitorID,
-            this.getDailyKey(now.subtract(365, "day").unix()),
+            this.getDailyKey(now.subtract(365, "day")),
         ]);
 
         for (let bean of dailyStatBeans) {
@@ -123,6 +155,8 @@ class UptimeCalculator {
                 up: bean.up,
                 down: bean.down,
                 avgPing: bean.ping,
+                minPing: bean.pingMin,
+                maxPing: bean.pingMax,
             });
         }
     }
@@ -148,13 +182,16 @@ class UptimeCalculator {
         }
 
         let divisionKey = this.getMinutelyKey(date);
-        let dailyKey = this.getDailyKey(divisionKey);
+        let hourlyKey = this.getHourlyKey(date);
+        let dailyKey = this.getDailyKey(date);
 
         let minutelyData = this.minutelyUptimeDataList[divisionKey];
+        let hourlyData = this.hourlyUptimeDataList[hourlyKey];
         let dailyData = this.dailyUptimeDataList[dailyKey];
 
         if (flatStatus === UP) {
             minutelyData.up += 1;
+            hourlyData.up += 1;
             dailyData.up += 1;
 
             // Only UP status can update the ping
@@ -163,30 +200,55 @@ class UptimeCalculator {
                 // The first beat of the minute, the ping is the current ping
                 if (minutelyData.up === 1) {
                     minutelyData.avgPing = ping;
+                    minutelyData.minPing = ping;
+                    minutelyData.maxPing = ping;
                 } else {
                     minutelyData.avgPing = (minutelyData.avgPing * (minutelyData.up - 1) + ping) / minutelyData.up;
+                    minutelyData.minPing = Math.min(minutelyData.minPing, ping);
+                    minutelyData.maxPing = Math.max(minutelyData.maxPing, ping);
+                }
+
+                // Add avg ping
+                // The first beat of the hour, the ping is the current ping
+                if (hourlyData.up === 1) {
+                    hourlyData.avgPing = ping;
+                    hourlyData.minPing = ping;
+                    hourlyData.maxPing = ping;
+                } else {
+                    hourlyData.avgPing = (hourlyData.avgPing * (hourlyData.up - 1) + ping) / hourlyData.up;
+                    hourlyData.minPing = Math.min(hourlyData.minPing, ping);
+                    hourlyData.maxPing = Math.max(hourlyData.maxPing, ping);
                 }
 
                 // Add avg ping (daily)
                 // The first beat of the day, the ping is the current ping
-                if (minutelyData.up === 1) {
+                if (dailyData.up === 1) {
                     dailyData.avgPing = ping;
+                    dailyData.minPing = ping;
+                    dailyData.maxPing = ping;
                 } else {
                     dailyData.avgPing = (dailyData.avgPing * (dailyData.up - 1) + ping) / dailyData.up;
+                    dailyData.minPing = Math.min(dailyData.minPing, ping);
+                    dailyData.maxPing = Math.max(dailyData.maxPing, ping);
                 }
             }
 
         } else {
             minutelyData.down += 1;
+            hourlyData.down += 1;
             dailyData.down += 1;
-        }
-
-        if (dailyData !== this.lastDailyUptimeData) {
-            this.lastDailyUptimeData = dailyData;
         }
 
         if (minutelyData !== this.lastUptimeData) {
             this.lastUptimeData = minutelyData;
+        }
+
+        if (hourlyData !== this.lastHourlyUptimeData) {
+            this.lastHourlyUptimeData = hourlyData;
+        }
+
+        if (dailyData !== this.lastDailyUptimeData) {
+            this.lastDailyUptimeData = dailyData;
         }
 
         // Don't store data in test mode
@@ -199,12 +261,24 @@ class UptimeCalculator {
         dailyStatBean.up = dailyData.up;
         dailyStatBean.down = dailyData.down;
         dailyStatBean.ping = dailyData.avgPing;
+        dailyStatBean.pingMin = dailyData.minPing;
+        dailyStatBean.pingMax = dailyData.maxPing;
         await R.store(dailyStatBean);
+
+        let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
+        hourlyStatBean.up = hourlyData.up;
+        hourlyStatBean.down = hourlyData.down;
+        hourlyStatBean.ping = hourlyData.avgPing;
+        hourlyStatBean.pingMin = hourlyData.minPing;
+        hourlyStatBean.pingMax = hourlyData.maxPing;
+        await R.store(hourlyStatBean);
 
         let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
         minutelyStatBean.up = minutelyData.up;
         minutelyStatBean.down = minutelyData.down;
         minutelyStatBean.ping = minutelyData.avgPing;
+        minutelyStatBean.pingMin = minutelyData.minPing;
+        minutelyStatBean.pingMax = minutelyData.maxPing;
         await R.store(minutelyStatBean);
 
         // Remove the old data
@@ -212,6 +286,11 @@ class UptimeCalculator {
         await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
             this.monitorID,
             this.getMinutelyKey(date.subtract(24, "hour")),
+        ]);
+
+        await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ? AND timestamp < ?", [
+            this.monitorID,
+            this.getHourlyKey(date.subtract(30, "day")),
         ]);
 
         return date;
@@ -243,6 +322,31 @@ class UptimeCalculator {
     }
 
     /**
+     * Get the hourly stat bean
+     * @param {number} timestamp milliseconds
+     * @returns {Promise<import("redbean-node").Bean>} stat_hourly bean
+     */
+    async getHourlyStatBean(timestamp) {
+        if (this.lastHourlyStatBean && this.lastHourlyStatBean.timestamp === timestamp) {
+            return this.lastHourlyStatBean;
+        }
+
+        let bean = await R.findOne("stat_hourly", " monitor_id = ? AND timestamp = ?", [
+            this.monitorID,
+            timestamp,
+        ]);
+
+        if (!bean) {
+            bean = R.dispense("stat_hourly");
+            bean.monitor_id = this.monitorID;
+            bean.timestamp = timestamp;
+        }
+
+        this.lastHourlyStatBean = bean;
+        return this.lastHourlyStatBean;
+    }
+
+    /**
      * Get the minutely stat bean
      * @param {number} timestamp milliseconds
      * @returns {Promise<import("redbean-node").Bean>} stat_minutely bean
@@ -268,11 +372,12 @@ class UptimeCalculator {
     }
 
     /**
+     * Convert timestamp to minutely key
      * @param {dayjs.Dayjs} date The heartbeat date
      * @returns {number} Timestamp
      */
     getMinutelyKey(date) {
-        // Convert the current date to the nearest minute (e.g. 2021-01-01 12:34:56 -> 2021-01-01 12:34:00)
+        // Truncate value to minutes (e.g. 2021-01-01 12:34:56 -> 2021-01-01 12:34:00)
         date = date.startOf("minute");
 
         // Convert to timestamp in second
@@ -283,6 +388,33 @@ class UptimeCalculator {
                 up: 0,
                 down: 0,
                 avgPing: 0,
+                minPing: 0,
+                maxPing: 0,
+            });
+        }
+
+        return divisionKey;
+    }
+
+    /**
+     * Convert timestamp to hourly key
+     * @param {dayjs.Dayjs} date The heartbeat date
+     * @returns {number} Timestamp
+     */
+    getHourlyKey(date) {
+        // Truncate value to hours (e.g. 2021-01-01 12:34:56 -> 2021-01-01 12:00:00)
+        date = date.startOf("hour");
+
+        // Convert to timestamp in second
+        let divisionKey = date.unix();
+
+        if (! (divisionKey in this.hourlyUptimeDataList)) {
+            this.hourlyUptimeDataList.push(divisionKey, {
+                up: 0,
+                down: 0,
+                avgPing: 0,
+                minPing: 0,
+                maxPing: 0,
             });
         }
 
@@ -291,13 +423,11 @@ class UptimeCalculator {
 
     /**
      * Convert timestamp to daily key
-     * @param {number} timestamp Timestamp
+     * @param {dayjs.Dayjs} date The heartbeat date
      * @returns {number} Timestamp
      */
-    getDailyKey(timestamp) {
-        let date = dayjs.unix(timestamp);
-
-        // Convert the date to the nearest day (e.g. 2021-01-01 12:34:56 -> 2021-01-01 00:00:00)
+    getDailyKey(date) {
+        // Truncate value to start of day (e.g. 2021-01-01 12:34:56 -> 2021-01-01 00:00:00)
         // Considering if the user keep changing could affect the calculation, so use UTC time to avoid this problem.
         date = date.utc().startOf("day");
         let dailyKey = date.unix();
@@ -307,10 +437,32 @@ class UptimeCalculator {
                 up: 0,
                 down: 0,
                 avgPing: 0,
+                minPing: 0,
+                maxPing: 0,
             });
         }
 
         return dailyKey;
+    }
+
+    /**
+     * Convert timestamp to key
+     * @param {dayjs.Dayjs} datetime Datetime
+     * @param {"day" | "hour" | "minute"} type the type of data which is expected to be returned
+     * @returns {number} Timestamp
+     * @throws {Error} If the type is invalid
+     */
+    getKey(datetime, type) {
+        switch (type) {
+            case "day":
+                return this.getDailyKey(datetime);
+            case "hour":
+                return this.getHourlyKey(datetime);
+            case "minute":
+                return this.getMinutelyKey(datetime);
+            default:
+                throw new Error("Invalid type");
+        }
     }
 
     /**
@@ -333,21 +485,21 @@ class UptimeCalculator {
 
     /**
      * @param {number} num the number of data points which are expected to be returned
-     * @param {"day" | "minute"} type the type of data which is expected to be returned
+     * @param {"day" | "hour" | "minute"} type the type of data which is expected to be returned
      * @returns {UptimeDataResult} UptimeDataResult
      * @throws {Error} The maximum number of minutes greater than 1440
      */
     getData(num, type = "day") {
-        let key;
 
-        if (type === "day") {
-            key = this.getDailyKey(this.getCurrentDate().unix());
-        } else {
-            if (num > 24 * 60) {
-                throw new Error("The maximum number of minutes is 1440");
-            }
-            key = this.getMinutelyKey(this.getCurrentDate());
+        if (type === "hour" && num > 24 * 30) {
+            throw new Error("The maximum number of hours is 720");
         }
+        if (type === "minute" && num > 24 * 60) {
+            throw new Error("The maximum number of minutes is 1440");
+        }
+
+        // Get the current time period key based on the type
+        let key = this.getKey(this.getCurrentDate(), type);
 
         let total = {
             up: 0,
@@ -357,20 +509,37 @@ class UptimeCalculator {
         let totalPing = 0;
         let endTimestamp;
 
-        if (type === "day") {
-            endTimestamp = key - 86400 * (num - 1);
-        } else {
-            endTimestamp = key - 60 * (num - 1);
+        // Get the eariest timestamp of the required period based on the type
+        switch (type) {
+            case "day":
+                endTimestamp = key - 86400 * (num - 1);
+                break;
+            case "hour":
+                endTimestamp = key - 3600 * (num - 1);
+                break;
+            case "minute":
+                endTimestamp = key - 60 * (num - 1);
+                break;
+            default:
+                throw new Error("Invalid type");
         }
 
         // Sum up all data in the specified time range
         while (key >= endTimestamp) {
             let data;
 
-            if (type === "day") {
-                data = this.dailyUptimeDataList[key];
-            } else {
-                data = this.minutelyUptimeDataList[key];
+            switch (type) {
+                case "day":
+                    data = this.dailyUptimeDataList[key];
+                    break;
+                case "hour":
+                    data = this.hourlyUptimeDataList[key];
+                    break;
+                case "minute":
+                    data = this.minutelyUptimeDataList[key];
+                    break;
+                default:
+                    throw new Error("Invalid type");
             }
 
             if (data) {
@@ -379,27 +548,53 @@ class UptimeCalculator {
                 totalPing += data.avgPing * data.up;
             }
 
-            // Previous day
-            if (type === "day") {
-                key -= 86400;
-            } else {
-                key -= 60;
+            // Set key to the pervious time period
+            switch (type) {
+                case "day":
+                    key -= 86400;
+                    break;
+                case "hour":
+                    key -= 3600;
+                    break;
+                case "minute":
+                    key -= 60;
+                    break;
+                default:
+                    throw new Error("Invalid type");
             }
         }
 
         let uptimeData = new UptimeDataResult();
 
+        // If there is no data in the previous time ranges, use the last data?
         if (total.up === 0 && total.down === 0) {
-            if (type === "day" && this.lastDailyUptimeData) {
-                total = this.lastDailyUptimeData;
-                totalPing = total.avgPing * total.up;
-            } else if (type === "minute" && this.lastUptimeData) {
-                total = this.lastUptimeData;
-                totalPing = total.avgPing * total.up;
-            } else {
-                uptimeData.uptime = 0;
-                uptimeData.avgPing = null;
-                return uptimeData;
+            switch (type) {
+                case "day":
+                    if (this.lastDailyUptimeData) {
+                        total = this.lastDailyUptimeData;
+                        totalPing = total.avgPing * total.up;
+                    } else {
+                        return uptimeData;
+                    }
+                    break;
+                case "hour":
+                    if (this.lastHourlyUptimeData) {
+                        total = this.lastHourlyUptimeData;
+                        totalPing = total.avgPing * total.up;
+                    } else {
+                        return uptimeData;
+                    }
+                    break;
+                case "minute":
+                    if (this.lastUptimeData) {
+                        total = this.lastUptimeData;
+                        totalPing = total.avgPing * total.up;
+                    } else {
+                        return uptimeData;
+                    }
+                    break;
+                default:
+                    throw new Error("Invalid type");
             }
         }
 
@@ -414,6 +609,85 @@ class UptimeCalculator {
         uptimeData.uptime = total.up / (total.up + total.down);
         uptimeData.avgPing = avgPing;
         return uptimeData;
+    }
+
+    /**
+     * Get data in form of an array
+     * @param {number} num the number of data points which are expected to be returned
+     * @param {"day" | "hour" | "minute"} type the type of data which is expected to be returned
+     * @returns {Array<object>} uptime data
+     * @throws {Error} The maximum number of minutes greater than 1440
+     */
+    getDataArray(num, type = "day") {
+        if (type === "hour" && num > 24 * 30) {
+            throw new Error("The maximum number of hours is 720");
+        }
+        if (type === "minute" && num > 24 * 60) {
+            throw new Error("The maximum number of minutes is 1440");
+        }
+
+        // Get the current time period key based on the type
+        let key = this.getKey(this.getCurrentDate(), type);
+
+        let result = [];
+
+        let endTimestamp;
+
+        // Get the eariest timestamp of the required period based on the type
+        switch (type) {
+            case "day":
+                endTimestamp = key - 86400 * (num - 1);
+                break;
+            case "hour":
+                endTimestamp = key - 3600 * (num - 1);
+                break;
+            case "minute":
+                endTimestamp = key - 60 * (num - 1);
+                break;
+            default:
+                throw new Error("Invalid type");
+        }
+
+        // Get datapoints in the specified time range
+        while (key >= endTimestamp) {
+            let data;
+
+            switch (type) {
+                case "day":
+                    data = this.dailyUptimeDataList[key];
+                    break;
+                case "hour":
+                    data = this.hourlyUptimeDataList[key];
+                    break;
+                case "minute":
+                    data = this.minutelyUptimeDataList[key];
+                    break;
+                default:
+                    throw new Error("Invalid type");
+            }
+
+            if (data) {
+                data.timestamp = key;
+                result.push(data);
+            }
+
+            // Set key to the pervious time period
+            switch (type) {
+                case "day":
+                    key -= 86400;
+                    break;
+                case "hour":
+                    key -= 3600;
+                    break;
+                case "minute":
+                    key -= 60;
+                    break;
+                default:
+                    throw new Error("Invalid type");
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -446,7 +720,7 @@ class UptimeCalculator {
      * @returns {UptimeDataResult} UptimeDataResult
      */
     get7Day() {
-        return this.getData(7);
+        return this.getData(168, "hour");
     }
 
     /**
@@ -464,7 +738,7 @@ class UptimeCalculator {
     }
 
     /**
-     * @returns {dayjs.Dayjs} Current date
+     * @returns {dayjs.Dayjs} Current datetime in UTC
      */
     getCurrentDate() {
         return dayjs.utc();
@@ -476,12 +750,12 @@ class UptimeDataResult {
     /**
      * @type {number} Uptime
      */
-    uptime;
+    uptime = 0;
 
     /**
      * @type {number} Average ping
      */
-    avgPing;
+    avgPing = null;
 }
 
 module.exports = {

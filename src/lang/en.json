@@ -120,7 +120,7 @@
     "disableauth.message2": "It is designed for scenarios {intendThirdPartyAuth} in front of Uptime Kuma such as Cloudflare Access, Authelia or other authentication mechanisms.",
     "where you intend to implement third-party authentication": "where you intend to implement third-party authentication",
     "Please use this option carefully!": "Please use this option carefully!",
-    "Logout": "Logout",
+    "Logout": "Log out",
     "Leave": "Leave",
     "I understand, please disable": "I understand, please disable",
     "Confirm": "Confirm",
@@ -129,7 +129,7 @@
     "Username": "Username",
     "Password": "Password",
     "Remember me": "Remember me",
-    "Login": "Login",
+    "Login": "Log in",
     "No Monitors, please": "No Monitors, please",
     "add one": "add one",
     "Notification Type": "Notification Type",
@@ -905,5 +905,6 @@
     "useRemoteBrowser": "Use a Remote Browser",
     "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
     "GrafanaOncallUrl": "Grafana Oncall URL",
-    "Browser Screenshot": "Browser Screenshot"
+    "Browser Screenshot": "Browser Screenshot",
+    "What is a Remote Browser?": "What is a Remote Browser?"
 }

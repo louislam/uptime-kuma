@@ -90,7 +90,7 @@ const Monitor = require("./model/monitor");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, startE2eTests, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -130,7 +130,6 @@ const twoFAVerifyOptions = {
  * @type {boolean}
  */
 const testMode = !!args["test"] || false;
-const e2eTestMode = !!args["e2e"] || false;
 
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");
@@ -1278,6 +1277,7 @@ let needSetup = false;
 
                 callback({
                     ok: true,
+                    token: User.createJWT(user, server.jwtSecret),
                     msg: "successAuthChangePassword",
                     msgi18n: true,
                 });
@@ -1500,6 +1500,14 @@ let needSetup = false;
                 log.info("manage", `Clear Statistics User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat");
+                await R.exec("DELETE FROM stat_daily");
+                await R.exec("DELETE FROM stat_hourly");
+                await R.exec("DELETE FROM stat_minutely");
+
+                // Restart all monitors to reset the stats
+                for (let monitorID in server.monitorList) {
+                    await restartMonitor(socket.userID, monitorID);
+                }
 
                 callback({
                     ok: true,
@@ -1559,10 +1567,6 @@ let needSetup = false;
         }
         startMonitors();
         checkVersion.startInterval();
-
-        if (e2eTestMode) {
-            startE2eTests();
-        }
     });
 
     await initBackgroundJobs();
