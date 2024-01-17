@@ -654,7 +654,7 @@
     "dnsCacheDescription": "In einigen IPv6-Umgebungen funktioniert es möglicherweise nicht. Deaktiviere es, wenn Probleme auftreten.",
     "loadingError": "Die Daten konnten nicht abgerufen werden, bitte später noch einmal versuchen.",
     "confirmUninstallPlugin": "Möchtest du dieses Plugin wirklich deinstallieren?",
-    "grpcMethodDescription": "Der Name der Methode wird in das \"cammelCase\"-Format konvertiert (z.B. sayHello, check, etc.)",
+    "grpcMethodDescription": "Der Name der Methode wird in das \"camelCase\"-Format konvertiert (z.B. sayHello, check, etc.)",
     "Passive Monitor Type": "Passiver Monitortyp",
     "Specific Monitor Type": "Spezifischer Monitortyp",
     "webhookAdditionalHeadersTitle": "Zusätzliche Header",
@@ -912,5 +912,6 @@
     "Add a domain": "Domain hinzufügen",
     "Remove domain": "Domain '{0}' entfernen",
     "successKeyword": "Erfolgsschlüsselwort",
-    "successKeywordExplanation": "MQTT-Schlüsselwort, das als Erfolg gewertet wird"
+    "successKeywordExplanation": "MQTT-Schlüsselwort, das als Erfolg gewertet wird",
+    "settingUpDatabaseMSG": "Die Datenbank wird eingerichtet. Dies kann einen Moment dauern, bitte habe Geduld."
 }
