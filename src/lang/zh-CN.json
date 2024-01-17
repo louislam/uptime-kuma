@@ -767,7 +767,7 @@
     "Open Badge Generator": "打开徽章生成器",
     "Badge Style": "徽章样式",
     "Badge Down Days": "故障状态所需剩余天数",
-    "Badge Warn Days": "警告状态所需剩余天数",
+    "Badge Warn Days": "徽章预警天数",
     "Badge Warn Color": "警告状态下徽章颜色",
     "Badge Maintenance Color": "维护状态下徽章颜色",
     "Badge Down Color": "故障状态下徽章颜色",
