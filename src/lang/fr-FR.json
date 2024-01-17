@@ -88,7 +88,7 @@
     "Port": "Port",
     "Heartbeat Interval": "Intervalle de vérification",
     "Retries": "Essais",
-    "Heartbeat Retry Interval": "Intervalle de ré-essaie",
+    "Heartbeat Retry Interval": "Intervalle de ré-essai",
     "Resend Notification if Down X times consecutively": "Renvoyer la notification si hors ligne X fois consécutivement",
     "Advanced": "Avancé",
     "Upside Down Mode": "Mode inversé",
