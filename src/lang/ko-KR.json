@@ -775,5 +775,9 @@
     "chromeExecutable": "Chrome/Chromium 실행 파일",
     "chromeExecutableAutoDetect": "자동 감지",
     "Invert Keyword": "키워드 반전",
-    "Expected Value": "기대값"
+    "Expected Value": "기대값",
+    "Add a domain": "도메인 추가",
+    "Remove domain": "도메인 '{0}' 제거",
+    "Monitor Group": "모니터링 그룹",
+    "Monitor Setting": "{0}의 모니터 설정"
 }
