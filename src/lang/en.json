@@ -835,7 +835,7 @@
     "Enable Kafka Producer Auto Topic Creation": "Enable Kafka Producer Auto Topic Creation",
     "Kafka SASL Options": "Kafka SASL Options",
     "Mechanism": "Mechanism",
-    "Pick a SASL Mechanism...": "Pick a SASL Mechanism...",
+    "Pick a SASL Mechanism...": "Pick a SASL Mechanism…",
     "Authorization Identity": "Authorization Identity",
     "AccessKey Id": "AccessKey Id",
     "Secret AccessKey": "Secret AccessKey",
