@@ -772,5 +772,6 @@
     "onebotGroupMessage": "Csoport",
     "SecretAccessKey": "Titkos Hozzáférési Kulcs",
     "Invert Keyword": "Kulcsszó invertálása",
-    "or": "vagy"
+    "or": "vagy",
+    "For safety, must use secret key": "Biztonsági okoból kötelező a titkos kulcs használata"
 }
