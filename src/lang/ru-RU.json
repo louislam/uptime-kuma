@@ -808,7 +808,7 @@
     "Kafka Producer Message": "Сообщение продюсера Kafka",
     "Kafka SASL Options": "Параметры SASL в Kafka",
     "Mechanism": "Механизм",
-    "Pick a SASL Mechanism...": "Выберите механизм SASL...",
+    "Pick a SASL Mechanism...": "Выберите механизм SASL…",
     "AccessKey Id": "AccessKey Id",
     "Secret AccessKey": "Секретный ключ доступа",
     "Session Token": "Токен сессии",
@@ -926,5 +926,6 @@
     "useRemoteBrowser": "Использовать удаленный браузер",
     "deleteRemoteBrowserMessage": "Вы уверены, что хотите удалить этот удаленный браузер для всех мониторов?",
     "Remove the expiry notification": "Удалить дату истечения срока действия уведомления",
-    "Add a new expiry notification day": "Добавить новый день уведомления об истечении срока действия"
+    "Add a new expiry notification day": "Добавить новый день уведомления об истечении срока действия",
+    "What is a Remote Browser?": "Что такое удаленный браузер?"
 }
