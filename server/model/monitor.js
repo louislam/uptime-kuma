@@ -774,9 +774,6 @@ class Monitor extends BeanModel {
                             if ([ "", "healthy" ].includes(res.data.State.Health.Status)) {
                                 bean.status = UP;
                                 bean.msg = res.data.State.Health.Status;
-                            } else if (res.data.State.Health.Status === "starting") {
-                                bean.status = PENDING;
-                                bean.msg = res.data.State.Health.Status;
                             } else {
                                 bean.status = DOWN;
                                 bean.msg = res.data.State.Health.Status;
