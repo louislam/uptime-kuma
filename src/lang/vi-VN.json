@@ -505,7 +505,7 @@
     "resendEveryXTimes": "Gửi phản hồi mỗi {0} lần",
     "setupDatabaseMariaDB": "Kết nối tới một cơ sở dữ liệu MariaDB bên ngoài. Bạn cần cấu hình thông tin kết nối cơ sở dữ liệu.",
     "setupDatabaseChooseDatabase": "Bạn muốn dùng cơ sở dữ liệu nào?",
-    "setupDatabaseEmbeddedMariaDB": "Bạn không cần phải cài đặt bất cứ thứ gì. Docker image đã nhúng và cấu hình tự động một cơ sở dữ liệu MariaDB cho bạn. Uptime Kuma sẽ kết nối tới cơ sở dữ liệu thông qua unix socket.",
+    "setupDatabaseEmbeddedMariaDB": "Bạn không cần phải cài đặt bất cứ thứ gì. Docker image đã nhúng và cấu hình tự động cơ sở dữ liệu MariaDB cho bạn. Uptime Kuma sẽ kết nối tới cơ sở dữ liệu thông qua unix socket.",
     "setupDatabaseSQLite": "Một tệp cơ sở dữ liệu đơn giản, được khuyên dùng cho quy mô triển khai nhỏ. Trước v2.0.0, Uptime Kuma sử dụng SQLite như là một cơ sở dữ liệu mặc định.",
     "dbName": "Tên cơ sở dữ liệu",
     "General Monitor Type": "Loại giám sát chung",
@@ -521,5 +521,6 @@
     "timeoutAfter": "Hết thời gian chờ sau {0} giây",
     "styleElapsedTime": "Thời gian đã qua dưới thanh trạng thái",
     "styleElapsedTimeShowNoLine": "Hiển Thị (Không Dòng Kẻ)",
-    "styleElapsedTimeShowWithLine": "Hiển Thị (Có Dòng Kẻ)"
+    "styleElapsedTimeShowWithLine": "Hiển Thị (Có Dòng Kẻ)",
+    "Request Timeout": "Yêu cầu hết hạn"
 }
