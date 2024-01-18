@@ -17,7 +17,6 @@ const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
-const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
 
@@ -499,40 +498,6 @@ exports.radius = function (
         } else {
             throw Error(error.message);
         }
-    });
-};
-
-/**
- * Redis server ping
- * @param {string} dsn The redis connection string
- * @returns {Promise<any>} Response from redis server
- */
-exports.redisPingAsync = function (dsn) {
-    return new Promise((resolve, reject) => {
-        const client = redis.createClient({
-            url: dsn
-        });
-        client.on("error", (err) => {
-            if (client.isOpen) {
-                client.disconnect();
-            }
-            reject(err);
-        });
-        client.connect().then(() => {
-            if (!client.isOpen) {
-                client.emit("error", new Error("connection isn't open"));
-            }
-            client.ping().then((res, err) => {
-                if (client.isOpen) {
-                    client.disconnect();
-                }
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            }).catch(error => reject(error));
-        });
     });
 };
 
