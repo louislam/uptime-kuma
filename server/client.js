@@ -6,8 +6,8 @@ const { R } = require("redbean-node");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const server = UptimeKumaServer.getInstance();
 const io = server.io;
-const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
+const { Settings } = require("./settings");
 
 /**
  * Send list of notification providers to client
@@ -155,7 +155,7 @@ async function sendInfo(socket, hideVersion = false) {
         version,
         latestVersion,
         isContainer,
-        primaryBaseURL: await setting("primaryBaseURL"),
+        primaryBaseURL: await Settings.get("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
     });

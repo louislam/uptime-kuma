@@ -1,8 +1,8 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setting } = require("../util-server");
 const { getMonitorRelativeURL } = require("../../src/util");
 const { DOWN, UP } = require("../../src/util");
+const { Settings } = require("../settings");
 
 class GoogleChat extends NotificationProvider {
 
@@ -29,7 +29,7 @@ class GoogleChat extends NotificationProvider {
 
             textMsg += `${msg}`;
 
-            const baseURL = await setting("primaryBaseURL");
+            const baseURL = await Settings.get("primaryBaseURL");
             if (baseURL && monitorJSON) {
                 textMsg += `\n${baseURL + getMonitorRelativeURL(monitorJSON.id)}`;
             }
