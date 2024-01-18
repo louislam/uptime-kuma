@@ -771,13 +771,10 @@ class Monitor extends BeanModel {
 
                     if (res.data.State.Running) {
                         if (res.data.State.Health) {
-                            if ([ "", "healthy" ].includes(res.data.State.Health.Status)) {
-                                bean.status = UP;
-                                bean.msg = res.data.State.Health.Status;
-                            } else {
-                                bean.status = DOWN;
-                                bean.msg = res.data.State.Health.Status;
-                            }
+                            // treat empty Status as healthy to support podman: https://github.com/louislam/uptime-kuma/issues/3767
+                            const containerIsHealthy = [ "", "healthy" ].includes(res.data.State.Health.Status);
+                            bean.status = containerIsHealthy ? UP : DOWN;
+                            bean.msg = res.data.State.Health.Status;
                         } else {
                             bean.status = DOWN;
                             bean.msg = res.data.State.Status;
