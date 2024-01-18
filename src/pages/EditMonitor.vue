@@ -173,9 +173,10 @@
                                 <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
                                 <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
 
-                                <!-- eslint-disable-next-line vue/no-v-html -->
-                                <div class="form-text" v-html="$t('jsonQueryDescription')">
-                                </div>
+                                <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
+                                    <a href="https://jsonata.org/">jsonata.org</a>
+                                    <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                </i18n-t>
                                 <br>
 
                                 <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
@@ -900,9 +901,8 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND } from "../util.ts";
+import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
-import { sleep } from "../util";
 import HiddenInput from "../components/HiddenInput.vue";
 
 const toast = useToast;

@@ -58,7 +58,7 @@
                     <router-link :to=" '/clone/' + monitor.id " class="btn btn-normal">
                         <font-awesome-icon icon="clone" /> {{ $t("Clone") }}
                     </router-link>
-                    <button class="btn btn-danger" @click="deleteDialog">
+                    <button class="btn btn-normal text-danger" @click="deleteDialog">
                         <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                     </button>
                 </div>

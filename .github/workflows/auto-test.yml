@@ -15,7 +15,7 @@ on:
 
 jobs:
   auto-test:
-    needs: [ check-linters ]
+    needs: [ check-linters, e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
@@ -27,16 +27,16 @@ jobs:
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
     - run: npm install npm@9 -g
     - run: npm install
     - run: npm run build
-    - run: npm test
+    - run: npm run test-backend
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
@@ -55,10 +55,10 @@ jobs:
 
     steps:
       - run: git config --global core.autocrlf false  # Mainly for Windows
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: npm install npm@9 -g
@@ -69,42 +69,27 @@ jobs:
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Use Node.js 20
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 20
     - run: npm install
-    - run: npm run lint
+    - run: npm run lint:prod
 
-# TODO: Temporarily disable, as it cannot pass the test in 2.0.0 yet
-#  e2e-tests:
-#    needs: [ check-linters ]
-#    runs-on: ubuntu-latest
-#    steps:
-#    - run: git config --global core.autocrlf false  # Mainly for Windows
-#    - uses: actions/checkout@v3
-#
-#    - name: Use Node.js 14
-#      uses: actions/setup-node@v3
-#      with:
-#        node-version: 14
-#    - run: npm install
-#    - run: npm run build
-#    - run: npm run cy:test
-
-  frontend-unit-tests:
+  e2e-test:
     needs: [ check-linters ]
-    runs-on: ubuntu-latest
+    runs-on: ARM64
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Use Node.js 14
-      uses: actions/setup-node@v3
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
       with:
-        node-version: 14
+        node-version: 20
     - run: npm install
+    - run: npx playwright install
     - run: npm run build
-    - run: npm run cy:run:unit
+    - run: npm run test-e2e
