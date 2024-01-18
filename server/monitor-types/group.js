@@ -1,14 +1,9 @@
-const {
-    UP,
-    PENDING,
-    DOWN,
-} = require("../../src/util");
+const { UP, PENDING, DOWN } = require("../../src/util");
 const { MonitorType } = require("./monitor-type");
 const Monitor = require("../model/monitor");
 
 class GroupMonitorType extends MonitorType {
-
-    name = "dns";
+    name = "group";
 
     /**
      * @inheritdoc
