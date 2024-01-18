@@ -154,15 +154,6 @@ export function ucfirst(str: string) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 
-/**
- * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
- * @param msg Message to write
- * @returns {void}
- */
-export function debug(msg: unknown) {
-    log.log("", msg, "debug");
-}
-
 class Logger {
 
     /**
