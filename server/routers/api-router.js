@@ -1,6 +1,5 @@
 let express = require("express");
 const {
-    setting,
     allowDevAllOrigin,
     allowAllOrigin,
     percentageToColor,

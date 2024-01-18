@@ -13,7 +13,6 @@ const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
 const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
-const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
