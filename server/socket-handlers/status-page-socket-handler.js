@@ -289,7 +289,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             });
 
         } catch (error) {
-            console.error(error);
+            log.error("socket", error);
             callback({
                 ok: false,
                 msg: error.message,
