@@ -162,13 +162,13 @@ router.post("/api/monitor/add", async (request, response) => {
     });
 });
 
-router.post("/api/monitor/:id/restart", async (request, response) => {
-    allowDevAllOrigin(response);
-    const monitorId = request.params.id;
-    const monitor = await R.findOne("monitor", " id = ? ", [
-        monitorId
+router.post("/api/monitor/:name/restart", async (request, response) => {
+    allowAllOrigin(response);
+    const monitorName = request.params.name;
+    const monitor = await R.findOne("monitor", " description = ? ", [
+        monitorName
     ]);
-    log.debug("router", `/api/monitor/${monitorId}/restart called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+    log.debug("router", `/api/monitor/${monitorName}/restart called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
     if (!monitor) {
         response.status(404).json({
             ok: false,
