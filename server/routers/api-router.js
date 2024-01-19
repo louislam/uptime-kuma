@@ -74,14 +74,17 @@ const pushTokenLength = 32;
 router.post("/api/monitor/add", async (request, response) => {
     allowAllOrigin(response);
     const userId = 1;
-    const { name, restart_url, restart_interval } = request.body;
+    const { name } = request.body;
+    const refined_name = name.replace(/[^\w\s]/gi, "").toLowerCase();
+    const restart_url = `http://anpr_client_${refined_name}:5000/restart`
+    const restart_interval = 100
     const monitor = {
         type: "http",
         name: "",
         parent: null,
         url: "https://",
-        restartUrl: null,
-        restartInterval: null,
+        restartUrl: restart_url,
+        restartInterval: restart_interval,
         method: "GET",
         interval: 60,
         retryInterval: 60,
@@ -124,6 +127,8 @@ router.post("/api/monitor/add", async (request, response) => {
 
     monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
     monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
+    
+    const pushToken = genSecret(pushTokenLength);
 
     bean.import(monitor);
     bean.name = name;
@@ -133,13 +138,15 @@ router.post("/api/monitor/add", async (request, response) => {
     bean.type = "push";
     bean.retryInterval = 50;
     bean.interval = 50;
-    bean.weight = 2000;
-    bean.pushToken = genSecret(pushTokenLength);
+    bean.weight = 2000; 
+    bean.pushToken = pushToken;
     bean.method = "GET";
 
     bean.validate();
 
     await R.store(bean);
+    
+    const push_url = `http://${request.headers.host}/api/push/${pushToken}?status=up&msg=OK&ping=`
 
     if(bean.active !== false) {
         const list = await server.getMonitorJSONList(userId);
@@ -158,15 +165,20 @@ router.post("/api/monitor/add", async (request, response) => {
 
     response.json({
         ok: true,
-        data: bean.toJSON(false)
+        data: {
+            monitor,
+            restart_interval,
+            restart_url, 
+            push_url
+        }
     });
 });
 
 router.post("/api/monitor/:name/restart", async (request, response) => {
     allowAllOrigin(response);
     const monitorName = request.params.name;
-    const monitor = await R.findOne("monitor", " description = ? ", [
-        monitorName
+    const monitor = await R.findOne("monitor", " description = ? OR id = ? ", [
+        monitorName, monitorName
     ]);
     log.debug("router", `/api/monitor/${monitorName}/restart called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
     if (!monitor) {
@@ -190,6 +202,7 @@ router.post("/api/monitor/:name/restart", async (request, response) => {
             ok: true,
         });
     } catch (e) {
+        log.error("router", e);
         response.status(503).json({
             ok: false,
             msg: "Service to restart is not available"

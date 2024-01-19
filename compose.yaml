@@ -1,6 +1,6 @@
 services:
   uptime-kuma:
-    image: uptime-kuma
+    image: uptime-kuma:latest
     volumes:
       - ./data:/app/data
     ports:
@@ -26,8 +26,13 @@ services:
       MYSQL_DATABASE: uptimekuma
       MYSQL_USER: uptimekuma
       MYSQL_PASSWORD: AiRook1es@123
-  
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
 
 networks:
   anpr_network:
-      driver: bridge
+    external: true
+
