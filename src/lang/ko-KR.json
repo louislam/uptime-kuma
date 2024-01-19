@@ -762,5 +762,22 @@
     "Home": "홈",
     "Cannot connect to the socket server": "소켓 서버에 연결 할 수 없습니다",
     "Reconnecting...": "재 연결중...",
-    "Json Query": "Json 쿼리"
+    "Json Query": "JSON 쿼리",
+    "settingUpDatabaseMSG": "데이터베이스를 설정하는 중입니다. 시간이 걸릴 수 있으니 기다려 주세요.",
+    "enableNSCD": "모든 DNS 요청을 캐싱하기 위해 NSCD (Name Service Cache Daemon) 활성화",
+    "pushOthers": "기타",
+    "programmingLanguages": "프로그래밍 언어",
+    "Select": "선택",
+    "Edit Maintenance": "점검 수정하기",
+    "styleElapsedTime": "하트비트 바 밑의 지난 시간 표시",
+    "styleElapsedTimeShowNoLine": "보이기 (선 없음)",
+    "styleElapsedTimeShowWithLine": "보이기 (선 있음)",
+    "chromeExecutable": "Chrome/Chromium 실행 파일",
+    "chromeExecutableAutoDetect": "자동 감지",
+    "Invert Keyword": "키워드 반전",
+    "Expected Value": "기대값",
+    "Add a domain": "도메인 추가",
+    "Remove domain": "도메인 '{0}' 제거",
+    "Monitor Group": "모니터링 그룹",
+    "Monitor Setting": "{0}의 모니터 설정"
 }

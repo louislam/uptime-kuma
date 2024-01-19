@@ -666,5 +666,7 @@
     "programmingLanguages": "Linguaggi di programmazione",
     "promosmsAllowLongSMS": "Permetti SMS lunghi",
     "liquidIntroduction": "La templatabilità è ottenuta attraverso il linguaggio di templating Liquid. Consulta {0} per le istruzioni d'uso. Queste sono le variabili disponibili:",
-    "templateMsg": "Messaggio della notifica"
+    "templateMsg": "Messaggio della notifica",
+    "Search monitored sites": "Ricerca tra i siti monitorati",
+    "settingUpDatabaseMSG": "Configurazione del database in corso. Potrebbe richiedere un po' di tempo..."
 }

@@ -654,7 +654,7 @@
     "dnsCacheDescription": "In einigen IPv6-Umgebungen funktioniert es möglicherweise nicht. Deaktiviere es, wenn Probleme auftreten.",
     "loadingError": "Die Daten konnten nicht abgerufen werden, bitte später noch einmal versuchen.",
     "confirmUninstallPlugin": "Möchtest du dieses Plugin wirklich deinstallieren?",
-    "grpcMethodDescription": "Der Name der Methode wird in das \"cammelCase\"-Format konvertiert (z.B. sayHello, check, etc.)",
+    "grpcMethodDescription": "Der Name der Methode wird in das \"camelCase\"-Format konvertiert (z.B. sayHello, check, etc.)",
     "Passive Monitor Type": "Passiver Monitortyp",
     "Specific Monitor Type": "Spezifischer Monitortyp",
     "webhookAdditionalHeadersTitle": "Zusätzliche Header",
@@ -805,7 +805,7 @@
     "Enable Kafka Producer Auto Topic Creation": "Kafka Producer Auto Topic Creation aktivieren",
     "Kafka SASL Options": "Kafka SASL Optionen",
     "Mechanism": "Mechanismus",
-    "Pick a SASL Mechanism...": "Wähle ein SASL Mechanismus...",
+    "Pick a SASL Mechanism...": "Wähle ein SASL Mechanismus…",
     "Authorization Identity": "Authorization Identity",
     "AccessKey Id": "AccessKey Id",
     "Secret AccessKey": "Secret AccessKey",
@@ -912,5 +912,11 @@
     "Add a domain": "Domain hinzufügen",
     "Remove domain": "Domain '{0}' entfernen",
     "successKeyword": "Erfolgsschlüsselwort",
-    "successKeywordExplanation": "MQTT-Schlüsselwort, das als Erfolg gewertet wird"
+    "successKeywordExplanation": "MQTT-Schlüsselwort, das als Erfolg gewertet wird",
+    "settingUpDatabaseMSG": "Die Datenbank wird eingerichtet. Dies kann einen Moment dauern, bitte habe Geduld.",
+    "Search monitored sites": "Überwachte Seiten durchsuchen",
+    "statusPageSpecialSlugDesc": "Spezieller Slug {0}: diese Seite wird angezeigt, wenn kein Slug angegeben wird",
+    "ntfyPriorityHelptextAllEvents": "Alle Ereignisse werden mit der höchsten Priorität gesendet",
+    "ntfyPriorityHelptextAllExceptDown": "Alle Ereignisse werden mit dieser Priorität gesendet, außer {0}-Ereignisse, die eine Priorität von {1} haben",
+    "What is a Remote Browser?": "Was ist ein Remote-Browser?"
 }
