@@ -1045,5 +1045,6 @@
     "Monitor": "",
     "pushViewCode": "",
     "CopyToClipboardError": "",
-    "Enable DNS Cache": ""
+    "Enable DNS Cache": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
