@@ -1084,5 +1084,6 @@
     "Kafka SASL Options": "",
     "CopyToClipboardError": "",
     "Pick a SASL Mechanism...": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
