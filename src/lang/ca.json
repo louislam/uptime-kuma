@@ -1046,5 +1046,6 @@
     "Channel access token": "",
     "User ID": "",
     "Notification Sound": "",
-    "enableGRPCTls": ""
+    "enableGRPCTls": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
