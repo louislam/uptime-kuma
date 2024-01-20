@@ -1067,5 +1067,6 @@
     "CopyToClipboardError": "",
     "pushViewCode": "",
     "setupDatabaseChooseDatabase": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
