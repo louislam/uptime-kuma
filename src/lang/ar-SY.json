@@ -1097,5 +1097,6 @@
     "Reconnecting...": "",
     "pushViewCode": "",
     "setupDatabaseEmbeddedMariaDB": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
