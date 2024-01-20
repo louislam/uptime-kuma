@@ -1043,5 +1043,6 @@
     "trustProxyDescription": "",
     "backupOutdatedWarning": "",
     "Enable DNS Cache": "",
-    "Create your admin account": ""
+    "Create your admin account": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
