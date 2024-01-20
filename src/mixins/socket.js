@@ -241,7 +241,7 @@ export default {
 
             socket.on("disconnect", () => {
                 console.log("disconnect");
-                this.connectionErrorMsg = "Lost connection to the socket server. Reconnecting...";
+                this.connectionErrorMsg = `${this.$t("Lost connection to the socket server. Reconnecting...")}`;
                 this.socket.connected = false;
             });
 
