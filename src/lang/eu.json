@@ -1076,5 +1076,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "setupDatabaseEmbeddedMariaDB": "",
     "pushViewCode": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
