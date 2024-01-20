@@ -1050,5 +1050,6 @@
     "Close": "",
     "CopyToClipboardError": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "grpcMethodDescription": ""
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
