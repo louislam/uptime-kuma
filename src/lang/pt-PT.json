@@ -1059,5 +1059,6 @@
     "CopyToClipboardError": "",
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "high": ""
+    "high": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
