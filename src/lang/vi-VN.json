@@ -1072,5 +1072,6 @@
     "Most likely causes:": "",
     "telegramMessageThreadID": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
