@@ -1050,5 +1050,6 @@
     "pushViewCode": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "grpcMethodDescription": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
