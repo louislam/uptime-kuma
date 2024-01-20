@@ -1085,5 +1085,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
     "pushViewCode": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
