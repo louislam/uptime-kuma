@@ -1074,5 +1074,6 @@
     "nostrRecipientsHelp": "",
     "showCertificateExpiry": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
