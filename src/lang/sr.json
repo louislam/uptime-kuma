@@ -1048,5 +1048,6 @@
     "wayToGetDiscordURL": "",
     "pushViewCode": "",
     "setupDatabaseChooseDatabase": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
