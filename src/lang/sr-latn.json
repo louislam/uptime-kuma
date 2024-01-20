@@ -1048,5 +1048,6 @@
     "trustProxyDescription": "",
     "Search...": "",
     "Add New below or Select...": "",
-    "backupOutdatedWarning": ""
+    "backupOutdatedWarning": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
