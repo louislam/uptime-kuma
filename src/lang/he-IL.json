@@ -1084,5 +1084,6 @@
     "wayToGetFlashDutyKey": "",
     "Notify Channel": "",
     "CopyToClipboardError": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
