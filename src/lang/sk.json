@@ -1050,5 +1050,6 @@
     "Retry": "",
     "WeCom Bot Key": "",
     "Setup Proxy": "",
-    "Proxy Server": ""
+    "Proxy Server": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
