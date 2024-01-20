@@ -1047,5 +1047,6 @@
     "ignoreTLSError": "",
     "setupDatabaseEmbeddedMariaDB": "",
     "setupDatabaseChooseDatabase": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
