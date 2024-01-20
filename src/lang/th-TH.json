@@ -1079,5 +1079,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "grpcMethodDescription": "",
     "pushViewCode": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
