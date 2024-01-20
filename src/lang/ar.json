@@ -1054,5 +1054,6 @@
     "chromeExecutable": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "CopyToClipboardError": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
