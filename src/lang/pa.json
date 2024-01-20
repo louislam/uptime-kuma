@@ -1049,5 +1049,6 @@
     "ignoreTLSError": "",
     "CopyToClipboardError": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "grpcMethodDescription": ""
+    "grpcMethodDescription": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
