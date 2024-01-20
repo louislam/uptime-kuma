@@ -1046,5 +1046,6 @@
     "Upside Down Mode": "",
     "Max. Redirects": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
