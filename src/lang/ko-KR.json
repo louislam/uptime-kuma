@@ -1083,5 +1083,6 @@
     "tailscalePingWarning": "",
     "Server URL should not contain the nfty topic": "",
     "Badge Type": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "ntfyPriorityHelptextAllEvents": ""
 }
