@@ -50,7 +50,7 @@
     "Cert Exp.": "Cert Exp.",
     "Monitor": "Monitor | Monitors",
     "now": "now",
-    "ago": "{0} ago",
+    "time ago": "{0} ago",
     "day": "day | days",
     "-day": "-day",
     "hour": "hour",
@@ -900,5 +900,6 @@
     "OAuth Scope": "OAuth Scope",
     "Optional: Space separated list of scopes": "Optional: Space separated list of scopes",
     "Go back to home page.": "Go back to home page.",
-    "No tags found.": "No tags found."
+    "No tags found.": "No tags found.",
+    "Lost connection to the socket server.": "Lost connection to the socket server."
 }

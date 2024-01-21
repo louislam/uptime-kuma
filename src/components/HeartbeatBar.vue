@@ -14,7 +14,7 @@
             v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
             class="d-flex justify-content-between align-items-center word" :style="timeStyle"
         >
-            <div>{{ $t("ago", [timeSinceFirstBeat]) }}</div>
+            <div>{{ $t("time ago", [timeSinceFirstBeat]) }}</div>
             <div v-if="$root.styleElapsedTime === 'with-line'" class="connecting-line"></div>
             <div>{{ timeSinceLastBeat }}</div>
         </div>
