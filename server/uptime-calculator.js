@@ -642,7 +642,11 @@ class UptimeCalculator {
             avgPing = totalPing / total.up;
         }
 
-        uptimeData.uptime = total.up / (total.up + total.down);
+        if (total.up + total.down === 0) {
+            uptimeData.uptime = 0;
+        } else {
+            uptimeData.uptime = total.up / (total.up + total.down);
+        }
         uptimeData.avgPing = avgPing;
         return uptimeData;
     }
