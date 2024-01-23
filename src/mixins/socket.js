@@ -99,21 +99,20 @@ export default {
 
             this.socket.initedSocketIO = true;
 
-            let protocol = (location.protocol === "https:") ? "wss://" : "ws://";
+            let protocol = location.protocol + "//";
 
-            let wsHost;
+            let url;
             const env = process.env.NODE_ENV || "production";
             if (env === "development" && isDevContainer()) {
-                wsHost = protocol + getDevContainerServerHostname();
+                url = protocol + getDevContainerServerHostname();
             } else if (env === "development" || localStorage.dev === "dev") {
-                wsHost = protocol + location.hostname + ":3001";
+                url = protocol + location.hostname + ":3001";
             } else {
-                wsHost = protocol + location.host;
+                // Connect to the current url
+                url = undefined;
             }
 
-            socket = io(wsHost, {
-                transports: [ "websocket" ],
-            });
+            socket = io(url);
 
             socket.on("info", (info) => {
                 this.info = info;
@@ -287,6 +286,10 @@ export default {
 
             socket.on("initServerTimezone", () => {
                 socket.emit("initServerTimezone", dayjs.tz.guess());
+            });
+
+            socket.on("refresh", () => {
+                location.reload();
             });
         },
 

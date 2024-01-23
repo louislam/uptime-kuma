@@ -1,14 +1,12 @@
 const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
-const { log, genSecret } = require("../src/util");
+const { log, genSecret, badgeConstants } = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
-const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const chroma = require("chroma-js");
-const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
@@ -130,7 +128,7 @@ exports.ping = async (hostname, size = 56) => {
         return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        console.debug("ping", "IPv6 error message: " + e.message);
+        log.debug("ping", "IPv6 error message: " + e.message);
 
         // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
         if (!e.message) {
@@ -796,29 +794,6 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
     }
 
     return user;
-};
-
-/**
- * Start end-to-end tests
- * @returns {void}
- */
-exports.startE2eTests = async () => {
-    console.log("Starting unit test...");
-    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, [ "run", "cy:run" ]);
-
-    child.stdout.on("data", (data) => {
-        console.log(data.toString());
-    });
-
-    child.stderr.on("data", (data) => {
-        console.log(data.toString());
-    });
-
-    child.on("close", function (code) {
-        console.log("Jest exit code: " + code);
-        process.exit(code);
-    });
 };
 
 /**

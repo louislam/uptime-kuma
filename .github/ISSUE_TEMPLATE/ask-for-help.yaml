@@ -6,7 +6,7 @@ body:
   - type: checkboxes
     id: no-duplicate-issues
     attributes:
-      label: "⚠️ Please verify that this bug has NOT been raised before."
+      label: "⚠️ Please verify that this question has NOT been raised before."
       description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
       options:
         - label: "I checked and didn't find similar issue"
