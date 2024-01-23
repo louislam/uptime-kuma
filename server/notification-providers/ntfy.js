@@ -56,7 +56,7 @@ class Ntfy extends NotificationProvider {
                 "tags": tags,
             };
 
-            if (monitorJSON.url) {
+            if (monitorJSON.url && monitorJSON.url !== "https://") {
                 data.actions = [
                     {
                         "action": "view",
