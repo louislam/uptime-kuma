@@ -9,6 +9,10 @@ const Database = require("../database");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 
+/**
+ * Cached instance of a browser
+ * @type {import ("playwright-core").Browser}
+ */
 let browser = null;
 
 let allowedList = [];
@@ -62,8 +66,15 @@ async function isAllowedChromeExecutable(executablePath) {
     return allowedList.includes(executablePath);
 }
 
+/**
+ * Get the current instance of the browser. If there isn't one, create
+ * it.
+ * @returns {Promise<import ("playwright-core").Browser>} The browser
+ */
 async function getBrowser() {
-    if (!browser) {
+    if (browser && browser.isConnected()) {
+        return browser;
+    } else {
         let executablePath = await Settings.get("chromeExecutable");
 
         executablePath = await prepareChromeExecutable(executablePath);
@@ -72,8 +83,9 @@ async function getBrowser() {
             //headless: false,
             executablePath,
         });
+
+        return browser;
     }
-    return browser;
 }
 
 async function prepareChromeExecutable(executablePath) {
