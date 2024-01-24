@@ -290,8 +290,11 @@ class UptimeCalculator {
         dailyStatBean.ping = dailyData.avgPing;
         dailyStatBean.pingMin = dailyData.minPing;
         dailyStatBean.pingMax = dailyData.maxPing;
-        if (dailyData.maintenance) {
-            dailyStatBean.extras = JSON.stringify({ maintenance: dailyData.maintenance });
+        {
+            const { up, down, avgPing, minPing, maxPing, ...extras } = dailyData;
+            if (Object.keys(extras).length > 0) {
+                dailyStatBean.extras = JSON.stringify(extras);
+            }
         }
         await R.store(dailyStatBean);
 
@@ -301,8 +304,11 @@ class UptimeCalculator {
         hourlyStatBean.ping = hourlyData.avgPing;
         hourlyStatBean.pingMin = hourlyData.minPing;
         hourlyStatBean.pingMax = hourlyData.maxPing;
-        if (hourlyData.maintenance) {
-            hourlyStatBean.extras = JSON.stringify({ maintenance: hourlyData.maintenance });
+        {
+            const { up, down, avgPing, minPing, maxPing, ...extras } = hourlyData;
+            if (Object.keys(extras).length > 0) {
+                hourlyStatBean.extras = JSON.stringify(extras);
+            }
         }
         await R.store(hourlyStatBean);
 
@@ -312,8 +318,11 @@ class UptimeCalculator {
         minutelyStatBean.ping = minutelyData.avgPing;
         minutelyStatBean.pingMin = minutelyData.minPing;
         minutelyStatBean.pingMax = minutelyData.maxPing;
-        if (minutelyData.maintenance) {
-            minutelyStatBean.extras = JSON.stringify({ maintenance: minutelyData.maintenance });
+        {
+            const { up, down, avgPing, minPing, maxPing, ...extras } = minutelyData;
+            if (Object.keys(extras).length > 0) {
+                minutelyStatBean.extras = JSON.stringify(extras);
+            }
         }
         await R.store(minutelyStatBean);
 
