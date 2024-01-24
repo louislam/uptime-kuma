@@ -1,24 +1,8 @@
 <template>
     <div ref="wrap" class="wrap" :style="wrapStyle">
         <div class="hp-bar-big" :style="barStyle">
-            <!-- <div
-                v-for="(beat, index) in shortBeatList"
-                :key="index"
-                class="beat"
-                :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
-                :style="beatStyle"
-                :title="getBeatTitle(beat)"
-            /> -->
             <CalendarHeatmap :style="{ fill: '#fff' }" class="heat-map" :values="values" :end-date="endDate" no-data-text="Down" tooltip-unit="counts" />
         </div>
-        <!-- <div
-            v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
-            class="d-flex justify-content-between align-items-center word" :style="timeStyle"
-        >
-            <div>{{ timeSinceFirstBeat }} ago</div>
-            <div v-if="$root.styleElapsedTime === 'with-line'" class="connecting-line"></div>
-            <div>{{ timeSinceLastBeat }}</div>
-        </div> -->
     </div>
 </template>
 
@@ -395,30 +379,6 @@ export default {
             opacity: 0.8;
             transform: scale(var(--hover-scale));
         }
-    }
-}
-
-.dark {
-    .hp-bar-big .beat.empty {
-        background-color: #848484;
-    }
-}
-
-.word {
-    color: #aaa;
-    font-size: 12px;
-}
-
-.connecting-line {
-    flex-grow: 1;
-    height: 1px;
-    background-color: #ededed;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 2px;
-
-    .dark & {
-        background-color: #333;
     }
 }
 
