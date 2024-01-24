@@ -291,6 +291,7 @@ class UptimeCalculator {
         dailyStatBean.pingMin = dailyData.minPing;
         dailyStatBean.pingMax = dailyData.maxPing;
         {
+            // eslint-disable-next-line no-unused-vars
             const { up, down, avgPing, minPing, maxPing, ...extras } = dailyData;
             if (Object.keys(extras).length > 0) {
                 dailyStatBean.extras = JSON.stringify(extras);
@@ -305,6 +306,7 @@ class UptimeCalculator {
         hourlyStatBean.pingMin = hourlyData.minPing;
         hourlyStatBean.pingMax = hourlyData.maxPing;
         {
+            // eslint-disable-next-line no-unused-vars
             const { up, down, avgPing, minPing, maxPing, ...extras } = hourlyData;
             if (Object.keys(extras).length > 0) {
                 hourlyStatBean.extras = JSON.stringify(extras);
@@ -319,6 +321,7 @@ class UptimeCalculator {
         minutelyStatBean.pingMin = minutelyData.minPing;
         minutelyStatBean.pingMax = minutelyData.maxPing;
         {
+            // eslint-disable-next-line no-unused-vars
             const { up, down, avgPing, minPing, maxPing, ...extras } = minutelyData;
             if (Object.keys(extras).length > 0) {
                 minutelyStatBean.extras = JSON.stringify(extras);
