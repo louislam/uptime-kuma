@@ -229,7 +229,7 @@ export default {
                 if (this.chartRawData) {
                     for (const datapoint of this.chartRawData) {
                         // Empty datapoints are ignored
-                        if (datapoint.up === 0 && datapoint.down === 0) {
+                        if (datapoint.up === 0 && datapoint.down === 0 && datapoint.maintenance === 0) {
                             continue;
                         }
 
@@ -375,42 +375,48 @@ export default {
     methods: {
         // Get color of bar chart for this datapoint
         getBarColorForDatapoint(datapoint) {
-            if (datapoint.down === 0) {
+            if (datapoint.maintenance != null) {
+                // Target is in maintenance
+                return "rgba(23,71,245,0.41)";
+            } else if (datapoint.down === 0) {
                 // Target is up
                 return "#FFFFFFFF";
             } else if (datapoint.up === 0) {
+                // Target is down
                 return "#DC354568";
             } else {
+                // Show yellow for mixed status
                 return "rgba(245,182,23,0.41)";
             }
-
-            // TODO: handle maintenance status
-            // return "rgba(23,71,245,0.41)"
         },
         // push datapoint to chartData
         pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData) {
             const x = this.$root.unixToDateTime(datapoint.timestamp);
 
             // Show ping values if it was up in this period
-            if (datapoint.up > 0 && datapoint.avgPing > 0) {
-                avgPingData.push({
-                    x,
-                    y: datapoint.avgPing,
-                });
-                minPingData.push({
-                    x,
-                    y: datapoint.minPing,
-                });
-                maxPingData.push({
-                    x,
-                    y: datapoint.maxPing,
-                });
-            }
+            avgPingData.push({
+                x,
+                y: datapoint.up > 0 && datapoint.avgPing > 0 ? datapoint.avgPing : null,
+            });
+            minPingData.push({
+                x,
+                y: datapoint.up > 0 && datapoint.avgPing > 0 ? datapoint.minPing : null,
+            });
+            maxPingData.push({
+                x,
+                y: datapoint.up > 0 && datapoint.avgPing > 0 ? datapoint.maxPing : null,
+            });
 
-            downData.push({
+            let bar = {
                 x,
                 y: datapoint.down,
-            });
+            };
+
+            if (datapoint.maintenance) {
+                bar.y += datapoint.maintenance;
+            }
+
+            downData.push(bar);
 
             colorData.push(this.getBarColorForDatapoint(datapoint));
         },
@@ -418,6 +424,7 @@ export default {
         getAverage(datapoints) {
             const totalUp = datapoints.reduce((total, current) => total + current.up, 0);
             const totalDown = datapoints.reduce((total, current) => total + current.down, 0);
+            const totalMaintenance = datapoints.reduce((total, current) => total + (current.maintenance || 0), 0);
             const totalPing = datapoints.reduce((total, current) => total + current.avgPing * current.up, 0);
             const minPing = datapoints.reduce((min, current) => Math.min(min, current.minPing), Infinity);
             const maxPing = datapoints.reduce((max, current) => Math.max(max, current.maxPing), 0);
@@ -432,7 +439,8 @@ export default {
                 timestamp: datapoints[midpoint].timestamp,
                 up: totalUp,
                 down: totalDown,
-                avgPing: totalPing / totalUp,
+                maintenance: totalMaintenance > 0 ? totalMaintenance : undefined,
+                avgPing: totalUp > 0 ? totalPing / totalUp : 0,
                 minPing,
                 maxPing,
             };
