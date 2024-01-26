@@ -51,6 +51,24 @@ export default {
         },
 
         /**
+         * Converts a Unix timestamp to a dayjs object.
+         * @param {number} value - The Unix timestamp to convert.
+         * @returns {dayjs.Dayjs} The dayjs object representing the given timestamp.
+         */
+        unixToDayjs(value) {
+            return dayjs.unix(value).tz(this.timezone);
+        },
+
+        /**
+         * Converts the given value to a dayjs object.
+         * @param {string} value - the value to be converted
+         * @returns {dayjs.Dayjs} a dayjs object in the timezone of this instance
+         */
+        toDayjs(value) {
+            return dayjs.utc(value).tz(this.timezone);
+        },
+
+        /**
          * Get time for maintenance
          * @param {string | number | Date | dayjs.Dayjs} value Time to
          * format
