@@ -163,6 +163,8 @@ export default {
             };
         },
         chartData() {
+            let lastHeartbeatTime;
+            const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
 
             if (this.chartPeriodHrs === "0") {
                 // Render chart using heartbeatList
@@ -174,7 +176,27 @@ export default {
 
                 heartbeatList
                     .map((beat) => {
-                        const x = this.$root.datetime(beat.time);
+                        const beatTime = this.$root.toDayjs(beat.time);
+                        const x = beatTime.format("YYYY-MM-DD HH:mm:ss");
+
+                        // Insert empty datapoint to separate big gaps
+                        if (lastHeartbeatTime && monitorInterval) {
+                            const diff = Math.abs(beatTime.diff(lastHeartbeatTime));
+                            if (diff > monitorInterval * 1000 * 10) {
+                                // Big gap detected
+                                const gapX = beatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss");
+                                pingData.push({
+                                    x: gapX,
+                                    y: null,
+                                });
+                                downData.push({
+                                    x: gapX,
+                                    y: null,
+                                });
+                                colorData.push("#000");
+                            }
+                        }
+
                         pingData.push({
                             x,
                             y: beat.status === UP ? beat.ping : null,
@@ -184,6 +206,8 @@ export default {
                             y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
                         });
                         colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"));
+
+                        lastHeartbeatTime = beatTime;
                     });
 
                 return {
@@ -233,6 +257,41 @@ export default {
                             continue;
                         }
 
+                        const beatTime = this.$root.unixToDayjs(datapoint.timestamp);
+
+                        // Insert empty datapoint to separate big gaps
+                        if (lastHeartbeatTime && monitorInterval) {
+                            const diff = Math.abs(beatTime.diff(lastHeartbeatTime));
+                            if (diff > monitorInterval * 1000 * 10) {
+                                // Big gap detected
+                                // Clear the aggregate buffer
+                                if (aggregateBuffer.length > 0) {
+                                    const average = this.getAverage(aggregateBuffer);
+                                    this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                                    aggregateBuffer = [];
+                                }
+
+                                const x = this.$root.unixToDateTime(datapoint.timestamp + monitorInterval);
+                                avgPingData.push({
+                                    x,
+                                    y: null,
+                                });
+                                minPingData.push({
+                                    x,
+                                    y: null,
+                                });
+                                maxPingData.push({
+                                    x,
+                                    y: null,
+                                });
+                                downData.push({
+                                    x,
+                                    y: null,
+                                });
+                                colorData.push("#000");
+                            }
+                        }
+
                         if (datapoint.up > 0 && this.chartRawData.length > aggregatePoints * 2) {
                             // Aggregate Up data using a sliding window
                             aggregateBuffer.push(datapoint);
@@ -254,6 +313,8 @@ export default {
 
                             this.pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData);
                         }
+
+                        lastHeartbeatTime = beatTime;
                     }
                     // Clear the aggregate buffer if there are still datapoints
                     if (aggregateBuffer.length > 0) {
