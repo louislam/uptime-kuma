@@ -184,16 +184,23 @@ export default {
                             const diff = Math.abs(beatTime.diff(lastHeartbeatTime));
                             if (diff > monitorInterval * 1000 * 10) {
                                 // Big gap detected
-                                const gapX = beatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss");
-                                pingData.push({
-                                    x: gapX,
-                                    y: null,
-                                });
-                                downData.push({
-                                    x: gapX,
-                                    y: null,
-                                });
-                                colorData.push("#000");
+                                const gapX = [
+                                    lastHeartbeatTime.add(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
+                                    beatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss")
+                                ];
+
+                                for (const x of gapX) {
+                                    pingData.push({
+                                        x,
+                                        y: null,
+                                    });
+                                    downData.push({
+                                        x,
+                                        y: null,
+                                    });
+                                    colorData.push("#000");
+                                }
+
                             }
                         }
 
@@ -262,7 +269,8 @@ export default {
                         // Insert empty datapoint to separate big gaps
                         if (lastHeartbeatTime && monitorInterval) {
                             const diff = Math.abs(beatTime.diff(lastHeartbeatTime));
-                            if (diff > monitorInterval * 1000 * 10) {
+                            if ((period <= 24 && diff > Math.max(1000 * 60 * 10, monitorInterval * 1000 * 10)) ||
+                            (period > 24 && diff > Math.max(1000 * 60 * 60 * 10, monitorInterval * 1000 * 10)) ) {
                                 // Big gap detected
                                 // Clear the aggregate buffer
                                 if (aggregateBuffer.length > 0) {
@@ -271,24 +279,31 @@ export default {
                                     aggregateBuffer = [];
                                 }
 
-                                const x = this.$root.unixToDateTime(datapoint.timestamp + monitorInterval);
-                                avgPingData.push({
-                                    x,
-                                    y: null,
-                                });
-                                minPingData.push({
-                                    x,
-                                    y: null,
-                                });
-                                maxPingData.push({
-                                    x,
-                                    y: null,
-                                });
-                                downData.push({
-                                    x,
-                                    y: null,
-                                });
-                                colorData.push("#000");
+                                const gapX = [
+                                    lastHeartbeatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
+                                    this.$root.unixToDateTime(datapoint.timestamp + 60),
+                                ];
+
+                                for (const x of gapX) {
+                                    avgPingData.push({
+                                        x,
+                                        y: null,
+                                    });
+                                    minPingData.push({
+                                        x,
+                                        y: null,
+                                    });
+                                    maxPingData.push({
+                                        x,
+                                        y: null,
+                                    });
+                                    downData.push({
+                                        x,
+                                        y: null,
+                                    });
+                                    colorData.push("#000");
+                                }
+
                             }
                         }
 
