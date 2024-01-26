@@ -578,7 +578,7 @@ class Monitor extends BeanModel {
                         let data = res.data;
 
                         // convert data to object
-                        if (typeof data === "string") {
+                        if (typeof data === "string" && res.headers["content-type"] !== "application/json") {
                             data = JSON.parse(data);
                         }
 
