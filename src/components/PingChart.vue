@@ -365,6 +365,8 @@ export default {
                 period = period.toString();
             }
             this.chartPeriodHrs = period;
+        } else {
+            this.chartPeriodHrs = "24";
         }
     },
     beforeUnmount() {
