@@ -695,7 +695,7 @@
     "cloneOf": "Klon von {0}",
     "wayToGetZohoCliqURL": "Wie eine Webhook URL erstellt werden kann, erfährst du {0}.",
     "enableGRPCTls": "Senden von gRPC Anforderungen mit TLS Verbindung zulassen",
-    "grpcMethodDescription": "Der Name der Methode wird in das \"cammelCase\" Format konvertiert (z.B. sayHello, check, etc.)",
+    "grpcMethodDescription": "Der Name der Methode wird in das \"camelCase\" Format konvertiert (z.B. sayHello, check, etc.)",
     "wayToGetKookGuildID": "Schalte den „Entwicklermodus“ in den Kook-Einstellungen ein und klicke mit der rechten Maustaste auf die Gilde, um die ID zu erhalten",
     "Guild ID": "Gilde ID",
     "Lowcost": "Kostengünstig",
@@ -801,7 +801,7 @@
     "Enable Kafka Producer Auto Topic Creation": "Kafka Producer Auto Topic Creation aktivieren",
     "Kafka SASL Options": "Kafka SASL Optionen",
     "Mechanism": "Mechanismus",
-    "Pick a SASL Mechanism...": "Wähle ein SASL Mechanismus...",
+    "Pick a SASL Mechanism...": "Wähle ein SASL Mechanismus…",
     "AccessKey Id": "AccessKey Id",
     "Secret AccessKey": "Secret AccessKey",
     "Session Token": "Sitzungs-Token",
@@ -909,5 +909,11 @@
     "Add a domain": "Domain hinzufügen",
     "Remove domain": "Domain '{0}' entfernen",
     "successKeyword": "Erfolgsschlüsselwort",
-    "successKeywordExplanation": "MQTT-Schlüsselwort, das als Erfolg gewertet wird"
+    "successKeywordExplanation": "MQTT-Schlüsselwort, das als Erfolg gewertet wird",
+    "ntfyPriorityHelptextAllExceptDown": "Alle Ereignisse werden mit dieser Priorität gesendet, ausser {0}-Ereignisse, die eine Priorität von {1} haben",
+    "settingUpDatabaseMSG": "Die Datenbank wird eingerichtet. Dies kann einen Moment dauern, bitte habe Geduld.",
+    "Search monitored sites": "Überwachte Seiten durchsuchen",
+    "statusPageSpecialSlugDesc": "Spezieller Slug {0}: diese Seite wird angezeigt, wenn kein Slug angegeben wird",
+    "ntfyPriorityHelptextAllEvents": "Alle Ereignisse werden mit der höchsten Priorität gesendet",
+    "What is a Remote Browser?": "Was ist ein Remote-Browser?"
 }
