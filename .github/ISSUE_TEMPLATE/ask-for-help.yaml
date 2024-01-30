@@ -6,7 +6,7 @@ body:
   - type: checkboxes
     id: no-duplicate-issues
     attributes:
-      label: "⚠️ Please verify that this bug has NOT been raised before."
+      label: "⚠️ Please verify that this question has NOT been raised before."
       description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
       options:
         - label: "I checked and didn't find similar issue"
@@ -24,8 +24,14 @@ body:
       required: true
     attributes:
       label: "📝 Describe your problem"
-      description: "Please walk us through it step by step."
+      description: "Please walk us through it step by step. Include all important details and add screenshots where appropriate"
       placeholder: "Describe what are you asking for..."
+  - type: textarea
+    id: error-msg
+    validations:
+      required: false
+    attributes:
+      label: "📝 Error Message(s) or Log"
   - type: input
     id: uptime-kuma-version
     attributes:
@@ -38,7 +44,7 @@ body:
     id: operating-system
     attributes:
       label: "💻 Operating System and Arch"
-      description: "Which OS is your server/device running on?"
+      description: "Which OS is your server/device running on? (For Replit, please do not report this bug)"
       placeholder: "Ex. Ubuntu 20.04 x86"
     validations:
       required: true
@@ -46,23 +52,24 @@ body:
     id: browser-vendor
     attributes:
       label: "🌐 Browser"
-      description: "Which browser are you running on?"
+      description: "Which browser are you running on? (For Replit, please do not report this bug)"
       placeholder: "Ex. Google Chrome 95.0.4638.69"
     validations:
       required: true
-  - type: input
-    id: docker-version
+  - type: textarea
+    id: deployment-info
     attributes:
-      label: "🐋 Docker Version"
-      description: "If running with Docker, which version are you running?"
-      placeholder: "Ex. Docker 20.10.9 / K8S / Podman"
+      label: "🖥️ Deployment Environment"
+      description: |
+        examples:
+          - **Runtime**: Docker 20.10.9 / nodejs 14.18.0 / K8S via ... v1.3.3 / ..
+          - **Database**: sqlite/embedded mariadb/external mariadb
+          - **Filesystem used to store the database on**: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
+          - **number of monitors**: 42
+      value: |
+        - Runtime: 
+        - Database: 
+        - Filesystem used to store the database on: 
+        - number of monitors: 
     validations:
-      required: false
-  - type: input
-    id: nodejs-version
-    attributes:
-      label: "🟩 NodeJS Version"
-      description: "If running with Node.js? which version are you running?"
-      placeholder: "Ex. 14.18.0"
-    validations:
-      required: false
+      required: true

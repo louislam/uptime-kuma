@@ -13,6 +13,9 @@
             :disabled="disabled"
         >
 
+        <!-- A hidden textarea for copying text on non-https -->
+        <textarea ref="hiddenTextarea" style="position: fixed; left: -999999px; top: -999999px;"></textarea>
+
         <a class="btn btn-outline-primary" @click="copyToClipboard(model)">
             <font-awesome-icon :icon="icon" />
         </a>
@@ -87,19 +90,25 @@ export default {
     },
     methods: {
 
-        /** Show the input */
+        /**
+         * Show the input
+         * @returns {void}
+         */
         showInput() {
             this.visibility = "text";
         },
 
-        /** Hide the input */
+        /**
+         * Hide the input
+         * @returns {void}
+         */
         hideInput() {
             this.visibility = "password";
         },
 
         /**
          * Copy the provided text to the users clipboard
-         * @param {string} textToCopy
+         * @param {string} textToCopy Text to copy to clipboard
          * @returns {Promise<void>}
          */
         copyToClipboard(textToCopy) {
@@ -111,24 +120,19 @@ export default {
             }, 3000);
 
             // navigator clipboard api needs a secure context (https)
+            // For http, use the text area method (else part)
             if (navigator.clipboard && window.isSecureContext) {
                 // navigator clipboard api method'
                 return navigator.clipboard.writeText(textToCopy);
             } else {
                 // text area method
-                let textArea = document.createElement("textarea");
+                let textArea = this.$refs.hiddenTextarea;
                 textArea.value = textToCopy;
-                // make the textarea out of viewport
-                textArea.style.position = "fixed";
-                textArea.style.left = "-999999px";
-                textArea.style.top = "-999999px";
-                document.body.appendChild(textArea);
                 textArea.focus();
                 textArea.select();
                 return new Promise((res, rej) => {
                     // here the magic happens
                     document.execCommand("copy") ? res() : rej();
-                    textArea.remove();
                 });
             }
         }

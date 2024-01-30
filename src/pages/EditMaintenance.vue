@@ -3,7 +3,7 @@
         <div>
             <h1 class="mb-3">{{ pageName }}</h1>
             <form @submit.prevent="submit">
-                <div class="shadow-box">
+                <div class="shadow-box shadow-box-with-fixed-bottom-bar">
                     <div class="row">
                         <div class="col-xl-10">
                             <!-- Title -->
@@ -36,7 +36,7 @@
                                     v-model="affectedMonitors"
                                     :options="affectedMonitorsOptions"
                                     track-by="id"
-                                    label="name"
+                                    label="pathName"
                                     :multiple="true"
                                     :close-on-select="false"
                                     :clear-on-select="false"
@@ -85,35 +85,39 @@
 
                             <h2 class="mt-5">{{ $t("Date and Time") }}</h2>
 
-                            <div>⚠️ {{ $t("warningTimezone") }}: <mark>{{ $root.info.serverTimezone }} ({{ $root.info.serverTimezoneOffset }})</mark></div>
-
                             <!-- Strategy -->
                             <div class="my-3">
                                 <label for="strategy" class="form-label">{{ $t("Strategy") }}</label>
                                 <select id="strategy" v-model="maintenance.strategy" class="form-select">
                                     <option value="manual">{{ $t("strategyManual") }}</option>
                                     <option value="single">{{ $t("Single Maintenance Window") }}</option>
+                                    <option value="cron">{{ $t("cronExpression") }}</option>
                                     <option value="recurring-interval">{{ $t("Recurring") }} - {{ $t("recurringInterval") }}</option>
                                     <option value="recurring-weekday">{{ $t("Recurring") }} - {{ $t("dayOfWeek") }}</option>
                                     <option value="recurring-day-of-month">{{ $t("Recurring") }} - {{ $t("dayOfMonth") }}</option>
-                                    <option v-if="false" value="recurring-day-of-year">{{ $t("Recurring") }} - Day of Year</option>
                                 </select>
                             </div>
 
                             <!-- Single Maintenance Window -->
                             <template v-if="maintenance.strategy === 'single'">
-                                <!-- DateTime Range -->
+                            </template>
+
+                            <template v-if="maintenance.strategy === 'cron'">
+                                <!-- Cron -->
                                 <div class="my-3">
-                                    <label class="form-label">{{ $t("DateTime Range") }}</label>
-                                    <Datepicker
-                                        v-model="maintenance.dateRange"
-                                        :dark="$root.isDark"
-                                        range
-                                        :monthChangeOnScroll="false"
-                                        :minDate="minDate"
-                                        format="yyyy-MM-dd HH:mm"
-                                        modelType="yyyy-MM-dd HH:mm:ss"
-                                    />
+                                    <label for="cron" class="form-label">
+                                        {{ $t("cronExpression") }}
+                                    </label>
+                                    <p>{{ $t("cronSchedule") }}{{ cronDescription }}</p>
+                                    <input id="cron" v-model="maintenance.cron" type="text" class="form-control" required>
+                                </div>
+
+                                <div class="my-3">
+                                    <!-- Duration -->
+                                    <label for="duration" class="form-label">
+                                        {{ $t("Duration (Minutes)") }}
+                                    </label>
+                                    <input id="duration" v-model="maintenance.durationMinutes" type="number" class="form-control" required min="1" step="1">
                                 </div>
                             </template>
 
@@ -180,7 +184,6 @@
                                 </div>
                             </template>
 
-                            <!-- For any recurring types -->
                             <template v-if="maintenance.strategy === 'recurring-interval' || maintenance.strategy === 'recurring-weekday' || maintenance.strategy === 'recurring-day-of-month'">
                                 <!-- Maintenance Time Window of a Day -->
                                 <div class="my-3">
@@ -192,32 +195,49 @@
                                         disableTimeRangeValidation range
                                     />
                                 </div>
+                            </template>
+
+                            <template v-if="maintenance.strategy === 'recurring-interval' || maintenance.strategy === 'recurring-weekday' || maintenance.strategy === 'recurring-day-of-month' || maintenance.strategy === 'cron' || maintenance.strategy === 'single'">
+                                <!-- Timezone -->
+                                <div class="mb-4">
+                                    <label for="timezone" class="form-label">
+                                        {{ $t("Timezone") }}
+                                    </label>
+                                    <select id="timezone" v-model="maintenance.timezoneOption" class="form-select">
+                                        <option value="SAME_AS_SERVER">{{ $t("sameAsServerTimezone") }}</option>
+                                        <option value="UTC">UTC</option>
+                                        <option
+                                            v-for="(timezone, index) in timezoneList"
+                                            :key="index"
+                                            :value="timezone.value"
+                                        >
+                                            {{ timezone.name }}
+                                        </option>
+                                    </select>
+                                </div>
 
                                 <!-- Date Range -->
                                 <div class="my-3">
-                                    <label class="form-label">{{ $t("Effective Date Range") }}</label>
-                                    <Datepicker
-                                        v-model="maintenance.dateRange"
-                                        :dark="$root.isDark"
-                                        range datePicker
-                                        :monthChangeOnScroll="false"
-                                        :minDate="minDate"
-                                        format="yyyy-MM-dd HH:mm:ss"
-                                        modelType="yyyy-MM-dd HH:mm:ss"
-                                        required
-                                    />
+                                    <label v-if="maintenance.strategy !== 'single'" class="form-label">{{ $t("Effective Date Range") }}</label>
+
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="mb-2">{{ $t("startDateTime") }}</div>
+                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
+                                        </div>
+
+                                        <div class="col">
+                                            <div class="mb-2">{{ $t("endDateTime") }}</div>
+                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
-
-                            <div class="mt-4 mb-1">
-                                <button
-                                    id="monitor-submit-btn" class="btn btn-primary" type="submit"
-                                    :disabled="processing"
-                                >
-                                    {{ $t("Save") }}
-                                </button>
-                            </div>
                         </div>
+                    </div>
+
+                    <div class="fixed-bottom-bar p-3">
+                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                     </div>
                 </div>
             </form>
@@ -226,13 +246,10 @@
 </template>
 
 <script>
-
-import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
-import dayjs from "dayjs";
 import Datepicker from "@vuepic/vue-datepicker";
-
-const toast = useToast();
+import { timezoneList } from "../util-frontend";
+import cronstrue from "cronstrue/i18n";
 
 export default {
     components: {
@@ -242,6 +259,7 @@ export default {
 
     data() {
         return {
+            timezoneList: timezoneList(),
             processing: false,
             maintenance: {},
             affectedMonitors: [],
@@ -250,24 +268,11 @@ export default {
             selectedStatusPages: [],
             dark: (this.$root.theme === "dark"),
             neverEnd: false,
-            minDate: this.$root.date(dayjs()) + " 00:00",
             lastDays: [
                 {
                     langKey: "lastDay1",
                     value: "lastDay1",
                 },
-                {
-                    langKey: "lastDay2",
-                    value: "lastDay2",
-                },
-                {
-                    langKey: "lastDay3",
-                    value: "lastDay3",
-                },
-                {
-                    langKey: "lastDay4",
-                    value: "lastDay4",
-                }
             ],
             weekdays: [
                 {
@@ -311,6 +316,34 @@ export default {
 
     computed: {
 
+        cronDescription() {
+            if (! this.maintenance.cron) {
+                return "";
+            }
+
+            let locale = "";
+
+            if (this.$root.language) {
+                locale = this.$root.language.replace("-", "_");
+            }
+
+            // Special handling
+            // If locale is also not working in your language, you can map it here
+            // https://github.com/bradymholt/cRonstrue/tree/master/src/i18n/locales
+            if (locale === "zh_HK") {
+                locale = "zh_TW";
+            }
+
+            try {
+                return cronstrue.toString(this.maintenance.cron, {
+                    locale,
+                });
+            } catch (e) {
+                return this.$t("invalidCronExpression", e.message);
+            }
+
+        },
+
         selectedStatusPagesOptions() {
             return Object.values(this.$root.statusPageList).map(statusPage => {
                 return {
@@ -345,21 +378,46 @@ export default {
         },
     },
     mounted() {
-        this.init();
-
         this.$root.getMonitorList((res) => {
             if (res.ok) {
-                Object.values(this.$root.monitorList).map(monitor => {
+                Object.values(this.$root.monitorList).sort((m1, m2) => {
+
+                    if (m1.active !== m2.active) {
+                        if (m1.active === 0) {
+                            return 1;
+                        }
+
+                        if (m2.active === 0) {
+                            return -1;
+                        }
+                    }
+
+                    if (m1.weight !== m2.weight) {
+                        if (m1.weight > m2.weight) {
+                            return -1;
+                        }
+
+                        if (m1.weight < m2.weight) {
+                            return 1;
+                        }
+                    }
+
+                    return m1.pathName.localeCompare(m2.pathName);
+                }).map(monitor => {
                     this.affectedMonitorsOptions.push({
                         id: monitor.id,
-                        name: monitor.name,
+                        pathName: monitor.pathName,
                     });
                 });
             }
+            this.init();
         });
     },
     methods: {
-        /** Initialise page */
+        /**
+         * Initialise page
+         * @returns {void}
+         */
         init() {
             this.affectedMonitors = [];
             this.selectedStatusPages = [];
@@ -370,8 +428,10 @@ export default {
                     description: "",
                     strategy: "single",
                     active: 1,
+                    cron: "30 3 * * *",
+                    durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [ this.minDate ],
+                    dateRange: [],
                     timeRange: [{
                         hours: 2,
                         minutes: 0,
@@ -381,6 +441,7 @@ export default {
                     }],
                     weekdays: [],
                     daysOfMonth: [],
+                    timezoneOption: null,
                 };
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
@@ -390,10 +451,10 @@ export default {
                         this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
                             if (res.ok) {
                                 Object.values(res.monitors).map(monitor => {
-                                    this.affectedMonitors.push(monitor);
+                                    this.affectedMonitors.push(this.affectedMonitorsOptions.find(item => item.id === monitor.id));
                                 });
                             } else {
-                                toast.error(res.msg);
+                                this.$root.toastError(res.msg);
                             }
                         });
 
@@ -408,22 +469,25 @@ export default {
 
                                 this.showOnAllPages = Object.values(res.statusPages).length === this.selectedStatusPagesOptions.length;
                             } else {
-                                toast.error(res.msg);
+                                this.$root.toastError(res.msg);
                             }
                         });
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
         },
 
-        /** Create new maintenance */
+        /**
+         * Create new maintenance
+         * @returns {Promise<void>}
+         */
         async submit() {
             this.processing = true;
 
             if (this.affectedMonitors.length === 0) {
-                toast.error(this.$t("atLeastOneMonitor"));
+                this.$root.toastError(this.$t("atLeastOneMonitor"));
                 return this.processing = false;
             }
 
@@ -432,14 +496,14 @@ export default {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {
-                                toast.success(res.msg);
+                                this.$root.toastRes(res);
                                 this.processing = false;
                                 this.$root.getMaintenanceList();
                                 this.$router.push("/maintenance");
                             });
                         });
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastRes(res);
                         this.processing = false;
                     }
 
@@ -457,7 +521,7 @@ export default {
                         });
                     } else {
                         this.processing = false;
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -465,13 +529,14 @@ export default {
 
         /**
          * Add monitor to maintenance
-         * @param {number} maintenanceID
-         * @param {socketCB} callback
+         * @param {number} maintenanceID ID of maintenance to modify
+         * @param {socketCB} callback Callback for socket response
+         * @returns {Promise<void>}
          */
         async addMonitorMaintenance(maintenanceID, callback) {
             await this.$root.addMonitorMaintenance(maintenanceID, this.affectedMonitors, async (res) => {
                 if (!res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 } else {
                     this.$root.getMonitorList();
                 }
@@ -482,13 +547,14 @@ export default {
 
         /**
          * Add status page to maintenance
-         * @param {number} maintenanceID
-         * @param {socketCB} callback
+         * @param {number} maintenanceID ID of maintenance to modify
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         async addMaintenanceStatusPage(maintenanceID, callback) {
             await this.$root.addMaintenanceStatusPage(maintenanceID, (this.showOnAllPages) ? this.selectedStatusPagesOptions : this.selectedStatusPages, async (res) => {
                 if (!res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 } else {
                     this.$root.getMaintenanceList();
                 }
@@ -501,10 +567,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.shadow-box {
-    padding: 20px;
-}
-
 textarea {
     min-height: 150px;
 }

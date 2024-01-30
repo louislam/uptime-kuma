@@ -1,12 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
@@ -20,33 +22,69 @@ namespace UptimeKuma {
         /// </summary>
         [STAThread]
         static void Main(string[] args) {
+            var cwd = Path.GetDirectoryName(Application.ExecutablePath);
+
+            if (cwd != null) {
+                Environment.CurrentDirectory = cwd;
+            }
+
+            bool isIntranet = args.Contains("--intranet");
+
+            if (isIntranet) {
+                Console.WriteLine("The --intranet argument was provided, so we will not try to access the internet. The first time this application runs you'll need to run it without the --intranet param or copy the result from another machine to the intranet server.");
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new UptimeKumaApplicationContext());
+            Application.Run(new UptimeKumaApplicationContext(isIntranet));
         }
     }
 
     public class UptimeKumaApplicationContext : ApplicationContext
     {
+        private static Mutex mutex = null;
+
         const string appName = "Uptime Kuma";
 
         private NotifyIcon trayIcon;
         private Process process;
 
+        private MenuItem statusMenuItem;
         private MenuItem runWhenStarts;
+        private MenuItem openMenuItem;
 
         private RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
-        public UptimeKumaApplicationContext()
-        {
+        private readonly bool intranetOnly;
+
+        public UptimeKumaApplicationContext(bool intranetOnly) {
+
+            // Single instance only
+            bool createdNew;
+            mutex = new Mutex(true, appName, out createdNew);
+            if (!createdNew) {
+                return;
+            }
+
+            this.intranetOnly = intranetOnly;
+
+            var startingText = "Starting server...";
             trayIcon = new NotifyIcon();
+            trayIcon.Text = startingText;
 
             runWhenStarts = new MenuItem("Run when system starts", RunWhenStarts);
             runWhenStarts.Checked = registryKey.GetValue(appName) != null;
 
+            statusMenuItem = new MenuItem(startingText);
+            statusMenuItem.Enabled = false;
+
+            openMenuItem = new MenuItem("Open", Open);
+            openMenuItem.Enabled = false;
+
             trayIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
             trayIcon.ContextMenu = new ContextMenu(new MenuItem[] {
-                new("Open", Open),
+                statusMenuItem,
+                openMenuItem,
                 //new("Debug Console", DebugConsole),
                 runWhenStarts,
                 new("Check for Update...", CheckForUpdate),
@@ -69,6 +107,10 @@ namespace UptimeKuma {
         }
 
         void DownloadFiles() {
+            if (intranetOnly) {
+                return;
+            }
+
             var form = new DownloadForm();
             form.Closed += Exit;
             form.Show();
@@ -109,6 +151,23 @@ namespace UptimeKuma {
                 process.Start();
                 //Open(null, null);
 
+                // Async task to check if the server is ready
+                Task.Run(() => {
+                    var runningText = "Server is running";
+                    using TcpClient tcpClient = new TcpClient();
+                    while (true) {
+                        try {
+                            tcpClient.Connect("127.0.0.1", 3001);
+                            statusMenuItem.Text = runningText;
+                            openMenuItem.Enabled = true;
+                            trayIcon.Text = runningText;
+                            break;
+                        } catch (Exception) {
+                            System.Threading.Thread.Sleep(2000);
+                        }
+                    }
+                });
+
             } catch (Exception e) {
                 MessageBox.Show("Startup failed: " + e.Message, "Uptime Kuma Error");
             }
@@ -127,7 +186,9 @@ namespace UptimeKuma {
         }
 
         void CheckForUpdate(object sender, EventArgs e) {
-            var needUpdate = false;
+            if (intranetOnly) {
+                return;
+            }
 
             // Check version.json exists
             if (File.Exists("version.json")) {
@@ -158,8 +219,12 @@ namespace UptimeKuma {
 
         }
 
-        void VisitGitHub(object sender, EventArgs e)
-        {
+        void VisitGitHub(object sender, EventArgs e) {
+            if (intranetOnly) {
+                MessageBox.Show("You have parsed in --intranet so we will not try to access the internet or visit github.com, please go to https://github.com/louislam/uptime-kuma if you want to visit github.");
+                return;
+            }
+
             Process.Start("https://github.com/louislam/uptime-kuma");
         }
 

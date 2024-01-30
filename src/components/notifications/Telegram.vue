@@ -32,14 +32,32 @@
         <label for="message_thread_id" class="form-label">{{ $t("telegramMessageThreadID") }}</label>
         <input id="message_thread_id" v-model="$parent.notification.telegramMessageThreadID" type="text" class="form-control">
         <p class="form-text">{{ $t("telegramMessageThreadIDDescription") }}</p>
+
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.telegramSendSilently" class="form-check-input" type="checkbox">
+            <label class="form-check-label">{{ $t("telegramSendSilently") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("telegramSendSilentlyDescription") }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.telegramProtectContent" class="form-check-input" type="checkbox">
+            <label class="form-check-label">{{ $t("telegramProtectContent") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("telegramProtectContentDescription") }}
+        </div>
     </div>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
 import axios from "axios";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
@@ -48,7 +66,7 @@ export default {
     methods: {
         /**
          * Get the URL for telegram updates
-         * @param {string} [mode=masked] Should the token be masked?
+         * @param {string} mode Should the token be masked?
          * @returns {string} formatted URL
          */
         telegramGetUpdatesURL(mode = "masked") {
@@ -65,7 +83,11 @@ export default {
             return `https://api.telegram.org/bot${token}/getUpdates`;
         },
 
-        /** Get the telegram chat ID */
+        /**
+         * Get the telegram chat ID
+         * @returns {void}
+         * @throws The chat ID could not be found
+         */
         async autoGetTelegramChatID() {
             try {
                 let res = await axios.get(this.telegramGetUpdatesURL("withToken"));
@@ -86,7 +108,7 @@ export default {
                 }
 
             } catch (error) {
-                toast.error(error.message);
+                this.$root.toastError(error.message);
             }
 
         },

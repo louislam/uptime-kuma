@@ -67,7 +67,8 @@
     "Update Password": "更新密碼",
     "Disable Auth": "取消登入認証",
     "Enable Auth": "開啟登入認証",
-    "disableauth.message1": "你係咪確認想<strong>取消登入認証</strong>？",
+    "disableauth.message1": "你係咪確認想{disableAuth}？",
+    "disable authentication": "取消登入認証",
     "Please use this option carefully!": "請小心使用。",
     "Logout": "登出",
     "Leave": "離開",
@@ -97,5 +98,13 @@
     "Monitor Type": "監測器類型",
     "Heartbeat Interval": "檢查間距",
     "Add New Monitor": "新增監測器",
-    "Quick Stats": "綜合數據"
+    "Quick Stats": "綜合數據",
+    "markdownSupported": "可以用 Markdown",
+    "wayToGetFlashDutyKey": "您可以进入 协作空间 -> (选择一个 协作空间) -> 集成数据 -> 新增一个集成 页面，添加“自定义事件”获得一个推送地址，复制地址中的 Integration Key，更多信息前往{0}",
+    "FlashDuty Severity": "严重程度",
+    "setupDatabaseChooseDatabase": "你想用咩資料庫？",
+    "dbName": "資料庫名稱",
+    "Home": "首頁",
+    "Cannot connect to the socket server": "連唔到 Socket 伺服器",
+    "Reconnecting...": "重新連線中..."
 }

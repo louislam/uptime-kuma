@@ -5,11 +5,11 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const Maintenance = require("../model/maintenance");
 const server = UptimeKumaServer.getInstance();
-const MaintenanceTimeslot = require("../model/maintenance_timeslot");
 
 /**
  * Handlers for Maintenance
  * @param {Socket} socket Socket.io instance
+ * @returns {void}
  */
 module.exports.maintenanceSocketHandler = (socket) => {
     // Add a new maintenance
@@ -19,16 +19,19 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", maintenance);
 
-            let bean = Maintenance.jsonToBean(R.dispense("maintenance"), maintenance);
+            let bean = await Maintenance.jsonToBean(R.dispense("maintenance"), maintenance);
             bean.user_id = socket.userID;
             let maintenanceID = await R.store(bean);
-            await MaintenanceTimeslot.generateTimeslot(bean);
+
+            server.maintenanceList[maintenanceID] = bean;
+            await bean.run(true);
 
             await server.sendMaintenanceList(socket);
 
             callback({
                 ok: true,
-                msg: "Added Successfully.",
+                msg: "successAdded",
+                msgi18n: true,
                 maintenanceID,
             });
 
@@ -45,22 +48,21 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            let bean = await R.findOne("maintenance", " id = ? ", [ maintenance.id ]);
+            let bean = server.getMaintenance(maintenance.id);
 
             if (bean.user_id !== socket.userID) {
                 throw new Error("Permission denied.");
             }
 
-            Maintenance.jsonToBean(bean, maintenance);
-
+            await Maintenance.jsonToBean(bean, maintenance);
             await R.store(bean);
-            await MaintenanceTimeslot.generateTimeslot(bean, null, true);
-
+            await bean.run(true);
             await server.sendMaintenanceList(socket);
 
             callback({
                 ok: true,
                 msg: "Saved.",
+                msgi18n: true,
                 maintenanceID: bean.id,
             });
 
@@ -96,7 +98,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Added Successfully.",
+                msg: "successAdded",
+                msgi18n: true,
             });
 
         } catch (e) {
@@ -130,7 +133,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Added Successfully.",
+                msg: "successAdded",
+                msgi18n: true,
             });
 
         } catch (e) {
@@ -187,7 +191,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let monitors = await R.getAll("SELECT monitor.id, monitor.name FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
+            let monitors = await R.getAll("SELECT monitor.id FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
                 maintenanceID,
             ]);
 
@@ -236,6 +240,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             log.debug("maintenance", `Delete Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
             if (maintenanceID in server.maintenanceList) {
+                server.maintenanceList[maintenanceID].stop();
                 delete server.maintenanceList[maintenanceID];
             }
 
@@ -248,7 +253,8 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Deleted Successfully.",
+                msg: "successDeleted",
+                msgi18n: true,
             });
 
             await server.sendMaintenanceList(socket);
@@ -267,15 +273,22 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Pause Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            await R.exec("UPDATE maintenance SET active = 0 WHERE id = ? ", [
-                maintenanceID,
-            ]);
+            let maintenance = server.getMaintenance(maintenanceID);
+
+            if (!maintenance) {
+                throw new Error("Maintenance not found");
+            }
+
+            maintenance.active = false;
+            await R.store(maintenance);
+            maintenance.stop();
 
             apicache.clear();
 
             callback({
                 ok: true,
-                msg: "Paused Successfully.",
+                msg: "successPaused",
+                msgi18n: true,
             });
 
             await server.sendMaintenanceList(socket);
@@ -294,15 +307,22 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Resume Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            await R.exec("UPDATE maintenance SET active = 1 WHERE id = ? ", [
-                maintenanceID,
-            ]);
+            let maintenance = server.getMaintenance(maintenanceID);
+
+            if (!maintenance) {
+                throw new Error("Maintenance not found");
+            }
+
+            maintenance.active = true;
+            await R.store(maintenance);
+            await maintenance.run();
 
             apicache.clear();
 
             callback({
                 ok: true,
-                msg: "Resume Successfully",
+                msg: "successResumed",
+                msgi18n: true,
             });
 
             await server.sendMaintenanceList(socket);

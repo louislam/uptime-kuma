@@ -10,7 +10,9 @@ class Slack extends NotificationProvider {
     /**
      * Deprecated property notification.slackbutton
      * Set it as primary base url if this is not yet set.
+     * @deprecated
      * @param {string} url The primary base URL to use
+     * @returns {Promise<void>}
      */
     static async deprecateURL(url) {
         let currentPrimaryBaseURL = await setting("primaryBaseURL");
@@ -25,8 +27,16 @@ class Slack extends NotificationProvider {
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
+
+        if (notification.slackchannelnotify) {
+            msg += " <!channel>";
+        }
+
         try {
             if (heartbeatJSON == null) {
                 let data = {
@@ -39,10 +49,9 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const time = heartbeatJSON["time"];
             const textMsg = "Uptime Kuma Alert";
             let data = {
-                "text": monitorJSON ? textMsg + `: ${monitorJSON.name}` : textMsg,
+                "text": `${textMsg}\n${msg}`,
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
                 "icon_emoji": notification.slackiconemo,
@@ -54,7 +63,7 @@ class Slack extends NotificationProvider {
                                 "type": "header",
                                 "text": {
                                     "type": "plain_text",
-                                    "text": "Uptime Kuma Alert",
+                                    "text": textMsg,
                                 },
                             },
                             {
@@ -65,7 +74,7 @@ class Slack extends NotificationProvider {
                                 },
                                 {
                                     "type": "mrkdwn",
-                                    "text": "*Time (UTC)*\n" + time,
+                                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
                                 }],
                             }
                         ],

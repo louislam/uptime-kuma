@@ -6,7 +6,7 @@
                   'm-2': size == 'normal',
                   'px-2': size == 'sm',
                   'py-0': size == 'sm',
-                  'm-1': size == 'sm',
+                  'mx-1': size == 'sm',
         }"
         :style="{ backgroundColor: item.color, fontSize: size == 'sm' ? '0.7em' : '1em' }"
     >
@@ -18,9 +18,16 @@
 </template>
 
 <script>
+/**
+ * @typedef {import('./TagsManager.vue').Tag} Tag
+ */
+
 export default {
     props: {
-        /** Object representing tag */
+        /**
+         * Object representing tag
+         * @type {Tag}
+         */
         item: {
             type: Object,
             required: true,
@@ -32,7 +39,7 @@ export default {
         },
         /**
          * Size of tag
-         * @values normal, small
+         * @type {"normal" | "small"}
          */
         size: {
             type: String,

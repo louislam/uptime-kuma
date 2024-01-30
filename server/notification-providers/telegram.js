@@ -5,6 +5,9 @@ class Telegram extends NotificationProvider {
 
     name = "telegram";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -12,6 +15,8 @@ class Telegram extends NotificationProvider {
             let params = {
                 chat_id: notification.telegramChatID,
                 text: msg,
+                disable_notification: notification.telegramSendSilently ?? false,
+                protect_content: notification.telegramProtectContent ?? false,
             };
             if (notification.telegramMessageThreadID) {
                 params.message_thread_id = notification.telegramMessageThreadID;
@@ -23,8 +28,7 @@ class Telegram extends NotificationProvider {
             return okMsg;
 
         } catch (error) {
-            let msg = (error.response.data.description) ? error.response.data.description : "Error without description";
-            throw new Error(msg);
+            this.throwGeneralAxiosError(error);
         }
     }
 }

@@ -6,6 +6,9 @@ class Line extends NotificationProvider {
 
     name = "line";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
@@ -33,7 +36,10 @@ class Line extends NotificationProvider {
                     "messages": [
                         {
                             "type": "text",
-                            "text": "UptimeKuma Alert: [🔴 Down]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
+                            "text": "UptimeKuma Alert: [🔴 Down]\n" +
+                                "Name: " + monitorJSON["name"] + " \n" +
+                                heartbeatJSON["msg"] +
+                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                         }
                     ]
                 };
@@ -44,7 +50,10 @@ class Line extends NotificationProvider {
                     "messages": [
                         {
                             "type": "text",
-                            "text": "UptimeKuma Alert: [✅ Up]\n" + "Name: " + monitorJSON["name"] + " \n" + heartbeatJSON["msg"] + "\nTime (UTC): " + heartbeatJSON["time"]
+                            "text": "UptimeKuma Alert: [✅ Up]\n" +
+                                "Name: " + monitorJSON["name"] + " \n" +
+                                heartbeatJSON["msg"] +
+                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                         }
                     ]
                 };
