@@ -324,7 +324,7 @@ class Monitor extends BeanModel {
     /**
      * Start monitor
      * @param {Server} io Socket server instance
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     async start(io) {
         let previousBeat = null;
