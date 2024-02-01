@@ -440,19 +440,15 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
 /**
  * Connect to and ping a MongoDB database
  * @param {string} connectionString The database connection string
+ * @param {object} command MongoDB command to run on the database
  * @returns {Promise<(string[] | object[] | object)>} Response from
  * server
  */
-exports.mongodbPing = async function (connectionString) {
+exports.mongodbCommand = async function (connectionString, command) {
     let client = await MongoClient.connect(connectionString);
-    let dbPing = await client.db().command({ ping: 1 });
+    let result = await client.db().command(command);
     await client.close();
-
-    if (dbPing["ok"] === 1) {
-        return "UP";
-    } else {
-        throw Error("failed");
-    }
+    return result;
 };
 
 /**
