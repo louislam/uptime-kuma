@@ -45,7 +45,7 @@ class MongodbMonitorType extends MonitorType {
     }
 
     /**
-     * Connect to and ping a MongoDB database
+     * Connect to and run MongoDB command on a MongoDB database
      * @param {string} connectionString The database connection string
      * @param {object} command MongoDB command to run on the database
      * @returns {Promise<(string[] | object[] | object)>} Response from
