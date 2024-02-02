@@ -11,7 +11,6 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
-const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
@@ -435,20 +434,6 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
             }
         });
     });
-};
-
-/**
- * Connect to and ping a MongoDB database
- * @param {string} connectionString The database connection string
- * @param {object} command MongoDB command to run on the database
- * @returns {Promise<(string[] | object[] | object)>} Response from
- * server
- */
-exports.mongodbCommand = async function (connectionString, command) {
-    let client = await MongoClient.connect(connectionString);
-    let result = await client.db().command(command);
-    await client.close();
-    return result;
 };
 
 /**

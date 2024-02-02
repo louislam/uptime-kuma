@@ -5,7 +5,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbCommand, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -814,43 +814,6 @@ class Monitor extends BeanModel {
                     bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1", mysqlPassword);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type === "mongodb") {
-                    let startTime = dayjs().valueOf();
-
-                    let command = { "ping": 1 };
-
-                    if (this.databaseQuery) {
-                        command = JSON.parse(this.databaseQuery);
-                    }
-
-                    let result = await mongodbCommand(this.databaseConnectionString, command);
-
-                    if (result["ok"] !== 1) {
-                        throw new Error("MongoDB command failed");
-                    }
-
-                    if (this.jsonPath) {
-                        let expression = jsonata(this.jsonPath);
-                        result = await expression.evaluate(result);
-                        if (!result) {
-                            throw new Error("Queried value not found.");
-                        }
-                    }
-
-                    if (this.expectedValue) {
-                        if (result.toString() === this.expectedValue) {
-                            bean.msg = "Expected value found";
-                            bean.status = UP;
-                        } else {
-                            throw new Error("Query executed, but value is not equal to expected value, value was: [" + JSON.stringify(result) + "]");
-                        }
-                    } else {
-                        bean.msg = "";
-                        bean.status = UP;
-                    }
-
-                    bean.ping = dayjs().valueOf() - startTime;
-
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
