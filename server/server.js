@@ -40,7 +40,6 @@ const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
 const config = require("./config");
 
-log.info("server", "Welcome to Uptime Kuma");
 log.debug("server", "Arguments");
 log.debug("server", args);
 
@@ -48,8 +47,21 @@ if (! process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
-log.info("server", "Node Env: " + process.env.NODE_ENV);
-log.info("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
+if (!process.env.UPTIME_KUMA_WS_ORIGIN_CHECK) {
+    process.env.UPTIME_KUMA_WS_ORIGIN_CHECK = "cors-like";
+}
+
+log.info("server", "Env: " + process.env.NODE_ENV);
+log.debug("server", "Inside Container: " + (process.env.UPTIME_KUMA_IS_CONTAINER === "1"));
+
+if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
+    log.warn("server", "WebSocket Origin Check: " + process.env.UPTIME_KUMA_WS_ORIGIN_CHECK);
+}
+
+const checkVersion = require("./check-version");
+log.info("server", "Uptime Kuma Version: " + checkVersion.version);
+
+log.info("server", "Loading modules");
 
 log.debug("server", "Importing express");
 const express = require("express");
@@ -62,8 +74,6 @@ log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
-log.debug("server", "Importing compare-versions");
-const compareVersions = require("compare-versions");
 const { passwordStrength } = require("check-password-strength");
 
 log.debug("server", "Importing 2FA Modules");
@@ -71,24 +81,21 @@ const notp = require("notp");
 const base32 = require("thirty-two");
 
 const { UptimeKumaServer } = require("./uptime-kuma-server");
-const server = UptimeKumaServer.getInstance(args);
+const server = UptimeKumaServer.getInstance();
 const io = module.exports.io = server.io;
 const app = server.app;
 
-log.info("server", "Importing this project modules");
 log.debug("server", "Importing Monitor");
 const Monitor = require("./model/monitor");
+const User = require("./model/user");
+
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, FBSD, doubleCheckPassword, startE2eTests,
-    allowDevAllOrigin
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
-
-log.debug("server", "Importing Proxy");
-const { Proxy } = require("./proxy");
 
 log.debug("server", "Importing Database");
 const Database = require("./database");
@@ -101,22 +108,13 @@ const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
-const checkVersion = require("./check-version");
-log.info("server", "Version: " + checkVersion.version);
-
-// If host is omitted, the server will accept connections on the unspecified IPv6 address (::) when IPv6 is available and the unspecified IPv4 address (0.0.0.0) otherwise.
-// Dual-stack support for (::)
-// Also read HOST if not FreeBSD, as HOST is a system environment variable in FreeBSD
-let hostEnv = FBSD ? null : process.env.HOST;
-let hostname = args.host || process.env.UPTIME_KUMA_HOST || hostEnv;
+const hostname = config.hostname;
 
 if (hostname) {
     log.info("server", "Custom hostname: " + hostname);
 }
 
-const port = [ args.port, process.env.UPTIME_KUMA_PORT, process.env.PORT, 3001 ]
-    .map(portValue => parseInt(portValue))
-    .find(portValue => !isNaN(portValue));
+const port = config.port;
 
 const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
@@ -132,16 +130,12 @@ const twoFAVerifyOptions = {
  * @type {boolean}
  */
 const testMode = !!args["test"] || false;
-const e2eTestMode = !!args["e2e"] || false;
-
-if (config.demoMode) {
-    log.info("server", "==== Demo Mode ====");
-}
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
+const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
 const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
@@ -151,7 +145,6 @@ const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-sock
 const { apiKeySocketHandler } = require("./socket-handlers/api-key-socket-handler");
 const { generalSocketHandler } = require("./socket-handlers/general-socket-handler");
 const { Settings } = require("./settings");
-const { CacheableDnsHttpAgent } = require("./cacheable-dns-http-agent");
 const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
@@ -198,7 +191,7 @@ let needSetup = false;
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
-    log.info("server", "Adding route");
+    log.debug("server", "Adding route");
 
     // ***************************
     // Normal Router here
@@ -298,7 +291,7 @@ let needSetup = false;
         }
     });
 
-    log.info("server", "Adding socket handler");
+    log.debug("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
         sendInfo(socket, true);
@@ -327,6 +320,11 @@ let needSetup = false;
                 ]);
 
                 if (user) {
+                    // Check if the password changed
+                    if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
+                        throw new Error("The token is invalid due to password change or old token");
+                    }
+
                     log.debug("auth", "afterLogin");
                     afterLogin(socket, user);
                     log.debug("auth", "afterLogin ok");
@@ -347,9 +345,10 @@ let needSetup = false;
                     });
                 }
             } catch (error) {
-
                 log.error("auth", `Invalid token. IP=${clientIP}`);
-
+                if (error.message) {
+                    log.error("auth", error.message, `IP=${clientIP}`);
+                }
                 callback({
                     ok: false,
                     msg: "authInvalidToken",
@@ -389,9 +388,7 @@ let needSetup = false;
 
                     callback({
                         ok: true,
-                        token: jwt.sign({
-                            username: data.username,
-                        }, server.jwtSecret),
+                        token: User.createJWT(user, server.jwtSecret),
                     });
                 }
 
@@ -419,9 +416,7 @@ let needSetup = false;
 
                         callback({
                             ok: true,
-                            token: jwt.sign({
-                                username: data.username,
-                            }, server.jwtSecret),
+                            token: User.createJWT(user, server.jwtSecret),
                         });
                     } else {
 
@@ -804,6 +799,7 @@ let needSetup = false;
                 bean.mqttPassword = monitor.mqttPassword;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
+                bean.mqttCheckType = monitor.mqttCheckType;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
                 bean.databaseQuery = monitor.databaseQuery;
                 bean.authMethod = monitor.authMethod;
@@ -829,7 +825,11 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
                 bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
+                bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
+                bean.kafkaProducerAllowAutoTopicCreation =
+                    monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.remote_browser = monitor.remote_browser;
 
                 bean.validate();
 
@@ -1266,8 +1266,11 @@ let needSetup = false;
                 let user = await doubleCheckPassword(socket, password.currentPassword);
                 await user.resetPassword(password.newPassword);
 
+                server.disconnectAllSocketClients(user.id, socket.id);
+
                 callback({
                     ok: true,
+                    token: User.createJWT(user, server.jwtSecret),
                     msg: "successAuthChangePassword",
                     msgi18n: true,
                 });
@@ -1322,8 +1325,6 @@ let needSetup = false;
                 await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
-                await CacheableDnsHttpAgent.update();
-
                 // Also need to apply timezone globally
                 if (data.serverTimezone) {
                     await server.setTimezone(data.serverTimezone);
@@ -1338,9 +1339,9 @@ let needSetup = false;
                 // Update nscd status
                 if (previousNSCDStatus !== data.nscd) {
                     if (data.nscd) {
-                        server.startNSCDServices();
+                        await server.startNSCDServices();
                     } else {
-                        server.stopNSCDServices();
+                        await server.stopNSCDServices();
                     }
                 }
 
@@ -1435,212 +1436,6 @@ let needSetup = false;
             }
         });
 
-        socket.on("uploadBackup", async (uploadedJSON, importHandle, callback) => {
-            try {
-                checkLogin(socket);
-
-                let backupData = JSON.parse(uploadedJSON);
-
-                log.info("manage", `Importing Backup, User ID: ${socket.userID}, Version: ${backupData.version}`);
-
-                let notificationListData = backupData.notificationList;
-                let proxyListData = backupData.proxyList;
-                let monitorListData = backupData.monitorList;
-
-                let version17x = compareVersions.compare(backupData.version, "1.7.0", ">=");
-
-                // If the import option is "overwrite" it'll clear most of the tables, except "settings" and "user"
-                if (importHandle === "overwrite") {
-                    // Stops every monitor first, so it doesn't execute any heartbeat while importing
-                    for (let id in server.monitorList) {
-                        let monitor = server.monitorList[id];
-                        await monitor.stop();
-                    }
-                    await R.exec("DELETE FROM heartbeat");
-                    await R.exec("DELETE FROM monitor_notification");
-                    await R.exec("DELETE FROM monitor_tls_info");
-                    await R.exec("DELETE FROM notification");
-                    await R.exec("DELETE FROM monitor_tag");
-                    await R.exec("DELETE FROM tag");
-                    await R.exec("DELETE FROM monitor");
-                    await R.exec("DELETE FROM proxy");
-                }
-
-                // Only starts importing if the backup file contains at least one notification
-                if (notificationListData.length >= 1) {
-                    // Get every existing notification name and puts them in one simple string
-                    let notificationNameList = await R.getAll("SELECT name FROM notification");
-                    let notificationNameListString = JSON.stringify(notificationNameList);
-
-                    for (let i = 0; i < notificationListData.length; i++) {
-                        // Only starts importing the notification if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                        if ((importHandle === "skip" && notificationNameListString.includes(notificationListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
-
-                            let notification = JSON.parse(notificationListData[i].config);
-                            await Notification.save(notification, null, socket.userID);
-
-                        }
-                    }
-                }
-
-                // Only starts importing if the backup file contains at least one proxy
-                if (proxyListData && proxyListData.length >= 1) {
-                    const proxies = await R.findAll("proxy");
-
-                    // Loop over proxy list and save proxies
-                    for (const proxy of proxyListData) {
-                        const exists = proxies.find(item => item.id === proxy.id);
-
-                        // Do not process when proxy already exists in import handle is skip and keep
-                        if ([ "skip", "keep" ].includes(importHandle) && !exists) {
-                            return;
-                        }
-
-                        // Save proxy as new entry if exists update exists one
-                        await Proxy.save(proxy, exists ? proxy.id : undefined, proxy.userId);
-                    }
-                }
-
-                // Only starts importing if the backup file contains at least one monitor
-                if (monitorListData.length >= 1) {
-                    // Get every existing monitor name and puts them in one simple string
-                    let monitorNameList = await R.getAll("SELECT name FROM monitor");
-                    let monitorNameListString = JSON.stringify(monitorNameList);
-
-                    for (let i = 0; i < monitorListData.length; i++) {
-                        // Only starts importing the monitor if the import option is "overwrite", "keep" or "skip" but the notification doesn't exists
-                        if ((importHandle === "skip" && monitorNameListString.includes(monitorListData[i].name) === false) || importHandle === "keep" || importHandle === "overwrite") {
-
-                            // Define in here every new variable for monitors which where implemented after the first version of the Import/Export function (1.6.0)
-                            // --- Start ---
-
-                            // Define default values
-                            let retryInterval = 0;
-                            let timeout = monitorListData[i].timeout || (monitorListData[i].interval * 0.8); // fallback to old value
-
-                            /*
-                            Only replace the default value with the backup file data for the specific version, where it appears the first time
-                            More information about that where "let version" will be defined
-                            */
-                            if (version17x) {
-                                retryInterval = monitorListData[i].retryInterval;
-                            }
-
-                            // --- End ---
-
-                            let monitor = {
-                                // Define the new variable from earlier here
-                                name: monitorListData[i].name,
-                                description: monitorListData[i].description,
-                                type: monitorListData[i].type,
-                                url: monitorListData[i].url,
-                                method: monitorListData[i].method || "GET",
-                                body: monitorListData[i].body,
-                                headers: monitorListData[i].headers,
-                                authMethod: monitorListData[i].authMethod,
-                                basic_auth_user: monitorListData[i].basic_auth_user,
-                                basic_auth_pass: monitorListData[i].basic_auth_pass,
-                                authWorkstation: monitorListData[i].authWorkstation,
-                                authDomain: monitorListData[i].authDomain,
-                                timeout,
-                                interval: monitorListData[i].interval,
-                                retryInterval: retryInterval,
-                                resendInterval: monitorListData[i].resendInterval || 0,
-                                hostname: monitorListData[i].hostname,
-                                maxretries: monitorListData[i].maxretries,
-                                port: monitorListData[i].port,
-                                keyword: monitorListData[i].keyword,
-                                invertKeyword: monitorListData[i].invertKeyword,
-                                ignoreTls: monitorListData[i].ignoreTls,
-                                upsideDown: monitorListData[i].upsideDown,
-                                maxredirects: monitorListData[i].maxredirects,
-                                accepted_statuscodes: monitorListData[i].accepted_statuscodes,
-                                dns_resolve_type: monitorListData[i].dns_resolve_type,
-                                dns_resolve_server: monitorListData[i].dns_resolve_server,
-                                notificationIDList: monitorListData[i].notificationIDList,
-                                proxy_id: monitorListData[i].proxy_id || null,
-                            };
-
-                            if (monitorListData[i].pushToken) {
-                                monitor.pushToken = monitorListData[i].pushToken;
-                            }
-
-                            let bean = R.dispense("monitor");
-
-                            let notificationIDList = monitor.notificationIDList;
-                            delete monitor.notificationIDList;
-
-                            monitor.accepted_statuscodes_json = JSON.stringify(monitor.accepted_statuscodes);
-                            delete monitor.accepted_statuscodes;
-
-                            bean.import(monitor);
-                            bean.user_id = socket.userID;
-                            await R.store(bean);
-
-                            // Only for backup files with the version 1.7.0 or higher, since there was the tag feature implemented
-                            if (version17x) {
-                                // Only import if the specific monitor has tags assigned
-                                for (const oldTag of monitorListData[i].tags) {
-
-                                    // Check if tag already exists and get data ->
-                                    let tag = await R.findOne("tag", " name = ?", [
-                                        oldTag.name,
-                                    ]);
-
-                                    let tagId;
-                                    if (!tag) {
-                                        // -> If it doesn't exist, create new tag from backup file
-                                        let beanTag = R.dispense("tag");
-                                        beanTag.name = oldTag.name;
-                                        beanTag.color = oldTag.color;
-                                        await R.store(beanTag);
-
-                                        tagId = beanTag.id;
-                                    } else {
-                                        // -> If it already exist, set tagId to value from database
-                                        tagId = tag.id;
-                                    }
-
-                                    // Assign the new created tag to the monitor
-                                    await R.exec("INSERT INTO monitor_tag (tag_id, monitor_id, value) VALUES (?, ?, ?)", [
-                                        tagId,
-                                        bean.id,
-                                        oldTag.value,
-                                    ]);
-
-                                }
-                            }
-
-                            await updateMonitorNotification(bean.id, notificationIDList);
-
-                            // If monitor was active start it immediately, otherwise pause it
-                            if (monitorListData[i].active === 1) {
-                                await startMonitor(socket.userID, bean.id);
-                            } else {
-                                await pauseMonitor(socket.userID, bean.id);
-                            }
-
-                        }
-                    }
-
-                    await sendNotificationList(socket);
-                    await server.sendMonitorList(socket);
-                }
-
-                callback({
-                    ok: true,
-                    msg: "successBackupRestored",
-                    msgi18n: true,
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
         socket.on("clearEvents", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
@@ -1696,6 +1491,14 @@ let needSetup = false;
                 log.info("manage", `Clear Statistics User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat");
+                await R.exec("DELETE FROM stat_daily");
+                await R.exec("DELETE FROM stat_hourly");
+                await R.exec("DELETE FROM stat_minutely");
+
+                // Restart all monitors to reset the stats
+                for (let monitorID in server.monitorList) {
+                    await restartMonitor(socket.userID, monitorID);
+                }
 
                 callback({
                     ok: true,
@@ -1717,6 +1520,7 @@ let needSetup = false;
         dockerSocketHandler(socket);
         maintenanceSocketHandler(socket);
         apiKeySocketHandler(socket);
+        remoteBrowserSocketHandler(socket);
         generalSocketHandler(socket, server);
 
         log.debug("server", "added all socket handlers");
@@ -1736,11 +1540,12 @@ let needSetup = false;
 
     });
 
-    log.info("server", "Init the server");
+    log.debug("server", "Init the server");
 
     server.httpServer.once("error", async (err) => {
-        console.error("Cannot listen: " + err.message);
+        log.error("server", "Cannot listen: " + err.message);
         await shutdownFunction();
+        process.exit(1);
     });
 
     server.start();
@@ -1753,10 +1558,6 @@ let needSetup = false;
         }
         startMonitors();
         checkVersion.startInterval();
-
-        if (e2eTestMode) {
-            startE2eTests();
-        }
     });
 
     await initBackgroundJobs();
@@ -1824,6 +1625,7 @@ async function afterLogin(socket, user) {
     sendProxyList(socket);
     sendDockerHostList(socket);
     sendAPIKeyList(socket);
+    sendRemoteBrowserList(socket);
 
     await sleep(500);
 
@@ -1852,9 +1654,9 @@ async function afterLogin(socket, user) {
  * @returns {Promise<void>}
  */
 async function initDatabase(testMode = false) {
-    log.info("server", "Connecting to the Database");
+    log.debug("server", "Connecting to the database");
     await Database.connect(testMode);
-    log.info("server", "Connected");
+    log.info("server", "Connected to the database");
 
     // Patch the database
     await Database.patch();
@@ -1868,7 +1670,7 @@ async function initDatabase(testMode = false) {
         jwtSecretBean = await initJWTSecret();
         log.info("server", "Stored JWT secret into database");
     } else {
-        log.info("server", "Load JWT secret from database.");
+        log.debug("server", "Load JWT secret from database.");
     }
 
     // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
@@ -1936,6 +1738,7 @@ async function pauseMonitor(userID, monitorID) {
 
     if (monitorID in server.monitorList) {
         server.monitorList[monitorID].stop();
+        server.monitorList[monitorID].active = 0;
     }
 }
 
@@ -2004,8 +1807,10 @@ gracefulShutdown(server.httpServer, {
 });
 
 // Catch unexpected errors here
-process.addListener("unhandledRejection", (error, promise) => {
+let unexpectedErrorHandler = (error, promise) => {
     console.trace(error);
     UptimeKumaServer.errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
-});
+};
+process.addListener("unhandledRejection", unexpectedErrorHandler);
+process.addListener("uncaughtException", unexpectedErrorHandler);

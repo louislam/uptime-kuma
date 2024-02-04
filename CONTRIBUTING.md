@@ -1,14 +1,14 @@
 # Project Info
 
-First of all, I want to thank everyone who made pull requests for Uptime Kuma. I never thought the GitHub Community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
+First of all, I want to thank everyone who have made pull requests for Uptime Kuma. I never thought the GitHub community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
 
-The project was created with vite.js (vue3). Then I created a subdirectory called "server" for the server part. Both frontend and backend share the same package.json.
+The project was created with vite.js (vue3). Then I created a subdirectory called "server" for the server part. Both frontend and backend share the same `package.json`.
 
 The frontend code builds into "dist" directory. The server (express.js) exposes the "dist" directory as the root of the endpoint. This is how production is working.
 
 ## Key Technical Skills
 
-- Node.js (You should know about promise, async/await and arrow function etc.)
+- Node.js (You should know about promises, async/await, arrow functions, etc.)
 - Socket.io
 - SCSS
 - Vue.js
@@ -34,24 +34,27 @@ Yes or no, it depends on what you will try to do. Since I don't want to waste yo
 
 Here are some references:
 
-### ✅ Usually accepted:
+### ✅ Usually accepted
+
 - Bug fix
 - Security fix
 - Adding notification providers
 - Adding new language files (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
 - Adding new language keys: `$t("...")`
 
-### ⚠️ Discussion required:
+### ⚠️ Discussion required
+
 - Large pull requests
 - New features
 
-### ❌ Won't be merged:
+### ❌ Won't be merged
+
 - A dedicated PR for translating existing languages (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
 - Do not pass the auto-test
 - Any breaking changes
 - Duplicated pull requests
 - Buggy
-- UI/UX is not close to Uptime Kuma 
+- UI/UX is not close to Uptime Kuma
 - Modifications or deletions of existing logic without a valid reason.
 - Adding functions that is completely out of scope
 - Converting existing code into other programming languages
@@ -59,27 +62,25 @@ Here are some references:
 
 The above cases may not cover all possible situations.
 
-I (@louislam) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spend on it. Therefore, it is essential to have a discussion beforehand.
+I ([@louislam](https://github.com/louislam)) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spent on it. Therefore, it is essential to have a discussion beforehand.
 
 I will assign your pull request to a [milestone](https://github.com/louislam/uptime-kuma/milestones), if I plan to review and merge it.
 
 Also, please don't rush or ask for an ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
-
 
 ### Recommended Pull Request Guideline
 
 Before deep into coding, discussion first is preferred. Creating an empty pull request for discussion would be recommended.
 
 1. Fork the project
-1. Clone your fork repo to local
-1. Create a new branch
-1. Create an empty commit
-   `git commit -m "[empty commit] pull request for <YOUR TASK NAME>" --allow-empty`
-1. Push to your fork repo
-1. Create a pull request: https://github.com/louislam/uptime-kuma/compare
-1. Write a proper description
-1. Click "Change to draft"
-1. Discussion
+2. Clone your fork repo to local
+3. Create a new branch
+4. Create an empty commit: `git commit -m "<YOUR TASK NAME>" --allow-empty`
+5. Push to your fork repo
+6. Prepare a pull request: https://github.com/louislam/uptime-kuma/compare
+7. Write a proper description. You can mention @louislam in it, so @louislam will get the notification.
+8. Create your pull request as a Draft
+9. Wait for the discussion
 
 ## Project Styles
 
@@ -112,9 +113,9 @@ I personally do not like something that requires so many configurations before y
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
 - A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
 
-### GitHub Codespace
+### GitHub Codespaces
 
-If you don't want to setup an local environment, you can now develop on GitHub Codespace, read more: 
+If you don't want to setup an local environment, you can now develop on GitHub Codespaces, read more:
 
 https://github.com/louislam/uptime-kuma/tree/master/.devcontainer
 
@@ -143,7 +144,8 @@ npm run dev
 ```
 
 But sometimes, you would like to restart the server, but not the frontend, you can run these commands in two terminals:
-```
+
+```bash
 npm run start-frontend-dev
 npm run start-server-dev
 ```
@@ -152,14 +154,13 @@ npm run start-server-dev
 
 It binds to `0.0.0.0:3001` by default.
 
-
 It is mainly a socket.io app + express.js.
 
-express.js is used for: 
+express.js is used for:
+
 - entry point such as redirecting to a status page or the dashboard
 - serving the frontend built files (index.html, .js and .css etc.)
 - serving internal APIs of the status page
-
 
 ### Structure in /server/
 
@@ -175,9 +176,9 @@ express.js is used for:
 
 ## Frontend Dev Server
 
-It binds to `0.0.0.0:3000` by default. The frontend dev server is used for development only. 
+It binds to `0.0.0.0:3000` by default. The frontend dev server is used for development only.
 
-For production, it is not used. It will be compiled to `dist` directory instead. 
+For production, it is not used. It will be compiled to `dist` directory instead.
 
 You can use Vue.js devtools Chrome extension for debugging.
 
@@ -229,9 +230,9 @@ If for security / bug / other reasons, a library must be updated, breaking chang
 
 ## Translations
 
-Please add **all** the strings which are translatable to `src/lang/en.json` (If translation keys are omitted, they can not be translated).
+Please add **all** the strings which are translatable to `src/lang/en.json` (if translation keys are omitted, they can not be translated.)
 
-**Don't include any other languages in your initial Pull-Request** (even if this is your mother tongue), to avoid merge-conflicts between weblate and `master`.  
+**Don't include any other languages in your initial pull request** (even if this is your mother tongue), to avoid merge-conflicts between weblate and `master`.
 The translations can then (after merging a PR into `master`) be translated by awesome people donating their language skills.
 
 If you want to help by translating Uptime Kuma into your language, please visit the [instructions on how to translate using weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
@@ -243,13 +244,13 @@ My mother language is not English and my grammar is not that great.
 
 ## Wiki
 
-Since there is no way to make a pull request to wiki's repo, I have set up another repo to do that.
+Since there is no way to make a pull request to the wiki, I have set up another repo to do that.
 
 https://github.com/louislam/uptime-kuma-wiki
 
 ## Docker
 
-#### Arch
+### Arch
 
 - amd64
 - arm64
@@ -293,12 +294,12 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 1. Draft a release note
 2. Make sure the repo is cleared
 3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
-3. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
-4. Wait until the `Press any key to continue`
-5. `git push`
-6. Publish the release note as 1.X.X 
-7. Press any key to continue
-8. Deploy to the demo server: `npm run deploy-demo-server`
+4. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
+5. Wait until the `Press any key to continue`
+6. `git push`
+7. Publish the release note as 1.X.X
+8. Press any key to continue
+9. Deploy to the demo server: `npm run deploy-demo-server`
 
 Checking:
 
@@ -336,6 +337,6 @@ git push production master
 
 Change the base of a pull request such as `master` to `1.23.X`
 
-```
+```bash
 git rebase --onto <new parent> <old parent>
 ```
