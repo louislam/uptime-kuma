@@ -12,7 +12,6 @@ class MongodbMonitorType extends MonitorType {
      */
     async check(monitor, heartbeat, _server) {
         let command = { "ping": 1 };
-
         if (monitor.databaseQuery) {
             command = JSON.parse(monitor.databaseQuery);
         }
@@ -21,27 +20,29 @@ class MongodbMonitorType extends MonitorType {
 
         if (result["ok"] !== 1) {
             throw new Error("MongoDB command failed");
+        } else {
+            heartbeat.msg = "Command executed successfully";
         }
 
         if (monitor.jsonPath) {
             let expression = jsonata(monitor.jsonPath);
             result = await expression.evaluate(result);
-            if (!result) {
+            if (result) {
+                heartbeat.msg = "Command executed successfully and the jsonata expression produces a result.";
+            } else {
                 throw new Error("Queried value not found.");
             }
         }
 
         if (monitor.expectedValue) {
             if (result.toString() === monitor.expectedValue) {
-                heartbeat.msg = "Expected value found";
-                heartbeat.status = UP;
+                heartbeat.msg = "Command executed successfully and expected value was found";
             } else {
                 throw new Error("Query executed, but value is not equal to expected value, value was: [" + JSON.stringify(result) + "]");
             }
-        } else {
-            heartbeat.msg = "";
-            heartbeat.status = UP;
         }
+
+        heartbeat.status = UP;
     }
 
     /**

@@ -883,5 +883,7 @@
     "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot",
-    "What is a Remote Browser?": "What is a Remote Browser?"
+    "What is a Remote Browser?": "What is a Remote Browser?",
+    "Command": "Command",
+    "mongodbCommandDescription": "Run a MongoDB command against the database. For information about the available commands check out the MongoDB documentation {0}."
 }
