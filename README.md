@@ -46,7 +46,7 @@ docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name upti
 Uptime Kuma is now running on http://localhost:3001
 
 > [!WARNING]
-> File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
+> Filesystems like **NFS** (Network File System) or **RAID arrays** are **NOT** supported. Please map to a local directory or volume.
 
 ### 💪🏻 Non-Docker
 
