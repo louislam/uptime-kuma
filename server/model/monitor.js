@@ -1531,8 +1531,8 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Gets Full Path as array (Groups and Name)
-     * @returns {Promise<string[]>} Full path as array of this monitor
+     * Gets the full path
+     * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
     async getPath() {
         const path = [ this.name ];
