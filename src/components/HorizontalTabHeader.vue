@@ -2,7 +2,12 @@
     <div>
         <ul class="nav nav-tabs">
             <li v-for="(tab, index) in tabs" :key="index" class="nav-item">
-                <a class="nav-link" :class="{ active: index == selected }" href="#" @click="$emit('update:selected', index)">
+                <a
+                    class="nav-link"
+                    :class="{ active: index == selected }"
+                    href="#"
+                    @click="$emit('update:selected', index)"
+                >
                     {{ tab }}
                 </a>
             </li>
@@ -45,10 +50,12 @@ export default {
 
             &.active {
                 background-color: $highlight-white;
+
                 .dark & {
                     color: $dark-font-color;
                     background-color: $dark-header-bg;
                 }
+
                 border-color: transparent transparent $primary transparent;
                 border-width: 1px 1px 6px 1px;
             }
