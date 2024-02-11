@@ -606,9 +606,7 @@ class Monitor extends BeanModel {
                         if (result.toString() === this.expectedValue) {
                             bean.msg += ", expected value is found";
                             bean.status = UP;
-                            console.log("neelbhanushali: json-query successful");
                         } else {
-                            console.log("neelbhanushali: json-query unsuccessful");
                             throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
                         }
                     }
@@ -900,7 +898,6 @@ class Monitor extends BeanModel {
                 retries = 0;
 
             } catch (error) {
-                console.log("neelbhanushali: came in catch");
                 if (error?.name === "CanceledError") {
                     bean.msg = `timeout by AbortSignal (${this.timeout}s)`;
                 } else {
@@ -915,7 +912,6 @@ class Monitor extends BeanModel {
                 } else if ((this.maxretries > 0) && (retries < this.maxretries)) {
                     retries++;
                     bean.status = PENDING;
-                    console.log("neelbhanushali: checking retries", retries, this.maxretries);
                 } else {
                     // Continue counting retries during DOWN
                     retries++;
