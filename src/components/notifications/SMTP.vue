@@ -7,10 +7,10 @@
 
         <i18n-t tag="div" keypath="Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent" class="form-text">
             <template #localhost>
-                <code>localhost</code> 
+                <code>localhost</code>
             </template>
             <template #local_mta>
-                <a href="https://wikipedia.org/wiki/Mail_Transfer_Agent" target="_blank">{{ $t("locally configured mail transfer agent") }}</a> 
+                <a href="https://wikipedia.org/wiki/Mail_Transfer_Agent" target="_blank">{{ $t("locally configured mail transfer agent") }}</a>
             </template>
         </i18n-t>
         <div class="mb-3">
