@@ -13,6 +13,24 @@ export default {
     },
 
     mounted() {
+        if (window.defaultAppearance) {
+            if (window.defaultAppearance.language) {
+                localStorage.locale = window.defaultAppearance.language;
+            }
+
+            if (window.defaultAppearance.theme) {
+                this.userTheme = window.defaultAppearance.theme;
+            }
+
+            if (window.defaultAppearance.heartbeatBarTheme) {
+                this.userHeartbeatBar = window.defaultAppearance.heartbeatBarTheme;
+            }
+
+            if (window.defaultAppearance.styleElapsedTime) {
+                this.styleElapsedTime = window.defaultAppearance.styleElapsedTime;
+            }
+        }
+
         // Default Light
         if (! this.userTheme) {
             this.userTheme = "auto";
