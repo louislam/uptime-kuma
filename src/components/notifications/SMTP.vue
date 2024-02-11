@@ -5,6 +5,8 @@
             <input id="hostname" v-model="$parent.notification.smtpHost" type="text" class="form-control" required>
         </div>
 
+        <div class="form-text">{{ $t("HostnameDesc") }}</div>
+
         <div class="mb-3">
             <label for="port" class="form-label">{{ $t("Port") }}</label>
             <input id="port" v-model="$parent.notification.smtpPort" type="number" class="form-control" required min="0" max="65535" step="1">
