@@ -57,6 +57,7 @@
     "Friendly Name": "Friendly Name",
     "URL": "URL",
     "Hostname": "Hostname",
+    "HostnameDesc": "Either enter the hostname of the SMTP server you want to use or localhost if you intend to use a locally configured MTA.",
     "Port": "Port",
     "Heartbeat Interval": "Heartbeat Interval",
     "Request Timeout": "Request Timeout",
