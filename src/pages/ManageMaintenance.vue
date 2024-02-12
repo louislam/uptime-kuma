@@ -53,7 +53,7 @@
                                 <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                             </router-link>
 
-                            <button class="btn btn-danger" @click="deleteDialog(item.id)">
+                            <button class="btn btn-normal text-danger" @click="deleteDialog(item.id)">
                                 <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                             </button>
                         </div>
@@ -294,8 +294,15 @@ export default {
             gap: 8px;
             flex-direction: row-reverse;
 
-            .btn-group {
-                width: 310px;
+            @media (max-width: 550px) {
+                & {
+                    width: 100%;
+                }
+
+                .btn-group {
+                    margin: 1em 1em 0 1em;
+                    width: 100%;
+                }
             }
         }
     }
