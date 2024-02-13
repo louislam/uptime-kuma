@@ -1,9 +1,7 @@
 <template>
     <div class="mb-3">
-        <label for="heiioncall-apikey" class="form-label"
-            >{{ $t("API Key")
-            }}<span style="color: red"><sup>*</sup></span></label
-        >
+        <label for="heiioncall-apikey" class="form-label">{{ $t("API Key")
+        }}<span style="color: red"><sup>*</sup></span></label>
         <HiddenInput
             id="heiioncall-apikey"
             v-model="$parent.notification.heiiOnCallApiKey"
@@ -12,10 +10,8 @@
         ></HiddenInput>
     </div>
     <div class="mb-3">
-        <label for="heiioncall-trigger-id" class="form-label"
-            >{{ $t("Trigger ID")
-            }}<span style="color: red"><sup>*</sup></span></label
-        >
+        <label for="heiioncall-trigger-id" class="form-label">{{ $t("Trigger ID")
+        }}<span style="color: red"><sup>*</sup></span></label>
         <HiddenInput
             id="heiioncall-trigger-id"
             v-model="$parent.notification.heiiOnCallTriggerId"
