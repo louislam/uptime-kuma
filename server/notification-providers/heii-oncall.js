@@ -16,7 +16,7 @@ class HeiiOnCall extends NotificationProvider {
         // Payload to Heii On-Call is the entire heartbat JSON
         const payload = heartbeatJSON ? heartbeatJSON : {};
 
-        // If we can, add url back to mintor to payload
+        // If we can, add url back to monitor to payload
         const baseURL = await setting("primaryBaseURL");
         if (baseURL && monitorJSON) {
             payload["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
