@@ -884,5 +884,6 @@
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot",
     "What is a Remote Browser?": "What is a Remote Browser?",
-    "Trigger ID": "Trigger ID"
+    "Trigger ID": "Trigger ID",
+    "wayToGetHeiiOnCallDetails": "To get a Heii On-Call Tigger ID and Api Token visit: {0}"
 }
