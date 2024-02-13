@@ -4,7 +4,7 @@ const { setting } = require("../util-server");
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
-const heiiOnCallBaseUrl = "http://192.168.2.1:3005";
+const heiiOnCallBaseUrl = "https://heiioncall.com";
 
 class HeiiOnCall extends NotificationProvider {
     name = "HeiiOnCall";
@@ -22,7 +22,7 @@ class HeiiOnCall extends NotificationProvider {
             return this.postNotification(notification, "alert", payload);
         }
 
-        // If we can add url back to mintor to payload
+        // If we can, add url back to mintor to payload
         const baseURL = await setting("primaryBaseURL");
         if (baseURL && monitorJSON) {
             payload["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
@@ -42,7 +42,7 @@ class HeiiOnCall extends NotificationProvider {
     /**
      * Post to Heii On-Call
      * @param {BeanModel} notification Message title
-     * @param {string} action Trigger Action (alert, resovle)
+     * @param {string} action Trigger action (alert, resovle)
      * @param {object} payload Data for Heii On-Call
      * @returns {Promise<string>} Success message
      */
@@ -56,12 +56,17 @@ class HeiiOnCall extends NotificationProvider {
         };
 
         // Post to Heii On-Call Trigger https://heiioncall.com/docs#manual-triggers
-        await axios.post(
-            `${heiiOnCallBaseUrl}/triggers/${notification.heiiOnCallTriggerId}/${action}`,
-            payload,
-            config
-        );
-        return "Sent Successfully.";
+        try {
+            await axios.post(
+                `${heiiOnCallBaseUrl}/triggers/${notification.heiiOnCallTriggerId}/${action}`,
+                payload,
+                config
+            );
+        } catch (error) {
+            this.throwGeneralAxiosError(error);
+        }
+
+        return "Heii On-Call post sent successfully.";
     }
 }
 
