@@ -57,6 +57,7 @@ const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
 
 class Notification {
+
     providerList = {};
 
     /**
@@ -125,10 +126,10 @@ class Notification {
             new Webhook(),
             new WeCom(),
             new GoAlert(),
-            new ZohoCliq(),
+            new ZohoCliq()
         ];
         for (let item of list) {
-            if (!item.name) {
+            if (! item.name) {
                 throw new Error("Notification provider without name");
             }
 
@@ -148,19 +149,9 @@ class Notification {
      * @returns {Promise<string>} Successful msg
      * @throws Error with fail msg
      */
-    static async send(
-        notification,
-        msg,
-        monitorJSON = null,
-        heartbeatJSON = null
-    ) {
+    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         if (this.providerList[notification.type]) {
-            return this.providerList[notification.type].send(
-                notification,
-                msg,
-                monitorJSON,
-                heartbeatJSON
-            );
+            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
         } else {
             throw new Error("Notification type is not supported");
         }
@@ -182,9 +173,10 @@ class Notification {
                 userID,
             ]);
 
-            if (!bean) {
+            if (! bean) {
                 throw new Error("notification not found");
             }
+
         } else {
             bean = R.dispense("notification");
         }
@@ -214,7 +206,7 @@ class Notification {
             userID,
         ]);
 
-        if (!bean) {
+        if (! bean) {
             throw new Error("notification not found");
         }
 
@@ -230,6 +222,7 @@ class Notification {
         let exists = commandExistsSync("apprise");
         return exists;
     }
+
 }
 
 /**
@@ -240,17 +233,16 @@ class Notification {
  */
 async function applyNotificationEveryMonitor(notificationID, userID) {
     let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
-        userID,
+        userID
     ]);
 
     for (let i = 0; i < monitors.length; i++) {
-        let checkNotification = await R.findOne(
-            "monitor_notification",
-            " monitor_id = ? AND notification_id = ? ",
-            [ monitors[i].id, notificationID ]
-        );
+        let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
+            monitors[i].id,
+            notificationID,
+        ]);
 
-        if (!checkNotification) {
+        if (! checkNotification) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;

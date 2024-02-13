@@ -1,132 +1,62 @@
 <template>
     <form @submit.prevent="submit">
-        <div
-            ref="modal"
-            class="modal fade"
-            tabindex="-1"
-            data-bs-backdrop="static"
-        >
+        <div ref="modal" class="modal fade" tabindex="-1" data-bs-backdrop="static">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 id="exampleModalLabel" class="modal-title">
                             {{ $t("Setup Notification") }}
                         </h5>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                        />
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="notification-type" class="form-label">{{
-                                $t("Notification Type")
-                            }}</label>
-                            <select
-                                id="notification-type"
-                                v-model="notification.type"
-                                class="form-select"
-                            >
-                                <option
-                                    v-for="(
-                                        name, type
-                                    ) in notificationNameList.regularList"
-                                    :key="type"
-                                    :value="type"
-                                >
-                                    {{ name }}
-                                </option>
+                            <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
+                            <select id="notification-type" v-model="notification.type" class="form-select">
+                                <option v-for="(name, type) in notificationNameList.regularList" :key="type" :value="type">{{ name }}</option>
                                 <optgroup :label="$t('notificationRegional')">
-                                    <option
-                                        v-for="(
-                                            name, type
-                                        ) in notificationNameList.regionalList"
-                                        :key="type"
-                                        :value="type"
-                                    >
-                                        {{ name }}
-                                    </option>
+                                    <option v-for="(name, type) in notificationNameList.regionalList" :key="type" :value="type">{{ name }}</option>
                                 </optgroup>
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label for="notification-name" class="form-label">{{
-                                $t("Friendly Name")
-                            }}</label>
-                            <input
-                                id="notification-name"
-                                v-model="notification.name"
-                                type="text"
-                                class="form-control"
-                                required
-                            />
+                            <label for="notification-name" class="form-label">{{ $t("Friendly Name") }}</label>
+                            <input id="notification-name" v-model="notification.name" type="text" class="form-control" required>
                         </div>
 
                         <!-- form body -->
                         <component :is="currentForm" />
 
                         <div class="mb-3 mt-4">
-                            <hr class="dropdown-divider mb-4" />
+                            <hr class="dropdown-divider mb-4">
 
                             <div class="form-check form-switch">
-                                <input
-                                    v-model="notification.isDefault"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                />
-                                <label class="form-check-label">{{
-                                    $t("Default enabled")
-                                }}</label>
+                                <input v-model="notification.isDefault" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Default enabled") }}</label>
                             </div>
                             <div class="form-text">
                                 {{ $t("enableDefaultNotificationDescription") }}
                             </div>
 
-                            <br />
+                            <br>
 
                             <div class="form-check form-switch">
-                                <input
-                                    v-model="notification.applyExisting"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                />
-                                <label class="form-check-label">{{
-                                    $t("Apply on all existing monitors")
-                                }}</label>
+                                <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button
-                            v-if="id"
-                            type="button"
-                            class="btn btn-danger"
-                            :disabled="processing"
-                            @click="deleteConfirm"
-                        >
+                        <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
                             {{ $t("Delete") }}
                         </button>
-                        <button
-                            type="button"
-                            class="btn btn-warning"
-                            :disabled="processing"
-                            @click="test"
-                        >
+                        <button type="button" class="btn btn-warning" :disabled="processing" @click="test">
                             {{ $t("Test") }}
                         </button>
-                        <button
-                            type="submit"
-                            class="btn btn-primary"
-                            :disabled="processing"
-                        >
-                            <div
-                                v-if="processing"
-                                class="spinner-border spinner-border-sm me-1"
-                            ></div>
+                        <button type="submit" class="btn btn-primary" :disabled="processing">
+                            <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
                             {{ $t("Save") }}
                         </button>
                     </div>
@@ -135,13 +65,7 @@
         </div>
     </form>
 
-    <Confirm
-        ref="confirmDelete"
-        btn-style="btn-danger"
-        :yes-text="$t('Yes')"
-        :no-text="$t('No')"
-        @yes="deleteNotification"
-    >
+    <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteNotification">
         {{ $t("deleteNotificationMsg") }}
     </Confirm>
 </template>
@@ -197,7 +121,6 @@ export default {
                 "gotify": "Gotify",
                 "GrafanaOncall": "Grafana Oncall",
                 "HomeAssistant": "Home Assistant",
-                "HeiiOnCall": "Heii On-Call",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
                 "LineNotify": "LINE Notify",
@@ -407,8 +330,7 @@ export default {
 @import "../assets/vars.scss";
 
 .dark {
-    .modal-dialog .form-text,
-    .modal-dialog p {
+    .modal-dialog .form-text, .modal-dialog p {
         color: $dark-font-color;
     }
 }
