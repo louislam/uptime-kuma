@@ -16,16 +16,16 @@ class HeiiOnCall extends NotificationProvider {
         // Payload to Heii On-Call is the entire heartbat JSON
         const payload = heartbeatJSON ? heartbeatJSON : {};
 
-        if (!heartbeatJSON) {
-            // Test button was clicked on Notification Setup, trigger the alert as a test
-            payload["message"] = "Testing UptimeKuma Trigger";
-            return this.postNotification(notification, "alert", payload);
-        }
-
         // If we can, add url back to mintor to payload
         const baseURL = await setting("primaryBaseURL");
         if (baseURL && monitorJSON) {
             payload["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
+        }
+
+        if (!heartbeatJSON) {
+            // No heartbeatJSON. Could be test button, but not necessarily. Just pull msg into payload.
+            payload["msg"] = msg;
+            return this.postNotification(notification, "alert", payload);
         }
 
         if (heartbeatJSON.status === DOWN) {
