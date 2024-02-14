@@ -3,9 +3,6 @@ const { setting } = require("../util-server");
 
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-
-const heiiOnCallBaseUrl = "https://heiioncall.com";
-
 class HeiiOnCall extends NotificationProvider {
     name = "HeiiOnCall";
 
@@ -13,28 +10,24 @@ class HeiiOnCall extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        // Payload to Heii On-Call is the entire heartbat JSON
-        const payload = heartbeatJSON ? heartbeatJSON : {};
+        const payload = heartbeatJSON || {};
 
-        // If we can, add url back to monitor to payload
         const baseURL = await setting("primaryBaseURL");
         if (baseURL && monitorJSON) {
             payload["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
         }
 
         if (!heartbeatJSON) {
-            // No heartbeatJSON. Could be test button, but not necessarily. Just pull msg into payload.
+            // Testing or general notification like certificate expiry
             payload["msg"] = msg;
             return this.postNotification(notification, "alert", payload);
         }
 
         if (heartbeatJSON.status === DOWN) {
-            // Monitor is DOWN, alert on Heii On-Call
             return this.postNotification(notification, "alert", payload);
         }
 
         if (heartbeatJSON.status === UP) {
-            // Monitor is UP, resolve on Heii On-Call
             return this.postNotification(notification, "resolve", payload);
         }
     }
@@ -58,7 +51,7 @@ class HeiiOnCall extends NotificationProvider {
         // Post to Heii On-Call Trigger https://heiioncall.com/docs#manual-triggers
         try {
             await axios.post(
-                `${heiiOnCallBaseUrl}/triggers/${notification.heiiOnCallTriggerId}/${action}`,
+                `https://heiioncall.com/triggers/${notification.heiiOnCallTriggerId}/${action}`,
                 payload,
                 config
             );
@@ -66,7 +59,7 @@ class HeiiOnCall extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
 
-        return "Heii On-Call post sent successfully.";
+        return "Sent Successfully";
     }
 }
 

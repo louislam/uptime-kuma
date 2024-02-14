@@ -19,7 +19,7 @@
     </div>
     <div class="form-text">
         <i18n-t tag="p" keypath="wayToGetHeiiOnCallDetails" style="margin-top: 8px;">
-            <a href="https://heiioncall.com/docs" target="_blank">Heii On-Call Documentation</a>
+            <a href="https://heiioncall.com/docs" target="_blank">{{ $t("documentationOf", ["Heii On-Call"]) }}</a>
         </i18n-t>
     </div>
 </template>

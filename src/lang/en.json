@@ -885,5 +885,5 @@
     "Browser Screenshot": "Browser Screenshot",
     "What is a Remote Browser?": "What is a Remote Browser?",
     "Trigger ID": "Trigger ID",
-    "wayToGetHeiiOnCallDetails": "To get a Heii On-Call Tigger ID and Api Token visit: {0}"
+    "wayToGetHeiiOnCallDetails": "How to get the Tigger ID and API Keys is explained in the {documentation}"
 }
