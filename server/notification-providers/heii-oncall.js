@@ -25,9 +25,7 @@ class HeiiOnCall extends NotificationProvider {
                 Authorization: "Bearer " + notification.heiiOnCallApiKey,
             },
         };
-        
         const heiiUrl = `https://heiioncall.com/triggers/${notification.heiiOnCallTriggerId}/`;
-        
         // docs https://heiioncall.com/docs#manual-triggers
         try {
             if (!heartbeatJSON) {
@@ -42,7 +40,7 @@ class HeiiOnCall extends NotificationProvider {
                 return okMsg;
             }
             if (heartbeatJSON.status === UP) {
-                await axios.post(heiiUrl + "resolve",payload, config);
+                await axios.post(heiiUrl + "resolve", payload, config);
                 return okMsg;
             }
         } catch (error) {
