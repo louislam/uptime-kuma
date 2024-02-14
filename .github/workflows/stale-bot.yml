@@ -11,10 +11,10 @@ jobs:
     steps:
       - uses: actions/stale@v8
         with:
-          stale-issue-message: 'We are clearing up our old issues and your ticket has been open for 3 months with no activity. Remove stale label or comment or this will be closed in 2 days.'
-          close-issue-message: 'This issue was closed because it has been stalled for 2 days with no activity.'
-          days-before-stale: 90
-          days-before-close: 2
+          stale-issue-message: 'We are clearing up our old `help`-issues and your issue has been open for 60 days with no activity. If no comment is made and the stale label is not removed, this will be closed in 7 days.'
+          close-issue-message: 'This issue was closed because it has been stalled for 2 days with no activity.'          
+          days-before-stale: 60
+          days-before-close: 7
           days-before-pr-stale: -1
           days-before-pr-close: -1
           exempt-issue-labels: 'News,Medium,High,discussion,bug,doc,feature-request'
