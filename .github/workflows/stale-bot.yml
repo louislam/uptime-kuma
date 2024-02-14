@@ -11,7 +11,9 @@ jobs:
     steps:
       - uses: actions/stale@v8
         with:
-          stale-issue-message: 'We are clearing up our old `help`-issues and your issue has been open for 60 days with no activity. If no comment is made and the stale label is not removed, this will be closed in 7 days.'        
+          stale-issue-message: |-
+            We are clearing up our old `help`-issues and your issue has been open for 60 days with no activity.
+            If no comment is made and the stale label is not removed, this will be closed in 7 days.
           days-before-stale: 60
           days-before-close: 7
           days-before-pr-stale: -1
