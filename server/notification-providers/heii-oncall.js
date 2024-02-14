@@ -17,19 +17,24 @@ class HeiiOnCall extends NotificationProvider {
             payload["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
         }
 
-        if (!heartbeatJSON) {
-            // Testing or general notification like certificate expiry
-            payload["msg"] = msg;
-            return this.postNotification(notification, "alert", payload);
+        try {
+            if (!heartbeatJSON) {
+                // Testing or general notification like certificate expiry
+                payload["msg"] = msg;
+                return this.postNotification(notification, "alert", payload);
+            }
+
+            if (heartbeatJSON.status === DOWN) {
+                return this.postNotification(notification, "alert", payload);
+            }
+
+            if (heartbeatJSON.status === UP) {
+                return this.postNotification(notification, "resolve", payload);
+            }
+        } catch (error) {
+            this.throwGeneralAxiosError(error);
         }
 
-        if (heartbeatJSON.status === DOWN) {
-            return this.postNotification(notification, "alert", payload);
-        }
-
-        if (heartbeatJSON.status === UP) {
-            return this.postNotification(notification, "resolve", payload);
-        }
     }
 
     /**
@@ -49,15 +54,11 @@ class HeiiOnCall extends NotificationProvider {
         };
 
         // Post to Heii On-Call Trigger https://heiioncall.com/docs#manual-triggers
-        try {
-            await axios.post(
-                `https://heiioncall.com/triggers/${notification.heiiOnCallTriggerId}/${action}`,
-                payload,
-                config
-            );
-        } catch (error) {
-            this.throwGeneralAxiosError(error);
-        }
+        await axios.post(
+            `https://heiioncall.com/triggers/${notification.heiiOnCallTriggerId}/${action}`,
+            payload,
+            config
+        );
 
         return "Sent Successfully";
     }

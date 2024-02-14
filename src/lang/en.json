@@ -884,6 +884,6 @@
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot",
     "What is a Remote Browser?": "What is a Remote Browser?",
-    "Trigger ID": "Trigger ID",
-    "wayToGetHeiiOnCallDetails": "How to get the Tigger ID and API Keys is explained in the {documentation}"
+    "wayToGetHeiiOnCallDetails": "How to get the Tigger ID and API Keys is explained in the {0}",
+    "documentationOf": "{0} Documentation"
 }

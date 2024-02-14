@@ -9,7 +9,7 @@
         ></HiddenInput>
     </div>
     <div class="mb-3">
-        <label for="heiioncall-trigger-id" class="form-label">{{ $t("Trigger ID") }}<span
+        <label for="heiioncall-trigger-id" class="form-label">Trigger ID<span
             style="color: red;"
         ><sup>*</sup></span></label>
         <HiddenInput
@@ -17,11 +17,9 @@
             autocomplete="false"
         ></HiddenInput>
     </div>
-    <div class="form-text">
-        <i18n-t tag="p" keypath="wayToGetHeiiOnCallDetails" style="margin-top: 8px;">
-            <a href="https://heiioncall.com/docs" target="_blank">{{ $t("documentationOf", ["Heii On-Call"]) }}</a>
-        </i18n-t>
-    </div>
+    <i18n-t tag="p" keypath="wayToGetHeiiOnCallDetails" class="form-text mt-3">
+        <a href="https://heiioncall.com/docs" target="_blank">{{ $t("documentationOf", ["Heii On-Call"]) }}</a>
+    </i18n-t>
 </template>
 
 <script>
