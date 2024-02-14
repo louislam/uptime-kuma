@@ -13,7 +13,7 @@ jobs:
         with:
           stale-issue-message: |-
             We are clearing up our old `help`-issues and your issue has been open for 60 days with no activity.
-            If no comment is made and the stale label is not removed, this will be closed in 7 days.
+            If no comment is made and the stale label is not removed, this issue will be closed in 7 days.
           days-before-stale: 60
           days-before-close: 7
           days-before-pr-stale: -1
@@ -25,13 +25,13 @@ jobs:
         with:
           stale-issue-message: |-
             This issue was marked as `cannot-reproduce` by a maintainer.
-            If an issue is non-reproducible, we cannot fix it, as we do not know what the issue is.
+            If an issue is non-reproducible, we cannot fix it, as we do not know what the underlying issue is.
             If you have any ideas how we can reproduce this issue, we would love to hear them.
             
             We don't have a good way to deal with truely unreproducible issues and are going to close this issue in a month.
             If think there might be other differences in our environment or in how we tried to reproduce this, we would appreciate any ideas.
           close-issue-message: |-
-            This issue will be closed as no way to reproduce has been found.
+            This issue will be closed as no way to reproduce it has been found.
             If you/somebody finds a way how to (semi-reliably) reproduce this, we can reopen this issue. ^^
           days-before-stale: 180
           days-before-close: 30
