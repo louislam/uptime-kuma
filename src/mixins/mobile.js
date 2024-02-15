@@ -36,14 +36,8 @@ export default {
     },
 
     computed: {
-        /**
-         * @param {number? | undefined} width Width of the device
-         * @returns {boolean} Whether the device is mobile
-         */
-        isMobile(width) {
-            return (width && typeof width === "number"
-                ? width ?? this.windowWidth
-                : this.windowWidth) <= 767.98;
+        isMobile() {
+            return this.windowWidth <= 767.98;
         },
     },
 
