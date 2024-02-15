@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="gtxmessaging-api-key" class="form-label">{{ $t("gtxMessagingApiKey") }}</label>
+        <label for="gtxmessaging-api-key" class="form-label">{{ $t("API Key") }}</label>
         <HiddenInput id="gtxmessaging-api-key" v-model="$parent.notification.gtxMessagingApiKey" :required="true"></HiddenInput>
         <div class="form-text">
             {{ $t("gtxMessagingApiKeyHint") }}

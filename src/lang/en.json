@@ -884,7 +884,6 @@
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot",
     "What is a Remote Browser?": "What is a Remote Browser?",
-    "gtxMessagingApiKey": "API Key",
     "gtxMessagingApiKeyHint": "You can find your API key at: My Routing Accounts > Show Account Information > API Credentials > REST API (v2.x)",
     "gtxMessagingFrom": "The originator of the message.",
     "gtxMessagingFromHint": "Allowed is alphanumeric up to 11 chars, shortcode, local longcode or international number (E.164, E.212 or E.214).",

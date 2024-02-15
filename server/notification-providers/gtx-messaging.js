@@ -17,8 +17,8 @@ class GtxMessaging extends NotificationProvider {
 
         try {
             const data = new URLSearchParams();
-            data.append("from", from);
-            data.append("to", to);
+            data.append("from", notification.gtxMessagingFrom.trim());
+            data.append("to", notification.gtxMessagingTo.trim());
             data.append("text", text);
 
             const url = `https://rest.gtx-messaging.net/smsc/sendsms/${notification.gtxMessagingApiKey}/json`;
