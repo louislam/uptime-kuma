@@ -6,7 +6,6 @@
 
 <script>
 import MonitorList from "../components/MonitorList.vue";
-import mobile from "../mixins/mobile";
 
 export default {
     components: {
