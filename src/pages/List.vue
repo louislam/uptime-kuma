@@ -13,7 +13,7 @@ export default {
         MonitorList,
     },
     async mounted() {
-        if (!mobile.computed.isMobile()) {
+        if (!this.$root.isMobile) {
             this.$router.push("/dashboard");
         }
     },
