@@ -12,12 +12,12 @@ export default {
     components: {
         MonitorList,
     },
+    async mounted() {
+        if (!mobile.computed.isMobile()) {
+            this.$router.push("/dashboard");
+        }
+    },
 };
-
-mobile.methods.onResize();
-if (!mobile.computed.isMobile(mobile.methods.windowWidth) && window.location.pathname === "/list") {
-    window.location.href = "/dashboard";
-}
 </script>
 
 <style lang="scss" scoped>
