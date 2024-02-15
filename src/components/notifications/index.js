@@ -13,6 +13,7 @@ import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
 import GrafanaOncall from "./GrafanaOncall.vue";
+import GtxMessaging from "./GtxMessaging.vue";
 import HomeAssistant from "./HomeAssistant.vue";
 import Kook from "./Kook.vue";
 import Line from "./Line.vue";
@@ -111,7 +112,8 @@ const NotificationFormList = {
     "WeCom": WeCom,
     "GoAlert": GoAlert,
     "ServerChan": ServerChan,
-    "ZohoCliq": ZohoCliq
+    "ZohoCliq": ZohoCliq,
+    "gtxmessaging": GtxMessaging,
 };
 
 export default NotificationFormList;
