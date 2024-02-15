@@ -20,11 +20,6 @@
             {{ $t("gtxMessagingToHint") }}
         </div>
     </div>
-    <div class="mb-3">
-        <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
-            <a href="https://www.gtx-messaging.com/en/solutions/sms-gateway-api/" target="_blank">https://www.gtx-messaging.com/en/solutions/sms-gateway-api/</a>
-        </i18n-t>
-    </div>
 </template>
 
 <script>
