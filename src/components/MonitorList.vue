@@ -204,30 +204,53 @@ export default {
             }
         },
     },
-    mounted() {
+    async mounted() {
         window.addEventListener("scroll", this.onScroll);
 
-        const url = new URL(location.href);
-        const params = url.searchParams;
-        const filterParam = params.get("filter");
-        const statusParams = params.getAll("status");
+        const statusParams = this.$router.currentRoute.value.query["status"];
+        const activeParams = this.$router.currentRoute.value.query["active"];
+        const tagParams = this.$router.currentRoute.value.query["tags"];
 
-        if (filterParam !== "true") {
-            return;
-        }
-
-        const states = {
+        const statusStates = {
             up: 1,
             down: 0,
             pending: 2,
             maintenance: 3,
         };
 
+        const activeStates = {
+            running: true,
+            paused: false,
+        };
+
+        const tags = await (() => {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("getTags", (res) => {
+                    if (res.ok) {
+                        resolve(res.tags);
+                    }
+                });
+            });
+        })();
+
+        const fetchedTagIDs = tagParams
+            .split(",")
+            .map(identifier => {
+                const tagID = parseInt(identifier, 10);
+                return tags
+                    .find(t => t.name === identifier || t.id === tagID)
+                    ?.id ?? 0;
+            });
+
         this.updateFilter({
             ...this.filterState,
-            status: statusParams.map(
-                status => states[status]
-            ),
+            status: statusParams ? statusParams.split(",").map(
+                status => statusStates[status.trim()]
+            ) : this.filterState["status"],
+            active: activeParams ? activeParams.split(",").map(
+                active => activeStates[active.trim()]
+            ) : this.filterState["active"],
+            tags: tagParams ? fetchedTagIDs : this.filterState["tags"],
         });
     },
     beforeUnmount() {
