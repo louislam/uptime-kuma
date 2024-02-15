@@ -8,6 +8,9 @@ class RocketChat extends NotificationProvider {
 
     name = "rocket.chat";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
@@ -22,8 +25,6 @@ class RocketChat extends NotificationProvider {
                 return okMsg;
             }
 
-            const time = heartbeatJSON["time"];
-
             let data = {
                 "text": "Uptime Kuma Alert",
                 "channel": notification.rocketchannel,
@@ -31,7 +32,7 @@ class RocketChat extends NotificationProvider {
                 "icon_emoji": notification.rocketiconemo,
                 "attachments": [
                     {
-                        "title": "Uptime Kuma Alert *Time (UTC)*\n" + time,
+                        "title": `Uptime Kuma Alert *Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
                         "text": "*Message*\n" + msg,
                     }
                 ]

@@ -5,6 +5,9 @@ class Kook extends NotificationProvider {
 
     name = "Kook";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         let url = "https://www.kookapp.cn/api/v3/message/create";

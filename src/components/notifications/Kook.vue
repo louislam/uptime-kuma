@@ -9,10 +9,7 @@
 
     <div class="mb-3">
         <label for="kook-guild-id" class="form-label">{{ $t("Guild ID") }}</label>
-
-        <div class="input-group mb-3">
-            <input id="kook-guild-id" v-model="$parent.notification.kookGuildID" type="text" class="form-control" required>
-        </div>
+        <input id="kook-guild-id" v-model="$parent.notification.kookGuildID" type="text" class="form-control" required>
 
         <div class="form-text">
             <p style="margin-top: 8px;">

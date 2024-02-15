@@ -36,7 +36,7 @@
                                     v-model="affectedMonitors"
                                     :options="affectedMonitorsOptions"
                                     track-by="id"
-                                    label="name"
+                                    label="pathName"
                                     :multiple="true"
                                     :close-on-select="false"
                                     :clear-on-select="false"
@@ -203,8 +203,8 @@
                                     <label for="timezone" class="form-label">
                                         {{ $t("Timezone") }}
                                     </label>
-                                    <select id="timezone" v-model="maintenance.timezone" class="form-select">
-                                        <option :value="null">{{ $t("sameAsServerTimezone") }}</option>
+                                    <select id="timezone" v-model="maintenance.timezoneOption" class="form-select">
+                                        <option value="SAME_AS_SERVER">{{ $t("sameAsServerTimezone") }}</option>
                                         <option value="UTC">UTC</option>
                                         <option
                                             v-for="(timezone, index) in timezoneList"
@@ -218,17 +218,17 @@
 
                                 <!-- Date Range -->
                                 <div class="my-3">
-                                    <label class="form-label">{{ $t("Effective Date Range") }}</label>
+                                    <label v-if="maintenance.strategy !== 'single'" class="form-label">{{ $t("Effective Date Range") }}</label>
 
                                     <div class="row">
                                         <div class="col">
                                             <div class="mb-2">{{ $t("startDateTime") }}</div>
-                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control">
+                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
                                         </div>
 
                                         <div class="col">
                                             <div class="mb-2">{{ $t("endDateTime") }}</div>
-                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control">
+                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
                                         </div>
                                     </div>
                                 </div>
@@ -246,14 +246,10 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
-import dayjs from "dayjs";
 import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
 import cronstrue from "cronstrue/i18n";
-
-const toast = useToast();
 
 export default {
     components: {
@@ -272,7 +268,6 @@ export default {
             selectedStatusPages: [],
             dark: (this.$root.theme === "dark"),
             neverEnd: false,
-            minDate: this.$root.date(dayjs()) + " 00:00",
             lastDays: [
                 {
                     langKey: "lastDay1",
@@ -383,21 +378,46 @@ export default {
         },
     },
     mounted() {
-        this.init();
-
         this.$root.getMonitorList((res) => {
             if (res.ok) {
-                Object.values(this.$root.monitorList).map(monitor => {
+                Object.values(this.$root.monitorList).sort((m1, m2) => {
+
+                    if (m1.active !== m2.active) {
+                        if (m1.active === 0) {
+                            return 1;
+                        }
+
+                        if (m2.active === 0) {
+                            return -1;
+                        }
+                    }
+
+                    if (m1.weight !== m2.weight) {
+                        if (m1.weight > m2.weight) {
+                            return -1;
+                        }
+
+                        if (m1.weight < m2.weight) {
+                            return 1;
+                        }
+                    }
+
+                    return m1.pathName.localeCompare(m2.pathName);
+                }).map(monitor => {
                     this.affectedMonitorsOptions.push({
                         id: monitor.id,
-                        name: monitor.name,
+                        pathName: monitor.pathName,
                     });
                 });
             }
+            this.init();
         });
     },
     methods: {
-        /** Initialise page */
+        /**
+         * Initialise page
+         * @returns {void}
+         */
         init() {
             this.affectedMonitors = [];
             this.selectedStatusPages = [];
@@ -411,7 +431,7 @@ export default {
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [ this.minDate ],
+                    dateRange: [],
                     timeRange: [{
                         hours: 2,
                         minutes: 0,
@@ -421,7 +441,7 @@ export default {
                     }],
                     weekdays: [],
                     daysOfMonth: [],
-                    timezone: null,
+                    timezoneOption: null,
                 };
             } else if (this.isEdit) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
@@ -431,10 +451,10 @@ export default {
                         this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
                             if (res.ok) {
                                 Object.values(res.monitors).map(monitor => {
-                                    this.affectedMonitors.push(monitor);
+                                    this.affectedMonitors.push(this.affectedMonitorsOptions.find(item => item.id === monitor.id));
                                 });
                             } else {
-                                toast.error(res.msg);
+                                this.$root.toastError(res.msg);
                             }
                         });
 
@@ -449,22 +469,25 @@ export default {
 
                                 this.showOnAllPages = Object.values(res.statusPages).length === this.selectedStatusPagesOptions.length;
                             } else {
-                                toast.error(res.msg);
+                                this.$root.toastError(res.msg);
                             }
                         });
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
         },
 
-        /** Create new maintenance */
+        /**
+         * Create new maintenance
+         * @returns {Promise<void>}
+         */
         async submit() {
             this.processing = true;
 
             if (this.affectedMonitors.length === 0) {
-                toast.error(this.$t("atLeastOneMonitor"));
+                this.$root.toastError(this.$t("atLeastOneMonitor"));
                 return this.processing = false;
             }
 
@@ -473,14 +496,14 @@ export default {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {
-                                toast.success(res.msg);
+                                this.$root.toastRes(res);
                                 this.processing = false;
                                 this.$root.getMaintenanceList();
                                 this.$router.push("/maintenance");
                             });
                         });
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastRes(res);
                         this.processing = false;
                     }
 
@@ -498,7 +521,7 @@ export default {
                         });
                     } else {
                         this.processing = false;
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -506,13 +529,14 @@ export default {
 
         /**
          * Add monitor to maintenance
-         * @param {number} maintenanceID
-         * @param {socketCB} callback
+         * @param {number} maintenanceID ID of maintenance to modify
+         * @param {socketCB} callback Callback for socket response
+         * @returns {Promise<void>}
          */
         async addMonitorMaintenance(maintenanceID, callback) {
             await this.$root.addMonitorMaintenance(maintenanceID, this.affectedMonitors, async (res) => {
                 if (!res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 } else {
                     this.$root.getMonitorList();
                 }
@@ -523,13 +547,14 @@ export default {
 
         /**
          * Add status page to maintenance
-         * @param {number} maintenanceID
-         * @param {socketCB} callback
+         * @param {number} maintenanceID ID of maintenance to modify
+         * @param {socketCB} callback Callback for socket response
+         * @returns {void}
          */
         async addMaintenanceStatusPage(maintenanceID, callback) {
             await this.$root.addMaintenanceStatusPage(maintenanceID, (this.showOnAllPages) ? this.selectedStatusPagesOptions : this.selectedStatusPages, async (res) => {
                 if (!res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 } else {
                     this.$root.getMaintenanceList();
                 }

@@ -5,6 +5,9 @@ const { DOWN, UP } = require("../../src/util");
 class Feishu extends NotificationProvider {
     name = "Feishu";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         let feishuWebHookUrl = notification.feishuWebHookUrl;
@@ -35,8 +38,7 @@ class Feishu extends NotificationProvider {
                                             text:
                                                 "[Down] " +
                                                 heartbeatJSON["msg"] +
-                                                "\nTime (UTC): " +
-                                                heartbeatJSON["time"],
+                                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                                         },
                                     ],
                                 ],
@@ -62,8 +64,7 @@ class Feishu extends NotificationProvider {
                                             text:
                                                 "[Up] " +
                                                 heartbeatJSON["msg"] +
-                                                "\nTime (UTC): " +
-                                                heartbeatJSON["time"],
+                                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                                         },
                                     ],
                                 ],
