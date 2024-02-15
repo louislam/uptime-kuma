@@ -885,6 +885,9 @@
     "Browser Screenshot": "Browser Screenshot",
     "What is a Remote Browser?": "What is a Remote Browser?",
     "gtxMessagingApiKey": "API Key",
-    "gtxMessagingFrom": "From",
-    "gtxMessagingTo": "To"
+    "gtxMessagingApiKeyHint": "You can find your API key at: My Routing Accounts > Show Account Information > API Credentials > REST API (v2.x)",
+    "gtxMessagingFrom": "The originator of the message.",
+    "gtxMessagingFromHint": "Allowed is alphanumeric up to 11 chars, shortcode, local longcode or international number (E.164, E.212 or E.214).",
+    "gtxMessagingTo": "The recipient of the message.",
+    "gtxMessagingToHint": "International format, with leading \"+\" (E.164, E.212 or E.214)."
 }
