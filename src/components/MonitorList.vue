@@ -206,6 +206,29 @@ export default {
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+
+        const url = new URL(location.href);
+        const params = url.searchParams;
+        const filterParam = params.get("filter");
+        const statusParams = params.getAll("status");
+
+        if (filterParam !== "true") {
+            return;
+        }
+
+        const states = {
+            up: 1,
+            down: 0,
+            pending: 2,
+            maintenance: 3,
+        };
+
+        this.updateFilter({
+            ...this.filterState,
+            status: statusParams.map(
+                status => states[status]
+            ),
+        });
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
