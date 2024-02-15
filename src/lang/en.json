@@ -885,5 +885,6 @@
     "Browser Screenshot": "Browser Screenshot",
     "What is a Remote Browser?": "What is a Remote Browser?",
     "Command": "Command",
-    "mongodbCommandDescription": "Run a MongoDB command against the database. For information about the available commands check out the MongoDB documentation {0}."
+    "mongodbCommandDescription": "Run a MongoDB command against the database. For information about the available commands check out the {documentation}",
+    "documentationOf": "{0} Documentation"
 }

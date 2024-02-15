@@ -440,7 +440,9 @@
                                     <label for="mongodbCommand" class="form-label">{{ $t("Command") }}</label>
                                     <textarea id="mongodbCommand" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ '{ &quot;ping&quot;: 1 }' ])"></textarea>
                                     <i18n-t tag="div" class="form-text" keypath="mongodbCommandDescription">
-                                        <a href="https://www.mongodb.com/docs/manual/reference/command/">{{ $t('here') }}</a>
+                                        <template #documentation>
+                                            <a href="https://www.mongodb.com/docs/manual/reference/command/">{{ $t('documentationOf', ['MongoDB']) }}</a>
+                                        </template>
                                     </i18n-t>
                                 </div>
                                 <div class="my-3">
