@@ -66,6 +66,10 @@ class StatusPage extends BeanModel {
             head.append($(escapedGoogleAnalyticsScript));
         }
 
+        if (process.env.UPTIME_KUMA_ALLOW_CUSTOM_HTML === "1") {
+            head.append(statusPage.customHtml);
+        }
+
         // OG Meta Tags
         let ogTitle = $("<meta property=\"og:title\" content=\"\" />").attr("content", statusPage.title);
         head.append(ogTitle);
@@ -247,6 +251,7 @@ class StatusPage extends BeanModel {
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            customHtml: this.custom_html
         };
     }
 
@@ -270,6 +275,7 @@ class StatusPage extends BeanModel {
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            customHtml: this.custom_html
         };
     }
 

@@ -104,6 +104,15 @@
                     <prism-editor v-model="config.customCSS" class="css-editor" :highlight="highlighter" line-numbers></prism-editor>
                 </div>
 
+                <!-- Custom HTML -->
+                <div class="my-3">
+                    <div class="mb-1">{{ $t("Custom HTML") }}</div>
+                    <prism-editor v-model="config.customHtml" class="css-editor" :highlight="highlighter" line-numbers></prism-editor>
+                    <div class="form-text">
+                        {{ $t("customHtmlEnvVar1") }} <code>UPTIME_KUMA_ALLOW_CUSTOM_HTML</code> {{ $t("customHtmlEnvVar2") }} <code>1</code>.
+                    </div>
+                </div>
+
                 <div class="danger-zone">
                     <button class="btn btn-danger me-2" @click="deleteDialog">
                         <font-awesome-icon icon="trash" />
