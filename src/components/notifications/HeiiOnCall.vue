@@ -18,7 +18,9 @@
         ></HiddenInput>
     </div>
     <i18n-t tag="p" keypath="wayToGetHeiiOnCallDetails" class="form-text mt-3">
-        <a href="https://heiioncall.com/docs" target="_blank">{{ $t("documentationOf", ["Heii On-Call"]) }}</a>
+        <template #documentation>
+            <a href="https://heiioncall.com/docs" target="_blank">{{ $t("documentationOf", ["Heii On-Call"]) }}</a>
+        </template>
     </i18n-t>
 </template>
 
