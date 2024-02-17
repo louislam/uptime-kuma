@@ -161,6 +161,7 @@
     "Add New below or Select...": "Добавить новый или выбрать…",
     "Tag with this name already exist.": "Такой тег уже существует.",
     "Tag with this value already exist.": "Тег с таким значением уже существует.",
+    "Tag name contains a comma.": "Название тега содержит запятую.",
     "color": "цвет",
     "value (optional)": "значение (необязательно)",
     "Gray": "Серый",
