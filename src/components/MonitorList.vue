@@ -100,16 +100,16 @@ export default {
                 down: 0,
                 pending: 2,
                 maintenance: 3,
-                1: 'up',
-                0: 'down',
-                2: 'pending',
-                3: 'maintenance',
+                1: "up",
+                0: "down",
+                2: "pending",
+                3: "maintenance",
             },
             activeStates: {
                 running: true,
                 paused: false,
-                true: 'running',
-                false: 'paused',
+                true: "running",
+                false: "paused",
             },
         };
     },
@@ -293,11 +293,11 @@ export default {
         updateFilter(newFilter) {
             const newQuery = { ...this.$router.currentRoute.value.query };
 
-            for (const [key, value] of Object.entries(newFilter)) {
+            for (const [ key, value ] of Object.entries(newFilter)) {
                 if (!value
                     || (value instanceof Array && value.length === 0)) {
                     delete newQuery[key];
-                    continue
+                    continue;
                 }
 
                 newQuery[key] = value instanceof Array
