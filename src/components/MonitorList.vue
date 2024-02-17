@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="header-filter">
-                <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
+                <MonitorListFilter @update-filter="updateFilter" />
             </div>
 
             <!-- Selection Controls -->
@@ -95,11 +95,22 @@ export default {
             disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
-            filterState: {
-                status: null,
-                active: null,
-                tags: null,
-            }
+            statusStates: {
+                up: 1,
+                down: 0,
+                pending: 2,
+                maintenance: 3,
+                1: 'up',
+                0: 'down',
+                2: 'pending',
+                3: 'maintenance',
+            },
+            activeStates: {
+                running: true,
+                paused: false,
+                true: 'running',
+                false: 'paused',
+            },
         };
     },
     computed: {
@@ -169,7 +180,7 @@ export default {
          * @returns {boolean} True if any filter is active, false otherwise.
          */
         filtersActive() {
-            return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
+            return this.$router.currentRoute.value.query?.status != null || this.$router.currentRoute.value.query?.active != null || this.$router.currentRoute.value.query?.tags != null || this.searchText !== "";
         }
     },
     watch: {
@@ -207,21 +218,10 @@ export default {
     async mounted() {
         window.addEventListener("scroll", this.onScroll);
 
-        const statusParams = this.$router.currentRoute.value.query["status"];
-        const activeParams = this.$router.currentRoute.value.query["active"];
-        const tagParams = this.$router.currentRoute.value.query["tags"];
-
-        const statusStates = {
-            up: 1,
-            down: 0,
-            pending: 2,
-            maintenance: 3,
-        };
-
-        const activeStates = {
-            running: true,
-            paused: false,
-        };
+        const queryParams = this.$router.currentRoute.value.query;
+        const statusParams = queryParams?.["status"];
+        const activeParams = queryParams?.["active"];
+        const tagParams = queryParams?.["tags"];
 
         const tags = await (() => {
             return new Promise((resolve) => {
@@ -233,24 +233,26 @@ export default {
             });
         })();
 
-        const fetchedTagIDs = tagParams
-            .split(",")
-            .map(identifier => {
-                const tagID = parseInt(identifier, 10);
-                return tags
-                    .find(t => t.name === identifier || t.id === tagID)
-                    ?.id ?? 0;
-            });
+        const fetchedTagNames = tagParams
+            ? tagParams
+                .split(",")
+                .map(identifier => {
+                    const tagID = parseInt(identifier, 10);
+                    return tags
+                        .find(t => t.name === identifier || t.id === tagID)
+                        ?.name ?? 0;
+                })
+                .filter(tagID => tagID !== 0)
+            : undefined;
 
         this.updateFilter({
-            ...this.filterState,
             status: statusParams ? statusParams.split(",").map(
-                status => statusStates[status.trim()]
-            ) : this.filterState["status"],
+                status => this.statusStates[this.statusStates[status.trim()]]
+            ) : queryParams?.["status"],
             active: activeParams ? activeParams.split(",").map(
-                active => activeStates[active.trim()]
-            ) : this.filterState["active"],
-            tags: tagParams ? fetchedTagIDs : this.filterState["tags"],
+                active => this.activeStates[this.activeStates[active.trim()]]
+            ) : queryParams?.["active"],
+            tags: tagParams ? fetchedTagNames : queryParams?.["tags"],
         });
     },
     beforeUnmount() {
@@ -289,7 +291,20 @@ export default {
          * @returns {void}
          */
         updateFilter(newFilter) {
-            this.filterState = newFilter;
+            const newQuery = { ...this.$router.currentRoute.value.query };
+
+            for (const [key, value] of Object.entries(newFilter)) {
+                if (!value
+                    || (value instanceof Array && value.length === 0)) {
+                    delete newQuery[key];
+                    continue
+                }
+
+                newQuery[key] = value instanceof Array
+                    ? value.length > 0 ? value.join(",") : null
+                    : value;
+            }
+            this.$router.push({ query: newQuery });
         },
         /**
          * Deselect a monitor
@@ -379,24 +394,25 @@ export default {
 
             // filter by status
             let statusMatch = true;
-            if (this.filterState.status != null && this.filterState.status.length > 0) {
+            if (this.$router.currentRoute.value.query?.status != null && this.$router.currentRoute.value.query?.status.length > 0) {
                 if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
                     monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
                 }
-                statusMatch = this.filterState.status.includes(monitor.status);
+                statusMatch = this.$router.currentRoute.value.query?.status.includes(this.statusStates[monitor.status]);
             }
 
             // filter by active
             let activeMatch = true;
-            if (this.filterState.active != null && this.filterState.active.length > 0) {
-                activeMatch = this.filterState.active.includes(monitor.active);
+            if (this.$router.currentRoute.value.query?.active != null && this.$router.currentRoute.value.query?.active.length > 0) {
+                activeMatch = this.$router.currentRoute.value.query?.active.includes(monitor.active);
             }
 
             // filter by tags
             let tagsMatch = true;
-            if (this.filterState.tags != null && this.filterState.tags.length > 0) {
-                tagsMatch = monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
-                    .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
+            const tagsInURL = this.$router.currentRoute.value.query?.tags?.split(",") || [];
+            if (this.$router.currentRoute.value.query?.tags != null && this.$router.currentRoute.value.query?.tags.length > 0) {
+                tagsMatch = monitor.tags.map(tag => tag.name) // convert to array of tag names
+                    .filter(monitorTagId => tagsInURL.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
                     .length > 0;
             }
 

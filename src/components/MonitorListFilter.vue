@@ -14,10 +14,10 @@
             <font-awesome-icon v-if="numFiltersActive > 0" icon="times" />
         </button>
         <MonitorListFilterDropdown
-            :filterActive="filterState.status?.length > 0"
+            :filterActive="this.$router.currentRoute.value.query?.status?.length > 0"
         >
             <template #status>
-                <Status v-if="filterState.status?.length === 1" :status="filterState.status[0]" />
+                <Status v-if="this.$router.currentRoute.value.query?.status?.length === 1" :status="this.$router.currentRoute.value.query?.status[0]" />
                 <span v-else>
                     {{ $t('Status') }}
                 </span>
@@ -29,7 +29,7 @@
                             <Status :status="1" />
                             <span class="ps-3">
                                 {{ $root.stats.up }}
-                                <span v-if="filterState.status?.includes(1)" class="px-1 filter-active">
+                                <span v-if="this.$router.currentRoute.value.query?.status?.includes('up')" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -42,7 +42,7 @@
                             <Status :status="0" />
                             <span class="ps-3">
                                 {{ $root.stats.down }}
-                                <span v-if="filterState.status?.includes(0)" class="px-1 filter-active">
+                                <span v-if="this.$router.currentRoute.value.query?.status?.includes('down')" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -55,7 +55,7 @@
                             <Status :status="2" />
                             <span class="ps-3">
                                 {{ $root.stats.pending }}
-                                <span v-if="filterState.status?.includes(2)" class="px-1 filter-active">
+                                <span v-if="this.$router.currentRoute.value.query?.status?.includes('pending')" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -68,7 +68,7 @@
                             <Status :status="3" />
                             <span class="ps-3">
                                 {{ $root.stats.maintenance }}
-                                <span v-if="filterState.status?.includes(3)" class="px-1 filter-active">
+                                <span v-if="this.$router.currentRoute.value.query?.status?.includes('maintenance')" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -77,10 +77,10 @@
                 </li>
             </template>
         </MonitorListFilterDropdown>
-        <MonitorListFilterDropdown :filterActive="filterState.active?.length > 0">
+        <MonitorListFilterDropdown :filterActive="this.$router.currentRoute.value.query?.active?.length > 0">
             <template #status>
-                <span v-if="filterState.active?.length === 1">
-                    <span v-if="filterState.active[0]">{{ $t("Running") }}</span>
+                <span v-if="this.$router.currentRoute.value.query?.active?.length === 1">
+                    <span v-if="this.$router.currentRoute.value.query?.active[0]">{{ $t("Running") }}</span>
                     <span v-else>{{ $t("filterActivePaused") }}</span>
                 </span>
                 <span v-else>
@@ -94,7 +94,7 @@
                             <span>{{ $t("Running") }}</span>
                             <span class="ps-3">
                                 {{ $root.stats.active }}
-                                <span v-if="filterState.active?.includes(true)" class="px-1 filter-active">
+                                <span v-if="this.$router.currentRoute.value.query?.active?.includes(true)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -107,7 +107,7 @@
                             <span>{{ $t("filterActivePaused") }}</span>
                             <span class="ps-3">
                                 {{ $root.stats.pause }}
-                                <span v-if="filterState.active?.includes(false)" class="px-1 filter-active">
+                                <span v-if="this.$router.currentRoute.value.query?.active?.includes(false)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -116,11 +116,11 @@
                 </li>
             </template>
         </MonitorListFilterDropdown>
-        <MonitorListFilterDropdown :filterActive="filterState.tags?.length > 0">
+        <MonitorListFilterDropdown :filterActive="this.$router.currentRoute.value.query?.tags?.length > 0">
             <template #status>
                 <Tag
-                    v-if="filterState.tags?.length === 1"
-                    :item="tagsList.find(tag => tag.id === filterState.tags[0])"
+                    v-if="this.$router.currentRoute.value.query?.tags?.length === 1"
+                    :item="tagsList.find(tag => tag.id === this.$router.currentRoute.value.query?.tags[0])"
                     :size="'sm'"
                 />
                 <span v-else>
@@ -134,7 +134,7 @@
                             <span><Tag :item="tag" :size="'sm'" /></span>
                             <span class="ps-3">
                                 {{ getTaggedMonitorCount(tag) }}
-                                <span v-if="filterState.tags?.includes(tag.id)" class="px-1 filter-active">
+                                <span v-if="this.$router.currentRoute.value.query?.tags?.split(',').includes(tag.name)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -162,23 +162,26 @@ export default {
         Status,
         Tag,
     },
-    props: {
-        filterState: {
-            type: Object,
-            required: true,
-        }
-    },
     emits: [ "updateFilter" ],
     data() {
         return {
             tagsList: [],
+            filterNames: [
+                'status',
+                'active',
+                'tags',
+            ],
         };
     },
     computed: {
         numFiltersActive() {
             let num = 0;
 
-            Object.values(this.filterState).forEach(item => {
+            Object.values(
+                Array.from(Object.entries(this.$router.currentRoute.value.query)).filter(
+                    e => this.filterNames.includes(e[0])
+                )
+            ).forEach(item => {
                 if (item != null && item.length > 0) {
                     num += 1;
                 }
@@ -191,52 +194,63 @@ export default {
         this.getExistingTags();
     },
     methods: {
+        getActiveFilters: function() {
+            const filters = Object.fromEntries(
+                Array.from(Object.entries(this.$router.currentRoute.value.query ?? {}))
+            );
+
+            return {
+                status: filters['status'] ? filters['status'].split(',') : [],
+                active: filters['active'] ? filters['active'].split(',') : [],
+                tags: filters['tags'] ? filters['tags'].split(',') : [],
+            };
+        },
         toggleStatusFilter(status) {
             let newFilter = {
-                ...this.filterState
+                ...this.getActiveFilters(),
             };
 
-            if (newFilter.status == null) {
-                newFilter.status = [ status ];
+            const statusStates = {
+                1: 'up',
+                0: 'down',
+                2: 'pending',
+                3: 'maintenance',
+            };
+
+            const finalStatus = statusStates[status];
+
+            if (newFilter.status.includes(''+finalStatus)) {
+                newFilter.status = newFilter.status.filter(item => item !== ''+finalStatus);
             } else {
-                if (newFilter.status.includes(status)) {
-                    newFilter.status = newFilter.status.filter(item => item !== status);
-                } else {
-                    newFilter.status.push(status);
-                }
+                newFilter.status.push(finalStatus);
             }
+
             this.$emit("updateFilter", newFilter);
         },
         toggleActiveFilter(active) {
             let newFilter = {
-                ...this.filterState
+                ...this.getActiveFilters(),
             };
 
-            if (newFilter.active == null) {
-                newFilter.active = [ active ];
+            if (newFilter.active.includes(''+active)) {
+                newFilter.active = newFilter.active.filter(item => item !== ''+active);
             } else {
-                if (newFilter.active.includes(active)) {
-                    newFilter.active = newFilter.active.filter(item => item !== active);
-                } else {
-                    newFilter.active.push(active);
-                }
+                newFilter.active.push(active);
             }
+
             this.$emit("updateFilter", newFilter);
         },
         toggleTagFilter(tag) {
             let newFilter = {
-                ...this.filterState
+                ...this.getActiveFilters(),
             };
 
-            if (newFilter.tags == null) {
-                newFilter.tags = [ tag.id ];
+            if (newFilter.tags.includes(''+tag.name)) {
+                newFilter.tags = newFilter.tags.filter(item => item !== ''+tag.name);
             } else {
-                if (newFilter.tags.includes(tag.id)) {
-                    newFilter.tags = newFilter.tags.filter(item => item !== tag.id);
-                } else {
-                    newFilter.tags.push(tag.id);
-                }
+                newFilter.tags.push(tag.name);
             }
+
             this.$emit("updateFilter", newFilter);
         },
         clearFilters() {
