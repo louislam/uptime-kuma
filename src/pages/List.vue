@@ -11,11 +11,6 @@ export default {
     components: {
         MonitorList,
     },
-    async mounted() {
-        if (!this.$root.isMobile) {
-            this.$router.push("/dashboard");
-        }
-    },
 };
 </script>
 
