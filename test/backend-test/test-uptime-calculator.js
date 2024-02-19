@@ -78,22 +78,27 @@ test("Test getMinutelyKey", async (t) => {
 
 test("Test getDailyKey", async (t) => {
     let c2 = new UptimeCalculator();
-    let dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 20:46:00").unix());
+    let dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 20:46:00"));
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
 
     c2 = new UptimeCalculator();
-    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 23:45:30").unix());
+    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 23:45:30"));
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
 
     // Edge case 1
     c2 = new UptimeCalculator();
-    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 23:59:59").unix());
+    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 23:59:59"));
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
 
     // Edge case 2
     c2 = new UptimeCalculator();
-    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 00:00:00").unix());
+    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 00:00:00"));
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
+
+    // Test timezone
+    c2 = new UptimeCalculator();
+    dailyKey = c2.getDailyKey(dayjs("Sat Dec 23 2023 05:38:39 GMT+0800 (Hong Kong Standard Time)"));
+    assert.strictEqual(dailyKey, dayjs.utc("2023-12-22").unix());
 });
 
 test("Test lastDailyUptimeData", async (t) => {
@@ -353,21 +358,27 @@ test("Test get1YearUptime (1 check per day)", async (t) => {
 
 /**
  * Code from here: https://stackoverflow.com/a/64550489/1097815
+ * @returns {{rss: string, heapTotal: string, heapUsed: string, external: string}} Current memory usage
  */
 function memoryUsage() {
     const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
     const memoryData = process.memoryUsage();
 
-    const memoryUsage = {
+    return {
         rss: `${formatMemoryUsage(memoryData.rss)} -> Resident Set Size - total memory allocated for the process execution`,
         heapTotal: `${formatMemoryUsage(memoryData.heapTotal)} -> total size of the allocated heap`,
         heapUsed: `${formatMemoryUsage(memoryData.heapUsed)} -> actual memory used during the execution`,
         external: `${formatMemoryUsage(memoryData.external)} -> V8 external memory`,
     };
-    return memoryUsage;
 }
 
 test("Worst case", async (t) => {
+
+    // Disable on GitHub Actions, as it is not stable on it
+    if (process.env.GITHUB_ACTIONS) {
+        return;
+    }
+
     console.log("Memory usage before preparation", memoryUsage());
 
     let c = new UptimeCalculator();

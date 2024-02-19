@@ -101,12 +101,8 @@ export default {
          */
         deleteMaintenance() {
             this.$root.deleteMaintenance(this.maintenance.id, (res) => {
-                if (res.ok) {
-                    toast.success(res.msg);
-                    this.$router.push("/maintenance");
-                } else {
-                    toast.error(res.msg);
-                }
+                this.$root.toastRes(res);
+                this.$router.push("/maintenance");
             });
         },
     },

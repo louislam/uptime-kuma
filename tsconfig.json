@@ -8,7 +8,8 @@
             "es2020",
             "DOM"
         ],
-        "removeComments": false,
+        "declaration": false,
+        "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": false,
         "strict": true

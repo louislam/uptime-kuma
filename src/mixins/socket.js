@@ -3,8 +3,10 @@ import { useToast } from "vue-toastification";
 import jwtDecode from "jwt-decode";
 import Favico from "favico.js";
 import dayjs from "dayjs";
+import mitt from "mitt";
+
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getDevContainerServerHostname, isDevContainer } from "../util-frontend.js";
+import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
@@ -39,12 +41,12 @@ export default {
             maintenanceList: {},
             apiKeyList: {},
             heartbeatList: { },
-            importantHeartbeatList: { },
             avgPingList: { },
             uptimeList: { },
             tlsInfoList: {},
             notificationList: [],
             dockerHostList: [],
+            remoteBrowserList: [],
             statusPageListLoaded: false,
             statusPageList: [],
             proxyList: [],
@@ -59,6 +61,7 @@ export default {
                 currentPassword: "",
             },
             faviconUpdateDebounce: null,
+            emitter: mitt(),
         };
     },
 
@@ -96,23 +99,23 @@ export default {
 
             this.socket.initedSocketIO = true;
 
-            let protocol = (location.protocol === "https:") ? "wss://" : "ws://";
+            let protocol = location.protocol + "//";
 
-            let wsHost;
+            let url;
             const env = process.env.NODE_ENV || "production";
             if (env === "development" && isDevContainer()) {
-                wsHost = protocol + getDevContainerServerHostname();
+                url = protocol + getDevContainerServerHostname();
             } else if (env === "development" || localStorage.dev === "dev") {
-                wsHost = protocol + location.hostname + ":3001";
+                url = protocol + location.hostname + ":3001";
             } else {
-                wsHost = protocol + location.host;
+                // Connect to the current url
+                url = undefined;
             }
 
             // always starts and ends with '/'
             const basePath = document.querySelector("head base").getAttribute("href");
 
-            socket = io(wsHost, {
-                transports: [ "websocket" ],
+            socket = io(url, {
                 path: basePath + "socket.io",
             });
 
@@ -176,6 +179,10 @@ export default {
                 this.dockerHostList = data;
             });
 
+            socket.on("remoteBrowserList", (data) => {
+                this.remoteBrowserList = data;
+            });
+
             socket.on("heartbeat", (data) => {
                 if (! (data.monitorID in this.heartbeatList)) {
                     this.heartbeatList[data.monitorID] = [];
@@ -194,22 +201,18 @@ export default {
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
                             toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
-                                timeout: false,
+                                timeout: getToastErrorTimeout(),
                             });
                         } else if (data.status === 1) {
                             toast.success(`[${this.monitorList[data.monitorID].name}] [Up] ${data.msg}`, {
-                                timeout: 20000,
+                                timeout: getToastSuccessTimeout(),
                             });
                         } else {
                             toast(`[${this.monitorList[data.monitorID].name}] ${data.msg}`);
                         }
                     }
 
-                    if (! (data.monitorID in this.importantHeartbeatList)) {
-                        this.importantHeartbeatList[data.monitorID] = [];
-                    }
-
-                    this.importantHeartbeatList[data.monitorID].unshift(data);
+                    this.emitter.emit("newImportantHeartbeat", data);
                 }
             });
 
@@ -231,14 +234,6 @@ export default {
 
             socket.on("certInfo", (monitorID, data) => {
                 this.tlsInfoList[monitorID] = JSON.parse(data);
-            });
-
-            socket.on("importantHeartbeatList", (monitorID, data, overwrite) => {
-                if (! (monitorID in this.importantHeartbeatList) || overwrite) {
-                    this.importantHeartbeatList[monitorID] = data;
-                } else {
-                    this.importantHeartbeatList[monitorID] = data.concat(this.importantHeartbeatList[monitorID]);
-                }
             });
 
             socket.on("connect_error", (err) => {
@@ -296,6 +291,10 @@ export default {
 
             socket.on("initServerTimezone", () => {
                 socket.emit("initServerTimezone", dayjs.tz.guess());
+            });
+
+            socket.on("refresh", () => {
+                location.reload();
             });
         },
 
@@ -356,7 +355,7 @@ export default {
          * @returns {void}
          */
         toastSuccess(msg) {
-            toast.success(msg);
+            toast.success(this.$t(msg));
         },
 
         /**
@@ -365,7 +364,7 @@ export default {
          * @returns {void}
          */
         toastError(msg) {
-            toast.error(msg);
+            toast.error(this.$t(msg));
         },
 
         /**
@@ -634,7 +633,6 @@ export default {
         clearData() {
             console.log("reset heartbeat list");
             this.heartbeatList = {};
-            this.importantHeartbeatList = {};
         },
 
         /**
@@ -687,7 +685,7 @@ export default {
          */
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
-        }
+        },
     },
 
     computed: {
