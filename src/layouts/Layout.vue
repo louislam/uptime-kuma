@@ -212,10 +212,16 @@ export default {
 
 .nav-link {
     &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: $primary;
+        color: #fff;
 
         .dark & {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: $primary;
+            color: #000;
+        }
+
+        &.active {
+            background-color: $highlight;
         }
     }
 
