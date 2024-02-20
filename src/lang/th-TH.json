@@ -355,7 +355,6 @@
     "Discard": "ทิ้ง",
     "Cancel": "ยกเลิก",
     "Powered by": "ขับเคลื่อนโดย",
-    "shrinkDatabaseDescription": "ทริกเกอร์ฐานข้อมูล VACUUM สำหรับ SQLite หากฐานข้อมูลของคุณถูกสร้างขึ้นหลังจากเวอร์ชั่น 1.10.0 แสดงว่า AUTO_VACUUM เปิดใช้งานอยู่แล้วและไม่จำเป็นต้องดำเนินการนี้",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Username (incl. webapi_ prefix)",
     "serwersmsAPIPassword": "API Password",

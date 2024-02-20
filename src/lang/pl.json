@@ -354,7 +354,6 @@
     "Discard": "Odrzuć",
     "Cancel": "Anuluj",
     "Powered by": "Napędzane przez",
-    "shrinkDatabaseDescription": "Uruchom VACUUM na bazie SQLite. Jeżeli twoja baza została stworzona po wersji 1.10.0, to ma już włączoną opcję AUTO_VACUUM i stosowanie ręcznego oczyszczania nie jest potrzebne.",
     "clicksendsms": "ClickSend SMS",
     "apiCredentials": "Poświadczenia API",
     "serwersms": "SerwerSMS.pl",

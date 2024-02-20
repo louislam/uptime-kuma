@@ -355,7 +355,6 @@
     "Discard": "Bỏ",
     "Cancel": "Hủy",
     "Powered by": "Được cung cấp bởi",
-    "shrinkDatabaseDescription": "Khởi chạy database VACCUM cho SQLite. Nếu database được tạo sau version 1.10.0, AUTO_VACCUM đã được bật sẵn, hành động này không cần thiết.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Username (incl. webapi_ prefix)",
     "serwersmsAPIPassword": "API Password",

@@ -378,7 +378,6 @@
     "Discard": "להשליך",
     "Cancel": "לְבַטֵל",
     "Powered by": "פועל על",
-    "shrinkDatabaseDescription": "ואקום מסד נתונים להפעיל עבור SQLITE.אם בסיס הנתונים שלך נוצר לאחר 1.10.0, Auto_VACUUM כבר מופעל ואין צורך בפעולה זו.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "שם משתמש ל-API (כולל webapi_prefix)",
     "serwersmsAPIPassword": "סיסמת API",
