@@ -44,6 +44,7 @@ const languageList = {
     "ur": "Urdu",
     "ge": "ქართული",
     "uz": "O'zbek tili",
+    "ga": "Gaeilge",
 };
 
 let messages = {

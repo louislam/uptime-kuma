@@ -3,14 +3,14 @@ description: "Submit a bug report to help us improve"
 #title: "[Bug] "
 labels: [bug]
 body:
-  - type: checkboxes
-    id: no-duplicate-issues
+  - type: textarea
+    id: related-issues
+    validations:
+      required: true
     attributes:
-      label: "⚠️ Please verify that this bug has NOT been raised before."
-      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
-      options:
-        - label: "I checked and didn't find similar issue"
-          required: true
+      label: "📑 I have found these related issues/pull requests"
+      description: "Search related issues by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=) and explain what the difference between them or explain that you are unable to find any related issues"
+      placeholder: "Related to #1 by also touching the ... system. They should not be merged because ..."
   - type: checkboxes
     attributes:
       label: "🛡️ Security Policy"
@@ -31,7 +31,7 @@ body:
       required: true
     attributes:
       label: "👟 Reproduction steps"
-      description: "How do you trigger this bug? Please walk us through it step by step."
+      description: "How do you trigger this bug? Please walk us through it step by step. Include all important details and add screenshots where appropriate"
       placeholder: "..."
   - type: textarea
     id: expected-behavior
@@ -73,22 +73,23 @@ body:
       placeholder: "Ex. Google Chrome 95.0.4638.69"
     validations:
       required: true
-  - type: input
-    id: docker-version
+  - type: textarea
+    id: deployment-info
     attributes:
-      label: "🐋 Docker Version"
-      description: "If running with Docker, which version are you running?"
-      placeholder: "Ex. Docker 20.10.9 / K8S / Podman"
+      label: "🖥️ Deployment Environment"
+      description: |
+        examples:
+          - **Runtime**: Docker 20.10.9 / nodejs 14.18.0 / K8S via ... v1.3.3 / ..
+          - **Database**: sqlite/embedded mariadb/external mariadb
+          - **Filesystem used to store the database on**: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
+          - **number of monitors**: 42
+      value: |
+        - Runtime: 
+        - Database: 
+        - Filesystem used to store the database on: 
+        - number of monitors: 
     validations:
-      required: false
-  - type: input
-    id: nodejs-version
-    attributes:
-      label: "🟩 NodeJS Version"
-      description: "If running with Node.js? which version are you running?"
-      placeholder: "Ex. 14.18.0"
-    validations:
-      required: false
+      required: true
   - type: textarea
     id: logs
     attributes:
