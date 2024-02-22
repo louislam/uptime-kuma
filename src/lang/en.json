@@ -818,5 +818,5 @@
     "noOrBadCertificate": "No/Bad Certificate",
     "gamedigGuessPort": "Gamedig: Guess Port",
     "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server.",
-    "shrinkDatabaseDescriptionNew": "Trigger database {command1} for SQLite. {command2} is already enabled but this does not defragment the database nor repack individual database pages the way that the {command1} command does."
+    "shrinkDatabaseDescription": "Trigger database {vacuum} for SQLite. {auto_vacuum} is already enabled, but this does not defragment the database nor repack individual database pages the way that the {vacuum} command does."
 }
