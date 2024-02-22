@@ -32,11 +32,11 @@
                 <button class="btn btn-outline-info me-2" @click="shrinkDatabase">
                     {{ $t("Shrink Database") }} ({{ databaseSizeDisplay }})
                 </button>
-                <i18n-t tag="div" keypath="shrinkDatabaseDescriptionNew" class="form-text mt-2 mb-4 ms-2">
-                    <template v-slot:command1>
+                <i18n-t tag="div" keypath="shrinkDatabaseDescriptionSqlite" class="form-text mt-2 mb-4 ms-2">
+                    <template #vacuum>
                         <code>VACUUM</code>
                     </template>
-                    <template v-slot:command2>
+                    <template #auto_vacuum>
                         <code>AUTO_VACUUM</code>
                     </template>
                 </i18n-t>

@@ -263,7 +263,7 @@
     "Security": "Security",
     "Steam API Key": "Steam API Key",
     "Shrink Database": "Shrink Database",
-    "shrinkDatabaseDescriptionSqlite": "Trigger database {command1} for SQLite. {command2} is already enabled but this does not defragment the database nor repack individual database pages the way that the {command1} command does.",
+    "shrinkDatabaseDescriptionSqlite": "Trigger database {vacuum} for SQLite. {auto_vacuum} is already enabled but this does not defragment the database nor repack individual database pages the way that the {vacuum} command does.",
     "Pick a RR-Type...": "Pick a RR-Type…",
     "Pick Accepted Status Codes...": "Pick Accepted Status Codes…",
     "Default": "Default",

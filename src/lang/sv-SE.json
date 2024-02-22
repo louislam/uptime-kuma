@@ -145,7 +145,6 @@
     "clearDataOlderThan": "Behåll övervakarhistoriksdata i {0} dagar.",
     "steamApiKeyDescription": "För att övervaka en Steam Game Server behöver man en Steam Web-API nyckel. Du kan registrera din API nyckel här: ",
     "No Monitors": "Inga övervakare",
-    "shrinkDatabaseDescription": "Utlös databasdammsugning för SQLite. Om din databas skapades efter 1.10.0, AUTO_VACUUM är redan aktiverat och detta behövs inte.",
     "proxyDescription": "Proxyservrar måste tilldelas en övervakare för att fungera.",
     "setAsDefaultProxyDescription": "Denna proxyserver kommer att aktiveras som standard för nya övervakare. Du kan fortfarande inaktivera proxyserven var för sig övervakare.",
     "Content Type": "Innehållstyp",
