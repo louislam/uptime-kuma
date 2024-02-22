@@ -345,7 +345,6 @@
     "Discard": "Kassér",
     "Cancel": "Annullér",
     "Powered by": "Drevet af",
-    "shrinkDatabaseDescription": "Udfør database VACUUM for SQLite. Hvis din database er oprettet efter 1.10.0, er AUTO_VACUUM allerede aktiveret, og denne handling er ikke nødvendig.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Brugernavn (inkl. webapi_ prefix)",
     "serwersmsAPIPassword": "API Adgangskode",

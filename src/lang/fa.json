@@ -333,7 +333,6 @@
     "About": "درباره آپ‌تایم کوما",
     "wayToGetCloudflaredURL": "(دریافت Cloudflared از {0})",
     "cloudflareWebsite": "وب سایت کلادفلر",
-    "shrinkDatabaseDescription": "تریگر VACUUM برای SQLite. اگر دیتابیس شما بعد از 1.10.0 ایجاد شده باشد، AUTO_VACUUM قبلاً فعال شده است و لازم نیست این عمل انجام شود. (Trigger database VACUUM for SQLite. If your database is created after 1.10.0, AUTO_VACUUM is already enabled and this action is not needed.).",
     "Message:": "پیام:",
     "HTTP Headers": "هدر های HTTP",
     "Bot Token": "توکن بات",
