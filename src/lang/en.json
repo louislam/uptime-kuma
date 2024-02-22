@@ -279,6 +279,7 @@
     "selectedMonitorCount": "Selected: {0}",
     "Check/Uncheck": "Check/Uncheck",
     "Powered by": "Powered by",
+    "shrinkDatabaseDescription": "Trigger database {vacuum} for SQLite. {auto_vacuum} is already enabled, but this does not defragment the database nor repack individual database pages the way that the {vacuum} command does.",
     "Customize": "Customize",
     "Custom Footer": "Custom Footer",
     "Custom CSS": "Custom CSS",
@@ -817,6 +818,5 @@
     "showCertificateExpiry": "Show Certificate Expiry",
     "noOrBadCertificate": "No/Bad Certificate",
     "gamedigGuessPort": "Gamedig: Guess Port",
-    "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server.",
-    "shrinkDatabaseDescription": "Trigger database {vacuum} for SQLite. {auto_vacuum} is already enabled, but this does not defragment the database nor repack individual database pages the way that the {vacuum} command does."
+    "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server."
 }
