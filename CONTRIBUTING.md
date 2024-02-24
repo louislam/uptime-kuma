@@ -3,7 +3,7 @@
 First of all, I want to thank everyone who have wrote issues or shared pull requests for Uptime Kuma.
 I never thought the GitHub community would be so nice!
 Because of this, I also never thought that other people would actually read and edit my code.
-It is not very well-structured or commented, sorry about that.
+Parts of the code are not very well-structured or commented, sorry about that.
 
 The project was created with `vite.js` and is written in `vue3`.
 Our backend lives in the `server`-directory and mostly communicates via websockets.
@@ -222,7 +222,7 @@ npm test
 ## Dependencies
 
 Both frontend and backend share the same `package.json`.
-However, the frontend dependencies are eventually not used in the production environment, because it is usually also baked into dist files. So:
+However, the frontend dependencies are eventually not used in the production environment, because it is usually also baked into `dist` files. So:
 
 - Frontend dependencies = "devDependencies"
   - Examples: `vue`, `chart.js`
@@ -305,11 +305,11 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 This project has multiple maintainers which specialise in different areas.
 Currently, there are 3 maintainers:
 
-| Person          | Role              | Main Area        |
-|-----------------|-------------------|------------------|
-| @louislam       | senior maintainer | major features   |
-| @chakflying     | junior maintainer | fixing bugs      |
-| @commanderstorm | junior maintainer | issue-management |
+| Person            | Role              | Main Area        |
+|-------------------|-------------------|------------------|
+| `@louislam`       | senior maintainer | major features   |
+| `@chakflying`     | junior maintainer | fixing bugs      |
+| `@commanderstorm` | junior maintainer | issue-management |
 
 ### Procedures
 
@@ -324,7 +324,7 @@ We have a few procedures we follow. These are documented here:
   4. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
   5. Wait until the `Press any key to continue`
   6. `git push`
-  7. Publish the release note as 1.X.X
+  7. Publish the release note as `1.X.X`
   8. Press any key to continue
   9. Deploy to the demo server: `npm run deploy-demo-server`
 
@@ -339,11 +339,11 @@ We have a few procedures we follow. These are documented here:
 - <details><summary>Release Beta</summary>
   <p>
 
-  1. Draft a release note, check "This is a pre-release"
+  1. Draft a release note, check `This is a pre-release`
   2. Make sure the repo is cleared
   3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
   4. Wait until the `Press any key to continue`
-  5. Publish the release note as 1.X.X-beta.X
+  5. Publish the release note as `1.X.X-beta.X`
   6. Press any key to continue
   
   </p>
