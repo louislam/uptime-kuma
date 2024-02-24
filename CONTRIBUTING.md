@@ -1,19 +1,16 @@
 # Project Info
 
-First of all, I want to thank everyone who have made pull requests for Uptime Kuma. I never thought the GitHub community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
+First of all, I want to thank everyone who have wrote issues or shared pull requests for Uptime Kuma.
+I never thought the GitHub community would be so nice!
+Because of this, I also never thought that other people would actually read and edit my code.
+It is not very well-structured or commented, sorry about that.
 
-The project was created with vite.js (vue3). Then I created a subdirectory called "server" for the server part. Both frontend and backend share the same `package.json`.
+The project was created with `vite.js` and is written in `vue3`.
+Our backend lives in the `server`-directory and mostly communicates via websockets.
+Both frontend and backend share the same `package.json`.
 
-The frontend code builds into "dist" directory. The server (express.js) exposes the "dist" directory as the root of the endpoint. This is how production is working.
-
-## Key Technical Skills
-
-- Node.js (You should know about promises, async/await, arrow functions, etc.)
-- Socket.io
-- SCSS
-- Vue.js
-- Bootstrap
-- SQLite
+For production, the frontend is build into `dist`-directory and the server (`express.js`) exposes the `dist` directory as the root of the endpoint.
+For development, we run vite in development mode on another port. 
 
 ## Directories
 
