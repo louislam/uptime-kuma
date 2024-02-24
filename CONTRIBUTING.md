@@ -300,6 +300,17 @@ https://github.com/louislam/uptime-kuma-wiki
 Check the latest issues and pull requests:
 https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 
+### What is a maintainer and what are their roles?
+
+This project has multiple maintainers which specialise in different areas.
+Currently, there are 3 maintainers:
+
+| Person          | Role              | Main Area        |
+|-----------------|-------------------|------------------|
+| @louislam       | senior maintainer | major features   |
+| @chakflying     | junior maintainer | fixing bugs      |
+| @commanderstorm | junior maintainer | issue-management |
+
 ### Procedures
 
 We have a few procedures we follow. These are documented here:
