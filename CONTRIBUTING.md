@@ -75,7 +75,8 @@ If you come across any issue, feel free to leave a comment with what you are stu
 
 ### Recommended Pull Request Guideline
 
-Before deep into coding, discussion first is preferred. Creating an empty pull request for discussion would be recommended.
+Before diving deep into coding, having a discussion creating an empty pull request for discussion is prefered.
+The rationale behind this is that we might know which PRs do some work into the same direction and can point out pitfalls / conflicts.
 
 1. Fork the project
 2. Clone your fork repo to local
