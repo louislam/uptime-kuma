@@ -63,7 +63,15 @@ I ([@louislam](https://github.com/louislam)) have the final say. If your pull re
 
 I will assign your pull request to a [milestone](https://github.com/louislam/uptime-kuma/milestones), if I plan to review and merge it.
 
-Also, please don't rush or ask for an ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
+Please don't rush or ask for an ETA.
+We have to understand the pull request, make sure it are no breaking changes and stick to the vision of this project, especially for large pull requests.
+
+
+## I'd like to work on an issue. How do I do that?
+
+We have found that assigning people to issues is management-overhead that we don't need.
+A short comment that you want to try your hand at this issue is appreciated to save other devs time.
+If you come across any issue, feel free to leave a comment with what you are stuck with.
 
 ### Recommended Pull Request Guideline
 
