@@ -14,16 +14,16 @@ For development, we run vite in development mode on another port.
 
 ## Directories
 
-- config (dev config files)
-- data (App data)
-- db (Base database and migration scripts)
-- dist (Frontend build)
-- docker (Dockerfiles)
-- extra (Extra useful scripts)
-- public (Frontend resources for dev only)
-- server (Server source code)
-- src (Frontend source code)
-- test (unit test)
+- `config` (dev config files)
+- `data` (App data)
+- `db` (Base database and migration scripts)
+- `dist` (Frontend build)
+- `docker` (Dockerfiles)
+- `extra` (Extra useful scripts)
+- `public` (Frontend resources for dev only)
+- `server` (Server source code)
+- `src` (Frontend source code)
+- `test` (unit test)
 
 ## Can I create a pull request for Uptime Kuma?
 
@@ -160,25 +160,23 @@ npm run start-server-dev
 
 It binds to `0.0.0.0:3001` by default.
 
-It is mainly a socket.io app + express.js.
+It is mainly a `socket.io`-app, but includes `express.js` to serve:
 
-express.js is used for:
+- as an entry point for redirecting to a status page or the dashboard
+- the frontend built files (`index.html`, `*.js`, `*.css`, etc.)
+- internal APIs of the status page
 
-- entry point such as redirecting to a status page or the dashboard
-- serving the frontend built files (index.html, .js and .css etc.)
-- serving internal APIs of the status page
+### Structure in `/server/`
 
-### Structure in /server/
-
-- jobs/ (Jobs that are running in another process)
-- model/ (Object model, auto-mapping to the database table name)
-- modules/ (Modified 3rd-party modules)
-- monitor_types (Monitor Types)
-- notification-providers/ (individual notification logic)
-- routers/ (Express Routers)
-- socket-handler (Socket.io Handlers)
-- server.js (Server entry point)
-- uptime-kuma-server.js (UptimeKumaServer class, main logic should be here, but some still in `server.js`)
+- `jobs/` (Jobs that are running in another process)
+- `model/` (Object model, auto-mapping to the database table name)
+- `modules/` (Modified 3rd-party modules)
+- `monitor_types/` (Monitor Types)
+- `notification-providers/` (individual notification logic)
+- `routers/` (Express Routers)
+- `socket-handler/` (Socket.io Handlers)
+- `server.js` (Server entry point)
+- `uptime-kuma-server.js` (UptimeKumaServer class, main logic should be here, but some still in `server.js`)
 
 ## Frontend Dev Server
 
@@ -217,14 +215,15 @@ npm test
 
 ## Dependencies
 
-Both frontend and backend share the same package.json. However, the frontend dependencies are eventually not used in the production environment, because it is usually also baked into dist files. So:
+Both frontend and backend share the same `package.json`.
+However, the frontend dependencies are eventually not used in the production environment, because it is usually also baked into dist files. So:
 
 - Frontend dependencies = "devDependencies"
-  - Examples: vue, chart.js
+  - Examples: `vue`, `chart.js`
 - Backend dependencies = "dependencies"
-  - Examples: socket.io, sqlite3
+  - Examples: `socket.io`, `sqlite3`
 - Development dependencies = "devDependencies"
-  - Examples: eslint, sass
+  - Examples: `eslint`, `sass`
 
 ### Update Dependencies
 
