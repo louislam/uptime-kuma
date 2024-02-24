@@ -295,54 +295,69 @@ https://github.com/louislam/uptime-kuma-wiki
 Check the latest issues and pull requests:
 https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 
-### Release Procedures
+### Procedures
 
-1. Draft a release note
-2. Make sure the repo is cleared
-3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
-4. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
-5. Wait until the `Press any key to continue`
-6. `git push`
-7. Publish the release note as 1.X.X
-8. Press any key to continue
-9. Deploy to the demo server: `npm run deploy-demo-server`
+We have a few procedures we follow. These are documented here:
 
-Checking:
+- <details><summary>Release</summary>
+  <p>
 
-- Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
-- Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
-- Try clean installation with Node.js
+  1. Draft a release note
+  2. Make sure the repo is cleared
+  3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
+  4. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
+  5. Wait until the `Press any key to continue`
+  6. `git push`
+  7. Publish the release note as 1.X.X
+  8. Press any key to continue
+  9. Deploy to the demo server: `npm run deploy-demo-server`
 
-### Release Beta Procedures
+  These Items need to be checked:
 
-1. Draft a release note, check "This is a pre-release"
-2. Make sure the repo is cleared
-3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
-4. Wait until the `Press any key to continue`
-5. Publish the release note as 1.X.X-beta.X
-6. Press any key to continue
+  - [ ] Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
+  - [ ] Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
+  - [ ] Try clean installation with Node.js
+  
+  </p>
+  </details>
+- <details><summary>Release Beta</summary>
+  <p>
 
-### Release Wiki
+  1. Draft a release note, check "This is a pre-release"
+  2. Make sure the repo is cleared
+  3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
+  4. Wait until the `Press any key to continue`
+  5. Publish the release note as 1.X.X-beta.X
+  6. Press any key to continue
+  
+  </p>
+  </details>
+- <details><summary>Release Wiki</summary>
+  <p>
 
-#### Setup Repo
-
-```bash
-git clone https://github.com/louislam/uptime-kuma-wiki.git
-cd uptime-kuma-wiki
-git remote add production https://github.com/louislam/uptime-kuma.wiki.git
-```
-
-#### Push to Production Wiki
-
-```bash
-git pull
-git push production master
-```
-
-## Useful Commands
-
-Change the base of a pull request such as `master` to `1.23.X`
-
-```bash
-git rebase --onto <new parent> <old parent>
-```
+  **Setup Repo**
+  
+  ```bash
+  git clone https://github.com/louislam/uptime-kuma-wiki.git
+  cd uptime-kuma-wiki
+  git remote add production https://github.com/louislam/uptime-kuma.wiki.git
+  ```
+  
+  **Push to Production Wiki**
+  
+  ```bash
+  git pull
+  git push production master
+  ```
+  
+  </p>
+  </details>
+- <details><summary>Change the base of a pull request such as <code>master</code> to <code>1.23.X</code></summary>
+  <p>
+  
+  ```bash
+  git rebase --onto <new parent> <old parent>
+  ```
+  
+  </p>
+  </details>
