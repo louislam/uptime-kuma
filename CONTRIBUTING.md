@@ -90,10 +90,16 @@ The rationale behind this is that we might know which PRs do some work into the 
 
 ## Project Styles
 
-I personally do not like something that requires so many configurations before you can finally start the app. I hope Uptime Kuma installation will be as easy as like installing a mobile app.
+I personally do not like something that requires so many configurations before you can finally start the app.
+The goal is to make the Uptime Kuma installation as easy as installing a mobile app.
 
-- Easy to install for non-Docker users, no native build dependency is needed (for x86_64/armv7/arm64), no extra config, and no extra effort required to get it running
-- Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
+- Easy to install for non-Docker users
+  - no native build dependency is needed (for `x86_64`/`armv7`/`arm64`)
+  - no extra configuration and
+  - no extra effort required to get it running
+- Single container for Docker users
+  - no complex docker-compose file
+  - mapping the volume and exposing the port should be the only requirements
 - Settings should be configurable in the frontend. Environment variables are discouraged, unless it is related to startup such as `DATA_DIR`
 - Easy to use
 - The web UI styling should be consistent and nice
