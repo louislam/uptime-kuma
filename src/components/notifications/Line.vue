@@ -11,7 +11,7 @@
         <input id="line-user-id" v-model="$parent.notification.lineUserID" type="text" class="form-control" required>
     </div>
     <i18n-t tag="div" keypath="lineDevConsoleTo" class="form-text">
-        <b>{{ $t("Basic Settings") }}</b> 
+        <b>{{ $t("Basic Settings") }}</b>
     </i18n-t>
     <i18n-t tag="div" keypath="wayToGetLineChannelToken" class="form-text" style="margin-top: 8px;">
         <a href="https://developers.line.biz/console/" target="_blank">{{ $t("Line Developers Console") }}</a>
