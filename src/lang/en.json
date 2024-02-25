@@ -536,6 +536,7 @@
     "lineDevConsoleTo": "Line Developers Console - {0}",
     "Basic Settings": "Basic Settings",
     "User ID": "User ID",
+    "Your User ID": "Your user ID",
     "Messaging API": "Messaging API",
     "wayToGetLineChannelToken": "First access the {0}, create a provider and channel (Messaging API), then you can get the channel access token and user ID from the above mentioned menu items.",
     "Icon URL": "Icon URL",
