@@ -532,6 +532,7 @@
     "Recipients": "Recipients",
     "Access Token": "Access Token",
     "Channel access token": "Channel access token",
+    "ChannelAccessTokenLongLived": "Channel access token (Long-lived)",
     "Line Developers Console": "Line Developers Console",
     "lineDevConsoleTo": "Line Developers Console - {0}",
     "Basic Settings": "Basic Settings",
