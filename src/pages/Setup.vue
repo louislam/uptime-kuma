@@ -3,7 +3,7 @@
         <div class="form">
             <form @submit.prevent="submit">
                 <div>
-                    <object width="64" height="64" data="/icon.svg" />
+                    <object width="64" height="64" :data="iconSource" />
                     <div style="font-size: 28px; font-weight: bold; margin-top: 5px;">
                         Uptime Kuma
                     </div>
@@ -54,6 +54,12 @@ export default {
             password: "",
             repeatPassword: "",
         };
+    },
+
+    computed: {
+        iconSource() {
+            return this.$root.userTheme === "dark" ? "/raft_logo_light.svg" : "/raft_logo_dark.svg";
+        }
     },
     watch: {
 

@@ -6,7 +6,7 @@
             </h1>
 
             <div>
-                <router-link to="/add-status-page" class="btn btn-primary mb-3"><font-awesome-icon icon="plus" /> {{ $t("New Status Page") }}</router-link>
+                <router-link to="/add-status-page" class="btn btn-primary mb-3 add-new-status-page-button"><font-awesome-icon icon="plus" /> {{ $t("New Status Page") }}</router-link>
             </div>
 
             <div class="shadow-box">
@@ -57,10 +57,18 @@ export default {
          * @returns {string} Correctly formatted path including port numbers
          */
         icon(icon) {
-            if (icon === "/icon.svg") {
-                return icon;
+            if (this.$root.userTheme === "dark") {
+                if (icon === "/raft_logo_light.svg") {
+                    return icon;
+                } else {
+                    return getResBaseURL() + icon;
+                }
             } else {
-                return getResBaseURL() + icon;
+                if (icon === "/raft_logo_dark.svg") {
+                    return icon;
+                } else {
+                    return getResBaseURL() + icon;
+                }
             }
         }
     },
@@ -84,7 +92,7 @@ export default {
         }
 
         &.active {
-            background-color: #cdf8f4;
+            background-color: #e0dcfc;
         }
 
         $logo-width: 70px;
@@ -120,4 +128,8 @@ export default {
             }
         }
     }
+
+.add-new-status-page-button {
+    background-color: #8373f5;
+}
 </style>

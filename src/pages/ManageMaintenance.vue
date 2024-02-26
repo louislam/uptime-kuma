@@ -6,7 +6,7 @@
             </h1>
 
             <div>
-                <router-link to="/add-maintenance" class="btn btn-primary mb-3">
+                <router-link to="/add-maintenance" class="btn btn-primary mb-3 schedule-maintenance-button">
                     <font-awesome-icon icon="plus" /> {{ $t("Schedule Maintenance") }}
                 </router-link>
             </div>
@@ -124,10 +124,18 @@ export default {
          * @returns {string} Correctly formatted path including port numbers
          */
         icon(icon) {
-            if (icon === "/icon.svg") {
-                return icon;
+            if (this.$root.userTheme === "dark") {
+                if (icon === "/raft_logo_light.svg") {
+                    return icon;
+                } else {
+                    return getResBaseURL() + icon;
+                }
             } else {
-                return getResBaseURL() + icon;
+                if (icon === "/raft_logo_dark.svg") {
+                    return icon;
+                } else {
+                    return getResBaseURL() + icon;
+                }
             }
         },
 
@@ -313,5 +321,9 @@ export default {
                 background-color: $dark-bg2;
             }
         }
+    }
+
+    .schedule-maintenance-button {
+        background-color: #8373f5;
     }
 </style>

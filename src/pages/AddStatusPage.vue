@@ -33,7 +33,7 @@
                     </div>
 
                     <div class="mt-2 mb-1">
-                        <button id="monitor-submit-btn" class="btn btn-primary w-100" type="submit" :disabled="processing">{{ $t("Next") }}</button>
+                        <button id="monitor-submit-btn" class="btn btn-primary w-100 next-button" type="submit" :disabled="processing">{{ $t("Next") }}</button>
                     </div>
                 </div>
             </form>
@@ -84,5 +84,8 @@ export default {
 <style lang="scss" scoped>
 .shadow-box {
     padding: 20px;
+}
+.next-button {
+    background-color: #8373f5;
 }
 </style>
