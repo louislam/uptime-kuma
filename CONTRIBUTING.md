@@ -166,7 +166,9 @@ npm run start-server-dev
 
 It binds to `0.0.0.0:3001` by default.
 
-It is mainly a `socket.io`-app, but includes `express.js` to serve:
+The backend is an `express.js` server with `socket.io` integrated.
+It uses `socket.io` to communicate with clients, and most server logic is encapsulated in the `socket.io` handlers.
+`express.js` is also used to serve:
 
 - as an entry point for redirecting to a status page or the dashboard
 - the frontend built files (`index.html`, `*.js`, `*.css`, etc.)
