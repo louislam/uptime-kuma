@@ -489,7 +489,7 @@ optgroup {
         }
 
         &.active {
-            background-color: #cdf8f4;
+            background-color: #e0dcfc;
         }
         .tags {
             // Removes margin to line up tags list with uptime percentage
@@ -499,13 +499,13 @@ optgroup {
 }
 
 .alert-success {
-    color: #122f21;
+    color: #5a48da;
     background-color: $primary;
     border-color: $primary;
 }
 
 .alert-info {
-    color: #055160;
+    color: #6551f3;
     background-color: #cff4fc;
     border-color: #cff4fc;
 }
@@ -518,8 +518,8 @@ optgroup {
 
 .btn-success {
     color: #fff;
-    background-color: #4caf50;
-    border-color: #4caf50;
+    background-color: #9385f6;
+    border-color: #9385f6;
 }
 
 [contenteditable=true] {

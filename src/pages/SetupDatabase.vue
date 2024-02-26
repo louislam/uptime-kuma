@@ -2,7 +2,7 @@
     <div v-if="show" class="form-container">
         <form @submit.prevent="submit">
             <div>
-                <object width="64" height="64" data="/icon.svg" />
+                <object width="64" height="64" :data="iconSource" />
                 <div style="font-size: 28px; font-weight: bold; margin-top: 5px;">
                     Uptime Kuma
                 </div>
@@ -129,6 +129,9 @@ export default {
         disabledButton() {
             return this.dbConfig.type === undefined || this.info.runningSetup;
         },
+        iconSource() {
+            return this.$root.userTheme === "dark" ? "/raft_logo_light.svg" : "/raft_logo_dark.svg";
+        }
     },
     async mounted() {
         let res = await axios.get("/setup-database-info");

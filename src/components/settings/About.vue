@@ -1,8 +1,8 @@
 <template>
     <div class="d-flex justify-content-center align-items-center">
         <div class="logo d-flex flex-column justify-content-center align-items-center">
-            <object class="my-4" width="200" height="200" data="/icon.svg" />
-            <div class="fs-4 fw-bold">Uptime Kuma</div>
+            <object class="my-4" width="200" height="200" :data="iconSource" />
+            <div class="fs-4 fw-bold">Data Fabric Uptime Monitor</div>
             <div>{{ $t("Version") }}: {{ $root.info.version }}</div>
             <div class="frontend-version">{{ $t("Frontend Version") }}: {{ $root.frontendVersion }}</div>
 
@@ -37,6 +37,9 @@ export default {
         settingsLoaded() {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
+        iconSource() {
+            return this.$root.userTheme === "dark" ? "/raft_logo_light.svg" : "/raft_logo_dark.svg";
+        }
     },
 
     watch: {
