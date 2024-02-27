@@ -163,6 +163,8 @@ optgroup {
 
     &:hover, &:active, &:focus, &.active {
         color: white;
+        background-color: $highlight;
+        border-color: $highlight;
     }
 }
 
