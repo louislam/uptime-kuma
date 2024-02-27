@@ -55,7 +55,7 @@ export default {
             }
 
             if (this.lastHeartBeat.status === UP) {
-                return "primary";
+                return "green-health";
             }
 
             if (this.lastHeartBeat.status === PENDING) {

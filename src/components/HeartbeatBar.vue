@@ -275,7 +275,7 @@ export default {
 .hp-bar-big {
     .beat {
         display: inline-block;
-        background-color: $primary;
+        background-color: $green-health;
         border-radius: $border-radius;
 
         &.empty {

@@ -19,7 +19,7 @@ export default {
             }
 
             if (this.status === 1) {
-                return "primary";
+                return "green-health";
             }
 
             if (this.status === 2) {
