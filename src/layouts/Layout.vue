@@ -133,11 +133,13 @@
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
 import { useToast } from "vue-toastification";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 const toast = useToast();
 
 export default {
 
     components: {
+        FontAwesomeIcon,
         Login,
     },
 
