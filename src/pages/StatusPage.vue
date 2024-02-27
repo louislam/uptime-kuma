@@ -149,12 +149,12 @@
             <!-- Admin functions -->
             <div v-if="hasToken" class="mb-4">
                 <div v-if="!enableEditMode">
-                    <button class="btn btn-info me-2" @click="edit">
+                    <button class="btn btn-info me-2 edit-status-page-button" @click="edit">
                         <font-awesome-icon icon="edit" />
                         {{ $t("Edit Status Page") }}
                     </button>
 
-                    <a href="/manage-status-page" class="btn btn-info">
+                    <a href="/manage-status-page" class="btn btn-info go-to-dashboard-button">
                         <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Go to Dashboard") }}
                     </a>
@@ -316,7 +316,7 @@
             <div class="mb-4">
                 <div v-if="$root.publicGroupList.length === 0 && loadedData" class="text-center">
                     <!-- 👀 Nothing here, please add a group or a monitor. -->
-                    👀 {{ $t("statusPageNothing") }}
+                    {{ $t("statusPageNothing") }}
                 </div>
 
                 <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
@@ -329,10 +329,6 @@
                 <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
                 <!-- eslint-disable-next-line vue/no-v-html-->
                 <div v-if="! enableEditMode" class="alert-heading p-2" v-html="footerHTML"></div>
-
-                <p v-if="config.showPoweredBy">
-                    {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
-                </p>
 
                 <div class="refresh-info mb-2">
                     <div>{{ $t("Last Updated") }}:  {{ lastUpdateTimeDisplay }}</div>
@@ -1257,6 +1253,14 @@ footer {
 
 .refresh-info {
     opacity: 0.7;
+}
+
+.edit-status-page-button {
+    background-color: #8373f5;
+}
+
+.go-to-dashboard-button {
+    background-color: #8373f5;
 }
 
 </style>
