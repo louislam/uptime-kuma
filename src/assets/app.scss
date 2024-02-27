@@ -27,6 +27,14 @@ textarea.form-control {
     background-color: $maintenance !important;
 }
 
+.bg-green-health {
+    background-color: $green-health;
+}
+
+.dark .bg-green-health {
+    color: black;
+}
+
 .bg-dark {
     color: white;
 }
@@ -403,6 +411,7 @@ optgroup {
         &.bg-warning,
         &.bg-danger,
         &.bg-maintenance,
+        &.bg-green-health,
         &.bg-light {
             color: $dark-font-color2;
         }

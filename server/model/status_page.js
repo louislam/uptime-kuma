@@ -287,10 +287,10 @@ class StatusPage extends BeanModel {
      * @returns {string} Path
      */
     getIcon() {
-        if (this.$root.userTheme === "dark") {
-            return "/raft_logo_dark.svg";
+        if (!this.icon) {
+            return "/df_logo_light_purple.svg";
         } else {
-            return "/raft_logo_light.svg";
+            return this.icon;
         }
     }
 
