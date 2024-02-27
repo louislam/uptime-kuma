@@ -540,6 +540,7 @@
                                         :preselect-first="false"
                                         :max-height="600"
                                         :taggable="true"
+                                        class="status-code-select"
                                     ></VueMultiselect>
 
                                     <div class="form-text">
@@ -593,7 +594,7 @@
                                 <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
                             </div>
 
-                            <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
+                            <button class="btn btn-primary me-2 setup-notification-button" type="button" @click="$refs.notificationDialog.show()">
                                 {{ $t("Setup Notification") }}
                             </button>
 
@@ -620,7 +621,7 @@
                                     <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>
                                 </div>
 
-                                <button class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
+                                <button class="btn btn-primary me-2 setup-proxy-button" type="button" @click="$refs.proxyDialog.show()">
                                     {{ $t("Setup Proxy") }}
                                 </button>
                             </div>
@@ -876,7 +877,7 @@
                     </div>
 
                     <div class="fixed-bottom-bar p-3">
-                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                        <button id="monitor-submit-btn" class="btn btn-primary save-button-on-add-monitor-page" type="submit" :disabled="processing">{{ $t("Save") }}</button>
                     </div>
                 </div>
             </form>
@@ -1634,4 +1635,18 @@ message HealthCheckResponse {
     textarea {
         min-height: 200px;
     }
+.setup-notification-button {
+    background-color: #8373f5;
+}
+.setup-proxy-button {
+    background-color: #8373f5;
+}
+.save-button-on-add-monitor-page {
+    background-color: #8373f5;
+}
+.status-code-select .multiselect__single, .status-code-select .multiselect__input, .status-code-select .multiselect__tags {
+    background-color: #8373f5;
+    color: white; // Change the text color to white for better visibility
+}
+
 </style>
