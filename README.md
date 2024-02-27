@@ -1,5 +1,5 @@
 <div align="center" width="100%">
-    <img src="./public/raft_logo_light.svg" width="128" alt="" />
+    <img src="./public/raft_logo_dark.svg" width="128" alt="" />
 </div>
 
 # Uptime Kuma
