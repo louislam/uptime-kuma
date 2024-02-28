@@ -151,17 +151,15 @@ class Teams extends NotificationProvider {
         };
 
         if (dashboardUrl) {
-            payload.attachments.forEach(element => {
-                element.content.push({
-                    "type": "ActionSet",
-                    "actions": [
-                        {
-                            "type": "Action.OpenUrl",
-                            "title": "Visit Uptime Kuma",
-                            "url": dashboardUrl
-                        }
-                    ]
-                });
+            payload.attachments[0].content.body.push({
+                "type": "ActionSet",
+                "actions": [
+                    {
+                        "type": "Action.OpenUrl",
+                        "title": "Visit Uptime Kuma",
+                        "url": dashboardUrl
+                    }
+                ]
             });
         }
 
