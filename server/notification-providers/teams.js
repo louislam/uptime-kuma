@@ -1,6 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { DOWN, UP } = require("../../src/util");
+const { setting } = require("../util-server");
+const { DOWN, UP, getMonitorRelativeURL } = require("../../src/util");
 
 class Teams extends NotificationProvider {
     name = "teams";
@@ -13,9 +14,9 @@ class Teams extends NotificationProvider {
      */
     _statusMessageFactory = (status, monitorName) => {
         if (status === DOWN) {
-            return `🔴 Application [${monitorName}] went down`;
+            return `🔴 [${monitorName}] went down`;
         } else if (status === UP) {
-            return `✅ Application [${monitorName}] is back online`;
+            return `✅ [${monitorName}] is back online`;
         }
         return "Notification";
     };
@@ -36,26 +37,13 @@ class Teams extends NotificationProvider {
     };
 
     /**
-     * Format an URL in the markdown format
-     * @param {string} url An absolute URL
-     * @param {string} linkName Optional name of the link
-     * @returns {string} The URL formatted as markdown link
-     */
-    _formatAsMarkdownLink = (url, linkName) => {
-        if (linkName) {
-            return `[${linkName}](${url})`;
-        } else {
-            return `[${url}](${url})`;
-        }
-    };
-
-    /**
      * Generate payload for notification
      * @param {object} args Method arguments
      * @param {const} args.status The status of the monitor
      * @param {string} args.monitorMessage Message to send
-     * @param {string} args.monitorName Name of monitor affected
-     * @param {string} args.monitorUrl URL of monitor affected
+     * @param {string} args.monitorName Name of the monitor affected
+     * @param {string} args.monitorUrl URL of the monitor affected
+     * @param {string} args.dashboardUrl URL of the dashboard affected
      * @returns {object} Notification payload
      */
     _notificationPayloadFactory = ({
@@ -63,6 +51,7 @@ class Teams extends NotificationProvider {
         monitorMessage,
         monitorName,
         monitorUrl,
+        dashboardUrl,
     }) => {
         const notificationMessage = this._statusMessageFactory(
             status,
@@ -88,11 +77,14 @@ class Teams extends NotificationProvider {
         if (monitorUrl && monitorUrl !== "https://") {
             facts.push({
                 title: "URL",
-                value: this._formatAsMarkdownLink(monitorUrl),
+                // format URL as markdown syntax, to be clickable
+                value: `[${monitorUrl}](${monitorUrl})`,
             });
         }
 
-        return {
+        const headerMessage = `**${notificationMessage}**`;
+
+        const payload = {
             "type": "message",
             "attachments": [
                 {
@@ -129,9 +121,17 @@ class Teams extends NotificationProvider {
                                                 "items": [
                                                     {
                                                         "type": "TextBlock",
-                                                        "size": "Large",
+                                                        "size": "Medium",
                                                         "weight": "Bolder",
-                                                        "text": "**Uptime Kuma Alert**"
+                                                        "text": headerMessage,
+                                                    },
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "size": "Small",
+                                                        "weight": "Default",
+                                                        "text": "Uptime Kuma Alert",
+                                                        "isSubtle": true,
+                                                        "spacing": "None"
                                                     }
                                                 ]
                                             }
@@ -140,14 +140,8 @@ class Teams extends NotificationProvider {
                                 ]
                             },
                             {
-                                "type": "TextBlock",
-                                "weight": "Bolder",
-                                "text": notificationMessage,
-                                "separator": true,
-                                "wrap": true
-                            },
-                            {
                                 "type": "FactSet",
+                                "separator": true,
                                 "facts": facts
                             }
                         ],
@@ -157,6 +151,23 @@ class Teams extends NotificationProvider {
                 }
             ]
         };
+
+        if (dashboardUrl) {
+            payload.attachments.forEach(element => {
+                element.content.push({
+                    "type": "ActionSet",
+                    "actions": [
+                        {
+                            "type": "Action.OpenUrl",
+                            "title": "Visit Uptime Kuma",
+                            "url": dashboardUrl
+                        }
+                    ]
+                });
+            });
+        }
+
+        return payload;
     };
 
     /**
@@ -195,26 +206,33 @@ class Teams extends NotificationProvider {
                 return okMsg;
             }
 
-            let url;
+            let monitorUrl;
 
             switch (monitorJSON["type"]) {
                 case "http":
                 case "keywork":
-                    url = monitorJSON["url"];
+                    monitorUrl = monitorJSON["url"];
                     break;
                 case "docker":
-                    url = monitorJSON["docker_host"];
+                    monitorUrl = monitorJSON["docker_host"];
                     break;
                 default:
-                    url = monitorJSON["hostname"];
+                    monitorUrl = monitorJSON["hostname"];
                     break;
+            }
+
+            const baseURL = await setting("primaryBaseURL");
+            let dashboardUrl;
+            if (baseURL) {
+                dashboardUrl = baseURL + getMonitorRelativeURL(monitorJSON.id);
             }
 
             const payload = this._notificationPayloadFactory({
                 monitorMessage: heartbeatJSON.msg,
                 monitorName: monitorJSON.name,
-                monitorUrl: url,
+                monitorUrl: monitorUrl,
                 status: heartbeatJSON.status,
+                dashboardUrl: dashboardUrl,
             });
 
             await this._sendNotification(notification.webhookUrl, payload);
