@@ -14,9 +14,9 @@ class Teams extends NotificationProvider {
      */
     _statusMessageFactory = (status, monitorName) => {
         if (status === DOWN) {
-            return `🔴 [${monitorName}] went down`;
+            return `[${monitorName}] went down`;
         } else if (status === UP) {
-            return `✅ [${monitorName}] is back online`;
+            return `[${monitorName}] is back online`;
         }
         return "Notification";
     };
@@ -82,8 +82,6 @@ class Teams extends NotificationProvider {
             });
         }
 
-        const headerMessage = `**${notificationMessage}**`;
-
         const payload = {
             "type": "message",
             "attachments": [
@@ -123,7 +121,7 @@ class Teams extends NotificationProvider {
                                                         "type": "TextBlock",
                                                         "size": "Medium",
                                                         "weight": "Bolder",
-                                                        "text": headerMessage,
+                                                        "text": `**${notificationMessage}**`,
                                                     },
                                                     {
                                                         "type": "TextBlock",
@@ -141,7 +139,7 @@ class Teams extends NotificationProvider {
                             },
                             {
                                 "type": "FactSet",
-                                "separator": true,
+                                "separator": false,
                                 "facts": facts
                             }
                         ],
