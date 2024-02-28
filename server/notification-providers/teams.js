@@ -10,13 +10,14 @@ class Teams extends NotificationProvider {
      * Generate the message to send
      * @param {const} status The status constant
      * @param {string} monitorName Name of monitor
+     * @param {boolean} withStatusSymbol If the status should be prepended as symbol
      * @returns {string} Status message
      */
-    _statusMessageFactory = (status, monitorName) => {
+    _statusMessageFactory = (status, monitorName, withStatusSymbol) => {
         if (status === DOWN) {
-            return `[${monitorName}] went down`;
+            return (withStatusSymbol ? "🔴 " : "") + `[${monitorName}] went down`;
         } else if (status === UP) {
-            return `[${monitorName}] is back online`;
+            return (withStatusSymbol ? "✅ " : "") + `[${monitorName}] is back online`;
         }
         return "Notification";
     };
@@ -39,31 +40,34 @@ class Teams extends NotificationProvider {
     /**
      * Generate payload for notification
      * @param {object} args Method arguments
-     * @param {const} args.status The status of the monitor
-     * @param {string} args.monitorMessage Message to send
+     * @param {object} args.heartbeatJSON Heartbeat details
      * @param {string} args.monitorName Name of the monitor affected
      * @param {string} args.monitorUrl URL of the monitor affected
      * @param {string} args.dashboardUrl URL of the dashboard affected
      * @returns {object} Notification payload
      */
     _notificationPayloadFactory = ({
-        status,
-        monitorMessage,
+        heartbeatJSON,
         monitorName,
         monitorUrl,
         dashboardUrl,
     }) => {
-        const notificationMessage = this._statusMessageFactory(
-            status,
-            monitorName
-        );
-
+        const status = heartbeatJSON.status;
         const facts = [];
+        const actions = [];
 
-        if (monitorMessage) {
+        if (dashboardUrl) {
+            actions.push({
+                "type": "Action.OpenUrl",
+                "title": "Visit Uptime Kuma",
+                "url": dashboardUrl
+            });
+        }
+
+        if (heartbeatJSON?.msg) {
             facts.push({
                 title: "Description",
-                value: monitorMessage,
+                value: heartbeatJSON.msg,
             });
         }
 
@@ -80,10 +84,24 @@ class Teams extends NotificationProvider {
                 // format URL as markdown syntax, to be clickable
                 value: `[${monitorUrl}](${monitorUrl})`,
             });
+            actions.push({
+                "type": "Action.OpenUrl",
+                "title": "Visit Monitor URL",
+                "url": monitorUrl
+            });
+        }
+
+        if (heartbeatJSON?.localDateTime) {
+            facts.push({
+                title: "Time",
+                value: heartbeatJSON.localDateTime + (heartbeatJSON.timezone ? ` (${heartbeatJSON.timezone})` : ""),
+            });
         }
 
         const payload = {
             "type": "message",
+            // message with status prefix as notification text
+            "summary": this._statusMessageFactory(status, monitorName, true),
             "attachments": [
                 {
                     "contentType": "application/vnd.microsoft.card.adaptive",
@@ -121,7 +139,7 @@ class Teams extends NotificationProvider {
                                                         "type": "TextBlock",
                                                         "size": "Medium",
                                                         "weight": "Bolder",
-                                                        "text": `**${notificationMessage}**`,
+                                                        "text": `**${this._statusMessageFactory(status, monitorName, false)}**`,
                                                     },
                                                     {
                                                         "type": "TextBlock",
@@ -150,16 +168,10 @@ class Teams extends NotificationProvider {
             ]
         };
 
-        if (dashboardUrl) {
+        if (actions) {
             payload.attachments[0].content.body.push({
                 "type": "ActionSet",
-                "actions": [
-                    {
-                        "type": "Action.OpenUrl",
-                        "title": "Visit Uptime Kuma",
-                        "url": dashboardUrl
-                    }
-                ]
+                "actions": actions,
             });
         }
 
@@ -224,10 +236,9 @@ class Teams extends NotificationProvider {
             }
 
             const payload = this._notificationPayloadFactory({
-                monitorMessage: heartbeatJSON.msg,
+                heartbeatJSON: heartbeatJSON,
                 monitorName: monitorJSON.name,
                 monitorUrl: monitorUrl,
-                status: heartbeatJSON.status,
                 dashboardUrl: dashboardUrl,
             });
 
