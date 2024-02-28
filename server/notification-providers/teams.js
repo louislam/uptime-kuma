@@ -21,18 +21,32 @@ class Teams extends NotificationProvider {
     };
 
     /**
-     * Select theme color to use based on status
+     * Select the style to use based on status
      * @param {const} status The status constant
-     * @returns {string} Selected color in hex RGB format
+     * @returns {string} Selected style for adaptive cards
      */
-    _getThemeColor = (status) => {
+    _getStyle = (status) => {
         if (status === DOWN) {
-            return "ff0000";
+            return "attention";
         }
         if (status === UP) {
-            return "00e804";
+            return "good";
         }
-        return "008cff";
+        return "emphasis";
+    };
+
+    /**
+     * Format an URL in the markdown format
+     * @param {string} url An absolute URL
+     * @param {string} linkName Optional name of the link
+     * @returns {string} The URL formatted as markdown link
+     */
+    _formatAsMarkdownLink = (url, linkName) => {
+        if (linkName) {
+            return `[${linkName}](${url})`;
+        } else {
+            return `[${url}](${url})`;
+        }
     };
 
     /**
@@ -57,40 +71,91 @@ class Teams extends NotificationProvider {
 
         const facts = [];
 
+        if (monitorMessage) {
+            facts.push({
+                title: "Description",
+                value: monitorMessage,
+            });
+        }
+
         if (monitorName) {
             facts.push({
-                name: "Monitor",
+                title: "Monitor",
                 value: monitorName,
             });
         }
 
         if (monitorUrl && monitorUrl !== "https://") {
             facts.push({
-                name: "URL",
-                value: monitorUrl,
+                title: "URL",
+                value: this._formatAsMarkdownLink(monitorUrl),
             });
         }
 
         return {
-            "@context": "https://schema.org/extensions",
-            "@type": "MessageCard",
-            themeColor: this._getThemeColor(status),
-            summary: notificationMessage,
-            sections: [
+            "type": "message",
+            "attachments": [
                 {
-                    activityImage:
-                        "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
-                    activityTitle: "**Uptime Kuma**",
-                },
-                {
-                    activityTitle: notificationMessage,
-                },
-                {
-                    activityTitle: "**Description**",
-                    text: monitorMessage,
-                    facts,
-                },
-            ],
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "contentUrl": "",
+                    "content": {
+                        "type": "AdaptiveCard",
+                        "body": [
+                            {
+                                "type": "Container",
+                                "verticalContentAlignment": "Center",
+                                "items": [
+                                    {
+                                        "type": "ColumnSet",
+                                        "style": this._getStyle(status),
+                                        "columns": [
+                                            {
+                                                "type": "Column",
+                                                "width": "auto",
+                                                "verticalContentAlignment": "Center",
+                                                "items": [
+                                                    {
+                                                        "type": "Image",
+                                                        "width": "32px",
+                                                        "style": "Person",
+                                                        "url": "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
+                                                        "altText": "Uptime Kuma Logo"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "Column",
+                                                "width": "stretch",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "size": "Large",
+                                                        "weight": "Bolder",
+                                                        "text": "**Uptime Kuma Alert**"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "TextBlock",
+                                "weight": "Bolder",
+                                "text": notificationMessage,
+                                "separator": true,
+                                "wrap": true
+                            },
+                            {
+                                "type": "FactSet",
+                                "facts": facts
+                            }
+                        ],
+                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                        "version": "1.5"
+                    }
+                }
+            ]
         };
     };
 
