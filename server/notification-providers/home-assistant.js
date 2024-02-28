@@ -21,6 +21,7 @@ class HomeAssistant extends NotificationProvider {
                     ...(notificationService !== "persistent_notification" && { data: {
                         name: monitor?.name,
                         status: heartbeat?.status,
+                        channel: "uptime-kuma",
                     } }),
                 },
                 {
