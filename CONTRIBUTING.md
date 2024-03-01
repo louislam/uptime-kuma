@@ -33,7 +33,9 @@ The frontend code builds into "dist" directory. The server (express.js) exposes 
 Yes or no, it depends on what you will try to do.
 Both your and our maintainers time is precious, and we don't want to waste both time.
 
-Different guidelines (may not cover all possible situations) exist for different types of pull requests (PRs):
+If you have any questions about any process/.. is not clear, you are likely not alone => please ask them ^^
+
+Different guidelines exist for different types of pull requests (PRs):
 - <details><summary><b>security fixes</b></summary>
   <p>
   
@@ -75,15 +77,69 @@ Different guidelines (may not cover all possible situations) exist for different
 - <details><summary><b>new notification providers</b></summary>
   <p>
   
-  TODO
+  To set up a new notification provider these files need to be modified/created:
+  - `server/notification-providers/PROVIDER_NAME.js` is where the heart of the notification provider lives.
+    - Both `monitorJSON` and `heartbeatJSON` can be `null` for some events.
+      If both are `null`, this is a general testing message, but if just `heartbeatJSON` is `null` this is a certificate expiry.
+    - Please wrap the axios call into a 
+      ```js
+      try {
+        let result = await axios.post(...);
+        if (result.status === ...) ...
+      } catch (error) {
+        this.throwGeneralAxiosError(error);
+      }
+      ```
+  - `server/notification.js` is where the backend of the notification provider needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
+  - `src/components/NotificationDialog.vue` you need to decide if the provider is a regional or a global one and add it with a name to the respective list
+  - `src/components/notifications/PROVIDER_NAME.vue` is where the frontend of each provider lives.
+    Please make sure that you have:
+    - used `HiddenInput` for secret credentials
+    - included all the necessary helptexts/placeholder/.. to make sure the notification provider is simple to setup for new users. 
+    - include all translations (`{{ $t("Translation key") }}`, [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html)) in `src/lang/en.json` to enable our translators to translate this
+  - `src/components/notifications/index.js` is where the frontend of the provider needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
+
+  Offering notifications is close to the core of what we are as an uptime monitor.
+  Therefore, making sure that they work is also really important.
+  Because testing notification providers is quite time intensive, we mostly offload this onto the person contributing a notification provider.
   
+  To make shure you have tested the notification provider, please include screenshots of the following events in the pull-request description:
+    - `UP`/`DOWN`
+    - Certificate Expiry via https://expired.badssl.com/
+    - Testing (the test button on the notification provider setup page)
+  
+  Using the following way to format this is encouraged:
+  ```md
+  | Event | Before | After |
+  ------------------
+  | `UP` | paste-image-here | paste-image-here |
+  | `DOWN` | paste-image-here | paste-image-here |
+  | Certificate-expiry | paste-image-here | paste-image-here |
+  | Testing | paste-image-here | paste-image-here |
+  ```
+
   <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
   </p>
   </details>
 - <details><summary><b>new monitoring types</b></summary>
   <p>
-  
-  TODO
+
+  To set up a new notification provider these files need to be modified/created:
+  - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor.
+    the `async check(...)`-function should:
+    - throw an error for each fault that is detected with an actionable error message
+    - in the happy-path, you should set `heartbeat.msg` to a successfull message and set `heartbeat.status = UP`
+  - `server/uptime-kuma-server.js` is where the monitoring backend needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
+  - `src/pages/EditMonitor.vue` is the shared frontend users interact with.
+    Please make sure that you have:
+    - used `HiddenInput` for secret credentials
+    - included all the necessary helptexts/placeholder/.. to make sure the notification provider is simple to setup for new users.
+    - include all translations (`{{ $t("Translation key") }}`, [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html)) in `src/lang/en.json` to enable our translators to translate this
+  - 
+
 
   <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
   </p>
@@ -91,7 +147,8 @@ Different guidelines (may not cover all possible situations) exist for different
 - <details><summary><b>new features/ major changes / breaking bugfixes</b></summary>
   <p>
   
-  be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**. Especially for a large pull request or you don't know if it will be merged or not.  
+  be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**.
+  This is especially important for a large pull request or you don't know if it will be merged or not.
   
   <sub>Because of the large impact of this work, only senior maintainers may merge PRs in this area.</sub>
   </p>
@@ -103,8 +160,8 @@ The following rules are essential for making your PR mergable:
   - (if not possible) **explain which issues a PR addresses and why this PR should not be broken apart**
 - Make sure your **PR passes our continuous integration**.
   PRs will not be merged unless all CI-Checks are green.
-- Any **breaking changes**, unless for a good reason and discussed beforehand.
-  Such changes may require a major version release.
+- **Breaking changes** (unless for a good reason and discussed beforehand) will not get merged / not get merged quickly.
+  Such changes require a major version release.
 - **Test your code** before submitting a PR.
   Buggy PRs will not be merged.
 - Make sure the **UI/UX is close to Uptime Kuma**.
