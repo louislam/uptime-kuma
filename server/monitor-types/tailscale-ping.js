@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, log } = require("../../src/util");
-const exec = require("child_process").exec;
+const { UP } = require("../../src/util");
+const childProcessAsync = require("promisify-child-process");
 
 /**
  * A TailscalePing class extends the MonitorType.
@@ -23,7 +23,6 @@ class TailscalePing extends MonitorType {
             let tailscaleOutput = await this.runTailscalePing(monitor.hostname, monitor.interval);
             this.parseTailscaleOutput(tailscaleOutput, heartbeat);
         } catch (err) {
-            log.debug("Tailscale", err);
             // trigger log function somewhere to display a notification or alert to the user (but how?)
             throw new Error(`Error checking Tailscale ping: ${err}`);
         }
@@ -37,26 +36,19 @@ class TailscalePing extends MonitorType {
      * @throws Will throw an error if the command execution encounters any error.
      */
     async runTailscalePing(hostname, interval) {
-        let cmd = `tailscale ping ${hostname}`;
-
-        log.debug("Tailscale", cmd);
-
-        return new Promise((resolve, reject) => {
-            let timeout = interval * 1000 * 0.8;
-            exec(cmd, { timeout: timeout }, (error, stdout, stderr) => {
-                // we may need to handle more cases if tailscale reports an error that isn't necessarily an error (such as not-logged in or DERP health-related issues)
-                if (error) {
-                    reject(`Execution error: ${error.message}`);
-                    return;
-                }
-                if (stderr) {
-                    reject(`Error in output: ${stderr}`);
-                    return;
-                }
-
-                resolve(stdout);
-            });
+        let timeout = interval * 1000 * 0.8;
+        let res = await childProcessAsync.spawn("tailscale", [ "ping", "--c", "1", hostname ], {
+            timeout: timeout,
+            encoding: "utf8",
         });
+        if (res.stderr && res.stderr.toString()) {
+            throw new Error(`Error in output: ${res.stderr.toString()}`);
+        }
+        if (res.stdout && res.stdout.toString()) {
+            return res.stdout.toString();
+        } else {
+            throw new Error("No output from Tailscale ping");
+        }
     }
 
     /**
@@ -74,7 +66,7 @@ class TailscalePing extends MonitorType {
                 heartbeat.status = UP;
                 let time = line.split(" in ")[1].split(" ")[0];
                 heartbeat.ping = parseInt(time);
-                heartbeat.msg = line;
+                heartbeat.msg = "OK";
                 break;
             } else if (line.includes("timed out")) {
                 throw new Error(`Ping timed out: "${line}"`);

@@ -69,13 +69,17 @@
                 <div class="my-3">
                     <label class="form-label">
                         {{ $t("Domain Names") }}
-                        <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary" @click="addDomainField" />
+                        <button class="p-0 bg-transparent border-0" :aria-label="$t('Add a domain')" @click="addDomainField">
+                            <font-awesome-icon icon="plus-circle" class="action text-primary" />
+                        </button>
                     </label>
 
                     <ul class="list-group domain-name-list">
                         <li v-for="(domain, index) in config.domainNameList" :key="index" class="list-group-item">
                             <input v-model="config.domainNameList[index]" type="text" class="no-bg domain-input" placeholder="example.com" />
-                            <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" @click="removeDomain(index)" />
+                            <button class="p-0 bg-transparent border-0" :aria-label="$t('Remove domain', [ domain ])" @click="removeDomain(index)">
+                                <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" />
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -102,7 +106,7 @@
 
             <!-- Sidebar Footer -->
             <div class="sidebar-footer">
-                <button class="btn btn-success me-2" @click="save">
+                <button class="btn btn-success me-2" :disabled="loading" @click="save">
                     <font-awesome-icon icon="save" />
                     {{ $t("Save") }}
                 </button>
@@ -438,6 +442,7 @@ export default {
             lastUpdateTime: dayjs(),
             updateCountdown: null,
             updateCountdownText: null,
+            loading: true,
         };
     },
     computed: {
@@ -613,7 +618,7 @@ export default {
                         }
 
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -701,6 +706,8 @@ export default {
             this.incident = res.data.incident;
             this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
+
+            this.loading = false;
         }).catch( function (error) {
             if (error.response.status === 404) {
                 location.href = "/page-not-found";
@@ -742,7 +749,7 @@ export default {
         /**
          * Provide syntax highlighting for CSS
          * @param {string} code Text to highlight
-         * @returns {string} Highlighted HTML
+         * @returns {string} Highlighted CSS
          */
         highlighter(code) {
             return highlight(code, languages.css);
@@ -819,6 +826,7 @@ export default {
          * @returns {void}
          */
         save() {
+            this.loading = true;
             let startTime = new Date();
             this.config.slug = this.config.slug.trim().toLowerCase();
 
@@ -836,10 +844,12 @@ export default {
                     }
 
                     setTimeout(() => {
+                        this.loading = false;
                         location.href = "/status/" + this.config.slug;
                     }, time);
 
                 } else {
+                    this.loading = false;
                     toast.error(res.msg);
                 }
             });
@@ -863,7 +873,7 @@ export default {
                     this.enableEditMode = false;
                     location.href = "/manage-status-page";
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
@@ -953,7 +963,7 @@ export default {
          */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
-                toast.error(this.$t("Please input title and content"));
+                this.$root.toastError("Please input title and content");
                 return;
             }
 
@@ -963,7 +973,7 @@ export default {
                     this.enableEditIncidentMode = false;
                     this.incident = res.incident;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
 
             });
@@ -1236,20 +1246,6 @@ footer {
                 color: #1d2634;
             }
         }
-    }
-}
-
-/* required class */
-.css-editor {
-    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
-
-    border-radius: 1rem;
-    padding: 10px 5px;
-    border: 1px solid #ced4da;
-
-    .dark & {
-        background: $dark-bg;
-        border: 1px solid $dark-border-color;
     }
 }
 

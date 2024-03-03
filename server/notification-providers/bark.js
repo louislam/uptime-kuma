@@ -46,8 +46,8 @@ class Bark extends NotificationProvider {
     }
 
     /**
-     * Add additional parameter for better on device styles (iOS 15
-     * optimized)
+     * Add additional parameter for Bark v1 endpoints.
+     * Leads to better on device styles (iOS 15 optimized)
      * @param {BeanModel} notification Notification to send
      * @returns {string} Additional URL parameters
      */
@@ -95,11 +95,22 @@ class Bark extends NotificationProvider {
      * @returns {string} Success message
      */
     async postNotification(notification, title, subtitle, endpoint) {
-        // url encode title and subtitle
-        title = encodeURIComponent(title);
-        subtitle = encodeURIComponent(subtitle);
-        let params = this.additionalParameters(notification);
-        let result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`);
+        let result;
+        if (notification.apiVersion === "v1" || notification.apiVersion == null) {
+            // url encode title and subtitle
+            title = encodeURIComponent(title);
+            subtitle = encodeURIComponent(subtitle);
+            const params = this.additionalParameters(notification);
+            result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`);
+        } else {
+            result = await axios.post(`${endpoint}/push`, {
+                title,
+                body: subtitle,
+                icon: barkNotificationAvatar,
+                sound: notification.barkSound || "telegraph", // default sound is telegraph
+                group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
+            });
+        }
         this.checkResult(result);
         if (result.statusText != null) {
             return "Bark notification succeed: " + result.statusText;

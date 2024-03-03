@@ -4,6 +4,8 @@ const HttpsProxyAgent = require("https-proxy-agent");
 const SocksProxyAgent = require("socks-proxy-agent");
 const { debug } = require("../src/util");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
+const { CookieJar } = require("tough-cookie");
+const { createCookieAgent } = require("http-cookie-agent/http");
 
 class Proxy {
 
@@ -95,10 +97,13 @@ class Proxy {
         let httpAgent;
         let httpsAgent;
 
+        let jar = new CookieJar();
+
         const proxyOptions = {
             protocol: proxy.protocol,
             host: proxy.host,
             port: proxy.port,
+            cookies: { jar },
         };
 
         if (proxy.auth) {
@@ -112,12 +117,17 @@ class Proxy {
         switch (proxy.protocol) {
             case "http":
             case "https":
-                httpAgent = new HttpProxyAgent({
+                // eslint-disable-next-line no-case-declarations
+                const HttpCookieProxyAgent = createCookieAgent(HttpProxyAgent);
+                // eslint-disable-next-line no-case-declarations
+                const HttpsCookieProxyAgent = createCookieAgent(HttpsProxyAgent);
+
+                httpAgent = new HttpCookieProxyAgent({
                     ...httpAgentOptions || {},
-                    ...proxyOptions
+                    ...proxyOptions,
                 });
 
-                httpsAgent = new HttpsProxyAgent({
+                httpsAgent = new HttpsCookieProxyAgent({
                     ...httpsAgentOptions || {},
                     ...proxyOptions,
                 });
@@ -126,7 +136,9 @@ class Proxy {
             case "socks5":
             case "socks5h":
             case "socks4":
-                agent = new SocksProxyAgent({
+                // eslint-disable-next-line no-case-declarations
+                const SocksCookieProxyAgent = createCookieAgent(SocksProxyAgent);
+                agent = new SocksCookieProxyAgent({
                     ...httpAgentOptions,
                     ...httpsAgentOptions,
                     ...proxyOptions,
