@@ -27,39 +27,150 @@ For development, we run vite in development mode on another port.
 
 ## Can I create a pull request for Uptime Kuma?
 
-Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**. Especially for a large pull request or you don't know if it will be merged or not.
+Yes or no, it depends on what you will try to do.
+Both your and our maintainers time is precious, and we don't want to waste both time.
 
-Here are some references:
+If you have any questions about any process/.. is not clear, you are likely not alone => please ask them ^^
 
-### ✅ Usually accepted
+Different guidelines exist for different types of pull requests (PRs):
+- <details><summary><b>security fixes</b></summary>
+  <p>
+  
+  Submitting security fixes is something that may put the community at risk.
+  Please read through our [security policy](SECURITY.md) and submit vulnerabilities via an [advisory](https://github.com/louislam/uptime-kuma/security/advisories/new) + [issue](https://github.com/louislam/uptime-kuma/issues/new?assignees=&labels=help&template=security.md) instead.
+  We encourage you to submit how to fix a vulnerability if you know how to, this is not required.
+  Following the security policy allows us to properly test, fix bugs.
+  This review allows us to notice, if there are any changes necessary to unrelated parts like the documentation.  
+  [**PLEASE SEE OUR SECURITY POLICY.**](SECURITY.md)
+  
+  </p>
+  </details>
+- <details><summary><b>small, non-breaking bug fixes</b></summary>
+  <p>
+  
+  If you come across a bug and think you can solve, we appreciate your work.
+  Please make sure that you follow by these rules:
+  - keep the PR as small as possible, fix only one thing at a time => keeping it reviewable
+  - test that your code does what you came it does.
+  
+  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  </p>
+  </details> 
+- <details><summary><b>translations / internationalisation (i18n)</b></summary>
+  <p>
+  
+  We use weblate to localise this project into many languages.
+  If you are unhappy with a translation this is the best start.
+  On how to translate using weblate, please see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+  
+  There are two cases in which a change cannot be done in weblate and requires a PR:
+  - A text may not be currently localisable. In this case, **adding a new language key** via `$t("languageKey")` might be nessesary
+  - language keys need to be **added to `en.json`** to be visible in weblate. If this has not happened, a PR is appreciated.
+  - **Adding a new language** requires a new file see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md)
+  
+  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  </p>
+  </details> 
+- <details><summary><b>new notification providers</b></summary>
+  <p>
+  
+  To set up a new notification provider these files need to be modified/created:
+  - `server/notification-providers/PROVIDER_NAME.js` is where the heart of the notification provider lives.
+    - Both `monitorJSON` and `heartbeatJSON` can be `null` for some events.
+      If both are `null`, this is a general testing message, but if just `heartbeatJSON` is `null` this is a certificate expiry.
+    - Please wrap the axios call into a 
+      ```js
+      try {
+        let result = await axios.post(...);
+        if (result.status === ...) ...
+      } catch (error) {
+        this.throwGeneralAxiosError(error);
+      }
+      ```
+  - `server/notification.js` is where the backend of the notification provider needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
+  - `src/components/NotificationDialog.vue` you need to decide if the provider is a regional or a global one and add it with a name to the respective list
+  - `src/components/notifications/PROVIDER_NAME.vue` is where the frontend of each provider lives.
+    Please make sure that you have:
+    - used `HiddenInput` for secret credentials
+    - included all the necessary helptexts/placeholder/.. to make sure the notification provider is simple to setup for new users. 
+    - include all translations (`{{ $t("Translation key") }}`, [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html)) in `src/lang/en.json` to enable our translators to translate this
+  - `src/components/notifications/index.js` is where the frontend of the provider needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
 
-- Bug fix
-- Security fix
-- Adding notification providers
-- Adding new language files (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
-- Adding new language keys: `$t("...")`
+  Offering notifications is close to the core of what we are as an uptime monitor.
+  Therefore, making sure that they work is also really important.
+  Because testing notification providers is quite time intensive, we mostly offload this onto the person contributing a notification provider.
+  
+  To make shure you have tested the notification provider, please include screenshots of the following events in the pull-request description:
+    - `UP`/`DOWN`
+    - Certificate Expiry via https://expired.badssl.com/
+    - Testing (the test button on the notification provider setup page)
+  
+  Using the following way to format this is encouraged:
+  ```md
+  | Event | Before | After |
+  ------------------
+  | `UP` | paste-image-here | paste-image-here |
+  | `DOWN` | paste-image-here | paste-image-here |
+  | Certificate-expiry | paste-image-here | paste-image-here |
+  | Testing | paste-image-here | paste-image-here |
+  ```
 
-### ⚠️ Discussion required
+  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  </p>
+  </details>
+- <details><summary><b>new monitoring types</b></summary>
+  <p>
 
-- Large pull requests
-- New features
+  To set up a new notification provider these files need to be modified/created:
+  - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor.
+    the `async check(...)`-function should:
+    - throw an error for each fault that is detected with an actionable error message
+    - in the happy-path, you should set `heartbeat.msg` to a successfull message and set `heartbeat.status = UP`
+  - `server/uptime-kuma-server.js` is where the monitoring backend needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
+  - `src/pages/EditMonitor.vue` is the shared frontend users interact with.
+    Please make sure that you have:
+    - used `HiddenInput` for secret credentials
+    - included all the necessary helptexts/placeholder/.. to make sure the notification provider is simple to setup for new users.
+    - include all translations (`{{ $t("Translation key") }}`, [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html)) in `src/lang/en.json` to enable our translators to translate this
+  - 
 
-### ❌ Won't be merged
 
-- A dedicated PR for translating existing languages (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
-- Do not pass the auto-test
-- Any breaking changes
-- Duplicated pull requests
-- Buggy
-- UI/UX is not close to Uptime Kuma
-- Modifications or deletions of existing logic without a valid reason.
-- Adding functions that is completely out of scope
-- Converting existing code into other programming languages
-- Unnecessarily large code changes that are hard to review and cause conflicts with other PRs.
+  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  </p>
+  </details> 
+- <details><summary><b>new features/ major changes / breaking bugfixes</b></summary>
+  <p>
+  
+  be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**.
+  This is especially important for a large pull request or you don't know if it will be merged or not.
+  
+  <sub>Because of the large impact of this work, only senior maintainers may merge PRs in this area.</sub>
+  </p>
+  </details>
 
-The above cases may not cover all possible situations.
+The following rules are essential for making your PR mergable:
+- Merging multiple issues by a huge PR is more difficult to review and causes conflicts with other PRs. Please
+  - (if possible) **create one PR for one issue** or
+  - (if not possible) **explain which issues a PR addresses and why this PR should not be broken apart**
+- Make sure your **PR passes our continuous integration**.
+  PRs will not be merged unless all CI-Checks are green.
+- **Breaking changes** (unless for a good reason and discussed beforehand) will not get merged / not get merged quickly.
+  Such changes require a major version release.
+- **Test your code** before submitting a PR.
+  Buggy PRs will not be merged.
+- Make sure the **UI/UX is close to Uptime Kuma**.
+- **Think about the maintainability**:
+  Don't add functionality that is completely **out of scope**.
+  Keep in mind that we need to be able to maintain the functionality.
+- Don't modify or delete existing logic without a valid reason.
+- Don't convert existing code into other programming languages for no reason.
 
-I ([@louislam](https://github.com/louislam)) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spent on it. Therefore, it is essential to have a discussion beforehand.
+I ([@louislam](https://github.com/louislam)) have the final say.
+If your pull request does not meet my expectations, I will reject it, no matter how much time you spent on it.
+Therefore, it is essential to have a discussion beforehand.
 
 I will assign your pull request to a [milestone](https://github.com/louislam/uptime-kuma/milestones), if I plan to review and merge it.
 
