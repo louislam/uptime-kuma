@@ -1,32 +1,29 @@
 # Project Info
 
-First of all, I want to thank everyone who have made pull requests for Uptime Kuma. I never thought the GitHub community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
+First of all, I want to thank everyone who have wrote issues or shared pull requests for Uptime Kuma.
+I never thought the GitHub community would be so nice!
+Because of this, I also never thought that other people would actually read and edit my code.
+Parts of the code are not very well-structured or commented, sorry about that.
 
-The project was created with vite.js (vue3). Then I created a subdirectory called "server" for the server part. Both frontend and backend share the same `package.json`.
+The project was created with `vite.js` and is written in `vue3`.
+Our backend lives in the `server`-directory and mostly communicates via websockets.
+Both frontend and backend share the same `package.json`.
 
-The frontend code builds into "dist" directory. The server (express.js) exposes the "dist" directory as the root of the endpoint. This is how production is working.
-
-## Key Technical Skills
-
-- Node.js (You should know about promises, async/await, arrow functions, etc.)
-- Socket.io
-- SCSS
-- Vue.js
-- Bootstrap
-- SQLite
+For production, the frontend is build into `dist`-directory and the server (`express.js`) exposes the `dist` directory as the root of the endpoint.
+For development, we run vite in development mode on another port. 
 
 ## Directories
 
-- config (dev config files)
-- data (App data)
-- db (Base database and migration scripts)
-- dist (Frontend build)
-- docker (Dockerfiles)
-- extra (Extra useful scripts)
-- public (Frontend resources for dev only)
-- server (Server source code)
-- src (Frontend source code)
-- test (unit test)
+- `config` (dev config files)
+- `data` (App data)
+- `db` (Base database and migration scripts)
+- `dist` (Frontend build)
+- `docker` (Dockerfiles)
+- `extra` (Extra useful scripts)
+- `public` (Frontend resources for dev only)
+- `server` (Server source code)
+- `src` (Frontend source code)
+- `test` (unit test)
 
 ## Can I create a pull request for Uptime Kuma?
 
@@ -66,11 +63,20 @@ I ([@louislam](https://github.com/louislam)) have the final say. If your pull re
 
 I will assign your pull request to a [milestone](https://github.com/louislam/uptime-kuma/milestones), if I plan to review and merge it.
 
-Also, please don't rush or ask for an ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
+Please don't rush or ask for an ETA.
+We have to understand the pull request, make sure it has no breaking changes and stick to the vision of this project, especially for large pull requests.
+
+
+## I'd like to work on an issue. How do I do that?
+
+We have found that assigning people to issues is management-overhead that we don't need.
+A short comment that you want to try your hand at this issue is appreciated to save other devs time.
+If you come across any problem during development, feel free to leave a comment with what you are stuck on.
 
 ### Recommended Pull Request Guideline
 
-Before deep into coding, discussion first is preferred. Creating an empty pull request for discussion would be recommended.
+Before diving deep into coding, having a discussion first by creating an empty pull request for discussion is preferred.
+The rationale behind this is that we can align the direction and scope of the feature to eliminate any conflicts with existing and planned work, and can help by pointing out any potential pitfalls.
 
 1. Fork the project
 2. Clone your fork repo to local
@@ -84,10 +90,16 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 
 ## Project Styles
 
-I personally do not like something that requires so many configurations before you can finally start the app. I hope Uptime Kuma installation will be as easy as like installing a mobile app.
+I personally do not like something that requires so many configurations before you can finally start the app.
+The goal is to make the Uptime Kuma installation as easy as installing a mobile app.
 
-- Easy to install for non-Docker users, no native build dependency is needed (for x86_64/armv7/arm64), no extra config, and no extra effort required to get it running
-- Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
+- Easy to install for non-Docker users
+  - no native build dependency is needed (for `x86_64`/`armv7`/`arm64`)
+  - no extra configuration and
+  - no extra effort required to get it running
+- Single container for Docker users
+  - no complex docker-compose file
+  - mapping the volume and exposing the port should be the only requirements
 - Settings should be configurable in the frontend. Environment variables are discouraged, unless it is related to startup such as `DATA_DIR`
 - Easy to use
 - The web UI styling should be consistent and nice
@@ -154,25 +166,25 @@ npm run start-server-dev
 
 It binds to `0.0.0.0:3001` by default.
 
-It is mainly a socket.io app + express.js.
+The backend is an `express.js` server with `socket.io` integrated.
+It uses `socket.io` to communicate with clients, and most server logic is encapsulated in the `socket.io` handlers.
+`express.js` is also used to serve:
 
-express.js is used for:
+- as an entry point for redirecting to a status page or the dashboard
+- the frontend built files (`index.html`, `*.js`, `*.css`, etc.)
+- internal APIs of the status page
 
-- entry point such as redirecting to a status page or the dashboard
-- serving the frontend built files (index.html, .js and .css etc.)
-- serving internal APIs of the status page
+### Structure in `/server/`
 
-### Structure in /server/
-
-- jobs/ (Jobs that are running in another process)
-- model/ (Object model, auto-mapping to the database table name)
-- modules/ (Modified 3rd-party modules)
-- monitor_types (Monitor Types)
-- notification-providers/ (individual notification logic)
-- routers/ (Express Routers)
-- socket-handler (Socket.io Handlers)
-- server.js (Server entry point)
-- uptime-kuma-server.js (UptimeKumaServer class, main logic should be here, but some still in `server.js`)
+- `jobs/` (Jobs that are running in another process)
+- `model/` (Object model, auto-mapping to the database table name)
+- `modules/` (Modified 3rd-party modules)
+- `monitor_types/` (Monitor Types)
+- `notification-providers/` (individual notification logic)
+- `routers/` (Express Routers)
+- `socket-handler/` (Socket.io Handlers)
+- `server.js` (Server entry point)
+- `uptime-kuma-server.js` (UptimeKumaServer class, main logic should be here, but some still in `server.js`)
 
 ## Frontend Dev Server
 
@@ -211,14 +223,15 @@ npm test
 
 ## Dependencies
 
-Both frontend and backend share the same package.json. However, the frontend dependencies are eventually not used in the production environment, because it is usually also baked into dist files. So:
+Both frontend and backend share the same `package.json`.
+However, the frontend dependencies are eventually not used in the production environment, because it is usually also baked into `dist` files. So:
 
 - Frontend dependencies = "devDependencies"
-  - Examples: vue, chart.js
+  - Examples: `vue`, `chart.js`
 - Backend dependencies = "dependencies"
-  - Examples: socket.io, sqlite3
+  - Examples: `socket.io`, `sqlite3`
 - Development dependencies = "devDependencies"
-  - Examples: eslint, sass
+  - Examples: `eslint`, `sass`
 
 ### Update Dependencies
 
@@ -289,54 +302,80 @@ https://github.com/louislam/uptime-kuma-wiki
 Check the latest issues and pull requests:
 https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 
-### Release Procedures
+### What is a maintainer and what are their roles?
 
-1. Draft a release note
-2. Make sure the repo is cleared
-3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
-4. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
-5. Wait until the `Press any key to continue`
-6. `git push`
-7. Publish the release note as 1.X.X
-8. Press any key to continue
-9. Deploy to the demo server: `npm run deploy-demo-server`
+This project has multiple maintainers which specialise in different areas.
+Currently, there are 3 maintainers:
 
-Checking:
+| Person            | Role              | Main Area        |
+|-------------------|-------------------|------------------|
+| `@louislam`       | senior maintainer | major features   |
+| `@chakflying`     | junior maintainer | fixing bugs      |
+| `@commanderstorm` | junior maintainer | issue-management |
 
-- Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
-- Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
-- Try clean installation with Node.js
+### Procedures
 
-### Release Beta Procedures
+We have a few procedures we follow. These are documented here:
 
-1. Draft a release note, check "This is a pre-release"
-2. Make sure the repo is cleared
-3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
-4. Wait until the `Press any key to continue`
-5. Publish the release note as 1.X.X-beta.X
-6. Press any key to continue
+- <details><summary>Release</summary>
+  <p>
 
-### Release Wiki
+  1. Draft a release note
+  2. Make sure the repo is cleared
+  3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
+  4. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
+  5. Wait until the `Press any key to continue`
+  6. `git push`
+  7. Publish the release note as `1.X.X`
+  8. Press any key to continue
+  9. Deploy to the demo server: `npm run deploy-demo-server`
 
-#### Setup Repo
+  These Items need to be checked:
 
-```bash
-git clone https://github.com/louislam/uptime-kuma-wiki.git
-cd uptime-kuma-wiki
-git remote add production https://github.com/louislam/uptime-kuma.wiki.git
-```
+  - [ ] Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
+  - [ ] Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
+  - [ ] Try clean installation with Node.js
+  
+  </p>
+  </details>
+- <details><summary>Release Beta</summary>
+  <p>
 
-#### Push to Production Wiki
+  1. Draft a release note, check `This is a pre-release`
+  2. Make sure the repo is cleared
+  3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
+  4. Wait until the `Press any key to continue`
+  5. Publish the release note as `1.X.X-beta.X`
+  6. Press any key to continue
+  
+  </p>
+  </details>
+- <details><summary>Release Wiki</summary>
+  <p>
 
-```bash
-git pull
-git push production master
-```
-
-## Useful Commands
-
-Change the base of a pull request such as `master` to `1.23.X`
-
-```bash
-git rebase --onto <new parent> <old parent>
-```
+  **Setup Repo**
+  
+  ```bash
+  git clone https://github.com/louislam/uptime-kuma-wiki.git
+  cd uptime-kuma-wiki
+  git remote add production https://github.com/louislam/uptime-kuma.wiki.git
+  ```
+  
+  **Push to Production Wiki**
+  
+  ```bash
+  git pull
+  git push production master
+  ```
+  
+  </p>
+  </details>
+- <details><summary>Change the base of a pull request such as <code>master</code> to <code>1.23.X</code></summary>
+  <p>
+  
+  ```bash
+  git rebase --onto <new parent> <old parent>
+  ```
+  
+  </p>
+  </details>
