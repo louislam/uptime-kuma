@@ -96,11 +96,15 @@ class Monitor extends BeanModel {
             screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
         }
 
+        const path = await this.getPath();
+        const pathName = path.join(" / ");
+
         let data = {
             id: this.id,
             name: this.name,
             description: this.description,
-            pathName: await this.getPathName(),
+            path,
+            pathName,
             parent: this.parent,
             childrenIDs: await Monitor.getAllChildrenIDs(this.id),
             url: this.url,
@@ -1527,11 +1531,11 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Gets Full Path-Name (Groups and Name)
-     * @returns {Promise<string>} Full path name of this monitor
+     * Gets the full path
+     * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
-    async getPathName() {
-        let path = this.name;
+    async getPath() {
+        const path = [ this.name ];
 
         if (this.parent === null) {
             return path;
@@ -1539,7 +1543,7 @@ class Monitor extends BeanModel {
 
         let parent = await Monitor.getParent(this.id);
         while (parent !== null) {
-            path = `${parent.name} / ${path}`;
+            path.unshift(parent.name);
             parent = await Monitor.getParent(parent.id);
         }
 
