@@ -1395,6 +1395,7 @@ message HealthCheckResponse {
                             // group monitor fields
                             this.monitor.childrenIDs = undefined;
                             this.monitor.forceInactive = undefined;
+                            this.monitor.path = undefined;
                             this.monitor.pathName = undefined;
                             this.monitor.screenshot = undefined;
 
