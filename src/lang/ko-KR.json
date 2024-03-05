@@ -347,7 +347,6 @@
     "Discard": "취소",
     "Cancel": "취소",
     "Powered by": "Powered by",
-    "shrinkDatabaseDescription": "SQLite 데이터베이스 VACUUM을 트리거해요. 만약 데이터베이스가 1.10.0 버전 이후에 생성되었다면 AUTO_VACUUM이 설정되어 있어 이 작업은 필요 없을 거에요.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Usename (webapi_ 접두사 포함)",
     "serwersmsAPIPassword": "API 비밀번호",

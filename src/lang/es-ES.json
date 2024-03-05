@@ -394,7 +394,6 @@
     "successMessage": "Mensaje de éxito",
     "Pick Accepted Status Codes...": "Seleccione Códigos de Estado Aceptados…",
     "Post": "Post",
-    "shrinkDatabaseDescription": "Activar ASPIRADORA para SQLite. Si tu base de datos fue creada después 1.10.0, AUTO_ASPIRADORA ya está habilitada y esta acción no es necesaria.",
     "deleteStatusPageMsg": "¿Estas seguro que quieres eliminar esta página de estado?",
     "default": "Predeterminado",
     "enabled": "Habilitado",

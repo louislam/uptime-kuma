@@ -359,7 +359,6 @@
     "Discard": "Buang",
     "Cancel": "Batal",
     "Powered by": "Dipersembahkan oleh",
-    "shrinkDatabaseDescription": "Trigger database VACUUM untuk SQLite. Jika database Anda dibuat setelah 1.10.0, AUTO_VACUUM sudah otomatis diaktifkan dan aksi berikut tidak dibutuhkan.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "Nama Pengguna API ( termamsuk awalan webapi_ )",
     "serwersmsAPIPassword": "Kata Sandi API",

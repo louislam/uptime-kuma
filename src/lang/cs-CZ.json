@@ -385,7 +385,6 @@
     "Discard": "Zahodit",
     "Cancel": "Zrušit",
     "Powered by": "Poskytuje",
-    "shrinkDatabaseDescription": "Pomocí této možnosti provedete příkaz VACUUM nad SQLite databází. Pokud byla databáze vytvořena po vydání verze 1.10.0, AUTO_VACUUM je již povolena a tato akce není vyžadována.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API uživatelské jméno (včetně předpony webapi_)",
     "serwersmsAPIPassword": "API heslo",
