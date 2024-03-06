@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
-        node: [ 14, 20.5 ]
+        node: [ 16, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -35,7 +35,7 @@ jobs:
         node-version: ${{ matrix.node }}
     #- name: Clean Cache
     #  run: npm cache clean --force
-    #- run: npm i -g npm@9 --force
+    - run: npm i -g npm@9 --force
     - run: npm install
     - run: npm run build
     - run: npm run test-backend
