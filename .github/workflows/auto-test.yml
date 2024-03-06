@@ -33,9 +33,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
-    - run: npm i -g npm@9 --force
     - name: Clean Cache
       run: npm cache clean --force
+    - run: npm i -g npm@9 --force
     - run: npm install
     - run: npm run build
     - run: npm run test-backend
