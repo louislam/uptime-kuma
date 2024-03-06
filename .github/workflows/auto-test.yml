@@ -33,12 +33,15 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
-    #- name: Clean Cache
-    #  run: npm cache clean --force
-    - run: npm i -g npm@9 --force
-    - run: npm install
-    - run: npm run build
-    - run: npm run test-backend
+  
+    - name: Install NPM 9
+      run: npm i -g npm@9
+    - name: Install
+      run: npm install
+    - name: Build
+      run: npm run build
+    - name: Test Backend
+      run: npm run test-backend
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
