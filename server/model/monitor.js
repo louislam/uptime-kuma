@@ -774,12 +774,14 @@ class Monitor extends BeanModel {
                     let res = await axios.request(options);
 
                     if (res.data.State.Running) {
-                        if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
-                            bean.status = PENDING;
+                        if (res.data.State.Health) {
+                            // treat empty Status as healthy to support podman: https://github.com/louislam/uptime-kuma/issues/3767
+                            const containerIsHealthy = [ "", "healthy" ].includes(res.data.State.Health.Status);
+                            bean.status = containerIsHealthy ? UP : DOWN;
                             bean.msg = res.data.State.Health.Status;
                         } else {
-                            bean.status = UP;
-                            bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
+                            bean.status = DOWN;
+                            bean.msg = res.data.State.Status;
                         }
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
