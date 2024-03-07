@@ -52,7 +52,7 @@ class Teams extends NotificationProvider {
         monitorUrl,
         dashboardUrl,
     }) => {
-        const status = heartbeatJSON.status;
+        const status = heartbeatJSON?.status;
         const facts = [];
         const actions = [];
 
@@ -196,7 +196,9 @@ class Teams extends NotificationProvider {
      */
     _handleGeneralNotification = (webhookUrl, msg) => {
         const payload = this._notificationPayloadFactory({
-            monitorMessage: msg
+            heartbeatJSON: {
+                msg: msg
+            }
         });
 
         return this._sendNotification(webhookUrl, payload);
