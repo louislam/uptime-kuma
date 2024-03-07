@@ -1,76 +1,193 @@
 # Project Info
 
-First of all, I want to thank everyone who have made pull requests for Uptime Kuma. I never thought the GitHub community would be so nice! Because of this, I also never thought that other people would actually read and edit my code. It is not very well structured or commented, sorry about that.
+First of all, I want to thank everyone who have wrote issues or shared pull requests for Uptime Kuma.
+I never thought the GitHub community would be so nice!
+Because of this, I also never thought that other people would actually read and edit my code.
+Parts of the code are not very well-structured or commented, sorry about that.
 
-The project was created with vite.js (vue3). Then I created a subdirectory called "server" for the server part. Both frontend and backend share the same `package.json`.
+The project was created with `vite.js` and is written in `vue3`.
+Our backend lives in the `server`-directory and mostly communicates via websockets.
+Both frontend and backend share the same `package.json`.
 
-The frontend code builds into "dist" directory. The server (express.js) exposes the "dist" directory as the root of the endpoint. This is how production is working.
-
-## Key Technical Skills
-
-- Node.js (You should know about promises, async/await, arrow functions, etc.)
-- Socket.io
-- SCSS
-- Vue.js
-- Bootstrap
-- SQLite
+For production, the frontend is build into `dist`-directory and the server (`express.js`) exposes the `dist` directory as the root of the endpoint.
+For development, we run vite in development mode on another port. 
 
 ## Directories
 
-- config (dev config files)
-- data (App data)
-- db (Base database and migration scripts)
-- dist (Frontend build)
-- docker (Dockerfiles)
-- extra (Extra useful scripts)
-- public (Frontend resources for dev only)
-- server (Server source code)
-- src (Frontend source code)
-- test (unit test)
+- `config` (dev config files)
+- `data` (App data)
+- `db` (Base database and migration scripts)
+- `dist` (Frontend build)
+- `docker` (Dockerfiles)
+- `extra` (Extra useful scripts)
+- `public` (Frontend resources for dev only)
+- `server` (Server source code)
+- `src` (Frontend source code)
+- `test` (unit test)
 
 ## Can I create a pull request for Uptime Kuma?
 
-Yes or no, it depends on what you will try to do. Since I don't want to waste your time, be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**. Especially for a large pull request or you don't know if it will be merged or not.
+Yes or no, it depends on what you will try to do.
+Both your and our maintainers time is precious, and we don't want to waste both time.
 
-Here are some references:
+If you have any questions about any process/.. is not clear, you are likely not alone => please ask them ^^
 
-### ✅ Usually accepted
+Different guidelines exist for different types of pull requests (PRs):
+- <details><summary><b>security fixes</b></summary>
+  <p>
+  
+  Submitting security fixes is something that may put the community at risk.
+  Please read through our [security policy](SECURITY.md) and submit vulnerabilities via an [advisory](https://github.com/louislam/uptime-kuma/security/advisories/new) + [issue](https://github.com/louislam/uptime-kuma/issues/new?assignees=&labels=help&template=security.md) instead.
+  We encourage you to submit how to fix a vulnerability if you know how to, this is not required.
+  Following the security policy allows us to properly test, fix bugs.
+  This review allows us to notice, if there are any changes necessary to unrelated parts like the documentation.  
+  [**PLEASE SEE OUR SECURITY POLICY.**](SECURITY.md)
+  
+  </p>
+  </details>
+- <details><summary><b>small, non-breaking bug fixes</b></summary>
+  <p>
+  
+  If you come across a bug and think you can solve, we appreciate your work.
+  Please make sure that you follow by these rules:
+  - keep the PR as small as possible, fix only one thing at a time => keeping it reviewable
+  - test that your code does what you came it does.
+  
+  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  </p>
+  </details> 
+- <details><summary><b>translations / internationalisation (i18n)</b></summary>
+  <p>
+  
+  We use weblate to localise this project into many languages.
+  If you are unhappy with a translation this is the best start.
+  On how to translate using weblate, please see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+  
+  There are two cases in which a change cannot be done in weblate and requires a PR:
+  - A text may not be currently localisable. In this case, **adding a new language key** via `$t("languageKey")` might be nessesary
+  - language keys need to be **added to `en.json`** to be visible in weblate. If this has not happened, a PR is appreciated.
+  - **Adding a new language** requires a new file see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md)
+  
+  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  </p>
+  </details> 
+- <details><summary><b>new notification providers</b></summary>
+  <p>
+  
+  To set up a new notification provider these files need to be modified/created:
+  - `server/notification-providers/PROVIDER_NAME.js` is where the heart of the notification provider lives.
+    - Both `monitorJSON` and `heartbeatJSON` can be `null` for some events.
+      If both are `null`, this is a general testing message, but if just `heartbeatJSON` is `null` this is a certificate expiry.
+    - Please wrap the axios call into a 
+      ```js
+      try {
+        let result = await axios.post(...);
+        if (result.status === ...) ...
+      } catch (error) {
+        this.throwGeneralAxiosError(error);
+      }
+      ```
+  - `server/notification.js` is where the backend of the notification provider needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
+  - `src/components/NotificationDialog.vue` you need to decide if the provider is a regional or a global one and add it with a name to the respective list
+  - `src/components/notifications/PROVIDER_NAME.vue` is where the frontend of each provider lives.
+    Please make sure that you have:
+    - used `HiddenInput` for secret credentials
+    - included all the necessary helptexts/placeholder/.. to make sure the notification provider is simple to setup for new users. 
+    - include all translations (`{{ $t("Translation key") }}`, [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html)) in `src/lang/en.json` to enable our translators to translate this
+  - `src/components/notifications/index.js` is where the frontend of the provider needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
 
-- Bug fix
-- Security fix
-- Adding notification providers
-- Adding new language files (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
-- Adding new language keys: `$t("...")`
+  Offering notifications is close to the core of what we are as an uptime monitor.
+  Therefore, making sure that they work is also really important.
+  Because testing notification providers is quite time intensive, we mostly offload this onto the person contributing a notification provider.
+  
+  To make shure you have tested the notification provider, please include screenshots of the following events in the pull-request description:
+    - `UP`/`DOWN`
+    - Certificate Expiry via https://expired.badssl.com/
+    - Testing (the test button on the notification provider setup page)
+  
+  Using the following way to format this is encouraged:
+  ```md
+  | Event | Before | After |
+  ------------------
+  | `UP` | paste-image-here | paste-image-here |
+  | `DOWN` | paste-image-here | paste-image-here |
+  | Certificate-expiry | paste-image-here | paste-image-here |
+  | Testing | paste-image-here | paste-image-here |
+  ```
 
-### ⚠️ Discussion required
+  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  </p>
+  </details>
+- <details><summary><b>new monitoring types</b></summary>
+  <p>
 
-- Large pull requests
-- New features
+  To set up a new notification provider these files need to be modified/created:
+  - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor.
+    the `async check(...)`-function should:
+    - throw an error for each fault that is detected with an actionable error message
+    - in the happy-path, you should set `heartbeat.msg` to a successfull message and set `heartbeat.status = UP`
+  - `server/uptime-kuma-server.js` is where the monitoring backend needs to be registered.
+    *If you have an idea how we can skip this step, we would love to hear about it ^^*
+  - `src/pages/EditMonitor.vue` is the shared frontend users interact with.
+    Please make sure that you have:
+    - used `HiddenInput` for secret credentials
+    - included all the necessary helptexts/placeholder/.. to make sure the notification provider is simple to setup for new users.
+    - include all translations (`{{ $t("Translation key") }}`, [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html)) in `src/lang/en.json` to enable our translators to translate this
+  - 
 
-### ❌ Won't be merged
 
-- A dedicated PR for translating existing languages (see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md))
-- Do not pass the auto-test
-- Any breaking changes
-- Duplicated pull requests
-- Buggy
-- UI/UX is not close to Uptime Kuma
-- Modifications or deletions of existing logic without a valid reason.
-- Adding functions that is completely out of scope
-- Converting existing code into other programming languages
-- Unnecessarily large code changes that are hard to review and cause conflicts with other PRs.
+  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  </p>
+  </details> 
+- <details><summary><b>new features/ major changes / breaking bugfixes</b></summary>
+  <p>
+  
+  be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**.
+  This is especially important for a large pull request or you don't know if it will be merged or not.
+  
+  <sub>Because of the large impact of this work, only senior maintainers may merge PRs in this area.</sub>
+  </p>
+  </details>
 
-The above cases may not cover all possible situations.
+The following rules are essential for making your PR mergable:
+- Merging multiple issues by a huge PR is more difficult to review and causes conflicts with other PRs. Please
+  - (if possible) **create one PR for one issue** or
+  - (if not possible) **explain which issues a PR addresses and why this PR should not be broken apart**
+- Make sure your **PR passes our continuous integration**.
+  PRs will not be merged unless all CI-Checks are green.
+- **Breaking changes** (unless for a good reason and discussed beforehand) will not get merged / not get merged quickly.
+  Such changes require a major version release.
+- **Test your code** before submitting a PR.
+  Buggy PRs will not be merged.
+- Make sure the **UI/UX is close to Uptime Kuma**.
+- **Think about the maintainability**:
+  Don't add functionality that is completely **out of scope**.
+  Keep in mind that we need to be able to maintain the functionality.
+- Don't modify or delete existing logic without a valid reason.
+- Don't convert existing code into other programming languages for no reason.
 
-I ([@louislam](https://github.com/louislam)) have the final say. If your pull request does not meet my expectations, I will reject it, no matter how much time you spent on it. Therefore, it is essential to have a discussion beforehand.
+I ([@louislam](https://github.com/louislam)) have the final say.
+If your pull request does not meet my expectations, I will reject it, no matter how much time you spent on it.
+Therefore, it is essential to have a discussion beforehand.
 
 I will assign your pull request to a [milestone](https://github.com/louislam/uptime-kuma/milestones), if I plan to review and merge it.
 
-Also, please don't rush or ask for an ETA, because I have to understand the pull request, make sure it is no breaking changes and stick to my vision of this project, especially for large pull requests.
+Please don't rush or ask for an ETA.
+We have to understand the pull request, make sure it has no breaking changes and stick to the vision of this project, especially for large pull requests.
+
+
+## I'd like to work on an issue. How do I do that?
+
+We have found that assigning people to issues is management-overhead that we don't need.
+A short comment that you want to try your hand at this issue is appreciated to save other devs time.
+If you come across any problem during development, feel free to leave a comment with what you are stuck on.
 
 ### Recommended Pull Request Guideline
 
-Before deep into coding, discussion first is preferred. Creating an empty pull request for discussion would be recommended.
+Before diving deep into coding, having a discussion first by creating an empty pull request for discussion is preferred.
+The rationale behind this is that we can align the direction and scope of the feature to eliminate any conflicts with existing and planned work, and can help by pointing out any potential pitfalls.
 
 1. Fork the project
 2. Clone your fork repo to local
@@ -84,10 +201,16 @@ Before deep into coding, discussion first is preferred. Creating an empty pull r
 
 ## Project Styles
 
-I personally do not like something that requires so many configurations before you can finally start the app. I hope Uptime Kuma installation will be as easy as like installing a mobile app.
+I personally do not like something that requires so many configurations before you can finally start the app.
+The goal is to make the Uptime Kuma installation as easy as installing a mobile app.
 
-- Easy to install for non-Docker users, no native build dependency is needed (for x86_64/armv7/arm64), no extra config, and no extra effort required to get it running
-- Single container for Docker users, no very complex docker-compose file. Just map the volume and expose the port, then good to go
+- Easy to install for non-Docker users
+  - no native build dependency is needed (for `x86_64`/`armv7`/`arm64`)
+  - no extra configuration and
+  - no extra effort required to get it running
+- Single container for Docker users
+  - no complex docker-compose file
+  - mapping the volume and exposing the port should be the only requirements
 - Settings should be configurable in the frontend. Environment variables are discouraged, unless it is related to startup such as `DATA_DIR`
 - Easy to use
 - The web UI styling should be consistent and nice
@@ -154,25 +277,25 @@ npm run start-server-dev
 
 It binds to `0.0.0.0:3001` by default.
 
-It is mainly a socket.io app + express.js.
+The backend is an `express.js` server with `socket.io` integrated.
+It uses `socket.io` to communicate with clients, and most server logic is encapsulated in the `socket.io` handlers.
+`express.js` is also used to serve:
 
-express.js is used for:
+- as an entry point for redirecting to a status page or the dashboard
+- the frontend built files (`index.html`, `*.js`, `*.css`, etc.)
+- internal APIs of the status page
 
-- entry point such as redirecting to a status page or the dashboard
-- serving the frontend built files (index.html, .js and .css etc.)
-- serving internal APIs of the status page
+### Structure in `/server/`
 
-### Structure in /server/
-
-- jobs/ (Jobs that are running in another process)
-- model/ (Object model, auto-mapping to the database table name)
-- modules/ (Modified 3rd-party modules)
-- monitor_types (Monitor Types)
-- notification-providers/ (individual notification logic)
-- routers/ (Express Routers)
-- socket-handler (Socket.io Handlers)
-- server.js (Server entry point)
-- uptime-kuma-server.js (UptimeKumaServer class, main logic should be here, but some still in `server.js`)
+- `jobs/` (Jobs that are running in another process)
+- `model/` (Object model, auto-mapping to the database table name)
+- `modules/` (Modified 3rd-party modules)
+- `monitor_types/` (Monitor Types)
+- `notification-providers/` (individual notification logic)
+- `routers/` (Express Routers)
+- `socket-handler/` (Socket.io Handlers)
+- `server.js` (Server entry point)
+- `uptime-kuma-server.js` (UptimeKumaServer class, main logic should be here, but some still in `server.js`)
 
 ## Frontend Dev Server
 
@@ -211,14 +334,15 @@ npm test
 
 ## Dependencies
 
-Both frontend and backend share the same package.json. However, the frontend dependencies are eventually not used in the production environment, because it is usually also baked into dist files. So:
+Both frontend and backend share the same `package.json`.
+However, the frontend dependencies are eventually not used in the production environment, because it is usually also baked into `dist` files. So:
 
 - Frontend dependencies = "devDependencies"
-  - Examples: vue, chart.js
+  - Examples: `vue`, `chart.js`
 - Backend dependencies = "dependencies"
-  - Examples: socket.io, sqlite3
+  - Examples: `socket.io`, `sqlite3`
 - Development dependencies = "devDependencies"
-  - Examples: eslint, sass
+  - Examples: `eslint`, `sass`
 
 ### Update Dependencies
 
@@ -289,54 +413,80 @@ https://github.com/louislam/uptime-kuma-wiki
 Check the latest issues and pull requests:
 https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 
-### Release Procedures
+### What is a maintainer and what are their roles?
 
-1. Draft a release note
-2. Make sure the repo is cleared
-3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
-4. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
-5. Wait until the `Press any key to continue`
-6. `git push`
-7. Publish the release note as 1.X.X
-8. Press any key to continue
-9. Deploy to the demo server: `npm run deploy-demo-server`
+This project has multiple maintainers which specialise in different areas.
+Currently, there are 3 maintainers:
 
-Checking:
+| Person            | Role              | Main Area        |
+|-------------------|-------------------|------------------|
+| `@louislam`       | senior maintainer | major features   |
+| `@chakflying`     | junior maintainer | fixing bugs      |
+| `@commanderstorm` | junior maintainer | issue-management |
 
-- Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
-- Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
-- Try clean installation with Node.js
+### Procedures
 
-### Release Beta Procedures
+We have a few procedures we follow. These are documented here:
 
-1. Draft a release note, check "This is a pre-release"
-2. Make sure the repo is cleared
-3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
-4. Wait until the `Press any key to continue`
-5. Publish the release note as 1.X.X-beta.X
-6. Press any key to continue
+- <details><summary>Release</summary>
+  <p>
 
-### Release Wiki
+  1. Draft a release note
+  2. Make sure the repo is cleared
+  3. If the healthcheck is updated, remember to re-compile it: `npm run build-docker-builder-go`
+  4. `npm run release-final` with env vars: `VERSION` and `GITHUB_TOKEN`
+  5. Wait until the `Press any key to continue`
+  6. `git push`
+  7. Publish the release note as `1.X.X`
+  8. Press any key to continue
+  9. Deploy to the demo server: `npm run deploy-demo-server`
 
-#### Setup Repo
+  These Items need to be checked:
 
-```bash
-git clone https://github.com/louislam/uptime-kuma-wiki.git
-cd uptime-kuma-wiki
-git remote add production https://github.com/louislam/uptime-kuma.wiki.git
-```
+  - [ ] Check all tags is fine on https://hub.docker.com/r/louislam/uptime-kuma/tags
+  - [ ] Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 / armv7)
+  - [ ] Try clean installation with Node.js
+  
+  </p>
+  </details>
+- <details><summary>Release Beta</summary>
+  <p>
 
-#### Push to Production Wiki
+  1. Draft a release note, check `This is a pre-release`
+  2. Make sure the repo is cleared
+  3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`
+  4. Wait until the `Press any key to continue`
+  5. Publish the release note as `1.X.X-beta.X`
+  6. Press any key to continue
+  
+  </p>
+  </details>
+- <details><summary>Release Wiki</summary>
+  <p>
 
-```bash
-git pull
-git push production master
-```
-
-## Useful Commands
-
-Change the base of a pull request such as `master` to `1.23.X`
-
-```bash
-git rebase --onto <new parent> <old parent>
-```
+  **Setup Repo**
+  
+  ```bash
+  git clone https://github.com/louislam/uptime-kuma-wiki.git
+  cd uptime-kuma-wiki
+  git remote add production https://github.com/louislam/uptime-kuma.wiki.git
+  ```
+  
+  **Push to Production Wiki**
+  
+  ```bash
+  git pull
+  git push production master
+  ```
+  
+  </p>
+  </details>
+- <details><summary>Change the base of a pull request such as <code>master</code> to <code>1.23.X</code></summary>
+  <p>
+  
+  ```bash
+  git rebase --onto <new parent> <old parent>
+  ```
+  
+  </p>
+  </details>
