@@ -294,7 +294,7 @@ let needSetup = false;
     log.debug("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
-        sendInfo(socket, true);
+        await sendInfo(socket, true);
 
         if (needSetup) {
             log.info("server", "Redirect to setup page");
@@ -326,7 +326,7 @@ let needSetup = false;
                     }
 
                     log.debug("auth", "afterLogin");
-                    afterLogin(socket, user);
+                    await afterLogin(socket, user);
                     log.debug("auth", "afterLogin ok");
 
                     log.info("auth", `Successfully logged in user ${decoded.username}. IP=${clientIP}`);
@@ -382,7 +382,7 @@ let needSetup = false;
 
             if (user) {
                 if (user.twofa_status === 0) {
-                    afterLogin(socket, user);
+                    await afterLogin(socket, user);
 
                     log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
@@ -405,7 +405,7 @@ let needSetup = false;
                     let verify = notp.totp.verify(data.token, user.twofa_secret, twoFAVerifyOptions);
 
                     if (user.twofa_last_token !== data.token && verify) {
-                        afterLogin(socket, user);
+                        await afterLogin(socket, user);
 
                         await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
                             data.token,
@@ -1351,8 +1351,8 @@ let needSetup = false;
                     msgi18n: true,
                 });
 
-                sendInfo(socket);
-                server.sendMaintenanceList(socket);
+                await sendInfo(socket);
+                await server.sendMaintenanceList(socket);
 
             } catch (e) {
                 callback({
@@ -1532,7 +1532,7 @@ let needSetup = false;
         log.debug("auth", "check auto login");
         if (await setting("disableAuth")) {
             log.info("auth", "Disabled Auth: auto login to admin");
-            afterLogin(socket, await R.findOne("user"));
+            await afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
         } else {
             log.debug("auth", "need auth");
@@ -1548,7 +1548,7 @@ let needSetup = false;
         process.exit(1);
     });
 
-    server.start();
+    await server.start();
 
     server.httpServer.listen(port, hostname, () => {
         if (hostname) {
@@ -1619,13 +1619,13 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
-    sendInfo(socket);
-    server.sendMaintenanceList(socket);
-    sendNotificationList(socket);
-    sendProxyList(socket);
-    sendDockerHostList(socket);
-    sendAPIKeyList(socket);
-    sendRemoteBrowserList(socket);
+    await sendInfo(socket);
+    await server.sendMaintenanceList(socket);
+    await sendNotificationList(socket);
+    await sendProxyList(socket);
+    await sendDockerHostList(socket);
+    await sendAPIKeyList(socket);
+    await sendRemoteBrowserList(socket);
 
     await sleep(500);
 

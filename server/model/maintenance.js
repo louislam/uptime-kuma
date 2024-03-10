@@ -189,9 +189,9 @@ class Maintenance extends BeanModel {
     /**
      * Throw error if cron is invalid
      * @param {string|Date} cron Pattern or date
-     * @returns {Promise<void>}
+     * @returns {void}
      */
-    static async validateCron(cron) {
+    static validateCron(cron) {
         let job = new Cron(cron, () => {});
         job.stop();
     }

@@ -1535,7 +1535,7 @@ message HealthCheckResponse {
 
                         // Start the new parent monitor after edit is done
                         if (createdNewParent) {
-                            this.startParentGroupMonitor();
+                            await this.startParentGroupMonitor();
                         }
                         this.processing = false;
                         this.$root.getMonitorList();
