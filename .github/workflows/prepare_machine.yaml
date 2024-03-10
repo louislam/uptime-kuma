@@ -30,6 +30,5 @@ jobs:
           cd uptime-kuma
           npm install npm@9
           npm run setup
-          node server/server.js
 
               '
