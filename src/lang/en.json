@@ -201,7 +201,7 @@
     "statusPageNothing": "Nothing here, please add a group or a monitor.",
     "statusPageRefreshIn": "Refresh in: {0}",
     "No Services": "No Services",
-    "All Systems Operational": "All Systems Operational",
+    "All systems are up and running": "All systems are up and running",
     "Partially Degraded Service": "Partially Degraded Service",
     "Degraded Service": "Degraded Service",
     "Add Group": "Add Group",

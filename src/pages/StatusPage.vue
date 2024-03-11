@@ -236,7 +236,7 @@
                 <template v-else>
                     <div v-if="allUp">
                         <font-awesome-icon icon="check-circle" class="ok" />
-                        {{ $t("All Systems Operational") }}
+                        {{ $t("All systems are up and running") }}
                     </div>
 
                     <div v-else-if="partialDown">
