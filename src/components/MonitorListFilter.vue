@@ -154,7 +154,7 @@
                             <span class="ps-3">
                                 {{ getTaggedMonitorCount(tag) }}
                                 <span
-                                    v-if="$router.currentRoute.value.query?.tags?.split(',').includes(tag.id)"
+                                    v-if="$router.currentRoute.value.query?.tags?.split(',').includes(''+tag.id)"
                                     class="px-1 filter-active"
                                 >
                                     <font-awesome-icon icon="check" />
@@ -253,7 +253,9 @@ export default {
         },
         clearFilters() {
             this.$emit("updateFilter", {
-                status: null,
+                status: undefined,
+                active: undefined,
+                tags: undefined,
             });
         },
         getExistingTags() {
