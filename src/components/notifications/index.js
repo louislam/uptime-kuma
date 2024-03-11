@@ -14,6 +14,7 @@ import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
 import GrafanaOncall from "./GrafanaOncall.vue";
 import HomeAssistant from "./HomeAssistant.vue";
+import HeiiOnCall from "./HeiiOnCall.vue";
 import Kook from "./Kook.vue";
 import Line from "./Line.vue";
 import LineNotify from "./LineNotify.vue";
@@ -74,6 +75,7 @@ const NotificationFormList = {
     "gotify": Gotify,
     "GrafanaOncall": GrafanaOncall,
     "HomeAssistant": HomeAssistant,
+    "HeiiOnCall": HeiiOnCall,
     "Kook": Kook,
     "line": Line,
     "LineNotify": LineNotify,
