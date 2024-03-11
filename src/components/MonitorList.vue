@@ -95,22 +95,6 @@ export default {
             disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
-            statusStates: {
-                up: 1,
-                down: 0,
-                pending: 2,
-                maintenance: 3,
-                1: "up",
-                0: "down",
-                2: "pending",
-                3: "maintenance",
-            },
-            activeStates: {
-                running: true,
-                paused: false,
-                true: "running",
-                false: "paused",
-            },
         };
     },
     computed: {
@@ -233,26 +217,27 @@ export default {
             });
         })();
 
-        const fetchedTagNames = tagParams
+        const fetchedTagIDs = tagParams
             ? tagParams
                 .split(",")
                 .map(identifier => {
                     const tagID = parseInt(identifier, 10);
-                    return tags
-                        .find(t => t.name === identifier || t.id === tagID)
-                        ?.name ?? 0;
+                    if (isNaN(tagID)) {
+                        return;
+                    }
+                    return tags.find(t => t.tag_id === tagID)?.id ?? 1;
                 })
                 .filter(tagID => tagID !== 0)
             : undefined;
 
         this.updateFilter({
             status: statusParams ? statusParams.split(",").map(
-                status => this.statusStates[this.statusStates[status.trim()]]
+                status => status.trim()
             ) : queryParams?.["status"],
             active: activeParams ? activeParams.split(",").map(
-                active => this.activeStates[this.activeStates[active.trim()]]
+                active => active.trim()
             ) : queryParams?.["active"],
-            tags: tagParams ? fetchedTagNames : queryParams?.["tags"],
+            tags: tagParams ? fetchedTagIDs : queryParams?.["tags"],
         });
     },
     beforeUnmount() {
@@ -398,7 +383,7 @@ export default {
                 if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
                     monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
                 }
-                statusMatch = this.$router.currentRoute.value.query?.status.includes(this.statusStates[monitor.status]);
+                statusMatch = this.$router.currentRoute.value.query?.status.includes(monitor.status);
             }
 
             // filter by active
@@ -411,9 +396,8 @@ export default {
             let tagsMatch = true;
             const tagsInURL = this.$router.currentRoute.value.query?.tags?.split(",") || [];
             if (this.$router.currentRoute.value.query?.tags != null && this.$router.currentRoute.value.query?.tags.length > 0) {
-                tagsMatch = monitor.tags.map(tag => tag.name) // convert to array of tag names
-                    .filter(monitorTagId => tagsInURL.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
-                    .length > 0;
+                const monitorTagIds = monitor.tags.map(tag => tag.tag_id);
+                tagsMatch = tagsInURL.map(Number).some(tagId => monitorTagIds.includes(tagId));
             }
 
             return searchTextMatch && statusMatch && activeMatch && tagsMatch;
