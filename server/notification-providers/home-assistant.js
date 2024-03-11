@@ -22,6 +22,7 @@ class HomeAssistant extends NotificationProvider {
                         name: monitor?.name,
                         status: heartbeat?.status,
                         channel: "uptime-kuma",
+                        icon_url: "https://github.com/louislam/uptime-kuma/blob/master/public/icon-192x192.png?raw=true"
                     } }),
                 },
                 {
