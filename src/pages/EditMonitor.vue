@@ -482,10 +482,10 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ $t("ignoreTLSError") }}
+                                    {{ this.monitor.type === "redis" ? this.$t("ignoreTLSErrorGeneral") : this.$t("ignoreTLSError") }}
                                 </label>
                             </div>
 
