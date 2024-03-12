@@ -92,7 +92,7 @@ class Bark extends NotificationProvider {
      * @param {string} title Message title
      * @param {string} subtitle Message
      * @param {string} endpoint Endpoint to send request to
-     * @returns {string} Success message
+     * @returns {Promise<string>} Success message
      */
     async postNotification(notification, title, subtitle, endpoint) {
         let result;

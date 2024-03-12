@@ -44,7 +44,7 @@ class AliyunSMS extends NotificationProvider {
      * Send the SMS notification
      * @param {BeanModel} notification Notification details
      * @param {string} msgbody Message template
-     * @returns {boolean} True if successful else false
+     * @returns {Promise<boolean>} True if successful else false
      */
     async sendSms(notification, msgbody) {
         let params = {

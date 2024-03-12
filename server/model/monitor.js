@@ -43,7 +43,7 @@ class Monitor extends BeanModel {
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
      * JSON
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
@@ -74,7 +74,7 @@ class Monitor extends BeanModel {
      * Return an object that ready to parse to JSON
      * @param {boolean} includeSensitiveData Include sensitive data in
      * JSON
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toJSON(includeSensitiveData = true) {
 

@@ -1470,7 +1470,7 @@ message HealthCheckResponse {
 
         /**
          * Submit the form data for processing
-         * @returns {void}
+         * @returns {Promise<void>}
          */
         async submit() {
 
