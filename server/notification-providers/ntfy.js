@@ -54,14 +54,17 @@ class Ntfy extends NotificationProvider {
                 "priority": priority,
                 "title": monitorJSON.name + " " + status + " [Uptime-Kuma]",
                 "tags": tags,
-                "actions": [
+            };
+
+            if (monitorJSON.url && monitorJSON.url !== "https://") {
+                data.actions = [
                     {
                         "action": "view",
                         "label": "Open " + monitorJSON.name,
                         "url": monitorJSON.url,
-                    }
-                ]
-            };
+                    },
+                ];
+            }
 
             if (notification.ntfyIcon) {
                 data.icon = notification.ntfyIcon;

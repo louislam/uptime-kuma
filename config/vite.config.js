@@ -2,6 +2,7 @@ import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
+import VueDevTools from "vite-plugin-vue-devtools";
 
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
@@ -32,6 +33,7 @@ export default defineConfig({
             algorithm: "brotliCompress",
             filter: viteCompressionFilter,
         }),
+        VueDevTools(),
     ],
     css: {
         postcss: {

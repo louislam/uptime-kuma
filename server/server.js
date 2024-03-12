@@ -986,7 +986,7 @@ let needSetup = false;
                 log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 if (monitorID in server.monitorList) {
-                    server.monitorList[monitorID].stop();
+                    await server.monitorList[monitorID].stop();
                     delete server.monitorList[monitorID];
                 }
 
@@ -1703,11 +1703,11 @@ async function startMonitor(userID, monitorID) {
     ]);
 
     if (monitor.id in server.monitorList) {
-        server.monitorList[monitor.id].stop();
+        await server.monitorList[monitor.id].stop();
     }
 
     server.monitorList[monitor.id] = monitor;
-    monitor.start(io);
+    await monitor.start(io);
 }
 
 /**
@@ -1737,7 +1737,7 @@ async function pauseMonitor(userID, monitorID) {
     ]);
 
     if (monitorID in server.monitorList) {
-        server.monitorList[monitorID].stop();
+        await server.monitorList[monitorID].stop();
         server.monitorList[monitorID].active = 0;
     }
 }
@@ -1754,7 +1754,7 @@ async function startMonitors() {
     }
 
     for (let monitor of list) {
-        monitor.start(io);
+        await monitor.start(io);
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
         await sleep(getRandomInt(300, 1000));
     }
@@ -1775,7 +1775,7 @@ async function shutdownFunction(signal) {
     log.info("server", "Stopping all monitors");
     for (let id in server.monitorList) {
         let monitor = server.monitorList[id];
-        monitor.stop();
+        await monitor.stop();
     }
     await sleep(2000);
     await Database.close();
