@@ -202,9 +202,7 @@ export default {
     },
     methods: {
         getActiveFilters: function () {
-            const filters = Object.fromEntries(
-                Array.from(Object.entries(this.$router.currentRoute.value.query ?? {}))
-            );
+            const filters = this.$router.currentRoute.value.query;
 
             return {
                 status: filters["status"] ? filters["status"].split(",") : [],
