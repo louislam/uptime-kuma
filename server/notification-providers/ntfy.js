@@ -3,14 +3,14 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Ntfy extends NotificationProvider {
-
     name = "ntfy";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let headers = {};
             if (notification.ntfyAuthenticationMethod === "usernamePassword") {
@@ -31,7 +31,7 @@ class Ntfy extends NotificationProvider {
                     "priority": notification.ntfyPriority,
                     "tags": [ "test_tube" ],
                 };
-                await axios.post(`${notification.ntfyserverurl}`, ntfyTestData, { headers: headers });
+                await axios.post(notification.ntfyserverurl, ntfyTestData, { headers: headers });
                 return okMsg;
             }
             let tags = [];
@@ -70,7 +70,7 @@ class Ntfy extends NotificationProvider {
                 data.icon = notification.ntfyIcon;
             }
 
-            await axios.post(`${notification.ntfyserverurl}`, data, { headers: headers });
+            await axios.post(notification.ntfyserverurl, data, { headers: headers });
 
             return okMsg;
 
