@@ -5,14 +5,14 @@ const { getMonitorRelativeURL } = require("../../src/util");
 const { DOWN, UP } = require("../../src/util");
 
 class GoogleChat extends NotificationProvider {
-
     name = "GoogleChat";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             // Google Chat message formatting: https://developers.google.com/chat/api/guides/message-formats/basic
 

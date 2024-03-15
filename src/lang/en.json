@@ -885,5 +885,7 @@
     "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot",
-    "What is a Remote Browser?": "What is a Remote Browser?"
+    "What is a Remote Browser?": "What is a Remote Browser?",
+    "wayToGetHeiiOnCallDetails": "How to get the Trigger ID and API Keys is explained in the {documentation}",
+    "documentationOf": "{0} Documentation"
 }
