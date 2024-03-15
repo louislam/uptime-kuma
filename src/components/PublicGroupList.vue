@@ -37,8 +37,9 @@
                                         <div class="info">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
-
-                                            <Uptime :monitor="monitor.element" type="24" :pill="true" />
+                                            
+                                            <Status v-if="hideUptimePercentage" :status="statusOfLastHeartbeat(monitor.element.id)" />
+                                            <Uptime v-if="!hideUptimePercentage" :monitor="monitor.element" type="24" :pill="true" />
                                             <a
                                                 v-if="showLink(monitor)"
                                                 :href="monitor.element.url"
@@ -90,6 +91,8 @@ import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
+import Status from "./Status.vue";
+import PublicStatus from "./PublicStatus.vue";
 
 export default {
     components: {
@@ -98,6 +101,8 @@ export default {
         HeartbeatBar,
         Uptime,
         Tag,
+        Status,
+        PublicStatus
     },
     props: {
         /** Are we in edit mode? */
@@ -112,7 +117,11 @@ export default {
         /** Should expiry be shown? */
         showCertificateExpiry: {
             type: Boolean,
-        }
+        },
+        /** Should uptime be hidden? */
+        hideUptimePercentage: {
+            type: Boolean,
+        },
     },
     data() {
         return {
@@ -179,6 +188,17 @@ export default {
             } else {
                 return this.$t("Unknown") + " " + this.$tc("day", 2);
             }
+        },
+
+        /**
+         * Returns the status of the last heartbeat
+         * @param {object} monitor Monitor to get status for
+         * @returns {number} Status of the last heartbeat
+         */
+         statusOfLastHeartbeat(monitor) {
+            let heartbeats = this.$root.heartbeatList[this.monitorId] ?? [];
+            let lastHeartbeat = heartbeats[heartbeats.length - 1];
+            return lastHeartbeat?.status;
         },
 
         /**
