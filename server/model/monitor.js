@@ -43,7 +43,7 @@ class Monitor extends BeanModel {
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
      * JSON
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
@@ -74,7 +74,7 @@ class Monitor extends BeanModel {
      * Return an object that ready to parse to JSON
      * @param {boolean} includeSensitiveData Include sensitive data in
      * JSON
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toJSON(includeSensitiveData = true) {
 
@@ -947,7 +947,7 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
-                UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                await UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
 
             } else {
                 bean.important = false;
@@ -1377,7 +1377,7 @@ class Monitor extends BeanModel {
             let notifyDays = await setting("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
                 // Reset Default
-                setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+                await setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
                 notifyDays = [ 7, 14, 21 ];
             }
 
