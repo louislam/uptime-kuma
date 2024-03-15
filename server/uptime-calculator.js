@@ -157,8 +157,7 @@ class UptimeCalculator {
                 };
             }
 
-            let key = bean.timestamp;
-            this.hourlyUptimeDataList.push(key, data);
+            this.hourlyUptimeDataList.push(bean.timestamp, data);
         }
 
         // Load daily data from database (recent 365 days only)
@@ -183,8 +182,7 @@ class UptimeCalculator {
                 };
             }
 
-            let key = bean.timestamp;
-            this.dailyUptimeDataList.push(key, data);
+            this.dailyUptimeDataList.push(bean.timestamp, data);
         }
     }
 
