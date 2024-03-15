@@ -106,7 +106,6 @@ class Database {
         "patch-notification-config.sql": true,
         "patch-fix-kafka-producer-booleans.sql": true,
         "patch-timeout.sql": true, // The last file so far converted to a knex migration file
-        "patch-add-hide-uptime-percentage.sql": true
     };
 
     /**
