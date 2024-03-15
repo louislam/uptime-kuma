@@ -92,7 +92,6 @@ import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
 import Status from "./Status.vue";
-import PublicStatus from "./PublicStatus.vue";
 
 export default {
     components: {
@@ -102,7 +101,6 @@ export default {
         Uptime,
         Tag,
         Status,
-        PublicStatus
     },
     props: {
         /** Are we in edit mode? */
