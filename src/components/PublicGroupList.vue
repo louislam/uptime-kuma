@@ -193,7 +193,7 @@ export default {
          * @param {number} monitorId Id of the monitor to get status for
          * @returns {number} Status of the last heartbeat
          */
-         statusOfLastHeartbeat(monitorId) {
+        statusOfLastHeartbeat(monitorId) {
             let heartbeats = this.$root.heartbeatList[monitorId] ?? [];
             let lastHeartbeat = heartbeats[heartbeats.length - 1];
             return lastHeartbeat?.status;
