@@ -34,8 +34,6 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
   
-    - name: Install NPM 9
-      run: npm i -g npm@9
     - name: Install
       run: npm install
     - name: Build
@@ -66,7 +64,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - run: npm install npm@9 -g
       - run: npm ci --production
 
   check-linters:
