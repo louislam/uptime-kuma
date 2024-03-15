@@ -37,7 +37,7 @@
                                         <div class="info">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
-                                            
+
                                             <Status v-if="hideUptimePercentage" :status="statusOfLastHeartbeat(monitor.element.id)" />
                                             <Uptime v-if="!hideUptimePercentage" :monitor="monitor.element" type="24" :pill="true" />
                                             <a
