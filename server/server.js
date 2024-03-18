@@ -1619,15 +1619,15 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
-    await sendInfo(socket);
-    await server.sendMaintenanceList(socket);
-    await sendNotificationList(socket);
-    await sendProxyList(socket);
-    await sendDockerHostList(socket);
-    await sendAPIKeyList(socket);
-    await sendRemoteBrowserList(socket);
-
-    await sleep(500);
+    await Promise.allSettled([
+        sendInfo(socket),
+        server.sendMaintenanceList(socket),
+        sendNotificationList(socket),
+        sendProxyList(socket),
+        sendDockerHostList(socket),
+        sendAPIKeyList(socket),
+        sendRemoteBrowserList(socket),
+    ]);
 
     await StatusPage.sendStatusPageList(io, socket);
 
