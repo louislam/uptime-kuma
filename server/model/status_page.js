@@ -18,7 +18,7 @@ class StatusPage extends BeanModel {
      * @param {Response} response Response object
      * @param {string} indexHTML HTML to render
      * @param {string} slug Status page slug
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async handleStatusPageResponse(response, indexHTML, slug) {
         // Handle url with trailing slash (http://localhost:3001/status/)
@@ -42,7 +42,7 @@ class StatusPage extends BeanModel {
      * SSR for status pages
      * @param {string} indexHTML HTML page to render
      * @param {StatusPage} statusPage Status page populate HTML with
-     * @returns {void}
+     * @returns {Promise<string>} the rendered html
      */
     static async renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);

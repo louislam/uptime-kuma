@@ -4,7 +4,6 @@ const { setSettings, setting } = require("../util-server");
 const { getMonitorRelativeURL, UP } = require("../../src/util");
 
 class Slack extends NotificationProvider {
-
     name = "slack";
 
     /**
@@ -31,7 +30,7 @@ class Slack extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         if (notification.slackchannelnotify) {
             msg += " <!channel>";

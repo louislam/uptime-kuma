@@ -378,7 +378,7 @@ class Database {
 
     /**
      * Patch the database
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async patch() {
         // Still need to keep this for old versions of Uptime Kuma

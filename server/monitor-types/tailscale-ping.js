@@ -16,7 +16,7 @@ class TailscalePing extends MonitorType {
      * @param {object} monitor The monitor object associated with the check.
      * @param {object} heartbeat The heartbeat object to update.
      * @returns {Promise<void>}
-     * @throws Will throw an error if checking Tailscale ping encounters any error
+     * @throws Error if checking Tailscale ping encounters any error
      */
     async check(monitor, heartbeat) {
         try {
