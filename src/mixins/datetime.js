@@ -94,9 +94,8 @@ export default {
             if (value !== undefined && value !== "") {
                 const date = new Date(value);
                 return date.toLocaleString(this.$i18n.locale, { ...format,
-                    hour12: false }); // 24 hour format
-                // return date.toLocaleString(this.$i18n.locale, format); // 12 hours format
-                // return dayjs.utc(value).tz(this.timezone).format(format);
+                    hour12: false,
+                    timeZone: this.timezone }); // 24 hours format
             }
             return "";
         },
