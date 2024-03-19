@@ -92,7 +92,11 @@ export default {
          */
         datetimeFormat(value, format) {
             if (value !== undefined && value !== "") {
-                return dayjs.utc(value).tz(this.timezone).format(format);
+                const date = new Date(value);
+                return date.toLocaleString(this.$i18n.locale, { ...format,
+                    hour12: false }); // 24 hour format
+                // return date.toLocaleString(this.$i18n.locale, format); // 12 hours format
+                // return dayjs.utc(value).tz(this.timezone).format(format);
             }
             return "";
         },
