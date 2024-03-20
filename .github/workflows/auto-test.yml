@@ -61,6 +61,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+          check-latest: true
       - run: npm install npm@10 -g
       - run: npm ci --production
 
