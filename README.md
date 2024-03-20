@@ -63,7 +63,7 @@ Requirements:
 
 ```bash
 # Update your npm
-npm install npm@9 -g
+npm install npm@10 -g
 
 git clone https://github.com/louislam/uptime-kuma.git
 cd uptime-kuma
