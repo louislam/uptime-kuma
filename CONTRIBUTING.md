@@ -231,7 +231,7 @@ The goal is to make the Uptime Kuma installation as easy as installing a mobile 
 ## Tools
 
 - [`Node.js`](https://nodejs.org/) >= 18
-- [`npm`](https://www.npmjs.com/) >= 10.2.4
+- [`npm`](https://www.npmjs.com/) >= 9.3
 - [`git`](https://git-scm.com/)
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
 - A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
