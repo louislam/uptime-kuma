@@ -4,14 +4,14 @@ const { setting } = require("../util-server");
 const { getMonitorRelativeURL } = require("../../src/util");
 
 class Stackfield extends NotificationProvider {
-
     name = "stackfield";
 
     /**
      * @inheritdoc
      */
-    async send(notification, msg, monitorJSON = null) {
-        let okMsg = "Sent Successfully.";
+    async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
+
         try {
             // Stackfield message formatting: https://www.stackfield.com/help/formatting-messages-2001
 

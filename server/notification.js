@@ -14,7 +14,9 @@ const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
+const GrafanaOncall = require("./notification-providers/grafana-oncall");
 const HomeAssistant = require("./notification-providers/home-assistant");
+const HeiiOnCall = require("./notification-providers/heii-oncall");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
@@ -84,7 +86,9 @@ class Notification {
             new GoogleChat(),
             new Gorush(),
             new Gotify(),
+            new GrafanaOncall(),
             new HomeAssistant(),
+            new HeiiOnCall(),
             new Kook(),
             new Line(),
             new LineNotify(),

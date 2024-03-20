@@ -1,12 +1,11 @@
-const https = require("https");
 const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT
 } = require("../../src/util");
-const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, mqttAsync, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials,
+const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
+    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -16,12 +15,18 @@ const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
-const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { CookieJar } = require("tough-cookie");
+const { HttpsCookieAgent } = require("http-cookie-agent/http");
+const https = require("https");
+const http = require("http");
+
+const rootCertificates = rootCertificatesFingerprints();
 
 /**
  * status:
@@ -38,7 +43,7 @@ class Monitor extends BeanModel {
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
      * JSON
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
@@ -69,7 +74,7 @@ class Monitor extends BeanModel {
      * Return an object that ready to parse to JSON
      * @param {boolean} includeSensitiveData Include sensitive data in
      * JSON
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toJSON(includeSensitiveData = true) {
 
@@ -91,11 +96,15 @@ class Monitor extends BeanModel {
             screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
         }
 
+        const path = await this.getPath();
+        const pathName = path.join(" / ");
+
         let data = {
             id: this.id,
             name: this.name,
             description: this.description,
-            pathName: await this.getPathName(),
+            path,
+            pathName,
             parent: this.parent,
             childrenIDs: await Monitor.getAllChildrenIDs(this.id),
             url: this.url,
@@ -130,6 +139,7 @@ class Monitor extends BeanModel {
             maintenance: await Monitor.isUnderMaintenance(this.id),
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
+            mqttCheckType: this.mqttCheckType,
             databaseQuery: this.databaseQuery,
             authMethod: this.authMethod,
             grpcUrl: this.grpcUrl,
@@ -146,10 +156,11 @@ class Monitor extends BeanModel {
             expectedValue: this.expectedValue,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
-            kafkaProducerSsl: this.kafkaProducerSsl === "1" && true || false,
-            kafkaProducerAllowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation === "1" && true || false,
+            kafkaProducerSsl: this.getKafkaProducerSsl(),
+            kafkaProducerAllowAutoTopicCreation: this.getKafkaProducerAllowAutoTopicCreation(),
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
+            remote_browser: this.remote_browser,
         };
 
         if (includeSensitiveData) {
@@ -299,11 +310,27 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Parse to boolean
+     * @returns {boolean} Kafka Producer Ssl enabled?
+     */
+    getKafkaProducerSsl() {
+        return Boolean(this.kafkaProducerSsl);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Kafka Producer Allow Auto Topic Creation Enabled?
+     */
+    getKafkaProducerAllowAutoTopicCreation() {
+        return Boolean(this.kafkaProducerAllowAutoTopicCreation);
+    }
+
+    /**
      * Start monitor
      * @param {Server} io Socket server instance
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    start(io) {
+    async start(io) {
         let previousBeat = null;
         let retries = 0;
 
@@ -332,6 +359,9 @@ class Monitor extends BeanModel {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [
                     this.id,
                 ]);
+                if (previousBeat) {
+                    retries = previousBeat.retries;
+                }
             }
 
             const isFirstBeat = !previousBeat;
@@ -344,6 +374,12 @@ class Monitor extends BeanModel {
 
             if (this.isUpsideDown()) {
                 bean.status = flipStatus(bean.status);
+            }
+
+            // Runtime patch timeout if it is 0
+            // See https://github.com/louislam/uptime-kuma/pull/3961#issuecomment-1804149144
+            if (!this.timeout || this.timeout <= 0) {
+                this.timeout = this.interval * 1000 * 0.8;
             }
 
             try {
@@ -401,9 +437,7 @@ class Monitor extends BeanModel {
                     if (this.auth_method === "oauth2-cc") {
                         try {
                             if (this.oauthAccessToken === undefined || new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()) {
-                                log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new one`);
-                                this.oauthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
-                                log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken.expires_at * 1000)}`);
+                                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
                             }
                             oauth2AuthHeader = {
                                 "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
@@ -416,6 +450,7 @@ class Monitor extends BeanModel {
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
+                        secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                     };
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
@@ -447,7 +482,6 @@ class Monitor extends BeanModel {
                         timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                            "User-Agent": "Uptime-Kuma/" + version,
                             ...(contentType ? { "Content-Type": contentType } : {}),
                             ...(basicAuthHeader),
                             ...(oauth2AuthHeader),
@@ -457,6 +491,7 @@ class Monitor extends BeanModel {
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
                         },
+                        signal: axiosAbortSignal((this.timeout + 10) * 1000),
                     };
 
                     if (bodyValue) {
@@ -478,7 +513,12 @@ class Monitor extends BeanModel {
                     }
 
                     if (!options.httpsAgent) {
-                        options.httpsAgent = new https.Agent(httpsAgentOptions);
+                        let jar = new CookieJar();
+                        let httpsCookieAgentOptions = {
+                            ...httpsAgentOptions,
+                            cookies: { jar }
+                        };
+                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
                     }
 
                     if (this.auth_method === "mtls") {
@@ -596,6 +636,7 @@ class Monitor extends BeanModel {
                         // If the previous beat was down or pending we use the regular
                         // beatInterval/retryInterval in the setTimeout further below
                         if (previousBeat.status !== (this.isUpsideDown() ? DOWN : UP) || msSinceLastBeat > beatInterval * 1000 + bufferTime) {
+                            bean.duration = Math.round(msSinceLastBeat / 1000);
                             throw new Error("No heartbeat in the time window");
                         } else {
                             let timeout = beatInterval * 1000 - msSinceLastBeat;
@@ -611,6 +652,7 @@ class Monitor extends BeanModel {
                             return;
                         }
                     } else {
+                        bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");
                     }
 
@@ -627,13 +669,13 @@ class Monitor extends BeanModel {
                         timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "*/*",
-                            "User-Agent": "Uptime-Kuma/" + version,
                         },
-                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
+                        httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                         }),
-                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                        httpAgent: new http.Agent({
                             maxCachedSessions: 0,
                         }),
                         maxRedirects: this.maxredirects,
@@ -674,29 +716,33 @@ class Monitor extends BeanModel {
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
-                    const dockerHost = await R.load("docker_host", this.docker_host);
-
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
-                            "User-Agent": "Uptime-Kuma/" + version,
                         },
-                        httpsAgent: CacheableDnsHttpAgent.getHttpsAgent({
+                        httpsAgent: new https.Agent({
                             maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                             rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
                         }),
-                        httpAgent: CacheableDnsHttpAgent.getHttpAgent({
+                        httpAgent: new http.Agent({
                             maxCachedSessions: 0,
                         }),
                     };
+
+                    const dockerHost = await R.load("docker_host", this.docker_host);
+
+                    if (!dockerHost) {
+                        throw new Error("Failed to load docker host config");
+                    }
 
                     if (dockerHost._dockerType === "socket") {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
-                        options.httpsAgent = CacheableDnsHttpAgent.getHttpsAgent(
+                        options.httpsAgent = new https.Agent(
                             DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
                         );
                     }
@@ -715,18 +761,10 @@ class Monitor extends BeanModel {
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
                     }
-                } else if (this.type === "mqtt") {
-                    bean.msg = await mqttAsync(this.hostname, this.mqttTopic, this.mqttSuccessMessage, {
-                        port: this.port,
-                        username: this.mqttUsername,
-                        password: this.mqttPassword,
-                        interval: this.interval,
-                    });
-                    bean.status = UP;
                 } else if (this.type === "sqlserver") {
                     let startTime = dayjs().valueOf();
 
-                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery);
+                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
 
                     bean.msg = "";
                     bean.status = UP;
@@ -765,7 +803,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "postgres") {
                     let startTime = dayjs().valueOf();
 
-                    await postgresQuery(this.databaseConnectionString, this.databaseQuery);
+                    await postgresQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
 
                     bean.msg = "";
                     bean.status = UP;
@@ -773,7 +811,11 @@ class Monitor extends BeanModel {
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
 
-                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery);
+                    // Use `radius_password` as `password` field, since there are too many unnecessary fields
+                    // TODO: rename `radius_password` to `password` later for general use
+                    let mysqlPassword = this.radiusPassword;
+
+                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1", mysqlPassword);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "mongodb") {
@@ -861,7 +903,11 @@ class Monitor extends BeanModel {
 
             } catch (error) {
 
-                bean.msg = error.message;
+                if (error?.name === "CanceledError") {
+                    bean.msg = `timeout by AbortSignal (${this.timeout}s)`;
+                } else {
+                    bean.msg = error.message;
+                }
 
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
@@ -871,8 +917,13 @@ class Monitor extends BeanModel {
                 } else if ((this.maxretries > 0) && (retries < this.maxretries)) {
                     retries++;
                     bean.status = PENDING;
+                } else {
+                    // Continue counting retries during DOWN
+                    retries++;
                 }
             }
+
+            bean.retries = retries;
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
             let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
@@ -896,7 +947,7 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
-                UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                await UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
 
             } else {
                 bean.important = false;
@@ -1016,27 +1067,44 @@ class Monitor extends BeanModel {
             }
 
             return res;
-        } catch (e) {
+        } catch (error) {
+
+            /**
+             * Make a single attempt to obtain an new access token in the event that
+             * the recent api request failed for authentication purposes
+             */
+            if (this.auth_method === "oauth2-cc" && error.response.status === 401 && !finalCall) {
+                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
+                let oauth2AuthHeader = {
+                    "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
+                };
+                options.headers = { ...(options.headers),
+                    ...(oauth2AuthHeader)
+                };
+
+                return this.makeAxiosRequest(options, true);
+            }
+
             // Fix #2253
             // Read more: https://stackoverflow.com/questions/1759956/curl-error-18-transfer-closed-with-outstanding-read-data-remaining
-            if (!finalCall && typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
+            if (!finalCall && typeof error.message === "string" && error.message.includes("maxContentLength size of -1 exceeded")) {
                 log.debug("monitor", "makeAxiosRequest with gzip");
                 options.headers["Accept-Encoding"] = "gzip, deflate";
                 return this.makeAxiosRequest(options, true);
             } else {
-                if (typeof e.message === "string" && e.message.includes("maxContentLength size of -1 exceeded")) {
-                    e.message = "response timeout: incomplete response within a interval";
+                if (typeof error.message === "string" && error.message.includes("maxContentLength size of -1 exceeded")) {
+                    error.message = "response timeout: incomplete response within a interval";
                 }
-                throw e;
+                throw error;
             }
         }
     }
 
     /**
      * Stop monitor
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    stop() {
+    async stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
 
@@ -1309,7 +1377,7 @@ class Monitor extends BeanModel {
             let notifyDays = await setting("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
                 // Reset Default
-                setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+                await setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
                 notifyDays = [ 7, 14, 21 ];
             }
 
@@ -1318,7 +1386,10 @@ class Monitor extends BeanModel {
                     let certInfo = tlsInfoObject.certInfo;
                     while (certInfo) {
                         let subjectCN = certInfo.subject["CN"];
-                        if (certInfo.daysRemaining > targetDays) {
+                        if (rootCertificates.has(certInfo.fingerprint256)) {
+                            log.debug("monitor", `Known root cert: ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
+                            break;
+                        } else if (certInfo.daysRemaining > targetDays) {
                             log.debug("monitor", `No need to send cert notification for ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
                         } else {
                             log.debug("monitor", `call sendCertNotificationByTargetDays for ${targetDays} deadline on certificate ${subjectCN}.`);
@@ -1384,10 +1455,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>} Previous heartbeat
      */
     static async getPreviousHeartbeat(monitorID) {
-        return await R.getRow(`
-            SELECT ping, status, time FROM heartbeat
-            WHERE id = (select MAX(id) from heartbeat where monitor_id = ?)
-        `, [
+        return await R.findOne("heartbeat", " id = (select MAX(id) from heartbeat where monitor_id = ?)", [
             monitorID
         ]);
     }
@@ -1463,11 +1531,11 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Gets Full Path-Name (Groups and Name)
-     * @returns {Promise<string>} Full path name of this monitor
+     * Gets the full path
+     * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
-    async getPathName() {
-        let path = this.name;
+    async getPath() {
+        const path = [ this.name ];
 
         if (this.parent === null) {
             return path;
@@ -1475,7 +1543,7 @@ class Monitor extends BeanModel {
 
         let parent = await Monitor.getParent(this.id);
         while (parent !== null) {
-            path = `${parent.name} / ${path}`;
+            path.unshift(parent.name);
             parent = await Monitor.getParent(parent.id);
         }
 
@@ -1530,6 +1598,23 @@ class Monitor extends BeanModel {
         const parentActive = await Monitor.isParentActive(parent.id);
         return parent.active && parentActive;
     }
+
+    /**
+     * Obtains a new Oidc Token
+     * @returns {Promise<object>} OAuthProvider client
+     */
+    async makeOidcTokenClientCredentialsRequest() {
+        log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new token`);
+        const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+        if (this.oauthAccessToken?.expires_at) {
+            log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken?.expires_at * 1000)}`);
+        } else {
+            log.debug("monitor", `[${this.name}] Obtained oauth access-token. Time until expiry was not provided`);
+        }
+
+        return oAuthAccessToken;
+    }
+
 }
 
 module.exports = Monitor;

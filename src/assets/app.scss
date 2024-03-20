@@ -635,6 +635,10 @@ $shadow-box-padding: 20px;
     }
 }
 
+.zoom-cursor {
+  cursor: zoom-in;
+}
+
 // Localization
 
 @import "localization.scss";

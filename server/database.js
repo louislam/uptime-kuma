@@ -12,22 +12,40 @@ const mysql = require("mysql2/promise");
  */
 class Database {
 
+    /**
+     * Boostrap database for SQLite
+     * @type {string}
+     */
     static templatePath = "./db/kuma.db";
 
     /**
      * Data Dir (Default: ./data)
+     * @type {string}
      */
     static dataDir;
 
     /**
      * User Upload Dir (Default: ./data/upload)
+     * @type {string}
      */
     static uploadDir;
 
+    /**
+     * Chrome Screenshot Dir (Default: ./data/screenshots)
+     * @type {string}
+     */
     static screenshotDir;
 
+    /**
+     * SQLite file path (Default: ./data/kuma.db)
+     * @type {string}
+     */
     static sqlitePath;
 
+    /**
+     * For storing Docker TLS certs (Default: ./data/docker-tls)
+     * @type {string}
+     */
     static dockerTLSDir;
 
     /**
@@ -84,8 +102,10 @@ class Database {
         "patch-add-certificate-expiry-status-page.sql": true,
         "patch-monitor-oauth-cc.sql": true,
         "patch-add-timeout-monitor.sql": true,
-        "patch-add-gamedig-given-port.sql": true,   // The last file so far converted to a knex migration file
+        "patch-add-gamedig-given-port.sql": true,
         "patch-notification-config.sql": true,
+        "patch-fix-kafka-producer-booleans.sql": true,
+        "patch-timeout.sql": true, // The last file so far converted to a knex migration file
     };
 
     /**
@@ -243,7 +263,14 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
-                    timezone: "+00:00",
+                    timezone: "Z",
+                    typeCast: function (field, next) {
+                        if (field.type === "DATETIME") {
+                            // Do not perform timezone conversion
+                            return field.string();
+                        }
+                        return next();
+                    },
                 },
                 pool: mariadbPoolConfig,
             };
@@ -257,6 +284,14 @@ class Database {
                     socketPath: embeddedMariaDB.socketPath,
                     user: "node",
                     database: "kuma",
+                    timezone: "Z",
+                    typeCast: function (field, next) {
+                        if (field.type === "DATETIME") {
+                            // Do not perform timezone conversion
+                            return field.string();
+                        }
+                        return next();
+                    },
                 },
                 pool: mariadbPoolConfig,
             };
@@ -343,7 +378,7 @@ class Database {
 
     /**
      * Patch the database
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async patch() {
         // Still need to keep this for old versions of Uptime Kuma
