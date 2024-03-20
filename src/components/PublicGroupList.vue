@@ -140,7 +140,9 @@
                                                 class="btn btn-warning btn-sm mt-3"
                                                 :disabled="isRestarting"
                                                 @click="
-                                                    restartMonitor(monitor.id)
+                                                    restartMonitor(
+                                                        monitor.element.id
+                                                    )
                                                 "
                                             >
                                                 <div
