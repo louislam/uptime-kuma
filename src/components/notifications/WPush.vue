@@ -16,7 +16,7 @@
         </select>
     </div>
 
-    <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
+    <i18n-t tag="p" keypath="More info on:">
         <a href="https://wpush.cn/" rel="noopener noreferrer" target="_blank">https://wpush.cn/</a>
     </i18n-t>
 </template>
