@@ -887,5 +887,6 @@
     "Browser Screenshot": "Browser Screenshot",
     "What is a Remote Browser?": "What is a Remote Browser?",
     "wayToGetHeiiOnCallDetails": "How to get the Trigger ID and API Keys is explained in the {documentation}",
-    "documentationOf": "{0} Documentation"
+    "documentationOf": "{0} Documentation",
+    "callMeBotGet": "Here you can generate an endpoint for {0}, {1} and {2}. Keep in mind that you might get rate limited. You can read more about ratelimits here: {3}"
 }
