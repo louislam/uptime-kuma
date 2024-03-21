@@ -20,7 +20,7 @@ class WPush extends NotificationProvider {
             };
             const result = await axios.post("https://api.wpush.cn/api/v1/send", context);
             if (result.data.code !== 0) {
-                throw response.data.message;
+                throw result.data.message;
             }
 
             return okMsg;
