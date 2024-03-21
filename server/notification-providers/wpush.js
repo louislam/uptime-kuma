@@ -12,14 +12,15 @@ class WPush extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            const ret = await axios.post("https://api.wpush.cn/api/v1/send", {
+            const context = {
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),
                 "content": msg,
                 "apikey": notification.wpushAPIkey,
                 "channel": notification.wpushChannel
-            });
-            if (ret.data.code !== 0) {
-                return ret.data.message;
+            };
+            const result = await axios.post("https://api.wpush.cn/api/v1/send", context);
+            if (result.data.code !== 0) {
+                throw response.data.message;
             }
 
             return okMsg;
