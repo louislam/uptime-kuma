@@ -471,6 +471,98 @@
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
 
+                            <!-- Slow Response Notification -->
+                            <div class="my-3 form-check">
+                                <input id="slow-response-notification" v-model="monitor.slowResponseNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="slow-response-notification">
+                                    {{ $t("slowResponseNotificationEnable") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationUseDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Method -->
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                                <label for="slow-response-notification-method" class="form-label">{{ $t("slowResponseNotificationMethod") }}</label>
+                                <select id="slow-response-notification-method" v-model="monitor.slowResponseNotificationMethod" class="form-select">
+                                    <option value="average">
+                                        {{ $t("slowResponseNotificationMethodAverage") }}
+                                    </option>
+                                    <option value="max">
+                                        {{ $t("slowResponseNotificationMethodMax") }}
+                                    </option>
+                                    <option value="last">
+                                        {{ $t("slowResponseNotificationMethodLast") }}
+                                    </option>
+                                </select>
+                                <div v-if="monitor.slowResponseNotificationMethod === 'average'" class="form-text">
+                                    {{ $t("slowResponseNotificationMethodAverageDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
+                                <div v-if="monitor.slowResponseNotificationMethod === 'max'" class="form-text">
+                                    {{ $t("slowResponseNotificationMethodMaxDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
+                                <div v-if="monitor.slowResponseNotificationMethod === 'last'" class="form-text">
+                                    {{ $t("slowResponseNotificationMethodLastDescription", [monitor.slowResponseNotificationRange]) }}
+                                </div>
+                            </div>
+
+                            <!-- Window Duration -->
+                            <div v-if="monitor.slowResponseNotification && monitor.slowResponseNotificationMethod !== 'last'" class="my-3">
+                                <label for="slow-response-notification-range" class="form-label">{{ $t("slowResponseNotificationRange") }}</label>
+                                <input id="slow-response-notification-range" v-model="monitor.slowResponseNotificationRange" type="number" class="form-control" required :min="monitor.interval" step="1">
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationRangeDescription", [monitor.slowResponseNotificationMethod]) }}
+                                </div>
+                            </div>
+
+                            <!-- Threshold Method -->
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                                <label for="slow-response-notification-threshold-method" class="form-label">{{ $t("slowResponseNotificationThresholdMethod") }}</label>
+                                <select id="slow-response-notification-threshold-method" v-model="monitor.slowResponseNotificationThresholdMethod" class="form-select">
+                                    <option value="threshold-static">
+                                        {{ $t("slowResponseNotificationThresholdMethodStatic") }}
+                                    </option>
+                                    <option value="threshold-relative-24-hour">
+                                        {{ $t("slowResponseNotificationThresholdMethodRelative24Hour") }}
+                                    </option>
+                                </select>
+                                <div v-if="monitor.slowResponseNotificationThresholdMethod === 'threshold-static'" class="form-text">
+                                    {{ $t("slowResponseNotificationThresholdMethodStaticDescription") }}
+                                </div>
+                                <div v-if="monitor.slowResponseNotificationThresholdMethod === 'threshold-relative-24-hour'" class="form-text">
+                                    {{ $t("slowResponseNotificationThresholdMethodRelative24HourDescription", [monitor.slowResponseNotificationThresholdMultiplier]) }}
+                                </div>
+                            </div>
+
+                            <!-- Threshold -->
+                            <div v-if="monitor.slowResponseNotification && monitor.slowResponseNotificationThresholdMethod == 'threshold-static'" class="my-3">
+                                <label for="slow-response-notification-threshold" class="form-label">{{ $t("slowResponseNotificationThreshold") }}</label>
+                                <input id="slow-response-notification-threshold" v-model="monitor.slowResponseNotificationThreshold" type="number" class="form-control" required min="0" step="1">
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationThresholdDescription", [monitor.slowResponseNotificationThreshold]) }}
+                                </div>
+                            </div>
+
+                            <!-- Threshold Multiplier -->
+                            <div v-if="monitor.slowResponseNotification && monitor.slowResponseNotificationThresholdMethod == 'threshold-relative-24-hour'" class="my-3">
+                                <label for="slow-response-notification-threshold-multiplier" class="form-label">{{ $t("slowResponseNotificationThresholdMultiplier") }}</label>
+                                <input id="slow-response-notification-threshold-multiplier" v-model="monitor.slowResponseNotificationThresholdMultiplier" type="number" class="form-control" required min="1" step="0.1">
+                                <div class="form-text">
+                                    {{ $t("slowResponseNotificationThresholdMultiplierDescription", [monitor.slowResponseNotificationThresholdMultiplier]) }}
+                                </div>
+                            </div>
+
+                            <!-- Slow Response Resend Interval -->
+                            <div v-if="monitor.slowResponseNotification" class="my-3">
+                                <label for="slow-response-notification-resend-interval" class="form-label">
+                                    {{ $t("slowResponseNotificationResendInterval", [monitor.slowResponseNotificationInterval]) }}
+                                    <span v-if="monitor.slowResponseNotificationResendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.slowResponseNotificationResendInterval ]) }})</span>
+                                    <span v-else>({{ $t("resendDisabled") }})</span>
+                                </label>
+                                <input id="slow-response-notification-resend-interval" v-model="monitor.slowResponseNotificationResendInterval" type="number" class="form-control" required min="0" step="1">
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
@@ -947,7 +1039,14 @@ const monitorDefaults = {
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
-    remote_browser: null
+    remote_browser: null,
+    slowResponseNotification: false,
+    slowResponseNotificationMethod: "average",
+    slowResponseNotificationRange: 300,
+    slowResponseNotificationThresholdMethod: "threshold-relative-24-hour",
+    slowResponseNotificationThreshold: 2500,
+    slowResponseNotificationThresholdMultiplier: 5.0,
+    slowResponseNotificationResendInterval: 0,
 };
 
 export default {
@@ -1239,6 +1338,10 @@ message HealthCheckResponse {
             // Link interval and retryInterval if they are the same value.
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
+            }
+            // Always keep slowResponseNotificationRange >= interval
+            if (this.monitor.slowResponseNotificationRange < value) {
+                this.monitor.slowResponseNotificationRange = value;
             }
         },
 

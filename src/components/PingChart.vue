@@ -19,11 +19,12 @@
 <script lang="js">
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import "chartjs-adapter-dayjs-4";
+import annotationPlugin from "chartjs-plugin-annotation";
 import dayjs from "dayjs";
 import { Line } from "vue-chartjs";
 import { DOWN, PENDING, MAINTENANCE, log } from "../util.ts";
 
-Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
+Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler, annotationPlugin);
 
 export default {
     components: { Line },
@@ -56,6 +57,19 @@ export default {
         };
     },
     computed: {
+        threshold() {
+            let heartbeatList = this.heartbeatList ||
+             (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) ||
+             [];
+
+            let lastBeat = heartbeatList.at(-1);
+
+            if (lastBeat) {
+                return lastBeat.pingThreshold;
+            } else {
+                return undefined;
+            }
+        },
         chartOptions() {
             return {
                 responsive: true,
@@ -152,6 +166,22 @@ export default {
                     },
                     legend: {
                         display: false,
+                    },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: "line",
+                                mode: "horizontal",
+                                scaleID: "y",
+                                value: this.threshold,
+                                endValue: this.threshold,
+                                borderColor: "rgba(248,163,6,1.0)",
+                                borderWith: 2,
+                                borderDash: [ 1, 3 ],
+                                adjustScaleRange: false,
+                                display: this.threshold !== undefined,
+                            }
+                        }
                     },
                 },
             };

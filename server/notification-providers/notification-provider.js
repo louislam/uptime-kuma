@@ -7,6 +7,12 @@ class NotificationProvider {
     name = undefined;
 
     /**
+     * Does the notification provider support slow response notifications?
+     * @type {boolean}
+     */
+    supportSlowNotifications = false;
+
+    /**
      * Send a notification
      * @param {BeanModel} notification Notification to send
      * @param {string} msg General Message
