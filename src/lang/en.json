@@ -888,7 +888,5 @@
     "What is a Remote Browser?": "What is a Remote Browser?",
     "wayToGetHeiiOnCallDetails": "How to get the Trigger ID and API Keys is explained in the {documentation}",
     "documentationOf": "{0} Documentation",
-    "callMeBotGet": "Get the endpoint for {0}.",
-    "callMeBotInfo": "Note that you may get rate limited. Example: You are only allowed to send one Telegram call per 65 seconds! Please use the cleanup button to be able to use the URL.",
-    "callMeBotInvalidEndpoint": "The specifyed endpoint is invalid!"
+    "callMeBotGet": "Here you can generate an endpoint for {0}, {1} and {2}. Keep in mind that you might get rate limited. You can read more about ratelimits here: {3}"
 }
