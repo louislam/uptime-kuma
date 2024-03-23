@@ -211,6 +211,20 @@ export default {
 @import "../assets/vars.scss";
 
 .nav-link {
+    &:hover {
+        background-color: $primary;
+        color: #fff;
+
+        .dark & {
+            background-color: $primary;
+            color: #000;
+        }
+
+        &.active {
+            background-color: $highlight;
+        }
+    }
+
     &.status-page {
         background-color: rgba(255, 255, 255, 0.1);
     }
