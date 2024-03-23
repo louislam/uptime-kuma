@@ -62,11 +62,14 @@
                                             </span>
                                         </div>
                                         <div class="extra-info">
-                                            <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
-                                                <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
-                                            </div>
-                                            <div v-if="showTags">
-                                                <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                            <p v-if="showDescriptions && !!monitor.element.description">{{ monitor.element.description }}</p>
+                                            <div class="tags">
+                                                <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
+                                                    <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
+                                                </div>
+                                                <div v-if="showTags">
+                                                    <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -108,6 +111,10 @@ export default {
         /** Should tags be shown? */
         showTags: {
             type: Boolean,
+        },
+        /** Should descriptions be shown? */
+        showDescriptions: {
+            type: Boolean
         },
         /** Should expiry be shown? */
         showCertificateExpiry: {
@@ -200,8 +207,11 @@ export default {
 @import "../assets/vars";
 
 .extra-info {
-    display: flex;
     margin-bottom: 0.5rem;
+}
+
+.extra-info .tags {
+    display: flex;
 }
 
 .extra-info > div > div:first-child {

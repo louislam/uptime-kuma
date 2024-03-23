@@ -42,10 +42,11 @@ class Monitor extends BeanModel {
      * necessary data to public
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
+     * @param {boolean} showDescriptions Include description in JSON
      * JSON
      * @returns {Promise<object>} Object ready to parse
      */
-    async toPublicJSON(showTags = false, certExpiry = false) {
+    async toPublicJSON(showTags = false, certExpiry = false, showDescriptions = false) {
         let obj = {
             id: this.id,
             name: this.name,
@@ -59,6 +60,10 @@ class Monitor extends BeanModel {
 
         if (showTags) {
             obj.tags = await this.getTags();
+        }
+
+        if (showDescriptions && !!this.show_description) {
+            obj.description = this.description;
         }
 
         if (certExpiry && (this.type === "http" || this.type === "keyword" || this.type === "json-query") && this.getURLProtocol() === "https:") {
@@ -103,6 +108,7 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             description: this.description,
+            show_description: !!this.show_description,
             path,
             pathName,
             parent: this.parent,

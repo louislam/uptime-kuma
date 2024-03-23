@@ -568,6 +568,11 @@
                                 <input id="description" v-model="monitor.description" type="text" class="form-control">
                             </div>
 
+                            <div class="my-3 form-check form-switch">
+                                <input id="showDescription" v-model="monitor.show_description" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="showDescription">{{ $t("Show description on Status Page") }}</label>
+                            </div>
+
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                             </div>
