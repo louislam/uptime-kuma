@@ -153,6 +153,7 @@ class Monitor extends BeanModel {
             gamedigGivenPortOnly: this.getGameDigGivenPortOnly(),
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
+            jsonPathOperator: this.jsonPathOperator,
             expectedValue: this.expectedValue,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
@@ -607,7 +608,7 @@ class Monitor extends BeanModel {
 
                         let result = await expression.evaluate(data);
 
-                        if (result.toString() === this.expectedValue) {
+                        if (this.isJsonPathMatching(result)) {
                             bean.msg += ", expected value is found";
                             bean.status = UP;
                         } else {
@@ -1615,6 +1616,25 @@ class Monitor extends BeanModel {
         return oAuthAccessToken;
     }
 
+    /**
+     * Evaluates the provided value with the expected value based on the defined operator. Fallback is the equals operator
+     * @param {any} value
+     * @returns {boolean} Is the JsonPath matching the expected value with the defined operator?
+     */
+    isJsonPathMatching(value) {
+        const operators = {
+            "==": (value) => value == this.expectedValue,
+            "!=": (value) => value != this.expectedValue,
+            "<": (value) => value < this.expectedValue,
+            "<=": (value) => value <= this.expectedValue,
+            ">": (value) => value > this.expectedValue,
+            ">=": (value) => value >= this.expectedValue,
+        };
+
+        const operator = operators[this.jsonPathOperator] ?? operators["=="];
+
+        return operator(value?.toString());
+    }
 }
 
 module.exports = Monitor;

@@ -179,6 +179,16 @@
                                 </i18n-t>
                                 <br>
 
+                                <label for="jsonPathOperator" class="form-label">{{ $t("Json Query Operator") }}</label>
+                                <select id="jsonPathOperator" v-model="monitor.jsonPathOperator" class="form-select" required>
+                                    <option value="==">{{ $t("Json Query Equals") }} (==)</option>
+                                    <option value="!=">{{ $t("Json Query Not Equals") }} (!=)</option>
+                                    <option value="<">{{ $t("Json Query Less Than") }} (&lt;)</option>
+                                    <option value="<=">{{ $t("Json Query Less Than Or Equals") }} (&lt;=)</option>
+                                    <option value=">">{{ $t("Json Query Greater Than") }} (&gt;)</option>
+                                    <option value=">=">{{ $t("Json Query Greater Than Or Equals") }} (&gt;=)</option>
+                                </select>
+
                                 <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
                                 <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                             </div>
@@ -374,6 +384,16 @@
                                     <div class="form-text" v-html="$t('jsonQueryDescription')">
                                     </div>
                                     <br>
+
+                                    <label for="jsonPathOperator" class="form-label">{{ $t("Json Query Operator") }}</label>
+                                    <select id="jsonPathOperator" v-model="monitor.jsonPathOperator" class="form-select" required>
+                                        <option value="==">{{ $t("Json Query Equals") }} (==)</option>
+                                        <option value="!=">{{ $t("Json Query Not Equals") }} (!=)</option>
+                                        <option value="<">{{ $t("Json Query Less Than") }} (&lt;)</option>
+                                        <option value="<=">{{ $t("Json Query Less Than Or Equals") }} (&lt;=)</option>
+                                        <option value=">">{{ $t("Json Query Greater Than") }} (&gt;)</option>
+                                        <option value=">=">{{ $t("Json Query Greater Than Or Equals") }} (&gt;=)</option>
+                                    </select>
 
                                     <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
                                     <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>

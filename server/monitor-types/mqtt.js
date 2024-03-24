@@ -41,7 +41,7 @@ class MqttMonitorType extends MonitorType {
 
             let result = await expression.evaluate(parsedMessage);
 
-            if (result?.toString() === monitor.expectedValue) {
+            if (monitor.isJsonPathMatching(result)) {
                 heartbeat.msg = "Message received, expected value is found";
                 heartbeat.status = UP;
             } else {
