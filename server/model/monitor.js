@@ -161,6 +161,9 @@ class Monitor extends BeanModel {
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
             remote_browser: this.remote_browser,
+            datadog_site: this.datadog_site,
+            datadog_monitor_id: this.datadog_monitor_id,
+
         };
 
         if (includeSensitiveData) {
@@ -190,6 +193,8 @@ class Monitor extends BeanModel {
                 tlsCert: this.tlsCert,
                 tlsKey: this.tlsKey,
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
+                datadog_api_key: this.datadog_api_key,
+                datadog_app_key: this.datadog_app_key,
             };
         }
 

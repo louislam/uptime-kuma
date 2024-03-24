@@ -85,6 +85,9 @@
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
+                                        <option value="datadog">
+                                            DataDog
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -243,6 +246,32 @@
                                         {{ $t("Enable Kafka Producer Auto Topic Creation") }}
                                     </label>
                                 </div>
+                            </template>
+
+                            <!-- Datadog -->
+                            <!-- Datadog Only-->
+                            <template v-if="monitor.type === 'datadog'">
+
+                                <div class="my-3">
+                                    <label for="datadog_site" class="form-label">DataDog Site (Site parameter)</label>
+                                    <input id="datadog_site" v-model="monitor.datadog_site" type="text" class="form-control" required>
+                                </div>
+                                <a href="https://docs.datadoghq.com/getting_started/site/">DataDog Sites</a>
+
+                                <div class="my-3">
+                                    <label for="datadog_api_key" class="form-label">API key</label>
+                                    <input id="datadog_api_key" v-model="monitor.datadog_api_key" type="password" class="form-control" required>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="datadog_app_key" class="form-label">APP key</label>
+                                    <input id="datadog_app_key" v-model="monitor.datadog_app_key" type="password" class="form-control" required>
+                                </div>
+                                <div class="my-3">
+                                    <label for="datadog_monitor_id" class="form-label">Monitor Id</label>
+                                    <input id="datadog_monitor_id" v-model="monitor.datadog_monitor_id" type="text" class="form-control" required>
+                                </div>
+
                             </template>
 
                             <!-- Hostname -->
