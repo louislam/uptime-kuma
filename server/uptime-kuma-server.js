@@ -517,4 +517,4 @@ const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
 const { DnsMonitorType } = require("./monitor-types/dns");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
-const { DataDog } = require("./monitor-types/datadog")
+const { DataDog } = require("./monitor-types/datadog");
