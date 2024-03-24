@@ -13,6 +13,7 @@ class DataDog extends MonitorType {
      * Run the monitoring check on the given monitor
      * @param {object} monitor - The monitor object associated with the check.
      * @param {object} heartbeat - The heartbeat object to update.
+     * @returns {Promise<void>}
      * @throws Will throw an error if the API call found any.
      */
     async check(monitor, heartbeat) {
