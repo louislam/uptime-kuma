@@ -125,13 +125,7 @@ class CellsyntMobileServices extends NotificationProvider {
             };
             try {
                 if (heartbeatJSON != null) {
-                    var d = new Date(heartbeatJSON["time"]),
-                    dformat = [d.getMonth()+1,
-                            d.getDate(),
-                            d.getFullYear()].join('/')+' '+
-                            [d.getHours(),
-                            d.getMinutes()].join(':');
-                    msg = dformat+" - "+msg;
+                    msg = msg;
                     data.params.text = msg.replace(/[^\x00-\x7F]/g, "");
                 }
                 
