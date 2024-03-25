@@ -441,5 +441,22 @@
     "statusMaintenance": "Manutenção",
     "Passive Monitor Type": "Tipo de Monitor Passivo",
     "Custom": "Personalizar",
-    "General Monitor Type": "Tipo de Monitor Geral"
+    "General Monitor Type": "Tipo de Monitor Geral",
+    "Invert Keyword": "Palavra-chave invertida",
+    "setupDatabaseChooseDatabase": "Qual base de dados você deseja usar?",
+    "setupDatabaseEmbeddedMariaDB": "Não é necessário configurar nada. Esta imagem Docker possui o MariaDB incorporado e configurado automaticamente para você. O Uptime Kuma se conectará a esta base de dados através de um socket Unix.",
+    "setupDatabaseMariaDB": "Conecte-se a uma base de dados MariaDB externa. Você precisa configurar as informações de conexão com a base de dados.",
+    "setupDatabaseSQLite": "Um arquivo de base de dados simples, recomendado para implementações em pequena escala. Antes da versão 2.0.0, o Uptime Kuma utilizava o SQLite como base de dados padrão.",
+    "dbName": "Nome da Base de Dados",
+    "settingUpDatabaseMSG": "Configurando a base de dados. Isso pode levar algum tempo, por favor, seja paciente.",
+    "pushOthers": "Outros",
+    "Request Timeout": "Tempo Limite da Requisição",
+    "timeoutAfter": "Tempo limite após {0} segundos",
+    "Resend Notification if Down X times consecutively": "Reenviar Notificação se estiver em baixo X vezes consecutivas",
+    "styleElapsedTime": "Tempo decorrido abaixo da barra de pulsação.",
+    "Home": "Início",
+    "Expected Value": "Valor Esperado",
+    "Json Query": "Consulta JSON",
+    "Cannot connect to the socket server": "Não é possível conectar ao servidor de sockets",
+    "Reconnecting...": "Reconectando..."
 }
