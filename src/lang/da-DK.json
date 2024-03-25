@@ -655,5 +655,7 @@
     "sameAsServerTimezone": "Samme som serverens tidszone",
     "wayToGetLineNotifyToken": "Du kan få en adgangsnøgle fra {0}",
     "telegramSendSilentlyDescription": "Send beskeden lydløst. Brugerne vil modtage en notifikation uden lyd.",
-    "pushoverMessageTtl": "Message TTL (Sekunder)"
+    "pushoverMessageTtl": "Message TTL (Sekunder)",
+    "setupDatabaseEmbeddedMariaDB": "Du skal ikke opsætte noget. Docker billedet har integreret og konfigureret MariaDB automatisk. Uptime Kuma vil forbinde til databasen vha. en Unix socket.",
+    "setupDatabaseMariaDB": "Oprette forbindelse til en ekstern MariaDB database. Du skal indstille databasens forbindelsesinformation."
 }
