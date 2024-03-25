@@ -151,7 +151,8 @@ export default {
                 "Splunk": "Splunk",
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
-                "ZohoCliq": "ZohoCliq"
+                "ZohoCliq": "ZohoCliq",
+                "Cellsynt": "Cellsynt"
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English

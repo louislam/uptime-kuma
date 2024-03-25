@@ -241,12 +241,18 @@ class Monitor extends BeanModel {
     /**
      * Encode user and password to Base64 encoding
      * for HTTP "basic" auth, as per RFC-7617
+<<<<<<< HEAD
      * @param {string} user Username to encode
      * @param {string} pass Password to encode
      * @returns {string} Encoded username:password
+=======
+     * @param {string|null} user - The username (nullable if not changed by a user)
+     * @param {string|null} pass - The password (nullable if not changed by a user)
+     * @returns {string}
+>>>>>>> notification-provider-cellsynt-mobile-services
      */
     encodeBase64(user, pass) {
-        return Buffer.from(user + ":" + pass).toString("base64");
+        return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
     }
 
     /**
@@ -595,8 +601,12 @@ class Monitor extends BeanModel {
                         let data = res.data;
 
                         // convert data to object
-                        if (typeof data === "string") {
-                            data = JSON.parse(data);
+                        if (typeof data === "string" && res.headers["content-type"] !== "application/json") {
+                            try {
+                                data = JSON.parse(data);
+                            } catch (_) {
+                                // Failed to parse as JSON, just process it as a string
+                            }
                         }
 
                         let expression = jsonata(this.jsonPath);

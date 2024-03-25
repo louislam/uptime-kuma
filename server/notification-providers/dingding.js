@@ -21,7 +21,7 @@ class DingDing extends NotificationProvider {
                         text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                     }
                 };
-                if (this.sendToDingDing(notification, params)) {
+                if (await this.sendToDingDing(notification, params)) {
                     return okMsg;
                 }
             } else {
@@ -31,7 +31,7 @@ class DingDing extends NotificationProvider {
                         content: msg
                     }
                 };
-                if (this.sendToDingDing(notification, params)) {
+                if (await this.sendToDingDing(notification, params)) {
                     return okMsg;
                 }
             }
@@ -62,7 +62,7 @@ class DingDing extends NotificationProvider {
         if (result.data.errmsg === "ok") {
             return true;
         }
-        return false;
+        throw new Error(result.data.errmsg);
     }
 
     /**
