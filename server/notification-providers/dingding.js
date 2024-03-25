@@ -10,7 +10,7 @@ class DingDing extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON != null) {
@@ -44,7 +44,7 @@ class DingDing extends NotificationProvider {
      * Send message to DingDing
      * @param {BeanModel} notification Notification to send
      * @param {object} params Parameters of message
-     * @returns {boolean} True if successful else false
+     * @returns {Promise<boolean>} True if successful else false
      */
     async sendToDingDing(notification, params) {
         let timestamp = Date.now();
