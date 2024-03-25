@@ -70,7 +70,7 @@ class Cellsynt extends NotificationProvider {
                         needed (default value is 1, see Long SMS). Maximum value is 6
                         (i.e. max 153 x 6 = 918 characters).
                     */
-                    "allowconcat": notification.cellsyntAllowLongSMS?6:1,
+                    "allowconcat": notification.cellsyntAllowLongSMS? 6: 1,
 
                     /* Value can be set to true if message should be sent as "flash
                         message", i.e. displayed directly on phone screen instead of

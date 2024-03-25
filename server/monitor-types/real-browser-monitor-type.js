@@ -75,11 +75,7 @@ async function isAllowedChromeExecutable(executablePath) {
 /**
  * Get the current instance of the browser. If there isn't one, create
  * it.
-<<<<<<< HEAD
- * @returns {Promise<Browser>} The browser
-=======
  * @returns {Promise<import ("playwright-core").Browser>} The browser
->>>>>>> notification-provider-cellsynt-mobile-services
  */
 async function getBrowser() {
     if (browser && browser.isConnected()) {

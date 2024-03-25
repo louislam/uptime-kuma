@@ -54,11 +54,7 @@ const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
-<<<<<<< HEAD
-const CellsyntMobileServices = require("./notification-providers/cellsyntmobileservices");
-=======
 const Cellsynt = require("./notification-providers/cellsynt");
->>>>>>> notification-provider-cellsynt-mobile-services
 
 class Notification {
 
@@ -130,11 +126,7 @@ class Notification {
             new WeCom(),
             new GoAlert(),
             new ZohoCliq(),
-<<<<<<< HEAD
-            new CellsyntMobileServices()
-=======
             new Cellsynt()
->>>>>>> notification-provider-cellsynt-mobile-services
         ];
         for (let item of list) {
             if (! item.name) {

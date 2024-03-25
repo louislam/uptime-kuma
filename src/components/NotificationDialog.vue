@@ -168,8 +168,7 @@ export default {
                 "SMSManager": "SmsManager (smsmanager.cz)",
                 "WeCom": "WeCom (企业微信群机器人)",
                 "ServerChan": "ServerChan (Server酱)",
-                "smsc": "SMSC",
-                "CellsyntMobileServices": "Cellsynt mobile services"
+                "smsc": "SMSC"
             };
 
             // Sort by notification name
