@@ -1618,13 +1618,13 @@ class Monitor extends BeanModel {
 
     /**
      * Evaluates the provided value with the expected value based on the defined operator. Fallback is the equals operator
-     * @param {any} value
+     * @param {any} value The expected_value that the matching operator will evaluate
      * @returns {boolean} Is the JsonPath matching the expected value with the defined operator?
      */
     isJsonPathMatching(value) {
         const operators = {
-            "==": (value) => value == this.expectedValue,
-            "!=": (value) => value != this.expectedValue,
+            "==": (value) => value === this.expectedValue,
+            "!=": (value) => value !== this.expectedValue,
             "<": (value) => value < this.expectedValue,
             "<=": (value) => value <= this.expectedValue,
             ">": (value) => value > this.expectedValue,
