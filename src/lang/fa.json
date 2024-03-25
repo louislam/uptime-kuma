@@ -349,7 +349,7 @@
     "light": "روشن",
     "Query": "کوئری",
     "Effective Date Range": "محدوده تاریخ مورد تاثیر (اختیاری)",
-    "statusPageRefreshIn": "بارگذاری مجدد در هر:‌ {0}",
+    "statusPageRefreshIn": "تا بارگذاری مجدد:‌ {0}",
     "Content Type": "نوع محتوا (Content Type)",
     "Server URL": "آدرس سرور",
     "Priority": "اهمیت",
