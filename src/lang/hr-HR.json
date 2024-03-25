@@ -911,5 +911,6 @@
     "self-hosted container": "kontejner koji je self-hosted",
     "useRemoteBrowser": "Korištenje udaljenog preglednika",
     "Add a new expiry notification day": "Dodaj novi dan za istek obavijesti",
-    "Remove the expiry notification": "Ukloni dan za istek obavijesti"
+    "Remove the expiry notification": "Ukloni dan za istek obavijesti",
+    "What is a Remote Browser?": "Što je udaljeni preglednik?"
 }
