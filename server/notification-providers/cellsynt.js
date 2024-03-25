@@ -1,12 +1,9 @@
 const NotificationProvider = require("./notification-provider");
-const { DOWN, UP } = require("../../src/util");
 const { default: axios } = require("axios");
-const Crypto = require("crypto");
-const qs = require("qs");
 
-class CellsyntMobileServices extends NotificationProvider {
+class Cellsynt extends NotificationProvider {
 
-    name = "CellsyntMobileServices";
+    name = "Cellsynt";
 
     /**
      * @inheritdoc
@@ -48,17 +45,6 @@ class CellsyntMobileServices extends NotificationProvider {
                     /* Identifier which will be visible on recipient's mobile phone as
                         originator of the message. Allowed values and function depends
                         on parameter originatortype's value according to below:
-                        ** numeric **
-                        Numeric value (max 15 digits) with telephone number on
-                        international format without leading 00 (example UK number
-                        07920 110 000 should be set as 447920110000). Receiving
-                        mobile phone will add a leading + sign and thus see the
-                        originator as a normal mobile phone number (+447920110000).
-                        Therefore it is also possible to reply to the message.
-                        ** shortcode **
-                        Numerical value (max 15 digits). Used to set a shortcode in an
-                        operator network as originator (i.e. will be shown without leading
-                        + sign, e.g. 72456).
                         ** alpha **
                         3Send SMS
                         Alphanumeric string (max 11 characters). The following
@@ -66,31 +52,25 @@ class CellsyntMobileServices extends NotificationProvider {
                         characters may work but functionality can not be guaranteed.
                         Recipients can not reply to messages with alphanumeric
                         originators 
+                        ** numeric **
+                        Numeric value (max 15 digits) with telephone number on
+                        international format without leading 00 (example UK number
+                        07920 110 000 should be set as 447920110000). Receiving
+                        mobile phone will add a leading + sign and thus see the
+                        originator as a normal mobile phone number (+447920110000).
+                        Therefore it is also possible to reply to the message.
                     */
                     //"originator": "uptime-kuma",
                     "originator": notification.cellsyntOriginator,
                     /* Type of message that should be sent. Possible values: text
                         (default), binary and unicode */
-                    "type": "text",
+                    //"type": "text",
 
                     /* Maximum number of SMS permitted to be linked together when
                         needed (default value is 1, see Long SMS). Maximum value is 6
                         (i.e. max 153 x 6 = 918 characters).
                     */
                     "allowconcat": notification.cellsyntAllowLongSMS?6:1,
-
-                    /* Can be used if you want to prevent a message from being
-                        delivered after a certain time, e.g. 9 PM the same evening if
-                        information thereafter is considered invalid / outdated. If
-                        message has not been delivered after the set time (e.g. mobile
-                        phone was switched off) you will get a delivery receipt with
-                        status "failed".
-                        Value should be given as a Unix timestamp. Different operators
-                        permit different allowed max values (e.g. 3 days expiry time). If
-                        a value is set that is above an operator's max allowed time it will
-                        be adjusted to the highest possible value.
-                    */
-                    //"expiry": "9 PM",
 
                     /* Value can be set to true if message should be sent as "flash
                         message", i.e. displayed directly on phone screen instead of
@@ -132,8 +112,6 @@ class CellsyntMobileServices extends NotificationProvider {
                 let resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
                 if(typeof resp.data == undefined || resp.data == null || resp.data.includes("Error")) {
                     this.throwGeneralAxiosError(resp.data);
-                }else{
-                    
                 }
             }catch (error) {
                 this.throwGeneralAxiosError(error);
@@ -146,4 +124,4 @@ class CellsyntMobileServices extends NotificationProvider {
     }
 }
 
-module.exports = CellsyntMobileServices;
+module.exports = Cellsynt;
