@@ -918,5 +918,9 @@
     "settingUpDatabaseMSG": "Veritabanı kuruluyor. Biraz zaman alabilir, lütfen sabırlı olun.",
     "statusPageSpecialSlugDesc": "Özel slug {0}: slug belirtilmediğinde bu sayfa gösterilecektir",
     "ntfyPriorityHelptextAllExceptDown": "Önceliği {1} olan {0}-olayları hariç tüm olaylar bu öncelik ile gönderilir",
-    "What is a Remote Browser?": "Uzak Tarayıcı Nedir?"
+    "What is a Remote Browser?": "Uzak Tarayıcı Nedir?",
+    "Your User ID": "Kullanıcı kimliğiniz",
+    "Channel access token (Long-lived)": "Kanal erişim tokenı (Uzun ömürlü)",
+    "wayToGetHeiiOnCallDetails": "Tetikleyici Kimliği ve API Anahtarlarının nasıl alınacağı {dokümantasyon} bölümünde açıklanmıştır",
+    "documentationOf": "{0} Dokümantasyon"
 }
