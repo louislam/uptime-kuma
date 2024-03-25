@@ -920,5 +920,9 @@
     "Search monitored sites": "搜索监控中站点",
     "settingUpDatabaseMSG": "正在配置数据库中。这需要一定的时间，请耐心等候。",
     "ntfyPriorityHelptextAllEvents": "所有事件将使用最高优先级",
-    "What is a Remote Browser?": "什么是远程浏览器？"
+    "What is a Remote Browser?": "什么是远程浏览器？",
+    "Your User ID": "你的用户 ID",
+    "Channel access token (Long-lived)": "频道访问令牌（长期版）",
+    "wayToGetHeiiOnCallDetails": "如需了解如何获取 Trigger ID 和 API 密钥，请访问 {documentation}",
+    "documentationOf": "{0} 文档"
 }
