@@ -5,9 +5,7 @@ exports.up = function (knex) {
         })
         .then(() =>
             knex("monitor")
-                .where({
-                    type: "json-query"
-                })
+                .whereNotNull("expected_value")
                 .update({
                     "json_path_operator": "=="
                 })
