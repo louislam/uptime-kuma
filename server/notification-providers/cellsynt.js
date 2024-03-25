@@ -69,7 +69,7 @@ class Cellsynt extends NotificationProvider {
                         needed (default value is 1, see Long SMS). Maximum value is 6
                         (i.e. max 153 x 6 = 918 characters).
                     */
-                    "allowconcat": notification.cellsyntAllowLongSMS ? 6: 1,
+                    "allowconcat": notification.cellsyntAllowLongSMS ? 6 : 1,
 
                     /* Value can be set to true if message should be sent as "flash
                         message", i.e. displayed directly on phone screen instead of
@@ -105,8 +105,7 @@ class Cellsynt extends NotificationProvider {
                 if (heartbeatJSON != null) {
                     data.params.text = msg.replace(/[^\x00-\x7F]/g, "");
                 }
-                
-                let resp = await axios.post("https://se-1.cellsynt.net/sms.php",null,data);
+                let resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
                 if(resp.data == null || resp.data.includes("Error")) {
                     this.throwGeneralAxiosError(resp.data);
                 }
