@@ -888,5 +888,9 @@
     "openModalTo": "باز کردن مدال برای {0}",
     "Add a domain": "اضافه کردن دامین",
     "Remove domain": "حذف دامین '{0}'",
-    "ntfyPriorityHelptextAllEvents": "تمامی ایونت ها با حداکثر اولویت ارسال می شوند"
+    "ntfyPriorityHelptextAllEvents": "تمامی ایونت ها با حداکثر اولویت ارسال می شوند",
+    "documentationOf": "کلید مطلب ها",
+    "wayToGetHeiiOnCallDetails": "روش دریافت ایدی کلید و کلید ای پی آی درمطلب توضیح داده شده است",
+    "Channel access token (Long-lived)": "توکن دسترسی به کانال",
+    "Your User ID": "آیدی حساب کاربری شما"
 }
