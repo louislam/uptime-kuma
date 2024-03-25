@@ -914,5 +914,6 @@
     "Remote Browser": "Vzdálený prohlížeč",
     "Add a new expiry notification day": "Přidání nového oznámení o vypršení platnosti",
     "Remove the expiry notification": "Odstranit upozornění na vypršení",
-    "ntfyPriorityHelptextAllExceptDown": "Všechny události jsou odesílány s touto prioritou, kromě událostí {0}, které mají prioritu {1}"
+    "ntfyPriorityHelptextAllExceptDown": "Všechny události jsou odesílány s touto prioritou, kromě událostí {0}, které mají prioritu {1}",
+    "What is a Remote Browser?": "Co je to vzdálený prohlížeč?"
 }
