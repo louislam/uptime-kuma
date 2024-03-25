@@ -847,7 +847,7 @@
     "monitorToastMessagesLabel": "Monitorizar las notificaciones Toast",
     "toastSuccessTimeout": "Tiempo de espera para notificaciones de éxito",
     "toastErrorTimeout": "Tiempo de espera para notificaciones de error",
-    "setupDatabaseChooseDatabase": "¿Qué base de datos quieres usar?",
+    "setupDatabaseChooseDatabase": "¿Qué base de datos desea utilizar?",
     "setupDatabaseEmbeddedMariaDB": "No necesitas configurar nada. Esta imagen de Docker tiene incorporado y configurado MariaDB para ti automáticamente. Uptime Kuma se conectará a esta base de datos a través de un socket Unix.",
     "setupDatabaseMariaDB": "Conectarse a una base de datos MariaDB externa. Debe configurar la información de conexión a la base de datos.",
     "setupDatabaseSQLite": "Un archivo de base de datos simple, recomendado para despliegues a pequeña escala. Antes de la versión 2.0.0, Uptime Kuma utilizaba SQLite como base de datos predeterminada.",
