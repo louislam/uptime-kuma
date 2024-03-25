@@ -632,7 +632,7 @@
     "Schedule Maintenance": "Wartung planen",
     "Edit Maintenance": "Wartung bearbeiten",
     "pauseMaintenanceMsg": "Möchtest du wirklich pausieren?",
-    "maintenanceStatus-under-maintenance": "Unter Wartung",
+    "maintenanceStatus-under-maintenance": "In Wartung",
     "maintenanceStatus-inactive": "Inaktiv",
     "maintenanceStatus-scheduled": "Geplant",
     "maintenanceStatus-ended": "Ende",
