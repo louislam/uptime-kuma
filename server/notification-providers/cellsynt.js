@@ -106,7 +106,7 @@ class Cellsynt extends NotificationProvider {
                     data.params.text = msg.replace(/[^\x00-\x7F]/g, "");
                 }
                 let resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
-                if(resp.data == null || resp.data.includes("Error")) {
+                if (resp.data == null || resp.data.includes("Error")) {
                     this.throwGeneralAxiosError(resp.data);
                 }
             } catch (error) {

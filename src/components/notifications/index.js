@@ -54,7 +54,6 @@ import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
 import Cellsynt from "./Cellsynt.vue";
 
-
 /**
  * Manage all notification form.
  * @type { Record<string, any> }

@@ -14,10 +14,8 @@
             <option value="numeric">{{ $t("Numeric") }}</option>
         </select>
         <div class="form-text">
-            <p><b>{{ $t("Alpha (recommended)") }}:</b><br>
-                {{ $t("Alphanumeric string (max 11 characters). The following characters are guaranteed to work: a-z, A-Z and 0-9. Other characters may work but functionality can not be guaranteed. Recipients can not reply to messages with alphanumeric originators.") }}</p>
-            <p><b>{{ $t("Numeric") }}:</b><br>
-                {{ $t("Numeric value (max 15 digits) with telephone number on international format without leading 00 (example UK number 07920 110 000 should be set as 447920110000). Receiving mobile phone will add a leading + sign and thus see the originator as a normal mobile phone number (+447920110000). Therefore it is also possible to reply to the message.") }}</p>
+            <p><b>{{ $t("Alpha (recommended)") }}:</b><br /> {{ $t("Alphanumeric string (max 11 characters). The following characters are guaranteed to work: a-z, A-Z and 0-9. Other characters may work but functionality can not be guaranteed. Recipients can not reply to messages with alphanumeric originators.") }}</p>
+            <p><b>{{ $t("Numeric") }}:</b><br /> {{ $t("Numeric value (max 15 digits) with telephone number on international format without leading 00 (example UK number 07920 110 000 should be set as 447920110000). Receiving mobile phone will add a leading + sign and thus see the originator as a normal mobile phone number (+447920110000). Therefore it is also possible to reply to the message.") }}</p>
         </div>
     </div>
     <div class="mb-3">
