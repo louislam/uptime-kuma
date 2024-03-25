@@ -14,12 +14,12 @@ class Cellsynt extends NotificationProvider {
         try {
             let data = {
                 params: {
-                    /* Your username (received when account is setup). 
+                    /* Your username (received when account is setup).
                     */
                     "username": notification.cellsyntLogin,
 
                     /* Your password to use together with the username for
-                        authentication (received when account is setup). 
+                        authentication (received when account is setup).
                     */
                     "password": notification.cellsyntPassword,
 
@@ -27,21 +27,20 @@ class Cellsynt extends NotificationProvider {
                         leading 00 followed by country code, e.g. 00447920110000 for
                         UK number 07920 110 000 (max 17 digits in total).
                         To send the same message to multiple recipients, separate
-                        numbers with comma. Max 25000 recipients per HTTP request. 
+                        numbers with comma. Max 25000 recipients per HTTP request.
                     */
                     "destination": notification.cellsyntDestination,
 
                     "text": msg.replace(/[^\x00-\x7F]/g, ""),
                     /* Character set text and other data is sent as in the HTTP
-                        request. Possible values: ISO-8859-1 (default) and UTF-8 
+                        request. Possible values: ISO-8859-1 (default) and UTF-8
                     */
                     "charset": "UTF-8",
 
                     /* Controls the originator type the message should be sent with.
-                        Possible values: numeric, shortcode and alpha. 
+                        Possible values: numeric, shortcode and alpha.
                     */
                     "originatortype": notification.Originatortype,
-                    
                     /* Identifier which will be visible on recipient's mobile phone as
                         originator of the message. Allowed values and function depends
                         on parameter originatortype's value according to below:
@@ -51,7 +50,7 @@ class Cellsynt extends NotificationProvider {
                         characters are guaranteed to work: a-z, A-Z and 0-9. Other
                         characters may work but functionality can not be guaranteed.
                         Recipients can not reply to messages with alphanumeric
-                        originators 
+                        originators
                         ** numeric **
                         Numeric value (max 15 digits) with telephone number on
                         international format without leading 00 (example UK number
@@ -70,7 +69,7 @@ class Cellsynt extends NotificationProvider {
                         needed (default value is 1, see Long SMS). Maximum value is 6
                         (i.e. max 153 x 6 = 918 characters).
                     */
-                    "allowconcat": notification.cellsyntAllowLongSMS? 6: 1,
+                    "allowconcat": notification.cellsyntAllowLongSMS ? 6: 1,
 
                     /* Value can be set to true if message should be sent as "flash
                         message", i.e. displayed directly on phone screen instead of
@@ -81,7 +80,6 @@ class Cellsynt extends NotificationProvider {
                         (class=1).
                     */
                     //"flash": "",
-                    
                     /* Message class can be set to 0 (flash message), 1 (default, MEspecific), 2 (SIM-specific) or 3 (TE-specific).
                     */
                     //"class": "",
@@ -105,15 +103,14 @@ class Cellsynt extends NotificationProvider {
             };
             try {
                 if (heartbeatJSON != null) {
-                    msg = msg;
                     data.params.text = msg.replace(/[^\x00-\x7F]/g, "");
                 }
                 
-                let resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
-                if(typeof resp.data == undefined || resp.data == null || resp.data.includes("Error")) {
+                let resp = await axios.post("https://se-1.cellsynt.net/sms.php",null,data);
+                if(resp.data == null || resp.data.includes("Error")) {
                     this.throwGeneralAxiosError(resp.data);
                 }
-            }catch (error) {
+            } catch (error) {
                 this.throwGeneralAxiosError(error);
             }
 

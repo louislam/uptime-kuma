@@ -51,8 +51,8 @@ export default {
         HiddenInput
     },
     mounted() {
-        this.$parent.notification.cellsyntOriginator            = "uptime-kuma";
-        this.$parent.notification.cellsyntOriginatortype        = "alpha";
+        this.$parent.notification.cellsyntOriginator = "uptime-kuma";
+        this.$parent.notification.cellsyntOriginatortype = "alpha";
         console.log("hello world");
     }
 };
