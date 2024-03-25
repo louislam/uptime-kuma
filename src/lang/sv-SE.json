@@ -886,5 +886,9 @@
     "nostrRecipientsHelp": "npub-format, en per rad",
     "gamedigGuessPort": "Gamedig: Gissa port",
     "twilioAuthToken": "Auth-token / API-nyckelhemlighet",
-    "What is a Remote Browser?": "Vad är en fjärrläsare?"
+    "What is a Remote Browser?": "Vad är en fjärrläsare?",
+    "Channel access token (Long-lived)": "Kanalaccess-token (långtids)",
+    "Your User ID": "Ditt användarID",
+    "wayToGetHeiiOnCallDetails": "Hur man får Trigger ID och API-nycklar är förklarat i {dokumentationen}",
+    "documentationOf": "{0} Dokumentation"
 }
