@@ -128,7 +128,7 @@ class Notification {
             new WeCom(),
             new GoAlert(),
             new ZohoCliq(),
-            new Cellsynt()
+            new Cellsynt(),
         ];
         for (let item of list) {
             if (! item.name) {
