@@ -153,7 +153,7 @@ export default {
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
                 "ZohoCliq": "ZohoCliq",
-                "Cellsynt": "Cellsynt"
+                "Cellsynt": "Cellsynt",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
