@@ -21,7 +21,7 @@
     <div class="mb-3">
         <label for="cellsynt-originator" class="form-label">{{ $t("Originator") }}</label>
         <input id="cellsynt-originator" v-model="$parent.notification.cellsyntOriginator" type="text" class="form-control" required>
-        <div class="form-text"><p>{{ $t("Identifier which will be visible on recipient's mobile phone as originator of the message. Allowed values and function depends on parameter originatortype.") }}</p></div>
+        <div class="form-text"><p>{{ $t("Visible on recipient's mobile phone as originator of the message. Allowed values and function depends on parameter originatortype.") }}</p></div>
     </div>
     <div class="mb-3">
         <label for="cellsynt-destination" class="form-label">{{ $t("Destination") }}</label>
