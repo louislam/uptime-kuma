@@ -26,7 +26,7 @@
     <div class="mb-3">
         <label for="cellsynt-destination" class="form-label">{{ $t("Destination") }}</label>
         <input id="cellsynt-destination" v-model="$parent.notification.cellsyntDestination" type="text" class="form-control" required>
-        <div class="form-text"><p>{{ $t("Recipient's telephone number on international format with leading 00 followed by country code, e.g. 00447920110000 for UK number 07920 110 000 (max 17 digits in total). To send the same message to multiple recipients, separate numbers with comma. Max 25000 recipients per HTTP request.") }}</p></div>
+        <div class="form-text"><p>{{ $t("Recipient's telephone number using international format with leading 00 followed by country code, e.g. 00447920110000 for the UK number 07920 110 000 (max 17 digits in total). Max 25000 comma separated recipients per HTTP request.") }}</p></div>
     </div>
     <div class="form-check form-switch">
         <input id="cellsynt-allow-long" v-model="$parent.notification.cellsyntAllowLongSMS" type="checkbox" class="form-check-input">
