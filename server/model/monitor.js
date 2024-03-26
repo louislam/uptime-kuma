@@ -161,6 +161,7 @@ class Monitor extends BeanModel {
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
             remote_browser: this.remote_browser,
+            component_name: this.component_name,
         };
 
         if (includeSensitiveData) {
