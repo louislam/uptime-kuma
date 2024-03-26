@@ -116,14 +116,23 @@ class UptimeCalculator {
         ]);
 
         for (let bean of minutelyStatBeans) {
-            let key = bean.timestamp;
-            this.minutelyUptimeDataList.push(key, {
+            let data = {
                 up: bean.up,
                 down: bean.down,
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
-            });
+            };
+
+            if (bean.extras != null) {
+                data = {
+                    ...data,
+                    ...JSON.parse(bean.extras),
+                };
+            }
+
+            let key = bean.timestamp;
+            this.minutelyUptimeDataList.push(key, data);
         }
 
         // Load hourly data from database (recent 30 days only)
@@ -133,14 +142,23 @@ class UptimeCalculator {
         ]);
 
         for (let bean of hourlyStatBeans) {
-            let key = bean.timestamp;
-            this.hourlyUptimeDataList.push(key, {
+            let data = {
                 up: bean.up,
                 down: bean.down,
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
-            });
+            };
+
+            if (bean.extras != null) {
+                data = {
+                    ...data,
+                    ...JSON.parse(bean.extras),
+                };
+            }
+
+            let key = bean.timestamp;
+            this.hourlyUptimeDataList.push(key, data);
         }
 
         // Load daily data from database (recent 365 days only)
@@ -150,14 +168,23 @@ class UptimeCalculator {
         ]);
 
         for (let bean of dailyStatBeans) {
-            let key = bean.timestamp;
-            this.dailyUptimeDataList.push(key, {
+            let data = {
                 up: bean.up,
                 down: bean.down,
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
-            });
+            };
+
+            if (bean.extras != null) {
+                data = {
+                    ...data,
+                    ...JSON.parse(bean.extras),
+                };
+            }
+
+            let key = bean.timestamp;
+            this.dailyUptimeDataList.push(key, data);
         }
     }
 
@@ -169,11 +196,6 @@ class UptimeCalculator {
      */
     async update(status, ping = 0) {
         let date = this.getCurrentDate();
-
-        // Don't count MAINTENANCE into uptime
-        if (status === MAINTENANCE) {
-            return date;
-        }
 
         let flatStatus = this.flatStatus(status);
 
@@ -189,7 +211,12 @@ class UptimeCalculator {
         let hourlyData = this.hourlyUptimeDataList[hourlyKey];
         let dailyData = this.dailyUptimeDataList[dailyKey];
 
-        if (flatStatus === UP) {
+        if (status === MAINTENANCE) {
+            minutelyData.maintenance = minutelyData.maintenance ? minutelyData.maintenance + 1 : 1;
+            hourlyData.maintenance = hourlyData.maintenance ? hourlyData.maintenance + 1 : 1;
+            dailyData.maintenance = dailyData.maintenance ? dailyData.maintenance + 1 : 1;
+
+        } else if (flatStatus === UP) {
             minutelyData.up += 1;
             hourlyData.up += 1;
             dailyData.up += 1;
@@ -233,7 +260,7 @@ class UptimeCalculator {
                 }
             }
 
-        } else {
+        } else if (flatStatus === DOWN) {
             minutelyData.down += 1;
             hourlyData.down += 1;
             dailyData.down += 1;
@@ -263,6 +290,13 @@ class UptimeCalculator {
         dailyStatBean.ping = dailyData.avgPing;
         dailyStatBean.pingMin = dailyData.minPing;
         dailyStatBean.pingMax = dailyData.maxPing;
+        {
+            // eslint-disable-next-line no-unused-vars
+            const { up, down, avgPing, minPing, maxPing, ...extras } = dailyData;
+            if (Object.keys(extras).length > 0) {
+                dailyStatBean.extras = JSON.stringify(extras);
+            }
+        }
         await R.store(dailyStatBean);
 
         let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
@@ -271,6 +305,13 @@ class UptimeCalculator {
         hourlyStatBean.ping = hourlyData.avgPing;
         hourlyStatBean.pingMin = hourlyData.minPing;
         hourlyStatBean.pingMax = hourlyData.maxPing;
+        {
+            // eslint-disable-next-line no-unused-vars
+            const { up, down, avgPing, minPing, maxPing, ...extras } = hourlyData;
+            if (Object.keys(extras).length > 0) {
+                hourlyStatBean.extras = JSON.stringify(extras);
+            }
+        }
         await R.store(hourlyStatBean);
 
         let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
@@ -279,6 +320,13 @@ class UptimeCalculator {
         minutelyStatBean.ping = minutelyData.avgPing;
         minutelyStatBean.pingMin = minutelyData.minPing;
         minutelyStatBean.pingMax = minutelyData.maxPing;
+        {
+            // eslint-disable-next-line no-unused-vars
+            const { up, down, avgPing, minPing, maxPing, ...extras } = minutelyData;
+            if (Object.keys(extras).length > 0) {
+                minutelyStatBean.extras = JSON.stringify(extras);
+            }
+        }
         await R.store(minutelyStatBean);
 
         // Remove the old data
@@ -474,7 +522,7 @@ class UptimeCalculator {
     flatStatus(status) {
         switch (status) {
             case UP:
-            // case MAINTENANCE:
+            case MAINTENANCE:
                 return UP;
             case DOWN:
             case PENDING:
@@ -606,7 +654,11 @@ class UptimeCalculator {
             avgPing = totalPing / total.up;
         }
 
-        uptimeData.uptime = total.up / (total.up + total.down);
+        if (total.up + total.down === 0) {
+            uptimeData.uptime = 0;
+        } else {
+            uptimeData.uptime = total.up / (total.up + total.down);
+        }
         uptimeData.avgPing = avgPing;
         return uptimeData;
     }
