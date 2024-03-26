@@ -2,7 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Cellsynt extends NotificationProvider {
-
     name = "Cellsynt";
 
     /**
