@@ -9,7 +9,7 @@ class Cellsynt extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             let data = {
