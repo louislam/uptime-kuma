@@ -57,10 +57,10 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            {
+                            ...((monitorJSON["type"] === "push" || address !== "https://") ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
                                 value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
-                            },
+                            }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],
@@ -92,10 +92,10 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            {
+                            ...(monitorJSON["type"] === "push" || address !== "https://") ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
                                 value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
-                            },
+                            }] : [],
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],
