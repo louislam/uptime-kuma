@@ -39,7 +39,7 @@ class Cellsynt extends NotificationProvider {
                     /* Controls the originator type the message should be sent with.
                         Possible values: numeric, shortcode and alpha.
                     */
-                    "originatortype": notification.Originatortype,
+                    "originatortype": notification.cellsyntOriginatortype,
                     /* Identifier which will be visible on recipient's mobile phone as
                         originator of the message. Allowed values and function depends
                         on parameter originatortype's value according to below:
