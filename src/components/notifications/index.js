@@ -115,7 +115,7 @@ const NotificationFormList = {
     "GoAlert": GoAlert,
     "ServerChan": ServerChan,
     "ZohoCliq": ZohoCliq,
-    "Cellsynt": Cellsynt
+    "Cellsynt": Cellsynt,
 };
 
 export default NotificationFormList;
