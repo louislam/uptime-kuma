@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP,log, DOWN } = require("../../src/util");
+const { UP, log, DOWN } = require("../../src/util");
 
 /**
  * A AtlassianStatusPage class extends the MonitorType.
@@ -19,28 +19,27 @@ class Atlassian extends MonitorType {
      */
     async check(monitor, heartbeat) {
         try {
-            log.info("AtlassianStatus",monitor.url);
-            log.info("AtlassianStatus",monitor.component_name);
+            log.info("AtlassianStatus", monitor.url);
+            log.info("AtlassianStatus", monitor.component_name);
             const response = (await fetch(monitor.url));
             const body = await response.json();
             // log.debug("AtlassianStatus",body["components"]);
-            let component_status = new Map();
+            let componentStatus = new Map();
             for (let index = 0; index < body["components"].length; index++) {
                 const element = body["components"][index];
-                component_status.set(element["name"],element["status"])
+                componentStatus.set(element["name"], element["status"]);
             }
-            log.debug("AtlassianStatus",component_status);
-            if (component_status.get(monitor.component_name)!= undefined ) {
-                if (component_status.get(monitor.component_name) === "operational") {
-                    log.debug("AtlassianStatus",component_status.get(monitor.component_name))
-                    heartbeat.status = UP
-                }else {
-                    heartbeat.status = DOWN
+            log.debug("AtlassianStatus", componentStatus);
+            if (componentStatus.get(monitor.component_name) !== undefined ) {
+                if (componentStatus.get(monitor.component_name) === "operational") {
+                    log.debug("AtlassianStatus", componentStatus.get(monitor.component_name));
+                    heartbeat.status = UP;
+                } else {
+                    heartbeat.status = DOWN;
                 }
             } else {
                 throw new Error("Component not exist into the status");
             }
-            
         } catch (err) {
             // trigger log function somewhere to display a notification or alert to the user (but how?)
             throw new Error(`StatusPage check errors: ${err}`);
