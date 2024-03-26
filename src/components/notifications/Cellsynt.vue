@@ -34,7 +34,6 @@
         <div class="form-text">{{ $t("Long SMS (also known as \"concatenated SMS\") enables sending messages exceeding 160 characters.") }}</div>
     </div>
     <div class="mb-3">
-        <label for="cellsynt-destination" class="form-label">{{ $t("Details") }}</label>
         <div class="form-text">
             {{ $t("For sign-up and price information check out this link") }}, <a href="https://www.cellsynt.com/en/" target="_blank">https://www.cellsynt.com/en/</a>
         </div>
