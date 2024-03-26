@@ -96,7 +96,7 @@
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required>
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" :required="friendlyNameRequired()">
                             </div>
 
                             <!-- URL -->
@@ -978,6 +978,7 @@ export default {
             kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
+            friendlyNameRequiredOptions: [],
             gameList: null,
             connectionStringTemplates: {
                 "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
@@ -1330,6 +1331,15 @@ message HealthCheckResponse {
             "TXT",
         ];
 
+        let friendlyNameRequiredOptions = [
+            "push",
+            "sqlserver",
+            "postgres",
+            "mysql",
+            "mongodb",
+            "redis",
+        ];
+
         let kafkaSaslMechanismOptions = [
             "None",
             "plain",
@@ -1344,6 +1354,7 @@ message HealthCheckResponse {
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.friendlyNameRequiredOptions = friendlyNameRequiredOptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
@@ -1383,6 +1394,16 @@ message HealthCheckResponse {
                         }
 
                         this.monitor = res.monitor;
+
+                        // Handling for when friendly name isn't set
+                        if (
+                            this.monitor.name === this.monitor.url
+                            || this.monitor.name === this.monitor.hostname
+                            || this.monitor.name === `${this.monitor.hostname}:${this.monitor.port}`
+                            || this.monitor.name === this.monitor.docker_container
+                        ) {
+                            this.monitor.name = "";
+                        }
 
                         if (this.isClone) {
                             /*
@@ -1475,6 +1496,32 @@ message HealthCheckResponse {
         async submit() {
 
             this.processing = true;
+
+            // Check if friendly name has been supplied. If not, use URL
+            // or hostname
+            switch (this.monitor.type) {
+                case "http":
+                case "keyword":
+                case "grpc-keyword":
+                    // Use given name or URL
+                    this.monitor.name = this.monitor.name || this.monitor.url;
+                    break;
+                case "port":
+                    // Use given name or hostname:port
+                    this.monitor.name = this.monitor.name || `${this.monitor.hostname}:${this.monitor.port}`;
+                    break;
+                case "ping":
+                case "dns":
+                case "steam":
+                case "mqtt":
+                case "radius":
+                    // Use given name or hostname
+                    this.monitor.name = this.monitor.name || this.monitor.hostname;
+                    break;
+                case "docker":
+                    this.monitor.name = this.monitor.name || this.monitor.docker_container;
+                    break;
+            }
 
             if (!this.isInputValid()) {
                 this.processing = false;
@@ -1578,6 +1625,15 @@ message HealthCheckResponse {
         },
 
         /**
+         * Is the friendly name required for the selected option.
+         * Returns true if it is else false
+         * @returns {boolean}
+         */
+        friendlyNameRequired() {
+            return this.friendlyNameRequiredOptions.includes(this.monitor.type);
+        },
+
+        /*
          * Added a Proxy Event
          * Enable it if the proxy is added in EditMonitor.vue
          * @param {number} id ID of proxy to add
