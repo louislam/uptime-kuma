@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
-        node: [ 14, 20.5 ]
+        node: [ 16, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -33,10 +33,13 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
-    - run: npm install npm@9 -g
-    - run: npm install
-    - run: npm run build
-    - run: npm run test-backend
+  
+    - name: Install
+      run: npm install
+    - name: Build
+      run: npm run build
+    - name: Test Backend
+      run: npm run test-backend
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
@@ -61,7 +64,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - run: npm install npm@9 -g
       - run: npm ci --production
 
   check-linters:

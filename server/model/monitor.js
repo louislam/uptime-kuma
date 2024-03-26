@@ -43,7 +43,7 @@ class Monitor extends BeanModel {
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
      * JSON
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false) {
         let obj = {
@@ -74,7 +74,7 @@ class Monitor extends BeanModel {
      * Return an object that ready to parse to JSON
      * @param {boolean} includeSensitiveData Include sensitive data in
      * JSON
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toJSON(includeSensitiveData = true) {
 
@@ -96,11 +96,15 @@ class Monitor extends BeanModel {
             screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
         }
 
+        const path = await this.getPath();
+        const pathName = path.join(" / ");
+
         let data = {
             id: this.id,
             name: this.name,
             description: this.description,
-            pathName: await this.getPathName(),
+            path,
+            pathName,
             parent: this.parent,
             childrenIDs: await Monitor.getAllChildrenIDs(this.id),
             url: this.url,
@@ -324,9 +328,9 @@ class Monitor extends BeanModel {
     /**
      * Start monitor
      * @param {Server} io Socket server instance
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    start(io) {
+    async start(io) {
         let previousBeat = null;
         let retries = 0;
 
@@ -943,7 +947,7 @@ class Monitor extends BeanModel {
                 log.debug("monitor", `[${this.name}] apicache clear`);
                 apicache.clear();
 
-                UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
+                await UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
 
             } else {
                 bean.important = false;
@@ -1098,9 +1102,9 @@ class Monitor extends BeanModel {
 
     /**
      * Stop monitor
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    stop() {
+    async stop() {
         clearTimeout(this.heartbeatInterval);
         this.isStop = true;
 
@@ -1373,7 +1377,7 @@ class Monitor extends BeanModel {
             let notifyDays = await setting("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
                 // Reset Default
-                setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+                await setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
                 notifyDays = [ 7, 14, 21 ];
             }
 
@@ -1527,11 +1531,11 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Gets Full Path-Name (Groups and Name)
-     * @returns {Promise<string>} Full path name of this monitor
+     * Gets the full path
+     * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
-    async getPathName() {
-        let path = this.name;
+    async getPath() {
+        const path = [ this.name ];
 
         if (this.parent === null) {
             return path;
@@ -1539,7 +1543,7 @@ class Monitor extends BeanModel {
 
         let parent = await Monitor.getParent(this.id);
         while (parent !== null) {
-            path = `${parent.name} / ${path}`;
+            path.unshift(parent.name);
             parent = await Monitor.getParent(parent.id);
         }
 

@@ -11,7 +11,7 @@ class AliyunSMS extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON != null) {
@@ -44,7 +44,7 @@ class AliyunSMS extends NotificationProvider {
      * Send the SMS notification
      * @param {BeanModel} notification Notification details
      * @param {string} msgbody Message template
-     * @returns {boolean} True if successful else false
+     * @returns {Promise<boolean>} True if successful else false
      */
     async sendSms(notification, msgbody) {
         let params = {
