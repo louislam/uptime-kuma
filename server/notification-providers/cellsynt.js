@@ -1,5 +1,5 @@
 const NotificationProvider = require("./notification-provider");
-const { default: axios } = require("axios");
+const axios = require("axios");
 
 class Cellsynt extends NotificationProvider {
 
