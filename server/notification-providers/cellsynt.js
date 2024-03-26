@@ -104,7 +104,7 @@ class Cellsynt extends NotificationProvider {
                 if (heartbeatJSON != null) {
                     data.params.text = msg.replace(/[^\x00-\x7F]/g, "");
                 }
-                let resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
+                const resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
                 if (resp.data == null || resp.data.includes("Error")) {
                     this.throwGeneralAxiosError(resp.data);
                 }
