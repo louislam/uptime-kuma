@@ -76,20 +76,32 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         ]);
 
         for (let monitorID of monitorIDList) {
+            // Calculating the percentage of uptime per day with the status count to show full year data
             let list = await R.getAll(`
-                    SELECT * FROM heartbeat
+                    SELECT 
+                        strftime('%Y-%m-%d', time) AS day,
+                        (COUNT(CASE WHEN status = 1 THEN 1 END) * 100.0) / COUNT(status) AS percentage,
+                        (
+                            SELECT status
+                            FROM heartbeat AS sub
+                            WHERE strftime('%Y-%m-%d', sub.time) = strftime('%Y-%m-%d', main.time)
+                            GROUP BY status
+                            ORDER BY COUNT(*) DESC
+                            LIMIT 1
+                        ) as status
+                    FROM heartbeat as main
                     WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT 50
+                    GROUP BY day
+                    ORDER BY day DESC
+                    LIMIT 365
             `, [
                 monitorID,
             ]);
 
-            list = R.convertToBeans("heartbeat", list);
-            heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+            heartbeatList[monitorID] = list;
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
-            uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+            uptimeList[`${monitorID}_1y`] = uptimeCalculator.get1Year().uptime;
         }
 
         response.json({

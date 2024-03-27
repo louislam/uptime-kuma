@@ -33,12 +33,12 @@
                         <template #item="monitor">
                             <div class="item">
                                 <div class="row">
-                                    <div class="col-9 col-md-8 small-padding">
+                                    <div class="col-3 col-md-4 small-padding">
                                         <div class="info">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
 
-                                            <Uptime :monitor="monitor.element" type="24" :pill="true" />
+                                            <Uptime style="vertical-align: top;" :monitor="monitor.element" type="1y" :pill="true" />
                                             <a
                                                 v-if="showLink(monitor)"
                                                 :href="monitor.element.url"
@@ -48,7 +48,7 @@
                                             >
                                                 {{ monitor.element.name }}
                                             </a>
-                                            <p v-else class="item-name"> {{ monitor.element.name }} </p>
+                                            <p v-else class="item-name" style="white-space: initial;"> {{ monitor.element.name }} </p>
 
                                             <span
                                                 title="Setting"
@@ -70,8 +70,8 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                    <div :key="$root.userHeartbeatBar" class="col-9 col-md-8">
+                                        <HeartbeatBarStatus :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
                             </div>
@@ -87,7 +87,7 @@
 <script>
 import MonitorSettingDialog from "./MonitorSettingDialog.vue";
 import Draggable from "vuedraggable";
-import HeartbeatBar from "./HeartbeatBar.vue";
+import HeartbeatBarStatus from "./HeartbeatBarStatus.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
 
@@ -95,7 +95,7 @@ export default {
     components: {
         MonitorSettingDialog,
         Draggable,
-        HeartbeatBar,
+        HeartbeatBarStatus,
         Uptime,
         Tag,
     },
