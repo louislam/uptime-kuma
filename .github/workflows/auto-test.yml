@@ -33,7 +33,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
-    - run: npm install npm@9 -g
     - run: npm install
     - run: npm run build
     - run: npm run test-backend
@@ -61,8 +60,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          check-latest: true
-      - run: npm install npm@9 -g
       - run: npm ci --production
 
   check-linters:
