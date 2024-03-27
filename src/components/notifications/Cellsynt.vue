@@ -31,11 +31,11 @@
     <div class="form-check form-switch">
         <input id="cellsynt-allow-long" v-model="$parent.notification.cellsyntAllowLongSMS" type="checkbox" class="form-check-input">
         <label for="cellsynt-allow-long" class="form-label">{{ $t("Allow Long SMS") }}</label>
-        <div class="form-text">{{ $t("Long SMS (also known as \"concatenated SMS\") enables sending messages exceeding 160 characters.") }}</div>
+        <div class="form-text">{{ $t("Split long messages into up to 6 parts. 153 x 6 = 918 characters.") }}</div>
     </div>
     <div class="mb-3">
         <div class="form-text">
-            {{ $t("For sign-up and price information check out this link") }}, <a href="https://www.cellsynt.com/en/" target="_blank">https://www.cellsynt.com/en/</a>
+            {{ $t("Read more: <a href=\"https://www.cellsynt.com/en/\" target=\"_blank\">https://www.cellsynt.com/en/</a>") }},
         </div>
     </div>
 </template>
