@@ -7,7 +7,7 @@
         "url": "https://github.com/louislam/uptime-kuma.git"
     },
     "engines": {
-        "node": "14 || 16 || 18 || >= 20.4.0"
+        "node": "18 || >= 20.4.0"
     },
     "scripts": {
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
