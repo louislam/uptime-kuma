@@ -24,11 +24,7 @@ class Cellsynt extends NotificationProvider {
                 "allowconcat": notification.cellsyntAllowLongSMS ? 6 : 1
             }
         };
-        
         try {
-            if (heartbeatJSON != null) {
-                data.params.text = msg.replace(/[^\x00-\x7F]/g, "");
-            }
             const resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
             if (resp.data == null || resp.data.includes("Error")) {
                 throw new Error(resp.data);
