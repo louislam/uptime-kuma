@@ -11,9 +11,7 @@ class Cellsynt extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         let data = {
-            /**
-             * You can find more information about the API here: https://www.cellsynt.com/en/sms/api-integration
-             */
+            // docs at https://www.cellsynt.com/en/sms/api-integration
             params: {
                 "username": notification.cellsyntLogin,
                 "password": notification.cellsyntPassword,
