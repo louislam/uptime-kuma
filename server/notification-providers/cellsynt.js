@@ -26,9 +26,8 @@ class Cellsynt extends NotificationProvider {
             const resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
             if (resp.data == null || resp.data.includes("Error")) {
                 throw new Error(resp.data);
-            } else {
-                return okMsg;
             }
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
