@@ -10,7 +10,6 @@ class Cellsynt extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
-        try {
             let data = {
                 params: {
                     /* Your username (received when account is setup).
@@ -113,9 +112,6 @@ class Cellsynt extends NotificationProvider {
             }
 
             return okMsg;
-        } catch (error) {
-            this.throwGeneralAxiosError(error);
-        }
     }
 }
 
