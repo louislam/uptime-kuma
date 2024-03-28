@@ -112,7 +112,12 @@ export default {
                 url = undefined;
             }
 
-            socket = io(url);
+            // always starts and ends with '/'
+            const basePath = document.querySelector("head base").getAttribute("href");
+
+            socket = io(url, {
+                path: basePath + "socket.io",
+            });
 
             socket.on("info", (info) => {
                 this.info = info;

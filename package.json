@@ -23,6 +23,7 @@
         "start": "npm run start-server",
         "start-server": "node server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development node server/server.js",
+        "start-server-dev:test-subdir": "cross-env NODE_ENV=development BASE_PATH=/my-kuma node server/server.js",
         "start-server-dev:watch": "cross-env NODE_ENV=development node --watch server/server.js",
         "build": "vite build --config ./config/vite.config.js",
         "test": "npm run test-backend && npm run test-e2e",

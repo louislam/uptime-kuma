@@ -25,7 +25,7 @@ export default {
         // 3. Vue Frontend Dev (not setup database yet)
         let res;
         try {
-            res = (await axios.get("/api/entry-page")).data;
+            res = (await axios.get("./api/entry-page")).data;
 
             if (res.type === "statusPageMatchedDomain") {
                 this.statusPageSlug = res.statusPageSlug;

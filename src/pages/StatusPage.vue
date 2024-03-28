@@ -154,10 +154,10 @@
                         {{ $t("Edit Status Page") }}
                     </button>
 
-                    <a href="/manage-status-page" class="btn btn-info">
+                    <router-link to="/manage-status-page" class="btn btn-info">
                         <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Go to Dashboard") }}
-                    </a>
+                    </router-link>
                 </div>
 
                 <div v-else>
@@ -210,12 +210,12 @@
                             {{ $t("Style") }}: {{ $t(incident.style) }}
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'info'">{{ $t("info") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'warning'">{{ $t("warning") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'danger'">{{ $t("danger") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'primary'">{{ $t("primary") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'light'">{{ $t("light") }}</a></li>
+                            <li><a class="dropdown-item" href="#" @click.prevent="incident.style = 'dark'">{{ $t("dark") }}</a></li>
                         </ul>
                     </div>
 
@@ -432,7 +432,7 @@ export default {
             incident: null,
             previousIncident: null,
             showImageCropUpload: false,
-            imgDataUrl: "/icon.svg",
+            imgDataUrl: "./icon.svg",
             loadedTheme: false,
             loadedData: false,
             baseURL: "",
@@ -710,7 +710,7 @@ export default {
             this.loading = false;
         }).catch( function (error) {
             if (error.response.status === 404) {
-                location.href = "/page-not-found";
+                this.$router.push("/page-not-found");
             }
             console.log(error);
         });
@@ -742,7 +742,7 @@ export default {
                     data: window.preloadData
                 }));
             } else {
-                return axios.get("/api/status-page/" + this.slug);
+                return axios.get("./api/status-page/" + this.slug);
             }
         },
 
@@ -762,7 +762,7 @@ export default {
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
-                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
+                axios.get("./api/status-page/heartbeat/" + this.slug).then((res) => {
                     const { heartbeatList, uptimeList } = res.data;
 
                     this.$root.heartbeatList = heartbeatList;
@@ -845,7 +845,7 @@ export default {
 
                     setTimeout(() => {
                         this.loading = false;
-                        location.href = "/status/" + this.config.slug;
+                        this.$router.push("/status/" + this.config.slug);
                     }, time);
 
                 } else {
@@ -871,7 +871,7 @@ export default {
             this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
                 if (res.ok) {
                     this.enableEditMode = false;
-                    location.href = "/manage-status-page";
+                    this.$router.push("/manage-status-page");
                 } else {
                     this.$root.toastError(res.msg);
                 }
@@ -917,7 +917,7 @@ export default {
          * @returns {void}
          */
         discard() {
-            location.href = "/status/" + this.slug;
+            this.$router.back();
         },
 
         /**

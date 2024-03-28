@@ -1,7 +1,7 @@
 {
     "name": "Uptime Kuma",
     "short_name": "Uptime Kuma",
-    "start_url": "/",
+    "start_url": "./",
     "background_color": "#fff",
     "display": "standalone",
     "icons": [

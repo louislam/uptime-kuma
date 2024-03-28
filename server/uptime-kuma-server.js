@@ -84,6 +84,21 @@ class UptimeKumaServer {
         // Set default axios timeout to 5 minutes instead of infinity
         axios.defaults.timeout = 300 * 1000;
 
+        let basePathEnv = process.env.UPTIME_KUMA_BASE_PATH || process.env.BASE_PATH || "/";
+
+        if (!basePathEnv.startsWith("/")) {
+            basePathEnv = "/" + basePathEnv;
+        }
+        if (!basePathEnv.endsWith("/")) {
+            basePathEnv = basePathEnv + "/";
+        }
+
+        if (basePathEnv !== "/") {
+            log.info("server", "Base Path enabled: " + basePathEnv);
+        }
+
+        this.basePath = basePathEnv;
+
         log.info("server", "Creating express and socket.io instance");
         this.app = express();
         if (isSSL) {
@@ -100,6 +115,7 @@ class UptimeKumaServer {
 
         try {
             this.indexHTML = fs.readFileSync("./dist/index.html").toString();
+            this.indexHTML = this.indexHTML.replace(/<base href.*?>/, `<base href="${this.basePath}">`);
         } catch (e) {
             // "dist/index.html" is not necessary for development
             if (process.env.NODE_ENV !== "development") {
@@ -123,6 +139,7 @@ class UptimeKumaServer {
         }
 
         this.io = new Server(this.httpServer, {
+            path: this.basePath + "socket.io"
             cors,
             allowRequest: async (req, callback) => {
                 let transport;

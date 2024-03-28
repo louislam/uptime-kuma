@@ -266,7 +266,8 @@ export default {
          * @returns {void}
          */
         autoGetPrimaryBaseURL() {
-            this.settings.primaryBaseURL = location.protocol + "//" + location.host;
+            const basePath = document.querySelector("head base").getAttribute("href");
+            this.settings.primaryBaseURL = location.protocol + "//" + location.host + basePath;
         },
         /**
          * Test the chrome executable
