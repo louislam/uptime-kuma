@@ -1,3 +1,4 @@
+const { R } = require("redbean-node");
 const PrometheusClient = require("prom-client");
 const { log } = require("../src/util");
 
@@ -7,6 +8,15 @@ const commonLabels = [
     "monitor_url",
     "monitor_hostname",
     "monitor_port",
+    "location",
+    "region",
+    "datacenter",
+    "cloud_provider",
+    "az",
+    "rack",
+    "shelf",
+    "room",
+    "floor",
 ];
 
 const monitorCertDaysRemaining = new PrometheusClient.Gauge({
@@ -35,6 +45,14 @@ const monitorStatus = new PrometheusClient.Gauge({
 class Prometheus {
     monitorLabelValues = {};
 
+    async getMonitorTags(monitor) {
+        console.log("Getting Tags for Prometheus");
+
+        const tags = await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ?", [ monitor.id ]);
+
+        return tags;
+    }
+
     /**
      * @param {object} monitor Monitor object to monitor
      */
@@ -46,6 +64,17 @@ class Prometheus {
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port
         };
+
+        this.getMonitorTags(monitor).then(tags => {
+            for (let tag in tags) {
+                let tagDetail = tags[tag];
+                let name = tagDetail.name;
+                let value = tagDetail.value;
+                console.log("New tag created: {" + name + ": " + value + "}");
+                this.monitorLabelValues[name] = value;
+            }
+        }
+        );
     }
 
     /**
