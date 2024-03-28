@@ -9,7 +9,6 @@ class Cellsynt extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-
         let data = {
             // docs at https://www.cellsynt.com/en/sms/api-integration
             params: {
@@ -24,7 +23,10 @@ class Cellsynt extends NotificationProvider {
         };
         try {
             const resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
-            if (resp.data == null || resp.data.includes("Error")) {
+            if (resp.data == null ) {
+                throw new Error("Error: Could not connect to Cellsynt, please try again.");
+            } else if (resp.data.includes("Error:")) {       
+                resp.data = resp.data.replaceAll("Error:", "");
                 throw new Error(resp.data);
             }
             return okMsg;

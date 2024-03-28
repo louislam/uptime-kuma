@@ -10,17 +10,19 @@
     <div class="mb-3">
         <label for="cellsynt-Originatortype" class="form-label">{{ $t("Originator type") }}</label>
         <select id="cellsynt-Originatortype" v-model="$parent.notification.cellsyntOriginatortype" :required="true" class="form-select">
-            <option value="alpha">{{ $t("Alpha (recommended)") }}</option>
-            <option value="numeric">{{ $t("Numeric") }}</option>
+            <option value="alpha">{{ $t("Alphanumeric (recommended)") }}</option>
+            <option value="numeric">{{ $t("Telephone number") }}</option>
         </select>
         <div class="form-text">
-            <p><b>{{ $t("Alpha (recommended)") }}:</b><br /> {{ $t("Alphanumeric string (max 11 alphanumeric characters). Recipients can not reply to the message.") }}</p>
-            <p><b>{{ $t("Numeric") }}:</b><br /> {{ $t("Numeric value (max 15 digits) with telephone number on international format without leading 00 (example UK number 07920 110 000 should be set as 447920110000). Recipients can reply to the message.") }}</p>
+            <p><b>{{ $t("Alphanumeric (recommended)") }}:</b><br /> {{ $t("Alphanumeric string (max 11 alphanumeric characters). Recipients can not reply to the message.") }}</p>
+            <p><b>{{ $t("Telephone number") }}:</b><br /> {{ $t("Numeric value (max 15 digits) with telephone number on international format without leading 00 (example UK number 07920 110 000 should be set as 447920110000). Recipients can reply to the message.") }}</p>
         </div>
     </div>
     <div class="mb-3">
-        <label for="cellsynt-originator" class="form-label">{{ $t("Originator") }}</label>
-        <input id="cellsynt-originator" v-model="$parent.notification.cellsyntOriginator" type="text" class="form-control" required>
+        <label for="cellsynt-originator" class="form-label" v-if="$parent.notification.cellsyntOriginatortype == 'alpha'">{{ $t("Originator") }} <small>{{ $t("(max 11 alphanumeric characters)") }}</small></label>
+        <label for="cellsynt-originator" class="form-label" v-if="$parent.notification.cellsyntOriginatortype == 'numeric'">{{ $t("Originator") }} <small>{{ $t("(max 15 digits)") }}</small></label>
+        <input id="cellsynt-originator" v-if="$parent.notification.cellsyntOriginatortype == 'alpha'" v-model="$parent.notification.cellsyntOriginator" type="text" class="form-control" pattern="[a-zA-Z0-9\s]+" maxlength="11" required>
+        <input id="cellsynt-originator" v-if="$parent.notification.cellsyntOriginatortype == 'numeric'" v-model="$parent.notification.cellsyntOriginator" type="number" class="form-control" pattern="[0-9]+" maxlength="15" required>
         <div class="form-text"><p>{{ $t("Visible on recipient's mobile phone as originator of the message. Allowed values and function depends on parameter originatortype.") }}</p></div>
     </div>
     <div class="mb-3">
@@ -46,8 +48,12 @@ export default {
         HiddenInput
     },
     mounted() {
-        this.$parent.notification.cellsyntOriginator = "uptime-kuma";
+        if (this.$parent.notification.cellsyntOriginatortype == null || this.$parent.notification.cellsyntOriginatortype == "") {
         this.$parent.notification.cellsyntOriginatortype = "alpha";
+        }
+        if (this.$parent.notification.cellsyntOriginator == null || this.$parent.notification.cellsyntOriginator == "") {
+            this.$parent.notification.cellsyntOriginator = "uptimekuma";
+        }
     }
 };
 </script>
