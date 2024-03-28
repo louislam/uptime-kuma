@@ -752,6 +752,7 @@ let needSetup = false;
 
                 bean.name = monitor.name;
                 bean.description = monitor.description;
+                bean.show_description = monitor.show_description;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;

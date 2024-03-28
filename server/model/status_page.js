@@ -115,13 +115,14 @@ class StatusPage extends BeanModel {
         // Public Group List
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
+        const showDescriptions = !!statusPage.show_descriptions;
 
         const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
             statusPage.id
         ]);
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry, showDescriptions);
             publicGroupList.push(monitorGroup);
         }
 
@@ -240,6 +241,7 @@ class StatusPage extends BeanModel {
             theme: this.theme,
             published: !!this.published,
             showTags: !!this.show_tags,
+            showDescriptions: !!this.show_descriptions,
             domainNameList: this.getDomainNameList(),
             customCSS: this.custom_css,
             footerText: this.footer_text,
@@ -263,6 +265,7 @@ class StatusPage extends BeanModel {
             theme: this.theme,
             published: !!this.published,
             showTags: !!this.show_tags,
+            showDescriptions: !!this.show_descriptions,
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
