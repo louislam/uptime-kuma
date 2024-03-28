@@ -86,6 +86,11 @@
                                             Tailscale Ping
                                         </option>
                                     </optgroup>
+                                    <optgroup :label="$t('Third Party')">
+                                        <option value="atlassian">
+                                            Atlassian Statuspage
+                                        </option>
+                                    </optgroup>
                                 </select>
                             </div>
 
@@ -100,7 +105,7 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' || monitor.type === 'atlassian'" class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
@@ -308,6 +313,13 @@
                             <div v-if="monitor.type === 'docker'" class="my-3">
                                 <label for="docker_container" class="form-label">{{ $t("Container Name / ID") }}</label>
                                 <input id="docker_container" v-model="monitor.docker_container" type="text" class="form-control" required>
+                            </div>
+
+                            <!-- Third Party -->
+                            <!-- Atlassian Status page -->
+                            <div v-if="monitor.type === 'atlassian'" class="my-3">
+                                <label for="component_name" class="form-label">{{ $t("Component name") }}</label>
+                                <input id="component_name" v-model="monitor.component_name" type="text" class="form-control" required>
                             </div>
 
                             <!-- Docker Host -->
