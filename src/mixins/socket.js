@@ -118,14 +118,22 @@ export default {
                 this.info = info;
             });
 
-            socket.on("setup", (monitorID, data) => {
+            socket.on("setup", () => {
                 this.$router.push("/setup");
             });
 
-            socket.on("autoLogin", (monitorID, data) => {
+            socket.on("autoLogin", () => {
                 this.loggedIn = true;
                 this.storage().token = "autoLogin";
                 this.socket.token = "autoLogin";
+                this.allowLoginDialog = false;
+            });
+
+            socket.on("autoLoginRemoteHeader", (username) => {
+                this.loggedIn = true;
+                this.username = username;
+                this.storage().token = "autoLoginRemoteHeader";
+                this.socket.token = "autoLoginRemoteHeader";
                 this.allowLoginDialog = false;
             });
 
@@ -259,7 +267,7 @@ export default {
                 let token = this.storage().token;
 
                 if (token) {
-                    if (token !== "autoLogin") {
+                    if (token.startsWith("autoLogin") === false) {
                         this.loginByToken(token);
                     } else {
                         // Timeout if it is not actually auto login
@@ -308,7 +316,7 @@ export default {
         getJWTPayload() {
             const jwtToken = this.$root.storage().token;
 
-            if (jwtToken && jwtToken !== "autoLogin") {
+            if (jwtToken && jwtToken.startsWith("autoLogin") === false) {
                 return jwtDecode(jwtToken);
             }
             return undefined;
