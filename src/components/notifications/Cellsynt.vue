@@ -19,10 +19,10 @@
         </div>
     </div>
     <div class="mb-3">
-        <label for="cellsynt-originator" class="form-label" v-if="$parent.notification.cellsyntOriginatortype == 'alpha'">{{ $t("Originator") }} <small>{{ $t("(max 11 alphanumeric characters)") }}</small></label>
-        <label for="cellsynt-originator" class="form-label" v-if="$parent.notification.cellsyntOriginatortype == 'numeric'">{{ $t("Originator") }} <small>{{ $t("(max 15 digits)") }}</small></label>
-        <input id="cellsynt-originator" v-if="$parent.notification.cellsyntOriginatortype == 'alpha'" v-model="$parent.notification.cellsyntOriginator" type="text" class="form-control" pattern="[a-zA-Z0-9\s]+" maxlength="11" required>
-        <input id="cellsynt-originator" v-if="$parent.notification.cellsyntOriginatortype == 'numeric'" v-model="$parent.notification.cellsyntOriginator" type="number" class="form-control" pattern="[0-9]+" maxlength="15" required>
+        <label for="cellsynt-originator" v-if="$parent.notification.cellsyntOriginatortype === 'alpha'" class="form-label">{{ $t("Originator") }} <small>{{ $t("(max 11 alphanumeric characters)") }}</small></label>
+        <label for="cellsynt-originator" v-if="$parent.notification.cellsyntOriginatortype === 'numeric'" class="form-label">{{ $t("Originator") }} <small>{{ $t("(max 15 digits)") }}</small></label>
+        <input v-if="$parent.notification.cellsyntOriginatortype === 'alpha'" id="cellsynt-originator" v-model="$parent.notification.cellsyntOriginator" type="text" class="form-control" pattern="[a-zA-Z0-9\s]+" maxlength="11" required>
+        <input v-if="$parent.notification.cellsyntOriginatortype === 'numeric'" id="cellsynt-originator" v-model="$parent.notification.cellsyntOriginator" type="number" class="form-control" pattern="[0-9]+" maxlength="15" required>
         <div class="form-text"><p>{{ $t("Visible on recipient's mobile phone as originator of the message. Allowed values and function depends on parameter originatortype.") }}</p></div>
     </div>
     <div class="mb-3">
@@ -48,10 +48,10 @@ export default {
         HiddenInput
     },
     mounted() {
-        if (this.$parent.notification.cellsyntOriginatortype == null || this.$parent.notification.cellsyntOriginatortype == "") {
+        if (typeof this.$parent.notification.cellsyntOriginatortype === "undefined" || this.$parent.notification.cellsyntOriginatortype === "") {
         this.$parent.notification.cellsyntOriginatortype = "alpha";
         }
-        if (this.$parent.notification.cellsyntOriginator == null || this.$parent.notification.cellsyntOriginator == "") {
+        if (typeof this.$parent.notification.cellsyntOriginator === "undefined" || this.$parent.notification.cellsyntOriginator === "") {
             this.$parent.notification.cellsyntOriginator = "uptimekuma";
         }
     }
