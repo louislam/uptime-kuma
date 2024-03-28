@@ -54,6 +54,7 @@ import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
+import Cellsynt from "./Cellsynt.vue";
 
 /**
  * Manage all notification form.
@@ -116,6 +117,7 @@ const NotificationFormList = {
     "ServerChan": ServerChan,
     "ZohoCliq": ZohoCliq,
     "gtxmessaging": GtxMessaging,
+    "Cellsynt": Cellsynt,
 };
 
 export default NotificationFormList;

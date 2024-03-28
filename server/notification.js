@@ -56,6 +56,7 @@ const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
+const Cellsynt = require("./notification-providers/cellsynt");
 
 class Notification {
 
@@ -129,6 +130,7 @@ class Notification {
             new GoAlert(),
             new ZohoCliq(),
             new GtxMessaging(),
+            new Cellsynt(),
         ];
         for (let item of list) {
             if (! item.name) {
