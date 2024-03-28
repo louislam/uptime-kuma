@@ -130,7 +130,7 @@ class Notification {
             new GoAlert(),
             new ZohoCliq(),
             new GtxMessaging(),
-            new Cellsynt()
+            new Cellsynt(),
         ];
         for (let item of list) {
             if (! item.name) {

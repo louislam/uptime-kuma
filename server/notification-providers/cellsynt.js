@@ -9,7 +9,7 @@ class Cellsynt extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-        let data = {
+        const data = {
             // docs at https://www.cellsynt.com/en/sms/api-integration
             params: {
                 "username": notification.cellsyntLogin,
