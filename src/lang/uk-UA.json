@@ -924,5 +924,9 @@
     "statusPageSpecialSlugDesc": "Спеціальний slug {0}: ця сторінка буде показана, якщо slug не надано",
     "Search monitored sites": "Пошук сайтів, що відстежуються",
     "ntfyPriorityHelptextAllEvents": "Усі події надсилаються з максимальним пріоритетом",
-    "What is a Remote Browser?": "Що таке віддалений браузер?"
+    "What is a Remote Browser?": "Що таке віддалений браузер?",
+    "Your User ID": "Ваш ID користувача",
+    "Channel access token (Long-lived)": "Токен доступу до каналу (довготривалий)",
+    "documentationOf": "{0} Документація",
+    "wayToGetHeiiOnCallDetails": "Як отримати Trigger ID та API-ключі пояснюється в {documentation}"
 }

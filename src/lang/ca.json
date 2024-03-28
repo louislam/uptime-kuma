@@ -31,5 +31,14 @@
     "setupDatabaseSQLite": "Un simple fitxer de base de dades, es recomana per desplegaments en petita escala. Abans de la v2.0.0, Uptime Kuma utilitzaba SQLite com la base de dades predeterminada.",
     "sameAsServerTimezone": "La mateixa zona horaria que el servidor",
     "settingUpDatabaseMSG": "Configuració de la base de dades. Pot trigar una estona, si us plau, tingueu paciència.",
-    "dbName": "Nom de la base de dades"
+    "dbName": "Nom de la base de dades",
+    "Passive Monitor Type": "Tipus passiu de monitor",
+    "pauseDashboardHome": "Pausa",
+    "Pause": "Pausa",
+    "Name": "Nom",
+    "Status": "Estat",
+    "DateTime": "DataHora",
+    "Message": "Missatge",
+    "General Monitor Type": "Tipus general de monitor",
+    "Specific Monitor Type": "Tipus específic de monitor"
 }

@@ -535,7 +535,7 @@
     "Server Timezone": "Fuso orario del server",
     "statusPageMaintenanceEndDate": "Fine",
     "IconUrl": "URL dell'icona",
-    "Enable DNS Cache": "Abilita la cache DNS per i monitor HTTP(s).",
+    "Enable DNS Cache": "(Obsoleto) Abilita la cache DNS per i monitor HTTP(s).",
     "Enable": "Abilitare",
     "Disable": "Disattivare",
     "chromeExecutableAutoDetect": "Trovato automaticamente",
@@ -668,5 +668,13 @@
     "liquidIntroduction": "La templatabilità è ottenuta attraverso il linguaggio di templating Liquid. Consulta {0} per le istruzioni d'uso. Queste sono le variabili disponibili:",
     "templateMsg": "Messaggio della notifica",
     "Search monitored sites": "Ricerca tra i siti monitorati",
-    "settingUpDatabaseMSG": "Configurazione del database in corso. Potrebbe richiedere un po' di tempo..."
+    "settingUpDatabaseMSG": "Configurazione del database in corso. Potrebbe richiedere un po' di tempo...",
+    "templateHeartbeatJSON": "oggetto che descrive il battito cardiaco",
+    "templateLimitedToUpDownNotifications": "disponibile solo per le notifiche UP/DOWN",
+    "Add a new expiry notification day": "Aggiungi un nuovo giorno di notifica di scadenza",
+    "DockerHostRequired": "Per favore, imposta l'host Docker per questo monitor.",
+    "smtpLiquidIntroduction": "I due campi seguenti sono adattabili tramite il linguaggio di templating Liquid. Consulta {0} per le istruzioni d'uso. Queste sono le variabili disponibili:",
+    "emailCustomisableContent": "Contenuto personalizzabile",
+    "noDockerHostMsg": "Non disponibile. Configura prima un host Docker.",
+    "Remove the expiry notification": "Rimuovi il giorno di notifica di scadenza"
 }

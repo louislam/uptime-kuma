@@ -869,7 +869,7 @@
     "tagNotFound": "Tag tidak ditemukan.",
     "foundChromiumVersion": "Ditemukan Chromium/Chrome. Versi: {0}",
     "Kafka SASL Options": "Opsi Kafka SASL",
-    "Pick a SASL Mechanism...": "Pilih Mekanisme SASL...",
+    "Pick a SASL Mechanism...": "Pilih Mekanisme SASL…",
     "AccessKey Id": "Id AccessKey",
     "Secret AccessKey": "Secret AccessKey",
     "Session Token": "Sesi Token",
@@ -912,5 +912,6 @@
     "statusPageSpecialSlugDesc": "Tanda khusus {0}: halaman ini akan ditampilkan jika tidak ada tanda khusus yang disediakan",
     "settingUpDatabaseMSG": "Menyiapkan basis data. Mungkin perlu waktu beberapa saat, harap bersabar.",
     "Search monitored sites": "Mencari situs yang dipantau",
-    "ntfyPriorityHelptextAllEvents": "Semua peristiwa dikirim dengan prioritas maksimum"
+    "ntfyPriorityHelptextAllEvents": "Semua peristiwa dikirim dengan prioritas maksimum",
+    "What is a Remote Browser?": "Apa itu Remote Browser?"
 }

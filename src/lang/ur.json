@@ -542,5 +542,13 @@
     "Access Token": "ٹوکن تک رسائی حاصل کریں",
     "Channel access token": "چینل تک رسائی کا ٹوکن",
     "Line Developers Console": "لائن ڈویلپرز کنسول",
-    "lineDevConsoleTo": "لائن ڈیولپرز کنسول - {0}"
+    "lineDevConsoleTo": "لائن ڈیولپرز کنسول - {0}",
+    "successKeywordExplanation": "MQTT کلیدی لفظ جسے کامیابی سمجھا جائے گا",
+    "User ID": "صارف کی شناخت",
+    "Search monitored sites": "نگرانی شدہ سائٹس تلاش کریں",
+    "successKeyword": "کامیابی کا کلیدی لفظ",
+    "statusPageSpecialSlugDesc": "خصوصی سلگ {0}: یہ صفحہ اس وقت دکھایا جائے گا جب کوئی سلگ فراہم نہ کیا جائے",
+    "settingUpDatabaseMSG": "ڈیٹا بیس کی ترتیب۔ اس میں کچھ وقت لگ سکتا ہے، براہ کرم صبر کریں۔",
+    "Add a new expiry notification day": "میعاد ختم ہونے کی اطلاع کا نیا دن شامل کریں",
+    "Remove the expiry notification": "میعاد ختم ہونے کی اطلاع کے دن کو ہٹا دیں"
 }

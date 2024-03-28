@@ -918,5 +918,9 @@
     "ntfyPriorityHelptextAllEvents": "Всички събития се изпращат с максимален приоритет",
     "settingUpDatabaseMSG": "Настройка на базата данни. Може да отнеме известно време, моля, бъдете търпеливи.",
     "Search monitored sites": "Търсене на мониторирани сайтове",
-    "What is a Remote Browser?": "Какво е отдалечен браузър?"
+    "What is a Remote Browser?": "Какво е отдалечен браузър?",
+    "Channel access token (Long-lived)": "Токен код за достъп до канал (дълготраен)",
+    "Your User ID": "Вашето потребителско ID",
+    "documentationOf": "{0} Документация",
+    "wayToGetHeiiOnCallDetails": "Как да получите Trigger ID и API ключове е обяснено в {documentation}"
 }
