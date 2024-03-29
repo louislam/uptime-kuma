@@ -19,8 +19,7 @@
         </div>
     </div>
     <div class="mb-3">
-        <label v-if="$parent.notification.cellsyntOriginatortype === 'alpha'" for="cellsynt-originator" class="form-label">{{ $t("Originator") }} <small>{{ $t("(max 11 alphanumeric characters)") }}</small></label>
-        <label v-if="$parent.notification.cellsyntOriginatortype === 'numeric'" for="cellsynt-originator" class="form-label">{{ $t("Originator") }} <small>{{ $t("(max 15 digits)") }}</small></label>
+        <label for="cellsynt-originator" class="form-label">{{ $t("Originator") }} <small>({{ $parent.notification.cellsyntOriginatortype === 'alpha' ? $t("max 11 alphanumeric characters") : $t("max 15 digits") }})</small></label>
         <input v-if="$parent.notification.cellsyntOriginatortype === 'alpha'" id="cellsynt-originator" v-model="$parent.notification.cellsyntOriginator" type="text" class="form-control" pattern="[a-zA-Z0-9\s]+" maxlength="11" required>
         <input v-if="$parent.notification.cellsyntOriginatortype === 'numeric'" id="cellsynt-originator" v-model="$parent.notification.cellsyntOriginator" type="number" class="form-control" pattern="[0-9]+" maxlength="15" required>
         <div class="form-text"><p>{{ $t("Visible on recipient's mobile phone as originator of the message. Allowed values and function depends on parameter originatortype.") }}</p></div>
