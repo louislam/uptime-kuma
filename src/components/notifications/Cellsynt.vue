@@ -47,12 +47,8 @@ export default {
         HiddenInput
     },
     mounted() {
-        if (typeof this.$parent.notification.cellsyntOriginatortype === "undefined" || this.$parent.notification.cellsyntOriginatortype === "") {
-            this.$parent.notification.cellsyntOriginatortype = "alpha";
-        }
-        if (typeof this.$parent.notification.cellsyntOriginator === "undefined" || this.$parent.notification.cellsyntOriginator === "") {
-            this.$parent.notification.cellsyntOriginator = "uptimekuma";
-        }
+        this.$parent.notification.cellsyntOriginatortype ||= "alpha";
+        this.$parent.notification.cellsyntOriginator ||= "uptimekuma";
     }
 };
 </script>
