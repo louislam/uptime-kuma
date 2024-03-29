@@ -903,5 +903,7 @@
     "Destination": "Destination",
     "cellsyntDestinationDescB": "Recipient's telephone number using international format with leading 00 followed by country code, e.g. 00447920110000 for the UK number 07920 110 000 (max 17 digits in total). Max 25000 comma separated recipients per HTTP request.",
     "Allow Long SMS": "Allow Long SMS",
-    "cellsyntSplitLongMessagesDescA": "Split long messages into up to 6 parts. 153 x 6 = 918 characters."
+    "cellsyntSplitLongMessagesDescA": "Split long messages into up to 6 parts. 153 x 6 = 918 characters.",
+    "max 15 digits": "max 15 digits",
+    "max 11 alphanumeric characters": "max 11 alphanumeric characters"
 }
