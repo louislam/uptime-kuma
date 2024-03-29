@@ -319,9 +319,9 @@ async function createTables() {
     await knex.schema.createTable("monitor_tls_info", (table) => {
         table.increments("id");
         table.integer("monitor_id").unsigned().notNullable()
-        .references("id").inTable("monitor")
-        .onDelete("CASCADE")
-        .onUpdate("CASCADE");
+            .references("id").inTable("monitor")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
         table.text("info_json");
     });
 
