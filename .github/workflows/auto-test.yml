@@ -33,7 +33,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
-    - run: npm install
+    - run: npm ci
     - run: npm run build
     - run: npm test
       env:
@@ -73,7 +73,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 14
-    - run: npm install
+    - run: npm ci
     - run: npm run lint:prod
 
   e2e-tests:
@@ -87,7 +87,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 14
-    - run: npm install
+    - run: npm ci
     - run: npm run build
     - run: npm run cy:test
 
@@ -102,6 +102,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 14
-    - run: npm install
+    - run: npm ci
     - run: npm run build
     - run: npm run cy:run:unit
