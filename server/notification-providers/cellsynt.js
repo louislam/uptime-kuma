@@ -24,7 +24,7 @@ class Cellsynt extends NotificationProvider {
         try {
             const resp = await axios.post("https://se-1.cellsynt.net/sms.php", null, data);
             if (resp.data == null ) {
-                throw new Error("Error: Could not connect to Cellsynt, please try again.");
+                throw new Error("Could not connect to Cellsynt, please try again.");
             } else if (resp.data.includes("Error:")) {
                 resp.data = resp.data.replaceAll("Error:", "");
                 throw new Error(resp.data);
