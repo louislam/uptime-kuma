@@ -892,5 +892,18 @@
     "From Phone Number / Transmission Path Originating Address (TPOA)": "From Phone Number / Transmission Path Originating Address (TPOA)",
     "gtxMessagingFromHint": "On mobile phones, your recipients sees the TPOA displayed as the sender of the message. Allowed are up to 11 alphanumeric characters, a shortcode, the local longcode or international numbers ({e164}, {e212} or {e214})",
     "To Phone Number": "To Phone Number",
-    "gtxMessagingToHint": "International format, with leading \"+\" ({e164}, {e212} or {e214})"
+    "gtxMessagingToHint": "International format, with leading \"+\" ({e164}, {e212} or {e214})",
+    "Originator type": "Originator type",
+    "Alphanumeric (recommended)": "Alphanumeric (recommended)",
+    "Telephone number": "Telephone number",
+    "cellsyntOriginatortypeAlphanumeric": "Alphanumeric string (max 11 alphanumeric characters). Recipients can not reply to the message.",
+    "cellsyntOriginatortypeNumeric": "Numeric value (max 15 digits) with telephone number on international format without leading 00 (example UK number 07920 110 000 should be set as 447920110000). Recipients can reply to the message.",
+    "Originator": "Originator",
+    "cellsyntOriginator": "Visible on recipient's mobile phone as originator of the message. Allowed values and function depends on parameter originatortype.",
+    "Destination": "Destination",
+    "cellsyntDestination": "Recipient's telephone number using international format with leading 00 followed by country code, e.g. 00447920110000 for the UK number 07920 110 000 (max 17 digits in total). Max 25000 comma separated recipients per HTTP request.",
+    "Allow Long SMS": "Allow Long SMS",
+    "cellsyntSplitLongMessages": "Split long messages into up to 6 parts. 153 x 6 = 918 characters.",
+    "max 15 digits": "max 15 digits",
+    "max 11 alphanumeric characters": "max 11 alphanumeric characters"
 }
