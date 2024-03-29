@@ -512,6 +512,12 @@ class Monitor extends BeanModel {
                         }
                     }
 
+                    let tlsInfo;
+                    // Store tlsInfo when key material is received
+                    options.httpsAgent.on("keylog", (line, tlsSocket) => {
+                        tlsInfo = checkCertificate(tlsSocket);
+                    });
+
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
@@ -521,29 +527,20 @@ class Monitor extends BeanModel {
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    // Check certificate if https is used
-                    let certInfoStartTime = dayjs().valueOf();
+                    // Store certificate and check for expiry if https is used
                     if (this.getUrl()?.protocol === "https:") {
-                        log.debug("monitor", `[${this.name}] Check cert`);
-                        try {
-                            let tlsInfoObject = checkCertificate(res);
-                            tlsInfo = await this.updateTlsInfo(tlsInfoObject);
+                        // No way to listen for the `secureConnection` event, so we do it here
+                        const tlssocket = res.request.res.socket;
 
-                            if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
-                                log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
-                                await this.checkCertExpiryNotifications(tlsInfoObject);
-                            }
-
-                        } catch (e) {
-                            if (e.message !== "No TLS certificate in response") {
-                                log.error("monitor", "Caught error");
-                                log.error("monitor", e.message);
-                            }
+                        if (tlssocket) {
+                            tlsInfo.valid = tlssocket.authorized || false;
                         }
-                    }
 
-                    if (process.env.TIMELOGGER === "1") {
-                        log.debug("monitor", "Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+                        await this.updateTlsInfo(tlsInfo);
+                        if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
+                            log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
+                            await this.checkCertExpiryNotifications(tlsInfo);
+                        }
                     }
 
                     if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID === this.id) {
