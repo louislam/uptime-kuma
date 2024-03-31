@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
-        node: [ 14, 20 ]
+        node: [ 16, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -33,8 +33,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
-    - run: npm install npm@9 -g
-    - run: npm install
+    - run: npm ci
     - run: npm run build
     - run: npm test
       env:
@@ -50,7 +49,7 @@ jobs:
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 14, 20 ]
+        node: [ 16, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -61,7 +60,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - run: npm install npm@9 -g
       - run: npm ci --production
 
   check-linters:
@@ -71,11 +69,11 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    - name: Use Node.js 14
+    - name: Use Node.js 20
       uses: actions/setup-node@v4
       with:
-        node-version: 14
-    - run: npm install
+        node-version: 20.5
+    - run: npm ci
     - run: npm run lint:prod
 
   e2e-tests:
@@ -85,11 +83,11 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    - name: Use Node.js 14
+    - name: Use Node.js 16
       uses: actions/setup-node@v4
       with:
-        node-version: 14
-    - run: npm install
+        node-version: 16
+    - run: npm ci
     - run: npm run build
     - run: npm run cy:test
 
@@ -100,10 +98,10 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    - name: Use Node.js 14
+    - name: Use Node.js 16
       uses: actions/setup-node@v4
       with:
-        node-version: 14
-    - run: npm install
+        node-version: 16
+    - run: npm ci
     - run: npm run build
     - run: npm run cy:run:unit
