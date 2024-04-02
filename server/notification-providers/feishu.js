@@ -9,8 +9,7 @@ class Feishu extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
-        let feishuWebHookUrl = notification.feishuWebHookUrl;
+        const okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON == null) {
@@ -20,7 +19,7 @@ class Feishu extends NotificationProvider {
                         text: msg,
                     },
                 };
-                await axios.post(feishuWebHookUrl, testdata);
+                await axios.post(notification.feishuWebHookUrl, testdata);
                 return okMsg;
             }
 
@@ -46,7 +45,7 @@ class Feishu extends NotificationProvider {
                         },
                     },
                 };
-                await axios.post(feishuWebHookUrl, downdata);
+                await axios.post(notification.feishuWebHookUrl, downdata);
                 return okMsg;
             }
 
@@ -72,7 +71,7 @@ class Feishu extends NotificationProvider {
                         },
                     },
                 };
-                await axios.post(feishuWebHookUrl, updata);
+                await axios.post(notification.feishuWebHookUrl, updata);
                 return okMsg;
             }
         } catch (error) {
