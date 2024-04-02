@@ -115,6 +115,7 @@ export default {
                 "apprise": this.$t("apprise"),
                 "Bark": "Bark",
                 "clicksendsms": "ClickSend SMS",
+                "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",

@@ -4,6 +4,7 @@ import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bark from "./Bark.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
+import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
 import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
@@ -67,6 +68,7 @@ const NotificationFormList = {
     "apprise": Apprise,
     "Bark": Bark,
     "clicksendsms": ClickSendSMS,
+    "CallMeBot": CallMeBot,
     "smsc": SMSC,
     "DingDing": DingDing,
     "discord": Discord,

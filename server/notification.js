@@ -6,6 +6,7 @@ const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bark = require("./notification-providers/bark");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
+const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
@@ -80,6 +81,7 @@ class Notification {
             new Apprise(),
             new Bark(),
             new ClickSendSMS(),
+            new CallMeBot(),
             new SMSC(),
             new DingDing(),
             new Discord(),
