@@ -2,18 +2,15 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Whapi extends NotificationProvider {
-
     name = "whapi";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
-
             const config = {
                 headers: {
                     "Accept": "application/json",
