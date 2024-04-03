@@ -810,7 +810,7 @@
     "Enable Kafka SSL": "Kafka SSL'i etkinleştir",
     "Kafka SASL Options": "Kafka SASL Seçenekleri",
     "Mechanism": "Mekanizma",
-    "Pick a SASL Mechanism...": "Bir SASL Mekanizması seçin...",
+    "Pick a SASL Mechanism...": "Bir SASL Mekanizması seçin…",
     "Authorization Identity": "Yetki Kimliği",
     "Secret AccessKey": "Gizli Erişim Anahtarı",
     "Session Token": "Oturum Jetonu",
@@ -912,5 +912,11 @@
     "useRemoteBrowser": "Uzak Tarayıcı Kullanın",
     "deleteRemoteBrowserMessage": "Bu Uzak Tarayıcıyı tüm monitörler için silmek istediğinizden emin misiniz?",
     "openModalTo": "modeli {0}'a aç",
-    "Add a domain": "Alan adı ekle"
+    "Add a domain": "Alan adı ekle",
+    "Search monitored sites": "İzlenen siteleri arayın",
+    "ntfyPriorityHelptextAllEvents": "Tüm olaylar maksimum öncelik ile gönderilir",
+    "settingUpDatabaseMSG": "Veritabanı kuruluyor. Biraz zaman alabilir, lütfen sabırlı olun.",
+    "statusPageSpecialSlugDesc": "Özel slug {0}: slug belirtilmediğinde bu sayfa gösterilecektir",
+    "ntfyPriorityHelptextAllExceptDown": "Önceliği {1} olan {0}-olayları hariç tüm olaylar bu öncelik ile gönderilir",
+    "What is a Remote Browser?": "Uzak Tarayıcı Nedir?"
 }

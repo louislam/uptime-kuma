@@ -632,7 +632,7 @@
     "Server Timezone": "Часова зона на сървъра",
     "statusPageMaintenanceEndDate": "Край",
     "enableGRPCTls": "Разреши изпращане на gRPC заявка с TLS връзка",
-    "grpcMethodDescription": "Името на метода се форматира в \"cammelCase\", например sayHello, check, и т.н.",
+    "grpcMethodDescription": "Името на метода се форматира в \"camelCase\", например sayHello, check, и т.н.",
     "smseagle": "SMSEagle",
     "smseagleTo": "Тел. номер(а)",
     "smseagleGroup": "Име на група/и от тел. указател",
@@ -818,7 +818,7 @@
     "Kafka Producer Message": "Съобщение на Kafka Producer",
     "Kafka SASL Options": "Опции на Kafka SASL",
     "Mechanism": "Механизъм",
-    "Pick a SASL Mechanism...": "Изберете SASL механизъм...",
+    "Pick a SASL Mechanism...": "Изберете SASL механизъм…",
     "Authorization Identity": "Идентичност за оторизиране",
     "AccessKey Id": "AccessKey ID",
     "Secret AccessKey": "Таен ключ за достъп",
@@ -912,5 +912,11 @@
     "useRemoteBrowser": "Използвай отдалечен браузър",
     "deleteRemoteBrowserMessage": "Сигурни ли сте, че желаете да изтриете този отдалечен браузър за всички монитори?",
     "successKeyword": "Ключова дума за успех",
-    "successKeywordExplanation": "MQTT ключова дума, която ще се счита за успех"
+    "successKeywordExplanation": "MQTT ключова дума, която ще се счита за успех",
+    "ntfyPriorityHelptextAllExceptDown": "Всички събития се изпращат с този приоритет, с изключение на {0}-събития, които имат приоритет {1}",
+    "statusPageSpecialSlugDesc": "Специален слъг {0}: тази страница ще бъде показана, когато не е предоставен слъг",
+    "ntfyPriorityHelptextAllEvents": "Всички събития се изпращат с максимален приоритет",
+    "settingUpDatabaseMSG": "Настройка на базата данни. Може да отнеме известно време, моля, бъдете търпеливи.",
+    "Search monitored sites": "Търсене на мониторирани сайтове",
+    "What is a Remote Browser?": "Какво е отдалечен браузър?"
 }

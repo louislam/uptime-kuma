@@ -96,7 +96,7 @@ async function getBrowser() {
 async function getRemoteBrowser(remoteBrowserID, userId) {
     let remoteBrowser = await RemoteBrowser.get(remoteBrowserID, userId);
     log.debug("MONITOR", `Using remote browser: ${remoteBrowser.name} (${remoteBrowser.id})`);
-    browser = chromium.connect(remoteBrowser.url);
+    browser = await chromium.connect(remoteBrowser.url);
     return browser;
 }
 
