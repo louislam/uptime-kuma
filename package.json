@@ -147,7 +147,7 @@
         "ws": "^8.16.0"
     },
     "devDependencies": {
-        "@actions/github": "~5.0.3",
+        "@actions/github": "~5.1.1",
         "@babel/eslint-parser": "^7.24.1",
         "@babel/preset-env": "^7.24.4",
         "@fortawesome/fontawesome-svg-core": "~1.2.36",
@@ -171,7 +171,7 @@
         "cypress": "^13.7.2",
         "delay": "^5.0.0",
         "dns2": "~2.0.5",
-        "dompurify": "~2.4.9",
+        "dompurify": "~3.0.11",
         "eslint": "~8.14.0",
         "eslint-plugin-vue": "~8.7.1",
         "favico.js": "~0.3.10",
