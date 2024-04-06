@@ -7,7 +7,7 @@ module.exports.chartSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            log.info("monitor", `Get Monitor Chart Data: ${monitorID} User ID: ${socket.userID}`);
+            log.debug("monitor", `Get Monitor Chart Data: ${monitorID} User ID: ${socket.userID}`);
 
             if (period == null) {
                 throw new Error("Invalid period.");
