@@ -661,7 +661,7 @@ exports.checkCertificate = function (socket) {
     if (socket === undefined || socket == null) {
         return null;
     }
-    
+
     let certInfoStartTime = dayjs().valueOf();
 
     const info = socket.getPeerCertificate(true);
