@@ -657,12 +657,12 @@ const parseCertificateInfo = function (info) {
  * @returns {object} Object containing certificate information
  */
 exports.checkCertificate = function (socket) {
-    let certInfoStartTime = dayjs().valueOf();
-
     // Return null if there is no socket
     if (socket === undefined || socket == null) {
         return null;
     }
+    
+    let certInfoStartTime = dayjs().valueOf();
 
     const info = socket.getPeerCertificate(true);
     const valid = socket.authorized || false;
