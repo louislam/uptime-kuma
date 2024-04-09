@@ -508,10 +508,7 @@ export default {
             const maxPing = datapoints.reduce((max, current) => Math.max(max, current.maxPing), 0);
 
             // Find the middle timestamp to use
-            let midpoint = 0;
-            if (datapoints.length > 1) {
-                midpoint = Math.floor(datapoints.length / 2);
-            }
+            let midpoint = Math.floor(datapoints.length / 2);
 
             return {
                 timestamp: datapoints[midpoint].timestamp,
