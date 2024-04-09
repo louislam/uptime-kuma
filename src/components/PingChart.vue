@@ -10,7 +10,7 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <li v-for="(item, key) in chartPeriodOptions" :key="key">
                     <button
-                        role="button" class="dropdown-item" :class="{ active: chartPeriodHrs == key }"
+                        type="button" class="dropdown-item" :class="{ active: chartPeriodHrs == key }"
                         @click="chartPeriodHrs = key"
                     >
                         {{ item }}
