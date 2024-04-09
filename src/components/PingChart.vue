@@ -484,17 +484,10 @@ export default {
                 x,
                 y: datapoint.up > 0 && datapoint.avgPing > 0 ? datapoint.maxPing : null,
             });
-
-            let bar = {
+            downData.push({
                 x,
-                y: datapoint.down,
-            };
-
-            if (datapoint.maintenance) {
-                bar.y += datapoint.maintenance;
-            }
-
-            downData.push(bar);
+                y: datapoint.down + (datapoint.maintenance || 0),
+            });
 
             colorData.push(this.getBarColorForDatapoint(datapoint));
         },
