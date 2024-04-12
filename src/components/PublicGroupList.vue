@@ -38,7 +38,7 @@
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
 
-                                            <Status v-if="hideUptimePercentage" :status="statusOfLastHeartbeat(monitor.element.id)" />
+                                            <Status v-if="showLastHeartbeat" :status="statusOfLastHeartbeat(monitor.element.id)" />
                                             <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
                                             <a
                                                 v-if="showLink(monitor)"
@@ -116,8 +116,8 @@ export default {
         showCertificateExpiry: {
             type: Boolean,
         },
-        /** Should uptime be hidden? */
-        hideUptimePercentage: {
+        /** Should only the last heartbeat be shown? */
+        showLastHeartbeat: {
             type: Boolean,
         },
     },

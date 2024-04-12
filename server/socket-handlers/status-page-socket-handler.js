@@ -163,7 +163,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.footer_text = config.footerText;
             statusPage.custom_css = config.customCSS;
             statusPage.show_powered_by = config.showPoweredBy;
-            statusPage.hide_uptime_percentage = config.hideUptimePercentage;
+            statusPage.show_last_heartbeat = config.showLastHeartbeat;
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
             statusPage.modified_date = R.isoDateTime();
             statusPage.google_analytics_tag_id = config.googleAnalyticsId;

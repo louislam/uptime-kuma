@@ -60,10 +60,10 @@
                     <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
                 </div>
 
-                <!-- Hide uptime percentage -->
+                <!-- Show last heartbeat -->
                 <div class="my-3 form-check form-switch">
-                    <input id="hide-uptime-percentage" v-model="config.hideUptimePercentage" class="form-check-input" type="checkbox">
-                    <label class="form-check-label" for="hide-uptime-percentage">{{ $t("hideUptimePercentage") }}</label>
+                    <input id="show-last-heartbeat" v-model="config.showLastHeartbeat" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-last-heartbeat">{{ $t("showLastHeartbeat") }}</label>
                 </div>
 
                 <div v-if="false" class="my-3">
@@ -325,7 +325,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :hide-uptime-percentage="config.hideUptimePercentage" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :show-last-heartbeat="config.showLastHeartbeat" />
             </div>
 
             <footer class="mt-5 mb-4">
