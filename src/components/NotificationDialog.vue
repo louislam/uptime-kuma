@@ -115,6 +115,7 @@ export default {
                 "apprise": this.$t("apprise"),
                 "Bark": "Bark",
                 "clicksendsms": "ClickSend SMS",
+                "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
@@ -152,7 +153,10 @@ export default {
                 "Splunk": "Splunk",
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
-                "ZohoCliq": "ZohoCliq"
+                "ZohoCliq": "ZohoCliq",
+                "whapi": "WhatsApp (Whapi)",
+                "gtxmessaging": "GtxMessaging",
+                "Cellsynt": "Cellsynt",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English

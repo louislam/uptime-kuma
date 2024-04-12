@@ -4,6 +4,7 @@ import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bark from "./Bark.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
+import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
 import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
@@ -13,6 +14,7 @@ import GoogleChat from "./GoogleChat.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
 import GrafanaOncall from "./GrafanaOncall.vue";
+import GtxMessaging from "./GtxMessaging.vue";
 import HomeAssistant from "./HomeAssistant.vue";
 import HeiiOnCall from "./HeiiOnCall.vue";
 import Kook from "./Kook.vue";
@@ -53,6 +55,8 @@ import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
+import Whapi from "./Whapi.vue";
+import Cellsynt from "./Cellsynt.vue";
 
 /**
  * Manage all notification form.
@@ -65,6 +69,7 @@ const NotificationFormList = {
     "apprise": Apprise,
     "Bark": Bark,
     "clicksendsms": ClickSendSMS,
+    "CallMeBot": CallMeBot,
     "smsc": SMSC,
     "DingDing": DingDing,
     "discord": Discord,
@@ -113,7 +118,10 @@ const NotificationFormList = {
     "WeCom": WeCom,
     "GoAlert": GoAlert,
     "ServerChan": ServerChan,
-    "ZohoCliq": ZohoCliq
+    "ZohoCliq": ZohoCliq,
+    "whapi": Whapi,
+    "gtxmessaging": GtxMessaging,
+    "Cellsynt": Cellsynt,
 };
 
 export default NotificationFormList;
