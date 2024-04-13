@@ -6,6 +6,7 @@ const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bark = require("./notification-providers/bark");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
+const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
@@ -55,6 +56,9 @@ const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
+const Whapi = require("./notification-providers/whapi");
+const GtxMessaging = require("./notification-providers/gtx-messaging");
+const Cellsynt = require("./notification-providers/cellsynt");
 
 class Notification {
 
@@ -78,6 +82,7 @@ class Notification {
             new Apprise(),
             new Bark(),
             new ClickSendSMS(),
+            new CallMeBot(),
             new SMSC(),
             new DingDing(),
             new Discord(),
@@ -126,7 +131,10 @@ class Notification {
             new Webhook(),
             new WeCom(),
             new GoAlert(),
-            new ZohoCliq()
+            new ZohoCliq(),
+            new Whapi(),
+            new GtxMessaging(),
+            new Cellsynt(),
         ];
         for (let item of list) {
             if (! item.name) {
