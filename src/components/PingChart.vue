@@ -47,7 +47,7 @@ export default {
             loading: false,
 
             // Time period for the chart to display, in hours
-            chartPeriodHrs: "0",
+            chartPeriodHrs: "24",
 
             chartPeriodOptions: {
                 0: this.$t("recent"),
@@ -163,229 +163,10 @@ export default {
             };
         },
         chartData() {
-            let lastHeartbeatTime;
-            const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
-
             if (this.chartPeriodHrs === "0") {
-                // Render chart using heartbeatList
-                let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-                let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
-                let colorData = []; // Color Data for Bar Chart
-
-                let heartbeatList = (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
-
-                heartbeatList
-                    .map((beat) => {
-                        const beatTime = this.$root.toDayjs(beat.time);
-                        const x = beatTime.format("YYYY-MM-DD HH:mm:ss");
-
-                        // Insert empty datapoint to separate big gaps
-                        if (lastHeartbeatTime && monitorInterval) {
-                            const diff = Math.abs(beatTime.diff(lastHeartbeatTime));
-                            if (diff > monitorInterval * 1000 * 10) {
-                                // Big gap detected
-                                const gapX = [
-                                    lastHeartbeatTime.add(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
-                                    beatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss")
-                                ];
-
-                                for (const x of gapX) {
-                                    pingData.push({
-                                        x,
-                                        y: null,
-                                    });
-                                    downData.push({
-                                        x,
-                                        y: null,
-                                    });
-                                    colorData.push("#000");
-                                }
-
-                            }
-                        }
-
-                        pingData.push({
-                            x,
-                            y: beat.status === UP ? beat.ping : null,
-                        });
-                        downData.push({
-                            x,
-                            y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
-                        });
-                        colorData.push((beat.status === MAINTENANCE) ? "rgba(23,71,245,0.41)" : ((beat.status === PENDING) ? "rgba(245,182,23,0.41)" : "#DC354568"));
-
-                        lastHeartbeatTime = beatTime;
-                    });
-
-                return {
-                    datasets: [
-                        {
-                            // Line Chart
-                            data: pingData,
-                            fill: "origin",
-                            tension: 0.2,
-                            borderColor: "#5CDD8B",
-                            backgroundColor: "#5CDD8B38",
-                            yAxisID: "y",
-                            label: "ping",
-                        },
-                        {
-                            // Bar Chart
-                            type: "bar",
-                            data: downData,
-                            borderColor: "#00000000",
-                            backgroundColor: colorData,
-                            yAxisID: "y1",
-                            barThickness: "flex",
-                            barPercentage: 1,
-                            categoryPercentage: 1,
-                            inflateAmount: 0.05,
-                            label: "status",
-                        },
-                    ],
-                };
+                return this.getChartDatapointsFromHeartbeatList();
             } else {
-                // Render chart using UptimeCalculator data
-                let avgPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-                let minPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-                let maxPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-                let downData = [];  // Down Data for Bar Chart, y-axis is number of down datapoints in this period
-                let colorData = []; // Color Data for Bar Chart
-
-                const period = parseInt(this.chartPeriodHrs);
-                let aggregatePoints = period > 6 ? 12 : 4;
-
-                let aggregateBuffer = [];
-
-                if (this.chartRawData) {
-                    for (const datapoint of this.chartRawData) {
-                        // Empty datapoints are ignored
-                        if (datapoint.up === 0 && datapoint.down === 0 && datapoint.maintenance === 0) {
-                            continue;
-                        }
-
-                        const beatTime = this.$root.unixToDayjs(datapoint.timestamp);
-
-                        // Insert empty datapoint to separate big gaps
-                        if (lastHeartbeatTime && monitorInterval) {
-                            const diff = Math.abs(beatTime.diff(lastHeartbeatTime));
-                            if ((period <= 24 && diff > Math.max(1000 * 60 * 10, monitorInterval * 1000 * 10)) ||
-                            (period > 24 && diff > Math.max(1000 * 60 * 60 * 10, monitorInterval * 1000 * 10)) ) {
-                                // Big gap detected
-                                // Clear the aggregate buffer
-                                if (aggregateBuffer.length > 0) {
-                                    const average = this.getAverage(aggregateBuffer);
-                                    this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
-                                    aggregateBuffer = [];
-                                }
-
-                                const gapX = [
-                                    lastHeartbeatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
-                                    this.$root.unixToDateTime(datapoint.timestamp + 60),
-                                ];
-
-                                for (const x of gapX) {
-                                    avgPingData.push({
-                                        x,
-                                        y: null,
-                                    });
-                                    minPingData.push({
-                                        x,
-                                        y: null,
-                                    });
-                                    maxPingData.push({
-                                        x,
-                                        y: null,
-                                    });
-                                    downData.push({
-                                        x,
-                                        y: null,
-                                    });
-                                    colorData.push("#000");
-                                }
-
-                            }
-                        }
-
-                        if (datapoint.up > 0 && this.chartRawData.length > aggregatePoints * 2) {
-                            // Aggregate Up data using a sliding window
-                            aggregateBuffer.push(datapoint);
-
-                            if (aggregateBuffer.length === aggregatePoints) {
-                                const average = this.getAverage(aggregateBuffer);
-                                this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
-                                // Remove the first half of the buffer
-                                aggregateBuffer = aggregateBuffer.slice(Math.floor(aggregatePoints / 2));
-                            }
-                        } else {
-                            // datapoint is fully down or too few datapoints, no need to aggregate
-                            // Clear the aggregate buffer
-                            if (aggregateBuffer.length > 0) {
-                                const average = this.getAverage(aggregateBuffer);
-                                this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
-                                aggregateBuffer = [];
-                            }
-
-                            this.pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData);
-                        }
-
-                        lastHeartbeatTime = beatTime;
-                    }
-                    // Clear the aggregate buffer if there are still datapoints
-                    if (aggregateBuffer.length > 0) {
-                        const average = this.getAverage(aggregateBuffer);
-                        this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
-                        aggregateBuffer = [];
-                    }
-                }
-
-                return {
-                    datasets: [
-                        {
-                            // average ping chart
-                            data: avgPingData,
-                            fill: "origin",
-                            tension: 0.2,
-                            borderColor: "#5CDD8B",
-                            backgroundColor: "#5CDD8B06",
-                            yAxisID: "y",
-                            label: "avg-ping",
-                        },
-                        {
-                            // minimum ping chart
-                            data: minPingData,
-                            fill: "origin",
-                            tension: 0.2,
-                            borderColor: "#3CBD6B38",
-                            backgroundColor: "#5CDD8B06",
-                            yAxisID: "y",
-                            label: "min-ping",
-                        },
-                        {
-                            // maximum ping chart
-                            data: maxPingData,
-                            fill: "origin",
-                            tension: 0.2,
-                            borderColor: "#7CBD6B38",
-                            backgroundColor: "#5CDD8B06",
-                            yAxisID: "y",
-                            label: "max-ping",
-                        },
-                        {
-                            // Bar Chart
-                            type: "bar",
-                            data: downData,
-                            borderColor: "#00000000",
-                            backgroundColor: colorData,
-                            yAxisID: "y1",
-                            barThickness: "flex",
-                            barPercentage: 1,
-                            categoryPercentage: 1,
-                            inflateAmount: 0.05,
-                            label: "status",
-                        },
-                    ],
-                };
+                return this.getChartDatapointsFromStats();
             }
         },
     },
@@ -457,14 +238,14 @@ export default {
                 // Target is in maintenance
                 return "rgba(23,71,245,0.41)";
             } else if (datapoint.down === 0) {
-                // Target is up
-                return "#FFFFFFFF";
+                // Target is up, no need to display a bar
+                return "#000";
             } else if (datapoint.up === 0) {
                 // Target is down
-                return "#DC354568";
+                return "rgba(220, 53, 69, 0.41)";
             } else {
                 // Show yellow for mixed status
-                return "rgba(245,182,23,0.41)";
+                return "rgba(245, 182, 23, 0.41)";
             }
         },
         // push datapoint to chartData
@@ -511,6 +292,244 @@ export default {
                 avgPing: totalUp > 0 ? totalPing / totalUp : 0,
                 minPing,
                 maxPing,
+            };
+        },
+        getChartDatapointsFromHeartbeatList() {
+            // Render chart using heartbeatList
+            let lastHeartbeatTime;
+            const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
+            let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+            let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
+            let colorData = []; // Color Data for Bar Chart
+
+            let heartbeatList = (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
+
+            for (const beat of heartbeatList) {
+                const beatTime = this.$root.toDayjs(beat.time);
+                const x = beatTime.format("YYYY-MM-DD HH:mm:ss");
+
+                // Insert empty datapoint to separate big gaps
+                if (lastHeartbeatTime && monitorInterval) {
+                    const diff = Math.abs(beatTime.diff(lastHeartbeatTime));
+                    if (diff > monitorInterval * 1000 * 10) {
+                        // Big gap detected
+                        const gapX = [
+                            lastHeartbeatTime.add(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
+                            beatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss")
+                        ];
+
+                        for (const x of gapX) {
+                            pingData.push({
+                                x,
+                                y: null,
+                            });
+                            downData.push({
+                                x,
+                                y: null,
+                            });
+                            colorData.push("#000");
+                        }
+
+                    }
+                }
+
+                pingData.push({
+                    x,
+                    y: beat.status === UP ? beat.ping : null,
+                });
+                downData.push({
+                    x,
+                    y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
+                });
+                switch (beat.status) {
+                    case MAINTENANCE:
+                        colorData.push("rgba(23 ,71, 245, 0.41)");
+                        break;
+                    case PENDING:
+                        colorData.push("rgba(245, 182, 23, 0.41)");
+                        break;
+                    default:
+                        colorData.push("rgba(220, 53, 69, 0.41)");
+                }
+
+                lastHeartbeatTime = beatTime;
+            }
+
+            return {
+                datasets: [
+                    {
+                        // Line Chart
+                        data: pingData,
+                        fill: "origin",
+                        tension: 0.2,
+                        borderColor: "#5CDD8B",
+                        backgroundColor: "#5CDD8B38",
+                        yAxisID: "y",
+                        label: "ping",
+                    },
+                    {
+                        // Bar Chart
+                        type: "bar",
+                        data: downData,
+                        borderColor: "#00000000",
+                        backgroundColor: colorData,
+                        yAxisID: "y1",
+                        barThickness: "flex",
+                        barPercentage: 1,
+                        categoryPercentage: 1,
+                        inflateAmount: 0.05,
+                        label: "status",
+                    },
+                ],
+            };
+        },
+        getChartDatapointsFromStats() {
+            // Render chart using UptimeCalculator data
+            let lastHeartbeatTime;
+            const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
+
+            let avgPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+            let minPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+            let maxPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
+            let downData = [];  // Down Data for Bar Chart, y-axis is number of down datapoints in this period
+            let colorData = []; // Color Data for Bar Chart
+
+            const period = parseInt(this.chartPeriodHrs);
+            let aggregatePoints = period > 6 ? 12 : 4;
+
+            let aggregateBuffer = [];
+
+            if (this.chartRawData) {
+                for (const datapoint of this.chartRawData) {
+                    // Empty datapoints are ignored
+                    if (datapoint.up === 0 && datapoint.down === 0 && datapoint.maintenance === 0) {
+                        continue;
+                    }
+
+                    const beatTime = this.$root.unixToDayjs(datapoint.timestamp);
+
+                    // Insert empty datapoint to separate big gaps
+                    if (lastHeartbeatTime && monitorInterval) {
+                        const diff = Math.abs(beatTime.diff(lastHeartbeatTime));
+                        const oneSecond = 1000;
+                        const oneMinute = oneSecond * 60;
+                        const oneHour = oneMinute * 60;
+                        if ((period <= 24 && diff > Math.max(oneMinute * 10, monitorInterval * oneSecond * 10)) ||
+                            (period > 24 && diff > Math.max(oneHour * 10, monitorInterval * oneSecond * 10))) {
+                            // Big gap detected
+                            // Clear the aggregate buffer
+                            if (aggregateBuffer.length > 0) {
+                                const average = this.getAverage(aggregateBuffer);
+                                this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                                aggregateBuffer = [];
+                            }
+
+                            const gapX = [
+                                lastHeartbeatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
+                                this.$root.unixToDateTime(datapoint.timestamp + 60),
+                            ];
+
+                            for (const x of gapX) {
+                                avgPingData.push({
+                                    x,
+                                    y: null,
+                                });
+                                minPingData.push({
+                                    x,
+                                    y: null,
+                                });
+                                maxPingData.push({
+                                    x,
+                                    y: null,
+                                });
+                                downData.push({
+                                    x,
+                                    y: null,
+                                });
+                                colorData.push("#000");
+                            }
+
+                        }
+                    }
+
+                    if (datapoint.up > 0 && this.chartRawData.length > aggregatePoints * 2) {
+                        // Aggregate Up data using a sliding window
+                        aggregateBuffer.push(datapoint);
+
+                        if (aggregateBuffer.length === aggregatePoints) {
+                            const average = this.getAverage(aggregateBuffer);
+                            this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                            // Remove the first half of the buffer
+                            aggregateBuffer = aggregateBuffer.slice(Math.floor(aggregatePoints / 2));
+                        }
+                    } else {
+                        // datapoint is fully down or too few datapoints, no need to aggregate
+                        // Clear the aggregate buffer
+                        if (aggregateBuffer.length > 0) {
+                            const average = this.getAverage(aggregateBuffer);
+                            this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                            aggregateBuffer = [];
+                        }
+
+                        this.pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData);
+                    }
+
+                    lastHeartbeatTime = beatTime;
+                }
+                // Clear the aggregate buffer if there are still datapoints
+                if (aggregateBuffer.length > 0) {
+                    const average = this.getAverage(aggregateBuffer);
+                    this.pushDatapoint(average, avgPingData, minPingData, maxPingData, downData, colorData);
+                    aggregateBuffer = [];
+                }
+            }
+
+            return {
+                datasets: [
+                    {
+                        // average ping chart
+                        data: avgPingData,
+                        fill: "origin",
+                        tension: 0.2,
+                        borderColor: "#5CDD8B",
+                        backgroundColor: "#5CDD8B06",
+                        yAxisID: "y",
+                        label: "avg-ping",
+                    },
+                    {
+                        // minimum ping chart
+                        data: minPingData,
+                        fill: "origin",
+                        tension: 0.2,
+                        borderColor: "#3CBD6B38",
+                        backgroundColor: "#5CDD8B06",
+                        yAxisID: "y",
+                        label: "min-ping",
+                    },
+                    {
+                        // maximum ping chart
+                        data: maxPingData,
+                        fill: "origin",
+                        tension: 0.2,
+                        borderColor: "#7CBD6B38",
+                        backgroundColor: "#5CDD8B06",
+                        yAxisID: "y",
+                        label: "max-ping",
+                    },
+                    {
+                        // Bar Chart
+                        type: "bar",
+                        data: downData,
+                        borderColor: "#00000000",
+                        backgroundColor: colorData,
+                        yAxisID: "y1",
+                        barThickness: "flex",
+                        barPercentage: 1,
+                        categoryPercentage: 1,
+                        inflateAmount: 0.05,
+                        label: "status",
+                    },
+                ],
             };
         },
     }
