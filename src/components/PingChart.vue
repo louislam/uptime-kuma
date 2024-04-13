@@ -47,7 +47,8 @@ export default {
             loading: false,
 
             // Time period for the chart to display, in hours
-            chartPeriodHrs: "24",
+            // Initial value is 0 as a workaround for triggering a data fetch on created()
+            chartPeriodHrs: "0",
 
             chartPeriodOptions: {
                 0: this.$t("recent"),
