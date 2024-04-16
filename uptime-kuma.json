@@ -1,30 +1,12 @@
 {
-  "__inputs": [],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "8.1.1"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -40,35 +22,40 @@
     ]
   },
   "editable": true,
-  "gnetId": 14847,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
-  "links": [],
+  "id": 9,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "cloud",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Uptime Kuma",
+      "tooltip": "Open Dashboard",
+      "type": "link",
+      "url": "https://status.example.com"
+    }
+  ],
+  "liveNow": false,
   "panels": [
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "SUpEVGqnk"
+      },
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "red",
-                  "index": 0,
-                  "text": "DOWN"
-                },
-                "1": {
-                  "color": "green",
-                  "index": 1,
-                  "text": "UP"
-                }
-              },
-              "type": "value"
-            }
-          ],
+          "decimals": 0,
+          "mappings": [],
+          "min": 0,
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -81,22 +68,23 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 9,
+        "h": 5,
+        "w": 6,
         "x": 0,
         "y": 0
       },
-      "id": 4,
+      "id": 6,
       "options": {
-        "colorMode": "background",
-        "graphMode": "area",
+        "colorMode": "value",
+        "graphMode": "none",
         "justifyMode": "center",
-        "orientation": "auto",
+        "orientation": "vertical",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -104,24 +92,103 @@
           "fields": "",
           "values": false
         },
-        "text": {},
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "10.4.1",
       "targets": [
         {
-          "exemplar": true,
-          "expr": "monitor_status ",
-          "interval": "",
-          "legendFormat": "{{ monitor_name }}",
-          "refId": "A"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "count by(instance) (uptime_status{instance=\"$Instance\"})",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "Total",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "count by(instance) (uptime_status{instance=\"$Instance\"} == 1)",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "legendFormat": "Active",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "count by(instance) (uptime_status{instance=\"$Instance\"} == 2)",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "legendFormat": "Pending",
+          "range": true,
+          "refId": "C",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "count by(instance) (uptime_status{instance=\"$Instance\"} == 0)",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "legendFormat": "Inactive",
+          "range": true,
+          "refId": "D",
+          "useBackend": false
         }
       ],
-      "title": "Site Status",
+      "title": "Services",
+      "transformations": [
+        {
+          "disabled": true,
+          "id": "calculateField",
+          "options": {
+            "alias": "Pending / Inactive",
+            "binary": {
+              "left": "Total",
+              "operator": "-",
+              "right": "Active"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        }
+      ],
       "type": "stat"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "SUpEVGqnk"
+      },
+      "description": "This Panel lists Services that are in inactive state\n",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -131,47 +198,50 @@
             {
               "options": {
                 "0": {
-                  "color": "red",
+                  "color": "dark-red",
                   "index": 0,
-                  "text": "EXPIRED"
+                  "text": "Down"
                 },
                 "1": {
-                  "color": "green",
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "Up"
+                },
+                "2": {
+                  "color": "dark-yellow",
                   "index": 1,
-                  "text": "VALID"
+                  "text": "Pending"
                 }
               },
               "type": "value"
             }
           ],
+          "noValue": "Everything UP",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
-              },
-              {
                 "color": "green",
-                "value": 1
+                "value": null
               }
             ]
-          }
+          },
+          "unit": "bool"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 9,
-        "x": 12,
+        "h": 28,
+        "w": 4,
+        "x": 6,
         "y": 0
       },
-      "id": 5,
+      "id": 9,
       "options": {
-        "colorMode": "background",
-        "graphMode": "area",
+        "colorMode": "background_solid",
+        "graphMode": "none",
         "justifyMode": "center",
-        "orientation": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -179,58 +249,176 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "name",
+        "wideLayout": false
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "10.4.1",
       "targets": [
         {
-          "exemplar": true,
-          "expr": "monitor_cert_is_valid",
-          "interval": "",
-          "legendFormat": "{{ monitor_name }}",
-          "refId": "A"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "uptime_status{instance=\"$Instance\"} == 0",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "{{uptime_name}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
         }
       ],
-      "title": "TLS Certificate Status",
+      "title": "Unhealthy Services",
       "type": "stat"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "SUpEVGqnk"
+      },
+      "description": "This Panel lists Services that are in pending state\n",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "dark-red",
+                  "index": 0,
+                  "text": "Down"
+                },
+                "1": {
+                  "color": "dark-green",
+                  "index": 2,
+                  "text": "Up"
+                },
+                "2": {
+                  "color": "dark-yellow",
+                  "index": 1,
+                  "text": "Pending"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "noValue": "Everything UP",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bool"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 28,
+        "w": 4,
+        "x": 10,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "name",
+        "wideLayout": true
+      },
+      "pluginVersion": "10.4.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "last_over_time(uptime_status{instance=\"$Instance\"}[$__interval]) == 2",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "legendFormat": "{{uptime_name}}",
+          "range": true,
+          "refId": "B",
+          "useBackend": false
+        }
+      ],
+      "title": "Pending Services",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "SUpEVGqnk"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "last"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 23,
+            "gradientMode": "hue",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": false,
+            "spanNulls": 300000,
             "stacking": {
               "group": "A",
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "dashed+area"
             }
           },
+          "decimals": 0,
           "mappings": [],
+          "max": 2000,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -239,8 +427,20 @@
                 "value": null
               },
               {
+                "color": "yellow",
+                "value": 400
+              },
+              {
+                "color": "dark-orange",
+                "value": 600
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 1000
+              },
+              {
+                "color": "dark-red",
+                "value": 1500
               }
             ]
           },
@@ -249,40 +449,55 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 9,
-        "x": 0,
-        "y": 8
+        "h": 14,
+        "w": 10,
+        "x": 14,
+        "y": 0
       },
-      "id": 2,
+      "id": 4,
       "options": {
         "legend": {
           "calcs": [
-            "max",
-            "min",
-            "lastNotNull"
+            "mean",
+            "min"
           ],
           "displayMode": "table",
-          "placement": "bottom"
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
         },
         "tooltip": {
-          "mode": "single"
+          "mode": "single",
+          "sort": "none"
         }
       },
       "targets": [
         {
-          "exemplar": true,
-          "expr": "sum(monitor_response_time{}) by (monitor_name)",
-          "interval": "",
-          "legendFormat": "{{ monitor_name }}",
-          "refId": "A"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "uptime_response_time{uptime_type=\"http\", instance=\"$Instance\"}",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "{{uptime_name}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
         }
       ],
-      "title": "Response Times",
+      "title": "Response Times (http based)",
       "type": "timeseries"
     },
     {
-      "datasource": null,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "SUpEVGqnk"
+      },
+      "description": "This panel shows all http services and the remaining days after the certificate needs to be renewed",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -293,32 +508,37 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "dark-red",
                 "value": null
               },
               {
                 "color": "#EAB839",
+                "value": 15
+              },
+              {
+                "color": "light-green",
                 "value": 30
               },
               {
-                "color": "green",
+                "color": "dark-green",
                 "value": 60
               }
             ]
-          }
+          },
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 9,
-        "x": 12,
-        "y": 8
+        "h": 23,
+        "w": 6,
+        "x": 0,
+        "y": 5
       },
-      "id": 6,
+      "id": 8,
       "options": {
-        "colorMode": "background",
-        "graphMode": "area",
+        "colorMode": "background_solid",
+        "graphMode": "none",
         "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
@@ -328,28 +548,190 @@
           "fields": "",
           "values": false
         },
-        "text": {},
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "8.1.1",
+      "pluginVersion": "10.4.1",
       "targets": [
         {
-          "exemplar": true,
-          "expr": "monitor_cert_days_remaining",
-          "interval": "",
-          "legendFormat": "{{ monitor_name }}",
-          "refId": "A"
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "uptime_cert_days_remaining{instance=\"$Instance\", uptime_type=\"http\"} < 65",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "instant": false,
+          "legendFormat": "{{uptime_name}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
         }
       ],
-      "title": "TLS Certificate Remaining Days",
+      "title": "Certificate Validity Days",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "SUpEVGqnk"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 23,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": 300000,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed+area"
+            }
+          },
+          "decimals": 0,
+          "mappings": [],
+          "max": 2000,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 400
+              },
+              {
+                "color": "dark-orange",
+                "value": 600
+              },
+              {
+                "color": "red",
+                "value": 1000
+              },
+              {
+                "color": "dark-red",
+                "value": 1500
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 10,
+        "x": 14,
+        "y": 14
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "min"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "sortBy": "Mean",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "SUpEVGqnk"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "uptime_response_time{uptime_type=\"ping\", instance=\"$Instance\"}",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "{{uptime_name}}",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Response Times (ping based)",
+      "type": "timeseries"
     }
   ],
-  "schemaVersion": 30,
-  "style": "dark",
+  "refresh": "1m",
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "status_online:3001",
+          "value": "status_online:3001"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "SUpEVGqnk"
+        },
+        "definition": "query_result(uptime_status)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "Instance",
+        "options": [],
+        "query": {
+          "qryType": 3,
+          "query": "query_result(uptime_status)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "/.*instance=\"([^\"]*).*/",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-15m",
@@ -357,8 +739,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Uptime Kuma",
-  "uid": "CN8E-vZ7k",
-  "version": 1,
-  "description": "A dashboard to show the data from the excellent Uptime Kuma project!"
+  "title": "Service Status",
+  "uid": "canLN3c4z",
+  "version": 21,
+  "weekStart": ""
 }
