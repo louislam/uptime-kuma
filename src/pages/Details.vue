@@ -550,7 +550,7 @@ export default {
         /**
          * Return the correct title for the ping stat
          * @param {boolean} average Is the statistic an average?
-         * @returns {string} Title formatted dependant on monitor type
+         * @returns {string} Title formatted dependent on monitor type
          */
         pingTitle(average = false) {
             let translationPrefix = "";

@@ -513,7 +513,7 @@ class UptimeCalculator {
 
     /**
      * Flat status to UP or DOWN
-     * @param {number} status the status which schould be turned into a flat status
+     * @param {number} status the status which should be turned into a flat status
      * @returns {UP|DOWN|PENDING} The flat status
      * @throws {Error} Invalid status
      */
@@ -594,7 +594,7 @@ class UptimeCalculator {
                 totalPing += data.avgPing * data.up;
             }
 
-            // Set key to the pervious time period
+            // Set key to the previous time period
             switch (type) {
                 case "day":
                     key -= 86400;
@@ -721,7 +721,7 @@ class UptimeCalculator {
                 result.push(data);
             }
 
-            // Set key to the pervious time period
+            // Set key to the previous time period
             switch (type) {
                 case "day":
                     key -= 86400;
