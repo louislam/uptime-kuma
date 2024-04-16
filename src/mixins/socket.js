@@ -323,7 +323,7 @@ export default {
         },
 
         /**
-         * Show success or error toast dependant on response status code
+         * Show success or error toast dependent on response status code
          * @param {object} res Response object
          * @returns {void}
          */

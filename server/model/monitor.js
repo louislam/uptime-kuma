@@ -1573,7 +1573,7 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Unlinks all children of the the group monitor
+     * Unlinks all children of the group monitor
      * @param {number} groupID ID of group to remove children of
      * @returns {Promise<void>}
      */
