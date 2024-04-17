@@ -1,9 +1,9 @@
 console.log("Downloading dist");
 const https = require("https");
-const tar = require("tar");
-
-const packageJSON = require("../package.json");
 const fs = require("fs");
+
+const tar = require("tar");
+const packageJSON = require("../package.json");
 const rmSync = require("./fs-rmSync.js");
 const version = packageJSON.version;
 
