@@ -1,7 +1,7 @@
 const { log } = require("../src/util");
 
-const mqttUsername = "louis1";
-const mqttPassword = "!@#$LLam";
+const mqttUsername = process.env.MQTT_USERNAME;
+const mqttPassword = process.env.MQTT_PASSWORD;
 
 class SimpleMqttServer {
     aedes = require("aedes")();
