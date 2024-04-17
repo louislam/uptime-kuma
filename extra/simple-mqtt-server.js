@@ -6,52 +6,39 @@ const mqttPassword = process.env.MQTT_PASSWORD;
 class SimpleMqttServer {
     aedes = require("aedes")();
     server = require("net").createServer(this.aedes.handle);
-
-    /**
-     * @param {number} port Port to listen on
-     */
     constructor(port) {
         this.port = port;
     }
-
-    /**
-     * Start the MQTT server
-     * @returns {void}
-     */
     start() {
         this.server.listen(this.port, () => {
-            console.log("server started and listening on port ", this.port);
+            log.info('mqtt_server', `Server started and listening on port ${this.port}`);
+        });
+    }
+    authenticateClient(client, username, passwordReceived, callback) {
+        if (username && passwordReceived) {
+            const isAuthentic = username === mqttUsername && passwordReceived.toString('utf-8') === mqttPassword;
+            callback(null, isAuthentic);
+        } else {
+            callback(null, false);
+        }
+    }
+    handleSubscriptions(subscriptions) {
+        subscriptions.forEach(subscription => {
+            if (subscription.topic === "test") {
+                this.aedes.publish({
+                    topic: "test",
+                    payload: Buffer.from("ok"),
+                }, (error) => {
+                    if (error) {
+                        log.error('mqtt_server', error);
+                    }
+                });
+            }
         });
     }
 }
+server1.aedes.authenticate = server1.authenticateClient.bind(server1);
+server1.aedes.on("subscribe", server1.handleSubscriptions.bind(server1));
 
-let server1 = new SimpleMqttServer(10000);
-
-server1.aedes.authenticate = function (client, username, password, callback) {
-    if (username && password) {
-        console.log(password.toString("utf-8"));
-        callback(null, username === mqttUsername && password.toString("utf-8") === mqttPassword);
-    } else {
-        callback(null, false);
-    }
-};
-
-server1.aedes.on("subscribe", (subscriptions, client) => {
-    console.log(subscriptions);
-
-    for (let s of subscriptions) {
-        if (s.topic === "test") {
-            server1.aedes.publish({
-                topic: "test",
-                payload: Buffer.from("ok"),
-            }, (error) => {
-                if (error) {
-                    log.error("mqtt_server", error);
-                }
-            });
-        }
-    }
-
-});
 
 server1.start();
