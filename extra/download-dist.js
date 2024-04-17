@@ -23,45 +23,15 @@ function download(url) {
     console.log(url);
 
     https.get(url, (response) => {
-        if (response.statusCode === 200) {
-            console.log("Extracting dist...");
-
-function handleDirectoryCleanup() {
-    if (fs.existsSync("./dist")) {
-        if (fs.existsSync("./dist-backup")) {
-            rmSync("./dist-backup", { recursive: true });
-        }
-        fs.renameSync("./dist", "./dist-backup");
+function checkResponseStatus(response, tarStream) {
+    if (response.statusCode === 200) {
+        console.log("Extracting dist...");
+        handleDirectoryCleanup();
+        response.pipe(tarStream);
+    } else if (response.statusCode === 302) {
+        download(response.headers.location);
+    } else {
+        console.log("dist not found");
     }
 }
-            }
-
-            const tarStream = tar.x({
-                cwd: "./",
-            });
-
-            tarStream.on("close", () => {
-                if (fs.existsSync("./dist-backup")) {
-                    rmSync("./dist-backup", {
-                        recursive: true
-                    });
-                }
-                console.log("Done");
-                process.exit(0);
-            });
-
-            tarStream.on("error", () => {
-                if (fs.existsSync("./dist-backup")) {
-                    fs.renameSync("./dist-backup", "./dist");
-                }
-                console.error("Error from tarStream");
-            });
-
-            response.pipe(tarStream);
-        } else if (response.statusCode === 302) {
-            download(response.headers.location);
-        } else {
-            console.log("dist not found");
-        }
-    });
 }
