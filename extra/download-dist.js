@@ -26,15 +26,14 @@ function download(url) {
         if (response.statusCode === 200) {
             console.log("Extracting dist...");
 
-            if (fs.existsSync("./dist")) {
-
-                if (fs.existsSync("./dist-backup")) {
-                    rmSync("./dist-backup", {
-                        recursive: true
-                    });
-                }
-
-                fs.renameSync("./dist", "./dist-backup");
+function handleDirectoryCleanup() {
+    if (fs.existsSync("./dist")) {
+        if (fs.existsSync("./dist-backup")) {
+            rmSync("./dist-backup", { recursive: true });
+        }
+        fs.renameSync("./dist", "./dist-backup");
+    }
+}
             }
 
             const tarStream = tar.x({
