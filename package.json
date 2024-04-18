@@ -118,7 +118,7 @@
         "mongodb": "~4.17.1",
         "mqtt": "~4.3.7",
         "mssql": "~8.1.4",
-        "mysql2": "~3.6.2",
+        "mysql2": "~3.9.6",
         "nanoid": "~3.3.4",
         "node-cloudflared-tunnel": "~1.0.9",
         "node-radius-client": "~1.0.0",
@@ -141,7 +141,7 @@
         "socket.io": "~4.6.1",
         "socket.io-client": "~4.6.1",
         "socks-proxy-agent": "6.1.1",
-        "tar": "~6.1.11",
+        "tar": "~6.2.1",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2",
         "ws": "^8.13.0"
