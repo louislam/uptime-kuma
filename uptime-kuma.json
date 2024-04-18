@@ -21,6 +21,7 @@
       }
     ]
   },
+  "description": "This Dashboard shows all services checked by Uptime Kuma",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -33,10 +34,22 @@
       "keepTime": false,
       "tags": [],
       "targetBlank": true,
-      "title": "Uptime Kuma",
+      "title": "Uptime Kuma Instance",
       "tooltip": "Open Dashboard",
       "type": "link",
-      "url": "https://status.example.com"
+      "url": "https://uptime.example.com"
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "GitHub",
+      "tooltip": "Open GitHub-Repo",
+      "type": "link",
+      "url": "https://github.com/louislam/uptime-kuma"
     }
   ],
   "liveNow": false,
@@ -44,7 +57,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "SUpEVGqnk"
+        "uid": "${datasource}"
       },
       "description": "",
       "fieldConfig": {
@@ -87,78 +100,86 @@
         "orientation": "vertical",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "fields": "",
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "textMode": "value_and_name",
+        "wideLayout": false
       },
       "pluginVersion": "10.4.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "count by(instance) (uptime_status{instance=\"$Instance\"})",
+          "exemplar": false,
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
+          "instant": true,
           "legendFormat": "Total",
-          "range": true,
-          "refId": "A",
+          "range": false,
+          "refId": "Total",
           "useBackend": false
         },
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "count by(instance) (uptime_status{instance=\"$Instance\"} == 1)",
+          "exemplar": false,
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\"} == 1)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
+          "instant": true,
           "legendFormat": "Active",
-          "range": true,
-          "refId": "B",
+          "range": false,
+          "refId": "Active",
           "useBackend": false
         },
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "count by(instance) (uptime_status{instance=\"$Instance\"} == 2)",
+          "exemplar": false,
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\"} == 2)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
+          "instant": true,
           "legendFormat": "Pending",
-          "range": true,
-          "refId": "C",
+          "range": false,
+          "refId": "Pending",
           "useBackend": false
         },
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "count by(instance) (uptime_status{instance=\"$Instance\"} == 0)",
+          "exemplar": false,
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\"} == 0)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
+          "instant": true,
           "legendFormat": "Inactive",
-          "range": true,
-          "refId": "D",
+          "range": false,
+          "refId": "Inactive",
           "useBackend": false
         }
       ],
@@ -263,11 +284,13 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "uptime_status{instance=\"$Instance\"} == 0",
+          "exemplar": false,
+          "expr": "monitor_status{instance=\"$Instance\", job=\"$job\"} == 0",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "{{uptime_name}}",
-          "range": true,
+          "instant": true,
+          "legendFormat": "{{monitor_name}}",
+          "range": false,
           "refId": "A",
           "useBackend": false
         }
@@ -355,12 +378,15 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "last_over_time(uptime_status{instance=\"$Instance\"}[$__interval]) == 2",
+          "exemplar": false,
+          "expr": "last_over_time(monitor_status{instance=\"$Instance\", job=\"$job\"}[$__interval]) == 2",
+          "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
-          "legendFormat": "{{uptime_name}}",
-          "range": true,
+          "instant": true,
+          "legendFormat": "{{monitor_name}}",
+          "range": false,
           "refId": "B",
           "useBackend": false
         }
@@ -377,13 +403,13 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd",
+            "mode": "thresholds",
             "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
-            "axisColorMode": "text",
+            "axisColorMode": "series",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -417,7 +443,6 @@
           },
           "decimals": 0,
           "mappings": [],
-          "max": 2000,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -480,10 +505,10 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "uptime_response_time{uptime_type=\"http\", instance=\"$Instance\"}",
+          "expr": "monitor_response_time{monitor_type=\"http\", instance=\"$Instance\", job=\"$job\"}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "{{uptime_name}}",
+          "legendFormat": "{{monitor_name}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -561,12 +586,13 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "uptime_cert_days_remaining{instance=\"$Instance\", uptime_type=\"http\"} < 65",
+          "exemplar": false,
+          "expr": "sort(monitor_cert_days_remaining{instance=\"$Instance\", monitor_type=\"http\", job=\"$job\"}) < 65",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "{{uptime_name}}",
-          "range": true,
+          "instant": true,
+          "legendFormat": "{{monitor_name}}",
+          "range": false,
           "refId": "A",
           "useBackend": false
         }
@@ -583,13 +609,13 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd",
+            "mode": "thresholds",
             "seriesBy": "last"
           },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
-            "axisColorMode": "text",
+            "axisColorMode": "series",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -623,7 +649,6 @@
           },
           "decimals": 0,
           "mappings": [],
-          "max": 2000,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -686,10 +711,10 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "uptime_response_time{uptime_type=\"ping\", instance=\"$Instance\"}",
+          "expr": "monitor_response_time{monitor_type=\"ping\", instance=\"$Instance\", job=\"$job\"}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
-          "legendFormat": "{{uptime_name}}",
+          "legendFormat": "{{monitor_name}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -701,12 +726,62 @@
   ],
   "refresh": "1m",
   "schemaVersion": 39,
-  "tags": [],
+  "tags": [
+    "uptime-kuma",
+    "metrics"
+  ],
   "templating": {
     "list": [
       {
         "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "SUpEVGqnk"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
           "selected": true,
+          "text": "Uptime-Kuma",
+          "value": "Uptime-Kuma"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(job)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Job",
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(job)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
           "text": "status_online:3001",
           "value": "status_online:3001"
         },
@@ -714,7 +789,7 @@
           "type": "prometheus",
           "uid": "SUpEVGqnk"
         },
-        "definition": "query_result(uptime_status)",
+        "definition": "query_result(monitor_status)",
         "hide": 0,
         "includeAll": false,
         "multi": false,
@@ -722,7 +797,7 @@
         "options": [],
         "query": {
           "qryType": 3,
-          "query": "query_result(uptime_status)",
+          "query": "query_result(monitor_status)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -734,13 +809,20 @@
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-30m",
     "to": "now"
   },
-  "timepicker": {},
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m",
+      "30m"
+    ]
+  },
   "timezone": "",
-  "title": "Service Status",
+  "title": "Uptime-Kuma Status",
   "uid": "canLN3c4z",
-  "version": 21,
+  "version": 26,
   "weekStart": ""
 }
