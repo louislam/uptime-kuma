@@ -313,14 +313,14 @@
                 </div>
             </div>
 
-            <div v-if="this.$root.downMonitors?.length > 0" class="mb-4">
+            <div v-if="$root.downMonitors?.length > 0" class="mb-4">
                 <div class="mb-5">
                     <h2 class="group-title">
-                        {{ $t(this.$root.downMonitors.length === 1 ? "offlineMonitor" : "offlineMonitors") }}
+                        {{ $t($root.downMonitors.length === 1 ? "offlineMonitor" : "offlineMonitors") }}
                     </h2>
 
                     <div class="shadow-box monitor-list mt-4 position-relative">
-                        <div v-for="monitor in this.$root.downMonitors" :key="monitor.id" class="item">
+                        <div v-for="monitor in $root.downMonitors" :key="monitor.id" class="item">
                             <div class="row">
                                 <div class="col-9 col-md-8 small-padding">
                                     <div class="info">
@@ -796,7 +796,7 @@ export default {
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
 
-                    this.$root.downMonitors = this.downMonitors(); 
+                    this.$root.downMonitors = this.downMonitors();
 
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
