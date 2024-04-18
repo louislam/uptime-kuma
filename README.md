@@ -14,3 +14,10 @@ To import the sample Grafana dashboard, follow these steps:
 
 You should now see the imported dashboard listed in the "Dashboards" section of the left sidebar. You can click on the
 dashboard to view it.
+
+
+### Post Configuration
+
+Now after the Dashboard was imported successfully we have to tell Grafana wich Datasource and Prometheus Job is the right one to use. To do so, select the right Datasource, Job and Instance one the Dropdown menus at the top left of the dashboard. Right after your selection the dashboard should update automatically and should now display your data.
+
+Additionally there is a hyperlink on the top right hand side which you can configure to bring you right to your Uptime-Kuma instance. To do so, klick at the Gear-Icon in the top left bar and navigate to Links. Klick on the 'Uptime-Kuma Instance'-Link and paste your own Instance-URL

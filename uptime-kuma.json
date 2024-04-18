@@ -209,7 +209,7 @@
         "type": "prometheus",
         "uid": "SUpEVGqnk"
       },
-      "description": "This Panel lists Services that are in inactive state\n",
+      "description": "This Panel lists Services that are in inactive state",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -303,7 +303,7 @@
         "type": "prometheus",
         "uid": "SUpEVGqnk"
       },
-      "description": "This Panel lists Services that are in pending state\n",
+      "description": "This Panel lists Services that are in pending state",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -399,7 +399,7 @@
         "type": "prometheus",
         "uid": "SUpEVGqnk"
       },
-      "description": "",
+      "description": "This panel shows the different http based services and their response times in the selected interval as well as their mean- and minimum response time.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -724,7 +724,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "1m",
+  "refresh": "30s",
   "schemaVersion": 39,
   "tags": [
     "uptime-kuma",
@@ -822,7 +822,8 @@
   },
   "timezone": "",
   "title": "Uptime-Kuma Status",
-  "uid": "canLN3c4z",
-  "version": 31,
-  "weekStart": ""
+  "uid": "CN8E-vZ7k",
+  "version": 2,
+  "weekStart": "",
+  "description": "A simple dashboard showcasing service status updates over time tracked by the Uptime Kuma monitoring tool."
 }
