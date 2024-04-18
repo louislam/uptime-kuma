@@ -294,7 +294,7 @@ let needSetup = false;
     log.debug("server", "Adding socket handler");
     io.on("connection", async (socket) => {
 
-        sendInfo(socket, true);
+        await sendInfo(socket, true);
 
         if (needSetup) {
             log.info("server", "Redirect to setup page");
@@ -326,7 +326,7 @@ let needSetup = false;
                     }
 
                     log.debug("auth", "afterLogin");
-                    afterLogin(socket, user);
+                    await afterLogin(socket, user);
                     log.debug("auth", "afterLogin ok");
 
                     log.info("auth", `Successfully logged in user ${decoded.username}. IP=${clientIP}`);
@@ -382,7 +382,7 @@ let needSetup = false;
 
             if (user) {
                 if (user.twofa_status === 0) {
-                    afterLogin(socket, user);
+                    await afterLogin(socket, user);
 
                     log.info("auth", `Successfully logged in user ${data.username}. IP=${clientIP}`);
 
@@ -405,7 +405,7 @@ let needSetup = false;
                     let verify = notp.totp.verify(data.token, user.twofa_secret, twoFAVerifyOptions);
 
                     if (user.twofa_last_token !== data.token && verify) {
-                        afterLogin(socket, user);
+                        await afterLogin(socket, user);
 
                         await R.exec("UPDATE `user` SET twofa_last_token = ? WHERE id = ? ", [
                             data.token,
@@ -986,7 +986,7 @@ let needSetup = false;
                 log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 if (monitorID in server.monitorList) {
-                    server.monitorList[monitorID].stop();
+                    await server.monitorList[monitorID].stop();
                     delete server.monitorList[monitorID];
                 }
 
@@ -1351,8 +1351,8 @@ let needSetup = false;
                     msgi18n: true,
                 });
 
-                sendInfo(socket);
-                server.sendMaintenanceList(socket);
+                await sendInfo(socket);
+                await server.sendMaintenanceList(socket);
 
             } catch (e) {
                 callback({
@@ -1532,7 +1532,7 @@ let needSetup = false;
         log.debug("auth", "check auto login");
         if (await setting("disableAuth")) {
             log.info("auth", "Disabled Auth: auto login to admin");
-            afterLogin(socket, await R.findOne("user"));
+            await afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
         } else {
             log.debug("auth", "need auth");
@@ -1548,7 +1548,7 @@ let needSetup = false;
         process.exit(1);
     });
 
-    server.start();
+    await server.start();
 
     server.httpServer.listen(port, hostname, () => {
         if (hostname) {
@@ -1619,15 +1619,15 @@ async function afterLogin(socket, user) {
     socket.join(user.id);
 
     let monitorList = await server.sendMonitorList(socket);
-    sendInfo(socket);
-    server.sendMaintenanceList(socket);
-    sendNotificationList(socket);
-    sendProxyList(socket);
-    sendDockerHostList(socket);
-    sendAPIKeyList(socket);
-    sendRemoteBrowserList(socket);
-
-    await sleep(500);
+    await Promise.allSettled([
+        sendInfo(socket),
+        server.sendMaintenanceList(socket),
+        sendNotificationList(socket),
+        sendProxyList(socket),
+        sendDockerHostList(socket),
+        sendAPIKeyList(socket),
+        sendRemoteBrowserList(socket),
+    ]);
 
     await StatusPage.sendStatusPageList(io, socket);
 
@@ -1703,11 +1703,11 @@ async function startMonitor(userID, monitorID) {
     ]);
 
     if (monitor.id in server.monitorList) {
-        server.monitorList[monitor.id].stop();
+        await server.monitorList[monitor.id].stop();
     }
 
     server.monitorList[monitor.id] = monitor;
-    monitor.start(io);
+    await monitor.start(io);
 }
 
 /**
@@ -1737,7 +1737,7 @@ async function pauseMonitor(userID, monitorID) {
     ]);
 
     if (monitorID in server.monitorList) {
-        server.monitorList[monitorID].stop();
+        await server.monitorList[monitorID].stop();
         server.monitorList[monitorID].active = 0;
     }
 }
@@ -1754,7 +1754,7 @@ async function startMonitors() {
     }
 
     for (let monitor of list) {
-        monitor.start(io);
+        await monitor.start(io);
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
         await sleep(getRandomInt(300, 1000));
     }
@@ -1775,7 +1775,7 @@ async function shutdownFunction(signal) {
     log.info("server", "Stopping all monitors");
     for (let id in server.monitorList) {
         let monitor = server.monitorList[id];
-        monitor.stop();
+        await monitor.stop();
     }
     await sleep(2000);
     await Database.close();
