@@ -910,5 +910,7 @@
     "Allow Long SMS": "Allow Long SMS",
     "cellsyntSplitLongMessages": "Split long messages into up to 6 parts. 153 x 6 = 918 characters.",
     "max 15 digits": "max 15 digits",
-    "max 11 alphanumeric characters": "max 11 alphanumeric characters"
+    "max 11 alphanumeric characters": "max 11 alphanumeric characters",
+    "offlineMonitor": "Offline Monitor",
+    "offlineMonitors": "Offline Monitors"
 }
