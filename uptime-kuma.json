@@ -117,9 +117,9 @@
             "uid": "${datasource}"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\"})",
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -134,9 +134,9 @@
             "uid": "${datasource}"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\"} == 1)",
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 1)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -152,9 +152,9 @@
             "uid": "${datasource}"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\"} == 2)",
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 2)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -170,9 +170,9 @@
             "uid": "${datasource}"
           },
           "disableTextWrap": false,
-          "editorMode": "builder",
+          "editorMode": "code",
           "exemplar": false,
-          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\"} == 0)",
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 0)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -265,7 +265,7 @@
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "fields": "",
           "values": false
@@ -285,7 +285,7 @@
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "monitor_status{instance=\"$Instance\", job=\"$job\"} == 0",
+          "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 0",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -359,7 +359,7 @@
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "fields": "",
           "values": false
@@ -379,7 +379,7 @@
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "last_over_time(monitor_status{instance=\"$Instance\", job=\"$job\"}[$__interval]) == 2",
+          "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 2",
           "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
@@ -568,7 +568,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "lastNotNull"
+            "last"
           ],
           "fields": "",
           "values": false
@@ -753,7 +753,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "Uptime-Kuma",
           "value": "Uptime-Kuma"
         },
@@ -809,7 +809,7 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
@@ -823,6 +823,6 @@
   "timezone": "",
   "title": "Uptime-Kuma Status",
   "uid": "canLN3c4z",
-  "version": 26,
+  "version": 31,
   "weekStart": ""
 }
