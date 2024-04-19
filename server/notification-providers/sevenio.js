@@ -1,9 +1,8 @@
 const NotificationProvider = require("./notification-provider");
-const Axios = require("axios");
+const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class SevenIO extends NotificationProvider {
-
     name = "SevenIO";
 
     /**
@@ -18,18 +17,18 @@ class SevenIO extends NotificationProvider {
             text: msg,
         };
 
-        const axios = Axios.create({
+        const config = {
             baseURL: "https://gateway.seven.io/api/",
             headers: {
                 "Content-Type": "application/json",
                 "X-API-Key": notification.sevenioApiKey,
             },
-        });
+        };
 
         try {
             // testing or certificate expiry notification
             if (heartbeatJSON == null) {
-                await axios.post("sms", data);
+                await axios.post("sms", data, config);
                 return okMsg;
             }
 
@@ -67,7 +66,7 @@ class SevenIO extends NotificationProvider {
                 data.text = `Your service ${monitorJSON["name"]} ${address}went back up at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}).`;
             }
-            await axios.post("sms", data);
+            await axios.post("sms", data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

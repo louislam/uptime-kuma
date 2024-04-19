@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="sevenio-api-key" class="form-label">{{ $t("apiKeySevenIO") }}</label>
-        <input id="sevenio-api-key" v-model="$parent.notification.sevenioApiKey" type="password" class="form-control" required autocomplete="false">
+        <HiddenInput id="sevenio-api-key" v-model="$parent.notification.sevenioApiKey" :required="true" autocomplete="new-password"></HiddenInput>
         <div class="form-text">
             {{ $t("wayToGetSevenIOApiKey") }}
         </div>
@@ -20,3 +20,12 @@
         </div>
     </div>
 </template>
+
+<script>
+import HiddenInput from "../HiddenInput.vue";
+export default {
+    components: {
+        HiddenInput,
+    },
+};
+</script>
