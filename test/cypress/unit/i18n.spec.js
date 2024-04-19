@@ -47,8 +47,12 @@ describe("Test i18n.js", () => {
         expect(currentLocale()).equal("en");
 
         setLanguages(['pl']);
-        localStorage.locale = "de";
-        expect(currentLocale()).equal("de");
+        localStorage.locale = "ja-ZZ";
+        expect(currentLocale()).equal("ja");
+
+        setLanguages(['pl']);
+        localStorage.locale = "invalid-lang";
+        expect(currentLocale()).equal("pl");
     });
 
 });
