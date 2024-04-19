@@ -64,7 +64,7 @@ const rtlLangs = [ "fa", "ar-SY", "ur" ];
  */
 export function currentLocale() {
     const potentialLocales = [ localStorage.locale, navigator.language, ...navigator.languages ];
-    const availableLocales = potentialLocales.filter(l => l in messages || l.substring(0, 2) in messages);
+    const availableLocales = potentialLocales.filter(l => l && (l in messages || l.substring(0, 2) in messages));
     return availableLocales[0] || "en";
 }
 
