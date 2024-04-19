@@ -46,7 +46,7 @@ describe("Test i18n.js", () => {
         setLanguages(['abc', 'en-US', 'pl', 'ja']);
         expect(currentLocale()).equal("en");
 
-        setLanguages(['en']);
+        setLanguages(['pl']);
         localStorage.locale = "de";
         expect(currentLocale()).equal("de");
     });
