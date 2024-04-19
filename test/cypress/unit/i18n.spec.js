@@ -15,34 +15,34 @@ describe("Test i18n.js", () => {
         }
         setLanguage('en-EN');
 
-        expect(currentLocale()).toEqual("en");
+        expect(currentLocale()).equal("en");
 
         setLanguage('zh-HK');
-        expect(currentLocale()).toEqual("zh-HK");
+        expect(currentLocale()).equal("zh-HK");
 
         // Note that in Safari on iOS prior to 10.2, the country code returned is lowercase: "en-us", "fr-fr" etc.
         // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
         setLanguage('zh-hk');
-        expect(currentLocale()).toEqual("en");
+        expect(currentLocale()).equal("en");
 
         setLanguage('en-US');
-        expect(currentLocale()).toEqual("en");
+        expect(currentLocale()).equal("en");
 
         setLanguage('ja-ZZ');
-        expect(currentLocale()).toEqual("ja");
+        expect(currentLocale()).equal("ja");
 
         setLanguage('zz-ZZ');
-        expect(currentLocale()).toEqual("en");
+        expect(currentLocale()).equal("en");
 
         setLanguage('zz-ZZ');
-        expect(currentLocale()).toEqual("en");
+        expect(currentLocale()).equal("en");
 
         setLanguage('en');
         localStorage.locale = "en";
-        expect(currentLocale()).toEqual("en");
+        expect(currentLocale()).equal("en");
 
         localStorage.locale = "zh-HK";
-        expect(currentLocale()).toEqual("zh-HK");
+        expect(currentLocale()).equal("zh-HK");
     });
 
 });
