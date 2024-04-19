@@ -63,8 +63,8 @@ const rtlLangs = [ "fa", "ar-SY", "ur" ];
  * @returns {string} the locale that should be displayed
  */
 export function currentLocale() {
-    const potentialLocales = [ localStorage.locale, navigator.language, navigator.language.substring(0, 2), ...navigator.languages ];
-    const availableLocales = potentialLocales.filter(l => languageList[l]);
+    const potentialLocales = [ localStorage.locale, navigator.language, ...navigator.languages ];
+    const availableLocales = potentialLocales.filter(l => l in messages || l.substring(0, 2) in messages);
     return availableLocales[0] || "en";
 }
 
