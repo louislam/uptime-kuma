@@ -105,7 +105,8 @@ class Database {
         "patch-add-gamedig-given-port.sql": true,
         "patch-notification-config.sql": true,
         "patch-fix-kafka-producer-booleans.sql": true,
-        "patch-timeout.sql": true, // The last file so far converted to a knex migration file
+        "patch-timeout.sql": true,
+        "patch-monitor-tls-info-add-fk.sql": true, // The last file so far converted to a knex migration file
     };
 
     /**
@@ -378,7 +379,7 @@ class Database {
 
     /**
      * Patch the database
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async patch() {
         // Still need to keep this for old versions of Uptime Kuma

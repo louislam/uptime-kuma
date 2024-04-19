@@ -38,6 +38,6 @@ test("logout", async ({ page }, testInfo) => {
     await page.goto("./dashboard");
     await login(page);
     await page.getByText("A", { exact: true }).click();
-    await page.getByRole("button", { name: "Logout" }).click();
+    await page.getByRole("button", { name: "Log out" }).click();
     await screenshot(testInfo, page);
 });

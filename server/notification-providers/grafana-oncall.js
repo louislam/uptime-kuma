@@ -3,19 +3,18 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class GrafanaOncall extends NotificationProvider {
-
     name = "GrafanaOncall";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
 
         if (!notification.GrafanaOncallURL) {
             throw new Error("GrafanaOncallURL cannot be empty");
         }
 
-        let okMsg = "Sent Successfully.";
         try {
             if (heartbeatJSON === null) {
                 let grafanaupdata = {
@@ -23,10 +22,7 @@ class GrafanaOncall extends NotificationProvider {
                     message: msg,
                     state: "alerting",
                 };
-                await axios.post(
-                    notification.GrafanaOncallURL,
-                    grafanaupdata
-                );
+                await axios.post(notification.GrafanaOncallURL, grafanaupdata);
                 return okMsg;
             } else if (heartbeatJSON["status"] === DOWN) {
                 let grafanadowndata = {
@@ -34,10 +30,7 @@ class GrafanaOncall extends NotificationProvider {
                     message: heartbeatJSON["msg"],
                     state: "alerting",
                 };
-                await axios.post(
-                    notification.GrafanaOncallURL,
-                    grafanadowndata
-                );
+                await axios.post(notification.GrafanaOncallURL, grafanadowndata);
                 return okMsg;
             } else if (heartbeatJSON["status"] === UP) {
                 let grafanaupdata = {
@@ -45,10 +38,7 @@ class GrafanaOncall extends NotificationProvider {
                     message: heartbeatJSON["msg"],
                     state: "ok",
                 };
-                await axios.post(
-                    notification.GrafanaOncallURL,
-                    grafanaupdata
-                );
+                await axios.post(notification.GrafanaOncallURL, grafanaupdata);
                 return okMsg;
             }
         } catch (error) {

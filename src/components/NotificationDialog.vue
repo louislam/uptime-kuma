@@ -115,11 +115,13 @@ export default {
                 "apprise": this.$t("apprise"),
                 "Bark": "Bark",
                 "clicksendsms": "ClickSend SMS",
+                "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
                 "gotify": "Gotify",
                 "GrafanaOncall": "Grafana Oncall",
+                "HeiiOnCall": "Heii On-Call",
                 "HomeAssistant": "Home Assistant",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
@@ -153,6 +155,9 @@ export default {
                 "GoAlert": "GoAlert",
                 "ZohoCliq": "ZohoCliq",
                 "SevenIO": "SevenIO",
+                "whapi": "WhatsApp (Whapi)",
+                "gtxmessaging": "GtxMessaging",
+                "Cellsynt": "Cellsynt",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English

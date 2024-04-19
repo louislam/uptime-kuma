@@ -85,7 +85,7 @@ export default {
 
         /**
          * Get the telegram chat ID
-         * @returns {void}
+         * @returns {Promise<void>}
          * @throws The chat ID could not be found
          */
         async autoGetTelegramChatID() {
