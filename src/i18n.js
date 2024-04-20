@@ -66,7 +66,7 @@ export function currentLocale() {
     for (const locale of [ localStorage.locale, navigator.language, ...navigator.languages ]) {
         // localstorage might not have a value or there might not be a language in `navigator.language`
         if (!locale) {
-            continue
+            continue;
         }
         if (locale in messages) {
             return locale;
