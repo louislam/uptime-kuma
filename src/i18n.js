@@ -63,12 +63,22 @@ const rtlLangs = [ "fa", "ar-SY", "ur" ];
  * @returns {string} the locale that should be displayed
  */
 export function currentLocale() {
-    const potentialLocales = [ localStorage.locale, navigator.language, ...navigator.languages ];
-    const availableLocales = potentialLocales
-        .filter(l => !!l)
-        .map(l => l.split("-")[0] in messages ? l.split("-")[0] : l)
-        .filter(l => l in messages);
-    return availableLocales[0] || "en";
+    for (const locale of [ localStorage.locale, navigator.language, ...navigator.languages ]) {
+        // localstorage might not have a value or there might not be a language in `navigator.language`
+        if (!locale) {
+            continue
+        }
+        if (locale in messages) {
+            return locale;
+        }
+        // some locales are further specified such as "en-US".
+        // If we only have a generic locale for this, we can use it too
+        const genericLocale = l.split("-")[0];
+        if (genericLocale in messages) {
+            return genericLocale;
+        }
+    }
+    return "en";
 }
 
 export const localeDirection = () => {
