@@ -46,6 +46,12 @@ describe("Test i18n.js", () => {
         setLanguages(['abc', 'en-US', 'pl', 'ja']);
         expect(currentLocale()).equal("en");
 
+        setLanguages(['fil-PH', 'pl']);
+        expect(currentLocale()).equal("pl");
+
+        setLanguages(['shi-Latn-MA', 'pl']);
+        expect(currentLocale()).equal("pl");
+
         setLanguages(['pl']);
         localStorage.locale = "ja-ZZ";
         expect(currentLocale()).equal("ja");

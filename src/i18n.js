@@ -66,7 +66,7 @@ export function currentLocale() {
     const potentialLocales = [ localStorage.locale, navigator.language, ...navigator.languages ];
     const availableLocales = potentialLocales
         .filter(l => !!l)
-        .map(l => l.substring(0, 2) in messages ? l.substring(0, 2) : l)
+        .map(l => l.split("-")[0] in messages ? l.split("-")[0] : l)
         .filter(l => l in messages);
     return availableLocales[0] || "en";
 }
