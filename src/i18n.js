@@ -73,7 +73,7 @@ export function currentLocale() {
         }
         // some locales are further specified such as "en-US".
         // If we only have a generic locale for this, we can use it too
-        const genericLocale = l.split("-")[0];
+        const genericLocale = locale.split("-")[0];
         if (genericLocale in messages) {
             return genericLocale;
         }
