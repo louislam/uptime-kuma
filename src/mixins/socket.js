@@ -129,6 +129,16 @@ export default {
                 this.allowLoginDialog = false;
             });
 
+            socket.on("loginRequired", () => {
+                let token = this.storage().token;
+                if (token && token !== "autoLogin") {
+                    this.loginByToken(token);
+                } else {
+                    this.$root.storage().removeItem("token");
+                    this.allowLoginDialog = true;
+                }
+            });
+
             socket.on("monitorList", (data) => {
                 // Add Helper function
                 Object.entries(data).forEach(([ monitorID, monitor ]) => {
@@ -254,24 +264,6 @@ export default {
                 // Reset Heartbeat list if it is re-connect
                 if (this.socket.connectCount >= 2) {
                     this.clearData();
-                }
-
-                let token = this.storage().token;
-
-                if (token) {
-                    if (token !== "autoLogin") {
-                        this.loginByToken(token);
-                    } else {
-                        // Timeout if it is not actually auto login
-                        setTimeout(() => {
-                            if (! this.loggedIn) {
-                                this.allowLoginDialog = true;
-                                this.$root.storage().removeItem("token");
-                            }
-                        }, 5000);
-                    }
-                } else {
-                    this.allowLoginDialog = true;
                 }
 
                 this.socket.firstConnect = false;

@@ -1535,6 +1535,7 @@ let needSetup = false;
             await afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
         } else {
+            socket.emit("loginRequired");
             log.debug("auth", "need auth");
         }
 
