@@ -21,7 +21,7 @@
       }
     ]
   },
-  "description": "This Dashboard shows all services checked by Uptime Kuma",
+  "description": "A simple dashboard showcasing service status updates over time tracked by the Uptime Kuma monitoring tool.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -55,6 +55,19 @@
   "liveNow": false,
   "panels": [
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Overview",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -87,10 +100,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
-        "w": 6,
+        "h": 4,
+        "w": 12,
         "x": 0,
-        "y": 0
+        "y": 1
       },
       "id": 6,
       "options": {
@@ -119,7 +132,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count by(instance) (uptime_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"})",
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -136,7 +149,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count by(instance) (uptime_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 1)",
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 1)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -154,7 +167,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count by(instance) (uptime_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 2)",
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 2)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -172,7 +185,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count by(instance) (uptime_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 0)",
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 0)",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": true,
@@ -180,6 +193,24 @@
           "legendFormat": "Inactive",
           "range": false,
           "refId": "Inactive",
+          "useBackend": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 3)",
+          "fullMetaSearch": false,
+          "hide": false,
+          "includeNullMetadata": true,
+          "instant": true,
+          "legendFormat": "Under Maintenance",
+          "range": false,
+          "refId": "Maintenance",
           "useBackend": false
         }
       ],
@@ -207,7 +238,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "SUpEVGqnk"
+        "uid": "${datasource}"
       },
       "description": "This Panel lists Services that are in inactive state",
       "fieldConfig": {
@@ -222,16 +253,6 @@
                   "color": "dark-red",
                   "index": 0,
                   "text": "Down"
-                },
-                "1": {
-                  "color": "dark-green",
-                  "index": 2,
-                  "text": "Up"
-                },
-                "2": {
-                  "color": "dark-yellow",
-                  "index": 1,
-                  "text": "Pending"
                 }
               },
               "type": "value"
@@ -254,8 +275,8 @@
       "gridPos": {
         "h": 28,
         "w": 4,
-        "x": 6,
-        "y": 0
+        "x": 12,
+        "y": 1
       },
       "id": 9,
       "options": {
@@ -280,12 +301,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "uptime_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 0",
+          "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 0",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -301,7 +322,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "SUpEVGqnk"
+        "uid": "${datasource}"
       },
       "description": "This Panel lists Services that are in pending state",
       "fieldConfig": {
@@ -312,19 +333,9 @@
           "mappings": [
             {
               "options": {
-                "0": {
-                  "color": "dark-red",
-                  "index": 0,
-                  "text": "Down"
-                },
-                "1": {
-                  "color": "dark-green",
-                  "index": 2,
-                  "text": "Up"
-                },
                 "2": {
-                  "color": "dark-yellow",
-                  "index": 1,
+                  "color": "semi-dark-yellow",
+                  "index": 0,
                   "text": "Pending"
                 }
               },
@@ -348,8 +359,8 @@
       "gridPos": {
         "h": 28,
         "w": 4,
-        "x": 10,
-        "y": 0
+        "x": 16,
+        "y": 1
       },
       "id": 2,
       "options": {
@@ -374,12 +385,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "uptime_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 2",
+          "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 2",
           "format": "time_series",
           "fullMetaSearch": false,
           "hide": false,
@@ -397,130 +408,93 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "SUpEVGqnk"
+        "uid": "${datasource}"
       },
-      "description": "This panel shows the different http based services and their response times in the selected interval as well as their mean- and minimum response time.",
+      "description": "This Panel lists Services that are currently under Maintenance\n",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds",
-            "seriesBy": "last"
+            "mode": "thresholds"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "series",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 23,
-            "gradientMode": "hue",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": 300000,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "dashed+area"
+          "mappings": [
+            {
+              "options": {
+                "3": {
+                  "color": "dark-orange",
+                  "index": 0,
+                  "text": "Maintenance"
+                }
+              },
+              "type": "value"
             }
-          },
-          "decimals": 0,
-          "mappings": [],
-          "min": 0,
+          ],
+          "noValue": "Everything UP",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 400
-              },
-              {
-                "color": "dark-orange",
-                "value": 600
-              },
-              {
-                "color": "red",
-                "value": 1000
-              },
-              {
-                "color": "dark-red",
-                "value": 1500
               }
             ]
           },
-          "unit": "ms"
+          "unit": "bool"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 14,
-        "w": 10,
-        "x": 14,
-        "y": 0
+        "h": 28,
+        "w": 4,
+        "x": 20,
+        "y": 1
       },
-      "id": 4,
+      "id": 15,
       "options": {
-        "legend": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
           "calcs": [
-            "mean",
-            "min"
+            "last"
           ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Mean",
-          "sortDesc": true
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "name",
+        "wideLayout": true
       },
+      "pluginVersion": "10.4.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "uptime_response_time{monitor_type=\"http\", instance=\"$Instance\", job=\"$job\"}",
+          "exemplar": false,
+          "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"} == 3",
+          "format": "time_series",
           "fullMetaSearch": false,
+          "hide": false,
           "includeNullMetadata": true,
+          "instant": true,
           "legendFormat": "{{monitor_name}}",
-          "range": true,
-          "refId": "A",
+          "range": false,
+          "refId": "B",
           "useBackend": false
         }
       ],
-      "title": "Response Times (http based)",
-      "type": "timeseries"
+      "title": "Services in Maintenance",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "SUpEVGqnk"
+        "uid": "${datasource}"
       },
       "description": "This panel shows all http services and the remaining days after the certificate needs to be renewed",
       "fieldConfig": {
@@ -555,8 +529,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 23,
-        "w": 6,
+        "h": 24,
+        "w": 9,
         "x": 0,
         "y": 5
       },
@@ -582,12 +556,12 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
           "exemplar": false,
-          "expr": "sort(uptime_cert_days_remaining{instance=\"$Instance\", monitor_type=\"http\", job=\"$job\"}) < 65",
+          "expr": "sort(monitor_cert_days_remaining{instance=\"$Instance\", monitor_type=\"http\", job=\"$job\"} < 65)",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -597,59 +571,25 @@
           "useBackend": false
         }
       ],
+      "timeFrom": "1d",
       "title": "Certificate Validity Days",
       "type": "stat"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "SUpEVGqnk"
+        "uid": "${datasource}"
       },
       "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds",
-            "seriesBy": "last"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "series",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 23,
-            "gradientMode": "hue",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": 300000,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "dashed+area"
-            }
+            "mode": "thresholds"
           },
           "decimals": 0,
           "mappings": [],
           "min": 0,
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -658,73 +598,1518 @@
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 400
-              },
-              {
-                "color": "dark-orange",
-                "value": 600
-              },
-              {
                 "color": "red",
-                "value": 1000
-              },
-              {
-                "color": "dark-red",
-                "value": 1500
+                "value": 80
               }
             ]
           },
-          "unit": "ms"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 14,
-        "w": 10,
-        "x": 14,
-        "y": 14
+        "h": 24,
+        "w": 3,
+        "x": 9,
+        "y": 5
       },
-      "id": 7,
+      "id": 28,
       "options": {
-        "legend": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
           "calcs": [
-            "mean",
-            "min"
+            "last"
           ],
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortBy": "Mean",
-          "sortDesc": true
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "showPercentChange": false,
+        "textMode": "value_and_name",
+        "wideLayout": true
       },
+      "pluginVersion": "10.4.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "SUpEVGqnk"
+            "uid": "${datasource}"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "uptime_response_time{monitor_type=\"ping\", instance=\"$Instance\", job=\"$job\"}",
+          "exemplar": false,
+          "expr": "sort_desc(count by(monitor_type) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type!=\"group\"}))",
           "fullMetaSearch": false,
+          "hide": false,
           "includeNullMetadata": true,
-          "legendFormat": "{{monitor_name}}",
-          "range": true,
-          "refId": "A",
+          "instant": true,
+          "legendFormat": "{{monitor_type}}",
+          "range": false,
+          "refId": "Maintenance",
           "useBackend": false
         }
       ],
-      "title": "Response Times (ping based)",
-      "type": "timeseries"
+      "title": "Monitors by Type",
+      "transformations": [
+        {
+          "disabled": true,
+          "id": "calculateField",
+          "options": {
+            "alias": "Pending / Inactive",
+            "binary": {
+              "left": "Total",
+              "operator": "-",
+              "right": "Active"
+            },
+            "mode": "binary",
+            "reduce": {
+              "reducer": "sum"
+            }
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "id": 27,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "color": "dark-red",
+                      "index": 0,
+                      "text": "Child(s) Inactive"
+                    },
+                    "1": {
+                      "color": "dark-green",
+                      "index": 1,
+                      "text": "All Childs Active"
+                    },
+                    "2": {
+                      "color": "semi-dark-yellow",
+                      "index": 2,
+                      "text": "Pending Child(s)"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "noValue": "No Data / Please select Groups",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 15,
+            "w": 8,
+            "x": 0,
+            "y": 10
+          },
+          "id": 14,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"group\", monitor_name=~\"$groups\"}",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "{{monitor_name}}",
+              "range": false,
+              "refId": "Groups",
+              "useBackend": false
+            }
+          ],
+          "title": "Group Status",
+          "transformations": [
+            {
+              "disabled": true,
+              "id": "calculateField",
+              "options": {
+                "alias": "Pending / Inactive",
+                "binary": {
+                  "left": "Total",
+                  "operator": "-",
+                  "right": "Active"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            }
+          ],
+          "type": "stat"
+        }
+      ],
+      "title": "Groups",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 11,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "decimals": 0,
+              "mappings": [],
+              "min": 0,
+              "noValue": "0",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 12,
+            "x": 0,
+            "y": 11
+          },
+          "id": 23,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "vertical",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "value_and_name",
+            "wideLayout": false
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"$monitor_types\"})",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Total",
+              "range": false,
+              "refId": "Total",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"$monitor_types\"} == 1)",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Active",
+              "range": false,
+              "refId": "Active",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"$monitor_types\"} == 2)",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Pending",
+              "range": false,
+              "refId": "Pending",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"$monitor_types\"} == 0)",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Inactive",
+              "range": false,
+              "refId": "Inactive",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "count by(instance) (monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"$monitor_types\"} == 3)",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Under Maintenance",
+              "range": false,
+              "refId": "Maintenance",
+              "useBackend": false
+            }
+          ],
+          "title": "Services",
+          "transformations": [
+            {
+              "disabled": true,
+              "id": "calculateField",
+              "options": {
+                "alias": "Pending / Inactive",
+                "binary": {
+                  "left": "Total",
+                  "operator": "-",
+                  "right": "Active"
+                },
+                "mode": "binary",
+                "reduce": {
+                  "reducer": "sum"
+                }
+              }
+            }
+          ],
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "This Panel lists Services that are in inactive state",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "0": {
+                      "color": "dark-red",
+                      "index": 0,
+                      "text": "Down"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "noValue": "Everything UP",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bool"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 20,
+            "w": 4,
+            "x": 12,
+            "y": 11
+          },
+          "id": 24,
+          "options": {
+            "colorMode": "background_solid",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "name",
+            "wideLayout": false
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"$monitor_types\"} == 0",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "{{monitor_name}}",
+              "range": false,
+              "refId": "A",
+              "useBackend": false
+            }
+          ],
+          "title": "Unhealthy Services",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "This Panel lists Services that are in pending state",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "2": {
+                      "color": "semi-dark-yellow",
+                      "index": 0,
+                      "text": "Pending"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "noValue": "Everything UP",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bool"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 20,
+            "w": 4,
+            "x": 16,
+            "y": 11
+          },
+          "id": 25,
+          "options": {
+            "colorMode": "background_solid",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "name",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"$monitor_types\"} == 2",
+              "format": "time_series",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "{{monitor_name}}",
+              "range": false,
+              "refId": "B",
+              "useBackend": false
+            }
+          ],
+          "title": "Pending Services",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "This Panel lists Services that are currently under Maintenance\n",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "3": {
+                      "color": "dark-orange",
+                      "index": 0,
+                      "text": "Maintenance"
+                    }
+                  },
+                  "type": "value"
+                }
+              ],
+              "noValue": "Everything UP",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bool"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 20,
+            "w": 4,
+            "x": 20,
+            "y": 11
+          },
+          "id": 26,
+          "options": {
+            "colorMode": "background_solid",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "text": {},
+            "textMode": "name",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "monitor_status{instance=\"$Instance\", job=\"$job\", monitor_type=\"$monitor_types\"} == 3",
+              "format": "time_series",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "{{monitor_name}}",
+              "range": false,
+              "refId": "B",
+              "useBackend": false
+            }
+          ],
+          "title": "Services in Maintenance",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "This panel shows the different $monitor_types based services and their response times in the selected interval as well as their mean- and minimum response time.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds",
+                "seriesBy": "last"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "series",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 23,
+                "gradientMode": "hue",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "smooth",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": 300000,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "dashed+area"
+                }
+              },
+              "decimals": 0,
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 400
+                  },
+                  {
+                    "color": "dark-orange",
+                    "value": 600
+                  },
+                  {
+                    "color": "red",
+                    "value": 1000
+                  },
+                  {
+                    "color": "dark-red",
+                    "value": 1500
+                  }
+                ]
+              },
+              "unit": "ms"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 16,
+            "w": 12,
+            "x": 0,
+            "y": 15
+          },
+          "id": 4,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "min"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "expr": "monitor_response_time{monitor_type=\"$monitor_types\", instance=\"$Instance\", job=\"$job\"}",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "legendFormat": "{{monitor_name}}",
+              "range": true,
+              "refId": "A",
+              "useBackend": false
+            }
+          ],
+          "title": "Response Times of all $monitor_types - Based Services",
+          "type": "timeseries"
+        }
+      ],
+      "repeat": "monitor_types",
+      "repeatDirection": "h",
+      "title": "Service Details ($monitor_types based)",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "id": 17,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 2,
+            "x": 0,
+            "y": 12
+          },
+          "id": 16,
+          "options": {
+            "colorMode": "none",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "name",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_version_info",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "{{version}}",
+              "range": false,
+              "refId": "A",
+              "useBackend": false
+            }
+          ],
+          "title": "NodeJS Version",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-GrYlRd"
+              },
+              "decimals": 1,
+              "mappings": [],
+              "max": 0.25,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 5,
+            "x": 2,
+            "y": 12
+          },
+          "id": 22,
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "sizing": "auto"
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_eventloop_lag_min_seconds{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Min",
+              "range": false,
+              "refId": "Min",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_eventloop_lag_mean_seconds{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Mean",
+              "range": false,
+              "refId": "Mean",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_eventloop_lag_max_seconds{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Max",
+              "range": false,
+              "refId": "Max",
+              "useBackend": false
+            }
+          ],
+          "title": "Event Loop Delay",
+          "type": "gauge"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 7,
+            "y": 12
+          },
+          "id": 19,
+          "options": {
+            "colorMode": "none",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_active_handles_total{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Active Handles",
+              "range": false,
+              "refId": "Active Handles",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_active_handles_total{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Active Handles Total",
+              "range": false,
+              "refId": "Active Handles Total",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_active_requests_total{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Active Requets Total",
+              "range": false,
+              "refId": "Active Requests Total",
+              "useBackend": false
+            }
+          ],
+          "title": "Node JS",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "decbytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 11,
+            "x": 13,
+            "y": 12
+          },
+          "id": 18,
+          "options": {
+            "colorMode": "none",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "process_resident_memory_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Resident Memory",
+              "range": false,
+              "refId": "Resident Memory",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "process_virtual_memory_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Virtual Memory",
+              "range": false,
+              "refId": "Virtual Memory",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_external_memory_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "External Memory",
+              "range": false,
+              "refId": "External Memory",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "process_heap_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Heap",
+              "range": false,
+              "refId": "Heap",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_heap_size_total_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Heap Total",
+              "range": false,
+              "refId": "Heap Total",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_heap_size_used_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Heap Used",
+              "range": false,
+              "refId": "Heap Used",
+              "useBackend": false
+            }
+          ],
+          "title": "Memory",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 7,
+            "y": 16
+          },
+          "id": 20,
+          "options": {
+            "colorMode": "none",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "process_open_fds{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Open File Descriptors",
+              "range": false,
+              "refId": "Open FDS",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "process_max_fds{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": true,
+              "legendFormat": "Max Open File Descriptors",
+              "range": false,
+              "refId": "Max open FDS",
+              "useBackend": false
+            }
+          ],
+          "title": "Process FDS",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "decbytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 11,
+            "x": 13,
+            "y": 16
+          },
+          "id": 21,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.4.1",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "process_resident_memory_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "includeNullMetadata": true,
+              "instant": false,
+              "legendFormat": "Resident Memory",
+              "range": true,
+              "refId": "Resident Memory",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_external_memory_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": false,
+              "legendFormat": "External Memory",
+              "range": true,
+              "refId": "External Memory",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "process_heap_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": false,
+              "legendFormat": "Heap",
+              "range": true,
+              "refId": "Heap",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_heap_size_total_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": false,
+              "legendFormat": "Heap Total",
+              "range": true,
+              "refId": "Heap Total",
+              "useBackend": false
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "disableTextWrap": false,
+              "editorMode": "builder",
+              "exemplar": false,
+              "expr": "nodejs_heap_size_used_bytes{job=\"$job\", instance=\"$Instance\"}",
+              "fullMetaSearch": false,
+              "hide": false,
+              "includeNullMetadata": true,
+              "instant": false,
+              "legendFormat": "Heap Used",
+              "range": true,
+              "refId": "Heap Used",
+              "useBackend": false
+            }
+          ],
+          "title": "Memory",
+          "type": "timeseries"
+        }
+      ],
+      "title": "System",
+      "type": "row"
     }
   ],
-  "refresh": "30s",
+  "refresh": "auto",
   "schemaVersion": 39,
   "tags": [
     "uptime-kuma",
@@ -736,7 +2121,7 @@
         "current": {
           "selected": false,
           "text": "Prometheus",
-          "value": "SUpEVGqnk"
+          "value": "${datasource}"
         },
         "hide": 0,
         "includeAll": false,
@@ -787,9 +2172,9 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "SUpEVGqnk"
+          "uid": "${datasource}"
         },
-        "definition": "query_result(uptime_status)",
+        "definition": "query_result(monitor_status)",
         "hide": 0,
         "includeAll": false,
         "multi": false,
@@ -797,7 +2182,7 @@
         "options": [],
         "query": {
           "qryType": 3,
-          "query": "query_result(uptime_status)",
+          "query": "query_result(monitor_status)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 1,
@@ -805,11 +2190,77 @@
         "skipUrlSync": false,
         "sort": 1,
         "type": "query"
+      },
+      {
+        "allValue": "All",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values(monitor_type)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Monitor Type",
+        "multi": true,
+        "name": "monitor_types",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(monitor_type)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": "",
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${datasource}"
+        },
+        "definition": "label_values({monitor_type=\"group\"},monitor_name)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Groups",
+        "multi": true,
+        "name": "groups",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values({monitor_type=\"group\"},monitor_name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
       }
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {
@@ -820,10 +2271,9 @@
       "30m"
     ]
   },
-  "timezone": "",
+  "timezone": "browser",
   "title": "Uptime-Kuma Status",
   "uid": "CN8E-vZ7k",
   "version": 2,
-  "weekStart": "",
-  "description": "A simple dashboard showcasing service status updates over time tracked by the Uptime Kuma monitoring tool."
+  "weekStart": "monday"
 }
