@@ -517,7 +517,7 @@ class Monitor extends BeanModel {
                     // The keylog event listener is a workaround to access the tlsSocket
                     options.httpsAgent.once("keylog", async (line, tlsSocket) => {
                         tlsSocket.once('secureConnect', async () => {
-                        tlsInfo = checkCertificate(tlsSocket);
+                            tlsInfo = checkCertificate(tlsSocket);
 
                             tlsInfo.valid = tlsSocket.authorized || false;
                             await this.updateTlsInfo(tlsInfo);
@@ -538,6 +538,25 @@ class Monitor extends BeanModel {
 
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
+
+                    // fallback for if kelog event is not emitted, but we may still have tlsInfo,
+                    // e.g. if the connection is made through a proxy
+                    if (this.getUrl()?.protocol === "https:") {
+                        if (tlsInfo.valid === undefined) {
+                            const tlsSocket = res.request.res.socket;
+
+                            if (tlsSocket) {
+                                tlsInfo.valid = tlsSocket.authorized || false;
+                                tlsInfo = checkCertificate(tlsSocket);
+                                await this.updateTlsInfo(tlsInfo);
+
+                                if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
+                                    log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
+                                    await this.checkCertExpiryNotifications(tlsInfo);
+                                }
+                            }
+                        }
+                    }
 
                     if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID === this.id) {
                         log.info("monitor", res.data);
