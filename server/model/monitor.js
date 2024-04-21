@@ -518,15 +518,9 @@ class Monitor extends BeanModel {
                     options.httpsAgent.once("keylog", async (line, tlsSocket) => {
                         tlsSocket.once("secureConnect", async () => {
                             tlsInfo = checkCertificate(tlsSocket);
-
                             tlsInfo.valid = tlsSocket.authorized || false;
-                            await this.updateTlsInfo(tlsInfo);
-                            this.prometheus?.update(null, tlsInfo);
 
-                            if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
-                                log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
-                                await this.checkCertExpiryNotifications(tlsInfo);
-                            }
+                            await this.handleTlsInfo(tlsInfo);
                         });
                     });
 
@@ -545,14 +539,10 @@ class Monitor extends BeanModel {
                         const tlsSocket = res.request.res.socket;
 
                         if (tlsSocket) {
-                            tlsInfo.valid = tlsSocket.authorized || false;
                             tlsInfo = checkCertificate(tlsSocket);
-                            await this.updateTlsInfo(tlsInfo);
+                            tlsInfo.valid = tlsSocket.authorized || false;
 
-                            if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
-                                log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
-                                await this.checkCertExpiryNotifications(tlsInfo);
-                            }
+                            await this.handleTlsInfo(tlsInfo);
                         }
                     }
 
@@ -1691,6 +1681,21 @@ class Monitor extends BeanModel {
 
         const parentActive = await Monitor.isParentActive(parent.id);
         return parent.active && parentActive;
+    }
+
+    /**
+     * Store TLS certificate information and check for expiry
+     * @param {Object} tlsInfo Information about the TLS connection
+     * @returns {Promise<void>}
+     */
+    async handleTlsInfo(tlsInfo) {
+        await this.updateTlsInfo(tlsInfo);
+        this.prometheus?.update(null, tlsInfo);
+
+        if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
+            log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
+            await this.checkCertExpiryNotifications(tlsInfo);
+        }
     }
 }
 
