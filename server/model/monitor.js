@@ -516,7 +516,7 @@ class Monitor extends BeanModel {
                     // Store tlsInfo when secureConnect event is emitted
                     // The keylog event listener is a workaround to access the tlsSocket
                     options.httpsAgent.once("keylog", async (line, tlsSocket) => {
-                        tlsSocket.once('secureConnect', async () => {
+                        tlsSocket.once("secureConnect", async () => {
                             tlsInfo = checkCertificate(tlsSocket);
 
                             tlsInfo.valid = tlsSocket.authorized || false;
