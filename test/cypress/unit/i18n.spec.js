@@ -3,46 +3,62 @@ import { currentLocale } from "../../../src/i18n";
 describe("Test i18n.js", () => {
 
     it("currentLocale()", () => {
-        const setLanguage = (language) => {
-            Object.defineProperty(window.navigator, 'language', {
-                value: language,
+        const setLanguages = (languages) => {
+            Object.defineProperty(navigator, 'language', {
+                value: languages[0],
                 writable: true
             });
-            Object.defineProperty(window.navigator, 'languages', {
-                value: [language],
+            Object.defineProperty(navigator, 'languages', {
+                value: languages,
                 writable: true
             });
         }
-        setLanguage('en-EN');
 
+        setLanguages(['en-EN']);
         expect(currentLocale()).equal("en");
 
-        setLanguage('zh-HK');
+        setLanguages(['zh-HK']);
         expect(currentLocale()).equal("zh-HK");
 
         // Note that in Safari on iOS prior to 10.2, the country code returned is lowercase: "en-us", "fr-fr" etc.
         // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language
-        setLanguage('zh-hk');
+        setLanguages(['zh-hk']);
         expect(currentLocale()).equal("en");
 
-        setLanguage('en-US');
+        setLanguages(['en-US']);
         expect(currentLocale()).equal("en");
 
-        setLanguage('ja-ZZ');
+        setLanguages(['ja-ZZ']);
         expect(currentLocale()).equal("ja");
 
-        setLanguage('zz-ZZ');
+        setLanguages(['zz-ZZ']);
         expect(currentLocale()).equal("en");
 
-        setLanguage('zz-ZZ');
+        setLanguages(['zz-ZZ']);
         expect(currentLocale()).equal("en");
 
-        setLanguage('en');
-        localStorage.locale = "en";
+        setLanguages(['en-US', 'en', 'pl', 'ja']);
         expect(currentLocale()).equal("en");
 
-        localStorage.locale = "zh-HK";
-        expect(currentLocale()).equal("zh-HK");
+        setLanguages(['en-US', 'pl', 'ja']);
+        expect(currentLocale()).equal("en");
+
+        setLanguages(['abc', 'en-US', 'pl', 'ja']);
+        expect(currentLocale()).equal("en");
+
+        setLanguages(['fil-PH', 'pl']);
+        expect(currentLocale()).equal("pl");
+
+        setLanguages(['shi-Latn-MA', 'pl']);
+        expect(currentLocale()).equal("pl");
+
+        setLanguages(['pl']);
+        localStorage.locale = "ja-ZZ";
+        expect(currentLocale()).equal("ja");
+
+        setLanguages(['pl']);
+        localStorage.locale = "invalid-lang";
+        expect(currentLocale()).equal("pl");
     });
 
 });
