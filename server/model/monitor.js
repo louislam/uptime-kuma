@@ -512,10 +512,16 @@ class Monitor extends BeanModel {
                         }
                     }
 
-                    let tlsInfo;
-                    // Store tlsInfo when key material is received
-                    options.httpsAgent.on("keylog", (line, tlsSocket) => {
-                        tlsInfo = checkCertificate(tlsSocket);
+                    let tlsInfo = {};
+                    // Store tlsInfo when secureConnect event is emitted
+                    // The keylog event listener is a workaround to access the tlsSocket
+                    options.httpsAgent.once("keylog", async (line, tlsSocket) => {
+                        tlsSocket.once("secureConnect", async () => {
+                            tlsInfo = checkCertificate(tlsSocket);
+                            tlsInfo.valid = tlsSocket.authorized || false;
+
+                            await this.handleTlsInfo(tlsInfo);
+                        });
                     });
 
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
@@ -527,19 +533,16 @@ class Monitor extends BeanModel {
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    // Store certificate and check for expiry if https is used
-                    if (this.getUrl()?.protocol === "https:") {
-                        // No way to listen for the `secureConnection` event, so we do it here
-                        const tlssocket = res.request.res.socket;
+                    // fallback for if kelog event is not emitted, but we may still have tlsInfo,
+                    // e.g. if the connection is made through a proxy
+                    if (this.getUrl()?.protocol === "https:" && tlsInfo.valid === undefined) {
+                        const tlsSocket = res.request.res.socket;
 
-                        if (tlssocket) {
-                            tlsInfo.valid = tlssocket.authorized || false;
-                        }
+                        if (tlsSocket) {
+                            tlsInfo = checkCertificate(tlsSocket);
+                            tlsInfo.valid = tlsSocket.authorized || false;
 
-                        await this.updateTlsInfo(tlsInfo);
-                        if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
-                            log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
-                            await this.checkCertExpiryNotifications(tlsInfo);
+                            await this.handleTlsInfo(tlsInfo);
                         }
                     }
 
@@ -1678,6 +1681,21 @@ class Monitor extends BeanModel {
 
         const parentActive = await Monitor.isParentActive(parent.id);
         return parent.active && parentActive;
+    }
+
+    /**
+     * Store TLS certificate information and check for expiry
+     * @param {Object} tlsInfo Information about the TLS connection
+     * @returns {Promise<void>}
+     */
+    async handleTlsInfo(tlsInfo) {
+        await this.updateTlsInfo(tlsInfo);
+        this.prometheus?.update(null, tlsInfo);
+
+        if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
+            log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
+            await this.checkCertExpiryNotifications(tlsInfo);
+        }
     }
 }
 
