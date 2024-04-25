@@ -1621,7 +1621,7 @@ class Monitor extends BeanModel {
 
     /**
      * Store TLS certificate information and check for expiry
-     * @param {Object} tlsInfo Information about the TLS connection
+     * @param {object} tlsInfo Information about the TLS connection
      * @returns {Promise<void>}
      */
     async handleTlsInfo(tlsInfo) {
