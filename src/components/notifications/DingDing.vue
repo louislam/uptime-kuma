@@ -7,7 +7,7 @@
         <input id="secretKey" v-model="$parent.notification.secretKey" type="text" class="form-control" required>
 
         <label for="isAtAll" class="form-label">{{ $t("isAtAll") }}<span style="color: red;"><sup>*</sup></span></label>
-        <input id="isAtAll" type="checkbox" v-model="$parent.notification.isAtAll" class="form-check-input">
+        <input id="isAtAll"  v-model="$parent.notification.isAtAll" type="checkbox" class="form-check-input">
 
         <div class="form-text">
             <p>{{ $t("For safety, must use secret key") }}</p>
