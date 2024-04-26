@@ -11,36 +11,23 @@ class DingDing extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-            // Convert isAtAll to Boolean
-            notification.isAtAll = this.convertToBoolean(notification.isAtAll);
+
         try {
-            if (heartbeatJSON != null) {
-                let params = {
-                    msgtype: "markdown",
-                    markdown: {
-                        title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
-                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
-                    },
-                    "at": {
-                        "isAtAll": notification.isAtAll // Here the isAtAll value in the notification object is used
-                    }
-                };
-                if (await this.sendToDingDing(notification, params)) {
-                    return okMsg;
+            let params = {
+                msgtype: "markdown",
+                markdown: {
+                    title: `[${this.statusToString(heartbeatJSON ? heartbeatJSON["status"] : UP)}] ${monitorJSON ? monitorJSON["name"] : ''}`,
+                    text: heartbeatJSON ? 
+                        `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}` :
+                        msg,
+                },
+                "at": {
+                    "isAtAll": notification.isAtAll === 'true'
                 }
-            } else {
-                let params = {
-                    msgtype: "text",
-                    text: {
-                        content: msg
-                    },
-                    "at": {
-                        "isAtAll": notification.isAtAll // Here the isAtAll value in the notification object is used
-                    }
-                };
-                if (await this.sendToDingDing(notification, params)) {
-                    return okMsg;
-                }
+            };
+
+            if (await this.sendToDingDing(notification, params)) {
+                return okMsg;
             }
         } catch (error) {
             this.throwGeneralAxiosError(error);
@@ -89,13 +76,7 @@ class DingDing extends NotificationProvider {
      * Convert status constant to string
      * @param {const} status The status constant
      * @returns {string} Status
-     * @returns {boolean} isAtAll
      */
-
-    convertToBoolean(value) {
-        return value === "true";
-    }
-
     statusToString(status) {
         // TODO: Move to notification-provider.js to avoid repetition in classes
         switch (status) {

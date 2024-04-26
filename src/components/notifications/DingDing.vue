@@ -5,9 +5,12 @@
 
         <label for="secretKey" class="form-label">{{ $t("SecretKey") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="secretKey" v-model="$parent.notification.secretKey" type="text" class="form-control" required>
-
+        
         <label for="isAtAll" class="form-label">{{ $t("isAtAll") }}<span style="color: red;"><sup>*</sup></span></label>
-        <input id="isAtAll"  v-model="$parent.notification.isAtAll" type="checkbox" class="form-check-input">
+        <select id="isAtAll" v-model="$parent.notification.isAtAll" class="form-select" required>
+            <option value="false">{{ $t("false") }}</option>
+            <option value="true">{{ $t("true") }}</option>
+        </select>
 
         <div class="form-text">
             <p>{{ $t("For safety, must use secret key") }}</p>
