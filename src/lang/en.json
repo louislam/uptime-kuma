@@ -667,6 +667,7 @@
     "WebHookUrl": "WebHookUrl",
     "SecretKey": "SecretKey",
     "For safety, must use secret key": "For safety, must use secret key",
+    "isAtAll":"Whether @everyone",
     "Device Token": "Device Token",
     "Platform": "Platform",
     "Huawei": "Huawei",
