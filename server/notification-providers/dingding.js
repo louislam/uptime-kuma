@@ -13,21 +13,30 @@ class DingDing extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            let params = {
-                msgtype: "markdown",
-                markdown: {
-                    title: `[${this.statusToString(heartbeatJSON ? heartbeatJSON["status"] : UP)}] ${monitorJSON ? monitorJSON["name"] : ''}`,
-                    text: heartbeatJSON ? 
-                        `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}` :
-                        msg,
-                },
-                "at": {
-                    "isAtAll": notification.isAtAll === 'true'
+            if (heartbeatJSON != null) {
+                let params = {
+                    msgtype: "markdown",
+                    markdown: {
+                        title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
+                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                    },
+                    "at": {
+                        "isAtAll": notification.isAtAll === 'true'
+                    }
+                };
+                if (await this.sendToDingDing(notification, params)) {
+                    return okMsg;
                 }
-            };
-
-            if (await this.sendToDingDing(notification, params)) {
-                return okMsg;
+            } else {
+                let params = {
+                    msgtype: "text",
+                    text: {
+                        content: msg
+                    }
+                };
+                if (await this.sendToDingDing(notification, params)) {
+                    return okMsg;
+                }
             }
         } catch (error) {
             this.throwGeneralAxiosError(error);

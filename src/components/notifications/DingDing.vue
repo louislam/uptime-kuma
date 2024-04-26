@@ -5,7 +5,7 @@
 
         <label for="secretKey" class="form-label">{{ $t("SecretKey") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="secretKey" v-model="$parent.notification.secretKey" type="text" class="form-control" required>
-        
+
         <label for="isAtAll" class="form-label">{{ $t("isAtAll") }}<span style="color: red;"><sup>*</sup></span></label>
         <select id="isAtAll" v-model="$parent.notification.isAtAll" class="form-select" required>
             <option value="false">{{ $t("false") }}</option>
