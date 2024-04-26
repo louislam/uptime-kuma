@@ -247,7 +247,7 @@ class Monitor extends BeanModel {
      * for HTTP "basic" auth, as per RFC-7617
      * @param {string|null} user - The username (nullable if not changed by a user)
      * @param {string|null} pass - The password (nullable if not changed by a user)
-     * @returns {string}
+     * @returns {string} Encoded Base64 string
      */
     encodeBase64(user, pass) {
         return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
