@@ -11,7 +11,8 @@ class DingDing extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-
+            // Convert isAtAll to Boolean
+            notification.isAtAll = this.convertToBoolean(notification.isAtAll);
         try {
             if (heartbeatJSON != null) {
                 let params = {
@@ -19,6 +20,9 @@ class DingDing extends NotificationProvider {
                     markdown: {
                         title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
                         text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                    },
+                    "at": {
+                        "isAtAll": notification.isAtAll // Here the isAtAll value in the notification object is used
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
@@ -29,6 +33,9 @@ class DingDing extends NotificationProvider {
                     msgtype: "text",
                     text: {
                         content: msg
+                    },
+                    "at": {
+                        "isAtAll": notification.isAtAll // Here the isAtAll value in the notification object is used
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
@@ -82,7 +89,13 @@ class DingDing extends NotificationProvider {
      * Convert status constant to string
      * @param {const} status The status constant
      * @returns {string} Status
+     * @returns {boolean} isAtAll
      */
+
+    convertToBoolean(value) {
+        return value === "true";
+    }
+
     statusToString(status) {
         // TODO: Move to notification-provider.js to avoid repetition in classes
         switch (status) {
