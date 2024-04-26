@@ -62,7 +62,7 @@ class DingDing extends NotificationProvider {
         if (result.data.errmsg === "ok") {
             return true;
         }
-        return false;
+        throw new Error(result.data.errmsg);
     }
 
     /**

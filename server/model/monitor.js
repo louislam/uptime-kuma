@@ -245,12 +245,12 @@ class Monitor extends BeanModel {
     /**
      * Encode user and password to Base64 encoding
      * for HTTP "basic" auth, as per RFC-7617
-     * @param {string} user Username to encode
-     * @param {string} pass Password to encode
-     * @returns {string} Encoded username:password
+     * @param {string|null} user - The username (nullable if not changed by a user)
+     * @param {string|null} pass - The password (nullable if not changed by a user)
+     * @returns {string} Encoded Base64 string
      */
     encodeBase64(user, pass) {
-        return Buffer.from(user + ":" + pass).toString("base64");
+        return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
     }
 
     /**
@@ -533,6 +533,18 @@ class Monitor extends BeanModel {
                         }
                     }
 
+                    let tlsInfo = {};
+                    // Store tlsInfo when secureConnect event is emitted
+                    // The keylog event listener is a workaround to access the tlsSocket
+                    options.httpsAgent.once("keylog", async (line, tlsSocket) => {
+                        tlsSocket.once("secureConnect", async () => {
+                            tlsInfo = checkCertificate(tlsSocket);
+                            tlsInfo.valid = tlsSocket.authorized || false;
+
+                            await this.handleTlsInfo(tlsInfo);
+                        });
+                    });
+
                     log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
                     log.debug("monitor", `[${this.name}] Axios Request`);
 
@@ -542,29 +554,17 @@ class Monitor extends BeanModel {
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    // Check certificate if https is used
-                    let certInfoStartTime = dayjs().valueOf();
-                    if (this.getUrl()?.protocol === "https:") {
-                        log.debug("monitor", `[${this.name}] Check cert`);
-                        try {
-                            let tlsInfoObject = checkCertificate(res);
-                            tlsInfo = await this.updateTlsInfo(tlsInfoObject);
+                    // fallback for if kelog event is not emitted, but we may still have tlsInfo,
+                    // e.g. if the connection is made through a proxy
+                    if (this.getUrl()?.protocol === "https:" && tlsInfo.valid === undefined) {
+                        const tlsSocket = res.request.res.socket;
 
-                            if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
-                                log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
-                                await this.checkCertExpiryNotifications(tlsInfoObject);
-                            }
+                        if (tlsSocket) {
+                            tlsInfo = checkCertificate(tlsSocket);
+                            tlsInfo.valid = tlsSocket.authorized || false;
 
-                        } catch (e) {
-                            if (e.message !== "No TLS certificate in response") {
-                                log.error("monitor", "Caught error");
-                                log.error("monitor", e.message);
-                            }
+                            await this.handleTlsInfo(tlsInfo);
                         }
-                    }
-
-                    if (process.env.TIMELOGGER === "1") {
-                        log.debug("monitor", "Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
                     }
 
                     if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID === this.id) {
@@ -599,8 +599,12 @@ class Monitor extends BeanModel {
                         let data = res.data;
 
                         // convert data to object
-                        if (typeof data === "string") {
-                            data = JSON.parse(data);
+                        if (typeof data === "string" && res.headers["content-type"] !== "application/json") {
+                            try {
+                                data = JSON.parse(data);
+                            } catch (_) {
+                                // Failed to parse as JSON, just process it as a string
+                            }
                         }
 
                         let expression = jsonata(this.jsonPath);
@@ -1615,6 +1619,20 @@ class Monitor extends BeanModel {
         return oAuthAccessToken;
     }
 
+    /**
+     * Store TLS certificate information and check for expiry
+     * @param {object} tlsInfo Information about the TLS connection
+     * @returns {Promise<void>}
+     */
+    async handleTlsInfo(tlsInfo) {
+        await this.updateTlsInfo(tlsInfo);
+        this.prometheus?.update(null, tlsInfo);
+
+        if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
+            log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
+            await this.checkCertExpiryNotifications(tlsInfo);
+        }
+    }
 }
 
 module.exports = Monitor;
