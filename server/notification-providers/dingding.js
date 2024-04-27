@@ -19,6 +19,9 @@ class DingDing extends NotificationProvider {
                     markdown: {
                         title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
                         text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                    },
+                    "at": {
+                        "isAtAll": notification.mentioning === "everyone"
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
