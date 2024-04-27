@@ -15,8 +15,12 @@
 
         <label for="isAtAll" class="form-label">{{ $t("isAtAll") }}<span style="color: red;"><sup>*</sup></span></label>
         <select id="isAtAll" v-model="$parent.notification.isAtAll" class="form-select" required>
-            <option value="true">{{ $t("TRUE") }}</option>
-            <option value="false">{{ $t("FALSE") }}</option>
+            <i18n-t keypath="Don't mention people" tag="option" value="false">
+                {{ $t("Don't mention people") }}
+            </i18n-t>
+            <i18n-t keypath="Mention everyone" tag="option" value="true">
+                {{ $t("Mention everyone") }}
+            </i18n-t>
         </select>
     </div>
 </template>
