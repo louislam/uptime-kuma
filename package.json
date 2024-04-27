@@ -137,6 +137,7 @@
         "redbean-node": "~0.3.0",
         "redis": "~4.5.1",
         "semver": "~7.5.4",
+        "snmp-native": "^1.2.0",
         "socket.io": "~4.6.1",
         "socket.io-client": "~4.6.1",
         "socks-proxy-agent": "6.1.1",
