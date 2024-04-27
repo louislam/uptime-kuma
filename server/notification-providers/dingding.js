@@ -21,7 +21,7 @@ class DingDing extends NotificationProvider {
                         text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                     },
                     "at": {
-                        "isAtAll": notification.isAtAll === "true"
+                        "isAtAll": notification.mentioning === "everyone"
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
