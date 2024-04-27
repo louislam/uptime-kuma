@@ -56,6 +56,7 @@ const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
+const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
@@ -132,6 +133,7 @@ class Notification {
             new WeCom(),
             new GoAlert(),
             new ZohoCliq(),
+            new SevenIO(),
             new Whapi(),
             new GtxMessaging(),
             new Cellsynt(),

@@ -55,6 +55,7 @@ import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
+import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import Cellsynt from "./Cellsynt.vue";
 
@@ -119,6 +120,7 @@ const NotificationFormList = {
     "GoAlert": GoAlert,
     "ServerChan": ServerChan,
     "ZohoCliq": ZohoCliq,
+    "SevenIO": SevenIO,
     "whapi": Whapi,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,

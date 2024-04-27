@@ -154,6 +154,7 @@ export default {
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
                 "ZohoCliq": "ZohoCliq",
+                "SevenIO": "SevenIO",
                 "whapi": "WhatsApp (Whapi)",
                 "gtxmessaging": "GtxMessaging",
                 "Cellsynt": "Cellsynt",
