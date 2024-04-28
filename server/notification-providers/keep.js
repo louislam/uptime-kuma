@@ -28,7 +28,7 @@ class Keep extends NotificationProvider {
             config.headers = formData.getHeaders();
             data = formData;
 
-            let url = notification.webhookURL
+            let url = notification.webhookURL;
 
             if (url.endsWith("/")) {
                 url = url.slice(0, -1);
