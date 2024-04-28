@@ -1,7 +1,7 @@
 <template>
     <div>
-        <div 
-            v-if="settings.disableAuth" 
+        <div
+            v-if="settings.disableAuth"
             class="mt-5 d-flex align-items-center justify-content-center my-3"
         >
             {{ $t("apiKeysDisabledMsg") }}
@@ -14,17 +14,17 @@
             </div>
 
             <div>
-                <span 
+                <span
                     v-if="Object.keys(keyList).length === 0"
                     class="d-flex align-items-center justify-content-center my-3"
                 >
                     {{ $t("No API Keys") }}
                 </span>
 
-                <div 
-                    v-for="(item, index) in keyList" 
-                    :key="index" 
-                    class="item" 
+                <div
+                    v-for="(item, index) in keyList"
+                    :key="index"
+                    class="item"
                     :class="item.status"
                 >
                     <div class="left-part">
@@ -63,7 +63,7 @@
             </div>
         </div>
 
-        <div class="text-center mt-3" style="font-size: 13px">
+        <div class="text-center mt-3" style="font-size: 13px;">
             <a href="https://github.com/louislam/uptime-kuma/wiki/API-Keys" target="_blank">{{ $t("Learn More") }}</a>
         </div>
 
