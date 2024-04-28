@@ -47,6 +47,6 @@ export default {
 
 <style lang="scss" scoped>
 textarea {
-  min-height: 200px;
+    min-height: 200px;
 }
 </style>
