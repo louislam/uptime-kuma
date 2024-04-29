@@ -1,16 +1,23 @@
 let express = require("express");
-const { allowDevAllOrigin, allowAllOrigin, percentageToColor, filterAndJoin, sendHttpError } = require("../util-server");
+const {
+    setting,
+    allowDevAllOrigin,
+    allowAllOrigin,
+    percentageToColor,
+    filterAndJoin,
+    sendHttpError,
+} = require("../util-server");
 const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log } = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
-const { UptimeCacheList } = require("../uptime-cache-list");
 const { makeBadge } = require("badge-maker");
-const { badgeConstants } = require("../config");
 const { Prometheus } = require("../prometheus");
+const Database = require("../database");
+const { UptimeCalculator } = require("../uptime-calculator");
 
 let router = express.Router();
 
@@ -22,10 +29,14 @@ router.get("/api/entry-page", async (request, response) => {
     allowDevAllOrigin(response);
 
     let result = { };
+    let hostname = request.hostname;
+    if ((await setting("trustProxy")) && request.headers["x-forwarded-host"]) {
+        hostname = request.headers["x-forwarded-host"];
+    }
 
-    if (request.hostname in StatusPage.domainMappingList) {
+    if (hostname in StatusPage.domainMappingList) {
         result.type = "statusPageMatchedDomain";
-        result.statusPageSlug = StatusPage.domainMappingList[request.hostname];
+        result.statusPageSlug = StatusPage.domainMappingList[hostname];
     } else {
         result.type = "entryPage";
         result.entryPage = server.entryPage;
@@ -38,7 +49,7 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
-        let ping = parseInt(request.query.ping) || null;
+        let ping = parseFloat(request.query.ping) || null;
         let statusString = request.query.status || "up";
         let status = (statusString === "up") ? UP : DOWN;
 
@@ -52,54 +63,68 @@ router.get("/api/push/:pushToken", async (request, response) => {
 
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
-        if (monitor.isUpsideDown()) {
-            status = flipStatus(status);
-        }
-
         let isFirstBeat = true;
-        let previousStatus = status;
-        let duration = 0;
 
         let bean = R.dispense("heartbeat");
         bean.time = R.isoDateTimeMillis(dayjs.utc());
+        bean.monitor_id = monitor.id;
+        bean.ping = ping;
+        bean.msg = msg;
+        bean.downCount = previousHeartbeat?.downCount || 0;
 
         if (previousHeartbeat) {
             isFirstBeat = false;
-            previousStatus = previousHeartbeat.status;
-            duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
+            bean.duration = dayjs(bean.time).diff(dayjs(previousHeartbeat.time), "second");
         }
 
         if (await Monitor.isUnderMaintenance(monitor.id)) {
             msg = "Monitor under maintenance";
-            status = MAINTENANCE;
+            bean.status = MAINTENANCE;
+        } else {
+            determineStatus(status, previousHeartbeat, monitor.maxretries, monitor.isUpsideDown(), bean);
         }
 
-        log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
-        log.debug("router", "PreviousStatus: " + previousStatus);
-        log.debug("router", "Current Status: " + status);
+        // Calculate uptime
+        let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitor.id);
+        let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+        bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
-        bean.important = Monitor.isImportantBeat(isFirstBeat, previousStatus, status);
-        bean.monitor_id = monitor.id;
-        bean.status = status;
-        bean.msg = msg;
-        bean.ping = ping;
-        bean.duration = duration;
+        log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);
+        log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
+        log.debug("router", "Current Status: " + bean.status);
+
+        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, status);
+
+        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, status)) {
+            // Reset down count
+            bean.downCount = 0;
+
+            log.debug("monitor", `[${this.name}] sendNotification`);
+            await Monitor.sendNotification(isFirstBeat, monitor, bean);
+        } else {
+            if (bean.status === DOWN && this.resendInterval > 0) {
+                ++bean.downCount;
+                if (bean.downCount >= this.resendInterval) {
+                    // Send notification again, because we are still DOWN
+                    log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
+                    await Monitor.sendNotification(isFirstBeat, this, bean);
+
+                    // Reset down count
+                    bean.downCount = 0;
+                }
+            }
+        }
 
         await R.store(bean);
 
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
-        UptimeCacheList.clearCache(monitor.id);
+
         Monitor.sendStats(io, monitor.id, monitor.user_id);
         new Prometheus(monitor).update(bean, undefined);
 
         response.json({
             ok: true,
         });
-
-        if (Monitor.isImportantForNotification(isFirstBeat, previousStatus, status)) {
-            await Monitor.sendNotification(isFirstBeat, monitor, bean);
-        }
-
     } catch (e) {
         response.status(404).json({
             ok: false,
@@ -205,8 +230,12 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
         // if no duration is given, set value to 24 (h)
-        const requestedDuration = request.params.duration !== undefined ? parseInt(request.params.duration, 10) : 24;
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
+
+        if (requestedDuration === "24") {
+            requestedDuration = "24h";
+        }
 
         let publicMonitor = await R.getRow(`
                 SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -224,10 +253,8 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.message = "N/A";
             badgeValues.color = badgeConstants.naColor;
         } else {
-            const uptime = overrideValue ?? await Monitor.calcUptime(
-                requestedDuration,
-                requestedMonitorId
-            );
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
             const cleanUptime = (uptime * 100).toPrecision(4);
@@ -273,19 +300,17 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         const requestedMonitorId = parseInt(request.params.id, 10);
 
         // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
-        const requestedDuration = Math.min(request.params.duration ? parseInt(request.params.duration, 10) : 24, 720);
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
 
-        const publicAvgPing = parseInt(await R.getCell(`
-                SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
-                WHERE monitor_group.group_id = \`group\`.id
-                AND heartbeat.time > DATETIME('now', ? || ' hours')
-                AND heartbeat.ping IS NOT NULL
-                AND public = 1
-                AND heartbeat.monitor_id = ?
-            `,
-        [ -requestedDuration, requestedMonitorId ]
-        ));
+        if (requestedDuration === "24") {
+            requestedDuration = "24h";
+        }
+
+        // Check if monitor is public
+
+        const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
+        const publicAvgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
 
         const badgeValues = { style };
 
@@ -342,10 +367,12 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
         );
         const overrideValue = value && parseFloat(value);
 
+        const sqlHourOffset = Database.sqlHourOffset();
+
         const publicAvgPing = parseInt(await R.getCell(`
             SELECT AVG(ping) FROM monitor_group, \`group\`, heartbeat
             WHERE monitor_group.group_id = \`group\`.id
-            AND heartbeat.time > DATETIME('now', ? || ' hours')
+            AND heartbeat.time > ${sqlHourOffset}
             AND heartbeat.ping IS NOT NULL
             AND public = 1
             AND heartbeat.monitor_id = ?
@@ -442,7 +469,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
                 if (!tlsInfo.valid) {
                     // return a "Bad Cert" badge in naColor (grey), when cert is not valid
                     badgeValues.message = "Bad Cert";
-                    badgeValues.color = badgeConstants.downColor;
+                    badgeValues.color = downColor;
                 } else {
                     const daysRemaining = parseInt(overrideValue ?? tlsInfo.certInfo.daysRemaining);
 
@@ -547,5 +574,59 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
         sendHttpError(response, error.message);
     }
 });
+
+/**
+ * Determines the status of the next beat in the push route handling.
+ * @param {string} status - The reported new status.
+ * @param {object} previousHeartbeat - The previous heartbeat object.
+ * @param {number} maxretries - The maximum number of retries allowed.
+ * @param {boolean} isUpsideDown - Indicates if the monitor is upside down.
+ * @param {object} bean - The new heartbeat object.
+ * @returns {void}
+ */
+function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, bean) {
+    if (isUpsideDown) {
+        status = flipStatus(status);
+    }
+
+    if (previousHeartbeat) {
+        if (previousHeartbeat.status === UP && status === DOWN) {
+            // Going Down
+            if ((maxretries > 0) && (previousHeartbeat.retries < maxretries)) {
+                // Retries available
+                bean.retries = previousHeartbeat.retries + 1;
+                bean.status = PENDING;
+            } else {
+                // No more retries
+                bean.retries = 0;
+                bean.status = DOWN;
+            }
+        } else if (previousHeartbeat.status === PENDING && status === DOWN && previousHeartbeat.retries < maxretries) {
+            // Retries available
+            bean.retries = previousHeartbeat.retries + 1;
+            bean.status = PENDING;
+        } else {
+            // No more retries or not pending
+            if (status === DOWN) {
+                bean.retries = previousHeartbeat.retries + 1;
+                bean.status = status;
+            } else {
+                bean.retries = 0;
+                bean.status = status;
+            }
+        }
+    } else {
+        // First beat?
+        if (status === DOWN && maxretries > 0) {
+            // Retries available
+            bean.retries = 1;
+            bean.status = PENDING;
+        } else {
+            // Retires not enabled
+            bean.retries = 0;
+            bean.status = status;
+        }
+    }
+}
 
 module.exports = router;

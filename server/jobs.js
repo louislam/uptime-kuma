@@ -1,5 +1,6 @@
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const { clearOldData } = require("./jobs/clear-old-data");
+const { incrementalVacuum } = require("./jobs/incremental-vacuum");
 const Cron = require("croner");
 
 const jobs = [
@@ -9,6 +10,12 @@ const jobs = [
         jobFunc: clearOldData,
         croner: null,
     },
+    {
+        name: "incremental-vacuum",
+        interval: "*/5 * * * *",
+        jobFunc: incrementalVacuum,
+        croner: null,
+    }
 ];
 
 /**
@@ -32,7 +39,10 @@ const initBackgroundJobs = async function () {
 
 };
 
-/** Stop all background jobs if running */
+/**
+ * Stop all background jobs if running
+ * @returns {void}
+ */
 const stopBackgroundJobs = function () {
     for (const job of jobs) {
         if (job.croner) {

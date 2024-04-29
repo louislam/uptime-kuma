@@ -19,7 +19,7 @@ import DockerHosts from "./components/settings/Docker.vue";
 import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
 import APIKeys from "./components/settings/APIKeys.vue";
-import Plugins from "./components/settings/Plugins.vue";
+import SetupDatabase from "./pages/SetupDatabase.vue";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
@@ -30,8 +30,8 @@ import Tags from "./components/settings/Tags.vue";
 import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
-import Backup from "./components/settings/Backup.vue";
 import About from "./components/settings/About.vue";
+import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
 
 const routes = [
     {
@@ -115,6 +115,10 @@ const routes = [
                                 component: DockerHosts,
                             },
                             {
+                                path: "remote-browsers",
+                                component: RemoteBrowsers,
+                            },
+                            {
                                 path: "security",
                                 component: Security,
                             },
@@ -125,14 +129,6 @@ const routes = [
                             {
                                 path: "proxies",
                                 component: Proxies,
-                            },
-                            {
-                                path: "backup",
-                                component: Backup,
-                            },
-                            {
-                                path: "plugins",
-                                component: Plugins,
                             },
                             {
                                 path: "about",
@@ -171,6 +167,10 @@ const routes = [
     {
         path: "/setup",
         component: Setup,
+    },
+    {
+        path: "/setup-database",
+        component: SetupDatabase,
     },
     {
         path: "/status-page",

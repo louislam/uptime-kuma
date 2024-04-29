@@ -3,11 +3,13 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Discord extends NotificationProvider {
-
     name = "discord";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
@@ -30,6 +32,7 @@ class Discord extends NotificationProvider {
                     break;
                 case "port":
                 case "dns":
+                case "gamedig":
                 case "steam":
                     address = monitorJSON["hostname"];
                     if (monitorJSON["port"]) {

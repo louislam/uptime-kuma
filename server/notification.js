@@ -6,6 +6,8 @@ const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bark = require("./notification-providers/bark");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
+const CallMeBot = require("./notification-providers/call-me-bot");
+const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Feishu = require("./notification-providers/feishu");
@@ -13,18 +15,22 @@ const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
+const GrafanaOncall = require("./notification-providers/grafana-oncall");
 const HomeAssistant = require("./notification-providers/home-assistant");
+const HeiiOnCall = require("./notification-providers/heii-oncall");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
+const Nostr = require("./notification-providers/nostr");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
+const FlashDuty = require("./notification-providers/flashduty");
 const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
@@ -50,14 +56,23 @@ const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
+const SevenIO = require("./notification-providers/sevenio");
+const Whapi = require("./notification-providers/whapi");
+const GtxMessaging = require("./notification-providers/gtx-messaging");
+const Cellsynt = require("./notification-providers/cellsynt");
 
 class Notification {
 
     providerList = {};
 
-    /** Initialize the notification providers */
+    /**
+     * Initialize the notification providers
+     * @returns {void}
+     * @throws Notification provider does not have a name
+     * @throws Duplicate notification providers in list
+     */
     static init() {
-        log.info("notification", "Prepare Notification Providers");
+        log.debug("notification", "Prepare Notification Providers");
 
         this.providerList = {};
 
@@ -68,6 +83,8 @@ class Notification {
             new Apprise(),
             new Bark(),
             new ClickSendSMS(),
+            new CallMeBot(),
+            new SMSC(),
             new DingDing(),
             new Discord(),
             new Feishu(),
@@ -75,18 +92,22 @@ class Notification {
             new GoogleChat(),
             new Gorush(),
             new Gotify(),
+            new GrafanaOncall(),
             new HomeAssistant(),
+            new HeiiOnCall(),
             new Kook(),
             new Line(),
             new LineNotify(),
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
+            new Nostr(),
             new Ntfy(),
             new Octopush(),
             new OneBot(),
             new Opsgenie(),
             new PagerDuty(),
+            new FlashDuty(),
             new PagerTree(),
             new PromoSMS(),
             new Pushbullet(),
@@ -111,9 +132,12 @@ class Notification {
             new Webhook(),
             new WeCom(),
             new GoAlert(),
-            new ZohoCliq()
+            new ZohoCliq(),
+            new SevenIO(),
+            new Whapi(),
+            new GtxMessaging(),
+            new Cellsynt(),
         ];
-
         for (let item of list) {
             if (! item.name) {
                 throw new Error("Notification provider without name");
@@ -128,10 +152,10 @@ class Notification {
 
     /**
      * Send a notification
-     * @param {BeanModel} notification
+     * @param {BeanModel} notification Notification to send
      * @param {string} msg General Message
-     * @param {Object} monitorJSON Monitor details (For Up/Down only)
-     * @param {Object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @param {object} monitorJSON Monitor details (For Up/Down only)
+     * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} Successful msg
      * @throws Error with fail msg
      */
@@ -145,10 +169,10 @@ class Notification {
 
     /**
      * Save a notification
-     * @param {Object} notification Notification to save
+     * @param {object} notification Notification to save
      * @param {?number} notificationID ID of notification to update
      * @param {number} userID ID of user who adds notification
-     * @returns {Promise<Bean>}
+     * @returns {Promise<Bean>} Notification that was saved
      */
     static async save(notification, notificationID, userID) {
         let bean;

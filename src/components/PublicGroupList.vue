@@ -61,12 +61,17 @@
                                                 />
                                             </span>
                                         </div>
-                                        <div v-if="showTags" class="tags">
-                                            <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                        <div class="extra-info">
+                                            <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
+                                                <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
+                                            </div>
+                                            <div v-if="showTags">
+                                                <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                            </div>
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                                        <HeartbeatBar size="small" :monitor-id="monitor.element.id" />
+                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
                             </div>
@@ -103,6 +108,10 @@ export default {
         /** Should tags be shown? */
         showTags: {
             type: Boolean,
+        },
+        /** Should expiry be shown? */
+        showCertificateExpiry: {
+            type: Boolean,
         }
     },
     data() {
@@ -122,6 +131,7 @@ export default {
         /**
          * Remove the specified group
          * @param {number} index Index of group to remove
+         * @returns {void}
          */
         removeGroup(index) {
             this.$root.publicGroupList.splice(index, 1);
@@ -132,6 +142,7 @@ export default {
          * @param {number} groupIndex Index of group to remove monitor
          * from
          * @param {number} index Index of monitor to remove
+         * @returns {void}
          */
         removeMonitor(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList.splice(index, 1);
@@ -141,18 +152,45 @@ export default {
          * Should a link to the monitor be shown?
          * Attempts to guess if a link should be shown based upon if
          * sendUrl is set and if the URL is default or not.
-         * @param {Object} monitor Monitor to check
-         * @param {boolean} [ignoreSendUrl=false] Should the presence of the sendUrl
+         * @param {object} monitor Monitor to check
+         * @param {boolean} ignoreSendUrl Should the presence of the sendUrl
          * property be ignored. This will only work in edit mode.
-         * @returns {boolean}
+         * @returns {boolean} Should the link be shown
          */
         showLink(monitor, ignoreSendUrl = false) {
             // We must check if there are any elements in monitorList to
             // prevent undefined errors if it hasn't been loaded yet
             if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
-                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword";
+                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
             }
-            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
+            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
+        },
+
+        /**
+         * Returns formatted certificate expiry or Bad cert message
+         * @param {object} monitor Monitor to show expiry for
+         * @returns {string} Certificate expiry message
+         */
+        formattedCertExpiryMessage(monitor) {
+            if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
+                return monitor.element.certExpiryDaysRemaining + " " + this.$tc("day", monitor.element.certExpiryDaysRemaining);
+            } else if (monitor?.element?.validCert === false) {
+                return this.$t("noOrBadCertificate");
+            } else {
+                return this.$t("Unknown") + " " + this.$tc("day", 2);
+            }
+        },
+
+        /**
+         * Returns certificate expiry color based on days remaining
+         * @param {object} monitor Monitor to show expiry for
+         * @returns {string} Color for certificate expiry
+         */
+        certExpiryColor(monitor) {
+            if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
+                return "#059669";
+            }
+            return "#DC2626";
         },
     }
 };
@@ -160,6 +198,15 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars";
+
+.extra-info {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.extra-info > div > div:first-child {
+    margin-left: 0 !important;
+}
 
 .no-monitor-msg {
     position: absolute;
