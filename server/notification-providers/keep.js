@@ -34,7 +34,7 @@ class Keep extends NotificationProvider {
                 url = url.slice(0, -1);
             }
 
-            let webhookURL = url + "/alert/events/uptimekuma";
+            let webhookURL = url + "/alert/event/uptimekuma";
 
             await axios.post(webhookURL, data, config);
             return okMsg;
