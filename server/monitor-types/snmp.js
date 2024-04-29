@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { UP, DOWN } = require("../../src/util");
-const snmp = require("snmp-native");
+const snmp = require("net-snmp");
 
 class SNMPMonitorType extends MonitorType {
     name = "snmp";
