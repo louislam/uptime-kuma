@@ -924,9 +924,6 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     remote_browser: null,
-    port: 161,
-    communityString: 'public',
-    oid: '1.3.6.1.2.1.1.1.0',
 };
 
 export default {
@@ -1243,9 +1240,16 @@ message HealthCheckResponse {
                     this.monitor.port = "53";
                 } else if (this.monitor.type === "radius") {
                     this.monitor.port = "1812";
+                } else if (this.monitor.type === "snmp") {
+                    this.monitor.port = "161";
                 } else {
                     this.monitor.port = undefined;
                 }
+            }
+
+            // Set default SNMP version
+            if (!this.monitor.snmpVersion) {
+                this.monitor.snmpVersion = "2c";
             }
 
             // Get the game list from server
