@@ -2,7 +2,7 @@
     <div>
         <div
             v-if="settings.disableAuth"
-            class="mt-5 d-flex align-items-center justify-content-center my-3"
+            class="mt-5 d-flex align-items-center justify-content-center my-3" 
         >
             {{ $t("apiKeysDisabledMsg") }}
         </div>
