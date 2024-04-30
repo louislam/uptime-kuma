@@ -124,6 +124,8 @@ async function createTables() {
         table.integer("resend_interval").notNullable().defaultTo(0);
         table.integer("packet_size").notNullable().defaultTo(56);
         table.string("game", 255);
+        table.text("request").defaultTo(null);
+        table.boolean("start_tls").notNullable().defaultTo(false);
     });
 
     // heartbeat
