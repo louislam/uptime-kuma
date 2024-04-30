@@ -123,6 +123,7 @@ export default {
                 "GrafanaOncall": "Grafana Oncall",
                 "HeiiOnCall": "Heii On-Call",
                 "HomeAssistant": "Home Assistant",
+                "Keep": "Keep",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
                 "LineNotify": "LINE Notify",
