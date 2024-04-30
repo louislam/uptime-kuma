@@ -19,7 +19,7 @@
                 <a v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'mp-health' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ filterPassword(monitor.url) }}</a>
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
-                <span v-if="monitor.type === 'keyword'">
+                <span v-if="monitor.type === 'keyword' || monitor.type === 'port-tls'">
                     <br>
                     <span>{{ $t("Keyword") }}: </span>
                     <span class="keyword">{{ monitor.keyword }}</span>
