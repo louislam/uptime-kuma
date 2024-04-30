@@ -17,6 +17,7 @@ import GrafanaOncall from "./GrafanaOncall.vue";
 import GtxMessaging from "./GtxMessaging.vue";
 import HomeAssistant from "./HomeAssistant.vue";
 import HeiiOnCall from "./HeiiOnCall.vue";
+import Keep from "./Keep.vue";
 import Kook from "./Kook.vue";
 import Line from "./Line.vue";
 import LineNotify from "./LineNotify.vue";
@@ -55,6 +56,7 @@ import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
+import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import Cellsynt from "./Cellsynt.vue";
 
@@ -81,6 +83,7 @@ const NotificationFormList = {
     "GrafanaOncall": GrafanaOncall,
     "HomeAssistant": HomeAssistant,
     "HeiiOnCall": HeiiOnCall,
+    "Keep": Keep,
     "Kook": Kook,
     "line": Line,
     "LineNotify": LineNotify,
@@ -119,6 +122,7 @@ const NotificationFormList = {
     "GoAlert": GoAlert,
     "ServerChan": ServerChan,
     "ZohoCliq": ZohoCliq,
+    "SevenIO": SevenIO,
     "whapi": Whapi,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
