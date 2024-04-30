@@ -245,19 +245,19 @@
                             <!-- SNMP Monitor Type -->
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_community_string" class="form-label">{{ $t("Community String") }}</label>
-                                <input id="snmp_community_string" v-model="monitor.snmpCommunityString" type="text" class="form-control" required>
+                                <input id="snmp_community_string" v-model="monitor.snmpCommunityString" type="text" class="form-control" required placeholder="Example: public">
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_oid" class="form-label">{{ $t("OID (Object Identifier)") }}</label>
-                                <input id="snmp_oid" v-model="monitor.snmpOid" type="text" class="form-control" required>
+                                <input id="snmp_oid" v-model="monitor.snmpOid" type="text" class="form-control" required pattern="^([0-2])((\.0)|(\.[1-9][0-9]*))*$" title="Please enter a valid OID, e.g. 1.3.6.1.4.1.9.6.1.101" placeholder="Example: 1.3.6.1.4.1.9.6.1.101">
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <div class="d-flex align-items-start">
                                     <div>
                                         <label for="snmp_condition" class="form-label">{{ $t("Condition") }}</label>
-                                        <select id="snmp_condition" v-model="monitor.snmpCondition" class="form-select me-3">
+                                        <select id="snmp_condition" v-model="monitor.snmpCondition" class="form-select me-3" required>
                                             <option value=">">></option>
                                             <option value=">=">>=</option>
                                             <option value="<"><</option>
@@ -268,7 +268,8 @@
                                     </div>
                                     <div>
                                         <label for="snmp_control_value" class="form-label">{{ $t("Control Value") }}</label>
-                                        <input id="snmp_control_value" v-model="monitor.snmpControlValue" type="number" class="form-control" required step=".01">
+                                        <input v-if="monitor.snmpCondition !== 'contains' && monitor.snmpCondition !== '=='" id="snmp_control_value" v-model="monitor.snmpControlValue" type="number" class="form-control" required step=".01">
+                                        <input v-else id="snmp_control_value" v-model="monitor.snmpControlValue" type="text" class="form-control" required>
                                     </div>
                             </div>
                         </div>
