@@ -161,6 +161,10 @@ class Monitor extends BeanModel {
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
             remote_browser: this.remote_browser,
+            snmpOid: this.snmpOid,
+            snmpCondition: this.snmpCondition,
+            snmpControlValue: this.snmpControlValue,
+            snmpVersion: this.snmpVersion,
         };
 
         if (includeSensitiveData) {
@@ -190,6 +194,7 @@ class Monitor extends BeanModel {
                 tlsCert: this.tlsCert,
                 tlsKey: this.tlsKey,
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
+                snmpCommunityString: this.snmpCommunityString,
             };
         }
 

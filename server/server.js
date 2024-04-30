@@ -830,6 +830,11 @@ let needSetup = false;
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.remote_browser = monitor.remote_browser;
+                bean.snmpVersion = monitor.snmpVersion;
+                bean.snmpCommunityString = monitor.snmpCommunityString;
+                bean.snmpOid = monitor.snmpOid;
+                bean.snmpCondition = monitor.snmpCondition;
+                bean.snmpControlValue = monitor.snmpControlValue;
 
                 bean.validate();
 
