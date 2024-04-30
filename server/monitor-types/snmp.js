@@ -6,18 +6,9 @@ class SNMPMonitorType extends MonitorType {
     name = "snmp";
 
     /**
-     * Checks the SNMP value against the condition and control value.
-     * @param {object} monitor The monitor object associated with the check.
-     * @param {object} heartbeat The heartbeat object to update.
-     * @param {object} _server Unused server object.
+     * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-
-        log.debug("monitor", `SNMP: Community String: ${monitor.snmpCommunityString}`);
-        log.debug("monitor", `SNMP: OID: ${monitor.snmpOid}`);
-        log.debug("monitor", `SNMP: Version: ${monitor.snmpVersion}`);
-        log.debug("monitor", `SNMP: Condition: ${monitor.snmpCondition}`);
-        log.debug("monitor", `SNMP: Control Value: ${monitor.snmpControlValue}`);
 
         const options = {
             port: monitor.port || '161',
@@ -37,7 +28,7 @@ class SNMPMonitorType extends MonitorType {
             session.on('error', (error) => {
                 heartbeat.status = DOWN;
                 heartbeat.msg = `SNMP: Error creating SNMP session: ${error.message}`;
-                log.debug("monitor", `SNMP: ${heartbeat.msg}`);
+                log.debug("monitor", heartbeat.msg);
             });
 
             const varbinds = await new Promise((resolve, reject) => {
@@ -45,7 +36,7 @@ class SNMPMonitorType extends MonitorType {
                     if (error) {
                         reject(error);
                     } else {
-                        log.debug("monitor", `SNMP: Received varbinds: Type: ${getKey(snmp.ObjectType, varbinds[0].type)}, Value: ${varbinds[0].value}`); // Log the received varbinds for debugging
+                        log.debug("monitor", `SNMP: Received varbinds (Type=${getKey(snmp.ObjectType, varbinds[0].type)}): ${varbinds[0].value}`);
                         resolve(varbinds);
                     }
                 });
@@ -91,7 +82,7 @@ class SNMPMonitorType extends MonitorType {
                 heartbeat.msg = `SNMP value ` + (heartbeat.status ? `passes` : `does not pass`) + ` comparison: ${value.toString('ascii')} ${monitor.snmpCondition} ${monitor.snmpControlValue}`;
 
             }
-            session.close(); // Close the session after use
+            session.close();
 
         } catch (err) {
             heartbeat.status = DOWN;
