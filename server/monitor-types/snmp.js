@@ -32,7 +32,7 @@ class SNMPMonitorType extends MonitorType {
         }
 
         try {
-            const session = snmp.createSession(monitor._ipAddress, monitor._snmpCommunityString, options);
+            const session = snmp.createSession(monitor.hostname, monitor.snmpCommunityString, options);
 
             const varbinds = await new Promise((resolve, reject) => {
                 session.get([monitor._snmpOid], (error, varbinds) => {
