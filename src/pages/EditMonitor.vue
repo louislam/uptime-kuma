@@ -255,7 +255,7 @@
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <div class="d-flex align-items-start">
-                                    <div>
+                                    <div class="me-2">
                                         <label for="snmp_condition" class="form-label">{{ $t("Condition") }}</label>
                                         <select id="snmp_condition" v-model="monitor.snmpCondition" class="form-select me-3" required>
                                             <option value=">">></option>
@@ -266,7 +266,7 @@
                                             <option value="contains">contains</option>
                                         </select>
                                     </div>
-                                    <div>
+                                    <div class="flex-grow-1">
                                         <label for="snmp_control_value" class="form-label">{{ $t("Control Value") }}</label>
                                         <input v-if="monitor.snmpCondition !== 'contains' && monitor.snmpCondition !== '=='" id="snmp_control_value" v-model="monitor.snmpControlValue" type="number" class="form-control" required step=".01">
                                         <input v-else id="snmp_control_value" v-model="monitor.snmpControlValue" type="text" class="form-control" required>
