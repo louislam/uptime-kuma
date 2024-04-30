@@ -8,4 +8,7 @@ exports.up = function (knex) {
             table.string("snmp_condition").defaultTo(null); // Add oid column
         });
 };
+
+exports.down = function (knex) {
+    // Nothing to do here
 };
