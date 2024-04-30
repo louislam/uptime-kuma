@@ -1,6 +1,5 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const FormData = require("form-data");
 
 class Keep extends NotificationProvider {
     name = "Keep";
@@ -20,13 +19,9 @@ class Keep extends NotificationProvider {
             let config = {
                 headers: {
                     "x-api-key": notification.webhookAPIKey,
+                    "content-type": "application/json",
                 },
             };
-
-            const formData = new FormData();
-            formData.append("data", JSON.stringify(data));
-            config.headers = formData.getHeaders();
-            data = formData;
 
             let url = notification.webhookURL;
 
@@ -34,7 +29,7 @@ class Keep extends NotificationProvider {
                 url = url.slice(0, -1);
             }
 
-            let webhookURL = url + "/alert/event/uptimekuma";
+            let webhookURL = url + "/alerts/event/uptimekuma";
 
             await axios.post(webhookURL, data, config);
             return okMsg;
