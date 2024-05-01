@@ -209,6 +209,11 @@ class Database {
         let config = {};
 
         let mariadbPoolConfig = {
+            pool: {
+                min: 0,
+                max: 10,
+                idleTimeoutMillis: 30000,
+            },
             afterCreate: function (conn, done) {
 
             }
