@@ -258,10 +258,10 @@
                                     <div class="me-2">
                                         <label for="snmp_condition" class="form-label">{{ $t("Condition") }}</label>
                                         <select id="snmp_condition" v-model="monitor.snmpCondition" class="form-select me-3" required>
-                                            <option value=">">></option>
-                                            <option value=">=">>=</option>
-                                            <option value="<"><</option>
-                                            <option value="<="><=</option>
+                                            <option value=">">&gt;</option>
+                                            <option value=">=">&gt;=</option>
+                                            <option value="<">&lt;</option>
+                                            <option value="<=">&lt;=</option>
                                             <option value="==">==</option>
                                             <option value="contains">contains</option>
                                         </select>
@@ -271,23 +271,23 @@
                                         <input v-if="monitor.snmpCondition !== 'contains' && monitor.snmpCondition !== '=='" id="snmp_control_value" v-model="monitor.snmpControlValue" type="number" class="form-control" required step=".01">
                                         <input v-else id="snmp_control_value" v-model="monitor.snmpControlValue" type="text" class="form-control" required>
                                     </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div v-if="monitor.type === 'snmp'" class="my-3">
-                            <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
-                            <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
-                                <option value="1">
-                                    SNMPv1
-                                </option>
-                                <option value="2c">
-                                    SNMPv2c
-                                </option>
-                                <option value="3">
-                                    SNMPv3
-                                </option>
-                            </select>
-                        </div>
+                            <div v-if="monitor.type === 'snmp'" class="my-3">
+                                <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
+                                <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
+                                    <option value="1">
+                                        SNMPv1
+                                    </option>
+                                    <option value="2c">
+                                        SNMPv2c
+                                    </option>
+                                    <option value="3">
+                                        SNMPv3
+                                    </option>
+                                </select>
+                            </div>
 
                         <!-- DNS Resolver Server -->
                         <!-- For DNS Type -->
