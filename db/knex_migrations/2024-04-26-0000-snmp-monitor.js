@@ -10,5 +10,11 @@ exports.up = function (knex) {
 };
 
 exports.down = function (knex) {
-    // Nothing to do here
+    return knex.schema.alterTable("monitor", function (table) {
+        table.dropColumn("snmp_community_string");
+        table.dropColumn("snmp_oid");
+        table.dropColumn("snmp_version");
+        table.dropColumn("snmp_control_value");
+        table.dropColumn("snmp_condition");
+    });
 };
