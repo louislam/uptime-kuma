@@ -93,7 +93,6 @@ class SNMPMonitorType extends MonitorType {
         } catch (err) {
             heartbeat.status = DOWN;
             heartbeat.msg = `SNMP Error: ${err.message}`;
-            log.debug("monitor", `SNMP: ${heartbeat.msg}`);
         }
     }
 
