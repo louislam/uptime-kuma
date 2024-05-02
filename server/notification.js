@@ -18,6 +18,7 @@ const Gotify = require("./notification-providers/gotify");
 const GrafanaOncall = require("./notification-providers/grafana-oncall");
 const HomeAssistant = require("./notification-providers/home-assistant");
 const HeiiOnCall = require("./notification-providers/heii-oncall");
+const Keep = require("./notification-providers/keep");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
@@ -95,6 +96,7 @@ class Notification {
             new GrafanaOncall(),
             new HomeAssistant(),
             new HeiiOnCall(),
+            new Keep(),
             new Kook(),
             new Line(),
             new LineNotify(),
