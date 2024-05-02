@@ -52,40 +52,36 @@ class SNMPMonitorType extends MonitorType {
                 throw new Error(`No varbinds returned from SNMP session (OID: ${monitor.snmpOid})`);
             } else {
                 const value = varbinds[0].value;
-                const numericValue = parseInt(value);
-                const stringValue = value.toString("ascii");
+
+                // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
+                let snmpValue = isNaN(value) ? value.toString() : parseFloat(value);
+                let snmpControlValue = isNaN(monitor.snmpControlValue) ? monitor.snmpControlValue.toString() : parseFloat(monitor.snmpControlValue);
 
                 switch (monitor.snmpCondition) {
                     case ">":
-                        heartbeat.status = numericValue > monitor.snmpControlValue ? UP : DOWN;
+                        heartbeat.status = snmpValue > snmpControlValue ? UP : DOWN;
                         break;
                     case ">=":
-                        heartbeat.status = numericValue >= monitor.snmpControlValue ? UP : DOWN;
+                        heartbeat.status = snmpValue >= snmpControlValue ? UP : DOWN;
                         break;
                     case "<":
-                        heartbeat.status = numericValue < monitor.snmpControlValue ? UP : DOWN;
+                        heartbeat.status = snmpValue < snmpControlValue ? UP : DOWN;
                         break;
                     case "<=":
-                        heartbeat.status = numericValue <= monitor.snmpControlValue ? UP : DOWN;
+                        heartbeat.status = snmpValue <= snmpControlValue ? UP : DOWN;
                         break;
                     case "==":
-                        if (!isNaN(value) && !isNaN(monitor.snmpControlValue)) {
-                            // Both values are numeric, parse them as numbers
-                            heartbeat.status = parseFloat(value) === parseFloat(monitor.snmpControlValue) ? UP : DOWN;
-                        } else {
-                            // At least one of the values is not numeric, compare them as strings
-                            heartbeat.status = value.toString() === monitor.snmpControlValue.toString() ? UP : DOWN;
-                        }
+                        heartbeat.status = snmpValue.toString() === snmpControlValue.toString() ? UP : DOWN;
                         break;
                     case "contains":
-                        heartbeat.status = stringValue.includes(monitor.snmpControlValue) ? UP : DOWN;
+                        heartbeat.status = snmpValue.toString().includes(snmpControlValue.toString()) ? UP : DOWN;
                         break;
                     default:
                         heartbeat.status = DOWN;
                         heartbeat.msg = `Invalid condition: ${monitor.snmpCondition}`;
                         break;
                 }
-                heartbeat.msg = "SNMP value " + (heartbeat.status ? "passes" : "does not pass") + ` comparison: ${value.toString("ascii")} ${monitor.snmpCondition} ${monitor.snmpControlValue}`;
+                heartbeat.msg = "SNMP value " + (heartbeat.status ? "passes" : "does not pass") + ` comparison: ${value.toString()} ${monitor.snmpCondition} ${snmpControlValue}`;
 
             }
             session.close();
