@@ -1,6 +1,6 @@
 {
-    "name": "Uptime Kuma",
-    "short_name": "Uptime Kuma",
+    "name": "Up_Or_Down",
+    "short_name": "Up_Or_Down",
     "start_url": "/",
     "background_color": "#fff",
     "display": "standalone",

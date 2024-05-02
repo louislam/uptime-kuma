@@ -13,9 +13,9 @@ At this moment, I DO NOT accept other bug bounty platforms, because I am not fam
 
 ## Supported Versions
 
-### Uptime Kuma Versions
+### Up_Or_Down Versions
 
-You should use or upgrade to the latest version of Uptime Kuma. All `1.X.X` versions are upgradable to the latest version.
+You should use or upgrade to the latest version of Up_Or_Down. All `1.X.X` versions are upgradable to the latest version.
 
 ### Upgradable Docker Tags
 

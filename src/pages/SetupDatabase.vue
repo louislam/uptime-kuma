@@ -4,7 +4,7 @@
             <div>
                 <object width="64" height="64" data="/icon.svg" />
                 <div style="font-size: 28px; font-weight: bold; margin-top: 5px;">
-                    Uptime Kuma
+                    Up_Or_Down
                 </div>
             </div>
 

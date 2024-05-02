@@ -2,9 +2,9 @@
     <img src="./public/icon.svg" width="128" alt="" />
 </div>
 
-# Uptime Kuma
+# Up_Or_Down
 
-Uptime Kuma is an easy-to-use self-hosted monitoring tool.
+Up_Or_Down is an easy-to-use self-hosted monitoring tool.
 
 <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma?style=flat" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
@@ -19,7 +19,7 @@ Try it!
 
 Demo Server (Location: Frankfurt - Germany): https://demo.kuma.pet/start-demo
 
-It is a temporary live demo, all data will be deleted after 10 minutes. Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors).
+It is a temporary live demo, all data will be deleted after 10 minutes. Sponsored by [Up_Or_Down Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors).
 
 ## ⭐ Features
 
@@ -43,7 +43,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-Uptime Kuma is now running on http://localhost:3001
+Up_Or_Down is now running on http://localhost:3001
 
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
@@ -59,7 +59,7 @@ Requirements:
 - [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 / 20.4
 - [npm](https://docs.npmjs.com/cli/) 9
 - [Git](https://git-scm.com/downloads)
-- [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
+- [pm2](https://pm2.keymetrics.io/) - For running Up_Or_Down in the background
 
 ```bash
 # Update your npm
@@ -80,7 +80,7 @@ npm install pm2 -g && pm2 install pm2-logrotate
 pm2 start server/server.js --name uptime-kuma
 ```
 
-Uptime Kuma is now running on http://localhost:3001
+Up_Or_Down is now running on http://localhost:3001
 
 More useful PM2 Commands
 
@@ -149,7 +149,7 @@ If you love this project, please consider giving it a ⭐.
 
 ⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not respond if you ask questions there.
 
-I recommend using Google, GitHub Issues, or Uptime Kuma's subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
+I recommend using Google, GitHub Issues, or Up_Or_Down's subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
 
 - [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
 - [Subreddit (r/UptimeKuma)](https://www.reddit.com/r/UptimeKuma/)
@@ -181,7 +181,7 @@ If you want to report a bug or request a new feature, feel free to open a [new i
 
 ### Translations
 
-If you want to translate Uptime Kuma into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+If you want to translate Up_Or_Down into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
 ### Spelling & Grammar
 

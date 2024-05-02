@@ -11,7 +11,7 @@ class MqttMonitorType extends MonitorType {
      * Run the monitoring check on the MQTT monitor
      * @param {Monitor} monitor Monitor to check
      * @param {Heartbeat} heartbeat Monitor heartbeat to update
-     * @param {UptimeKumaServer} server Uptime Kuma server
+     * @param {UptimeKumaServer} server Up_Or_Down server
      * @returns {Promise<void>}
      */
     async check(monitor, heartbeat, server) {

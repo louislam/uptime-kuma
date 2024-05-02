@@ -1,4 +1,4 @@
-console.log("== Uptime Kuma Remove 2FA Tool ==");
+console.log("== Up_Or_Down Remove 2FA Tool ==");
 console.log("Loading the database");
 
 const Database = require("../server/database");

@@ -1,6 +1,6 @@
 # Codespaces
 
-You can modifiy Uptime Kuma in your browser without setting up a local development.
+You can modifiy Up_Or_Down in your browser without setting up a local development.
 
 ![image](https://github.com/louislam/uptime-kuma/assets/1336778/31d9f06d-dd0b-4405-8e0d-a96586ee4595)
 

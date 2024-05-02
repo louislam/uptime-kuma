@@ -44,7 +44,7 @@ namespace UptimeKuma {
     {
         private static Mutex mutex = null;
 
-        const string appName = "Uptime Kuma";
+        const string appName = "Up_Or_Down";
 
         private NotifyIcon trayIcon;
         private Process process;
@@ -169,7 +169,7 @@ namespace UptimeKuma {
                 });
 
             } catch (Exception e) {
-                MessageBox.Show("Startup failed: " + e.Message, "Uptime Kuma Error");
+                MessageBox.Show("Startup failed: " + e.Message, "Up_Or_Down Error");
             }
         }
 
@@ -230,7 +230,7 @@ namespace UptimeKuma {
 
         void About(object sender, EventArgs e)
         {
-            MessageBox.Show("Uptime Kuma Windows Runtime v1.0.0" + Environment.NewLine + "© 2023 Louis Lam", "Info");
+            MessageBox.Show("Up_Or_Down Windows Runtime v1.0.0" + Environment.NewLine + "© 2023 Louis Lam", "Info");
         }
 
         void Exit(object sender, EventArgs e)
@@ -250,7 +250,7 @@ namespace UptimeKuma {
                     line += process.StandardOutput.ReadLine();
                 }
 
-                MessageBox.Show("Uptime Kuma exited unexpectedly. Exit code: " + process.ExitCode + " " + line);
+                MessageBox.Show("Up_Or_Down exited unexpectedly. Exit code: " + process.ExitCode + " " + line);
             }
 
             trayIcon.Visible = false;

@@ -1,16 +1,16 @@
-ARG BASE_IMAGE=louislam/uptime-kuma:base2
+ARG BASE_IMAGE=gwamaka/up_or_down:base2
 
 ############################################
 # Build in Golang
 # Run npm run build-healthcheck-armv7 in the host first, otherwise it will be super slow where it is building the armv7 healthcheck
 # Check file: builder-go.dockerfile
 ############################################
-FROM louislam/uptime-kuma:builder-go AS build_healthcheck
+FROM gwamaka/up_or_down:builder-go AS build_healthcheck
 
 ############################################
 # Build in Node.js
 ############################################
-FROM louislam/uptime-kuma:base2 AS build
+FROM gwamaka/up_or_down:base2 AS build
 USER node
 WORKDIR /app
 
@@ -30,7 +30,7 @@ FROM $BASE_IMAGE AS release
 USER node
 WORKDIR /app
 
-LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
+LABEL org.opencontainers.image.source="https://github.com/gwamaka/up_or_down"
 
 ENV UPTIME_KUMA_IS_CONTAINER=1
 
@@ -59,7 +59,7 @@ USER node
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base2 AS pr-test2
+FROM gwamaka/up_or_down:base2 AS pr-test2
 WORKDIR /app
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
@@ -78,7 +78,7 @@ RUN rm -rf ./* && chown node /app
 USER node
 RUN git config --global user.email "no-reply@no-reply.com"
 RUN git config --global user.name "PR Tester"
-RUN git clone https://github.com/louislam/uptime-kuma.git .
+RUN git clone https://github.com/gwamaka/up_or_down.git .
 RUN npm ci
 
 EXPOSE 3000 3001
@@ -88,7 +88,7 @@ CMD ["npm", "run", "start-pr-test"]
 ############################################
 # Upload the artifact to Github
 ############################################
-FROM louislam/uptime-kuma:base2 AS upload-artifact
+FROM gwamaka/up_or_down:base2 AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file

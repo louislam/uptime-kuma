@@ -1,5 +1,5 @@
 name: "❓ Ask for help"
-description: "Submit any question related to Uptime Kuma"
+description: "Submit any question related to Up_Or_Down"
 #title: "[Help] "
 labels: [help]
 body:
@@ -35,8 +35,8 @@ body:
   - type: input
     id: uptime-kuma-version
     attributes:
-      label: "🐻 Uptime-Kuma Version"
-      description: "Which version of Uptime-Kuma are you running? Please do NOT provide the docker tag such as latest or 1"
+      label: "🐻 Up_Or_Down Version"
+      description: "Which version of Up_Or_Down are you running? Please do NOT provide the docker tag such as latest or 1"
       placeholder: "Ex. 1.10.0"
     validations:
       required: true

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Uptime Kuma")]
-[assembly: AssemblyDescription("A portable executable for running Uptime Kuma")]
+[assembly: AssemblyTitle("Up_Or_Down")]
+[assembly: AssemblyDescription("A portable executable for running Up_Or_Down")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Uptime Kuma")]
-[assembly: AssemblyProduct("Uptime Kuma")]
+[assembly: AssemblyCompany("Up_Or_Down")]
+[assembly: AssemblyProduct("Up_Or_Down")]
 [assembly: AssemblyCopyright("Copyright © 2023 Louis Lam")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

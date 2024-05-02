@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  uptime-kuma:
-    container_name: uptime-kuma-dev
-    image: louislam/uptime-kuma:nightly2
+  up_or_down:
+    container_name: up_or_down-dev
+    image: gwamaka/up_or_down:nightly2
     volumes:
       #- ./data:/app/data
       - ../server:/app/server

@@ -67,7 +67,7 @@ namespace UptimeKuma {
             this.MaximizeBox = false;
             this.Name = "DownloadForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Uptime Kuma";
+            this.Text = "Up_Or_Down";
             this.Load += new System.EventHandler(this.DownloadForm_Load);
             this.ResumeLayout(false);
         }

@@ -1,6 +1,6 @@
 # Project Info
 
-First of all, I want to thank everyone who have wrote issues or shared pull requests for Uptime Kuma.
+First of all, I want to thank everyone who have wrote issues or shared pull requests for Up_Or_Down.
 I never thought the GitHub community would be so nice!
 Because of this, I also never thought that other people would actually read and edit my code.
 Parts of the code are not very well-structured or commented, sorry about that.
@@ -25,7 +25,7 @@ For development, we run vite in development mode on another port.
 - `src` (Frontend source code)
 - `test` (unit test)
 
-## Can I create a pull request for Uptime Kuma?
+## Can I create a pull request for Up_Or_Down?
 
 Yes or no, it depends on what you will try to do.
 Both your and our maintainers time is precious, and we don't want to waste both time.
@@ -161,7 +161,7 @@ The following rules are essential for making your PR mergable:
   Such changes require a major version release.
 - **Test your code** before submitting a PR.
   Buggy PRs will not be merged.
-- Make sure the **UI/UX is close to Uptime Kuma**.
+- Make sure the **UI/UX is close to Up_Or_Down**.
 - **Think about the maintainability**:
   Don't add functionality that is completely **out of scope**.
   Keep in mind that we need to be able to maintain the functionality.
@@ -202,7 +202,7 @@ The rationale behind this is that we can align the direction and scope of the fe
 ## Project Styles
 
 I personally do not like something that requires so many configurations before you can finally start the app.
-The goal is to make the Uptime Kuma installation as easy as installing a mobile app.
+The goal is to make the Up_Or_Down installation as easy as installing a mobile app.
 
 - Easy to install for non-Docker users
   - no native build dependency is needed (for `x86_64`/`armv7`/`arm64`)
@@ -313,7 +313,7 @@ npm run build
 
 ### Frontend Details
 
-Uptime Kuma Frontend is a single page application (SPA). Most paths are handled by Vue Router.
+Up_Or_Down Frontend is a single page application (SPA). Most paths are handled by Vue Router.
 
 The router is in `src/router.js`
 
@@ -359,7 +359,7 @@ Please add **all** the strings which are translatable to `src/lang/en.json` (if 
 **Don't include any other languages in your initial pull request** (even if this is your mother tongue), to avoid merge-conflicts between weblate and `master`.
 The translations can then (after merging a PR into `master`) be translated by awesome people donating their language skills.
 
-If you want to help by translating Uptime Kuma into your language, please visit the [instructions on how to translate using weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+If you want to help by translating Up_Or_Down into your language, please visit the [instructions on how to translate using weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
 
 ## Spelling & Grammar
 
@@ -391,8 +391,8 @@ https://github.com/louislam/uptime-kuma-wiki
 - `beta2`: Latest beta build
 - `2.x.x-beta.x`
 - `nightly2`: Dev build
-- `base2`: Basic Debian setup without Uptime Kuma source code (Full features)
-- `base2-slim`: Basic Debian setup without Uptime Kuma source code
+- `base2`: Basic Debian setup without Up_Or_Down source code (Full features)
+- `base2-slim`: Basic Debian setup without Up_Or_Down source code
 - `pr-test2`: For testing pull request without setting up a local environment
 
 #### v1
@@ -402,9 +402,9 @@ https://github.com/louislam/uptime-kuma-wiki
 - `1.x.x-beta.x`: Beta build
 - `beta`: Latest beta build
 - `nightly`: Dev build
-- `base-debian`: Basic Debian setup without Uptime Kuma source code
+- `base-debian`: Basic Debian setup without Up_Or_Down source code
 - `pr-test`: For testing pull request without setting up a local environment
-- `base-alpine`: (Deprecated) Basic Alpine setup without Uptime Kuma source code
+- `base-alpine`: (Deprecated) Basic Alpine setup without Up_Or_Down source code
 - `1-alpine`, `alpine`: (Deprecated)
 - `1.x.x-alpine`: (Deprecated)
 

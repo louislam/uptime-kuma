@@ -86,7 +86,7 @@
     "Enable Auth": "Uključi autentifikaciju",
     "disableauth.message1": "Da li ste sigurni da želite da {disableAuth}?",
     "disable authentication": "isključite autentifikaciju",
-    "disableauth.message2": "To je za {intendThirdPartyAuth} ispred Uptime Kuma kao na primer Cloudflare Access.",
+    "disableauth.message2": "To je za {intendThirdPartyAuth} ispred Up_Or_Down kao na primer Cloudflare Access.",
     "where you intend to implement third-party authentication": "one koji imaju dodatu autentifikaciju",
     "Please use this option carefully!": "Molim Vas koristite ovo sa pažnjom.",
     "Logout": "Odloguj se",

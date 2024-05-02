@@ -179,7 +179,7 @@
     "Discourage search engines from indexing site": "Odradiť vyhľadávacie nástroje od indexovania stránky",
     "disableauth.message1": "Ste si istý, že chcete {disableAuth}?",
     "disable authentication": "vypnúť autentifikáciu",
-    "disableauth.message2": "Je navrhnutý pre scenáre, {intendThirdPartyAuth} pred Uptime Kuma, ako je Cloudflare Access, Authelia alebo iné autentifikačné mechanizmy.",
+    "disableauth.message2": "Je navrhnutý pre scenáre, {intendThirdPartyAuth} pred Up_Or_Down, ako je Cloudflare Access, Authelia alebo iné autentifikačné mechanizmy.",
     "where you intend to implement third-party authentication": "kde máte v úmysle implementovať autentifikáciu treťou stranou",
     "Confirm": "Potvrdiť",
     "Remember me": "Zapamätať si ma",

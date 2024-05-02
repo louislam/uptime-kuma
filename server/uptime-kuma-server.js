@@ -78,7 +78,7 @@ class UptimeKumaServer {
      *
      */
     constructor() {
-        // Set axios default user-agent to Uptime-Kuma/version
+        // Set axios default user-agent to Up_Or_Down/version
         axios.defaults.headers.common["User-Agent"] = this.getUserAgent();
 
         // Set default axios timeout to 5 minutes instead of infinity
@@ -483,7 +483,7 @@ class UptimeKumaServer {
      * @returns {string} User-Agent
      */
     getUserAgent() {
-        return "Uptime-Kuma/" + require("../package.json").version;
+        return "Up_Or_Down/" + require("../package.json").version;
     }
 
     /**

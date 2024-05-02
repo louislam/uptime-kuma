@@ -19,7 +19,7 @@ import * as utc from "dayjs/plugin/utc";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
-export const appName = "Uptime Kuma";
+export const appName = "Up_Or_Down";
 export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;

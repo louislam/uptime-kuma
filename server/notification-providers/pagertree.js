@@ -22,7 +22,7 @@ class PagerTree extends NotificationProvider {
             }
 
             if (heartbeatJSON.status === DOWN) {
-                const title = `Uptime Kuma Monitor "${monitorJSON.name}" is DOWN`;
+                const title = `Up_Or_Down Monitor "${monitorJSON.name}" is DOWN`;
                 return this.postNotification(notification, title, monitorJSON, heartbeatJSON);
             }
         } catch (error) {
@@ -76,7 +76,7 @@ class PagerTree extends NotificationProvider {
 
         const baseURL = await setting("primaryBaseURL");
         if (baseURL && monitorJSON) {
-            options.client = "Uptime Kuma";
+            options.client = "Up_Or_Down";
             options.client_url = baseURL + getMonitorRelativeURL(monitorJSON.id);
         }
 

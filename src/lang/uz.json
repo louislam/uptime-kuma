@@ -1,9 +1,9 @@
 {
     "languageName": "O'zbek tili",
     "setupDatabaseChooseDatabase": "Qaysi ma'lumotlar ba'zasidan foydalanmoqchisiz?",
-    "setupDatabaseEmbeddedMariaDB": "Siz hech narsani sozlashga hojat yo'q. Bu docker obrazida MariaDB avtomatik ravishda o'rnatilgan va sozlangan. Uptime Kuma bu ma'lumotlar bazasiga unix socket orqali ulanadi.",
+    "setupDatabaseEmbeddedMariaDB": "Siz hech narsani sozlashga hojat yo'q. Bu docker obrazida MariaDB avtomatik ravishda o'rnatilgan va sozlangan. Up_Or_Down bu ma'lumotlar bazasiga unix socket orqali ulanadi.",
     "setupDatabaseMariaDB": "Tashqi MariaDB ma'lumotlar bazasiga ulaning. Siz ma'lumotlar bazasi bilan bog'lanish ma'lumotlarini sozlashingiz kerak.",
-    "setupDatabaseSQLite": "Kichik miqyosli o'rnatishlar uchun tavsiya etiladigan sodda ma'lumotlar bazasi fayli. Uptime Kuma v2.0.0 dan oldin ma'lumotlar bazasi sifatida SQLite dan foydalangan.",
+    "setupDatabaseSQLite": "Kichik miqyosli o'rnatishlar uchun tavsiya etiladigan sodda ma'lumotlar bazasi fayli. Up_Or_Down v2.0.0 dan oldin ma'lumotlar bazasi sifatida SQLite dan foydalangan.",
     "dbName": "Ma'lumotlar ba'zasi nomi",
     "Settings": "Sozlamalar",
     "Dashboard": "Boshqaruv paneli",

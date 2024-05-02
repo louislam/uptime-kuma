@@ -879,7 +879,7 @@ class Monitor extends BeanModel {
                         {
                             allowAutoTopicCreation: this.kafkaProducerAllowAutoTopicCreation,
                             ssl: this.kafkaProducerSsl,
-                            clientId: `Uptime-Kuma/${version}`,
+                            clientId: `Up_Or_Down/${version}`,
                             interval: this.interval,
                         },
                         JSON.parse(this.kafkaProducerSaslOptions),

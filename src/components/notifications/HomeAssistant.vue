@@ -28,10 +28,10 @@
             <pre>domain: notify
 service: mobile_app_my_phone # change to your device name
 service_data:
-  title: Uptime Kuma
+  title: Up_Or_Down
   data:
     status: 0 # 0=down 1=up
-    # name: Optional Uptime Kuma Monitor Name to filter by</pre>
+    # name: Optional Up_Or_Down Monitor Name to filter by</pre>
             <p>
                 {{ $t("Then choose an action, for example switch the scene to where an RGB light is red.") }}
             </p>
