@@ -13,7 +13,7 @@ class SNMPMonitorType extends MonitorType {
         const options = {
             port: monitor.port || "161",
             retries: monitor.maxretries,
-            timeout: 1000,
+            timeout: monitor.timeout * 1000,
             version: getKey(snmp.Version, monitor.snmpVersion) || snmp.Version2c,
         };
 
@@ -91,8 +91,13 @@ class SNMPMonitorType extends MonitorType {
             session.close();
 
         } catch (err) {
-            heartbeat.status = DOWN;
-            heartbeat.msg = `SNMP Error: ${err.message}`;
+            if (err instanceof snmp.RequestTimedOutError) {
+                heartbeat.status = DOWN;
+                heartbeat.msg = `SNMP Error: Timed out after ${monitor.timeout} seconds`;
+            } else {
+                heartbeat.status = DOWN;
+                heartbeat.msg = `SNMP Error: ${err.message}`;
+            }
         }
     }
 

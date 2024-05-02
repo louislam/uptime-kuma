@@ -506,8 +506,8 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
-                            <!-- Timeout: HTTP / Keyword only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'" class="my-3">
+                            <!-- Timeout: HTTP / Keyword / SNMP only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
                                 <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
@@ -969,7 +969,6 @@ const monitorDefaults = {
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
-    timeout: 48,
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
@@ -1319,6 +1318,13 @@ message HealthCheckResponse {
                 } else {
                     this.monitor.port = undefined;
                 }
+            }
+
+            // Set default timeout
+            if (this.monitor.type === "snmp") {
+                this.monitor.timeout = 1;
+            } else {
+                this.monitor.timeout = 48;
             }
 
             // Set default SNMP version

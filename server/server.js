@@ -835,6 +835,7 @@ let needSetup = false;
                 bean.snmpOid = monitor.snmpOid;
                 bean.snmpCondition = monitor.snmpCondition;
                 bean.snmpControlValue = monitor.snmpControlValue;
+                bean.timeout = monitor.timeout;
 
                 bean.validate();
 
