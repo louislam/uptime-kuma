@@ -162,7 +162,12 @@
 
                                 <div v-if="remoteBrowsersToggle">
                                     <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
-                                    <ActionSelect v-model="monitor.remote_browser" :options="remoteBrowsersOptions" icon="plus" :action="() => $refs.remoteBrowserDialog.show()" />
+                                    <ActionSelect
+                                        v-model="monitor.remote_browser"
+                                        :options="remoteBrowsersOptions"
+                                        icon="plus"
+                                        :action="() => $refs.remoteBrowserDialog.show()"
+                                    />
                                 </div>
                             </div>
 
@@ -196,7 +201,22 @@
                                 <!-- Kafka Brokers List -->
                                 <div class="my-3">
                                     <label for="kafkaProducerBrokers" class="form-label">{{ $t("Kafka Brokers") }}</label>
-                                    <VueMultiselect id="kafkaProducerBrokers" v-model="monitor.kafkaProducerBrokers" :multiple="true" :options="[]" :placeholder="$t('Enter the list of brokers')" :tag-placeholder="$t('Press Enter to add broker')" :max-height="500" :taggable="true" :show-no-options="false" :close-on-select="false" :clear-on-select="false" :preserve-search="false" :preselect-first="false" @tag="addKafkaProducerBroker"></VueMultiselect>
+                                    <VueMultiselect
+                                        id="kafkaProducerBrokers"
+                                        v-model="monitor.kafkaProducerBrokers"
+                                        :multiple="true"
+                                        :options="[]"
+                                        :placeholder="$t('Enter the list of brokers')"
+                                        :tag-placeholder="$t('Press Enter to add broker')"
+                                        :max-height="500"
+                                        :taggable="true"
+                                        :show-no-options="false"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :preselect-first="false"
+                                        @tag="addKafkaProducerBroker"
+                                    ></VueMultiselect>
                                 </div>
 
                                 <!-- Kafka Topic Name -->
@@ -313,7 +333,19 @@
                                     <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
 
                                     <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
-                                    <VueMultiselect id="dns_resolve_type" v-model="monitor.dns_resolve_type" :options="dnsresolvetypeOptions" :multiple="false" :close-on-select="true" :clear-on-select="false" :preserve-search="false" :placeholder="$t('Pick a RR-Type...')" :preselect-first="false" :max-height="500" :taggable="false"></VueMultiselect>
+                                    <VueMultiselect
+                                        id="dns_resolve_type"
+                                        v-model="monitor.dns_resolve_type"
+                                        :options="dnsresolvetypeOptions"
+                                        :multiple="false"
+                                        :close-on-select="true"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :placeholder="$t('Pick a RR-Type...')"
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :taggable="false"
+                                    ></VueMultiselect>
 
                                     <div class="form-text">
                                         {{ $t("rrtypeDescription") }}
@@ -333,7 +365,16 @@
                             <div v-if="monitor.type === 'docker'" class="my-3">
                                 <div class="mb-3">
                                     <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
-                                    <ActionSelect id="docker-host" v-model="monitor.docker_host" :action-aria-label="$t('openModalTo', $t('Setup Docker Host'))" :options="dockerHostOptionsList" :disabled="$root.dockerHostList == null || $root.dockerHostList.length === 0" :icon="'plus'" :action="() => $refs.dockerHostDialog.show()" :required="true" />
+                                    <ActionSelect
+                                        id="docker-host"
+                                        v-model="monitor.docker_host"
+                                        :action-aria-label="$t('openModalTo', $t('Setup Docker Host'))"
+                                        :options="dockerHostOptionsList"
+                                        :disabled="$root.dockerHostList == null || $root.dockerHostList.length === 0"
+                                        :icon="'plus'"
+                                        :action="() => $refs.dockerHostDialog.show()"
+                                        :required="true"
+                                    />
                                 </div>
                             </div>
 
@@ -403,19 +444,19 @@
                                 <div class="my-3">
                                     <label for="radius_secret" class="form-label">{{ $t("RadiusSecret") }}</label>
                                     <input id="radius_secret" v-model="monitor.radiusSecret" type="password" class="form-control" required />
-                                    <div class="form-text"> {{ $t("RadiusSecretDescription") }} </div>
+                                    <div class="form-text"> {{ $t( "RadiusSecretDescription") }} </div>
                                 </div>
 
                                 <div class="my-3">
                                     <label for="radius_called_station_id" class="form-label">{{ $t("RadiusCalledStationId") }}</label>
                                     <input id="radius_called_station_id" v-model="monitor.radiusCalledStationId" type="text" class="form-control" required />
-                                    <div class="form-text"> {{ $t("RadiusCalledStationIdDescription") }} </div>
+                                    <div class="form-text"> {{ $t( "RadiusCalledStationIdDescription") }} </div>
                                 </div>
 
                                 <div class="my-3">
                                     <label for="radius_calling_station_id" class="form-label">{{ $t("RadiusCallingStationId") }}</label>
                                     <input id="radius_calling_station_id" v-model="monitor.radiusCallingStationId" type="text" class="form-control" required />
-                                    <div class="form-text"> {{ $t("RadiusCallingStationIdDescription") }} </div>
+                                    <div class="form-text"> {{ $t( "RadiusCallingStationIdDescription") }} </div>
                                 </div>
                             </template>
 
@@ -439,13 +480,13 @@
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
-                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', ['SELECT 1'])"></textarea>
+                                    <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'SELECT 1' ])"></textarea>
                                 </div>
                             </template>
 
                             <!-- Interval -->
                             <div class="my-3">
-                                <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [monitor.interval]) }})</label>
+                                <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
                             </div>
 
@@ -460,21 +501,21 @@
                             <div class="my-3">
                                 <label for="retry-interval" class="form-label">
                                     {{ $t("Heartbeat Retry Interval") }}
-                                    <span>({{ $t("retryCheckEverySecond", [monitor.retryInterval]) }})</span>
+                                    <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
                             <!-- Timeout: HTTP / Keyword only -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'" class="my-3">
-                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</label>
+                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
 
                             <div class="my-3">
                                 <label for="resend-interval" class="form-label">
                                     {{ $t("Resend Notification if Down X times consecutively") }}
-                                    <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryXTimes", [monitor.resendInterval]) }})</span>
+                                    <span v-if="monitor.resendInterval > 0">({{ $t("resendEveryXTimes", [ monitor.resendInterval ]) }})</span>
                                     <span v-else>({{ $t("resendDisabled") }})</span>
                                 </label>
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
@@ -482,7 +523,7 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'" class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
@@ -491,7 +532,7 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'" class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
                                     {{ $t("ignoreTLSError") }}
@@ -525,7 +566,7 @@
                             </div>
 
                             <!-- HTTP / Keyword only -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword'">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
@@ -537,7 +578,19 @@
                                 <div class="my-3">
                                     <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
 
-                                    <VueMultiselect id="acceptedStatusCodes" v-model="monitor.accepted_statuscodes" :options="acceptedStatusCodeOptions" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" :placeholder="$t('Pick Accepted Status Codes...')" :preselect-first="false" :max-height="600" :taggable="true"></VueMultiselect>
+                                    <VueMultiselect
+                                        id="acceptedStatusCodes"
+                                        v-model="monitor.accepted_statuscodes"
+                                        :options="acceptedStatusCodeOptions"
+                                        :multiple="true"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="true"
+                                        :placeholder="$t('Pick Accepted Status Codes...')"
+                                        :preselect-first="false"
+                                        :max-height="600"
+                                        :taggable="true"
+                                    ></VueMultiselect>
 
                                     <div class="form-text">
                                         {{ $t("acceptedStatusCodesDescription") }}
@@ -548,7 +601,15 @@
                             <!-- Parent Monitor -->
                             <div class="my-3">
                                 <label for="monitorGroupSelector" class="form-label">{{ $t("Monitor Group") }}</label>
-                                <ActionSelect id="monitorGroupSelector" v-model="monitor.parent" :action-aria-label="$t('openModalTo', 'setup a new monitor group')" :options="parentMonitorOptionsList" :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null" :icon="'plus'" :action="() => $refs.createGroupDialog.show()" />
+                                <ActionSelect
+                                    id="monitorGroupSelector"
+                                    v-model="monitor.parent"
+                                    :action-aria-label="$t('openModalTo', 'setup a new monitor group')"
+                                    :options="parentMonitorOptionsList"
+                                    :disabled="sortedGroupMonitorList.length === 0 && draftGroupName == null"
+                                    :icon="'plus'"
+                                    :action="() => $refs.createGroupDialog.show()"
+                                />
                             </div>
 
                             <!-- Description -->
@@ -572,9 +633,9 @@
                             </p>
 
                             <div v-for="notification in $root.notificationList" :key="notification.id" class="form-check form-switch my-3">
-                                <input :id="'notification' + notification.id" v-model="monitor.notificationIDList[notification.id]" class="form-check-input" type="checkbox">
+                                <input :id=" 'notification' + notification.id" v-model="monitor.notificationIDList[notification.id]" class="form-check-input" type="checkbox">
 
-                                <label class="form-check-label" :for="'notification' + notification.id">
+                                <label class="form-check-label" :for=" 'notification' + notification.id">
                                     {{ notification.name }}
                                     <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                                 </label>
@@ -622,7 +683,19 @@
                                     <label class="form-label" for="kafkaProducerSaslMechanism">
                                         {{ $t("Mechanism") }}
                                     </label>
-                                    <VueMultiselect id="kafkaProducerSaslMechanism" v-model="monitor.kafkaProducerSaslOptions.mechanism" :options="kafkaSaslMechanismOptions" :multiple="false" :clear-on-select="false" :preserve-search="false" :placeholder="$t('Pick a SASL Mechanism...')" :preselect-first="false" :max-height="500" :allow-empty="false" :taggable="false"></VueMultiselect>
+                                    <VueMultiselect
+                                        id="kafkaProducerSaslMechanism"
+                                        v-model="monitor.kafkaProducerSaslOptions.mechanism"
+                                        :options="kafkaSaslMechanismOptions"
+                                        :multiple="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :placeholder="$t('Pick a SASL Mechanism...')"
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :allow-empty="false"
+                                        :taggable="false"
+                                    ></VueMultiselect>
                                 </div>
                                 <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'None'">
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
@@ -653,7 +726,7 @@
                             </template>
 
                             <!-- HTTP Options -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
 
                                 <!-- Method -->
@@ -730,8 +803,8 @@
                                         </option>
                                     </select>
                                 </div>
-                                <template v-if="monitor.authMethod && monitor.authMethod !== null">
-                                    <template v-if="monitor.authMethod === 'mtls'">
+                                <template v-if="monitor.authMethod && monitor.authMethod !== null ">
+                                    <template v-if="monitor.authMethod === 'mtls' ">
                                         <div class="my-3">
                                             <label for="tls-cert" class="form-label">{{ $t("Cert") }}</label>
                                             <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('Cert body')" required></textarea>
@@ -745,7 +818,7 @@
                                             <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
                                         </div>
                                     </template>
-                                    <template v-else-if="monitor.authMethod === 'oauth2-cc'">
+                                    <template v-else-if="monitor.authMethod === 'oauth2-cc' ">
                                         <div class="my-3">
                                             <label for="oauth_auth_method" class="form-label">{{ $t("Authentication Method") }}</label>
                                             <select id="oauth_auth_method" v-model="monitor.oauth_auth_method" class="form-select">
@@ -786,7 +859,7 @@
                                             <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
                                             <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                         </div>
-                                        <template v-if="monitor.authMethod === 'ntlm'">
+                                        <template v-if="monitor.authMethod === 'ntlm' ">
                                             <div class="my-3">
                                                 <label for="ntlm-domain" class="form-label">{{ $t("Domain") }}</label>
                                                 <input id="ntlm-domain" v-model="monitor.authDomain" type="text" class="form-control" :placeholder="$t('Domain')">
@@ -802,7 +875,7 @@
                             </template>
 
                             <!-- gRPC Options -->
-                            <template v-if="monitor.type === 'grpc-keyword'">
+                            <template v-if="monitor.type === 'grpc-keyword' ">
                                 <!-- Proto service enable TLS -->
                                 <h2 class="mt-5 mb-2">{{ $t("GRPC Options") }}</h2>
                                 <div class="my-3 form-check">
@@ -924,7 +997,7 @@ const monitorDefaults = {
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
-    remote_browser: null,
+    remote_browser: null
 };
 
 export default {
@@ -973,7 +1046,7 @@ export default {
         ipRegex() {
 
             // Allow to test with simple dns server with port (127.0.0.1:5300)
-            if (!isDev) {
+            if (! isDev) {
                 return this.ipRegexPattern;
             }
             return null;
@@ -1228,7 +1301,7 @@ message HealthCheckResponse {
 
         "monitor.type"() {
             if (this.monitor.type === "push") {
-                if (!this.monitor.pushToken) {
+                if (! this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
                     // it's very unlikely to get a collision though (62^32 ~ 2.27265788 * 10^57 unique tokens)
                     this.monitor.pushToken = genSecret(pushTokenLength);
@@ -1236,7 +1309,7 @@ message HealthCheckResponse {
             }
 
             // Set default port for DNS if not already defined
-            if (!this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812") {
+            if (! this.monitor.port || this.monitor.port === "53" || this.monitor.port === "1812") {
                 if (this.monitor.type === "dns") {
                     this.monitor.port = "53";
                 } else if (this.monitor.type === "radius") {
@@ -1548,7 +1621,7 @@ message HealthCheckResponse {
 
         async startParentGroupMonitor() {
             await sleep(2000);
-            await this.$root.getSocket().emit("resumeMonitor", this.monitor.parent, () => { });
+            await this.$root.getSocket().emit("resumeMonitor", this.monitor.parent, () => {});
         },
 
         /**
@@ -1594,7 +1667,7 @@ message HealthCheckResponse {
         // Clamp timeout
         clampTimeout(timeout) {
             // limit to 80% of interval, narrowly avoiding epsilon bug
-            const maxTimeout = ~~(this.monitor.interval * 8) / 10;
+            const maxTimeout = ~~(this.monitor.interval * 8 ) / 10;
             const clamped = Math.max(0, Math.min(timeout, maxTimeout));
 
             // 0 will be treated as 80% of interval
