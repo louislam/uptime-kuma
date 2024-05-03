@@ -49,7 +49,7 @@ Uptime Kuma is now running on <http://0.0.0.0:3001>.
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
 
 > [!NOTE]
-> If you want to limit exppoure to localhost (without exposing port for other users or to use a [reverse proxyx](https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy)), you can expose the port like this:
+> If you want to limit exposure to localhost (without exposing port for other users or to use a [reverse proxy](https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy)), you can expose the port like this:
 > 
 > ```bash
 > docker run -d --restart=always -p 127.0.0.1:3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
