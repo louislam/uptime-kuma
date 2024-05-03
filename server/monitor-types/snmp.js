@@ -14,6 +14,9 @@ class SNMPMonitorType extends MonitorType {
             port: monitor.port || "161",
             retries: monitor.maxretries,
             timeout: monitor.timeout * 1000,
+
+            // Resolve the net-snmp version identifier from monitor.snmpVersion using the `getKey` method (see utils.ts).
+            // If the specified version exists, use it; otherwise, default to SNMP version 2c.
             version: getKey(snmp.Version, monitor.snmpVersion) || snmp.Version2c,
         };
 
@@ -38,9 +41,14 @@ class SNMPMonitorType extends MonitorType {
                 });
             });
 
+            // Verify if any varbinds were returned from the SNMP session or if the varbind type indicates a non-existent instance.
+            // The `getKey` method retrieves the key associated with the varbind type from the snmp.ObjectType object.
             if (varbinds.length === 0 || getKey(snmp.ObjectType, varbinds[0].type) === "NoSuchInstance") {
                 throw new Error(`No varbinds returned from SNMP session (OID: ${monitor.snmpOid})`);
+
+            // Varbinds succesfully returned
             } else {
+
                 const value = varbinds[0].value;
 
                 // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
