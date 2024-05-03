@@ -643,3 +643,12 @@ export function intHash(str : string, length = 10) : number {
     return (hash % length + length) % length; // Ensure the result is non-negative
 }
 
+/**
+ * Retrieves the key from the provided object corresponding to the given value.
+ * @param {object} obj - The object to search.
+ * @param {*} value - The value to search for.
+ * @returns {string|null} - The key associated with the value, or null if not found.
+ */
+export function getKey(obj: any, value: string) {
+    return Object.keys(obj).find(key => obj[key] === value) || null;
+}

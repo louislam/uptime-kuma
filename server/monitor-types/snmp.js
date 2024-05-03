@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, log } = require("../../src/util");
+const { UP, DOWN, log, getKey } = require("../../src/util");
 const snmp = require("net-snmp");
 
 class SNMPMonitorType extends MonitorType {
@@ -16,16 +16,6 @@ class SNMPMonitorType extends MonitorType {
             timeout: monitor.timeout * 1000,
             version: getKey(snmp.Version, monitor.snmpVersion) || snmp.Version2c,
         };
-
-        /**
-         * Retrieves the key from the provided object corresponding to the given value.
-         * @param {object} obj - The object to search.
-         * @param {*} value - The value to search for.
-         * @returns {string|null} - The key associated with the value, or null if not found.
-         */
-        function getKey(obj, value) {
-            return Object.keys(obj).find(key => obj[key] === value) || null;
-        }
 
         try {
             const session = snmp.createSession(monitor.hostname, monitor.snmpCommunityString, options);
