@@ -25,9 +25,7 @@ class SNMPMonitorType extends MonitorType {
 
             // Handle errors during session creation
             session.on("error", (error) => {
-                heartbeat.status = DOWN;
-                heartbeat.msg = `SNMP: Error creating SNMP session: ${error.message}`;
-                log.debug("monitor", heartbeat.msg);
+                throw new Error(`Error creating SNMP session: ${error.message}`);
             });
 
             const varbinds = await new Promise((resolve, reject) => {
@@ -35,11 +33,11 @@ class SNMPMonitorType extends MonitorType {
                     if (error) {
                         reject(error);
                     } else {
-                        log.debug("monitor", `SNMP: Received varbinds (Type=${getKey(snmp.ObjectType, varbinds[0].type)}): ${varbinds[0].value}`);
                         resolve(varbinds);
                     }
                 });
             });
+            log.debug("monitor", `SNMP: Received varbinds (Type=${getKey(snmp.ObjectType, varbinds[0].type)}): ${varbinds[0].value}`);
 
             // Verify if any varbinds were returned from the SNMP session or if the varbind type indicates a non-existent instance.
             // The `getKey` method retrieves the key associated with the varbind type from the snmp.ObjectType object.

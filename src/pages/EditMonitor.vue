@@ -1320,11 +1320,13 @@ message HealthCheckResponse {
                 }
             }
 
-            // Set default timeout
+            // Set a default timeout of 1 second for SNMP monitors when querying a single OID.
+            // Since we're only querying a single OID, a shorter timeout is sufficient to ensure timely responses
+            // without unnecessary delays. This helps keep the monitoring process lightweight and efficient.
             if (this.monitor.type === "snmp") {
                 this.monitor.timeout = 1;
             } else {
-                this.monitor.timeout = 48;
+                this.monitor.timeout = 48; // Default timeout for other monitor types
             }
 
             // Set default SNMP version
