@@ -921,5 +921,6 @@
     "Allow Long SMS": "Allow Long SMS",
     "cellsyntSplitLongMessages": "Split long messages into up to 6 parts. 153 x 6 = 918 characters.",
     "max 15 digits": "max 15 digits",
-    "max 11 alphanumeric characters": "max 11 alphanumeric characters"
+    "max 11 alphanumeric characters": "max 11 alphanumeric characters",
+    "snmpVersionHelptext": "Prefer SNMPv2c for enhanced security and expanded features. If compatibility issues occur, fallback to SNMPv1, but note that SNMPv1 has limited capabilities compared to SNMPv2c."
 }

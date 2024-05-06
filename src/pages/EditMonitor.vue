@@ -304,6 +304,9 @@
                                         SNMPv2c
                                     </option>
                                 </select>
+
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <div class="form-text" v-html="$t('snmpVersionHelptext')"></div>
                             </div>
 
                             <!-- DNS Resolver Server -->
