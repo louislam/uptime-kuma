@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, log, getKey } = require("../../src/util");
+const { UP, DOWN, log } = require("../../src/util");
 const snmp = require("net-snmp");
 
 class SNMPMonitorType extends MonitorType {
@@ -14,7 +14,7 @@ class SNMPMonitorType extends MonitorType {
             port: monitor.port || "161",
             retries: monitor.maxretries,
             timeout: monitor.timeout * 1000,
-            version: monitor.snmpVersion,
+            version: parseInt(monitor.snmpVersion),
         };
 
         try {
@@ -34,7 +34,7 @@ class SNMPMonitorType extends MonitorType {
                     }
                 });
             });
-            log.debug("monitor", `SNMP: Received varbinds (Type=${getKey(snmp.ObjectType, varbinds[0].type)}): ${varbinds[0].value}`);
+            log.debug("monitor", `SNMP: Received varbinds (Type: ${snmp.ObjectType[varbinds[0].type]} Value: ${varbinds[0].value}`);
 
             // Verify if any varbinds were returned from the SNMP session or if the varbind type indicates a non-existent instance.
             if (varbinds.length === 0 || varbinds[0].type === snmp.ObjectType.NoSuchInstance) {
