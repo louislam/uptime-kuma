@@ -47,6 +47,7 @@ class SNMPMonitorType extends MonitorType {
             // Varbinds succesfully returned
             } else {
 
+                // We restrict querying to one OID per monitor, therefore `varbinds[0]` will always contain the value we're interested in.
                 const value = varbinds[0].value;
 
                 // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
