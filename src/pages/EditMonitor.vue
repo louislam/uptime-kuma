@@ -266,6 +266,9 @@
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_community_string" class="form-label">{{ $t("Community String") }}</label>
                                 <input id="snmp_community_string" v-model="monitor.snmpCommunityString" type="text" class="form-control" required placeholder="public">
+
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <div class="form-text" v-html="$t('snmpCommunityStringHelptext')"></div>
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
@@ -295,6 +298,8 @@
                                         <input v-else id="snmp_control_value" v-model="monitor.snmpControlValue" type="text" class="form-control" required>
                                     </div>
                                 </div>
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <div class="form-text" v-html="$t('snmpControlValueHelptext')"></div>
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
