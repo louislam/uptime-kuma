@@ -930,5 +930,6 @@
     "Control Value": "Control Value",
     "snmpControlValueHelptext": "Enter the control value against which the SNMP value will be compared. Depending on the condition chosen, this value can be numeric or string. For 'contains' condition, specify a substring to search for within the SNMP value.",
     "SNMP Version": "SNMP Version",
-    "snmpVersionHelptext": "Prefer SNMPv2c for enhanced security and expanded features. If compatibility issues occur, fallback to SNMPv1, but note that SNMPv1 has limited capabilities compared to SNMPv2c."
+    "snmpVersionHelptext": "Prefer SNMPv2c for enhanced security and expanded features. If compatibility issues occur, fallback to SNMPv1, but note that SNMPv1 has limited capabilities compared to SNMPv2c.",
+    "Please enter a valid OID.": "Please enter a valid OID."
 }
