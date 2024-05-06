@@ -271,6 +271,9 @@
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_oid" class="form-label">{{ $t("OID (Object Identifier)") }}</label>
                                 <input id="snmp_oid" v-model="monitor.snmpOid" type="text" class="form-control" required pattern="^([0-2])((\.0)|(\.[1-9][0-9]*))*$" title="Please enter a valid OID, e.g. 1.3.6.1.4.1.9.6.1.101" placeholder="1.3.6.1.4.1.9.6.1.101">
+
+                                <!-- eslint-disable-next-line vue/no-v-html -->
+                                <div class="form-text" v-html="$t('snmpOIDHelptext')"></div>
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
