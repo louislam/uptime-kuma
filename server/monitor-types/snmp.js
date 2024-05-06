@@ -17,8 +17,9 @@ class SNMPMonitorType extends MonitorType {
             version: parseInt(monitor.snmpVersion),
         };
 
+        let session;
         try {
-            const session = snmp.createSession(monitor.hostname, monitor.snmpCommunityString, options);
+            session = snmp.createSession(monitor.hostname, monitor.snmpCommunityString, options);
 
             // Handle errors during session creation
             session.on("error", (error) => {
@@ -77,11 +78,13 @@ class SNMPMonitorType extends MonitorType {
             }
             heartbeat.msg = "SNMP value " + (heartbeat.status ? "passes" : "does not pass") + ` comparison: ${value.toString()} ${monitor.snmpCondition} ${snmpControlValue}`;
 
-            session.close();
-
         } catch (err) {
             heartbeat.status = DOWN;
             heartbeat.msg = `SNMP Error: ${err.message}`;
+        } finally {
+            if (session) {
+                session.close();
+            }
         }
     }
 
