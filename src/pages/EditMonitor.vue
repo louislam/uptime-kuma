@@ -303,9 +303,6 @@
                                     <option value="2c">
                                         SNMPv2c
                                     </option>
-                                    <option value="3">
-                                        SNMPv3
-                                    </option>
                                 </select>
                             </div>
 
