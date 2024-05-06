@@ -40,41 +40,39 @@ class SNMPMonitorType extends MonitorType {
             if (varbinds.length === 0 || varbinds[0].type === snmp.ObjectType.NoSuchInstance) {
                 throw new Error(`No varbinds returned from SNMP session (OID: ${monitor.snmpOid})`);
 
-            // Varbinds succesfully returned
-            } else {
-
-                // We restrict querying to one OID per monitor, therefore `varbinds[0]` will always contain the value we're interested in.
-                const value = varbinds[0].value;
-
-                // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
-                let snmpValue = isNaN(value) ? value.toString() : parseFloat(value);
-                let snmpControlValue = isNaN(monitor.snmpControlValue) ? monitor.snmpControlValue.toString() : parseFloat(monitor.snmpControlValue);
-
-                switch (monitor.snmpCondition) {
-                    case ">":
-                        heartbeat.status = snmpValue > snmpControlValue ? UP : DOWN;
-                        break;
-                    case ">=":
-                        heartbeat.status = snmpValue >= snmpControlValue ? UP : DOWN;
-                        break;
-                    case "<":
-                        heartbeat.status = snmpValue < snmpControlValue ? UP : DOWN;
-                        break;
-                    case "<=":
-                        heartbeat.status = snmpValue <= snmpControlValue ? UP : DOWN;
-                        break;
-                    case "==":
-                        heartbeat.status = snmpValue.toString() === snmpControlValue.toString() ? UP : DOWN;
-                        break;
-                    case "contains":
-                        heartbeat.status = snmpValue.toString().includes(snmpControlValue.toString()) ? UP : DOWN;
-                        break;
-                    default:
-                        throw new Error(`Invalid condition ${monitor.snmpCondition}`);
-                }
-                heartbeat.msg = "SNMP value " + (heartbeat.status ? "passes" : "does not pass") + ` comparison: ${value.toString()} ${monitor.snmpCondition} ${snmpControlValue}`;
-
             }
+
+            // We restrict querying to one OID per monitor, therefore `varbinds[0]` will always contain the value we're interested in.
+            const value = varbinds[0].value;
+
+            // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
+            let snmpValue = isNaN(value) ? value.toString() : parseFloat(value);
+            let snmpControlValue = isNaN(monitor.snmpControlValue) ? monitor.snmpControlValue.toString() : parseFloat(monitor.snmpControlValue);
+
+            switch (monitor.snmpCondition) {
+                case ">":
+                    heartbeat.status = snmpValue > snmpControlValue ? UP : DOWN;
+                    break;
+                case ">=":
+                    heartbeat.status = snmpValue >= snmpControlValue ? UP : DOWN;
+                    break;
+                case "<":
+                    heartbeat.status = snmpValue < snmpControlValue ? UP : DOWN;
+                    break;
+                case "<=":
+                    heartbeat.status = snmpValue <= snmpControlValue ? UP : DOWN;
+                    break;
+                case "==":
+                    heartbeat.status = snmpValue.toString() === snmpControlValue.toString() ? UP : DOWN;
+                    break;
+                case "contains":
+                    heartbeat.status = snmpValue.toString().includes(snmpControlValue.toString()) ? UP : DOWN;
+                    break;
+                default:
+                    throw new Error(`Invalid condition ${monitor.snmpCondition}`);
+            }
+            heartbeat.msg = "SNMP value " + (heartbeat.status ? "passes" : "does not pass") + ` comparison: ${value.toString()} ${monitor.snmpCondition} ${snmpControlValue}`;
+
             session.close();
 
         } catch (err) {
