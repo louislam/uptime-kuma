@@ -70,9 +70,7 @@ class SNMPMonitorType extends MonitorType {
                         heartbeat.status = snmpValue.toString().includes(snmpControlValue.toString()) ? UP : DOWN;
                         break;
                     default:
-                        heartbeat.status = DOWN;
-                        heartbeat.msg = `Invalid condition: ${monitor.snmpCondition}`;
-                        break;
+                        throw new Error(`Invalid condition ${monitor.snmpCondition}`);
                 }
                 heartbeat.msg = "SNMP value " + (heartbeat.status ? "passes" : "does not pass") + ` comparison: ${value.toString()} ${monitor.snmpCondition} ${snmpControlValue}`;
 
