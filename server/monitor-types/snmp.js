@@ -76,13 +76,8 @@ class SNMPMonitorType extends MonitorType {
             session.close();
 
         } catch (err) {
-            if (err instanceof snmp.RequestTimedOutError) {
-                heartbeat.status = DOWN;
-                heartbeat.msg = `SNMP Error: Timed out after ${monitor.timeout} seconds`;
-            } else {
-                heartbeat.status = DOWN;
-                heartbeat.msg = `SNMP Error: ${err.message}`;
-            }
+            heartbeat.status = DOWN;
+            heartbeat.msg = `SNMP Error: ${err.message}`;
         }
     }
 
