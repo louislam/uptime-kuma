@@ -297,10 +297,10 @@
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
                                 <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
-                                    <option value="1">
+                                    <option value="0">
                                         SNMPv1
                                     </option>
-                                    <option value="2c">
+                                    <option value="1">
                                         SNMPv2c
                                     </option>
                                 </select>
