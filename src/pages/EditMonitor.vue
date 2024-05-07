@@ -298,8 +298,6 @@
                                         <input v-else id="snmp_control_value" v-model="monitor.snmpControlValue" type="text" class="form-control" required>
                                     </div>
                                 </div>
-                                <!-- eslint-disable-next-line vue/no-v-html -->
-                                <div class="form-text" v-html="$t('snmpControlValueHelptext')"></div>
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
@@ -312,9 +310,6 @@
                                         SNMPv2c
                                     </option>
                                 </select>
-
-                                <!-- eslint-disable-next-line vue/no-v-html -->
-                                <div class="form-text" v-html="$t('snmpVersionHelptext')"></div>
                             </div>
 
                             <!-- DNS Resolver Server -->

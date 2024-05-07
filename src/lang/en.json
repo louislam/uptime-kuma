@@ -923,13 +923,11 @@
     "max 15 digits": "max 15 digits",
     "max 11 alphanumeric characters": "max 11 alphanumeric characters",
     "Community String": "Community String",
-    "snmpCommunityStringHelptext": "This string acts as a password and is used to authenticate and control access to SNMP-enabled devices. Ensure it matches the configuration of your SNMP device.",
+    "snmpCommunityStringHelptext": "This string functions as a password to authenticate and control access to SNMP-enabled devices. Match it with your SNMP device's configuration.",
     "OID (Object Identifier)": "OID (Object Identifier)",
-    "snmpOIDHelptext": "Please input the OID corresponding to the sensor or status you wish to monitor. If you're unsure about the OID, various network management tools can assist you in discovering the correct OID for your device, such as a MIB browser, or SNMP management software.",
+    "snmpOIDHelptext": "Enter the OID for the sensor or status you want to monitor. Use network management tools like MIB browsers or SNMP software if you're unsure about the OID.",
     "Condition": "Condition",
     "Control Value": "Control Value",
-    "snmpControlValueHelptext": "Enter the control value against which the SNMP value will be compared. Depending on the condition chosen, this value can be numeric or string. For 'contains' condition, specify a substring to search for within the SNMP value.",
     "SNMP Version": "SNMP Version",
-    "snmpVersionHelptext": "Prefer SNMPv2c for enhanced security and expanded features. If compatibility issues occur, fallback to SNMPv1, but note that SNMPv1 has limited capabilities compared to SNMPv2c.",
     "Please enter a valid OID.": "Please enter a valid OID."
 }
