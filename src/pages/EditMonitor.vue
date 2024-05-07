@@ -1339,7 +1339,7 @@ message HealthCheckResponse {
 
             // Set default SNMP version
             if (!this.monitor.snmpVersion) {
-                this.monitor.snmpVersion = "2c";
+                this.monitor.snmpVersion = "1";
             }
 
             // Get the game list from server
