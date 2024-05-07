@@ -103,19 +103,19 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser'" class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
                             </div>
 
                             <!-- gRPC URL -->
-                            <div v-if="monitor.type === 'grpc-keyword'" class="my-3">
+                            <div v-if="monitor.type === 'grpc-keyword' " class="my-3">
                                 <label for="grpc-url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="grpc-url" v-model="monitor.grpcUrl" type="text" class="form-control" required>
                             </div>
 
                             <!-- Push URL -->
-                            <div v-if="monitor.type === 'push'" class="my-3">
+                            <div v-if="monitor.type === 'push' " class="my-3">
                                 <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
@@ -1183,8 +1183,8 @@ message HealthCheckResponse {
             // Only groups, not itself, not a decendant
             result = result.filter(
                 monitor => monitor.type === "group" &&
-                    monitor.id !== this.monitor.id &&
-                    !this.monitor.childrenIDs?.includes(monitor.id)
+                monitor.id !== this.monitor.id &&
+                !this.monitor.childrenIDs?.includes(monitor.id)
             );
 
             // Filter result by active state, weight and alphabetical
@@ -1698,9 +1698,9 @@ message HealthCheckResponse {
 </script>
 
 <style lang="scss" scoped>
-@import "../assets/vars.scss";
+    @import "../assets/vars.scss";
 
-textarea {
-    min-height: 200px;
-}
+    textarea {
+        min-height: 200px;
+    }
 </style>
