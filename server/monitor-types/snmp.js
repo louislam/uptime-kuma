@@ -19,7 +19,7 @@ class SNMPMonitorType extends MonitorType {
 
         let session;
         try {
-            session = snmp.createSession(monitor.hostname, monitor.snmpCommunityString, options);
+            session = snmp.createSession(monitor.hostname, monitor.radiusPassword, options);
 
             // Handle errors during session creation
             session.on("error", (error) => {
