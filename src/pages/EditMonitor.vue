@@ -268,15 +268,13 @@
                                 <!-- TODO: Rename monitor.radiusPassword to monitor.password for general use -->
                                 <HiddenInput id="snmp_community_string" v-model="monitor.radiusPassword" autocomplete="false" required="true" placeholder="public"></HiddenInput>
 
-                                <div class="form-text">{{ $t('snmpCommunityStringHelptext')
- }}</div>
+                                <div class="form-text">{{ $t('snmpCommunityStringHelptext') }}</div>
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_oid" class="form-label">{{ $t("OID (Object Identifier)") }}</label>
                                 <input id="snmp_oid" v-model="monitor.snmpOid" :title="$t('Please enter a valid OID.') + ' ' + $t('Example:', ['1.3.6.1.4.1.9.6.1.101'])" type="text" class="form-control" pattern="^([0-2])((\.0)|(\.[1-9][0-9]*))*$" placeholder="1.3.6.1.4.1.9.6.1.101" required>
-                                <div class="form-text">{{ 
-$t('snmpOIDHelptext') }}</div>
+                                <div class="form-text">{{ $t('snmpOIDHelptext') }} </div>
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
