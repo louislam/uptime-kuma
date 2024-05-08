@@ -265,18 +265,18 @@
                             <!-- SNMP Monitor Type -->
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_community_string" class="form-label">{{ $t("Community String") }}</label>
-                                <input id="snmp_community_string" v-model="monitor.snmpCommunityString" type="text" class="form-control" required placeholder="public">
+                                <!-- TODO: Rename monitor.radiusPassword to monitor.password for general use -->
+                                <HiddenInput id="snmp_community_string" v-model="monitor.radiusPassword" autocomplete="false" required="true" placeholder="public"></HiddenInput>
 
-                                <!-- eslint-disable-next-line vue/no-v-html -->
-                                <div class="form-text" v-html="$t('snmpCommunityStringHelptext')"></div>
+                                <div class="form-text">{{ $t('snmpCommunityStringHelptext')
+ }}</div>
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_oid" class="form-label">{{ $t("OID (Object Identifier)") }}</label>
                                 <input id="snmp_oid" v-model="monitor.snmpOid" :title="$t('Please enter a valid OID.') + ' ' + $t('Example:', ['1.3.6.1.4.1.9.6.1.101'])" type="text" class="form-control" pattern="^([0-2])((\.0)|(\.[1-9][0-9]*))*$" placeholder="1.3.6.1.4.1.9.6.1.101" required>
-
-                                <!-- eslint-disable-next-line vue/no-v-html -->
-                                <div class="form-text" v-html="$t('snmpOIDHelptext')"></div>
+                                <div class="form-text">{{ 
+$t('snmpOIDHelptext') }}</div>
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
@@ -303,10 +303,10 @@
                             <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
                                 <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
-                                    <option value="0">
+                                    <option value="1">
                                         SNMPv1
                                     </option>
-                                    <option value="1">
+                                    <option value="2c">
                                         SNMPv2c
                                     </option>
                                 </select>
@@ -1323,13 +1323,11 @@ message HealthCheckResponse {
                 }
             }
 
-            // Set a default timeout of 1 second for SNMP monitors when querying a single OID.
-            // Since we're only querying a single OID, a shorter timeout is sufficient to ensure timely responses
-            // without unnecessary delays. This helps keep the monitoring process lightweight and efficient.
             if (this.monitor.type === "snmp") {
-                this.monitor.timeout = 1;
+                // snmp is not expected to be executed via the internet => we can choose a lower default timeout
+                this.monitor.timeout = 5;
             } else {
-                this.monitor.timeout = 48; // Default timeout for other monitor types
+                this.monitor.timeout = 48;
             }
 
             // Set default SNMP version

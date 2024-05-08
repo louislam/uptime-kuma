@@ -14,7 +14,7 @@ class SNMPMonitorType extends MonitorType {
             port: monitor.port || "161",
             retries: monitor.maxretries,
             timeout: monitor.timeout * 1000,
-            version: parseInt(monitor.snmpVersion),
+            version: snmp.Version[monitor.snmpVersion],
         };
 
         let session;
@@ -37,14 +37,12 @@ class SNMPMonitorType extends MonitorType {
             });
             log.debug("monitor", `SNMP: Received varbinds (Type: ${snmp.ObjectType[varbinds[0].type]} Value: ${varbinds[0].value}`);
 
-            // Verify if any varbinds were returned from the SNMP session.
             if (varbinds.length === 0) {
                 throw new Error(`No varbinds returned from SNMP session (OID: ${monitor.snmpOid})`);
             }
 
-            // Check if the varbind type indicates a non-existent instance.
             if (varbinds[0].type === snmp.ObjectType.NoSuchInstance) {
-                throw new Error(`The SNMP query was successful but no varbinds returned for OID: ${monitor.snmpOid}`);
+                throw new Error(`The SNMP query returned that no instance exists for OID ${monitor.snmpOid}`);
             }
 
             // We restrict querying to one OID per monitor, therefore `varbinds[0]` will always contain the value we're interested in.
