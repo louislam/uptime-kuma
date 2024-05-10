@@ -1,6 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const { UP, DOWN, log } = require("../../src/util");
 const snmp = require("net-snmp");
+const jsonata = require("jsonata");
 
 class SNMPMonitorType extends MonitorType {
     name = "snmp";
@@ -52,29 +53,31 @@ class SNMPMonitorType extends MonitorType {
             let snmpValue = isNaN(value) ? value.toString() : parseFloat(value);
             let snmpControlValue = isNaN(monitor.snmpControlValue) ? monitor.snmpControlValue.toString() : parseFloat(monitor.snmpControlValue);
 
+            let jsonQueryExpression;
             switch (monitor.snmpCondition) {
                 case ">":
-                    heartbeat.status = snmpValue > snmpControlValue ? UP : DOWN;
-                    break;
                 case ">=":
-                    heartbeat.status = snmpValue >= snmpControlValue ? UP : DOWN;
-                    break;
                 case "<":
-                    heartbeat.status = snmpValue < snmpControlValue ? UP : DOWN;
-                    break;
                 case "<=":
-                    heartbeat.status = snmpValue <= snmpControlValue ? UP : DOWN;
+                    jsonQueryExpression = `$.value ${monitor.snmpCondition} $.control`;
                     break;
                 case "==":
-                    heartbeat.status = snmpValue.toString() === snmpControlValue.toString() ? UP : DOWN;
+                    jsonQueryExpression = "$string($.value) = $string($.control)";
                     break;
                 case "contains":
-                    heartbeat.status = snmpValue.toString().includes(snmpControlValue.toString()) ? UP : DOWN;
+                    jsonQueryExpression = "$contains($string($.value), $string($.control))";
                     break;
                 default:
                     throw new Error(`Invalid condition ${monitor.snmpCondition}`);
             }
-            heartbeat.msg = "SNMP value " + (heartbeat.status ? "passes" : "does not pass") + ` comparison: ${value.toString()} ${monitor.snmpCondition} ${snmpControlValue}`;
+
+            const expression = jsonata(jsonQueryExpression);
+            const result = await expression.evaluate({
+                value: snmpValue,
+                control: monitor.snmpControlValue
+            });
+            heartbeat.status = result ? UP : DOWN;
+            heartbeat.msg = `SNMP value ${result ? "passes" : "does not pass"} comparison: ${snmpValue} ${monitor.snmpCondition} ${snmpControlValue}`;
 
         } catch (err) {
             heartbeat.status = DOWN;
