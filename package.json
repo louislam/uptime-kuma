@@ -111,6 +111,7 @@
         "jwt-decode": "~3.1.2",
         "kafkajs": "^2.2.4",
         "knex": "^2.4.2",
+        "ldapjs": "^3.0.7",
         "limiter": "~2.1.0",
         "liquidjs": "^10.7.0",
         "mitt": "~3.0.1",

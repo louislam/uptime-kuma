@@ -6,6 +6,7 @@ const { log } = require("../src/util");
 const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
+const ldap = require("ldapjs");
 
 /**
  * Login to web app
@@ -14,26 +15,71 @@ const dayjs = require("dayjs");
  * @returns {Promise<(Bean|null)>} User or null if login failed
  */
 exports.login = async function (username, password) {
+
     if (typeof username !== "string" || typeof password !== "string") {
         return null;
     }
-
-    let user = await R.findOne("user", " username = ? AND active = 1 ", [
-        username,
-    ]);
-
-    if (user && passwordHash.verify(password, user.password)) {
-        // Upgrade the hash to bcrypt
-        if (passwordHash.needRehash(user.password)) {
-            await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-                passwordHash.generate(password),
-                user.id,
-            ]);
+    if (process.env.AUTH_METHOD === "LDAP") {
+        let ldapAuthSuccess = false;
+        await new Promise((resolve, reject) => {
+            const client = ldap.createClient({
+                url: [ process.env.LDAP_ADDRESS ]
+            });
+            client.on("connectError", (err) => {
+                log.error("auth", "connecting ldap server failed");
+                resolve();
+            });
+            client.bind(process.env.LDAP_UID + "=" + username + "," + process.env.LDAP_BASE_DN,
+                password, (err) => {
+                    if (err) {
+                        log.warn("auth", "ldap authentication failed for user: " + username);
+                    } else {
+                        log.info("auth", "ldap authentication succeeded for user: " + username);
+                        ldapAuthSuccess = true;
+                    }
+                    resolve();
+                });
+        });
+        if (!ldapAuthSuccess) {
+            return null;
         }
-        return user;
-    }
+        let user = await R.findOne("user", " username = ? AND active = 1 ", [
+            username,
+        ]);
+        if (user) {
+            if (passwordHash.needRehash(user.password)) {
+                await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
+                    passwordHash.generate(password),
+                    user.id,
+                ]);
+            }
+            return user;
+        } else {
+            log.info("auth", "user: " + username + "not exists in db, create it");
+            let user = R.dispense("user");
+            user.username = username;
+            user.password = passwordHash.generate(password);
+            await R.store(user);
+            return await R.findOne("user", " username = ? AND active = 1 ", [ username ]);
+        }
+    } else {
+        let user = await R.findOne("user", " username = ? AND active = 1 ", [
+            username,
+        ]);
 
-    return null;
+        if (user && passwordHash.verify(password, user.password)) {
+            // Upgrade the hash to bcrypt
+            if (passwordHash.needRehash(user.password)) {
+                await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
+                    passwordHash.generate(password),
+                    user.id,
+                ]);
+            }
+            return user;
+        }
+
+        return null;
+    }
 };
 
 /**
