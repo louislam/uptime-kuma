@@ -7,7 +7,6 @@ const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 const ldap = require("ldapjs");
-const { ReturnDocument } = require("mongodb");
 
 /**
  * Login to web app
