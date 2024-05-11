@@ -148,7 +148,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 config.logo = `/upload/${filename}?t=` + Date.now();
 
             } else {
-                config.icon = imgDataUrl;
+                config.logo = imgDataUrl;
             }
 
             statusPage.slug = config.slug;
