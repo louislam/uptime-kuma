@@ -1048,5 +1048,6 @@
     "setupDatabaseEmbeddedMariaDB": "",
     "ignoreTLSError": "",
     "CopyToClipboardError": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "setupDatabaseChooseDatabase": ""
 }
