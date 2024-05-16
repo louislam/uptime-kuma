@@ -1050,5 +1050,6 @@
     "pushViewCode": "",
     "ntfyPriorityHelptextAllEvents": "",
     "ignoreTLSError": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "setupDatabaseChooseDatabase": ""
 }
