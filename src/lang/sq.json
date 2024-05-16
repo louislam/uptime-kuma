@@ -1043,5 +1043,6 @@
     "goAlertIntegrationKeyInfo": "",
     "AccessKeyId": "",
     "TemplateCode": "",
-    "promosmsPhoneNumber": ""
+    "promosmsPhoneNumber": "",
+    "setupDatabaseChooseDatabase": ""
 }
