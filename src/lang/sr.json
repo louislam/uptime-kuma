@@ -1046,5 +1046,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "grpcMethodDescription": "",
     "wayToGetDiscordURL": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "setupDatabaseChooseDatabase": ""
 }
