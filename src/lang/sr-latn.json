@@ -1040,5 +1040,6 @@
     "high": "",
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "CopyToClipboardError": ""
+    "CopyToClipboardError": "",
+    "setupDatabaseChooseDatabase": ""
 }
