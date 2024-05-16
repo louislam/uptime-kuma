@@ -1045,5 +1045,6 @@
     "statusMaintenance": "",
     "Specific Monitor Type": "",
     "ignoreTLSError": "",
-    "setupDatabaseEmbeddedMariaDB": ""
+    "setupDatabaseEmbeddedMariaDB": "",
+    "setupDatabaseChooseDatabase": ""
 }
