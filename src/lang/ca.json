@@ -24,5 +24,12 @@
     "Reconnecting...": "S'està tornant a connectar...",
     "languageName": "Català",
     "Primary Base URL": "URL Base Primària",
-    "statusMaintenance": "Manteniment"
+    "statusMaintenance": "Manteniment",
+    "setupDatabaseChooseDatabase": "Quina base de dadas vols utilitzar?",
+    "setupDatabaseEmbeddedMariaDB": "No tens que configurar res. Aquesta imatge de docker ha configurat MariaDB automàticament. Uptime Kuma es conectarà a aquesta base de dades per el socket d'unix.",
+    "setupDatabaseMariaDB": "Conectar a una base de MariaDB externa. Has de ficar les dades de la conexió de la base de dades.",
+    "setupDatabaseSQLite": "Un simple fitxer de base de dades, es recomana per desplegaments en petita escala. Abans de la v2.0.0, Uptime Kuma utilitzaba SQLite com la base de dades predeterminada.",
+    "sameAsServerTimezone": "La mateixa zona horaria que el servidor",
+    "settingUpDatabaseMSG": "Configuració de la base de dades. Pot trigar una estona, si us plau, tingueu paciència.",
+    "dbName": "Nom de la base de dades"
 }

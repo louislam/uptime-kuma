@@ -3,11 +3,14 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class ServerChan extends NotificationProvider {
-
     name = "ServerChan";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             await axios.post(`https://sctapi.ftqq.com/${notification.serverChanSendKey}.send`, {
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),
@@ -23,8 +26,8 @@ class ServerChan extends NotificationProvider {
 
     /**
      * Get the formatted title for message
-     * @param {?Object} monitorJSON Monitor details (For Up/Down only)
-     * @param {?Object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @param {?object} monitorJSON Monitor details (For Up/Down only)
      * @returns {string} Formatted title
      */
     checkStatus(heartbeatJSON, monitorJSON) {

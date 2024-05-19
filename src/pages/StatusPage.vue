@@ -35,6 +35,14 @@
                 </div>
 
                 <div class="my-3">
+                    <label for="auto-refresh-interval" class="form-label">{{ $t("Refresh Interval") }}</label>
+                    <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number" class="form-control" :min="5">
+                    <div class="form-text">
+                        {{ $t("Refresh Interval Description", [config.autoRefreshInterval]) }}
+                    </div>
+                </div>
+
+                <div class="my-3">
                     <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
                     <select id="switch-theme" v-model="config.theme" class="form-select">
                         <option value="auto">{{ $t("Auto") }}</option>
@@ -69,13 +77,17 @@
                 <div class="my-3">
                     <label class="form-label">
                         {{ $t("Domain Names") }}
-                        <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary" @click="addDomainField" />
+                        <button class="p-0 bg-transparent border-0" :aria-label="$t('Add a domain')" @click="addDomainField">
+                            <font-awesome-icon icon="plus-circle" class="action text-primary" />
+                        </button>
                     </label>
 
                     <ul class="list-group domain-name-list">
                         <li v-for="(domain, index) in config.domainNameList" :key="index" class="list-group-item">
                             <input v-model="config.domainNameList[index]" type="text" class="no-bg domain-input" placeholder="example.com" />
-                            <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" @click="removeDomain(index)" />
+                            <button class="p-0 bg-transparent border-0" :aria-label="$t('Remove domain', [ domain ])" @click="removeDomain(index)">
+                                <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" />
+                            </button>
                         </li>
                     </ul>
                 </div>
@@ -102,7 +114,7 @@
 
             <!-- Sidebar Footer -->
             <div class="sidebar-footer">
-                <button class="btn btn-success me-2" @click="save">
+                <button class="btn btn-success me-2" :disabled="loading" @click="save">
                     <font-awesome-icon icon="save" />
                     {{ $t("Save") }}
                 </button>
@@ -434,10 +446,10 @@ export default {
             baseURL: "",
             clickedEditButton: false,
             maintenanceList: [],
-            autoRefreshInterval: 5,
             lastUpdateTime: dayjs(),
             updateCountdown: null,
             updateCountdownText: null,
+            loading: true,
         };
     },
     computed: {
@@ -452,6 +464,7 @@ export default {
 
         /**
          * If the monitor is added to public list, which will not be in this list.
+         * @returns {object[]} List of monitors
          */
         sortedMonitorList() {
             let result = [];
@@ -596,7 +609,8 @@ export default {
 
         /**
          * If connected to the socket and logged in, request private data of this statusPage
-         * @param connected
+         * @param {boolean} loggedIn Is the client logged in?
+         * @returns {void}
          */
         "$root.loggedIn"(loggedIn) {
             if (loggedIn) {
@@ -611,7 +625,7 @@ export default {
                         }
 
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -619,6 +633,8 @@ export default {
 
         /**
          * Selected a monitor and add to the list.
+         * @param {object} monitor Monitor to add
+         * @returns {void}
          */
         selectedMonitor(monitor) {
             if (monitor) {
@@ -697,6 +713,15 @@ export default {
             this.incident = res.data.incident;
             this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
+
+            this.loading = false;
+
+            // Configure auto-refresh loop
+            feedInterval = setInterval(() => {
+                this.updateHeartbeatList();
+            }, (this.config.autoRefreshInterval + 10) * 1000);
+
+            this.updateUpdateTimer();
         }).catch( function (error) {
             if (error.response.status === 404) {
                 location.href = "/page-not-found";
@@ -704,13 +729,7 @@ export default {
             console.log(error);
         });
 
-        // Configure auto-refresh loop
         this.updateHeartbeatList();
-        feedInterval = setInterval(() => {
-            this.updateHeartbeatList();
-        }, (this.autoRefreshInterval * 60 + 10) * 1000);
-
-        this.updateUpdateTimer();
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
@@ -723,7 +742,7 @@ export default {
         /**
          * Get status page data
          * It should be preloaded in window.preloadData
-         * @returns {Promise<any>}
+         * @returns {Promise<any>} Status page data
          */
         getData: function () {
             if (window.preloadData) {
@@ -738,13 +757,16 @@ export default {
         /**
          * Provide syntax highlighting for CSS
          * @param {string} code Text to highlight
-         * @returns {string}
+         * @returns {string} Highlighted CSS
          */
         highlighter(code) {
             return highlight(code, languages.css);
         },
 
-        /** Update the heartbeat list and update favicon if neccessary */
+        /**
+         * Update the heartbeat list and update favicon if necessary
+         * @returns {void}
+         */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
@@ -783,7 +805,7 @@ export default {
             clearInterval(this.updateCountdown);
 
             this.updateCountdown = setInterval(() => {
-                const countdown = dayjs.duration(this.lastUpdateTime.add(this.autoRefreshInterval, "minutes").add(10, "seconds").diff(dayjs()));
+                const countdown = dayjs.duration(this.lastUpdateTime.add(this.config.autoRefreshInterval, "seconds").add(10, "seconds").diff(dayjs()));
                 if (countdown.as("seconds") < 0) {
                     clearInterval(this.updateCountdown);
                 } else {
@@ -792,7 +814,10 @@ export default {
             }, 1000);
         },
 
-        /** Enable editing mode */
+        /**
+         * Enable editing mode
+         * @returns {void}
+         */
         edit() {
             if (this.hasToken) {
                 this.$root.initSocketIO(true);
@@ -804,8 +829,12 @@ export default {
             }
         },
 
-        /** Save the status page */
+        /**
+         * Save the status page
+         * @returns {void}
+         */
         save() {
+            this.loading = true;
             let startTime = new Date();
             this.config.slug = this.config.slug.trim().toLowerCase();
 
@@ -823,42 +852,53 @@ export default {
                     }
 
                     setTimeout(() => {
+                        this.loading = false;
                         location.href = "/status/" + this.config.slug;
                     }, time);
 
                 } else {
-                    toast.error(res.msg);
-                }
-            });
-        },
-
-        /** Show dialog confirming deletion */
-        deleteDialog() {
-            this.$refs.confirmDelete.show();
-        },
-
-        /** Request deletion of this status page */
-        deleteStatusPage() {
-            this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
-                if (res.ok) {
-                    this.enableEditMode = false;
-                    location.href = "/manage-status-page";
-                } else {
+                    this.loading = false;
                     toast.error(res.msg);
                 }
             });
         },
 
         /**
-         * Returns label for a specifed monitor
-         * @param {Object} monitor Object representing monitor
-         * @returns {string}
+         * Show dialog confirming deletion
+         * @returns {void}
+         */
+        deleteDialog() {
+            this.$refs.confirmDelete.show();
+        },
+
+        /**
+         * Request deletion of this status page
+         * @returns {void}
+         */
+        deleteStatusPage() {
+            this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
+                if (res.ok) {
+                    this.enableEditMode = false;
+                    location.href = "/manage-status-page";
+                } else {
+                    this.$root.toastError(res.msg);
+                }
+            });
+        },
+
+        /**
+         * Returns label for a specified monitor
+         * @param {object} monitor Object representing monitor
+         * @returns {string} Monitor label
          */
         monitorSelectorLabel(monitor) {
             return `${monitor.name}`;
         },
 
-        /** Add a group to the status page */
+        /**
+         * Add a group to the status page
+         * @returns {void}
+         */
         addGroup() {
             let groupName = this.$t("Untitled Group");
 
@@ -872,12 +912,18 @@ export default {
             });
         },
 
-        /** Add a domain to the status page */
+        /**
+         * Add a domain to the status page
+         * @returns {void}
+         */
         addDomainField() {
             this.config.domainNameList.push("");
         },
 
-        /** Discard changes to status page */
+        /**
+         * Discard changes to status page
+         * @returns {void}
+         */
         discard() {
             location.href = "/status/" + this.slug;
         },
@@ -885,19 +931,26 @@ export default {
         /**
          * Set URL of new image after successful crop operation
          * @param {string} imgDataUrl URL of image in data:// format
+         * @returns {void}
          */
         cropSuccess(imgDataUrl) {
             this.imgDataUrl = imgDataUrl;
         },
 
-        /** Show image crop dialog if in edit mode */
+        /**
+         * Show image crop dialog if in edit mode
+         * @returns {void}
+         */
         showImageCropUploadMethod() {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
         },
 
-        /** Create an incident for this status page */
+        /**
+         * Create an incident for this status page
+         * @returns {void}
+         */
         createIncident() {
             this.enableEditIncidentMode = true;
 
@@ -912,10 +965,13 @@ export default {
             };
         },
 
-        /** Post the incident to the status page */
+        /**
+         * Post the incident to the status page
+         * @returns {void}
+         */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
-                toast.error(this.$t("Please input title and content"));
+                this.$root.toastError("Please input title and content");
                 return;
             }
 
@@ -925,20 +981,26 @@ export default {
                     this.enableEditIncidentMode = false;
                     this.incident = res.incident;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
 
             });
 
         },
 
-        /** Click Edit Button */
+        /**
+         * Click Edit Button
+         * @returns {void}
+         */
         editIncident() {
             this.enableEditIncidentMode = true;
             this.previousIncident = Object.assign({}, this.incident);
         },
 
-        /** Cancel creation or editing of incident */
+        /**
+         * Cancel creation or editing of incident
+         * @returns {void}
+         */
         cancelIncident() {
             this.enableEditIncidentMode = false;
 
@@ -948,7 +1010,10 @@ export default {
             }
         },
 
-        /** Unpin the incident */
+        /**
+         * Unpin the incident
+         * @returns {void}
+         */
         unpinIncident() {
             this.$root.getSocket().emit("unpinIncident", this.slug, () => {
                 this.incident = null;
@@ -957,7 +1022,8 @@ export default {
 
         /**
          * Get the relative time difference of a date from now
-         * @returns {string}
+         * @param {any} date Date to get time difference
+         * @returns {string} Time difference
          */
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
@@ -966,6 +1032,7 @@ export default {
         /**
          * Remove a domain from the status page
          * @param {number} index Index of domain to remove
+         * @returns {void}
          */
         removeDomain(index) {
             this.config.domainNameList.splice(index, 1);
@@ -973,7 +1040,7 @@ export default {
 
         /**
          * Generate sanitized HTML from maintenance description
-         * @param {string} description
+         * @param {string} description Text to sanitize
          * @returns {string} Sanitized HTML
          */
         maintenanceHTML(description) {
@@ -1187,20 +1254,6 @@ footer {
                 color: #1d2634;
             }
         }
-    }
-}
-
-/* required class */
-.css-editor {
-    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
-
-    border-radius: 1rem;
-    padding: 10px 5px;
-    border: 1px solid #ced4da;
-
-    .dark & {
-        background: $dark-bg;
-        border: 1px solid $dark-border-color;
     }
 }
 
