@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /*!
 // Common Util for frontend and backend
 //
@@ -17,6 +18,7 @@ import * as timezone from "dayjs/plugin/timezone";
 import * as utc from "dayjs/plugin/utc";
 
 export const isDev = process.env.NODE_ENV === "development";
+export const isNode = typeof process !== "undefined" && process?.versions?.node;
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
@@ -93,8 +95,30 @@ const consoleLevelColors : Record<string, string> = {
 
 /**
  * Flip the status of s
- * @param s
+ * @param s input status: UP or DOWN
+ * @returns {number} UP or DOWN
  */
+export const badgeConstants = {
+    naColor: "#999",
+    defaultUpColor: "#66c20a",
+    defaultWarnColor: "#eed202",
+    defaultDownColor: "#c2290a",
+    defaultPendingColor: "#f8a306",
+    defaultMaintenanceColor: "#1747f5",
+    defaultPingColor: "blue",  // as defined by badge-maker / shields.io
+    defaultStyle: "flat",
+    defaultPingValueSuffix: "ms",
+    defaultPingLabelSuffix: "h",
+    defaultUptimeValueSuffix: "%",
+    defaultUptimeLabelSuffix: "h",
+    defaultCertExpValueSuffix: " days",
+    defaultCertExpLabelSuffix: "h",
+    // Values Come From Default Notification Times
+    defaultCertExpireWarnDays: "14",
+    defaultCertExpireDownDays: "7"
+};
+
+/** Flip the status of s */
 export function flipStatus(s: number) {
     if (s === UP) {
         return DOWN;
@@ -110,6 +134,7 @@ export function flipStatus(s: number) {
 /**
  * Delays for specified number of seconds
  * @param ms Number of milliseconds to sleep for
+ * @returns {Promise<void>} Promise that resolves after ms
  */
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -117,7 +142,8 @@ export function sleep(ms: number) {
 
 /**
  * PHP's ucfirst
- * @param str
+ * @param str string input
+ * @returns {string} string with first letter capitalized
  */
 export function ucfirst(str: string) {
     if (!str) {
@@ -130,7 +156,8 @@ export function ucfirst(str: string) {
 
 /**
  * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
- * @param msg
+ * @param msg Message to write
+ * @returns {void}
  */
 export function debug(msg: unknown) {
     log.log("", msg, "debug");
@@ -180,6 +207,7 @@ class Logger {
      * @param module The module the log comes from
      * @param msg Message to write
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @returns {void}
      */
     log(module: string, msg: any, level: string) {
         if (level === "DEBUG" && !isDev) {
@@ -203,35 +231,72 @@ class Logger {
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
 
-        let timePart = CONSOLE_STYLE_FgCyan + now + CONSOLE_STYLE_Reset;
-        let modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
-        let levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
+        let timePart: string;
+        let modulePart: string;
+        let levelPart: string;
+        let msgPart: string;
 
-        if (level === "INFO") {
-            console.info(timePart, modulePart, levelPart, msg);
-        } else if (level === "WARN") {
-            console.warn(timePart, modulePart, levelPart, msg);
-        } else if (level === "ERROR") {
-            let msgPart :string;
-            if (typeof msg === "string") {
-                msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
-            } else {
-                msgPart = msg;
+        if (isNode) {
+            // Add console colors
+            switch (level) {
+                case "DEBUG":
+                    timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
+                    break;
+                default:
+                    timePart = CONSOLE_STYLE_FgCyan + now + CONSOLE_STYLE_Reset;
+                    break;
             }
-            console.error(timePart, modulePart, levelPart, msgPart);
-        } else if (level === "DEBUG") {
-            if (isDev) {
-                timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
-                let msgPart :string;
-                if (typeof msg === "string") {
-                    msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
-                } else {
+
+            modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
+
+            levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
+
+            switch (level) {
+                case "ERROR":
+                    if (typeof msg === "string") {
+                        msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
+                    } else {
+                        msgPart = msg;
+                    }
+                    break;
+                case "DEBUG":
+                    if (typeof msg === "string") {
+                        msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
+                    } else {
+                        msgPart = msg;
+                    }
+                    break;
+                default:
                     msgPart = msg;
-                }
-                console.debug(timePart, modulePart, levelPart, msgPart);
+                    break;
             }
         } else {
-            console.log(timePart, modulePart, msg);
+            // No console colors
+            timePart = now;
+            modulePart = `[${module}]`;
+            levelPart = `${level}:`;
+            msgPart = msg;
+        }
+
+        // Write to console
+        switch (level) {
+            case "ERROR":
+                console.error(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "WARN":
+                console.warn(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "INFO":
+                console.info(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "DEBUG":
+                if (isDev) {
+                    console.debug(timePart, modulePart, levelPart, msgPart);
+                }
+                break;
+            default:
+                console.log(timePart, modulePart, levelPart, msgPart);
+                break;
         }
     }
 
@@ -239,6 +304,7 @@ class Logger {
      * Log an INFO message
      * @param module Module log comes from
      * @param msg Message to write
+     * @returns {void}
      */
     info(module: string, msg: unknown) {
         this.log(module, msg, "info");
@@ -248,6 +314,7 @@ class Logger {
      * Log a WARN message
      * @param module Module log comes from
      * @param msg Message to write
+     * @returns {void}
      */
     warn(module: string, msg: unknown) {
         this.log(module, msg, "warn");
@@ -257,6 +324,7 @@ class Logger {
      * Log an ERROR message
      * @param module Module log comes from
      * @param msg Message to write
+     * @returns {void}
      */
     error(module: string, msg: unknown) {
         this.log(module, msg, "error");
@@ -266,6 +334,7 @@ class Logger {
      * Log a DEBUG message
      * @param module Module log comes from
      * @param msg Message to write
+     * @returns {void}
      */
     debug(module: string, msg: unknown) {
         this.log(module, msg, "debug");
@@ -276,6 +345,7 @@ class Logger {
      * @param module Module log comes from
      * @param exception The exception to include
      * @param msg The message to write
+     * @returns {void}
      */
     exception(module: string, exception: unknown, msg: unknown) {
         let finalMessage = exception;
@@ -297,6 +367,7 @@ declare global { interface String { replaceAll(str: string, newStr: string): str
  * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
  * @author Chris Ferdinandi
  * @license MIT
+ * @returns {void}
  */
 export function polyfill() {
     if (!String.prototype.replaceAll) {
@@ -325,6 +396,7 @@ export class TimeLogger {
     /**
      * Output time since start of monitor
      * @param name Name of monitor
+     * @returns {void}
      */
     print(name: string) {
         if (isDev && process.env.TIMELOGGER === "1") {
@@ -335,8 +407,9 @@ export class TimeLogger {
 
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
- * @param min
- * @param max
+ * @param min minumim value, inclusive
+ * @param max maximum value, exclusive
+ * @returns {number} Random number
  */
 export function getRandomArbitrary(min: number, max: number) {
     return Math.random() * (max - min) + min;
@@ -350,8 +423,9 @@ export function getRandomArbitrary(min: number, max: number) {
  * if min isn't an integer) and no greater than max (or the next integer
  * lower than max if max isn't an integer).
  * Using Math.round() will give you a non-uniform distribution!
- * @param min
- * @param max
+ * @param min minumim value, inclusive
+ * @param max maximum value, exclusive
+ * @returns {number} Random number
  */
 export function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
@@ -362,6 +436,7 @@ export function getRandomInt(min: number, max: number) {
 /**
  * Returns either the NodeJS crypto.randomBytes() function or its
  * browser equivalent implemented via window.crypto.getRandomValues()
+ * @returns {Uint8Array} Random bytes
  */
 const getRandomBytes = (
     (typeof window !== "undefined" && window.crypto)
@@ -467,6 +542,7 @@ export function getMaintenanceRelativeURL(id: string) {
  * Parse to Time Object that used in VueDatePicker
  * @param {string} time E.g. 12:00
  * @returns object
+ * @throws {Error} if time string is invalid
  */
 export function parseTimeObject(time: string) {
     if (!time) {
@@ -494,8 +570,9 @@ export function parseTimeObject(time: string) {
 }
 
 /**
- * @param obj
- * @returns string e.g. 12:00
+ * Parse time to string from object {hours: number, minutes: number, seconds?: number}
+ * @param obj object to parse
+ * @returns {string} e.g. 12:00
  */
 export function parseTimeFromTimeObject(obj : any) {
     if (!obj) {
@@ -523,7 +600,8 @@ export function isoToUTCDateTime(input : string) {
 }
 
 /**
- * @param input
+ * @param input valid datetime string
+ * @returns {string} ISO DateTime string
  */
 export function utcToISODateTime(input : string) {
     return dayjs.utc(input).toISOString();
@@ -531,8 +609,8 @@ export function utcToISODateTime(input : string) {
 
 /**
  * For SQL_DATETIME_FORMAT
- * @param input
- * @param format
+ * @param input valid datetime string
+ * @param format Format to return
  * @returns A string date of SQL_DATETIME_FORMAT
  */
 export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) : string {
@@ -553,6 +631,7 @@ export function localToUTC(input : string, format = SQL_DATETIME_FORMAT) {
  * Generate a decimal integer number from a string
  * @param str Input
  * @param length Default is 10 which means 0 - 9
+ * @returns {number} output number
  */
 export function intHash(str : string, length = 10) : number {
     // A simple hashing function (you can use more complex hash functions if needed)

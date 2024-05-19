@@ -4,14 +4,13 @@ const FormData = require("form-data");
 const { Liquid } = require("liquidjs");
 
 class Webhook extends NotificationProvider {
-
     name = "webhook";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             let data = {

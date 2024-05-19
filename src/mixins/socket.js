@@ -99,21 +99,20 @@ export default {
 
             this.socket.initedSocketIO = true;
 
-            let protocol = (location.protocol === "https:") ? "wss://" : "ws://";
+            let protocol = location.protocol + "//";
 
-            let wsHost;
+            let url;
             const env = process.env.NODE_ENV || "production";
             if (env === "development" && isDevContainer()) {
-                wsHost = protocol + getDevContainerServerHostname();
+                url = protocol + getDevContainerServerHostname();
             } else if (env === "development" || localStorage.dev === "dev") {
-                wsHost = protocol + location.hostname + ":3001";
+                url = protocol + location.hostname + ":3001";
             } else {
-                wsHost = protocol + location.host;
+                // Connect to the current url
+                url = undefined;
             }
 
-            socket = io(wsHost, {
-                transports: [ "websocket" ],
-            });
+            socket = io(url);
 
             socket.on("info", (info) => {
                 this.info = info;
@@ -128,6 +127,16 @@ export default {
                 this.storage().token = "autoLogin";
                 this.socket.token = "autoLogin";
                 this.allowLoginDialog = false;
+            });
+
+            socket.on("loginRequired", () => {
+                let token = this.storage().token;
+                if (token && token !== "autoLogin") {
+                    this.loginByToken(token);
+                } else {
+                    this.$root.storage().removeItem("token");
+                    this.allowLoginDialog = true;
+                }
             });
 
             socket.on("monitorList", (data) => {
@@ -257,24 +266,6 @@ export default {
                     this.clearData();
                 }
 
-                let token = this.storage().token;
-
-                if (token) {
-                    if (token !== "autoLogin") {
-                        this.loginByToken(token);
-                    } else {
-                        // Timeout if it is not actually auto login
-                        setTimeout(() => {
-                            if (! this.loggedIn) {
-                                this.allowLoginDialog = true;
-                                this.$root.storage().removeItem("token");
-                            }
-                        }, 5000);
-                    }
-                } else {
-                    this.allowLoginDialog = true;
-                }
-
                 this.socket.firstConnect = false;
             });
 
@@ -287,6 +278,10 @@ export default {
 
             socket.on("initServerTimezone", () => {
                 socket.emit("initServerTimezone", dayjs.tz.guess());
+            });
+
+            socket.on("refresh", () => {
+                location.reload();
             });
         },
 
@@ -320,7 +315,7 @@ export default {
         },
 
         /**
-         * Show success or error toast dependant on response status code
+         * Show success or error toast dependent on response status code
          * @param {object} res Response object
          * @returns {void}
          */

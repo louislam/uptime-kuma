@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
-const childProcess = require("child_process");
+const childProcessAsync = require("promisify-child-process");
 
 /**
  * A TailscalePing class extends the MonitorType.
@@ -16,7 +16,7 @@ class TailscalePing extends MonitorType {
      * @param {object} monitor The monitor object associated with the check.
      * @param {object} heartbeat The heartbeat object to update.
      * @returns {Promise<void>}
-     * @throws Will throw an error if checking Tailscale ping encounters any error
+     * @throws Error if checking Tailscale ping encounters any error
      */
     async check(monitor, heartbeat) {
         try {
@@ -37,12 +37,10 @@ class TailscalePing extends MonitorType {
      */
     async runTailscalePing(hostname, interval) {
         let timeout = interval * 1000 * 0.8;
-        let res = childProcess.spawnSync("tailscale", [ "ping", hostname ], {
-            timeout: timeout
+        let res = await childProcessAsync.spawn("tailscale", [ "ping", "--c", "1", hostname ], {
+            timeout: timeout,
+            encoding: "utf8",
         });
-        if (res.error) {
-            throw new Error(`Execution error: ${res.error.message}`);
-        }
         if (res.stderr && res.stderr.toString()) {
             throw new Error(`Error in output: ${res.stderr.toString()}`);
         }

@@ -105,7 +105,8 @@ class Database {
         "patch-add-gamedig-given-port.sql": true,
         "patch-notification-config.sql": true,
         "patch-fix-kafka-producer-booleans.sql": true,
-        "patch-timeout.sql": true, // The last file so far converted to a knex migration file
+        "patch-timeout.sql": true,
+        "patch-monitor-tls-info-add-fk.sql": true, // The last file so far converted to a knex migration file
     };
 
     /**
@@ -208,9 +209,9 @@ class Database {
         let config = {};
 
         let mariadbPoolConfig = {
-            afterCreate: function (conn, done) {
-
-            }
+            min: 0,
+            max: 10,
+            idleTimeoutMillis: 30000,
         };
 
         log.info("db", `Database Type: ${dbConfig.type}`);
@@ -263,7 +264,14 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
-                    timezone: "+00:00",
+                    timezone: "Z",
+                    typeCast: function (field, next) {
+                        if (field.type === "DATETIME") {
+                            // Do not perform timezone conversion
+                            return field.string();
+                        }
+                        return next();
+                    },
                 },
                 pool: mariadbPoolConfig,
             };
@@ -277,6 +285,14 @@ class Database {
                     socketPath: embeddedMariaDB.socketPath,
                     user: "node",
                     database: "kuma",
+                    timezone: "Z",
+                    typeCast: function (field, next) {
+                        if (field.type === "DATETIME") {
+                            // Do not perform timezone conversion
+                            return field.string();
+                        }
+                        return next();
+                    },
                 },
                 pool: mariadbPoolConfig,
             };
@@ -363,7 +379,7 @@ class Database {
 
     /**
      * Patch the database
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async patch() {
         // Still need to keep this for old versions of Uptime Kuma
