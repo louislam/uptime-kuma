@@ -72,8 +72,6 @@
 <script>
 import APIKeyDialog from "../../components/APIKeyDialog.vue";
 import Confirm from "../Confirm.vue";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
@@ -96,6 +94,7 @@ export default {
         /**
          * Show dialog to confirm deletion
          * @param {number} keyID ID of monitor that is being deleted
+         * @returns {void}
          */
         deleteDialog(keyID) {
             this.selectedKeyID = keyID;
@@ -104,19 +103,18 @@ export default {
 
         /**
          * Delete a key
+         * @returns {void}
          */
         deleteKey() {
             this.$root.deleteAPIKey(this.selectedKeyID, (res) => {
-                if (res.ok) {
-                    toast.success(res.msg);
-                } else {
-                    toast.error(res.msg);
-                }
+                this.$root.toastRes(res);
             });
         },
 
         /**
          * Show dialog to confirm pause
+         * @param {number} keyID ID of key to pause
+         * @returns {void}
          */
         disableDialog(keyID) {
             this.selectedKeyID = keyID;
@@ -124,7 +122,8 @@ export default {
         },
 
         /**
-         * Pause maintenance
+         * Pause API key
+         * @returns {void}
          */
         disableKey() {
             this.$root.getSocket().emit("disableAPIKey", this.selectedKeyID, (res) => {
@@ -133,7 +132,9 @@ export default {
         },
 
         /**
-         * Resume maintenance
+         * Resume API key
+         * @param {number} id Key to resume
+         * @returns {void}
          */
         enableKey(id) {
             this.$root.getSocket().emit("enableAPIKey", id, (res) => {

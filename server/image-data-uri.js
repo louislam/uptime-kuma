@@ -10,7 +10,7 @@ let ImageDataURI = (() => {
     /**
      * Decode the data:image/ URI
      * @param {string} dataURI data:image/ URI to decode
-     * @returns {?Object} An object with properties "imageType" and "dataBase64".
+     * @returns {?object} An object with properties "imageType" and "dataBase64".
      * The former is the image type, e.g., "png", and the latter is a base64
      * encoded string of the image's binary data. If it fails to parse, returns
      * null instead of an object.
@@ -52,8 +52,8 @@ let ImageDataURI = (() => {
     /**
      * Write data URI to file
      * @param {string} dataURI data:image/ URI
-     * @param {string} [filePath] Path to write file to
-     * @returns {Promise<string>}
+     * @param {string} filePath Path to write file to
+     * @returns {Promise<string|void>} Write file error
      */
     function outputFile(dataURI, filePath) {
         filePath = filePath || "./";

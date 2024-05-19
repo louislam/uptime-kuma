@@ -135,7 +135,7 @@
 <script lang="ts">
 import { Modal } from "bootstrap";
 import CopyableInput from "./CopyableInput.vue";
-import { default as serverConfig } from "../../server/config.js";
+import { badgeConstants } from "../util.ts";
 
 export default {
     components: {
@@ -230,7 +230,7 @@ export default {
                     "labelColor",
                 ],
             },
-            badgeConstants: serverConfig.badgeConstants,
+            badgeConstants,
         };
     },
 
@@ -279,8 +279,9 @@ export default {
     methods: {
         /**
          * Setting monitor
-         * @param {number} monitorId    ID of monitor
-         * @param {string} monitorName  Name of monitor
+         * @param {number} monitorId ID of monitor
+         * @param {string} monitorName Name of monitor
+         * @returns {void}
          */
         show(monitorId, monitorName) {
             this.monitor = {

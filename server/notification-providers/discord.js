@@ -3,14 +3,20 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Discord extends NotificationProvider {
-
     name = "discord";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+            const webhookUrl = new URL(notification.discordWebhookUrl);
+            if (notification.discordChannelType === "postToThread") {
+                webhookUrl.searchParams.append("thread_id", notification.threadId);
+            }
 
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
@@ -18,7 +24,12 @@ class Discord extends NotificationProvider {
                     username: discordDisplayName,
                     content: msg,
                 };
-                await axios.post(notification.discordWebhookUrl, discordtestdata);
+
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordtestdata.thread_name = notification.postName;
+                }
+
+                await axios.post(webhookUrl.toString(), discordtestdata);
                 return okMsg;
             }
 
@@ -30,6 +41,7 @@ class Discord extends NotificationProvider {
                     break;
                 case "port":
                 case "dns":
+                case "gamedig":
                 case "steam":
                     address = monitorJSON["hostname"];
                     if (monitorJSON["port"]) {
@@ -69,12 +81,14 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 };
-
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discorddowndata.thread_name = notification.postName;
+                }
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discorddowndata);
+                await axios.post(webhookUrl.toString(), discorddowndata);
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
@@ -105,11 +119,15 @@ class Discord extends NotificationProvider {
                     }],
                 };
 
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordupdata.thread_name = notification.postName;
+                }
+
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discordupdata);
+                await axios.post(webhookUrl.toString(), discordupdata);
                 return okMsg;
             }
         } catch (error) {
