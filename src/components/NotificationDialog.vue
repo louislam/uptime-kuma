@@ -114,6 +114,7 @@ export default {
                 "AlertNow": "AlertNow",
                 "apprise": this.$t("apprise"),
                 "Bark": "Bark",
+                "Bitrix24": "Bitrix24",
                 "clicksendsms": "ClickSend SMS",
                 "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",

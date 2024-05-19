@@ -824,15 +824,6 @@ class Monitor extends BeanModel {
                     bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1", mysqlPassword);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type === "mongodb") {
-                    let startTime = dayjs().valueOf();
-
-                    await mongodbPing(this.databaseConnectionString);
-
-                    bean.msg = "";
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
-
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
@@ -863,7 +854,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();
 
-                    bean.msg = await redisPingAsync(this.databaseConnectionString);
+                    bean.msg = await redisPingAsync(this.databaseConnectionString, !this.ignoreTls);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
 
