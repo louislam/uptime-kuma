@@ -852,7 +852,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();
 
-                    bean.msg = await redisPingAsync(this.databaseConnectionString);
+                    bean.msg = await redisPingAsync(this.databaseConnectionString, !this.ignoreTls);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
 
