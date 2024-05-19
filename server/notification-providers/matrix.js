@@ -10,7 +10,7 @@ class Matrix extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         const size = 20;
         const randomString = encodeURIComponent(

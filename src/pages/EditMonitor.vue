@@ -1421,6 +1421,7 @@ message HealthCheckResponse {
                             // group monitor fields
                             this.monitor.childrenIDs = undefined;
                             this.monitor.forceInactive = undefined;
+                            this.monitor.path = undefined;
                             this.monitor.pathName = undefined;
                             this.monitor.screenshot = undefined;
 
@@ -1495,7 +1496,7 @@ message HealthCheckResponse {
 
         /**
          * Submit the form data for processing
-         * @returns {void}
+         * @returns {Promise<void>}
          */
         async submit() {
 
@@ -1560,7 +1561,7 @@ message HealthCheckResponse {
 
                         // Start the new parent monitor after edit is done
                         if (createdNewParent) {
-                            this.startParentGroupMonitor();
+                            await this.startParentGroupMonitor();
                         }
                         this.processing = false;
                         this.$root.getMonitorList();
