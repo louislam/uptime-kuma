@@ -78,22 +78,27 @@ test("Test getMinutelyKey", async (t) => {
 
 test("Test getDailyKey", async (t) => {
     let c2 = new UptimeCalculator();
-    let dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 20:46:00").unix());
+    let dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 20:46:00"));
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
 
     c2 = new UptimeCalculator();
-    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 23:45:30").unix());
+    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 23:45:30"));
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
 
     // Edge case 1
     c2 = new UptimeCalculator();
-    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 23:59:59").unix());
+    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 23:59:59"));
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
 
     // Edge case 2
     c2 = new UptimeCalculator();
-    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 00:00:00").unix());
+    dailyKey = c2.getDailyKey(dayjs.utc("2023-08-12 00:00:00"));
     assert.strictEqual(dailyKey, dayjs.utc("2023-08-12").unix());
+
+    // Test timezone
+    c2 = new UptimeCalculator();
+    dailyKey = c2.getDailyKey(dayjs("Sat Dec 23 2023 05:38:39 GMT+0800 (Hong Kong Standard Time)"));
+    assert.strictEqual(dailyKey, dayjs.utc("2023-12-22").unix());
 });
 
 test("Test lastDailyUptimeData", async (t) => {

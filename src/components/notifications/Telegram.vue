@@ -58,8 +58,6 @@
 <script>
 import HiddenInput from "../HiddenInput.vue";
 import axios from "axios";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
@@ -87,7 +85,7 @@ export default {
 
         /**
          * Get the telegram chat ID
-         * @returns {void}
+         * @returns {Promise<void>}
          * @throws The chat ID could not be found
          */
         async autoGetTelegramChatID() {
@@ -110,7 +108,7 @@ export default {
                 }
 
             } catch (error) {
-                toast.error(error.message);
+                this.$root.toastError(error.message);
             }
 
         },

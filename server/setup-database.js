@@ -48,7 +48,7 @@ class SetupDatabase {
 
         try {
             dbConfig = Database.readDBConfig();
-            log.info("setup-database", "db-config.json is found and is valid");
+            log.debug("setup-database", "db-config.json is found and is valid");
             this.needSetup = false;
 
         } catch (e) {
@@ -74,7 +74,7 @@ class SetupDatabase {
             dbConfig.type = process.env.UPTIME_KUMA_DB_TYPE;
             dbConfig.hostname = process.env.UPTIME_KUMA_DB_HOSTNAME;
             dbConfig.port = process.env.UPTIME_KUMA_DB_PORT;
-            dbConfig.database = process.env.UPTIME_KUMA_DB_NAME;
+            dbConfig.dbName = process.env.UPTIME_KUMA_DB_NAME;
             dbConfig.username = process.env.UPTIME_KUMA_DB_USERNAME;
             dbConfig.password = process.env.UPTIME_KUMA_DB_PASSWORD;
             Database.writeDBConfig(dbConfig);

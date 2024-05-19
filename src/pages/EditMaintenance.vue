@@ -246,13 +246,10 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
 import VueMultiselect from "vue-multiselect";
 import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
 import cronstrue from "cronstrue/i18n";
-
-const toast = useToast();
 
 export default {
     components: {
@@ -457,7 +454,7 @@ export default {
                                     this.affectedMonitors.push(this.affectedMonitorsOptions.find(item => item.id === monitor.id));
                                 });
                             } else {
-                                toast.error(res.msg);
+                                this.$root.toastError(res.msg);
                             }
                         });
 
@@ -472,11 +469,11 @@ export default {
 
                                 this.showOnAllPages = Object.values(res.statusPages).length === this.selectedStatusPagesOptions.length;
                             } else {
-                                toast.error(res.msg);
+                                this.$root.toastError(res.msg);
                             }
                         });
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -490,7 +487,7 @@ export default {
             this.processing = true;
 
             if (this.affectedMonitors.length === 0) {
-                toast.error(this.$t("atLeastOneMonitor"));
+                this.$root.toastError(this.$t("atLeastOneMonitor"));
                 return this.processing = false;
             }
 
@@ -499,14 +496,14 @@ export default {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
                             await this.addMaintenanceStatusPage(res.maintenanceID, () => {
-                                toast.success(res.msg);
+                                this.$root.toastRes(res);
                                 this.processing = false;
                                 this.$root.getMaintenanceList();
                                 this.$router.push("/maintenance");
                             });
                         });
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastRes(res);
                         this.processing = false;
                     }
 
@@ -524,7 +521,7 @@ export default {
                         });
                     } else {
                         this.processing = false;
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -539,7 +536,7 @@ export default {
         async addMonitorMaintenance(maintenanceID, callback) {
             await this.$root.addMonitorMaintenance(maintenanceID, this.affectedMonitors, async (res) => {
                 if (!res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 } else {
                     this.$root.getMonitorList();
                 }
@@ -557,7 +554,7 @@ export default {
         async addMaintenanceStatusPage(maintenanceID, callback) {
             await this.$root.addMaintenanceStatusPage(maintenanceID, (this.showOnAllPages) ? this.selectedStatusPagesOptions : this.selectedStatusPages, async (res) => {
                 if (!res.ok) {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 } else {
                     this.$root.getMaintenanceList();
                 }

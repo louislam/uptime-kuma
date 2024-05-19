@@ -18,9 +18,15 @@ class StatusPage extends BeanModel {
      * @param {Response} response Response object
      * @param {string} indexHTML HTML to render
      * @param {string} slug Status page slug
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async handleStatusPageResponse(response, indexHTML, slug) {
+        // Handle url with trailing slash (http://localhost:3001/status/)
+        // The slug comes from the route "/status/:slug". If the slug is empty, express converts it to "index.html"
+        if (slug === "index.html") {
+            slug = "default";
+        }
+
         let statusPage = await R.findOne("status_page", " slug = ? ", [
             slug
         ]);
@@ -36,7 +42,7 @@ class StatusPage extends BeanModel {
      * SSR for status pages
      * @param {string} indexHTML HTML page to render
      * @param {StatusPage} statusPage Status page populate HTML with
-     * @returns {void}
+     * @returns {Promise<string>} the rendered html
      */
     static async renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
@@ -232,6 +238,7 @@ class StatusPage extends BeanModel {
             description: this.description,
             icon: this.getIcon(),
             theme: this.theme,
+            autoRefreshInterval: this.autoRefreshInterval,
             published: !!this.published,
             showTags: !!this.show_tags,
             domainNameList: this.getDomainNameList(),
@@ -254,6 +261,7 @@ class StatusPage extends BeanModel {
             title: this.title,
             description: this.description,
             icon: this.getIcon(),
+            autoRefreshInterval: this.autoRefreshInterval,
             theme: this.theme,
             published: !!this.published,
             showTags: !!this.show_tags,

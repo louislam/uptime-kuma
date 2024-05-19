@@ -62,15 +62,13 @@
 <script lang="ts">
 import { Modal } from "bootstrap";
 import Confirm from "./Confirm.vue";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
         Confirm,
     },
     props: {},
-    emits: [ "added" ],
+    emits: [ "added", "deleted" ],
     data() {
         return {
             modal: null,
@@ -120,7 +118,7 @@ export default {
                 }
 
                 if (!found) {
-                    toast.error("Docker Host not found!");
+                    this.$root.toastError("Docker Host not found!");
                 }
 
             } else {
@@ -180,6 +178,7 @@ export default {
                 this.processing = false;
 
                 if (res.ok) {
+                    this.$emit("deleted", this.id);
                     this.modal.hide();
                 }
             });
