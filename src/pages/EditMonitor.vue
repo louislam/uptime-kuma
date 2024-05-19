@@ -434,6 +434,32 @@
                                 </div>
                             </template>
 
+                            <!-- MongoDB -->
+                            <template v-if="monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="mongodbCommand" class="form-label">{{ $t("Command") }}</label>
+                                    <textarea id="mongodbCommand" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ '{ &quot;ping&quot;: 1 }' ])"></textarea>
+                                    <i18n-t tag="div" class="form-text" keypath="mongodbCommandDescription">
+                                        <template #documentation>
+                                            <a href="https://www.mongodb.com/docs/manual/reference/command/">{{ $t('documentationOf', ['MongoDB']) }}</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+                                <div class="my-3">
+                                    <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control">
+
+                                    <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
+                                        <a href="https://jsonata.org/">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                    </i18n-t>
+                                </div>
+                                <div class="my-3">
+                                    <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control">
+                                </div>
+                            </template>
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>

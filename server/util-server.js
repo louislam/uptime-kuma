@@ -11,7 +11,6 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
-const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
@@ -438,24 +437,6 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
 };
 
 /**
- * Connect to and ping a MongoDB database
- * @param {string} connectionString The database connection string
- * @returns {Promise<(string[] | object[] | object)>} Response from
- * server
- */
-exports.mongodbPing = async function (connectionString) {
-    let client = await MongoClient.connect(connectionString);
-    let dbPing = await client.db().command({ ping: 1 });
-    await client.close();
-
-    if (dbPing["ok"] === 1) {
-        return "UP";
-    } else {
-        throw Error("failed");
-    }
-};
-
-/**
  * Query radius server
  * @param {string} hostname Hostname of radius server
  * @param {string} username Username to use
@@ -657,20 +638,26 @@ const parseCertificateInfo = function (info) {
 
 /**
  * Check if certificate is valid
- * @param {object} res Response object from axios
+ * @param {tls.TLSSocket} socket TLSSocket, which may or may not be connected
  * @returns {object} Object containing certificate information
- * @throws No socket was found to check certificate for
  */
-exports.checkCertificate = function (res) {
-    if (!res.request.res.socket) {
-        throw new Error("No socket found");
+exports.checkCertificate = function (socket) {
+    let certInfoStartTime = dayjs().valueOf();
+
+    // Return null if there is no socket
+    if (socket === undefined || socket == null) {
+        return null;
     }
 
-    const info = res.request.res.socket.getPeerCertificate(true);
-    const valid = res.request.res.socket.authorized || false;
+    const info = socket.getPeerCertificate(true);
+    const valid = socket.authorized || false;
 
     log.debug("cert", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
+
+    if (process.env.TIMELOGGER === "1") {
+        log.debug("monitor", "Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+    }
 
     return {
         valid: valid,

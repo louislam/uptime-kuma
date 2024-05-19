@@ -149,6 +149,7 @@ const apicache = require("./modules/apicache");
 const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
+const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
 
 app.use(express.json());
 
@@ -1319,6 +1320,12 @@ let needSetup = false;
                     await doubleCheckPassword(socket, currentPassword);
                 }
 
+                // Log out all clients if enabling auth
+                // GHSA-23q2-5gf8-gjpp
+                if (currentDisabledAuth && !data.disableAuth) {
+                    server.disconnectAllSocketClients(socket.userID, socket.id);
+                }
+
                 const previousChromeExecutable = await Settings.get("chromeExecutable");
                 const previousNSCDStatus = await Settings.get("nscd");
 
@@ -1522,6 +1529,7 @@ let needSetup = false;
         apiKeySocketHandler(socket);
         remoteBrowserSocketHandler(socket);
         generalSocketHandler(socket, server);
+        chartSocketHandler(socket);
 
         log.debug("server", "added all socket handlers");
 
@@ -1535,6 +1543,7 @@ let needSetup = false;
             await afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
         } else {
+            socket.emit("loginRequired");
             log.debug("auth", "need auth");
         }
 
