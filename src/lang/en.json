@@ -902,6 +902,8 @@
     "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot",
+    "Command": "Command",
+    "mongodbCommandDescription": "Run a MongoDB command against the database. For information about the available commands check out the {documentation}",
     "wayToGetSevenIOApiKey": "Visit the dashboard under app.seven.io > developer > api key > the green add button",
     "senderSevenIO": "Sending number or name",
     "receiverSevenIO": "Receiving number",
