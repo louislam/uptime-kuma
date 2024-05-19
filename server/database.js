@@ -209,9 +209,9 @@ class Database {
         let config = {};
 
         let mariadbPoolConfig = {
-            afterCreate: function (conn, done) {
-
-            }
+            min: 0,
+            max: 10,
+            idleTimeoutMillis: 30000,
         };
 
         log.info("db", `Database Type: ${dbConfig.type}`);
