@@ -1,5 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
+const { UP } = require("../../src/util");
 
 class Bitrix24 extends NotificationProvider {
     name = "Bitrix24";
@@ -14,7 +15,7 @@ class Bitrix24 extends NotificationProvider {
             const params = {
                 user_id: notification.bitrix24UserID,
                 message: "[B]Uptime Kuma[/B]",
-                "ATTACH[COLOR]": msg.indexOf("✅") === -1 ? "#b73419" : "#67b518",
+                "ATTACH[COLOR]": (heartbeatJSON ?? {})["status"] === UP ? "#b73419" : "#67b518",
                 "ATTACH[BLOCKS][0][MESSAGE]": msg
             };
 
