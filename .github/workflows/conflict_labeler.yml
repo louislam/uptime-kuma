@@ -21,6 +21,6 @@ jobs:
       - name: Apply label
         uses: eps1lon/actions-label-merge-conflict@v3
         with:
-          dirtyLabel: 'merge conflict'
-          commentOnDirty: 'This pull request has merge conflicts. Please resolve the conflicts so the PR can be successfully reviewed and merged.'
+          dirtyLabel: 'needs:resolve-merge-conflict'
+          removeOnDirtyLabel: 'needs:resolve-merge-conflict'
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
