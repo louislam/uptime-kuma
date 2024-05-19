@@ -892,7 +892,7 @@
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "Browser Screenshot": "Browser Screenshot",
     "Zookeeper Host": "Zookeeper Host",
-    "Zookeeper Timeout": "Zookeeper Connect Timeout (ms)"
+    "Zookeeper Timeout": "Zookeeper Connect Timeout (ms)",
     "wayToGetSevenIOApiKey": "Visit the dashboard under app.seven.io > developer > api key > the green add button",
     "senderSevenIO": "Sending number or name",
     "receiverSevenIO": "Receiving number",
