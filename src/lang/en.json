@@ -361,6 +361,8 @@
     "Proxy": "Proxy",
     "Date Created": "Date Created",
     "Footer Text": "Footer Text",
+    "Refresh Interval": "Refresh Interval",
+    "Refresh Interval Description": "The status page will do a full site refresh every {0} seconds",
     "Show Powered By": "Show Powered By",
     "Domain Names": "Domain Names",
     "signedInDisp": "Signed in as {0}",
