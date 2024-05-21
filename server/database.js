@@ -209,9 +209,9 @@ class Database {
         let config = {};
 
         let mariadbPoolConfig = {
-            afterCreate: function (conn, done) {
-
-            }
+            min: 0,
+            max: 10,
+            idleTimeoutMillis: 30000,
         };
 
         log.info("db", `Database Type: ${dbConfig.type}`);
@@ -223,11 +223,8 @@ class Database {
                 fs.copyFileSync(Database.templatePath, Database.sqlitePath);
             }
 
-            const Dialect = require("knex/lib/dialects/sqlite3/index.js");
-            Dialect.prototype._driver = () => require("@louislam/sqlite3");
-
             config = {
-                client: Dialect,
+                client: "sqlite3",
                 connection: {
                     filename: Database.sqlitePath,
                     acquireConnectionTimeout: acquireConnectionTimeout,

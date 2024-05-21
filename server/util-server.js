@@ -11,7 +11,6 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
-const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
@@ -438,24 +437,6 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
 };
 
 /**
- * Connect to and ping a MongoDB database
- * @param {string} connectionString The database connection string
- * @returns {Promise<(string[] | object[] | object)>} Response from
- * server
- */
-exports.mongodbPing = async function (connectionString) {
-    let client = await MongoClient.connect(connectionString);
-    let dbPing = await client.db().command({ ping: 1 });
-    await client.close();
-
-    if (dbPing["ok"] === 1) {
-        return "UP";
-    } else {
-        throw Error("failed");
-    }
-};
-
-/**
  * Query radius server
  * @param {string} hostname Hostname of radius server
  * @param {string} username Username to use
@@ -505,12 +486,16 @@ exports.radius = function (
 /**
  * Redis server ping
  * @param {string} dsn The redis connection string
- * @returns {Promise<any>} Response from redis server
+ * @param {boolean} rejectUnauthorized If false, allows unverified server certificates.
+ * @returns {Promise<any>} Response from server
  */
-exports.redisPingAsync = function (dsn) {
+exports.redisPingAsync = function (dsn, rejectUnauthorized) {
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
-            url: dsn
+            url: dsn,
+            socket: {
+                rejectUnauthorized
+            }
         });
         client.on("error", (err) => {
             if (client.isOpen) {
