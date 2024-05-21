@@ -1,11 +1,10 @@
 <template>
     <div class="mb-3">
-        <label for="smspartner-key" class="form-label">{{ $t("smspartnerApikey") }}</label>
+        <label for="smspartner-key" class="form-label">{{ $t("API Key") }}</label>
         <HiddenInput id="smspartner-key" v-model="$parent.notification.smspartnerApikey" :required="true" autocomplete="new-password"></HiddenInput>
-        <div class="form-text">
-            {{ $t("smspartnerApiurl") }}
+        <i18n-t keypath="smspartnerApiurl" as="div" class="form-text">
             <a href="https://my.smspartner.fr/dashboard/api" target="_blank">https://my.smspartner.fr/dashboard/api</a>
-        </div>
+        </i18n-t>
     </div>
     <div class="mb-3">
         <label for="smspartner-phone-number" class="form-label">{{ $t("smspartnerPhoneNumber") }}</label>

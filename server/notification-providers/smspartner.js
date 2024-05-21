@@ -12,15 +12,15 @@ class SMSPartner extends NotificationProvider {
         const url = "https://api.smspartner.fr/v1/send";
 
         try {
-            //Lets remove non ascii char
-            let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "");
+            // smspartner does not support non ascii characters and only a maximum 639 characters
+            let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "").substring(0, 639);
 
             let data = {
                 "apiKey": notification.smspartnerApikey,
                 "gamme": 1,
                 "sender": notification.smspartnerSenderName.substring(0, 11),
                 "phoneNumbers": notification.smspartnerPhoneNumber,
-                "message": cleanMsg.substring(0, 639)
+                "message": cleanMsg,
             };
 
             let config = {
@@ -34,8 +34,7 @@ class SMSPartner extends NotificationProvider {
             let resp = await axios.post(url, data, config);
 
             if (resp.data.success !== true) {
-                let error = "Something gone wrong. Api returned " + resp.data.response.status + ".";
-                this.throwGeneralAxiosError(error);
+                throw Error(`Api returned ${resp.data.response.status}.`);
             }
 
             return okMsg;
