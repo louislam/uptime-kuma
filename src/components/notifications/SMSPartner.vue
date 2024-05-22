@@ -12,7 +12,7 @@
         <label for="smspartner-phone-number" class="form-label">{{ $t("smspartnerPhoneNumber") }}</label>
         <input id="smspartner-phone-number" v-model="$parent.notification.smspartnerPhoneNumber" type="text" minlength="3" maxlength="20" pattern="^[\d+,]+$" class="form-control" required>
         <div class="form-text">
-            <i18n-t keypath="multiple numbers must be separated by" as="div" class="form-text">
+            <i18n-t keypath="smspartnerPhoneNumberHelptext" as="div" class="form-text">
                 <code>+336xxxxxxxx</code>
                 <code>+496xxxxxxxx</code>
                 <code>,</code>
