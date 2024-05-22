@@ -4,7 +4,7 @@
         <HiddenInput id="smspartner-key" v-model="$parent.notification.smspartnerApikey" :required="true" autocomplete="new-password"></HiddenInput>
         <div class="form-text">
             <i18n-t keypath="smspartnerApiurl" as="div" class="form-text">
-                <a href="https://my.smspartner.fr/dashboard/api" target="_blank">https://my.smspartner.fr/dashboard/api</a>
+                <a href="https://my.smspartner.fr/dashboard/api" target="_blank">my.smspartner.fr/dashboard/api</a>
             </i18n-t>
         </div>
     </div>
