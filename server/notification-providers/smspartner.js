@@ -17,7 +17,6 @@ class SMSPartner extends NotificationProvider {
 
             let data = {
                 "apiKey": notification.smspartnerApikey,
-                "gamme": 1,
                 "sender": notification.smspartnerSenderName.substring(0, 11),
                 "phoneNumbers": notification.smspartnerPhoneNumber,
                 "message": cleanMsg,
