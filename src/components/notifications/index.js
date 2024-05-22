@@ -43,6 +43,7 @@ import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
 import SMSManager from "./SMSManager.vue";
+import SMSPartner from "./SMSPartner.vue";
 import Slack from "./Slack.vue";
 import Squadcast from "./Squadcast.vue";
 import SMSEagle from "./SMSEagle.vue";
@@ -110,6 +111,7 @@ const NotificationFormList = {
     "serwersms": SerwerSMS,
     "signal": Signal,
     "SMSManager": SMSManager,
+    "SMSPartner": SMSPartner,
     "slack": Slack,
     "squadcast": Squadcast,
     "SMSEagle": SMSEagle,
