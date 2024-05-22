@@ -755,7 +755,7 @@
     "smseaglePriority": "Message priority (0-9, default = 0)",
     "smspartnerApiurl": "You can find your API key in your dashboard at {0}",
     "smspartnerPhoneNumber": "Phone number(s)",
-    "multiple numbers must be separated by": "Multiple numbers must be separated by {0}",
+    "multiple numbers must be separated by": "The number must be in the international format {0}, {1}. Multiple numbers must be separated by {2}",
     "smspartnerSenderName": "SMS Sender Name",
     "smspartnerSenderNameInfo": "Must be between 3..=11 regular characters",
     "Recipient Number": "Recipient Number",
