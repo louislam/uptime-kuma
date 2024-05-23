@@ -918,5 +918,11 @@
     "useRemoteBrowser": "Używaj zdalnej przeglądarki",
     "Add a new expiry notification day": "Dodaj nowy dzień wygaśnięcia powiadomienia",
     "Remove the expiry notification": "Usunąć dzień powiadomienia o wygaśnięciu",
-    "What is a Remote Browser?": "Co to jest zdalna przeglądarka?"
+    "What is a Remote Browser?": "Co to jest zdalna przeglądarka?",
+    "Mentioning": "Oznaczenia",
+    "Don't mention people": "Nie oznaczaj nikogo",
+    "Mention group": "Oznacz {group}",
+    "Channel access token (Long-lived)": "Token dostępu kanału (długotrwały)",
+    "Your User ID": "Twój identyfikator użytkownika",
+    "locally configured mail transfer agent": "lokalnie skonfigurowany serwer poczty"
 }
