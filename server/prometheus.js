@@ -28,7 +28,7 @@ const monitorResponseTime = new PrometheusClient.Gauge({
 
 const monitorStatus = new PrometheusClient.Gauge({
     name: "monitor_status",
-    help: "Monitor Status (1 = UP, 0= DOWN)",
+    help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
     labelNames: commonLabels
 });
 
@@ -36,7 +36,7 @@ class Prometheus {
     monitorLabelValues = {};
 
     /**
-     * @param {Object} monitor Monitor object to monitor
+     * @param {object} monitor Monitor object to monitor
      */
     constructor(monitor) {
         this.monitorLabelValues = {
@@ -50,8 +50,9 @@ class Prometheus {
 
     /**
      * Update the metrics page
-     * @param {Object} heartbeat Heartbeat details
-     * @param {Object} tlsInfo TLS details
+     * @param {object} heartbeat Heartbeat details
+     * @param {object} tlsInfo TLS details
+     * @returns {void}
      */
     update(heartbeat, tlsInfo) {
 
@@ -79,26 +80,32 @@ class Prometheus {
             }
         }
 
-        try {
-            monitorStatus.set(this.monitorLabelValues, heartbeat.status);
-        } catch (e) {
-            log.error("prometheus", "Caught error");
-            log.error("prometheus", e);
-        }
-
-        try {
-            if (typeof heartbeat.ping === "number") {
-                monitorResponseTime.set(this.monitorLabelValues, heartbeat.ping);
-            } else {
-                // Is it good?
-                monitorResponseTime.set(this.monitorLabelValues, -1);
+        if (heartbeat) {
+            try {
+                monitorStatus.set(this.monitorLabelValues, heartbeat.status);
+            } catch (e) {
+                log.error("prometheus", "Caught error");
+                log.error("prometheus", e);
             }
-        } catch (e) {
-            log.error("prometheus", "Caught error");
-            log.error("prometheus", e);
+
+            try {
+                if (typeof heartbeat.ping === "number") {
+                    monitorResponseTime.set(this.monitorLabelValues, heartbeat.ping);
+                } else {
+                    // Is it good?
+                    monitorResponseTime.set(this.monitorLabelValues, -1);
+                }
+            } catch (e) {
+                log.error("prometheus", "Caught error");
+                log.error("prometheus", e);
+            }
         }
     }
 
+    /**
+     * Remove monitor from prometheus
+     * @returns {void}
+     */
     remove() {
         try {
             monitorCertDaysRemaining.remove(this.monitorLabelValues);

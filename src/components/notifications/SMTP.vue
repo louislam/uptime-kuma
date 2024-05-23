@@ -5,6 +5,14 @@
             <input id="hostname" v-model="$parent.notification.smtpHost" type="text" class="form-control" required>
         </div>
 
+        <i18n-t tag="div" keypath="Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent" class="form-text">
+            <template #localhost>
+                <code>localhost</code>
+            </template>
+            <template #local_mta>
+                <a href="https://wikipedia.org/wiki/Mail_Transfer_Agent" target="_blank">{{ $t("locally configured mail transfer agent") }}</a>
+            </template>
+        </i18n-t>
         <div class="mb-3">
             <label for="port" class="form-label">{{ $t("Port") }}</label>
             <input id="port" v-model="$parent.notification.smtpPort" type="number" class="form-control" required min="0" max="65535" step="1">
@@ -34,7 +42,7 @@
 
         <div class="mb-3">
             <label for="password" class="form-label">{{ $t("Password") }}</label>
-            <HiddenInput id="password" v-model="$parent.notification.smtpPassword" :required="false" autocomplete="one-time-code"></HiddenInput>
+            <HiddenInput id="password" v-model="$parent.notification.smtpPassword" :required="false" autocomplete="new-password"></HiddenInput>
         </div>
 
         <div class="mb-3">
@@ -57,6 +65,28 @@
         <div class="mb-3">
             <label for="to-bcc" class="form-label">{{ $t("smtpBCC") }}</label>
             <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
+        </div>
+
+        <p class="form-text">
+            <i18n-t tag="div" keypath="smtpLiquidIntroduction" class="form-text mb-3">
+                <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
+            </i18n-t>
+            <code v-pre>{{name}}</code>: {{ $t("emailTemplateServiceName") }}<br />
+            <code v-pre>{{msg}}</code>: {{ $t("emailTemplateMsg") }}<br />
+            <code v-pre>{{status}}</code>: {{ $t("emailTemplateStatus") }}<br />
+            <code v-pre>{{heartbeatJSON}}</code>: {{ $t("emailTemplateHeartbeatJSON") }}<b>{{ $t("emailTemplateLimitedToUpDownNotification") }}</b><br />
+            <code v-pre>{{monitorJSON}}</code>: {{ $t("emailTemplateMonitorJSON") }} <b>{{ $t("emailTemplateLimitedToUpDownNotification") }}</b><br />
+            <code v-pre>{{hostnameOrURL}}</code>: {{ $t("emailTemplateHostnameOrURL") }}<br />
+        </p>
+        <div class="mb-3">
+            <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
+            <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
+            <div class="form-text">{{ $t("leave blank for default subject") }}</div>
+        </div>
+        <div class="mb-3">
+            <label for="body-email" class="form-label">{{ $t("emailCustomBody") }}</label>
+            <textarea id="body-email" v-model="$parent.notification.customBody" type="text" class="form-control" autocomplete="false" placeholder=""></textarea>
+            <div class="form-text">{{ $t("leave blank for default body") }}</div>
         </div>
 
         <ToggleSection :heading="$t('smtpDkimSettings')">
@@ -89,18 +119,6 @@
                 <input id="dkim-skip-fields" v-model="$parent.notification.smtpDkimskipFields" type="text" class="form-control" autocomplete="false" placeholder="message-id:date">
             </div>
         </ToggleSection>
-
-        <div class="mb-3">
-            <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
-            <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
-            <div v-pre class="form-text">
-                (leave blank for default one)<br />
-                {{NAME}}: Service Name<br />
-                {{HOSTNAME_OR_URL}}: Hostname or URL<br />
-                {{URL}}: URL<br />
-                {{STATUS}}: Status<br />
-            </div>
-        </div>
     </div>
 </template>
 

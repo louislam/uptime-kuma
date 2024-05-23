@@ -1,24 +1,101 @@
 "use strict";
+/*!
 // Common Util for frontend and backend
 //
 // DOT NOT MODIFY util.js!
-// Need to run "tsc" to compile if there are any changes.
+// Need to run "npm run tsc" to compile if there are any changes.
 //
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
+*/
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
-const _dayjs = require("dayjs");
-const dayjs = _dayjs;
+exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
+exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = void 0;
+const dayjs = require("dayjs");
 exports.isDev = process.env.NODE_ENV === "development";
+exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
 exports.PENDING = 2;
+exports.MAINTENANCE = 3;
 exports.STATUS_PAGE_ALL_DOWN = 0;
 exports.STATUS_PAGE_ALL_UP = 1;
 exports.STATUS_PAGE_PARTIAL_DOWN = 2;
-/** Flip the status of s */
+exports.STATUS_PAGE_MAINTENANCE = 3;
+exports.SQL_DATE_FORMAT = "YYYY-MM-DD";
+exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
+exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
+exports.MAX_INTERVAL_SECOND = 2073600;
+exports.MIN_INTERVAL_SECOND = 20;
+exports.CONSOLE_STYLE_Reset = "\x1b[0m";
+exports.CONSOLE_STYLE_Bright = "\x1b[1m";
+exports.CONSOLE_STYLE_Dim = "\x1b[2m";
+exports.CONSOLE_STYLE_Underscore = "\x1b[4m";
+exports.CONSOLE_STYLE_Blink = "\x1b[5m";
+exports.CONSOLE_STYLE_Reverse = "\x1b[7m";
+exports.CONSOLE_STYLE_Hidden = "\x1b[8m";
+exports.CONSOLE_STYLE_FgBlack = "\x1b[30m";
+exports.CONSOLE_STYLE_FgRed = "\x1b[31m";
+exports.CONSOLE_STYLE_FgGreen = "\x1b[32m";
+exports.CONSOLE_STYLE_FgYellow = "\x1b[33m";
+exports.CONSOLE_STYLE_FgBlue = "\x1b[34m";
+exports.CONSOLE_STYLE_FgMagenta = "\x1b[35m";
+exports.CONSOLE_STYLE_FgCyan = "\x1b[36m";
+exports.CONSOLE_STYLE_FgWhite = "\x1b[37m";
+exports.CONSOLE_STYLE_FgGray = "\x1b[90m";
+exports.CONSOLE_STYLE_FgOrange = "\x1b[38;5;208m";
+exports.CONSOLE_STYLE_FgLightGreen = "\x1b[38;5;119m";
+exports.CONSOLE_STYLE_FgLightBlue = "\x1b[38;5;117m";
+exports.CONSOLE_STYLE_FgViolet = "\x1b[38;5;141m";
+exports.CONSOLE_STYLE_FgBrown = "\x1b[38;5;130m";
+exports.CONSOLE_STYLE_FgPink = "\x1b[38;5;219m";
+exports.CONSOLE_STYLE_BgBlack = "\x1b[40m";
+exports.CONSOLE_STYLE_BgRed = "\x1b[41m";
+exports.CONSOLE_STYLE_BgGreen = "\x1b[42m";
+exports.CONSOLE_STYLE_BgYellow = "\x1b[43m";
+exports.CONSOLE_STYLE_BgBlue = "\x1b[44m";
+exports.CONSOLE_STYLE_BgMagenta = "\x1b[45m";
+exports.CONSOLE_STYLE_BgCyan = "\x1b[46m";
+exports.CONSOLE_STYLE_BgWhite = "\x1b[47m";
+exports.CONSOLE_STYLE_BgGray = "\x1b[100m";
+const consoleModuleColors = [
+    exports.CONSOLE_STYLE_FgCyan,
+    exports.CONSOLE_STYLE_FgGreen,
+    exports.CONSOLE_STYLE_FgLightGreen,
+    exports.CONSOLE_STYLE_FgBlue,
+    exports.CONSOLE_STYLE_FgLightBlue,
+    exports.CONSOLE_STYLE_FgMagenta,
+    exports.CONSOLE_STYLE_FgOrange,
+    exports.CONSOLE_STYLE_FgViolet,
+    exports.CONSOLE_STYLE_FgBrown,
+    exports.CONSOLE_STYLE_FgPink,
+];
+const consoleLevelColors = {
+    "INFO": exports.CONSOLE_STYLE_FgCyan,
+    "WARN": exports.CONSOLE_STYLE_FgYellow,
+    "ERROR": exports.CONSOLE_STYLE_FgRed,
+    "DEBUG": exports.CONSOLE_STYLE_FgGray,
+};
+exports.badgeConstants = {
+    naColor: "#999",
+    defaultUpColor: "#66c20a",
+    defaultWarnColor: "#eed202",
+    defaultDownColor: "#c2290a",
+    defaultPendingColor: "#f8a306",
+    defaultMaintenanceColor: "#1747f5",
+    defaultPingColor: "blue",
+    defaultStyle: "flat",
+    defaultPingValueSuffix: "ms",
+    defaultPingLabelSuffix: "h",
+    defaultUptimeValueSuffix: "%",
+    defaultUptimeLabelSuffix: "h",
+    defaultCertExpValueSuffix: " days",
+    defaultCertExpLabelSuffix: "h",
+    defaultCertExpireWarnDays: "14",
+    defaultCertExpireDownDays: "7"
+};
 function flipStatus(s) {
     if (s === exports.UP) {
         return exports.DOWN;
@@ -29,18 +106,10 @@ function flipStatus(s) {
     return s;
 }
 exports.flipStatus = flipStatus;
-/**
- * Delays for specified number of seconds
- * @param ms Number of milliseconds to sleep for
- */
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 exports.sleep = sleep;
-/**
- * PHP's ucfirst
- * @param str
- */
 function ucfirst(str) {
     if (!str) {
         return str;
@@ -49,26 +118,12 @@ function ucfirst(str) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 exports.ucfirst = ucfirst;
-/**
- * @deprecated Use log.debug
- * @since https://github.com/louislam/uptime-kuma/pull/910
- * @param msg
- */
 function debug(msg) {
     exports.log.log("", msg, "debug");
 }
 exports.debug = debug;
 class Logger {
     constructor() {
-        /**
-         * UPTIME_KUMA_HIDE_LOG=debug_monitor,info_monitor
-         *
-         * Example:
-         *  [
-         *     "debug_monitor",          // Hide all logs that level is debug and the module is monitor
-         *     "info_monitor",
-         *  ]
-         */
         this.hideLog = {
             info: [],
             warn: [],
@@ -76,10 +131,9 @@ class Logger {
             debug: [],
         };
         if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
-            let list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
-            for (let pair of list) {
-                // split first "_" only
-                let values = pair.split(/_(.*)/s);
+            const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+            for (const pair of list) {
+                const values = pair.split(/_(.*)/s);
                 if (values.length >= 2) {
                     this.hideLog[values[0]].push(values[1]);
                 }
@@ -88,76 +142,99 @@ class Logger {
             this.debug("server", this.hideLog);
         }
     }
-    /**
-     * Write a message to the log
-     * @param module The module the log comes from
-     * @param msg Message to write
-     * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
-     */
     log(module, msg, level) {
-        if (this.hideLog[level] && this.hideLog[level].includes(module)) {
+        if (level === "DEBUG" && !exports.isDev) {
+            return;
+        }
+        if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
         module = module.toUpperCase();
         level = level.toUpperCase();
-        const now = new Date().toISOString();
-        const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
-        if (level === "INFO") {
-            console.info(formattedMessage);
+        let now;
+        if (dayjs.tz) {
+            now = dayjs.tz(new Date()).format();
         }
-        else if (level === "WARN") {
-            console.warn(formattedMessage);
+        else {
+            now = dayjs().format();
         }
-        else if (level === "ERROR") {
-            console.error(formattedMessage);
-        }
-        else if (level === "DEBUG") {
-            if (exports.isDev) {
-                console.log(formattedMessage);
+        const levelColor = consoleLevelColors[level];
+        const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
+        let timePart;
+        let modulePart;
+        let levelPart;
+        let msgPart;
+        if (exports.isNode) {
+            switch (level) {
+                case "DEBUG":
+                    timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
+                    break;
+                default:
+                    timePart = exports.CONSOLE_STYLE_FgCyan + now + exports.CONSOLE_STYLE_Reset;
+                    break;
+            }
+            modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
+            levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
+            switch (level) {
+                case "ERROR":
+                    if (typeof msg === "string") {
+                        msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
+                    }
+                    else {
+                        msgPart = msg;
+                    }
+                    break;
+                case "DEBUG":
+                    if (typeof msg === "string") {
+                        msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
+                    }
+                    else {
+                        msgPart = msg;
+                    }
+                    break;
+                default:
+                    msgPart = msg;
+                    break;
             }
         }
         else {
-            console.log(formattedMessage);
+            timePart = now;
+            modulePart = `[${module}]`;
+            levelPart = `${level}:`;
+            msgPart = msg;
+        }
+        switch (level) {
+            case "ERROR":
+                console.error(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "WARN":
+                console.warn(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "INFO":
+                console.info(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "DEBUG":
+                if (exports.isDev) {
+                    console.debug(timePart, modulePart, levelPart, msgPart);
+                }
+                break;
+            default:
+                console.log(timePart, modulePart, levelPart, msgPart);
+                break;
         }
     }
-    /**
-     * Log an INFO message
-     * @param module Module log comes from
-     * @param msg Message to write
-     */
     info(module, msg) {
         this.log(module, msg, "info");
     }
-    /**
-     * Log a WARN message
-     * @param module Module log comes from
-     * @param msg Message to write
-     */
     warn(module, msg) {
         this.log(module, msg, "warn");
     }
-    /**
-     * Log an ERROR message
-     * @param module Module log comes from
-     * @param msg Message to write
-     */
     error(module, msg) {
         this.log(module, msg, "error");
     }
-    /**
-     * Log a DEBUG message
-     * @param module Module log comes from
-     * @param msg Message to write
-     */
     debug(module, msg) {
         this.log(module, msg, "debug");
     }
-    /**
-     * Log an exeption as an ERROR
-     * @param module Module log comes from
-     * @param exception The exeption to include
-     * @param msg The message to write
-     */
     exception(module, exception, msg) {
         let finalMessage = exception;
         if (msg) {
@@ -167,20 +244,12 @@ class Logger {
     }
 }
 exports.log = new Logger();
-/**
- * String.prototype.replaceAll() polyfill
- * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
- * @author Chris Ferdinandi
- * @license MIT
- */
 function polyfill() {
     if (!String.prototype.replaceAll) {
         String.prototype.replaceAll = function (str, newStr) {
-            // If a regex pattern
             if (Object.prototype.toString.call(str).toLowerCase() === "[object regexp]") {
                 return this.replace(str, newStr);
             }
-            // If a string
             return this.replace(new RegExp(str, "g"), newStr);
         };
     }
@@ -190,10 +259,6 @@ class TimeLogger {
     constructor() {
         this.startTime = dayjs().valueOf();
     }
-    /**
-     * Output time since start of monitor
-     * @param name Name of monitor
-     */
     print(name) {
         if (exports.isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
@@ -201,66 +266,42 @@ class TimeLogger {
     }
 }
 exports.TimeLogger = TimeLogger;
-/**
- * Returns a random number between min (inclusive) and max (exclusive)
- */
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
 exports.getRandomArbitrary = getRandomArbitrary;
-/**
- * From: https://stackoverflow.com/questions/1527803/generating-random-whole-numbers-in-javascript-in-a-specific-range
- *
- * Returns a random integer between min (inclusive) and max (inclusive).
- * The value is no lower than min (or the next integer greater than min
- * if min isn't an integer) and no greater than max (or the next integer
- * lower than max if max isn't an integer).
- * Using Math.round() will give you a non-uniform distribution!
- */
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 exports.getRandomInt = getRandomInt;
-/**
- * Returns either the NodeJS crypto.randomBytes() function or its
- * browser equivalent implemented via window.crypto.getRandomValues()
- */
-let getRandomBytes = ((typeof window !== 'undefined' && window.crypto)
-    // Browsers
+const getRandomBytes = ((typeof window !== "undefined" && window.crypto)
     ? function () {
         return (numBytes) => {
-            let randomBytes = new Uint8Array(numBytes);
+            const randomBytes = new Uint8Array(numBytes);
             for (let i = 0; i < numBytes; i += 65536) {
                 window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
             }
             return randomBytes;
         };
     }
-    // Node
     : function () {
         return require("crypto").randomBytes;
     })();
-/**
- * Get a random integer suitable for use in cryptography between upper
- * and lower bounds.
- * @param min Minimum value of integer
- * @param max Maximum value of integer
- * @returns Cryptographically suitable random integer
- */
 function getCryptoRandomInt(min, max) {
-    // synchronous version of: https://github.com/joepie91/node-random-number-csprng
     const range = max - min;
-    if (range >= Math.pow(2, 32))
+    if (range >= Math.pow(2, 32)) {
         console.log("Warning! Range is too large.");
+    }
     let tmpRange = range;
     let bitsNeeded = 0;
     let bytesNeeded = 0;
     let mask = 1;
     while (tmpRange > 0) {
-        if (bitsNeeded % 8 === 0)
+        if (bitsNeeded % 8 === 0) {
             bytesNeeded += 1;
+        }
         bitsNeeded += 1;
         mask = mask << 1 | 1;
         tmpRange = tmpRange >>> 1;
@@ -279,11 +320,6 @@ function getCryptoRandomInt(min, max) {
     }
 }
 exports.getCryptoRandomInt = getCryptoRandomInt;
-/**
- * Generate a secret
- * @param length Lenght of secret to generate
- * @returns
- */
 function genSecret(length = 64) {
     let secret = "";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -294,12 +330,69 @@ function genSecret(length = 64) {
     return secret;
 }
 exports.genSecret = genSecret;
-/**
- * Get the path of a monitor
- * @param id ID of monitor
- * @returns Formatted relative path
- */
 function getMonitorRelativeURL(id) {
     return "/dashboard/" + id;
 }
 exports.getMonitorRelativeURL = getMonitorRelativeURL;
+function getMaintenanceRelativeURL(id) {
+    return "/maintenance/" + id;
+}
+exports.getMaintenanceRelativeURL = getMaintenanceRelativeURL;
+function parseTimeObject(time) {
+    if (!time) {
+        return {
+            hours: 0,
+            minutes: 0,
+        };
+    }
+    const array = time.split(":");
+    if (array.length < 2) {
+        throw new Error("parseVueDatePickerTimeFormat: Invalid Time");
+    }
+    const obj = {
+        hours: parseInt(array[0]),
+        minutes: parseInt(array[1]),
+        seconds: 0,
+    };
+    if (array.length >= 3) {
+        obj.seconds = parseInt(array[2]);
+    }
+    return obj;
+}
+exports.parseTimeObject = parseTimeObject;
+function parseTimeFromTimeObject(obj) {
+    if (!obj) {
+        return obj;
+    }
+    let result = "";
+    result += obj.hours.toString().padStart(2, "0") + ":" + obj.minutes.toString().padStart(2, "0");
+    if (obj.seconds) {
+        result += ":" + obj.seconds.toString().padStart(2, "0");
+    }
+    return result;
+}
+exports.parseTimeFromTimeObject = parseTimeFromTimeObject;
+function isoToUTCDateTime(input) {
+    return dayjs(input).utc().format(exports.SQL_DATETIME_FORMAT);
+}
+exports.isoToUTCDateTime = isoToUTCDateTime;
+function utcToISODateTime(input) {
+    return dayjs.utc(input).toISOString();
+}
+exports.utcToISODateTime = utcToISODateTime;
+function utcToLocal(input, format = exports.SQL_DATETIME_FORMAT) {
+    return dayjs.utc(input).local().format(format);
+}
+exports.utcToLocal = utcToLocal;
+function localToUTC(input, format = exports.SQL_DATETIME_FORMAT) {
+    return dayjs(input).utc().format(format);
+}
+exports.localToUTC = localToUTC;
+function intHash(str, length = 10) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash += str.charCodeAt(i);
+    }
+    return (hash % length + length) % length;
+}
+exports.intHash = intHash;

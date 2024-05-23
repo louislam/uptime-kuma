@@ -2,16 +2,16 @@ class NotificationProvider {
 
     /**
      * Notification Provider Name
-     * @type string
+     * @type {string}
      */
     name = undefined;
 
     /**
      * Send a notification
-     * @param {BeanModel} notification
+     * @param {BeanModel} notification Notification to send
      * @param {string} msg General Message
-     * @param {?Object} monitorJSON Monitor details (For Up/Down only)
-     * @param {?Object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @param {?object} monitorJSON Monitor details (For Up/Down only)
+     * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} Return Successful Message
      * @throws Error with fail msg
      */
@@ -22,6 +22,7 @@ class NotificationProvider {
     /**
      * Throws an error
      * @param {any} error The error to throw
+     * @returns {void}
      * @throws {any} The error specified
      */
     throwGeneralAxiosError(error) {

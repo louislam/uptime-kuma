@@ -37,19 +37,38 @@
                             <div class="profile-pic">{{ $root.usernameFirstChar }}</div>
                             <font-awesome-icon icon="angle-down" />
                         </div>
+
+                        <!-- Header's Dropdown Menu -->
                         <ul class="dropdown-menu">
+                            <!-- Username -->
                             <li>
                                 <i18n-t v-if="$root.username != null" tag="span" keypath="signedInDisp" class="dropdown-item-text">
                                     <strong>{{ $root.username }}</strong>
                                 </i18n-t>
                                 <span v-if="$root.username == null" class="dropdown-item-text">{{ $t("signedInDispDisabled") }}</span>
                             </li>
+
                             <li><hr class="dropdown-divider"></li>
+
+                            <!-- Functions -->
                             <li>
-                                <router-link to="/settings" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
+                                <router-link to="/maintenance" class="dropdown-item" :class="{ active: $route.path.includes('manage-maintenance') }">
+                                    <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/settings/general" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
                                     <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                                 </router-link>
                             </li>
+
+                            <li>
+                                <a href="https://github.com/louislam/uptime-kuma/wiki" class="dropdown-item" target="_blank">
+                                    <font-awesome-icon icon="info-circle" /> {{ $t("Help") }}
+                                </a>
+                            </li>
+
                             <li v-if="$root.loggedIn && $root.socket.token !== 'autoLogin'">
                                 <button class="dropdown-item" @click="$root.logout">
                                     <font-awesome-icon icon="sign-out-alt" />
@@ -76,11 +95,11 @@
         </main>
 
         <!-- Mobile Only -->
-        <div v-if="$root.isMobile" style="width: 100%; height: 60px;" />
+        <div v-if="$root.isMobile" style="width: 100%; height: calc(60px + env(safe-area-inset-bottom));" />
         <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
-                {{ $t("Dashboard") }}
+                {{ $t("Home") }}
             </router-link>
 
             <router-link to="/list" class="nav-link">
@@ -98,12 +117,23 @@
                 {{ $t("Settings") }}
             </router-link>
         </nav>
+
+        <button
+            v-if="numActiveToasts != 0"
+            type="button"
+            class="btn btn-normal clear-all-toast-btn"
+            @click="clearToasts"
+        >
+            <font-awesome-icon icon="times" />
+        </button>
     </div>
 </template>
 
 <script>
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
 
@@ -112,7 +142,11 @@ export default {
     },
 
     data() {
-        return {};
+        return {
+            toastContainer: null,
+            numActiveToasts: 0,
+            toastContainerObserver: null,
+        };
     },
 
     computed: {
@@ -140,11 +174,34 @@ export default {
     },
 
     mounted() {
+        this.toastContainer = document.querySelector(".bottom-right.toast-container");
 
+        // Watch the number of active toasts
+        this.toastContainerObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === "childList") {
+                    this.numActiveToasts = mutation.target.children.length;
+                }
+            }
+        });
+
+        if (this.toastContainer != null) {
+            this.toastContainerObserver.observe(this.toastContainer, { childList: true });
+        }
+    },
+
+    beforeUnmount() {
+        this.toastContainerObserver.disconnect();
     },
 
     methods: {
-
+        /**
+         * Clear all toast notifications.
+         * @returns {void}
+         */
+        clearToasts() {
+            toast.clear();
+        }
     },
 
 };
@@ -163,14 +220,14 @@ export default {
     z-index: 1000;
     position: fixed;
     bottom: 0;
-    height: 60px;
+    height: calc(60px + env(safe-area-inset-bottom));
     width: 100%;
     left: 0;
     background-color: #fff;
     box-shadow: 0 15px 47px 0 rgba(0, 0, 0, 0.05), 0 5px 14px 0 rgba(0, 0, 0, 0.05);
     text-align: center;
     white-space: nowrap;
-    padding: 0 10px;
+    padding: 0 10px env(safe-area-inset-bottom);
 
     a {
         text-align: center;
@@ -302,6 +359,27 @@ main {
 
     .bottom-nav {
         background-color: $dark-bg;
+    }
+}
+
+.clear-all-toast-btn {
+    position: fixed;
+    right: 1em;
+    bottom: 1em;
+    font-size: 1.2em;
+    padding: 9px 15px;
+    width: 48px;
+    box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+
+    .dark & {
+        box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.5);
+    }
+}
+
+@media (max-width: 770px) {
+    .clear-all-toast-btn {
+        bottom: 72px;
     }
 }
 

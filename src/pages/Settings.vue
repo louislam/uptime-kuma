@@ -1,10 +1,19 @@
 <template>
     <div>
+        <div v-if="$root.isMobile" class="shadow-box mb-3">
+            <router-link to="/manage-status-page" class="nav-link">
+                <font-awesome-icon icon="stream" /> {{ $t("Status Pages") }}
+            </router-link>
+            <router-link to="/maintenance" class="nav-link">
+                <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
+            </router-link>
+        </div>
+
         <h1 v-show="show" class="mb-3">
             {{ $t("Settings") }}
         </h1>
 
-        <div class="shadow-box">
+        <div class="shadow-box shadow-box-settings">
             <div class="row">
                 <div v-if="showSubMenu" class="settings-menu col-lg-3 col-md-5">
                     <router-link
@@ -86,20 +95,26 @@ export default {
                 "reverse-proxy": {
                     title: this.$t("Reverse Proxy"),
                 },
+                tags: {
+                    title: this.$t("Tags"),
+                },
                 "monitor-history": {
                     title: this.$t("Monitor History"),
                 },
                 "docker-hosts": {
                     title: this.$t("Docker Hosts"),
                 },
+                "remote-browsers": {
+                    title: this.$t("Remote Browsers"),
+                },
                 security: {
                     title: this.$t("Security"),
                 },
+                "api-keys": {
+                    title: this.$t("API Keys")
+                },
                 proxies: {
                     title: this.$t("Proxies"),
-                },
-                backup: {
-                    title: this.$t("Backup"),
                 },
                 about: {
                     title: this.$t("About"),
@@ -124,6 +139,7 @@ export default {
         /**
          * Load the general settings page
          * For desktop only, on mobile do nothing
+         * @returns {void}
          */
         loadGeneralPage() {
             if (!this.currentPage && !this.$root.isMobile) {
@@ -131,7 +147,10 @@ export default {
             }
         },
 
-        /** Load settings from server */
+        /**
+         * Load settings from server
+         * @returns {void}
+         */
         loadSettings() {
             this.$root.getSocket().emit("getSettings", (res) => {
                 this.settings = res.data;
@@ -146,6 +165,10 @@ export default {
 
                 if (this.settings.entryPage === undefined) {
                     this.settings.entryPage = "dashboard";
+                }
+
+                if (this.settings.nscd === undefined) {
+                    this.settings.nscd = true;
                 }
 
                 if (this.settings.keepDataPeriodDays === undefined) {
@@ -167,23 +190,47 @@ export default {
         /**
          * Callback for saving settings
          * @callback saveSettingsCB
-         * @param {Object} res Result of operation
+         * @param {object} res Result of operation
+         * @returns {void}
          */
 
         /**
          * Save Settings
-         * @param {saveSettingsCB} [callback]
-         * @param {string} [currentPassword] Only need for disableAuth to true
+         * @param {saveSettingsCB} callback Callback for socket response
+         * @param {string} currentPassword Only need for disableAuth to true
+         * @returns {void}
          */
         saveSettings(callback, currentPassword) {
-            this.$root.getSocket().emit("setSettings", this.settings, currentPassword, (res) => {
-                this.$root.toastRes(res);
-                this.loadSettings();
+            let valid = this.validateSettings();
+            if (valid.success) {
+                this.$root.getSocket().emit("setSettings", this.settings, currentPassword, (res) => {
+                    this.$root.toastRes(res);
+                    this.loadSettings();
 
-                if (callback) {
-                    callback();
-                }
-            });
+                    if (callback) {
+                        callback();
+                    }
+                });
+            } else {
+                this.$root.toastError(valid.msg);
+            }
+        },
+
+        /**
+         * Ensure settings are valid
+         * @returns {object} Contains success state and error msg
+         */
+        validateSettings() {
+            if (this.settings.keepDataPeriodDays < 0) {
+                return {
+                    success: false,
+                    msg: this.$t("dataRetentionTimeError"),
+                };
+            }
+            return {
+                success: true,
+                msg: "",
+            };
         },
     }
 };
@@ -192,13 +239,13 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-.shadow-box {
+.shadow-box-settings {
     padding: 20px;
     min-height: calc(100vh - 155px);
 }
 
 footer {
-    color: #aaa;
+    color: $secondary-text;
     font-size: 13px;
     margin-top: 20px;
     padding-bottom: 30px;

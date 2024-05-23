@@ -1,7 +1,12 @@
 /*
+ * ⚠️ ⚠️ ⚠️ ⚠️ Due to the weird issue in Portainer that the healthcheck script is still pointing to this script for unknown reason.
+ * IT CANNOT BE DROPPED, even though it looks like it is not used.
+ * See more: https://github.com/louislam/uptime-kuma/issues/2774#issuecomment-1429092359
+ *
+ * ⚠️ Deprecated: Changed to healthcheck.go, it will be deleted in the future.
  * This script should be run after a period of time (180s), because the server may need some time to prepare.
  */
-const { FBSD } = require("../server/util-server");
+const FBSD = /^freebsd/.test(process.platform);
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 

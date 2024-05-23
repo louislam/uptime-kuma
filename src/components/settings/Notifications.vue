@@ -21,19 +21,52 @@
         </div>
 
         <div class="my-4 pt-4">
+            <h5 class="my-4 settings-subheading">{{ $t("monitorToastMessagesLabel") }}</h5>
+            <p>{{ $t("monitorToastMessagesDescription") }}</p>
+
+            <div class="my-4">
+                <label for="toastErrorTimeoutSecs" class="form-label">
+                    {{ $t("toastErrorTimeout") }}
+                </label>
+                <input
+                    id="toastErrorTimeoutSecs"
+                    v-model="toastErrorTimeoutSecs"
+                    type="number"
+                    class="form-control"
+                    min="-1"
+                    step="1"
+                />
+            </div>
+
+            <div class="my-4">
+                <label for="toastSuccessTimeoutSecs" class="form-label">
+                    {{ $t("toastSuccessTimeout") }}
+                </label>
+                <input
+                    id="toastSuccessTimeoutSecs"
+                    v-model="toastSuccessTimeoutSecs"
+                    type="number"
+                    class="form-control"
+                    min="-1"
+                    step="1"
+                />
+            </div>
+        </div>
+
+        <div class="my-4 pt-4">
             <h5 class="my-4 settings-subheading">{{ $t("settingsCertificateExpiry") }}</h5>
             <p>{{ $t("certificationExpiryDescription") }}</p>
             <p>{{ $t("notificationDescription") }}</p>
             <div class="mt-1 mb-3 ps-2 cert-exp-days col-12 col-xl-6">
                 <div v-for="day in settings.tlsExpiryNotifyDays" :key="day" class="d-flex align-items-center justify-content-between cert-exp-day-row py-2">
                     <span>{{ day }} {{ $tc("day", day) }}</span>
-                    <button type="button" class="btn-rm-expiry btn btn-outline-danger ms-2 py-1" @click="removeExpiryNotifDay(day)">
-                        <font-awesome-icon class="" icon="times" />
+                    <button type="button" class="btn-rm-expiry btn btn-outline-danger ms-2 py-1" :aria-label="$t('Remove the expiry notification')" @click="removeExpiryNotifDay(day)">
+                        <font-awesome-icon icon="times" />
                     </button>
                 </div>
             </div>
             <div class="col-12 col-xl-6">
-                <ActionInput v-model="expiryNotifInput" :type="'number'" :placeholder="$t('day')" :icon="'plus'" :action="() => addExpiryNotifDay(expiryNotifInput)" />
+                <ActionInput v-model="expiryNotifInput" :type="'number'" :placeholder="$t('day')" :icon="'plus'" :action="() => addExpiryNotifDay(expiryNotifInput)" :action-aria-label="$t('Add a new expiry notification day')" />
             </div>
             <div>
                 <button class="btn btn-primary" type="button" @click="saveSettings()">
@@ -58,6 +91,8 @@ export default {
 
     data() {
         return {
+            toastSuccessTimeoutSecs: 20,
+            toastErrorTimeoutSecs: -1,
             /**
              * Variable to store the input for new certificate expiry day.
              */
@@ -77,10 +112,31 @@ export default {
         },
     },
 
+    watch: {
+        // Parse, store and apply new timeout settings.
+        toastSuccessTimeoutSecs(newTimeout) {
+            const parsedTimeout = parseInt(newTimeout);
+            if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+                localStorage.toastSuccessTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
+            }
+        },
+        toastErrorTimeoutSecs(newTimeout) {
+            const parsedTimeout = parseInt(newTimeout);
+            if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+                localStorage.toastErrorTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
+            }
+        }
+    },
+
+    mounted() {
+        this.loadToastTimeoutSettings();
+    },
+
     methods: {
         /**
          * Remove a day from expiry notification days.
          * @param {number} day The day to remove.
+         * @returns {void}
          */
         removeExpiryNotifDay(day) {
             this.settings.tlsExpiryNotifyDays = this.settings.tlsExpiryNotifyDays.filter(d => d !== day);
@@ -93,6 +149,7 @@ export default {
          * - day is > 0.
          * - The day is not already in the list.
          * @param {number} day The day number to add.
+         * @returns {void}
          */
         addExpiryNotifDay(day) {
             if (day != null && day !== "") {
@@ -103,6 +160,28 @@ export default {
                         this.settings.tlsExpiryNotifyDays.sort((a, b) => a - b);
                         this.expiryNotifInput = null;
                     }
+                }
+            }
+        },
+
+        /**
+         * Loads toast timeout settings from storage to component data.
+         * @returns {void}
+         */
+        loadToastTimeoutSettings() {
+            const successTimeout = localStorage.toastSuccessTimeout;
+            if (successTimeout !== undefined) {
+                const parsedTimeout = parseInt(successTimeout);
+                if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+                    this.toastSuccessTimeoutSecs = parsedTimeout > 0 ? parsedTimeout / 1000 : parsedTimeout;
+                }
+            }
+
+            const errorTimeout = localStorage.toastErrorTimeout;
+            if (errorTimeout !== undefined) {
+                const parsedTimeout = parseInt(errorTimeout);
+                if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
+                    this.toastErrorTimeoutSecs = parsedTimeout > 0 ? parsedTimeout / 1000 : parsedTimeout;
                 }
             }
         },

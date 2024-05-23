@@ -1,40 +1,54 @@
-const path = require("path");
-const Bree = require("bree");
-const { SHARE_ENV } = require("worker_threads");
-const { log } = require("../src/util");
-let bree;
+const { UptimeKumaServer } = require("./uptime-kuma-server");
+const { clearOldData } = require("./jobs/clear-old-data");
+const { incrementalVacuum } = require("./jobs/incremental-vacuum");
+const Cron = require("croner");
+
 const jobs = [
     {
         name: "clear-old-data",
-        interval: "at 03:14",
+        interval: "14 03 * * *",
+        jobFunc: clearOldData,
+        croner: null,
     },
+    {
+        name: "incremental-vacuum",
+        interval: "*/5 * * * *",
+        jobFunc: incrementalVacuum,
+        croner: null,
+    }
 ];
 
 /**
  * Initialize background jobs
- * @param {Object} args Arguments to pass to workers
- * @returns {Bree}
+ * @returns {Promise<void>}
  */
-const initBackgroundJobs = function (args) {
-    bree = new Bree({
-        root: path.resolve("server", "jobs"),
-        jobs,
-        worker: {
-            env: SHARE_ENV,
-            workerData: args,
-        },
-        workerMessageHandler: (message) => {
-            log.info("jobs", message);
-        }
-    });
+const initBackgroundJobs = async function () {
+    const timezone = await UptimeKumaServer.getInstance().getTimezone();
 
-    bree.start();
-    return bree;
+    for (const job of jobs) {
+        const cornerJob = new Cron(
+            job.interval,
+            {
+                name: job.name,
+                timezone,
+            },
+            job.jobFunc,
+        );
+        job.croner = cornerJob;
+    }
+
 };
 
+/**
+ * Stop all background jobs if running
+ * @returns {void}
+ */
 const stopBackgroundJobs = function () {
-    if (bree) {
-        bree.stop();
+    for (const job of jobs) {
+        if (job.croner) {
+            job.croner.stop();
+            job.croner = null;
+        }
     }
 };
 

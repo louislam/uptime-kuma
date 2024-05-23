@@ -6,9 +6,10 @@
         "module": "commonjs",
         "lib": [
             "es2020",
-            "DOM",
+            "DOM"
         ],
-        "removeComments": false,
+        "declaration": false,
+        "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": false,
         "strict": true

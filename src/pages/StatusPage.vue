@@ -20,17 +20,35 @@
                 <div class="my-3">
                     <label for="description" class="form-label">{{ $t("Description") }}</label>
                     <textarea id="description" v-model="config.description" class="form-control"></textarea>
+                    <div class="form-text">
+                        {{ $t("markdownSupported") }}
+                    </div>
                 </div>
 
                 <!-- Footer Text -->
                 <div class="my-3">
                     <label for="footer-text" class="form-label">{{ $t("Footer Text") }}</label>
                     <textarea id="footer-text" v-model="config.footerText" class="form-control"></textarea>
+                    <div class="form-text">
+                        {{ $t("markdownSupported") }}
+                    </div>
                 </div>
 
-                <div class="my-3 form-check form-switch">
-                    <input id="switch-theme" v-model="config.theme" class="form-check-input" type="checkbox" true-value="dark" false-value="light">
-                    <label class="form-check-label" for="switch-theme">{{ $t("Switch to Dark Theme") }}</label>
+                <div class="my-3">
+                    <label for="auto-refresh-interval" class="form-label">{{ $t("Refresh Interval") }}</label>
+                    <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number" class="form-control" :min="5">
+                    <div class="form-text">
+                        {{ $t("Refresh Interval Description", [config.autoRefreshInterval]) }}
+                    </div>
+                </div>
+
+                <div class="my-3">
+                    <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
+                    <select id="switch-theme" v-model="config.theme" class="form-select">
+                        <option value="auto">{{ $t("Auto") }}</option>
+                        <option value="light">{{ $t("Light") }}</option>
+                        <option value="dark">{{ $t("Dark") }}</option>
+                    </select>
                 </div>
 
                 <div class="my-3 form-check form-switch">
@@ -44,6 +62,12 @@
                     <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
                 </div>
 
+                <!-- Show certificate expiry -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-certificate-expiry" v-model="config.showCertificateExpiry" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
+                </div>
+
                 <div v-if="false" class="my-3">
                     <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
@@ -53,15 +77,25 @@
                 <div class="my-3">
                     <label class="form-label">
                         {{ $t("Domain Names") }}
-                        <font-awesome-icon icon="plus-circle" class="btn-add-domain action text-primary" @click="addDomainField" />
+                        <button class="p-0 bg-transparent border-0" :aria-label="$t('Add a domain')" @click="addDomainField">
+                            <font-awesome-icon icon="plus-circle" class="action text-primary" />
+                        </button>
                     </label>
 
                     <ul class="list-group domain-name-list">
                         <li v-for="(domain, index) in config.domainNameList" :key="index" class="list-group-item">
                             <input v-model="config.domainNameList[index]" type="text" class="no-bg domain-input" placeholder="example.com" />
-                            <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" @click="removeDomain(index)" />
+                            <button class="p-0 bg-transparent border-0" :aria-label="$t('Remove domain', [ domain ])" @click="removeDomain(index)">
+                                <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" />
+                            </button>
                         </li>
                     </ul>
+                </div>
+
+                <!-- Google Analytics -->
+                <div class="my-3">
+                    <label for="googleAnalyticsTag" class="form-label">{{ $t("Google Analytics ID") }}</label>
+                    <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control">
                 </div>
 
                 <!-- Custom CSS -->
@@ -80,7 +114,7 @@
 
             <!-- Sidebar Footer -->
             <div class="sidebar-footer">
-                <button class="btn btn-success me-2" @click="save">
+                <button class="btn btn-success me-2" :disabled="loading" @click="save">
                     <font-awesome-icon icon="save" />
                     {{ $t("Save") }}
                 </button>
@@ -148,7 +182,12 @@
                 <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" />
 
                 <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
-                <Editable v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
+                <Editable v-if="editIncidentMode" v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
+                <div v-if="editIncidentMode" class="form-text">
+                    {{ $t("markdownSupported") }}
+                </div>
+                <!-- eslint-disable-next-line vue/no-v-html-->
+                <div v-if="! editIncidentMode" class="content" v-html="incidentHTML"></div>
 
                 <!-- Incident Date -->
                 <div class="date mt-3">
@@ -190,7 +229,7 @@
 
                     <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
                         <font-awesome-icon icon="unlink" />
-                        {{ $t("Unpin") }}
+                        {{ $t("Delete") }}
                     </button>
                 </div>
             </div>
@@ -218,15 +257,35 @@
                         {{ $t("Degraded Service") }}
                     </div>
 
+                    <div v-else-if="isMaintenance">
+                        <font-awesome-icon icon="wrench" class="status-maintenance" />
+                        {{ $t("maintenanceStatus-under-maintenance") }}
+                    </div>
+
                     <div v-else>
                         <font-awesome-icon icon="question-circle" style="color: #efefef;" />
                     </div>
                 </template>
             </div>
 
+            <!-- Maintenance -->
+            <template v-if="maintenanceList.length > 0">
+                <div
+                    v-for="maintenance in maintenanceList" :key="maintenance.id"
+                    class="shadow-box alert mb-4 p-3 bg-maintenance mt-4 position-relative" role="alert"
+                >
+                    <h4 class="alert-heading">{{ maintenance.title }}</h4>
+                    <!-- eslint-disable-next-line vue/no-v-html-->
+                    <div class="content" v-html="maintenanceHTML(maintenance.description)"></div>
+                    <MaintenanceTime :maintenance="maintenance" />
+                </div>
+            </template>
+
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
-            <Editable v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
+            <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
+            <!-- eslint-disable-next-line vue/no-v-html-->
+            <div v-if="! enableEditMode" class="alert-heading p-2" v-html="descriptionHTML"></div>
 
             <div v-if="editMode" class="mb-4">
                 <div>
@@ -237,11 +296,24 @@
                 </div>
 
                 <div class="mt-3">
-                    <div v-if="allMonitorList.length > 0 && loadedData">
+                    <div v-if="sortedMonitorList.length > 0 && loadedData">
                         <label>{{ $t("Add a monitor") }}:</label>
-                        <select v-model="selectedMonitor" class="form-control">
-                            <option v-for="monitor in allMonitorList" :key="monitor.id" :value="monitor">{{ monitor.name }}</option>
-                        </select>
+                        <VueMultiselect
+                            v-model="selectedMonitor"
+                            :options="sortedMonitorList"
+                            :multiple="false"
+                            :searchable="true"
+                            :placeholder="$t('Add a monitor')"
+                            label="name"
+                            trackBy="name"
+                            class="mt-3"
+                        >
+                            <template #option="{ option }">
+                                <div class="d-inline-flex">
+                                    <span>{{ option.pathName }} <Tag v-for="tag in option.tags" :key="tag" :item="tag" :size="'sm'" /></span>
+                                </div>
+                            </template>
+                        </VueMultiselect>
                     </div>
                     <div v-else class="text-center">
                         {{ $t("No monitors available.") }}  <router-link to="/add">{{ $t("Add one") }}</router-link>
@@ -255,18 +327,25 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
             </div>
 
             <footer class="mt-5 mb-4">
                 <div class="custom-footer-text text-start">
                     <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
                 </div>
-                <Editable v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+                <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+                <!-- eslint-disable-next-line vue/no-v-html-->
+                <div v-if="! enableEditMode" class="alert-heading p-2" v-html="footerHTML"></div>
 
                 <p v-if="config.showPoweredBy">
-                    {{ $t("Powered by") }} <a target="_blank" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
+                    {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
                 </p>
+
+                <div class="refresh-info mb-2">
+                    <div>{{ $t("Last Updated") }}:  {{ lastUpdateTimeDisplay }}</div>
+                    <div>{{ $tc("statusPageRefreshIn", [ updateCountdownText]) }}</div>
+                </div>
             </footer>
         </div>
 
@@ -283,6 +362,7 @@
 <script>
 import axios from "axios";
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
 import Favico from "favico.js";
 // import highlighting library (you can use any library you want just return html string)
 import { highlight, languages } from "prismjs/components/prism-core";
@@ -293,12 +373,18 @@ import ImageCropUpload from "vue-image-crop-upload";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
 import { useToast } from "vue-toastification";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
+import MaintenanceTime from "../components/MaintenanceTime.vue";
 import { getResBaseURL } from "../util-frontend";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
+import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
+import Tag from "../components/Tag.vue";
+import VueMultiselect from "vue-multiselect";
 
 const toast = useToast();
+dayjs.extend(duration);
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 
@@ -316,6 +402,9 @@ export default {
         ImageCropUpload,
         Confirm,
         PrismEditor,
+        MaintenanceTime,
+        Tag,
+        VueMultiselect
     },
 
     // Leave Page for vue route change
@@ -356,6 +445,11 @@ export default {
             loadedData: false,
             baseURL: "",
             clickedEditButton: false,
+            maintenanceList: [],
+            lastUpdateTime: dayjs(),
+            updateCountdown: null,
+            updateCountdownText: null,
+            loading: true,
         };
     },
     computed: {
@@ -370,8 +464,9 @@ export default {
 
         /**
          * If the monitor is added to public list, which will not be in this list.
+         * @returns {object[]} List of monitors
          */
-        allMonitorList() {
+        sortedMonitorList() {
             let result = [];
 
             for (let id in this.$root.monitorList) {
@@ -380,6 +475,31 @@ export default {
                     result.push(monitor);
                 }
             }
+
+            result.sort((m1, m2) => {
+
+                if (m1.active !== m2.active) {
+                    if (m1.active === 0) {
+                        return 1;
+                    }
+
+                    if (m2.active === 0) {
+                        return -1;
+                    }
+                }
+
+                if (m1.weight !== m2.weight) {
+                    if (m1.weight > m2.weight) {
+                        return -1;
+                    }
+
+                    if (m1.weight < m2.weight) {
+                        return 1;
+                    }
+                }
+
+                return m1.pathName.localeCompare(m2.pathName);
+            });
 
             return result;
         },
@@ -409,6 +529,10 @@ export default {
             return "bg-" + this.incident.style;
         },
 
+        maintenanceClass() {
+            return "bg-maintenance";
+        },
+
         overallStatus() {
 
             if (Object.keys(this.$root.publicLastHeartbeatList).length === 0) {
@@ -421,7 +545,9 @@ export default {
             for (let id in this.$root.publicLastHeartbeatList) {
                 let beat = this.$root.publicLastHeartbeatList[id];
 
-                if (beat.status === UP) {
+                if (beat.status === MAINTENANCE) {
+                    return STATUS_PAGE_MAINTENANCE;
+                } else if (beat.status === UP) {
                     hasUp = true;
                 } else {
                     status = STATUS_PAGE_PARTIAL_DOWN;
@@ -447,12 +573,44 @@ export default {
             return this.overallStatus === STATUS_PAGE_ALL_DOWN;
         },
 
+        isMaintenance() {
+            return this.overallStatus === STATUS_PAGE_MAINTENANCE;
+        },
+
+        incidentHTML() {
+            if (this.incident.content != null) {
+                return DOMPurify.sanitize(marked(this.incident.content));
+            } else {
+                return "";
+            }
+        },
+
+        descriptionHTML() {
+            if (this.config.description != null) {
+                return DOMPurify.sanitize(marked(this.config.description));
+            } else {
+                return "";
+            }
+        },
+
+        footerHTML() {
+            if (this.config.footerText != null) {
+                return DOMPurify.sanitize(marked(this.config.footerText));
+            } else {
+                return "";
+            }
+        },
+
+        lastUpdateTimeDisplay() {
+            return this.$root.datetime(this.lastUpdateTime);
+        }
     },
     watch: {
 
         /**
          * If connected to the socket and logged in, request private data of this statusPage
-         * @param connected
+         * @param {boolean} loggedIn Is the client logged in?
+         * @returns {void}
          */
         "$root.loggedIn"(loggedIn) {
             if (loggedIn) {
@@ -467,7 +625,7 @@ export default {
                         }
 
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -475,6 +633,8 @@ export default {
 
         /**
          * Selected a monitor and add to the list.
+         * @param {object} monitor Monitor to add
+         * @returns {void}
          */
         selectedMonitor(monitor) {
             if (monitor) {
@@ -551,7 +711,17 @@ export default {
             }
 
             this.incident = res.data.incident;
+            this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
+
+            this.loading = false;
+
+            // Configure auto-refresh loop
+            feedInterval = setInterval(() => {
+                this.updateHeartbeatList();
+            }, (this.config.autoRefreshInterval + 10) * 1000);
+
+            this.updateUpdateTimer();
         }).catch( function (error) {
             if (error.response.status === 404) {
                 location.href = "/page-not-found";
@@ -559,11 +729,7 @@ export default {
             console.log(error);
         });
 
-        // 5mins a loop
         this.updateHeartbeatList();
-        feedInterval = setInterval(() => {
-            this.updateHeartbeatList();
-        }, (300 + 10) * 1000);
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
@@ -576,7 +742,7 @@ export default {
         /**
          * Get status page data
          * It should be preloaded in window.preloadData
-         * @returns {Promise<any>}
+         * @returns {Promise<any>} Status page data
          */
         getData: function () {
             if (window.preloadData) {
@@ -591,13 +757,16 @@ export default {
         /**
          * Provide syntax highlighting for CSS
          * @param {string} code Text to highlight
-         * @returns {string}
+         * @returns {string} Highlighted CSS
          */
         highlighter(code) {
             return highlight(code, languages.css);
         },
 
-        /** Update the heartbeat list and update favicon if neccessary */
+        /**
+         * Update the heartbeat list and update favicon if necessary
+         * @returns {void}
+         */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
@@ -622,11 +791,33 @@ export default {
                     favicon.badge(downMonitors);
 
                     this.loadedData = true;
+                    this.lastUpdateTime = dayjs();
+                    this.updateUpdateTimer();
                 });
             }
         },
 
-        /** Enable editing mode */
+        /**
+         * Setup timer to display countdown to refresh
+         * @returns {void}
+         */
+        updateUpdateTimer() {
+            clearInterval(this.updateCountdown);
+
+            this.updateCountdown = setInterval(() => {
+                const countdown = dayjs.duration(this.lastUpdateTime.add(this.config.autoRefreshInterval, "seconds").add(10, "seconds").diff(dayjs()));
+                if (countdown.as("seconds") < 0) {
+                    clearInterval(this.updateCountdown);
+                } else {
+                    this.updateCountdownText = countdown.format("mm:ss");
+                }
+            }, 1000);
+        },
+
+        /**
+         * Enable editing mode
+         * @returns {void}
+         */
         edit() {
             if (this.hasToken) {
                 this.$root.initSocketIO(true);
@@ -638,8 +829,12 @@ export default {
             }
         },
 
-        /** Save the status page */
+        /**
+         * Save the status page
+         * @returns {void}
+         */
         save() {
+            this.loading = true;
             let startTime = new Date();
             this.config.slug = this.config.slug.trim().toLowerCase();
 
@@ -657,42 +852,53 @@ export default {
                     }
 
                     setTimeout(() => {
+                        this.loading = false;
                         location.href = "/status/" + this.config.slug;
                     }, time);
 
                 } else {
-                    toast.error(res.msg);
-                }
-            });
-        },
-
-        /** Show dialog confirming deletion */
-        deleteDialog() {
-            this.$refs.confirmDelete.show();
-        },
-
-        /** Request deletion of this status page */
-        deleteStatusPage() {
-            this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
-                if (res.ok) {
-                    this.enableEditMode = false;
-                    location.href = "/manage-status-page";
-                } else {
+                    this.loading = false;
                     toast.error(res.msg);
                 }
             });
         },
 
         /**
-         * Returns label for a specifed monitor
-         * @param {Object} monitor Object representing monitor
-         * @returns {string}
+         * Show dialog confirming deletion
+         * @returns {void}
+         */
+        deleteDialog() {
+            this.$refs.confirmDelete.show();
+        },
+
+        /**
+         * Request deletion of this status page
+         * @returns {void}
+         */
+        deleteStatusPage() {
+            this.$root.getSocket().emit("deleteStatusPage", this.slug, (res) => {
+                if (res.ok) {
+                    this.enableEditMode = false;
+                    location.href = "/manage-status-page";
+                } else {
+                    this.$root.toastError(res.msg);
+                }
+            });
+        },
+
+        /**
+         * Returns label for a specified monitor
+         * @param {object} monitor Object representing monitor
+         * @returns {string} Monitor label
          */
         monitorSelectorLabel(monitor) {
             return `${monitor.name}`;
         },
 
-        /** Add a group to the status page */
+        /**
+         * Add a group to the status page
+         * @returns {void}
+         */
         addGroup() {
             let groupName = this.$t("Untitled Group");
 
@@ -706,12 +912,18 @@ export default {
             });
         },
 
-        /** Add a domain to the status page */
+        /**
+         * Add a domain to the status page
+         * @returns {void}
+         */
         addDomainField() {
             this.config.domainNameList.push("");
         },
 
-        /** Discard changes to status page */
+        /**
+         * Discard changes to status page
+         * @returns {void}
+         */
         discard() {
             location.href = "/status/" + this.slug;
         },
@@ -719,19 +931,26 @@ export default {
         /**
          * Set URL of new image after successful crop operation
          * @param {string} imgDataUrl URL of image in data:// format
+         * @returns {void}
          */
         cropSuccess(imgDataUrl) {
             this.imgDataUrl = imgDataUrl;
         },
 
-        /** Show image crop dialog if in edit mode */
+        /**
+         * Show image crop dialog if in edit mode
+         * @returns {void}
+         */
         showImageCropUploadMethod() {
             if (this.editMode) {
                 this.showImageCropUpload = true;
             }
         },
 
-        /** Create an incident for this status page */
+        /**
+         * Create an incident for this status page
+         * @returns {void}
+         */
         createIncident() {
             this.enableEditIncidentMode = true;
 
@@ -746,10 +965,13 @@ export default {
             };
         },
 
-        /** Post the incident to the status page */
+        /**
+         * Post the incident to the status page
+         * @returns {void}
+         */
         postIncident() {
             if (this.incident.title === "" || this.incident.content === "") {
-                toast.error(this.$t("Please input title and content"));
+                this.$root.toastError("Please input title and content");
                 return;
             }
 
@@ -759,20 +981,26 @@ export default {
                     this.enableEditIncidentMode = false;
                     this.incident = res.incident;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
 
             });
 
         },
 
-        /** Click Edit Button */
+        /**
+         * Click Edit Button
+         * @returns {void}
+         */
         editIncident() {
             this.enableEditIncidentMode = true;
             this.previousIncident = Object.assign({}, this.incident);
         },
 
-        /** Cancel creation or editing of incident */
+        /**
+         * Cancel creation or editing of incident
+         * @returns {void}
+         */
         cancelIncident() {
             this.enableEditIncidentMode = false;
 
@@ -782,7 +1010,10 @@ export default {
             }
         },
 
-        /** Unpin the incident */
+        /**
+         * Unpin the incident
+         * @returns {void}
+         */
         unpinIncident() {
             this.$root.getSocket().emit("unpinIncident", this.slug, () => {
                 this.incident = null;
@@ -791,7 +1022,8 @@ export default {
 
         /**
          * Get the relative time difference of a date from now
-         * @returns {string}
+         * @param {any} date Date to get time difference
+         * @returns {string} Time difference
          */
         dateFromNow(date) {
             return dayjs.utc(date).fromNow();
@@ -800,9 +1032,23 @@ export default {
         /**
          * Remove a domain from the status page
          * @param {number} index Index of domain to remove
+         * @returns {void}
          */
         removeDomain(index) {
             this.config.domainNameList.splice(index, 1);
+        },
+
+        /**
+         * Generate sanitized HTML from maintenance description
+         * @param {string} description Text to sanitize
+         * @returns {string} Sanitized HTML
+         */
+        maintenanceHTML(description) {
+            if (description) {
+                return DOMPurify.sanitize(marked(description));
+            } else {
+                return "";
+            }
         },
 
     }
@@ -946,6 +1192,24 @@ footer {
     }
 }
 
+.maintenance-bg-info {
+    color: $maintenance;
+}
+
+.maintenance-icon {
+    font-size: 35px;
+    vertical-align: middle;
+}
+
+.dark .shadow-box {
+    background-color: #0d1117;
+}
+
+.status-maintenance {
+    color: $maintenance;
+    margin-right: 5px;
+}
+
 .mobile {
     h1 {
         font-size: 22px;
@@ -993,18 +1257,14 @@ footer {
     }
 }
 
-/* required class */
-.css-editor {
-    /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
-
-    border-radius: 1rem;
-    padding: 10px 5px;
-    border: 1px solid #ced4da;
-
-    .dark & {
-        background: $dark-bg;
-        border: 1px solid $dark-border-color;
+.bg-maintenance {
+    .alert-heading {
+        font-weight: bold;
     }
+}
+
+.refresh-info {
+    opacity: 0.7;
 }
 
 </style>
