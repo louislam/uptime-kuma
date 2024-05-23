@@ -171,10 +171,6 @@ export default {
                     this.settings.nscd = true;
                 }
 
-                if (this.settings.dnsCache === undefined) {
-                    this.settings.dnsCache = false;
-                }
-
                 if (this.settings.keepDataPeriodDays === undefined) {
                     this.settings.keepDataPeriodDays = 180;
                 }
@@ -249,7 +245,7 @@ export default {
 }
 
 footer {
-    color: #aaa;
+    color: $secondary-text;
     font-size: 13px;
     margin-top: 20px;
     padding-bottom: 30px;

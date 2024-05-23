@@ -6,7 +6,7 @@
 
 Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
-<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
+<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma?style=flat" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/latest?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a>  <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
 <img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
 </a>
@@ -17,9 +17,9 @@ Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
 Try it!
 
-- Tokyo Demo Server: https://demo.uptime.kuma.pet (Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors))
+Demo Server (Location: Frankfurt - Germany): https://demo.kuma.pet/start-demo
 
-It is a temporary live demo, all data will be deleted after 10 minutes. Use the one that is closer to you, but I suggest that you should install and try it out for the best demo experience.
+It is a temporary live demo, all data will be deleted after 10 minutes. Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors).
 
 ## ⭐ Features
 
@@ -43,10 +43,17 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Use the 
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
-Uptime Kuma is now running on http://localhost:3001
+Uptime Kuma is now running on <http://0.0.0.0:3001>.
 
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
+
+> [!NOTE]
+> If you want to limit exposure to localhost (without exposing port for other users or to use a [reverse proxy](https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy)), you can expose the port like this:
+> 
+> ```bash
+> docker run -d --restart=always -p 127.0.0.1:3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+> ```
 
 ### 💪🏻 Non-Docker
 
@@ -56,15 +63,12 @@ Requirements:
   - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc.
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
   - ❌ Replit / Heroku
-- [Node.js](https://nodejs.org/en/download/) 14 / 16 / 18 / 20.4
+- [Node.js](https://nodejs.org/en/download/) 18 / 20.4
 - [npm](https://docs.npmjs.com/cli/) 9
 - [Git](https://git-scm.com/downloads)
 - [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
 
 ```bash
-# Update your npm
-npm install npm@9 -g
-
 git clone https://github.com/louislam/uptime-kuma.git
 cd uptime-kuma
 npm run setup

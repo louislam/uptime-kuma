@@ -11,7 +11,7 @@ class Maintenance extends BeanModel {
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON() {
 
@@ -98,7 +98,7 @@ class Maintenance extends BeanModel {
     /**
      * Return an object that ready to parse to JSON
      * @param {string} timezone If not specified, the timeRange will be in UTC
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toJSON(timezone = null) {
         return this.toPublicJSON(timezone);
@@ -143,7 +143,7 @@ class Maintenance extends BeanModel {
      * Convert data from socket to bean
      * @param {Bean} bean Bean to fill in
      * @param {object} obj Data to fill bean with
-     * @returns {Bean} Filled bean
+     * @returns {Promise<Bean>} Filled bean
      */
     static async jsonToBean(bean, obj) {
         if (obj.id) {
@@ -189,9 +189,9 @@ class Maintenance extends BeanModel {
     /**
      * Throw error if cron is invalid
      * @param {string|Date} cron Pattern or date
-     * @returns {Promise<void>}
+     * @returns {void}
      */
-    static async validateCron(cron) {
+    static validateCron(cron) {
         let job = new Cron(cron, () => {});
         job.stop();
     }
@@ -324,7 +324,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Is this maintenance currently active
-     * @returns {boolean} The maintenance is active?
+     * @returns {Promise<boolean>} The maintenance is active?
      */
     async isUnderMaintenance() {
         return (await this.getStatus()) === "under-maintenance";
@@ -332,7 +332,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Get the timezone of the maintenance
-     * @returns {string} timezone
+     * @returns {Promise<string>} timezone
      */
     async getTimezone() {
         if (!this.timezone || this.timezone === "SAME_AS_SERVER") {
@@ -343,7 +343,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Get offset for timezone
-     * @returns {string} offset
+     * @returns {Promise<string>} offset
      */
     async getTimezoneOffset() {
         return dayjs.tz(dayjs(), await this.getTimezone()).format("Z");
@@ -351,7 +351,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Get the current status of the maintenance
-     * @returns {string} Current status
+     * @returns {Promise<string>} Current status
      */
     async getStatus() {
         if (!this.active) {

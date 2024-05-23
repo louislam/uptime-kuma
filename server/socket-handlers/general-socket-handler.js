@@ -109,4 +109,14 @@ module.exports.generalSocketHandler = (socket, server) => {
             msg: "Not found",
         });
     });
+
+    // Disconnect all other socket clients of the user
+    socket.on("disconnectOtherSocketClients", async () => {
+        try {
+            checkLogin(socket);
+            server.disconnectAllSocketClients(socket.userID, socket.id);
+        } catch (e) {
+            log.warn("disconnectAllSocketClients", e.message);
+        }
+    });
 };
