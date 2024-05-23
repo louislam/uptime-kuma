@@ -944,5 +944,6 @@
     "remoteBrowserToggle": "Ve výchozím nastavení běží Chromium uvnitř kontejneru Uptime Kuma. Přepnutím tohoto přepínače můžete použít vzdálený prohlížeč.",
     "wayToGetWhapiUrlAndToken": "URL rozhraní API a token získáte tak, že přejdete do požadovaného kanálu z {0}",
     "wayToWriteWhapiRecipient": "Telefonní číslo s mezinárodní předvolbou, ale bez znaménka plus na začátku ({0}), ID kontaktu ({1}) nebo ID skupiny ({2}).",
-    "remoteBrowsersDescription": "Vzdálené prohlížeče jsou alternativou k lokálně spuštěnému Chromu. Nastavte tuto možnost pomocí služby jako je browserless.io, nebo se připojte k vlastnímu vzdálenému prohlížeči"
+    "remoteBrowsersDescription": "Vzdálené prohlížeče jsou alternativou k lokálně spuštěnému Chromu. Nastavte tuto možnost pomocí služby jako je browserless.io, nebo se připojte k vlastnímu vzdálenému prohlížeči",
+    "statusPageSpecialSlugDesc": "Speciální slug {0}: tato stránka se zobrazí, pokud není definován žádný slug"
 }
