@@ -229,7 +229,7 @@
 
                     <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
                         <font-awesome-icon icon="unlink" />
-                        {{ $t("Unpin") }}
+                        {{ $t("Delete") }}
                     </button>
                 </div>
             </div>
