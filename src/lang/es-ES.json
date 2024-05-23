@@ -396,7 +396,7 @@
     "successMessage": "Mensaje de éxito",
     "Pick Accepted Status Codes...": "Seleccione Códigos de Estado Aceptados…",
     "Post": "Post",
-    "shrinkDatabaseDescription": "Activar ASPIRADORA para SQLite. Si tu base de datos fue creada después 1.10.0, AUTO_ASPIRADORA ya está habilitada y esta acción no es necesaria.",
+    "shrinkDatabaseDescription": "Activar VACUUM para SQLite. Si tu base de datos fue creada después 1.10.0, AUTO_VACUUM ya está habilitada y esta acción no es necesaria.",
     "deleteStatusPageMsg": "¿Estas seguro que quieres eliminar esta página de estado?",
     "default": "Predeterminado",
     "enabled": "Habilitado",
@@ -918,5 +918,11 @@
     "ntfyPriorityHelptextAllExceptDown": "Todos los eventos son enviados con esta prioridad, excepto los eventos {0}, que tienen una prioridad de {1}",
     "templateHeartbeatJSON": "Objeto que describe el latido",
     "What is a Remote Browser?": "¿Qué es un Navegador Remoto?",
-    "Your User ID": "Tu ID de usuario"
+    "Your User ID": "Tu ID de usuario",
+    "Alphanumeric (recommended)": "Alfanumérico (recomendado)",
+    "Destination": "Destino",
+    "wayToGetWhapiUrlAndToken": "Puedes obtener la URL de la API y el token accediendo al canal que desee desde {0}",
+    "API URL": "API URL",
+    "Allow Long SMS": "Permitir SMS largo",
+    "cellsyntDestination": "Número de teléfono del destinatario en formato internacional precedido de 00, seguido del código de país, ej. 00447920110000 para el número del Reino Unido 07920 110 000 (máximo 17 dígitos en total). Máximo 25.000 destinatarios, separados por comas, por solicitud HTTP."
 }
