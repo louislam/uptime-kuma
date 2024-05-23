@@ -924,5 +924,14 @@
     "statusPageSpecialSlugDesc": "Спеціальний slug {0}: ця сторінка буде показана, якщо slug не надано",
     "Search monitored sites": "Пошук сайтів, що відстежуються",
     "ntfyPriorityHelptextAllEvents": "Усі події надсилаються з максимальним пріоритетом",
-    "What is a Remote Browser?": "Що таке віддалений браузер?"
+    "What is a Remote Browser?": "Що таке віддалений браузер?",
+    "Your User ID": "Ваш ID користувача",
+    "Channel access token (Long-lived)": "Токен доступу до каналу (довготривалий)",
+    "documentationOf": "{0} Документація",
+    "wayToGetHeiiOnCallDetails": "Як отримати Trigger ID та API-ключі пояснюється в {documentation}",
+    "To Phone Number": "На номер телефону",
+    "gtxMessagingToHint": "Міжнародний формат, з \"+\" на початку ({e164}, {e212} або {e214})",
+    "gtxMessagingApiKeyHint": "Ви можете знайти свій API-ключ тут: API-ключ: Мої облікові записи маршрутизації > Показати інформацію про обліковий запис > Облікові дані API > REST API (v2.x)",
+    "From Phone Number / Transmission Path Originating Address (TPOA)": "З номера телефону / вихідної адреси маршруту передачі (TPOA)",
+    "gtxMessagingFromHint": "На мобільних телефонах ваші одержувачі бачать TPOA як відправника повідомлення. Допускається до 11 буквено-цифрових символів, короткий код, місцевий довгий код або міжнародні номери ({e164}, {e212} або {e214})"
 }
