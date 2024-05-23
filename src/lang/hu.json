@@ -827,5 +827,6 @@
     "twilioAccountSID": "Fiók SID",
     "Mechanism": "Mechanizmus",
     "No API Keys": "Nincsenek API kulcsok",
-    "Monitor Group": "Monitor csoport"
+    "Monitor Group": "Monitor csoport",
+    "ntfyAuthenticationMethod": "Hitelesítési metódus"
 }
