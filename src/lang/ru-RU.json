@@ -927,5 +927,10 @@
     "deleteRemoteBrowserMessage": "Вы уверены, что хотите удалить этот удаленный браузер для всех мониторов?",
     "Remove the expiry notification": "Удалить дату истечения срока действия уведомления",
     "Add a new expiry notification day": "Добавить новый день уведомления об истечении срока действия",
-    "What is a Remote Browser?": "Что такое удаленный браузер?"
+    "What is a Remote Browser?": "Что такое удаленный браузер?",
+    "Mention group": "Упомянуть {group}",
+    "Your User ID": "Ваш идентификатор пользователя",
+    "Host URL": "URL Хоста",
+    "locally configured mail transfer agent": "Настроенный локально агент передачи почты",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Введите либо адрес хоста к которому вы хотите подключиться или localhost если вы собираетесь использовать локально настроенный агент передачи почты"
 }
