@@ -919,5 +919,7 @@
     "statusPageSpecialSlugDesc": "Speciale padnaam {0}: deze pagina wordt getoond als er geen padnaam wordt opgegeven",
     "ntfyPriorityHelptextAllEvents": "Alle meldingen worden verzonden met de hoogste prioriteit",
     "ntfyPriorityHelptextAllExceptDown": "Alle meldingen worden verzonden met deze prioriteit, behalve {0}-meldingen, die hebben een prioriteit van {1}",
-    "What is a Remote Browser?": "Wat is een remote webbrowser?"
+    "What is a Remote Browser?": "Wat is een remote webbrowser?",
+    "Your User ID": "Jouw gebruikers ID",
+    "Channel access token (Long-lived)": "Kanaal access token (blijvend)"
 }
