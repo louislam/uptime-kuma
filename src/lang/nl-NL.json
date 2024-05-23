@@ -953,5 +953,9 @@
     "wayToGetSevenIOApiKey": "Bezoek het dashboard onder app.seven.io > developer > api key > de groene knop",
     "senderSevenIO": "Verzenden van nummer of naam",
     "Host URL": "Host URL",
-    "Mention group": "Vermeld {group}"
+    "Mention group": "Vermeld {group}",
+    "Mentioning": "Vermelden",
+    "receiverSevenIO": "Nummer ontvangen",
+    "receiverInfoSevenIO": "Als het ontvangende nummer zich niet in Duitsland bevindt, moet u de landcode vóór het nummer zetten (bijvoorbeeld voor de landcode 1 uit de VS gebruikt u 117612121212 in plaats van 017612121212)",
+    "apiKeySevenIO": "SevenIO API Sleutel"
 }
