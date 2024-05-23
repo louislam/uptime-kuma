@@ -947,5 +947,14 @@
     "whapiRecipient": "手机号码 / 联系人 ID / 组 ID",
     "API URL": "API 地址",
     "wayToGetWhapiUrlAndToken": "您可以通过进入您想要的频道来获取 API URL 和令牌：{0}",
-    "wayToWriteWhapiRecipient": "可用格式为不含 + 号的国际通用格式手机号码（{0}）、联系人 ID（{1}）或组 ID（{2}）。"
+    "wayToWriteWhapiRecipient": "可用格式为不含 + 号的国际通用格式手机号码（{0}）、联系人 ID（{1}）或组 ID（{2}）。",
+    "Mentioning": "是否提及所有人",
+    "Don't mention people": "不提及所有人",
+    "Mention group": "提及群内所有人",
+    "senderSevenIO": "发送号码或姓名",
+    "wayToGetSevenIOApiKey": "访问 app.seven.io > 开发人员 > api 密钥 > 绿色添加按钮下的仪表板",
+    "receiverInfoSevenIO": "如果接收号码不在德国，您必须在号码前面添加国家代码（例如，对于来自美国的国家代码 1，请使用 117612121212 而不是 017612121212）",
+    "apiKeySevenIO": "SevenIO API 密钥",
+    "locally configured mail transfer agent": "本地配置的邮件传输代理",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "输入您要连接的服务器的主机名，或者输入 {localhost}（如果您打算使用 {local_mta}）"
 }
