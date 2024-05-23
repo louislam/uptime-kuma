@@ -198,7 +198,7 @@
     "Required": "Requerido",
     "webhookJsonDesc": "{0} é bom para qualquer servidor HTTP moderno, como Express.js",
     "webhookAdditionalHeadersTitle": "Cabeçalhos Adicionais",
-    "webhookAdditionalHeadersDesc": "Define cabeçalhos adicionais enviados com o webhook. Cada cabeçalho pode ser definido como uma chave/valor JSON.",
+    "webhookAdditionalHeadersDesc": "Define cabeçalhos adicionais enviados com o webhook. Cada cabeçalho pode ser definido como um JSON do tipo chave/valor.",
     "Webhook URL": "URL Do Webhook",
     "Priority": "Prioridade",
     "Read more": "Ver mais",
@@ -547,7 +547,7 @@
     "What you can try:": "O que você pode tentar:",
     "apiKey-active": "Ativa",
     "Expiry": "Expiração",
-    "endpoint": "endpoint",
+    "endpoint": "endpoint (URL Serviço)",
     "pagertreeIntegrationUrl": "URL de Integração",
     "pagertreeUrgency": "Urgência",
     "telegramMessageThreadID": "(Opcional) ID da thread",
@@ -885,5 +885,6 @@
     "statusPageSpecialSlugDesc": "Slug especial {0}: esta página será mostrada quando nenhum slug for fornecido",
     "settingUpDatabaseMSG": "Configurando o banco de dados. Pode demorar um pouco, por favor, seja paciente.",
     "Search monitored sites": "Pesquisar sites monitorados",
-    "ntfyPriorityHelptextAllEvents": "Todos os eventos são enviados com prioridade máxima"
+    "ntfyPriorityHelptextAllEvents": "Todos os eventos são enviados com prioridade máxima",
+    "What is a Remote Browser?": "O que é um Navegador Remoto ?"
 }
