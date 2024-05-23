@@ -948,5 +948,10 @@
     "cellsyntDestination": "Ontvanger's telefoonnummer met landcode zonder + aan het begin (een Nederlands nummer 06 12 34 56 78 moet bijvoorbeeld worden ingesteld als 31612345678). Maximaal 25.000 door komma's gescheiden ontvangers per HTTP-verzoek.",
     "wayToWriteWhapiRecipient": "Het telefoonnummer met landcode, maar zonder + aan het begin ({0}), het contact ID ({1}) of groep ID ({2}).",
     "locally configured mail transfer agent": "lokaal geconfigureerde mail agent",
-    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Geef de hostnaam van de server waar je naar wilt verbinden op of {localhost} als je een {local-mta} wilt gebruiken"
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Geef de hostnaam van de server waar je naar wilt verbinden op of {localhost} als je een {local-mta} wilt gebruiken",
+    "Don't mention people": "Vermeld geen mensen",
+    "wayToGetSevenIOApiKey": "Bezoek het dashboard onder app.seven.io > developer > api key > de groene knop",
+    "senderSevenIO": "Verzenden van nummer of naam",
+    "Host URL": "Host URL",
+    "Mention group": "Vermeld {group}"
 }
