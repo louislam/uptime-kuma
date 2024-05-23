@@ -22,5 +22,4 @@ jobs:
         uses: eps1lon/actions-label-merge-conflict@v3
         with:
           dirtyLabel: 'needs:resolve-merge-conflict'
-          removeOnDirtyLabel: 'needs:resolve-merge-conflict'
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
