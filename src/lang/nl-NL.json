@@ -921,5 +921,7 @@
     "ntfyPriorityHelptextAllExceptDown": "Alle meldingen worden verzonden met deze prioriteit, behalve {0}-meldingen, die hebben een prioriteit van {1}",
     "What is a Remote Browser?": "Wat is een remote webbrowser?",
     "Your User ID": "Jouw gebruikers ID",
-    "Channel access token (Long-lived)": "Kanaal access token (blijvend)"
+    "Channel access token (Long-lived)": "Kanaal access token (blijvend)",
+    "documentationOf": "{0} Documentatie",
+    "wayToGetHeiiOnCallDetails": "Hoe de Trigger ID en de API Keys verkregen kunnen worden is terug te lezen in de {documentation}"
 }
