@@ -932,5 +932,19 @@
     "Destination": "Bestemming",
     "whapiRecipient": "Telefoonnummer / Contact-ID / Groeps-ID",
     "API URL": "API URL",
-    "wayToGetWhapiUrlAndToken": "Je kunt de API-URL en de token verkrijgen door naar het gewenste kanaal te gaan vanaf {0}"
+    "wayToGetWhapiUrlAndToken": "Je kunt de API-URL en de token verkrijgen door naar het gewenste kanaal te gaan vanaf {0}",
+    "gtxMessagingFromHint": "Op mobiele telefoons, de ontvangers zien het TPOA als de afzender van het bericht. Toegestaan zijn maximaal 11 alfanumerieke karakters, een shortcode, het lokale longcode of internationale nummers ({e164}, {e212} of {e214})",
+    "gtxMessagingToHint": "Internationaal formaat, met \"+\" aan het begin ({e164}, {e212} of {e214})",
+    "From Phone Number / Transmission Path Originating Address (TPOA)": "Van telefoonnummer / Transmission Path Originating Address (TPOA)",
+    "gtxMessagingApiKeyHint": "Je kan je API key vinden bij: My Routing Accounts > Show Account Information > API Credentials > REST API (v2.x)",
+    "Alphanumeric (recommended)": "Alfanumeriek (aanbevolen)",
+    "cellsyntOriginatortypeAlphanumeric": "Alfanumerieke reeks (max. 11 alfanumerieke karakters). Ontvangers kunnen niet op het bericht reageren.",
+    "cellsyntOriginatortypeNumeric": "Numerieke waarde (max. 15 cijfers) met telefoonnummer met landcode zonder + aan het begin (een Nederlands nummer 06 12 34 56 78 moet bijvoorbeeld worden ingesteld als 31612345678). Ontvangers kunnen op het bericht reageren.",
+    "Originator type": "Originator type",
+    "cellsyntSplitLongMessages": "Scheid lange berichten op in 6 delen. 153 x 6 = 918 karakters.",
+    "callMeBotGet": "Hier kan je een eindpunt genereren voor {0}, {1} en {2}. Houd er wel rekening mee dat er een maximaal aantal aanvragen zijn. Het maximum lijkt te zijn: {3}",
+    "cellsyntOriginator": "Zichtbaar op de mobiele telefoon van de ontvanger als afzender van het bericht. Toegestane waarden en functie zijn afhankelijk van het parameter-originatortype.",
+    "Originator": "Originator",
+    "cellsyntDestination": "Ontvanger's telefoonnummer met landcode zonder + aan het begin (een Nederlands nummer 06 12 34 56 78 moet bijvoorbeeld worden ingesteld als 31612345678). Maximaal 25.000 door komma's gescheiden ontvangers per HTTP-verzoek.",
+    "wayToWriteWhapiRecipient": "Het telefoonnummer met landcode, maar zonder + aan het begin ({0}), het contact ID ({1}) of groep ID ({2})."
 }
