@@ -945,5 +945,13 @@
     "wayToGetWhapiUrlAndToken": "URL rozhraní API a token získáte tak, že přejdete do požadovaného kanálu z {0}",
     "wayToWriteWhapiRecipient": "Telefonní číslo s mezinárodní předvolbou, ale bez znaménka plus na začátku ({0}), ID kontaktu ({1}) nebo ID skupiny ({2}).",
     "remoteBrowsersDescription": "Vzdálené prohlížeče jsou alternativou k lokálně spuštěnému Chromu. Nastavte tuto možnost pomocí služby jako je browserless.io, nebo se připojte k vlastnímu vzdálenému prohlížeči",
-    "statusPageSpecialSlugDesc": "Speciální slug {0}: tato stránka se zobrazí, pokud není definován žádný slug"
+    "statusPageSpecialSlugDesc": "Speciální slug {0}: tato stránka se zobrazí, pokud není definován žádný slug",
+    "Mentioning": "Zmínky",
+    "wayToGetSevenIOApiKey": "Navštivte ovládací panel v části app.seven.io > developer > api key > zelené tlačítko přidat",
+    "senderSevenIO": "Číslo nebo jméno odesílatele",
+    "receiverSevenIO": "Přijímací číslo",
+    "apiKeySevenIO": "API klíč SevenIO",
+    "locally configured mail transfer agent": "místně nakonfigurovaný agent pro přenos pošty",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Zadejte název hostitele serveru, ke kterému se chcete připojit, nebo {localhost}, pokud hodláte použít {local_mta}",
+    "receiverInfoSevenIO": "Pokud se přijímající číslo nenachází v Německu, musíte před číslo přidat kód země (např. pro kód země 420 z ČR použijte 420603603603 místo 603603603)"
 }
