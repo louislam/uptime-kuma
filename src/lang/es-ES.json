@@ -917,5 +917,6 @@
     "ntfyPriorityHelptextAllEvents": "Todos los eventos son enviados con la máxima prioridad",
     "ntfyPriorityHelptextAllExceptDown": "Todos los eventos son enviados con esta prioridad, excepto los eventos {0}, que tienen una prioridad de {1}",
     "templateHeartbeatJSON": "Objeto que describe el latido",
-    "What is a Remote Browser?": "¿Qué es un Navegador Remoto?"
+    "What is a Remote Browser?": "¿Qué es un Navegador Remoto?",
+    "Your User ID": "Tu ID de usuario"
 }
