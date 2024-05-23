@@ -733,52 +733,55 @@
                                     </select>
                                 </div>
 
-                                <!-- Encoding -->
-                                <div class="my-3">
-                                    <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
-                                    <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
-                                        <option value="json">JSON</option>
-                                        <option value="form">x-www-form-urlencoded</option>
-                                        <option value="xml">XML</option>
-                                    </select>
-                                </div>
+                                <template v-if="monitor.type !== 'push'">
+                                    <!-- Encoding -->
+                                    <div class="my-3">
+                                        <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
+                                        <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
+                                            <option value="json">JSON</option>
+                                            <option value="form">x-www-form-urlencoded</option>
+                                            <option value="xml">XML</option>
+                                        </select>
+                                    </div>
 
-                                <!-- Body -->
-                                <div class="my-3">
-                                    <label for="body" class="form-label">{{ $t("Body") }}</label>
-                                    <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
-                                </div>
+                                    <!-- Body -->
+                                    <div class="my-3">
+                                        <label for="body" class="form-label">{{ $t("Body") }}</label>
+                                        <textarea id="body" v-model="monitor.body" class="form-control" :placeholder="bodyPlaceholder"></textarea>
+                                    </div>
 
-                                <!-- Headers -->
-                                <div class="my-3">
-                                    <label for="headers" class="form-label">{{ $t("Headers") }}</label>
-                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
-                                </div>
+                                    <!-- Headers -->
+                                    <div class="my-3">
+                                        <label for="headers" class="form-label">{{ $t("Headers") }}</label>
+                                        <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                    </div>
 
-                                <!-- HTTP Auth -->
-                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
+                                    <!-- HTTP Auth -->
+                                    <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
 
-                                <!-- Method -->
-                                <div class="my-3">
-                                    <label for="method" class="form-label">{{ $t("Method") }}</label>
-                                    <select id="method" v-model="monitor.authMethod" class="form-select">
-                                        <option :value="null">
-                                            {{ $t("None") }}
-                                        </option>
-                                        <option value="basic">
-                                            {{ $t("HTTP Basic Auth") }}
-                                        </option>
-                                        <option value="oauth2-cc">
-                                            {{ $t("OAuth2: Client Credentials") }}
-                                        </option>
-                                        <option value="ntlm">
-                                            NTLM
-                                        </option>
-                                        <option value="mtls">
-                                            mTLS
-                                        </option>
-                                    </select>
-                                </div>
+                                    <!-- Method -->
+                                    <div class="my-3">
+                                        <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                        <select id="method" v-model="monitor.authMethod" class="form-select">
+                                            <option :value="null">
+                                                {{ $t("None") }}
+                                            </option>
+                                            <option value="basic">
+                                                {{ $t("HTTP Basic Auth") }}
+                                            </option>
+                                            <option value="oauth2-cc">
+                                                {{ $t("OAuth2: Client Credentials") }}
+                                            </option>
+                                            <option value="ntlm">
+                                                NTLM
+                                            </option>
+                                            <option value="mtls">
+                                                mTLS
+                                            </option>
+                                        </select>
+                                    </div>
+                                </template>
+
                                 <template v-if="monitor.authMethod && monitor.authMethod !== null ">
                                     <template v-if="monitor.authMethod === 'mtls' ">
                                         <div class="my-3">
