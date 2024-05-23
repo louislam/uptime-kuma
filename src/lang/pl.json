@@ -823,7 +823,7 @@
     "Enable Kafka SSL": "Włącz Kafka SSL",
     "Kafka SASL Options": "Opcje SASL Kafki",
     "Mechanism": "Mechanizm",
-    "Pick a SASL Mechanism...": "Wybierz mechanizm SASL...",
+    "Pick a SASL Mechanism...": "Wybierz mechanizm SASL…",
     "nostrRelaysHelp": "Jeden adres URL przekaźnika w wierszu",
     "nostrRecipients": "Klucze publiczne odbiorców (npub)",
     "nostrRecipientsHelp": "format npub, po jednym w wierszu",
@@ -903,7 +903,7 @@
     "GrafanaOncallUrl": "Adres URL Grafana Oncall",
     "Remote Browsers": "Zdalne przeglądarki",
     "self-hosted container": "kontener hostowany samodzielnie",
-    "settingUpDatabaseMSG": "Konfigurowanie bazy danych. Może to trochę potrwać, prosimy o cierpliwość.",
+    "settingUpDatabaseMSG": "Konfigurowanie bazy danych. Może to zająć chwilę, bądź cierpliwy.",
     "statusPageSpecialSlugDesc": "Specjalny slug {0}: ta strona zostanie wyświetlona, jeśli nie podano żadnego slugu",
     "Search monitored sites": "Wyszukiwanie monitorowanych witryn",
     "setup a new monitor group": "konfiguracja nowej grupy monitorów",
@@ -917,5 +917,12 @@
     "remoteBrowserToggle": "Domyślnie Chromium działa wewnątrz kontenera Uptime Kuma. Możesz użyć zdalnej przeglądarki, przełączając ten przełącznik.",
     "useRemoteBrowser": "Używaj zdalnej przeglądarki",
     "Add a new expiry notification day": "Dodaj nowy dzień wygaśnięcia powiadomienia",
-    "Remove the expiry notification": "Usunąć dzień powiadomienia o wygaśnięciu"
+    "Remove the expiry notification": "Usunąć dzień powiadomienia o wygaśnięciu",
+    "What is a Remote Browser?": "Co to jest zdalna przeglądarka?",
+    "Mentioning": "Oznaczenia",
+    "Don't mention people": "Nie oznaczaj nikogo",
+    "Mention group": "Oznacz {group}",
+    "Channel access token (Long-lived)": "Token dostępu kanału (długotrwały)",
+    "Your User ID": "Twój identyfikator użytkownika",
+    "locally configured mail transfer agent": "lokalnie skonfigurowany serwer poczty"
 }

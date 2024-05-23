@@ -114,7 +114,9 @@ export default {
                 "AlertNow": "AlertNow",
                 "apprise": this.$t("apprise"),
                 "Bark": "Bark",
+                "Bitrix24": "Bitrix24",
                 "clicksendsms": "ClickSend SMS",
+                "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
@@ -122,6 +124,7 @@ export default {
                 "GrafanaOncall": "Grafana Oncall",
                 "HeiiOnCall": "Heii On-Call",
                 "HomeAssistant": "Home Assistant",
+                "Keep": "Keep",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
                 "LineNotify": "LINE Notify",
@@ -144,6 +147,7 @@ export default {
                 "slack": "Slack",
                 "squadcast": "SquadCast",
                 "SMSEagle": "SMSEagle",
+                "SMSPartner": "SMS Partner",
                 "smtp": this.$t("smtp"),
                 "stackfield": "Stackfield",
                 "teams": "Microsoft Teams",
@@ -152,7 +156,11 @@ export default {
                 "Splunk": "Splunk",
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
-                "ZohoCliq": "ZohoCliq"
+                "ZohoCliq": "ZohoCliq",
+                "SevenIO": "SevenIO",
+                "whapi": "WhatsApp (Whapi)",
+                "gtxmessaging": "GtxMessaging",
+                "Cellsynt": "Cellsynt",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English

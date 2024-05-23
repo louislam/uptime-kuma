@@ -230,8 +230,8 @@ The goal is to make the Uptime Kuma installation as easy as installing a mobile 
 
 ## Tools
 
-- [`Node.js`](https://nodejs.org/) >= 14
-- [`npm`](https://www.npmjs.com/) >= 8.5
+- [`Node.js`](https://nodejs.org/) >= 18
+- [`npm`](https://www.npmjs.com/) >= 9.3
 - [`git`](https://git-scm.com/)
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
 - A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
@@ -490,3 +490,28 @@ We have a few procedures we follow. These are documented here:
   
   </p>
   </details>
+
+### Set up a Docker Builder
+
+- amd64, armv7 using local.
+- arm64 using remote arm64 cpu, as the emulator is too slow and can no longer pass the `npm ci` command.
+   1. Add the public key to the remote server.
+   2. Add the remote context. The remote machine must be arm64 and installed Docker CE. 
+      ```
+      docker context create oracle-arm64-jp --docker "host=ssh://root@100.107.174.88"
+      ```
+   3. Create a new builder.
+      ```
+      docker buildx create --name kuma-builder --platform linux/amd64,linux/arm/v7
+      docker buildx use kuma-builder
+      docker buildx inspect --bootstrap
+      ```
+   4. Append the remote context to the builder.
+      ```
+      docker buildx create --append --name kuma-builder --platform linux/arm64 oracle-arm64-jp
+      ```
+   5. Verify the builder and check if the builder is using `kuma-builder`.
+      ```
+      docker buildx inspect kuma-builder
+      docker buildx ls
+      ```
