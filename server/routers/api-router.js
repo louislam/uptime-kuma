@@ -60,10 +60,6 @@ router.all("/api/push/:pushToken", async (request, response) => {
             throw new Error("Monitor not found or not active.");
         }
 
-        if (monitor.method !== request.method) {
-            throw new Error("Monitor HTTP method (" + monitor.method + ") does not match request (" + request.method + ").");
-        }
-
         const previousHeartbeat = await Monitor.getPreviousHeartbeat(monitor.id);
 
         let isFirstBeat = true;
