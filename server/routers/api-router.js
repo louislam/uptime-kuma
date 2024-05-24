@@ -44,9 +44,8 @@ router.get("/api/entry-page", async (request, response) => {
     response.json(result);
 });
 
-router.get("/api/push/:pushToken", async (request, response) => {
+router.all("/api/push/:pushToken", async (request, response) => {
     try {
-
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
         let ping = parseFloat(request.query.ping) || null;
