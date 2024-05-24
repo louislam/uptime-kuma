@@ -702,7 +702,7 @@
                             </template>
 
                             <!-- HTTP Options -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'push' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' ">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
 
                                 <!-- Method -->
