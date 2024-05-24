@@ -990,5 +990,6 @@
     "OID (Object Identifier)": "OID (Objektsidentifierare)",
     "Please enter a valid OID.": "Ange ett giltigt OID.",
     "Group ID": "GruppID",
-    "Add Remote Browser": "Lägg till fjärrbläddrare"
+    "Add Remote Browser": "Lägg till fjärrbläddrare",
+    "jsonQueryDescription": ""
 }
