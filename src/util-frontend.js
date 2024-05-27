@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import timezones from "timezones-list";
+import { getTimeZones } from "@vvo/tzdb";
 import { localeDirection, currentLocale } from "./i18n";
 import { POSITION } from "vue-toastification";
 
@@ -29,18 +29,19 @@ function getTimezoneOffset(timeZone) {
  */
 export function timezoneList() {
     let result = [];
+    const timeZones = getTimeZones();
 
-    for (let timezone of timezones) {
+    for (let timezone of timeZones) {
         try {
-            let display = dayjs().tz(timezone.tzCode).format("Z");
+            let display = dayjs().tz(timezone.name).format("Z");
 
             result.push({
-                name: `(UTC${display}) ${timezone.tzCode}`,
-                value: timezone.tzCode,
-                time: getTimezoneOffset(timezone.tzCode),
+                name: `(UTC${display}) ${timezone.name}`,
+                value: timezone.name,
+                time: getTimezoneOffset(timezone.name),
             });
         } catch (e) {
-            // Skipping not supported timezone.tzCode by dayjs
+            // Skipping not supported timezone.name by dayjs
         }
     }
 

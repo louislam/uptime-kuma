@@ -46,29 +46,29 @@ class Bark extends NotificationProvider {
     }
 
     /**
-     * Add additional parameter for Bark v1 endpoints
+     * Add additional parameter for Bark v1 endpoints.
+     * Leads to better on device styles (iOS 15 optimized)
      * @param {BeanModel} notification Notification to send
-     * @param {string} postUrl URL to append parameters to
      * @returns {string} Additional URL parameters
      */
-    appendAdditionalParameters(notification, postUrl) {
+    additionalParameters(notification) {
         // set icon to uptime kuma icon, 11kb should be fine
-        postUrl += "?icon=" + barkNotificationAvatar;
+        let params = "?icon=" + barkNotificationAvatar;
         // grouping all our notifications
         if (notification.barkGroup != null) {
-            postUrl += "&group=" + notification.barkGroup;
+            params += "&group=" + notification.barkGroup;
         } else {
             // default name
-            postUrl += "&group=" + "UptimeKuma";
+            params += "&group=" + "UptimeKuma";
         }
         // picked a sound, this should follow system's mute status when arrival
         if (notification.barkSound != null) {
-            postUrl += "&sound=" + notification.barkSound;
+            params += "&sound=" + notification.barkSound;
         } else {
             // default sound
-            postUrl += "&sound=" + "telegraph";
+            params += "&sound=" + "telegraph";
         }
-        return postUrl;
+        return params;
     }
 
     /**
@@ -92,7 +92,7 @@ class Bark extends NotificationProvider {
      * @param {string} title Message title
      * @param {string} subtitle Message
      * @param {string} endpoint Endpoint to send request to
-     * @returns {string} Success message
+     * @returns {Promise<string>} Success message
      */
     async postNotification(notification, title, subtitle, endpoint) {
         let result;
@@ -100,9 +100,8 @@ class Bark extends NotificationProvider {
             // url encode title and subtitle
             title = encodeURIComponent(title);
             subtitle = encodeURIComponent(subtitle);
-            let postUrl = endpoint + "/" + title + "/" + subtitle;
-            postUrl = this.appendAdditionalParameters(notification, postUrl);
-            result = await axios.get(postUrl);
+            const params = this.additionalParameters(notification);
+            result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`);
         } else {
             result = await axios.post(`${endpoint}/push`, {
                 title,
