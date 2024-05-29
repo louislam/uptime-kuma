@@ -45,7 +45,7 @@ jobs:
     needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
-
+    if: github.event.repository.fork == false
     strategy:
       matrix:
         os: [ ARMv7 ]
