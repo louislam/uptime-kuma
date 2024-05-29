@@ -28,7 +28,7 @@ class Feishu extends NotificationProvider {
                     msg_type: "interactive",
                     card: {
                         config: {
-                            update_multi: true,
+                            update_multi: false,
                             wide_screen_mode: true,
                         },
                         header: {
@@ -58,7 +58,7 @@ class Feishu extends NotificationProvider {
                     msg_type: "interactive",
                     card: {
                         config: {
-                            update_multi: true,
+                            update_multi: false,
                             wide_screen_mode: true,
                         },
                         header: {
