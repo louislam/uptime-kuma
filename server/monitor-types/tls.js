@@ -10,29 +10,22 @@ class TlsMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        const options = {
-            hostname: monitor.hostname,
-            port: monitor.port,
-            useStartTls: monitor.tcpStartTls || false,
-            request: monitor.tcpRequest || null,
-            interval: monitor.interval || 30,
-        };
-
         const abortController = new AbortController();
 
-        const timeoutMs = options.interval * 1000 * 0.8;
+        const timeoutMs = (monitor.interval || 30) * 1000 * 0.8;
         const timeoutID = setTimeout(() => {
             this.log(`timeout after ${timeoutMs} ms`);
             abortController.abort();
         }, timeoutMs);
 
-        const tlsSocket = await this.connect(abortController.signal, options.hostname, options.port, options.useStartTls);
+        const tlsSocket = await this.connect(abortController.signal, monitor.hostname, monitor.port, monitor.tcpStartTls);
         let tlsSocketClosed = false;
         tlsSocket.on("close", () => {
             tlsSocketClosed = true;
         });
 
-        const result = await this.getResponseFromTlsPort(abortController.signal, tlsSocket, options)
+        const request = monitor.tcpRequest || null;
+        const result = await this.getResponseFromTlsPort(abortController.signal, tlsSocket, request)
             .then((response) => {
                 clearTimeout(timeoutID);
                 return response;
@@ -92,13 +85,13 @@ class TlsMonitorType extends MonitorType {
      * Sends the request over the given TLS socket and returns the response.
      * @param {AbortController} aborter   Abort controller used to abort the request
      * @param {tls.TLSSocket}   tlsSocket TLS socket instance
-     * @param {*}               options   Monitor options
+     * @param {string}          request   Request string (optional)
      * @returns {Promise<string>} Server response on success or rejected promise on error
      */
-    async getResponseFromTlsPort(aborter, tlsSocket, options) {
-        if (options.request) {
-            this.debug_log(`sending request: '${options.request}'`);
-            tlsSocket.write(options.request);
+    async getResponseFromTlsPort(aborter, tlsSocket, request) {
+        if (request) {
+            this.debug_log(`sending request: '${request}'`);
+            tlsSocket.write(request);
         }
 
         return await this.readData(aborter, tlsSocket);
