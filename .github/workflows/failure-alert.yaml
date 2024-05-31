@@ -1,0 +1,27 @@
+name: Notify on Any Workflow Failure
+
+on:
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
+
+env:
+  MATTERMOST_WEBHOOK_URL: ${{ secrets.DF_MATTERMOST_WEBHOOK_URL }} 
+  MATTERMOST_CHANNEL: 'raft-labs-servers'
+  MATTERMOST_USERNAME: 'gh-actions alert bot'
+
+jobs:
+  notifyMattermostOnFailure:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Mattermost Message Payload
+        env:
+          MATTERMOST_MESSAGE: >
+            :rip: A failure occurred in the ${{ github.repository }} repository. 
+            Workflow: *${{ github.event.workflow_run.name }}* failed. 
+            Check it out [here](${{ github.event.workflow_run.html_url }})
+        run: |
+          echo "{\"text\": \"${MATTERMOST_MESSAGE}\" }" > mattermost.json
+      - name: Send Mattermost Notification
+        uses: mattermost/action-mattermost-notify@master

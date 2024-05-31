@@ -1,0 +1,6 @@
+[Security Owners]
+Security/ @rsouthard @roger.jaynes.ctr @ryan.a.young.ctr @blake.burton @david.l.elliott.civ
+
+[CM]
+.gitlab/CODEOWNERS @david.l.elliott.civ @blake.burton @chris.simpson @larry.clark @jeffrey.j.rescignano.ctr @chris.cano
+.gitlab-ci.yml @david.l.elliott.civ @blake.burton @chris.simpson @larry.clark @jeffrey.j.rescignano.ctr @chris.cano @rsouthard

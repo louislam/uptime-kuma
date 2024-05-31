@@ -1,0 +1,41 @@
+# This workflow is managed by https://github.com/raft-tech/df-gh-templates. All attempts to edit outside of df-gh-templates will be futile.
+name: Tag & Release
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - 'VERSION'
+
+jobs:
+
+  release:
+    name: Create Tag & Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write    
+    steps:   
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Get TAG var
+        run: |
+          MAJOR=$(grep 'MAJOR' VERSION | cut -d '=' -f 2)
+          MINOR=$(grep 'MINOR' VERSION | cut -d '=' -f 2)
+          PATCH=$(grep 'PATCH' VERSION | cut -d '=' -f 2)
+          ADDOPTS=$(grep 'ADDOPTS' VERSION | cut -d '=' -f 2)
+
+          # Conditionally append ADDOPTS if it's not empty
+          if [ -z "$ADDOPTS" ]; then
+            TAG="${MAJOR}.${MINOR}.${PATCH}"
+          else
+            TAG="${MAJOR}.${MINOR}.${PATCH}-${ADDOPTS}"
+          fi
+
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with: 
+          generateReleaseNotes: true
+          tag: v${{ env.TAG }}

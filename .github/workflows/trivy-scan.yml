@@ -1,0 +1,78 @@
+# This workflow is managed by https://github.com/raft-tech/df-gh-templates. All attempts to edit outside of df-gh-templates will be futile.
+name: Build and Run Trivy Scan
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+env:
+  GHCR_REGISTRY: ghcr.io
+  GHCR_REPOSITORY: raft-tech
+  IB_REGISTRY: registry1.dso.mil
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  CONTEXT_PATH: ${{ vars.CONTEXT_PATH || '.' }}
+  DOCKERFILE_PATH: ${{ vars.DOCKERFILE_PATH || 'Dockerfile' }}
+  TAG: ${{ github.sha }}
+
+jobs:
+  docker:
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4.0.0
+
+      - name: List Files
+        run: ls
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2.10.0
+
+      - name: Login to GHCR
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Login to registry1
+        uses: docker/login-action@v2.2.0
+        with:
+          registry: ${{ env.IB_REGISTRY }}
+          username: ${{ secrets.IB_USER }}
+          password: ${{ secrets.IB_PASS }}
+
+      - name: Build and push - GHCR
+        uses: docker/build-push-action@v4.1.1
+        with:
+          context: ${{ env.CONTEXT_PATH }}
+          file: ${{ env.DOCKERFILE_PATH }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.GHCR_REGISTRY }}/${{ env.GHCR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GHCR_PAT }}
+
+      - name: Run Trivy in GitHub SBOM mode and submit results to Dependency Graph
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'github'
+          output: 'dependency-results.sbom.json'
+          image-ref: '.'
+          github-pat: ${{ secrets.GITHUB_TOKEN }}

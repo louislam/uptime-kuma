@@ -1,0 +1,51 @@
+# This workflow is managed by https://github.com/raft-tech/df-gh-templates. All attempts to edit outside of df-gh-templates will be futile.
+name: Create SSF Release Branch
+
+on:
+  workflow_run:
+    workflows: ["Tag & Release"]
+    branch: ["dev"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  branch:
+    name: Create Release Branch from Tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GHCR_PAT }}
+
+      - name: Get TAG var
+        if: env.SKIP_REMAINING_STEPS != 'true'
+        run: |
+          MAJOR=$(grep 'MAJOR' VERSION | cut -d '=' -f 2)
+          MINOR=$(grep 'MINOR' VERSION | cut -d '=' -f 2)
+          PATCH=$(grep 'PATCH' VERSION | cut -d '=' -f 2)
+          ADDOPTS=$(grep 'ADDOPTS' VERSION | cut -d '=' -f 2)
+
+          # Conditionally append ADDOPTS if it's not empty
+          if [ -z "$ADDOPTS" ]; then
+            TAG="${MAJOR}.${MINOR}.${PATCH}"
+          else
+            TAG="${MAJOR}.${MINOR}.${PATCH}-${ADDOPTS}"
+          fi
+
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Set Branch Name
+        if: env.SKIP_REMAINING_STEPS != 'true'
+        run: |
+          echo "BRANCH_NAME=release/${TAG}" >> $GITHUB_ENV
+
+      - name: Create and Push Branch
+        if: env.SKIP_REMAINING_STEPS != 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GHCR_PAT }}
+          branch: ${{ env.BRANCH_NAME }}

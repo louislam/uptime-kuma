@@ -1,0 +1,25 @@
+# This workflow is managed by https://github.com/raft-tech/df-gh-templates. All attempts to edit outside of df-gh-templates will be futile.
+name: Push to SSF
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  push-to-ssf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push To SSF
+        run: |
+          echo Pushing to SSF...
+          git config user.name "Raft"
+          git config user.email "info@teamraft.com"
+          git remote add ssf "https://raft:${{ secrets.SSF_ACCESS_TOKEN }}@${{ secrets.SSF_REPO }}"
+          git push -u ssf ${GITHUB_REF_NAME}:${GITHUB_REF_NAME}

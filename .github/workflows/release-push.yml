@@ -1,0 +1,84 @@
+# This workflow is managed by https://github.com/raft-tech/df-gh-templates. All attempts to edit outside of df-gh-templates will be futile.
+name: RELEASE - Build and Push Docker Image
+
+on:
+  workflow_run:
+    workflows: ["Tag & Release"]
+    branch: ["dev"]
+    types:
+      - completed
+
+env:
+  GHCR_REGISTRY: ghcr.io
+  GHCR_REPOSITORY: raft-tech
+  IB_REGISTRY: registry1.dso.mil
+  CONTEXT_PATH: ${{ vars.CONTEXT_PATH || '.' }}
+  DOCKERFILE_PATH: ${{ vars.DOCKERFILE_PATH || 'Dockerfile' }}
+  ### These need to be manually set on each repo in GitHub. If these are not set this workflow will skip.
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+  ###
+
+jobs:
+  ghcr_build_push:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4.0.0
+
+      - name: Set Tag
+        run: |
+          MAJOR=$(grep 'MAJOR' VERSION | cut -d '=' -f 2)
+          MINOR=$(grep 'MINOR' VERSION | cut -d '=' -f 2)
+          PATCH=$(grep 'PATCH' VERSION | cut -d '=' -f 2)
+          ADDOPTS=$(grep 'ADDOPTS' VERSION | cut -d '=' -f 2)
+
+          # Conditionally append ADDOPTS if it's not empty
+          if [ -z "$ADDOPTS" ]; then
+            TAG="${MAJOR}.${MINOR}.${PATCH}"
+          else
+            TAG="${MAJOR}.${MINOR}.${PATCH}-${ADDOPTS}"
+          fi
+
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+
+      - name: Check Tag
+        run: echo ${{env.TAG}}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set GHCR password # Defaults to the GHCR_PAT if set, otherwise uses the built in GITHUB_TOKEN
+        run: |
+          if [[ -n "${{ secrets.GHCR_PAT }}" ]]; then
+            echo "GHCR_PASSWORD=${{ secrets.GHCR_PAT }}" >> $GITHUB_ENV
+          else
+            echo "GHCR_PASSWORD=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+          fi
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ env.GHCR_PASSWORD }}
+
+      - name: Login to registry1
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.IB_REGISTRY }}
+          username: ${{ secrets.IB_USER }}
+          password: ${{ secrets.IB_PASS }}
+
+      - name: Build and push - GHCR
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.CONTEXT_PATH }}
+          file: ${{ env.DOCKERFILE_PATH }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.GHCR_REGISTRY }}/${{ env.GHCR_REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}

@@ -1,0 +1,58 @@
+name: Push release to SSF
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release/*
+
+jobs:
+  push-to-ssf:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Extract branch name
+        id: branch_name
+        run: |
+          SOURCE_BRANCH="${GITHUB_REF_NAME}"
+          STAGED_BRANCH="staged/${GITHUB_REF_NAME}"
+          RELEASE_BRANCH="${GITHUB_REF_NAME}"
+
+          echo "SOURCE_BRANCH=$SOURCE_BRANCH"
+          echo "STAGED_BRANCH=$STAGED_BRANCH"
+          echo "RELEASE_BRANCH=$RELEASE_BRANCH"
+
+          echo "SOURCE_BRANCH=$SOURCE_BRANCH" >> $GITHUB_ENV
+          echo "STAGED_BRANCH=$STAGED_BRANCH" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
+
+          # URL encode branch names
+          ENCODED_SOURCE_BRANCH=$(python -c "import urllib.parse; print(urllib.parse.quote('${SOURCE_BRANCH}', safe=''))")
+          ENCODED_STAGED_BRANCH=$(python -c "import urllib.parse; print(urllib.parse.quote('${STAGED_BRANCH}', safe=''))")
+          ENCODED_RELEASE_BRANCH=$(python -c "import urllib.parse; print(urllib.parse.quote('${RELEASE_BRANCH}', safe=''))")
+
+          echo "ENCODED_SOURCE_BRANCH=$ENCODED_SOURCE_BRANCH"
+          echo "ENCODED_STAGED_BRANCH=$ENCODED_STAGED_BRANCH"
+          echo "ENCODED_RELEASE_BRANCH=$ENCODED_RELEASE_BRANCH"
+
+          echo "ENCODED_SOURCE_BRANCH=$ENCODED_SOURCE_BRANCH" >> $GITHUB_ENV
+          echo "ENCODED_STAGED_BRANCH=$ENCODED_STAGED_BRANCH" >> $GITHUB_ENV
+          echo "ENCODED_RELEASE_BRANCH=$ENCODED_RELEASE_BRANCH" >> $GITHUB_ENV
+
+      - name: Push To SSF
+        run: |
+          echo Pushing to SSF...
+          git config user.name "Raft"
+          git config user.email "info@teamraft.com"
+          git remote add ssf "https://raft:${{ secrets.SSF_ACCESS_TOKEN }}@${{ secrets.SSF_REPO }}"
+          git push -u ssf ${{ env.SOURCE_BRANCH }}:${{ env.STAGED_BRANCH }}
+
+      - name: Create branch in GitLab
+        run: |
+          curl --request POST \
+            --header "PRIVATE-TOKEN: ${{ secrets.SSF_ACCESS_TOKEN }}" \
+            "https://code.ssf.sclzdev.net/api/v4/projects/${{ secrets.SSF_REPO_ID}}/repository/branches?branch=${{ env.ENCODED_RELEASE_BRANCH }}&ref=${{ env.ENCODED_STAGED_BRANCH }}"

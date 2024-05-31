@@ -1,0 +1,45 @@
+# This workflow is managed by https://github.com/raft-tech/df-gh-templates. All attempts to edit outside of df-gh-templates will be futile.
+name: Release Increment
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - 'VERSION'
+      - '.github/**'
+
+jobs:
+  increment_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GHCR_PAT }}
+
+      - name: Increment version number
+        run: |
+          source VERSION
+          if [ -z "$ADDOPTS" ]; then
+            OLD_VERSION="$MAJOR.$MINOR.$PATCH"
+          else
+            OLD_VERSION="$MAJOR.$MINOR.$PATCH-$ADDOPTS"
+          fi
+          echo "Old Version: $OLD_VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "New Version: $NEW_VERSION"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          NEW_VERSION_FILE="MAJOR=${MAJOR}\nMINOR=${MINOR}\nPATCH=${PATCH}\nADDOPTS="
+          echo -e "$NEW_VERSION_FILE" > VERSION
+          
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Increment version number to ${{ env.NEW_VERSION }} [auto]"
+          file_pattern: VERSION
+          branch: dev
+          commit_user_name: "GitHub Action"
+          commit_user_email: "action@github.com"
+          commit_author: "GitHub Action <action@github.com>"
