@@ -8,11 +8,7 @@ class TlsMonitorType extends MonitorType {
     name = "port-tls";
 
     /**
-     * Performs the periodic monitoring check on a TLS TCP port.
-     * @param {Monitor}          monitor   Monitor to check
-     * @param {Heartbeat}        heartbeat Monitor heartbeat to update
-     * @param {UptimeKumaServer} _server   Uptime Kuma server (unused)
-     * @returns {Promise<void>} A fulfilled promise if the check succeeds, a rejected one otherwise
+     * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
         const options = {
@@ -60,11 +56,11 @@ class TlsMonitorType extends MonitorType {
     /**
      * Compares the server's response against the monitor's attributes, decides on success/failure,
      * and updates the heartbeat accordingly.
-     * @param {string}    response  Response received from the server
-     * @param {Monitor}   monitor   Monitor to check
-     * @param {Heartbeat} heartbeat Monitor heartbeat to update
+     * @param {string | Error} response  Response received from the server or Error on failure
+     * @param {Monitor}        monitor   Monitor to check
+     * @param {Heartbeat}      heartbeat Monitor heartbeat to update
      * @returns {void}
-     * @throws Error if the check fails
+     * @throws Error if the check has failed or the response does not match the expectations
      */
     processResponse(response, monitor, heartbeat) {
         if (response instanceof Error) {
@@ -96,7 +92,7 @@ class TlsMonitorType extends MonitorType {
     /**
      * Sends the request over the given TLS socket and returns the response.
      * @param {AbortController} aborter   Abort controller used to abort the request
-     * @param {TLSSocket}       tlsSocket TLS socket instance
+     * @param {tls.TLSSocket}   tlsSocket TLS socket instance
      * @param {*}               options   Monitor options
      * @returns {Promise<string>} Server response on success or rejected promise on error
      */
@@ -115,7 +111,7 @@ class TlsMonitorType extends MonitorType {
      * @param {string}          hostname    Host to connect to
      * @param {int}             port        TCP port to connect to
      * @param {boolean}         useStartTls True if STARTTLS should be used, false for native TLS
-     * @returns {Promise<TLSSocket>} TLS socket instance if successful or rejected promise on error
+     * @returns {Promise<tls.TLSSocket>} TLS socket instance if successful or rejected promise on error
      */
     async connect(aborter, hostname, port, useStartTls) {
         if (useStartTls) {
@@ -146,8 +142,8 @@ class TlsMonitorType extends MonitorType {
 
     /**
      * Reads available data from the given socket.
-     * @param {AbortController} aborter Abort controller used to abort the read
-     * @param {*}               socket  net.Socket or tls.TLSSocket instance to use
+     * @param {AbortController}            aborter Abort controller used to abort the read
+     * @param {net.Socket | tls.TLSSocket} socket  Socket instance to use
      * @returns {Promise<string>} Data read from the socket or rejected promise on error
      */
     readData(aborter, socket) {
@@ -188,9 +184,9 @@ class TlsMonitorType extends MonitorType {
 
     /**
      * Reads available data from the given socket if it starts with a given prefix.
-     * @param {AbortController} aborter  Abort controller used to abort the read
-     * @param {*}               socket   net.Socket or tls.TLSSocket instance to use
-     * @param {string}          expected Prefix the response is expected to start with
+     * @param {AbortController}            aborter  Abort controller used to abort the read
+     * @param {net.Socket | tls.TLSSocket} socket   Socket instance to use
+     * @param {string}                     expected Prefix the response is expected to start with
      * @returns {Promise<string>} Data read from the socket or rejected promise if the response does
      *                            not start with the prefix
      */
@@ -204,8 +200,8 @@ class TlsMonitorType extends MonitorType {
 
     /**
      * Performs STARTTLS on the given socket.
-     * @param {AbortController} aborter Abort controller used to abort the STARTTLS process
-     * @param {*}               socket  net.Socket or tls.TLSSocket instance to use
+     * @param {AbortController}            aborter Abort controller used to abort the STARTTLS process
+     * @param {net.Socket | tls.TLSSocket} socket  Socket instance to use
      * @returns {Promise<void>} Rejected promise if the STARTTLS process failed
      */
     async startTls(aborter, socket) {
@@ -219,9 +215,9 @@ class TlsMonitorType extends MonitorType {
 
     /**
      * Upgrades an unencrypted socket to a TLS socket using STARTTLS.
-     * @param {*}               socket  net.Socket representing the unencrypted connection
-     * @returns {Promise<TLSSocket>} tls.TLSSocket instance representing the upgraded TLS connection
-     *                               or rejected promise if the STARTTLS process failed
+     * @param {net.Socket} socket Socket representing the unencrypted connection
+     * @returns {Promise<tls.TLSSocket>} Socket instance representing the upgraded TLS connection
+     *                                   or rejected promise if the STARTTLS process failed
      */
     upgradeConnection(socket) {
         return new Promise((resolve, reject) => {
