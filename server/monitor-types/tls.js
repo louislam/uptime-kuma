@@ -4,7 +4,6 @@ const net = require("net");
 const tls = require("tls");
 
 class TlsMonitorType extends MonitorType {
-
     name = "port-tls";
 
     /**
@@ -66,26 +65,26 @@ class TlsMonitorType extends MonitorType {
         if (response instanceof Error) {
             this.log("check failed: " + response.message);
             throw response;
-        } else {
-            let success = false;
-            let message = undefined;
-            if (monitor.keyword) {
-                const keywordContained = response.includes(monitor.keyword);
-                success = (keywordContained === !monitor.invertKeyword);
-                message = keywordContained ? "Data contains keyword" : "Data does not contain keyword";
-            } else {
-                success = true;
-                message = "Connection successful";
-            }
+        }
 
-            if (success) {
-                this.log("check successful: " + message);
-                heartbeat.msg = message;
-                heartbeat.status = UP;
-            } else {
-                this.log("check failed: " + message);
-                throw new Error(message);
-            }
+        let success = false;
+        let message = undefined;
+        if (monitor.keyword) {
+            const keywordContained = response.includes(monitor.keyword);
+            success = (keywordContained === !monitor.invertKeyword);
+            message = keywordContained ? "Data contains keyword" : "Data does not contain keyword";
+        } else {
+            success = true;
+            message = "Connection successful";
+        }
+
+        if (success) {
+            this.log("check successful: " + message);
+            heartbeat.msg = message;
+            heartbeat.status = UP;
+        } else {
+            this.log("check failed: " + message);
+            throw new Error(message);
         }
     }
 
