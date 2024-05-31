@@ -1,0 +1,5 @@
+include:
+  - project: "ssf/raft/ci-templates"
+    ref: main
+    file:
+      - "std-image.yml"
