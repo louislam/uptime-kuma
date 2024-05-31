@@ -226,14 +226,10 @@ class TlsMonitorType extends MonitorType {
                 resolve(tlsSocket);
             };
 
-            const onError = (error) => {
-                reject(error);
-            };
-
             const tlsSocket = tls.connect({ socket: socket });
 
             tlsSocket.on("secureConnect", onSecureConnect);
-            tlsSocket.on("error", onError);
+            tlsSocket.on("error", reject);
         });
     }
 
