@@ -141,9 +141,12 @@ class TlsMonitorType extends MonitorType {
     readData(aborter, socket) {
         return new Promise((resolve, reject) => {
             const cleanup = function () {
+                // Pause reading of data (i.e. emission of 'data' events), so that we don't lose
+                // any data between now and the next call to readData() while there are no event
+                // listeners installed.
+                socket.pause();
                 socket.removeListener("error", onError);
                 socket.removeListener("data", onData);
-                socket.pause();
                 aborter.removeEventListener("abort", onAbort);
             };
 
@@ -168,6 +171,7 @@ class TlsMonitorType extends MonitorType {
 
             aborter.addEventListener("abort", onAbort, { once: true });
 
+            // Register event callbacks and resume the socket. We are ready to receive data.
             socket.on("error", onError);
             socket.on("data", onData);
             socket.resume();
