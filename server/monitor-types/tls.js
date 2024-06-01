@@ -14,7 +14,7 @@ class TlsMonitorType extends MonitorType {
 
         const timeoutMs = (monitor.interval || 30) * 1000 * 0.8;
         const timeoutID = setTimeout(() => {
-            this.log(`timeout after ${timeoutMs} ms`);
+            log.debug(this.name, `timeout after ${timeoutMs} ms`);
             abortController.abort();
         }, timeoutMs);
 
@@ -39,7 +39,7 @@ class TlsMonitorType extends MonitorType {
         if (!tlsSocketClosed) {
             tlsSocket.end();
             tlsSocket.destroy();
-            this.debug_log("TLS socket commanded to close");
+            log.debug(this.name, "TLS socket commanded to close");
         }
 
         this.processResponse(result, monitor, heartbeat);
@@ -56,17 +56,17 @@ class TlsMonitorType extends MonitorType {
      */
     processResponse(response, monitor, heartbeat) {
         if (response instanceof Error) {
-            this.log("check failed: " + response.message);
+            log.debug(this.name, "check failed: " + response.message);
             throw response;
         }
 
         const [ success, message ] = this.checkResponseSuccess(response, monitor);
         if (success) {
-            this.log("check successful: " + message);
+            log.debug(this.name, "check successful: " + message);
             heartbeat.msg = message;
             heartbeat.status = UP;
         } else {
-            this.log("check failed: " + message);
+            log.debug(this.name, "check failed: " + message);
             throw new Error(message);
         }
     }
@@ -99,7 +99,7 @@ class TlsMonitorType extends MonitorType {
      */
     async getResponseFromTlsPort(aborter, tlsSocket, request) {
         if (request) {
-            this.debug_log(`sending request: '${request}'`);
+            log.debug(this.name, `sending request: '${request}'`);
             tlsSocket.write(request);
         }
 
@@ -120,13 +120,13 @@ class TlsMonitorType extends MonitorType {
                 signal: aborter
             });
             socket.connect(port, hostname);
-            this.debug_log("TCP connected");
+            log.debug(this.name, "TCP connected");
 
             await this.startTls(aborter, socket);
-            this.debug_log("STARTTLS prelude done");
+            log.debug(this.name, "STARTTLS prelude done");
 
             const tlsSocket = await this.upgradeConnection(socket);
-            this.debug_log("TLS upgrade done");
+            log.debug(this.name, "TLS upgrade done");
             tlsSocket.on("close", (hadError) => {
                 socket.end();
             });
@@ -136,7 +136,7 @@ class TlsMonitorType extends MonitorType {
                 signal: aborter,
                 servername: hostname
             });
-            this.debug_log("TLS connected");
+            log.debug(this.name, "TLS connected");
             return tlsSocket;
         }
     }
@@ -160,20 +160,20 @@ class TlsMonitorType extends MonitorType {
             };
 
             const onAbort = (_) => {
-                this.debug_log("read aborted");
+                log.debug(this.name, "read aborted");
                 cleanup();
                 reject(new Error("Timeout"));
             };
 
             const onError = (error) => {
-                this.debug_log(`unable to read data: ${error}`);
+                log.debug(this.name, `unable to read data: ${error}`);
                 cleanup();
                 reject(new Error(`Failed to read data: ${error}`));
             };
 
             const onData = (data) => {
                 const dataString = data.toString().trim();
-                this.debug_log(`read data: '${dataString}'`);
+                log.debug(this.name, `read data: '${dataString}'`);
                 cleanup();
                 resolve(dataString);
             };
@@ -197,7 +197,7 @@ class TlsMonitorType extends MonitorType {
      */
     async expectDataStartsWith(aborter, socket, expected) {
         const data = await this.readData(aborter, socket);
-        this.debug_log(`response data: '${data}', expected: '${expected}'…`);
+        log.debug(this.name, `response data: '${data}', expected: '${expected}'…`);
         if (!data.startsWith(expected)) {
             throw new Error(`Unexpected response. Data: '${data}', Expected: '${expected}'…`);
         }
@@ -210,11 +210,11 @@ class TlsMonitorType extends MonitorType {
      * @returns {Promise<void>} Rejected promise if the STARTTLS process failed
      */
     async startTls(aborter, socket) {
-        this.debug_log("waiting for prompt");
+        log.debug(this.name, "waiting for prompt");
         await this.expectDataStartsWith(aborter, socket, "220 ");
-        this.debug_log("sending STARTTLS");
+        log.debug(this.name, "sending STARTTLS");
         socket.write("STARTTLS\n");
-        this.debug_log("waiting for ready-to-TLS");
+        log.debug(this.name, "waiting for ready-to-TLS");
         await this.expectDataStartsWith(aborter, socket, "220 ");
     }
 
@@ -228,7 +228,7 @@ class TlsMonitorType extends MonitorType {
         return new Promise((resolve, reject) => {
             const onSecureConnect = () => {
                 const cipher = tlsSocket.getCipher();
-                this.debug_log(`connected: authorized: ${tlsSocket.authorized}, cipher: ${cipher ? cipher.name : "<none>"}`);
+                log.debug(this.name, `connected: authorized: ${tlsSocket.authorized}, cipher: ${cipher ? cipher.name : "<none>"}`);
                 resolve(tlsSocket);
             };
 
@@ -237,24 +237,6 @@ class TlsMonitorType extends MonitorType {
             tlsSocket.on("secureConnect", onSecureConnect);
             tlsSocket.on("error", reject);
         });
-    }
-
-    /**
-     * Logs a message.
-     * @param {*} msg Message
-     * @returns {void}
-     */
-    log(msg) {
-        log.debug(this.name, msg);
-    }
-
-    /**
-     * Logs a debug message (disabled by default).
-     * @param {*} msg Message
-     * @returns {void}
-     */
-    debug_log(msg) {
-        //log.debug(this.name, msg);
     }
 }
 
