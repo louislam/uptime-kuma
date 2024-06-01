@@ -18,8 +18,8 @@ class TlsMonitorType extends MonitorType {
         const options = {
             hostname: monitor.hostname,
             port: monitor.port,
-            useStartTls: monitor.startTls || false,
-            request: monitor.request || null,
+            useStartTls: monitor.tcpStartTls || false,
+            request: monitor.tcpRequest || null,
             interval: monitor.interval || 30,
         };
 

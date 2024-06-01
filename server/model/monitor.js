@@ -161,8 +161,8 @@ class Monitor extends BeanModel {
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
             remote_browser: this.remote_browser,
-            request: this.request,
-            startTls: this.getStartTls(),
+            tcpRequest: this.tcpRequest,
+            tcpStartTls: this.getTcpStartTls(),
         };
 
         if (includeSensitiveData) {
@@ -331,8 +331,8 @@ class Monitor extends BeanModel {
      * Parse to boolean
      * @returns {boolean} Enable STARTTLS for TCP Port (TLS)
      */
-    getStartTls() {
-        return Boolean(this.startTls);
+    getTcpStartTls() {
+        return Boolean(this.tcpStartTls);
     }
 
     /**
