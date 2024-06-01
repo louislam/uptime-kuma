@@ -60,17 +60,7 @@ class TlsMonitorType extends MonitorType {
             throw response;
         }
 
-        let success = false;
-        let message = undefined;
-        if (monitor.keyword) {
-            const keywordContained = response.includes(monitor.keyword);
-            success = (keywordContained === !monitor.invertKeyword);
-            message = keywordContained ? "Data contains keyword" : "Data does not contain keyword";
-        } else {
-            success = true;
-            message = "Connection successful";
-        }
-
+        const [ success, message ] = this.checkResponseSuccess(response, monitor);
         if (success) {
             this.log("check successful: " + message);
             heartbeat.msg = message;
@@ -78,6 +68,25 @@ class TlsMonitorType extends MonitorType {
         } else {
             this.log("check failed: " + message);
             throw new Error(message);
+        }
+    }
+
+    /**
+     * Checks if the server response should be considered a success or not.
+     * @param {string}  response Server response string
+     * @param {Monitor} monitor  Monitor to check
+     * @returns {[boolean, string]} Tuple with a boolean success indicator and a message string
+     */
+    checkResponseSuccess(response, monitor) {
+        if (monitor.keyword) {
+            // Monitor keyword present => Check if keyword is present/absent in response, depending
+            // on whether the 'Invert Keyword' option is enabled.
+            const keywordContained = response.includes(monitor.keyword);
+            const message = keywordContained ? "Data contains keyword" : "Data does not contain keyword";
+            return [ keywordContained === !monitor.invertKeyword, message ];
+        } else {
+            // No monitor keyword => Any response is considered a success.
+            return [ true, "Connection successful" ];
         }
     }
 
