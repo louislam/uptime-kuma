@@ -909,16 +909,16 @@
 
                                 <!-- Use STARTTLS -->
                                 <div class="my-3 form-check">
-                                    <input id="start-tls" v-model="monitor.startTls" class="form-check-input" type="checkbox">
-                                    <label class="form-check-label" for="start-tls">
+                                    <input id="tcp-start-tls" v-model="monitor.tcpStartTls" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="tcp-start-tls">
                                         {{ $t("Use STARTTLS") }}
                                     </label>
                                 </div>
 
                                 <!-- Request -->
                                 <div class="my-3">
-                                    <label for="request" class="form-label">{{ $t("Request") }}</label>
-                                    <textarea id="request" v-model="monitor.request" class="form-control"></textarea>
+                                    <label for="tcp-request" class="form-label">{{ $t("Request") }}</label>
+                                    <textarea id="tcp-request" v-model="monitor.tcpRequest" class="form-control"></textarea>
                                 </div>
                                 <div class="form-text">
                                     {{ $t("requestDescription") }}
