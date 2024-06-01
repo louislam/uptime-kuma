@@ -14,7 +14,7 @@ class TlsMonitorType extends MonitorType {
 
         const timeoutMs = (monitor.interval || 30) * 1000 * 0.8;
         const timeoutID = setTimeout(() => {
-            log.debug(this.name, `timeout after ${timeoutMs} ms`);
+            log.info(this.name, `timeout after ${timeoutMs} ms`);
             abortController.abort();
         }, timeoutMs);
 
@@ -56,17 +56,17 @@ class TlsMonitorType extends MonitorType {
      */
     processResponse(response, monitor, heartbeat) {
         if (response instanceof Error) {
-            log.debug(this.name, "check failed: " + response.message);
+            log.info(this.name, "check failed: " + response.message);
             throw response;
         }
 
         const [ success, message ] = this.checkResponseSuccess(response, monitor);
         if (success) {
-            log.debug(this.name, "check successful: " + message);
+            log.info(this.name, "check successful: " + message);
             heartbeat.msg = message;
             heartbeat.status = UP;
         } else {
-            log.debug(this.name, "check failed: " + message);
+            log.info(this.name, "check failed: " + message);
             throw new Error(message);
         }
     }
