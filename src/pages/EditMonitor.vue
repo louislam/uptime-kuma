@@ -147,6 +147,17 @@
                                 </div>
                             </div>
 
+                            <!-- Request -->
+                            <div v-if="monitor.type === 'port-tls'" class="my-3">
+                                <div class="my-3">
+                                    <label for="tcp-request" class="form-label">{{ $t("Request") }}</label>
+                                    <input id="tcp-request" v-model="monitor.tcpRequest" class="form-control" />
+                                </div>
+                                <div class="form-text">
+                                    {{ $t("tcpRequestDescription") }}
+                                </div>
+                            </div>
+
                             <!-- Remote Browser -->
                             <div v-if="monitor.type === 'real-browser'" class="my-3">
                                 <!-- Toggle -->
@@ -907,22 +918,69 @@
                             <template v-if="monitor.type === 'port-tls'">
                                 <h2 class="mt-5 mb-2">{{ $t("TLS Options") }}</h2>
 
-                                <!-- Use STARTTLS -->
+                                <!-- Enable TLS -->
                                 <div class="my-3 form-check">
-                                    <input id="tcp-start-tls" v-model="monitor.tcpStartTls" class="form-check-input" type="checkbox">
-                                    <label class="form-check-label" for="tcp-start-tls">
-                                        {{ $t("Use STARTTLS") }}
+                                    <input id="tcp-enable-tls" v-model="monitor.tcpEnableTls" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="tcp-enable-tls">
+                                        {{ $t("Enable TLS") }}
                                     </label>
                                 </div>
 
-                                <!-- Request -->
-                                <div class="my-3">
-                                    <label for="tcp-request" class="form-label">{{ $t("Request") }}</label>
-                                    <textarea id="tcp-request" v-model="monitor.tcpRequest" class="form-control"></textarea>
-                                </div>
-                                <div class="form-text">
-                                    {{ $t("requestDescription") }}
-                                </div>
+                                <template v-if="monitor.tcpEnableTls">
+                                    <!-- Use STARTTLS -->
+                                    <div class="my-3 form-check">
+                                        <input id="tcp-start-tls" v-model="monitor.tcpStartTls" class="form-check-input" type="checkbox">
+                                        <label class="form-check-label" for="tcp-start-tls">
+                                            {{ $t("Use STARTTLS") }}
+                                        </label>
+                                        <div class="form-text">
+                                            {{ $t("tcpStartTlsDescription") }}
+                                        </div>
+                                    </div>
+
+                                    <template v-if="monitor.tcpStartTls">
+                                        <!-- Common Presets for STARTTLS -->
+                                        <label for="tcp-starttls-presets" class="form-label">{{ $t("Common Presets") }}</label>
+                                        <div id="tcp-starttls-presets">
+                                            <div class="form-text">
+                                                {{ $t("tcpStartTlsPresetDescription") }}
+                                            </div>
+                                            <button v-for="preset in startTlsPresets" :key="preset.name" type="button" class="btn btn-outline-normal m-1" @click="applyStartTlsPreset(preset.name)">
+                                                {{ preset.name }}
+                                            </button>
+                                            <button class="btn btn-outline-normal m-1" type="button" @click="applyStartTlsPreset()">
+                                                {{ $t("Clear") }}
+                                            </button>
+                                        </div>
+
+                                        <!-- STARTTLS Prompt -->
+                                        <div class="my-3">
+                                            <label for="tcp-starttls-prompt" class="form-label">{{ $t("STARTTLS Prompt") }}</label>
+                                            <input id="tcp-starttls-prompt" v-model="monitor.tcpStartTlsPrompt" type="text" class="form-control" required>
+                                            <div class="form-text">
+                                                {{ $t("tcpStartTlsPromptDescription") }}
+                                            </div>
+                                        </div>
+
+                                        <!-- STARTTLS Command -->
+                                        <div class="my-3">
+                                            <label for="tcp-starttls-command" class="form-label">{{ $t("STARTTLS Command") }}</label>
+                                            <input id="tcp-starttls-command" v-model="monitor.tcpStartTlsCommand" type="text" class="form-control" required>
+                                            <div class="form-text">
+                                                {{ $t("tcpStartTlsCommandDescription") }}
+                                            </div>
+                                        </div>
+
+                                        <!-- STARTTLS Response -->
+                                        <div class="my-3">
+                                            <label for="tcp-starttls-response" class="form-label">{{ $t("STARTTLS Response") }}</label>
+                                            <input id="tcp-starttls-response" v-model="monitor.tcpStartTlsResponse" type="text" class="form-control" required>
+                                            <div class="form-text">
+                                                {{ $t("tcpStartTlsResponseDescription") }}
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
                             </template>
                         </div>
                     </div>
@@ -1040,6 +1098,32 @@ export default {
             },
             draftGroupName: null,
             remoteBrowsersEnabled: false,
+            startTlsPresets: [
+                {
+                    name: "SMTP",
+                    prompt: "220 ",
+                    command: String.raw`STARTTLS\n`,
+                    response: "220 ",
+                    request: String.raw`QUIT\n`,
+                    keyword: "221 ",
+                },
+                {
+                    name: "POP3",
+                    prompt: "+OK",
+                    command: String.raw`STLS\r\n`,
+                    response: "+OK",
+                    request: String.raw`QUIT\r\n`,
+                    keyword: "+OK",
+                },
+                {
+                    name: "IMAP4",
+                    prompt: "* OK",
+                    command: String.raw`a001 STARTTLS\r\n`,
+                    response: "a001 OK",
+                    request: String.raw`a002 CAPABILITY\r\n`,
+                    keyword: "* CAPABILITY",
+                },
+            ],
         };
     },
 
@@ -1675,6 +1759,23 @@ message HealthCheckResponse {
             if (this.monitor.timeout > clampedValue) {
                 this.monitor.timeout = clampedValue;
             }
+        },
+
+        applyStartTlsPreset(name) {
+            const preset = name
+                ? this.startTlsPresets.find(p => p.name === name)
+                : {
+                    prompt: "",
+                    command: "",
+                    response: "",
+                    request: "",
+                    keyword: "",
+                };
+            this.monitor.tcpStartTlsPrompt = preset.prompt;
+            this.monitor.tcpStartTlsCommand = preset.command;
+            this.monitor.tcpStartTlsResponse = preset.response;
+            this.monitor.tcpRequest = preset.request;
+            this.monitor.keyword = preset.keyword;
         },
 
     },
