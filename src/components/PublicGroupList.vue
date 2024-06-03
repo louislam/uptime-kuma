@@ -163,7 +163,7 @@ export default {
             if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
                 return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
             }
-            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
+            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
         },
 
         /**

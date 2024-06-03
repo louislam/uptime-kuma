@@ -25,6 +25,9 @@
                                     <mark>a-z</mark> <mark>0-9</mark>
                                 </i18n-t>
                                 <li>{{ $t("No consecutive dashes") }} <mark>--</mark></li>
+                                <i18n-t tag="li" keypath="statusPageSpecialSlugDesc">
+                                    <mark class="me-1">default</mark>
+                                </i18n-t>
                             </ul>
                         </div>
                     </div>

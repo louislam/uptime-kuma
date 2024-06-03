@@ -1,20 +1,16 @@
 const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
-const { log, genSecret } = require("../src/util");
+const { log, genSecret, badgeConstants } = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
-const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
-const mqtt = require("mqtt");
 const chroma = require("chroma-js");
-const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
-const { MongoClient } = require("mongodb");
 const { NtlmClient } = require("axios-ntlm");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
@@ -23,6 +19,7 @@ const radiusClient = require("node-radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
 const dns = require("dns");
+const tls = require("tls");
 
 const {
     dictionaries: {
@@ -131,7 +128,7 @@ exports.ping = async (hostname, size = 56) => {
         return await exports.pingAsync(hostname, false, size);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        console.debug("ping", "IPv6 error message: " + e.message);
+        log.debug("ping", "IPv6 error message: " + e.message);
 
         // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
         if (!e.message) {
@@ -170,73 +167,6 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
         }).catch((err) => {
             reject(err);
         });
-    });
-};
-
-/**
- * MQTT Monitor
- * @param {string} hostname Hostname / address of machine to test
- * @param {string} topic MQTT topic
- * @param {string} okMessage Expected result
- * @param {object} options MQTT options. Contains port, username,
- * password and interval (interval defaults to 20)
- * @returns {Promise<string>} Received MQTT message
- */
-exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
-    return new Promise((resolve, reject) => {
-        const { port, username, password, interval = 20 } = options;
-
-        // Adds MQTT protocol to the hostname if not already present
-        if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
-            hostname = "mqtt://" + hostname;
-        }
-
-        const timeoutID = setTimeout(() => {
-            log.debug("mqtt", "MQTT timeout triggered");
-            client.end();
-            reject(new Error("Timeout"));
-        }, interval * 1000 * 0.8);
-
-        const mqttUrl = `${hostname}:${port}`;
-
-        log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
-
-        let client = mqtt.connect(mqttUrl, {
-            username,
-            password
-        });
-
-        client.on("connect", () => {
-            log.debug("mqtt", "MQTT connected");
-
-            try {
-                log.debug("mqtt", "MQTT subscribe topic");
-                client.subscribe(topic);
-            } catch (e) {
-                client.end();
-                clearTimeout(timeoutID);
-                reject(new Error("Cannot subscribe topic"));
-            }
-        });
-
-        client.on("error", (error) => {
-            client.end();
-            clearTimeout(timeoutID);
-            reject(error);
-        });
-
-        client.on("message", (messageTopic, message) => {
-            if (messageTopic === topic) {
-                client.end();
-                clearTimeout(timeoutID);
-                if (okMessage != null && okMessage !== "" && message.toString() !== okMessage) {
-                    reject(new Error(`Message Mismatch - Topic: ${messageTopic}; Message: ${message.toString()}`));
-                } else {
-                    resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
-                }
-            }
-        });
-
     });
 };
 
@@ -398,6 +328,9 @@ exports.mssqlQuery = async function (connectionString, query) {
     try {
         pool = new mssql.ConnectionPool(connectionString);
         await pool.connect();
+        if (!query) {
+            query = "SELECT 1";
+        }
         await pool.request().query(query);
         pool.close();
     } catch (e) {
@@ -419,12 +352,22 @@ exports.postgresQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const config = postgresConParse(connectionString);
 
-        if (config.password === "") {
-            // See https://github.com/brianc/node-postgres/issues/1927
-            return reject(new Error("Password is undefined."));
+        // Fix #3868, which true/false is not parsed to boolean
+        if (typeof config.ssl === "string") {
+            config.ssl = config.ssl === "true";
         }
 
-        const client = new Client({ connectionString });
+        if (config.password === "") {
+            // See https://github.com/brianc/node-postgres/issues/1927
+            reject(new Error("Password is undefined."));
+            return;
+        }
+        const client = new Client(config);
+
+        client.on("error", (error) => {
+            log.debug("postgres", "Error caught in the error event handler.");
+            reject(error);
+        });
 
         client.connect((err) => {
             if (err) {
@@ -448,6 +391,7 @@ exports.postgresQuery = function (connectionString, query) {
                     });
                 } catch (e) {
                     reject(e);
+                    client.end();
                 }
             }
         });
@@ -459,11 +403,15 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
+ * @param {?string} password The password to use
  * @returns {Promise<(string)>} Response from server
  */
-exports.mysqlQuery = function (connectionString, query) {
+exports.mysqlQuery = function (connectionString, query, password = undefined) {
     return new Promise((resolve, reject) => {
-        const connection = mysql.createConnection(connectionString);
+        const connection = mysql.createConnection({
+            uri: connectionString,
+            password
+        });
 
         connection.on("error", (err) => {
             reject(err);
@@ -487,24 +435,6 @@ exports.mysqlQuery = function (connectionString, query) {
             }
         });
     });
-};
-
-/**
- * Connect to and ping a MongoDB database
- * @param {string} connectionString The database connection string
- * @returns {Promise<(string[] | object[] | object)>} Response from
- * server
- */
-exports.mongodbPing = async function (connectionString) {
-    let client = await MongoClient.connect(connectionString);
-    let dbPing = await client.db().command({ ping: 1 });
-    await client.close();
-
-    if (dbPing["ok"] === 1) {
-        return "UP";
-    } else {
-        throw Error("failed");
-    }
 };
 
 /**
@@ -557,12 +487,16 @@ exports.radius = function (
 /**
  * Redis server ping
  * @param {string} dsn The redis connection string
- * @returns {Promise<any>} Response from redis server
+ * @param {boolean} rejectUnauthorized If false, allows unverified server certificates.
+ * @returns {Promise<any>} Response from server
  */
-exports.redisPingAsync = function (dsn) {
+exports.redisPingAsync = function (dsn, rejectUnauthorized) {
     return new Promise((resolve, reject) => {
         const client = redis.createClient({
-            url: dsn
+            url: dsn,
+            socket: {
+                rejectUnauthorized
+            }
         });
         client.on("error", (err) => {
             if (client.isOpen) {
@@ -705,20 +639,26 @@ const parseCertificateInfo = function (info) {
 
 /**
  * Check if certificate is valid
- * @param {object} res Response object from axios
+ * @param {tls.TLSSocket} socket TLSSocket, which may or may not be connected
  * @returns {object} Object containing certificate information
- * @throws No socket was found to check certificate for
  */
-exports.checkCertificate = function (res) {
-    if (!res.request.res.socket) {
-        throw new Error("No socket found");
+exports.checkCertificate = function (socket) {
+    let certInfoStartTime = dayjs().valueOf();
+
+    // Return null if there is no socket
+    if (socket === undefined || socket == null) {
+        return null;
     }
 
-    const info = res.request.res.socket.getPeerCertificate(true);
-    const valid = res.request.res.socket.authorized || false;
+    const info = socket.getPeerCertificate(true);
+    const valid = socket.authorized || false;
 
     log.debug("cert", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
+
+    if (process.env.TIMELOGGER === "1") {
+        log.debug("monitor", "Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+    }
 
     return {
         valid: valid,
@@ -846,29 +786,6 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
     }
 
     return user;
-};
-
-/**
- * Start end-to-end tests
- * @returns {void}
- */
-exports.startE2eTests = async () => {
-    console.log("Starting unit test...");
-    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, [ "run", "cy:run" ]);
-
-    child.stdout.on("data", (data) => {
-        console.log(data.toString());
-    });
-
-    child.stderr.on("data", (data) => {
-        console.log(data.toString());
-    });
-
-    child.on("close", function (code) {
-        console.log("Jest exit code: " + code);
-        process.exit(code);
-    });
 };
 
 /**
@@ -1061,6 +978,30 @@ module.exports.grpcQuery = async (options) => {
     });
 };
 
+/**
+ * Returns an array of SHA256 fingerprints for all known root certificates.
+ * @returns {Set} A set of SHA256 fingerprints.
+ */
+module.exports.rootCertificatesFingerprints = () => {
+    let fingerprints = tls.rootCertificates.map(cert => {
+        let certLines = cert.split("\n");
+        certLines.shift();
+        certLines.pop();
+        let certBody = certLines.join("");
+        let buf = Buffer.from(certBody, "base64");
+
+        const shasum = crypto.createHash("sha256");
+        shasum.update(buf);
+
+        return shasum.digest("hex").toUpperCase().replace(/(.{2})(?!$)/g, "$1:");
+    });
+
+    fingerprints.push("6D:99:FB:26:5E:B1:C5:B3:74:47:65:FC:BC:64:8F:3C:D8:E1:BF:FA:FD:C4:C2:F9:9B:9D:47:CF:7F:F1:C2:4F"); // ISRG X1 cross-signed with DST X3
+    fingerprints.push("8B:05:B6:8C:C6:59:E5:ED:0F:CB:38:F2:C9:42:FB:FD:20:0E:6F:2F:F9:F8:5D:63:C6:99:4E:F5:E0:B0:27:01"); // ISRG X2 cross-signed with ISRG X1
+
+    return new Set(fingerprints);
+};
+
 module.exports.SHAKE256_LENGTH = 16;
 
 /**
@@ -1125,4 +1066,29 @@ module.exports.lookup = async (hostname, ipFamily) => {
             resolve(hostname);
         }
     });
+
+/**
+ * Generates an abort signal with the specified timeout.
+ * @param {number} timeoutMs - The timeout in milliseconds.
+ * @returns {AbortSignal | null} - The generated abort signal, or null if not supported.
+ */
+module.exports.axiosAbortSignal = (timeoutMs) => {
+    try {
+        // Just in case, as 0 timeout here will cause the request to be aborted immediately
+        if (!timeoutMs || timeoutMs <= 0) {
+            timeoutMs = 5000;
+        }
+        return AbortSignal.timeout(timeoutMs);
+    } catch (_) {
+        // v16-: AbortSignal.timeout is not supported
+        try {
+            const abortController = new AbortController();
+            setTimeout(() => abortController.abort(), timeoutMs);
+
+            return abortController.signal;
+        } catch (_) {
+            // v15-: AbortController is not supported
+            return null;
+        }
+    }
 };
