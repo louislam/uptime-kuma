@@ -1,5 +1,4 @@
 const test = require("node:test");
-
 const assert = require("node:assert");
 const { UptimeCalculator } = require("../../server/uptime-calculator");
 const dayjs = require("dayjs");
