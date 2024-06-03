@@ -591,7 +591,7 @@
     "keywordDescription": "Search keyword in plain HTML or JSON response. The search is case-sensitive.",
     "invertKeywordDescription": "Look for the keyword to be absent rather than present.",
     "tcpRequestDescription": "Request sent to the server after establishing the connection. Trailing newlines may be required. JavaScript escape sequences are allowed.",
-    "tcpStartTlsDescription": "Start unencrypted and upgrade connection using STARTTLS.",
+    "tcpStartTlsDescription": "Start unencrypted and upgrade connection using STARTTLS. Relevant documentation: {rfc2595}, {rfc3207}",
     "tcpStartTlsPresetDescription": "Select a preset below to auto-fill commonly used values for request, keyword, and STARTTLS prompt/command/response.",
     "tcpStartTlsPromptDescription": "Server prompt (prefix) indicating readiness for STARTTLS command. JavaScript escape sequences are allowed.",
     "tcpStartTlsCommandDescription": "Command to initiate the TLS negotiation. Trailing newlines may be required. JavaScript escape sequences are allowed.",

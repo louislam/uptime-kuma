@@ -933,9 +933,14 @@
                                         <label class="form-check-label" for="tcp-start-tls">
                                             {{ $t("Use STARTTLS") }}
                                         </label>
-                                        <div class="form-text">
-                                            {{ $t("tcpStartTlsDescription") }}
-                                        </div>
+                                        <i18n-t keypath="tcpStartTlsDescription" tag="div" class="form-text">
+                                            <template #rfc2595>
+                                                <a href="https://datatracker.ietf.org/doc/html/rfc2595">RFC 2595</a>
+                                            </template>
+                                            <template #rfc3207>
+                                                <a href="https://datatracker.ietf.org/doc/html/rfc3207">RFC 3207</a>
+                                            </template>
+                                        </i18n-t>
                                     </div>
 
                                     <template v-if="monitor.tcpStartTls">
