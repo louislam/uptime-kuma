@@ -101,10 +101,11 @@ module.exports.statusPageSocketHandler = (socket) => {
             if (!statusPage) {
                 throw new Error("No slug?");
             }
-
+            const config = await statusPage.toJSON();
+            config.allowEditingCustomHtml = import.meta.env.UPTIME_KUMA_ALLOW_CUSTOM_HTML === '1';
             callback({
                 ok: true,
-                config: await statusPage.toJSON(),
+                config,
             });
         } catch (error) {
             callback({
@@ -167,7 +168,9 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
             statusPage.modified_date = R.isoDateTime();
             statusPage.google_analytics_tag_id = config.googleAnalyticsId;
-            statusPage.custom_html = config.customHtml;
+            if (process.env.UPTIME_KUMA_ALLOW_CUSTOM_HTML === "1"){
+                statusPage.custom_html = config.customHtml;
+            }
 
             await R.store(statusPage);
 

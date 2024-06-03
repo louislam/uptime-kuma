@@ -107,10 +107,17 @@
                 <!-- Custom HTML -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom HTML") }}</div>
-                    <prism-editor v-model="config.customHtml" class="css-editor" :highlight="highlighter" line-numbers></prism-editor>
-                    <div class="form-text">
-                        {{ $t("customHtmlEnvVar1") }} <code>UPTIME_KUMA_ALLOW_CUSTOM_HTML</code> {{ $t("customHtmlEnvVar2") }} <code>1</code>.
-                    </div>
+                    <prism-editor v-model="config.customHtml" class="css-editor" :highlight="highlighter" line-numbers :readonly="!config.allowEditingCustomHtml"></prism-editor>
+                    <i18n-t v-if="config.allowEditingCustomHtml" tag="div" class="form-text" keypath="customHtmlEnvVarEnabled">
+                        <template #allow_custom_html>
+                            <code>UPTIME_KUMA_ALLOW_CUSTOM_HTML</code>
+                        </template>
+                    </i18n-t>
+                    <i18n-t v-else tag="div" class="form-text" keypath="customHtmlEnvVarDisabled">
+                        <template #allow_custom_html>
+                            <code>UPTIME_KUMA_ALLOW_CUSTOM_HTML=1</code>
+                        </template>
+                    </i18n-t>
                 </div>
 
                 <div class="danger-zone">
