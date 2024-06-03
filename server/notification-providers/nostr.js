@@ -1,4 +1,3 @@
-const { log } = require("../../src/util");
 const NotificationProvider = require("./notification-provider");
 const {
     relayInit,
