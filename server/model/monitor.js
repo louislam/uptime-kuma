@@ -296,7 +296,7 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
-     * @returns {boolean}
+     * @returns {boolean} if cachebusting is enabled
      */
     getCacheBust() {
         return Boolean(this.cacheBust);

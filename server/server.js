@@ -1443,7 +1443,6 @@ let needSetup = false;
             }
         });
 
-
         socket.on("clearEvents", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
