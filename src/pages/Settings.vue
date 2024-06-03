@@ -245,7 +245,7 @@ export default {
 }
 
 footer {
-    color: #aaa;
+    color: $secondary-text;
     font-size: 13px;
     margin-top: 20px;
     padding-bottom: 30px;

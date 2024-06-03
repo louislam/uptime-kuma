@@ -309,7 +309,7 @@ export default {
 }
 
 .word {
-    color: #aaa;
+    color: $secondary-text;
     font-size: 12px;
 }
 

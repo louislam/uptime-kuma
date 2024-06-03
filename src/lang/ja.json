@@ -565,7 +565,7 @@
     "Request Timeout": "リクエストタイムアウト",
     "timeoutAfter": "{0} 秒後にタイムアウト",
     "selectedMonitorCount": "選択済み: {0}",
-    "Long-Lived Access Token": "Long-Lived Access Token",
+    "Long-Lived Access Token": "長期アクセストークン",
     "Invert Keyword": "「含まない」キーワード",
     "Expected Value": "期待値"
 }
