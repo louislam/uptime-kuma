@@ -113,6 +113,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
         UptimeKumaServer.monitorTypeList["dns"] = new DnsMonitorType();
         UptimeKumaServer.monitorTypeList["mqtt"] = new MqttMonitorType();
+        UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -195,7 +196,7 @@ class UptimeKumaServer {
     /**
      * Send list of monitors to client
      * @param {Socket} socket Socket to send list on
-     * @returns {object} List of monitors
+     * @returns {Promise<object>} List of monitors
      */
     async sendMonitorList(socket) {
         let list = await this.getMonitorJSONList(socket.userID);
@@ -227,7 +228,7 @@ class UptimeKumaServer {
     /**
      * Send maintenance list to client
      * @param {Socket} socket Socket.io instance to send to
-     * @returns {object} Maintenance list
+     * @returns {Promise<object>} Maintenance list
      */
     async sendMaintenanceList(socket) {
         return await this.sendMaintenanceListByUserID(socket.userID);
@@ -236,7 +237,7 @@ class UptimeKumaServer {
     /**
      * Send list of maintenances to user
      * @param {number} userID User to send list to
-     * @returns {object} Maintenance list
+     * @returns {Promise<object>} Maintenance list
      */
     async sendMaintenanceListByUserID(userID) {
         let list = await this.getMaintenanceJSONList(userID);
@@ -516,3 +517,4 @@ const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
 const { DnsMonitorType } = require("./monitor-types/dns");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
+const { MongodbMonitorType } = require("./monitor-types/mongodb");

@@ -8,6 +8,7 @@ const User = require("../server/model/user");
 const { io } = require("socket.io-client");
 const { localWebSocketURL } = require("../server/config");
 const args = require("args-parser")(process.argv);
+
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -19,10 +20,10 @@ const main = async () => {
     }
 
     console.log("Connecting the database");
-    Database.initDataDir(args);
-    await Database.connect(false, false, true);
 
     try {
+        Database.initDataDir(args);
+        await Database.connect(false, false, true);
         // No need to actually reset the password for testing, just make sure no connection problem. It is ok for now.
         if (!process.env.TEST_BACKEND) {
             const user = await R.findOne("user");

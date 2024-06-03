@@ -35,6 +35,14 @@
                 </div>
 
                 <div class="my-3">
+                    <label for="auto-refresh-interval" class="form-label">{{ $t("Refresh Interval") }}</label>
+                    <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number" class="form-control" :min="5">
+                    <div class="form-text">
+                        {{ $t("Refresh Interval Description", [config.autoRefreshInterval]) }}
+                    </div>
+                </div>
+
+                <div class="my-3">
                     <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
                     <select id="switch-theme" v-model="config.theme" class="form-select">
                         <option value="auto">{{ $t("Auto") }}</option>
@@ -221,7 +229,7 @@
 
                     <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
                         <font-awesome-icon icon="unlink" />
-                        {{ $t("Unpin") }}
+                        {{ $t("Delete") }}
                     </button>
                 </div>
             </div>
@@ -438,7 +446,6 @@ export default {
             baseURL: "",
             clickedEditButton: false,
             maintenanceList: [],
-            autoRefreshInterval: 5,
             lastUpdateTime: dayjs(),
             updateCountdown: null,
             updateCountdownText: null,
@@ -708,6 +715,13 @@ export default {
             this.$root.publicGroupList = res.data.publicGroupList;
 
             this.loading = false;
+
+            // Configure auto-refresh loop
+            feedInterval = setInterval(() => {
+                this.updateHeartbeatList();
+            }, (this.config.autoRefreshInterval + 10) * 1000);
+
+            this.updateUpdateTimer();
         }).catch( function (error) {
             if (error.response.status === 404) {
                 location.href = "/page-not-found";
@@ -715,13 +729,7 @@ export default {
             console.log(error);
         });
 
-        // Configure auto-refresh loop
         this.updateHeartbeatList();
-        feedInterval = setInterval(() => {
-            this.updateHeartbeatList();
-        }, (this.autoRefreshInterval * 60 + 10) * 1000);
-
-        this.updateUpdateTimer();
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
@@ -797,7 +805,7 @@ export default {
             clearInterval(this.updateCountdown);
 
             this.updateCountdown = setInterval(() => {
-                const countdown = dayjs.duration(this.lastUpdateTime.add(this.autoRefreshInterval, "minutes").add(10, "seconds").diff(dayjs()));
+                const countdown = dayjs.duration(this.lastUpdateTime.add(this.config.autoRefreshInterval, "seconds").add(10, "seconds").diff(dayjs()));
                 if (countdown.as("seconds") < 0) {
                     clearInterval(this.updateCountdown);
                 } else {
