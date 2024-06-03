@@ -130,7 +130,7 @@
                             <!-- Keyword -->
                             <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword' || monitor.type === 'port-tls'" class="my-3">
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
-                                <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
+                                <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" :required="monitor.type !== 'port-tls'">
                                 <div class="form-text">
                                     {{ $t("keywordDescription") }}
                                 </div>

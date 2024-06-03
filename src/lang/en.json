@@ -588,7 +588,7 @@
     "atLeastOneMonitor": "Select at least one affected monitor",
     "passwordNotMatchMsg": "The repeat password does not match.",
     "notificationDescription": "Notifications must be assigned to a monitor to function.",
-    "keywordDescription": "Search keyword in plain HTML or JSON response. The search is case-sensitive.",
+    "keywordDescription": "Search keyword in plain HTML, JSON, or raw response. The search is case-sensitive.",
     "invertKeywordDescription": "Look for the keyword to be absent rather than present.",
     "tcpRequestDescription": "Request sent to the server after establishing the connection. Trailing newlines may be required. JavaScript escape sequences are allowed.",
     "tcpStartTlsDescription": "Start unencrypted and upgrade connection using STARTTLS. Relevant documentation: {rfc2595}, {rfc3207}",
