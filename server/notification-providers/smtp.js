@@ -4,13 +4,13 @@ const { DOWN } = require("../../src/util");
 const { Liquid } = require("liquidjs");
 
 class SMTP extends NotificationProvider {
-
     name = "smtp";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
 
         const config = {
             host: notification.smtpHost,
@@ -76,7 +76,7 @@ class SMTP extends NotificationProvider {
             text: body,
         });
 
-        return "Sent Successfully.";
+        return okMsg;
     }
 
     /**

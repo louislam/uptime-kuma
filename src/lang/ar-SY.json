@@ -1,5 +1,5 @@
 {
-    "languageName": "إنجليزي",
+    "languageName": "العربية",
     "checkEverySecond": "تحقق من كل {0} ثانية",
     "retryCheckEverySecond": "أعد محاولة كل {0} ثانية",
     "resendEveryXTimes": "إعادة تقديم كل {0} مرات",
@@ -712,5 +712,8 @@
     "More info on:": "مزيد من المعلومات حول: {0}",
     "What you can try:": "ماذا تستطيع أن تجرب:",
     "Packet Size": "حجم الحزمة",
-    "confirmUninstallPlugin": "هل أنت متأكد من أنك تريد إلغاء تثبيت هذا المكون الإضافي؟"
+    "confirmUninstallPlugin": "هل أنت متأكد من أنك تريد إلغاء تثبيت هذا المكون الإضافي؟",
+    "settingUpDatabaseMSG": "يرجى الإنتظار ، نقوم بإعداد قاعدة البيانات و قد يستغرق الأمر بعض الوقت.",
+    "setupDatabaseChooseDatabase": "ما هي قاعدة البيانات التي تريد استخدامها؟",
+    "dbName": "إسم قاعدة البيانات"
 }

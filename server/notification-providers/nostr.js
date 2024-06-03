@@ -107,7 +107,7 @@ class Nostr extends NotificationProvider {
     /**
      * Get public keys for recipients
      * @param {string} recipients Newline delimited list of recipients
-     * @returns {nip19.DecodeResult[]} Public keys
+     * @returns {Promise<nip19.DecodeResult[]>} Public keys
      */
     async getPublicKeys(recipients) {
         const recipientsList = recipients.split("\n");
