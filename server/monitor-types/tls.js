@@ -4,6 +4,26 @@ const net = require("net");
 const tls = require("tls");
 const unescape = require("unescape-js");
 
+/**
+ * Encloses a string in double quotes.
+ * @param {string} s String to quote
+ * @returns {string} Quoted string
+ */
+function quote(s) {
+    return JSON.stringify(s);
+}
+
+/**
+ * Truncates and appends an ellipsis (…) to a string if it is longer than a threshold, and encloses
+ * the resulting string in double quotes.
+ * @param {string} s String to ellipsize and/or quote
+ * @returns {string} Ellipsized and/or quoted string
+ */
+function ellipsize(s) {
+    const maxLen = 32;
+    return quote(s.length <= maxLen ? s : `${s.substring(0, maxLen)}…`);
+}
+
 class TlsMonitorType extends MonitorType {
     name = "port-tls";
 
@@ -79,17 +99,17 @@ class TlsMonitorType extends MonitorType {
      */
     processResponse(response, monitor, heartbeat) {
         if (response instanceof Error) {
-            log.info(this.name, "check failed: " + response.message);
+            log.info(this.name, "ERROR: " + response.message);
             throw response;
         }
 
         const [ success, message ] = this.checkResponseSuccess(response, monitor);
         if (success) {
-            log.info(this.name, "check successful: " + message);
+            log.info(this.name, "SUCCESS: " + message);
             heartbeat.msg = message;
             heartbeat.status = UP;
         } else {
-            log.info(this.name, "check failed: " + message);
+            log.info(this.name, "FAILURE: " + message);
             throw new Error(message);
         }
     }
@@ -105,7 +125,7 @@ class TlsMonitorType extends MonitorType {
             // Monitor keyword present => Check if keyword is present/absent in response, depending
             // on whether the 'Invert Keyword' option is enabled.
             const keywordContained = response.includes(monitor.keyword);
-            const message = keywordContained ? "Data contains keyword" : "Data does not contain keyword";
+            const message = `Keyword ${quote(monitor.keyword)} ${keywordContained ? "" : "not "}contained in response ${ellipsize(response)}`;
             return [ keywordContained === !monitor.invertKeyword, message ];
         } else {
             // No monitor keyword => Any response is considered a success.
@@ -122,11 +142,11 @@ class TlsMonitorType extends MonitorType {
      */
     async getResponseFromTlsPort(aborter, tlsSocket, request) {
         if (request) {
-            log.debug(this.name, `sending request: ${JSON.stringify(request)}`);
+            log.debug(this.name, `sending request: ${quote(request)}`);
             tlsSocket.write(request);
         }
 
-        return await this.readData(aborter, tlsSocket);
+        return await this.readData(aborter, tlsSocket, "request response");
     }
 
     /**
@@ -166,9 +186,10 @@ class TlsMonitorType extends MonitorType {
      * Reads available data from the given socket.
      * @param {AbortController}            aborter Abort controller used to abort the read
      * @param {net.Socket | tls.TLSSocket} socket  Socket instance to use
+     * @param {string}                     what    Human-readable name of the data we're waiting for
      * @returns {Promise<string>} Data read from the socket or rejected promise on error
      */
-    readData(aborter, socket) {
+    readData(aborter, socket, what) {
         return new Promise((resolve, reject) => {
             const cleanup = function () {
                 // Pause reading of data (i.e. emission of 'data' events), so that we don't lose
@@ -181,20 +202,20 @@ class TlsMonitorType extends MonitorType {
             };
 
             const onAbort = (_) => {
-                log.debug(this.name, "read aborted");
+                log.debug(this.name, `reading of ${what} aborted`);
                 cleanup();
-                reject(new Error("Timeout"));
+                reject(new Error(`Timeout while reading ${what}`));
             };
 
             const onError = (error) => {
-                log.debug(this.name, `unable to read data: ${error}`);
+                log.debug(this.name, `unable to read ${what} data: ${error.message}`);
                 cleanup();
-                reject(new Error(`Failed to read data: ${error}`));
+                reject(new Error(`Failed to read ${what}: ${error.message}`));
             };
 
             const onData = (data) => {
                 const dataString = data.toString().trim();
-                log.debug(this.name, `read data: '${dataString}'`);
+                log.debug(this.name, `read ${what} data: ${quote(dataString)}`);
                 cleanup();
                 resolve(dataString);
             };
@@ -212,15 +233,16 @@ class TlsMonitorType extends MonitorType {
      * Reads available data from the given socket if it starts with a given prefix.
      * @param {AbortController}            aborter  Abort controller used to abort the read
      * @param {net.Socket | tls.TLSSocket} socket   Socket instance to use
+     * @param {string}                     what     Human-readable name of the data we're waiting for
      * @param {string}                     expected Prefix the response is expected to start with
      * @returns {Promise<string>} Data read from the socket or rejected promise if the response does
      *                            not start with the prefix
      */
-    async expectDataStartsWith(aborter, socket, expected) {
-        const data = await this.readData(aborter, socket);
-        log.debug(this.name, `response data: '${data}', expected: '${expected}'…`);
+    async expectDataStartsWith(aborter, socket, what, expected) {
+        const data = await this.readData(aborter, socket, what);
+        log.debug(this.name, `${what} data: ${quote(data)}, expected prefix: ${quote(expected)}`);
         if (!data.startsWith(expected)) {
-            throw new Error(`Unexpected response. Data: '${data}', Expected: '${expected}'…`);
+            throw new Error(`Unexpected ${what}: ${ellipsize(data)} does not start with ${quote(expected)}`);
         }
     }
 
@@ -232,13 +254,13 @@ class TlsMonitorType extends MonitorType {
      * @returns {Promise<void>} Rejected promise if the STARTTLS process failed
      */
     async startTls(aborter, socket, tlsOptions) {
-        log.debug(this.name, `waiting for prompt ${JSON.stringify(tlsOptions.prompt)}…`);
-        await this.expectDataStartsWith(aborter, socket, tlsOptions.prompt);
-        log.debug(this.name, `got prompt. sending STARTTLS command ${JSON.stringify(tlsOptions.command)}`);
+        log.debug(this.name, `starttls: waiting for prompt ${quote(tlsOptions.prompt)}…`);
+        await this.expectDataStartsWith(aborter, socket, "STARTTLS prompt", tlsOptions.prompt);
+        log.debug(this.name, `starttls: got prompt. sending command ${quote(tlsOptions.command)}`);
         socket.write(tlsOptions.command);
-        log.debug(this.name, `sent command. waiting for response ${JSON.stringify(tlsOptions.response)}…`);
-        await this.expectDataStartsWith(aborter, socket, tlsOptions.response);
-        log.debug(this.name, "got response");
+        log.debug(this.name, `starttls: sent command. waiting for response ${quote(tlsOptions.response)}…`);
+        await this.expectDataStartsWith(aborter, socket, "STARTTLS response", tlsOptions.response);
+        log.debug(this.name, "starttls: got response");
     }
 
     /**
