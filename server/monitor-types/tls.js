@@ -2,6 +2,7 @@ const { MonitorType } = require("./monitor-type");
 const { log, UP } = require("../../src/util");
 const net = require("net");
 const tls = require("tls");
+const unescape = require("unescape-js");
 
 class TlsMonitorType extends MonitorType {
     name = "port-tls";
@@ -12,19 +13,41 @@ class TlsMonitorType extends MonitorType {
     async check(monitor, heartbeat, _server) {
         const abortController = new AbortController();
 
-        const timeoutMs = (monitor.interval || 30) * 1000 * 0.8;
+        const intervalS = monitor.interval || 30;
+        const timeoutMs = intervalS * 1000 * 0.8;
         const timeoutID = setTimeout(() => {
             log.info(this.name, `timeout after ${timeoutMs} ms`);
             abortController.abort();
         }, timeoutMs);
 
-        const tlsSocket = await this.connect(abortController.signal, monitor.hostname, monitor.port, monitor.tcpStartTls);
+        // Create a set of TLS options for better readability and to avoid passing the Monitor
+        // object into what is fairly generic STARTTLS code.
+        /**
+         * @typedef TlsOptions
+         * @type {object}
+         * @property {string}  hostname    - Host name to connect to
+         * @property {int}     port        - TCP port to connect to
+         * @property {boolean} useStartTls - True if STARTTLS should be used, false for native TLS
+         * @property {string}  prompt      - The server prompt to wait for before initiating STARTTLS
+         * @property {string}  command     - The command to send to initiate STARTTLS
+         * @property {string}  response    - The server response that indicates TLS negotiation readiness
+         */
+        const tlsOptions = {
+            hostname: monitor.hostname,
+            port: monitor.port,
+            useStartTls: monitor.tcpStartTls,
+            prompt: unescape(monitor.tcpStartTlsPrompt || ""),
+            command: unescape(monitor.tcpStartTlsCommand || ""),
+            response: unescape(monitor.tcpStartTlsResponse || ""),
+        };
+
+        const tlsSocket = await this.connect(abortController.signal, tlsOptions);
         let tlsSocketClosed = false;
         tlsSocket.on("close", () => {
             tlsSocketClosed = true;
         });
 
-        const request = monitor.tcpRequest || null;
+        const request = unescape(monitor.tcpRequest || "");
         const result = await this.getResponseFromTlsPort(abortController.signal, tlsSocket, request)
             .then((response) => {
                 clearTimeout(timeoutID);
@@ -99,7 +122,7 @@ class TlsMonitorType extends MonitorType {
      */
     async getResponseFromTlsPort(aborter, tlsSocket, request) {
         if (request) {
-            log.debug(this.name, `sending request: '${request}'`);
+            log.debug(this.name, `sending request: ${JSON.stringify(request)}`);
             tlsSocket.write(request);
         }
 
@@ -108,21 +131,19 @@ class TlsMonitorType extends MonitorType {
 
     /**
      * Connects to a given host and port using native TLS or STARTTLS.
-     * @param {AbortController} aborter     Abort controller used to abort the connection
-     * @param {string}          hostname    Host to connect to
-     * @param {int}             port        TCP port to connect to
-     * @param {boolean}         useStartTls True if STARTTLS should be used, false for native TLS
+     * @param {AbortController} aborter    Abort controller used to abort the connection
+     * @param {TlsOptions}      tlsOptions TLS options to use for the connection
      * @returns {Promise<tls.TLSSocket>} TLS socket instance if successful or rejected promise on error
      */
-    async connect(aborter, hostname, port, useStartTls) {
-        if (useStartTls) {
+    async connect(aborter, tlsOptions) {
+        if (tlsOptions.useStartTls) {
             const socket = new net.Socket({
                 signal: aborter
             });
-            socket.connect(port, hostname);
+            socket.connect(tlsOptions.port, tlsOptions.hostname);
             log.debug(this.name, "TCP connected");
 
-            await this.startTls(aborter, socket);
+            await this.startTls(aborter, socket, tlsOptions);
             log.debug(this.name, "STARTTLS prelude done");
 
             const tlsSocket = await this.upgradeConnection(socket);
@@ -132,9 +153,9 @@ class TlsMonitorType extends MonitorType {
             });
             return tlsSocket;
         } else {
-            const tlsSocket = tls.connect(port, hostname, {
+            const tlsSocket = tls.connect(tlsOptions.port, tlsOptions.hostname, {
                 signal: aborter,
-                servername: hostname
+                servername: tlsOptions.hostname
             });
             log.debug(this.name, "TLS connected");
             return tlsSocket;
@@ -205,17 +226,19 @@ class TlsMonitorType extends MonitorType {
 
     /**
      * Performs STARTTLS on the given socket.
-     * @param {AbortController}            aborter Abort controller used to abort the STARTTLS process
-     * @param {net.Socket | tls.TLSSocket} socket  Socket instance to use
+     * @param {AbortController}            aborter    Abort controller used to abort the STARTTLS process
+     * @param {net.Socket | tls.TLSSocket} socket     Socket instance to use
+     * @param {TlsOptions}                 tlsOptions TLS options to use for the connection
      * @returns {Promise<void>} Rejected promise if the STARTTLS process failed
      */
-    async startTls(aborter, socket) {
-        log.debug(this.name, "waiting for prompt");
-        await this.expectDataStartsWith(aborter, socket, "220 ");
-        log.debug(this.name, "sending STARTTLS");
-        socket.write("STARTTLS\n");
-        log.debug(this.name, "waiting for ready-to-TLS");
-        await this.expectDataStartsWith(aborter, socket, "220 ");
+    async startTls(aborter, socket, tlsOptions) {
+        log.debug(this.name, `waiting for prompt ${JSON.stringify(tlsOptions.prompt)}…`);
+        await this.expectDataStartsWith(aborter, socket, tlsOptions.prompt);
+        log.debug(this.name, `got prompt. sending STARTTLS command ${JSON.stringify(tlsOptions.command)}`);
+        socket.write(tlsOptions.command);
+        log.debug(this.name, `sent command. waiting for response ${JSON.stringify(tlsOptions.response)}…`);
+        await this.expectDataStartsWith(aborter, socket, tlsOptions.response);
+        log.debug(this.name, "got response");
     }
 
     /**
