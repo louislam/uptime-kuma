@@ -228,8 +228,7 @@ async function testRemoteBrowser(remoteBrowserURL) {
         throw new Error(e.message);
     }
 }
-class RealBrowserMonitorType extends MonitorType {
-
+export class RealBrowserMonitorType extends MonitorType {
     name = "real-browser";
 
     /**
@@ -266,7 +265,6 @@ class RealBrowserMonitorType extends MonitorType {
 }
 
 module.exports = {
-    RealBrowserMonitorType,
     testChrome,
     resetChrome,
     testRemoteBrowser,
