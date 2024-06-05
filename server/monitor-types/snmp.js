@@ -29,11 +29,7 @@ class SNMPMonitorType extends MonitorType {
 
             const varbinds = await new Promise((resolve, reject) => {
                 session.get([ monitor.snmpOid ], (error, varbinds) => {
-                    if (error) {
-                        reject(error);
-                    } else {
-                        resolve(varbinds);
-                    }
+                    error ? reject(error) : resolve(varbinds);
                 });
             });
             log.debug("monitor", `SNMP: Received varbinds (Type: ${snmp.ObjectType[varbinds[0].type]} Value: ${varbinds[0].value}`);
