@@ -171,21 +171,6 @@
                                 </div>
                             </div>
 
-                            <!-- Json Query -->
-                            <div v-if="monitor.type === 'json-query'" class="my-3">
-                                <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
-                                <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
-
-                                <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
-                                    <a href="https://jsonata.org/">jsonata.org</a>
-                                    <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
-                                </i18n-t>
-                                <br>
-
-                                <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
-                                <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
-                            </div>
-
                             <!-- Game -->
                             <!-- GameDig only -->
                             <div v-if="monitor.type === 'gamedig'" class="my-3">
@@ -251,7 +236,7 @@
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
                             <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
-                                <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
+                                <label for="hostname" class="form-label">{{ $t("Hostname or IP Address") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
                             </div>
 
@@ -278,6 +263,29 @@
                             </div>
 
                             <div v-if="monitor.type === 'snmp'" class="my-3">
+                                <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
+                                <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
+                                    <option value="1">
+                                        SNMPv1
+                                    </option>
+                                    <option value="2c">
+                                        SNMPv2c
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Json Query -->
+                            <!-- For Json Query / SNMP -->
+                            <div v-if="monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
+                                <div v-if="monitor.jsonPathOperator == 'custom'" class="my-2">
+                                    <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
+                                    <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
+                                        <a href="https://jsonata.org/">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
+                                    </i18n-t>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$.value" required>
+                                </div>
+
                                 <div class="d-flex align-items-start">
                                     <div class="me-2">
                                         <label for="json_path_operator" class="form-label">{{ $t("Condition") }}</label>
@@ -288,6 +296,7 @@
                                             <option value="<=">&lt;=</option>
                                             <option value="==">==</option>
                                             <option value="contains">contains</option>
+                                            <option value="custom">custom</option>
                                         </select>
                                     </div>
                                     <div class="flex-grow-1">
@@ -296,18 +305,6 @@
                                         <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div v-if="monitor.type === 'snmp'" class="my-3">
-                                <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
-                                <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
-                                    <option value="1">
-                                        SNMPv1
-                                    </option>
-                                    <option value="2c">
-                                        SNMPv2c
-                                    </option>
-                                </select>
                             </div>
 
                             <!-- DNS Resolver Server -->
@@ -1331,6 +1328,13 @@ message HealthCheckResponse {
             // Set default SNMP version
             if (!this.monitor.snmpVersion) {
                 this.monitor.snmpVersion = "1";
+            }
+
+            // Set default condition for for jsonPathOperator
+            if (this.monitor.type === "json-query") {
+                this.monitor.jsonPathOperator = "custom";
+            } else {
+                this.monitor.jsonPathOperator = "==";
             }
 
             // Get the game list from server

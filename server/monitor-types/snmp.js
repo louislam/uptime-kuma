@@ -1,7 +1,6 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, log } = require("../../src/util");
+const { UP, DOWN, log, evaluateJsonQuery } = require("../../src/util");
 const snmp = require("net-snmp");
-const jsonata = require("jsonata");
 
 class SNMPMonitorType extends MonitorType {
     name = "snmp";
@@ -45,46 +44,23 @@ class SNMPMonitorType extends MonitorType {
             // We restrict querying to one OID per monitor, therefore `varbinds[0]` will always contain the value we're interested in.
             const value = varbinds[0].value;
 
-            // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
-            const expectedValue = isNaN(monitor.expectedValue) ? monitor.expectedValue.toString() : parseFloat(monitor.expectedValue);
-            let snmpResponse = isNaN(value) ? value.toString() : parseFloat(value);
+            const result = await evaluateJsonQuery(value, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
 
-            let jsonQueryExpression;
-            switch (monitor.jsonPathOperator) {
-                case ">":
-                case ">=":
-                case "<":
-                case "<=":
-                    jsonQueryExpression = `$.value ${monitor.jsonPathOperator} $.control`;
-                    break;
-                case "==":
-                    jsonQueryExpression = "$string($.value) = $string($.control)";
-                    break;
-                case "contains":
-                    jsonQueryExpression = "$contains($string($.value), $string($.control))";
-                    break;
-                default:
-                    throw new Error(`Invalid condition ${monitor.jsonPathOperator}`);
-            }
-
-            const expression = jsonata(jsonQueryExpression);
-            const evaluation = await expression.evaluate({
-                value: snmpResponse,
-                control: expectedValue
-            });
             heartbeat.status = result ? UP : DOWN;
-            heartbeat.msg = `SNMP value ${result ? "passes" : "does not pass"} comparison: ${snmpValue} ${monitor.snmpCondition} ${snmpControlValue}`;
+            heartbeat.msg = `SNMP value ${result ? "passes" : "does not pass"} `;
+            heartbeat.msg += (monitor.jsonPathOperator === "custom")
+                ? `custom query. Query result: ${result}. Expected Value: ${monitor.expectedValue}.`
+                : `comparison: ${value.toString()} ${monitor.jsonPathOperator} ${monitor.expectedValue}.`;
 
         } catch (err) {
             heartbeat.status = DOWN;
-            heartbeat.msg = `SNMP Error: ${err.message}`;
+            heartbeat.msg = `Error: ${err.message}`;
         } finally {
             if (session) {
                 session.close();
             }
         }
     }
-
 }
 
 module.exports = {

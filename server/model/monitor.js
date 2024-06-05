@@ -2,7 +2,7 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT
+    SQL_DATETIME_FORMAT, evaluateJsonQuery
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
@@ -17,7 +17,6 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
-const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -610,15 +609,13 @@ class Monitor extends BeanModel {
                             }
                         }
 
-                        let expression = jsonata(this.jsonPath);
+                        const result = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
 
-                        let result = await expression.evaluate(data);
-
-                        if (result.toString() === this.expectedValue) {
+                        if (result) {
                             bean.msg += ", expected value is found";
                             bean.status = UP;
                         } else {
-                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
+                            throw new Error(`${bean.msg}, but value is not equal to expected value, value was: [${result}]`);
                         }
                     }
 
