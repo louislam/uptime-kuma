@@ -32,7 +32,7 @@ class SNMPMonitorType extends MonitorType {
                     error ? reject(error) : resolve(varbinds);
                 });
             });
-            log.debug("monitor", `SNMP: Received varbinds (Type: ${snmp.ObjectType[varbinds[0].type]} Value: ${varbinds[0].value}`);
+            log.debug("monitor", `SNMP: Received varbinds (Type: ${snmp.ObjectType[varbinds[0].type]} Value: ${varbinds[0].value})`);
 
             if (varbinds.length === 0) {
                 throw new Error(`No varbinds returned from SNMP session (OID: ${monitor.snmpOid})`);
