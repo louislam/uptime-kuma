@@ -832,8 +832,7 @@ let needSetup = false;
                 bean.remote_browser = monitor.remote_browser;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;
-                bean.snmpCondition = monitor.snmpCondition;
-                bean.snmpControlValue = monitor.snmpControlValue;
+                bean.jsonPathOperator = monitor.jsonPathOperator;
                 bean.timeout = monitor.timeout;
 
                 bean.validate();

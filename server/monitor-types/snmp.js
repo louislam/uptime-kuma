@@ -50,16 +50,16 @@ class SNMPMonitorType extends MonitorType {
             const value = varbinds[0].value;
 
             // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
-            let snmpValue = isNaN(value) ? value.toString() : parseFloat(value);
-            let snmpControlValue = isNaN(monitor.snmpControlValue) ? monitor.snmpControlValue.toString() : parseFloat(monitor.snmpControlValue);
+            const expectedValue = isNaN(monitor.expectedValue) ? monitor.expectedValue.toString() : parseFloat(monitor.expectedValue);
+            let snmpResponse = isNaN(value) ? value.toString() : parseFloat(value);
 
             let jsonQueryExpression;
-            switch (monitor.snmpCondition) {
+            switch (monitor.jsonPathOperator) {
                 case ">":
                 case ">=":
                 case "<":
                 case "<=":
-                    jsonQueryExpression = `$.value ${monitor.snmpCondition} $.control`;
+                    jsonQueryExpression = `$.value ${monitor.jsonPathOperator} $.control`;
                     break;
                 case "==":
                     jsonQueryExpression = "$string($.value) = $string($.control)";
@@ -68,13 +68,13 @@ class SNMPMonitorType extends MonitorType {
                     jsonQueryExpression = "$contains($string($.value), $string($.control))";
                     break;
                 default:
-                    throw new Error(`Invalid condition ${monitor.snmpCondition}`);
+                    throw new Error(`Invalid condition ${monitor.jsonPathOperator}`);
             }
 
             const expression = jsonata(jsonQueryExpression);
-            const result = await expression.evaluate({
-                value: snmpValue,
-                control: monitor.snmpControlValue
+            const evaluation = await expression.evaluate({
+                value: snmpResponse,
+                control: expectedValue
             });
             heartbeat.status = result ? UP : DOWN;
             heartbeat.msg = `SNMP value ${result ? "passes" : "does not pass"} comparison: ${snmpValue} ${monitor.snmpCondition} ${snmpControlValue}`;

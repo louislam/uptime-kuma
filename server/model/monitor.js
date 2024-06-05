@@ -162,8 +162,7 @@ class Monitor extends BeanModel {
             screenshot,
             remote_browser: this.remote_browser,
             snmpOid: this.snmpOid,
-            snmpCondition: this.snmpCondition,
-            snmpControlValue: this.snmpControlValue,
+            jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
         };
 
