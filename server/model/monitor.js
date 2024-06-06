@@ -609,13 +609,13 @@ class Monitor extends BeanModel {
                             }
                         }
 
-                        const result = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
+                        const { status, evaluation } = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
 
-                        if (result) {
+                        if (status) {
                             bean.msg += ", expected value is found";
                             bean.status = UP;
                         } else {
-                            throw new Error(`${bean.msg}, but value is not equal to expected value, value was: [${result}]`);
+                            throw new Error(`${bean.msg}, but value is not equal to expected value, value was: [${evaluation}]`);
                         }
                     }
 

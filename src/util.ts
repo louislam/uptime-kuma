@@ -651,20 +651,18 @@ export function intHash(str : string, length = 10) : number {
  * @param jsonPath The JSON path or custom JSON query expression.
  * @param jsonPathOperator The operator to use for comparison.
  * @param expectedValue The expected value to compare against.
- * @returns The result of the evaluation.
+ * @returns An object containing the status and the evaluation result.
  * @throws Error if the evaluation returns undefined.
  */
-export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOperator: string, expectedValue: any): Promise<boolean> {
-
+export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOperator: string, expectedValue: any): Promise<{ status: boolean; evaluation: any }> {
     // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
     const expected = isNaN(expectedValue) ? expectedValue.toString() : parseFloat(expectedValue);
-    let response = isNaN(data) ? data.toString() : parseFloat(data);
 
+    let response: any;
     try {
-        // Attempt to parse data as JSON
-        response = JSON.parse(response);
-    } catch (_) {
-        // Failed to parse as JSON, continue with the original value
+        response = JSON.parse(data);
+    } catch {
+        response = typeof data === "number" || typeof data === "object" ? data : data.toString();
     }
 
     let jsonQueryExpression;
@@ -690,18 +688,27 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
 
     // Evaluate the JSON Query Expression
     const expression = jsonata(jsonQueryExpression);
-    const evaluation = await expression.evaluate({
-        value: response,
-        control: expected
-    });
+
+    let evaluation;
+    if (jsonPathOperator === "custom") {
+        evaluation = await expression.evaluate(response);
+    } else {
+        evaluation = await expression.evaluate({
+            value: response,
+            control: expectedValue
+        });
+    }
 
     if (evaluation === undefined) {
         throw new Error("Query evaluation returned undefined. Check your query syntax and the structure of the response data.");
     }
 
-    const result = (jsonPathOperator === "custom")
+    const status = (jsonPathOperator === "custom")
         ? evaluation.toString() === expected.toString()
         : evaluation;
 
-    return result;
+    return {
+        status,
+        evaluation
+    };
 }

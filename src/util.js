@@ -440,9 +440,12 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
     if (evaluation === undefined) {
         throw new Error("Query evaluation returned undefined. Check your query syntax and the structure of the response data.");
     }
-    const result = (jsonPathOperator === "custom")
+    const status = (jsonPathOperator === "custom")
         ? evaluation.toString() === expected.toString()
         : evaluation;
-    return result;
+    return {
+        status,
+        evaluation
+    };
 }
 exports.evaluateJsonQuery = evaluateJsonQuery;

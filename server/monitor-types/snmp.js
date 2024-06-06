@@ -44,12 +44,12 @@ class SNMPMonitorType extends MonitorType {
             // We restrict querying to one OID per monitor, therefore `varbinds[0]` will always contain the value we're interested in.
             const value = varbinds[0].value;
 
-            const result = await evaluateJsonQuery(value, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
+            const { status, evaluation } = await evaluateJsonQuery(value, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
 
-            heartbeat.status = result ? UP : DOWN;
-            heartbeat.msg = `SNMP value ${result ? "passes" : "does not pass"} `;
+            heartbeat.status = status ? UP : DOWN;
+            heartbeat.msg = `SNMP value ${status ? "passes" : "does not pass"} `;
             heartbeat.msg += (monitor.jsonPathOperator === "custom")
-                ? `custom query. Query result: ${result}. Expected Value: ${monitor.expectedValue}.`
+                ? `custom query. Query result: ${evaluation}. Expected Value: ${monitor.expectedValue}.`
                 : `comparison: ${value.toString()} ${monitor.jsonPathOperator} ${monitor.expectedValue}.`;
 
         } catch (err) {
