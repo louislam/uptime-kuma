@@ -399,11 +399,12 @@ function intHash(str, length = 10) {
 exports.intHash = intHash;
 async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue) {
     const expected = isNaN(expectedValue) ? expectedValue.toString() : parseFloat(expectedValue);
-    let response = isNaN(data) ? data.toString() : parseFloat(data);
+    let response;
     try {
-        response = JSON.parse(response);
+        response = JSON.parse(data);
     }
-    catch (_) {
+    catch (_a) {
+        response = typeof data === "number" || typeof data === "object" ? data : data.toString();
     }
     let jsonQueryExpression;
     switch (jsonPathOperator) {
