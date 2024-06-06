@@ -427,10 +427,16 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
             throw new Error(`Invalid condition ${jsonPathOperator}`);
     }
     const expression = jsonata(jsonQueryExpression);
-    const evaluation = await expression.evaluate({
-        value: response,
-        control: expected
-    });
+    let evaluation;
+    if (jsonPathOperator === "custom") {
+        evaluation = await expression.evaluate(response);
+    }
+    else {
+        evaluation = await expression.evaluate({
+            value: response,
+            control: expectedValue
+        });
+    }
     if (evaluation === undefined) {
         throw new Error("Query evaluation returned undefined. Check your query syntax and the structure of the response data.");
     }
