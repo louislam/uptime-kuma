@@ -3,7 +3,7 @@ const { log, UP } = require("../../src/util");
 const mqtt = require("mqtt");
 const jsonata = require("jsonata");
 
-export class MqttMonitorType extends MonitorType {
+class MqttMonitorType extends MonitorType {
     name = "mqtt";
 
     /**

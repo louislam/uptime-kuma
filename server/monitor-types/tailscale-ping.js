@@ -2,7 +2,7 @@ const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
 const childProcessAsync = require("promisify-child-process");
 
-export class TailscalePing extends MonitorType {
+class TailscalePing extends MonitorType {
     name = "tailscale-ping";
 
     /**
@@ -71,3 +71,7 @@ export class TailscalePing extends MonitorType {
         }
     }
 }
+
+module.exports = {
+    TailscalePing,
+};

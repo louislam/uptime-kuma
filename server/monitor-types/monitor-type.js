@@ -1,4 +1,4 @@
-export class MonitorType {
+class MonitorType {
     name = undefined;
 
     /**
@@ -12,3 +12,7 @@ export class MonitorType {
         throw new Error("You need to override check()");
     }
 }
+
+module.exports = {
+    MonitorType,
+};

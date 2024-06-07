@@ -3,7 +3,7 @@ const { UP } = require("../../src/util");
 const { MongoClient } = require("mongodb");
 const jsonata = require("jsonata");
 
-export class MongodbMonitorType extends MonitorType {
+class MongodbMonitorType extends MonitorType {
     name = "mongodb";
 
     /**
@@ -57,3 +57,7 @@ export class MongodbMonitorType extends MonitorType {
         return result;
     }
 }
+
+module.exports = {
+    MongodbMonitorType,
+};

@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
 
-export class DnsMonitorType extends MonitorType {
+class DnsMonitorType extends MonitorType {
     name = "dns";
 
     /**
@@ -49,3 +49,7 @@ export class DnsMonitorType extends MonitorType {
         heartbeat.status = UP;
     }
 }
+
+module.exports = {
+    DnsMonitorType,
+};
