@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 
-export class GrpcKeywordMonitorType extends MonitorType {
+class GrpcKeywordMonitorType extends MonitorType {
     name = "grpc-keyword";
 
     /**
@@ -84,3 +84,7 @@ export class GrpcKeywordMonitorType extends MonitorType {
         });
     }
 }
+
+module.exports = {
+    GrpcKeywordMonitorType,
+};
