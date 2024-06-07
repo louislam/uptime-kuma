@@ -663,49 +663,48 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
         response = typeof data === "number" || typeof data === "object" ? data : data.toString();
     }
 
-    // If a JSON path is provided, pre-evaluate the data using it.
-    if (jsonPath && typeof data === "object") {
-        try {
-            response = await jsonata(jsonPath).evaluate(response);
-        } catch (err: any) {
-            throw new Error(`Error evaluating JSON query: ${err.message}`);
+    try {
+        // If a JSON path is provided, pre-evaluate the data using it.
+        response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
+
+        // Perform the comparison logic using the chosen operator
+        let jsonQueryExpression;
+        switch (jsonPathOperator) {
+            case ">":
+            case ">=":
+            case "<":
+            case "<=":
+                jsonQueryExpression = `$.value ${jsonPathOperator} $.expected`;
+                break;
+            case "!=":
+                jsonQueryExpression = "$string($.value) != $string($.expected)";
+                break;
+            case "==":
+                jsonQueryExpression = "$string($.value) = $string($.expected)";
+                break;
+            case "contains":
+                jsonQueryExpression = "$contains($string($.value), $string($.expected))";
+                break;
+            default:
+                throw new Error(`Invalid condition ${jsonPathOperator}`);
         }
+
+        // Evaluate the JSON Query Expression
+        const expression = jsonata(jsonQueryExpression);
+        const status = await expression.evaluate({
+            value: response,
+            expected: expectedValue
+        });
+
+        if (response === undefined || status === undefined) {
+            throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
+        }
+
+        return {
+            status,  // The evaluation of the json query
+            response // The response from the server or result from initial json-query evaluation
+        };
+    } catch (err: any) {
+        throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
-
-    // Perform the comparison logic using the chosen operator
-    // Perform the comparison logic using the chosen operator
-    let jsonQueryExpression;
-    switch (jsonPathOperator) {
-        case ">":
-        case ">=":
-        case "<":
-        case "<=":
-        case "!=":
-            jsonQueryExpression = `$.value ${jsonPathOperator} $.expected`;
-            break;
-        case "==":
-            jsonQueryExpression = "$string($.value) = $string($.expected)";
-            break;
-        case "contains":
-            jsonQueryExpression = "$contains($string($.value), $string($.expected))";
-            break;
-        default:
-            throw new Error(`Invalid condition ${jsonPathOperator}`);
-    }
-
-    // Evaluate the JSON Query Expression
-    const expression = jsonata(jsonQueryExpression);
-    const status = await expression.evaluate({
-        value: response.toString(),
-        expected: expectedValue.toString()
-    });
-
-    if (response === undefined || status === undefined) {
-        throw new Error("Query evaluation returned undefined. Check your query syntax and the structure of the response data.");
-    }
-
-    return {
-        status,  // The evaluation of the json query
-        response // The response from the server or result from initial json-query evaluation
-    };
 }

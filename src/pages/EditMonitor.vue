@@ -301,7 +301,7 @@
                                     </div>
                                     <div class="flex-grow-1">
                                         <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
-                                        <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '=='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
+                                        <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '==' && monitor.jsonPathOperator !== '!='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
                                         <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                                     </div>
                                 </div>
