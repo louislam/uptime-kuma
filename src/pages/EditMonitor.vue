@@ -277,13 +277,13 @@
                             <!-- Json Query -->
                             <!-- For Json Query / SNMP -->
                             <div v-if="monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
-                                <div v-if="monitor.jsonPathOperator == 'custom'" class="my-2">
+                                <div class="my-2">
                                     <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
                                     <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
                                         <a href="https://jsonata.org/">jsonata.org</a>
                                         <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
                                     </i18n-t>
-                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$.value" required>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
                                 </div>
 
                                 <div class="d-flex align-items-start">
@@ -294,14 +294,14 @@
                                             <option value=">=">&gt;=</option>
                                             <option value="<">&lt;</option>
                                             <option value="<=">&lt;=</option>
+                                            <option value="!=">&#33;=</option>
                                             <option value="==">==</option>
                                             <option value="contains">contains</option>
-                                            <option value="custom">custom</option>
                                         </select>
                                     </div>
                                     <div class="flex-grow-1">
-                                        <label for="expectedValue" class="form-label">{{ $t("Expected Value (Control)") }}</label>
-                                        <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '==' && monitor.jsonPathOperator !== 'custom'" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
+                                        <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                        <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '=='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
                                         <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                                     </div>
                                 </div>
@@ -1330,10 +1330,13 @@ message HealthCheckResponse {
                 this.monitor.snmpVersion = "1";
             }
 
+            // Set default jsonPath
+            if (!this.monitor.jsonPath) {
+                this.monitor.jsonPath = "$";
+            }
+
             // Set default condition for for jsonPathOperator
-            if (this.monitor.type === "json-query") {
-                this.monitor.jsonPathOperator = "custom";
-            } else {
+            if (!this.monitor.jsonPathOperator) {
                 this.monitor.jsonPathOperator = "==";
             }
 

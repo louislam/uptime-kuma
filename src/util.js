@@ -398,7 +398,6 @@ function intHash(str, length = 10) {
 }
 exports.intHash = intHash;
 async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue) {
-    const expected = isNaN(expectedValue) ? expectedValue.toString() : parseFloat(expectedValue);
     let response;
     try {
         response = JSON.parse(data);
@@ -406,46 +405,43 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
     catch (_a) {
         response = typeof data === "number" || typeof data === "object" ? data : data.toString();
     }
+    if (jsonPath && typeof data === "object") {
+        try {
+            response = await jsonata(jsonPath).evaluate(response);
+        }
+        catch (err) {
+            throw new Error(`Error evaluating JSON query: ${err.message}`);
+        }
+    }
     let jsonQueryExpression;
     switch (jsonPathOperator) {
         case ">":
         case ">=":
         case "<":
         case "<=":
-            jsonQueryExpression = `$.value ${jsonPathOperator} $.control`;
+        case "!=":
+            jsonQueryExpression = `$.value ${jsonPathOperator} $.expected`;
             break;
         case "==":
-            jsonQueryExpression = "$string($.value) = $string($.control)";
+            jsonQueryExpression = "$string($.value) = $string($.expected)";
             break;
         case "contains":
-            jsonQueryExpression = "$contains($string($.value), $string($.control))";
-            break;
-        case "custom":
-            jsonQueryExpression = jsonPath;
+            jsonQueryExpression = "$contains($string($.value), $string($.expected))";
             break;
         default:
             throw new Error(`Invalid condition ${jsonPathOperator}`);
     }
     const expression = jsonata(jsonQueryExpression);
-    let evaluation;
-    if (jsonPathOperator === "custom") {
-        evaluation = await expression.evaluate(response);
-    }
-    else {
-        evaluation = await expression.evaluate({
-            value: response,
-            control: expectedValue
-        });
-    }
-    if (evaluation === undefined) {
+    const status = await expression.evaluate({
+        value: response.toString(),
+        expected: expectedValue.toString()
+    });
+    if (response === undefined || status === undefined) {
         throw new Error("Query evaluation returned undefined. Check your query syntax and the structure of the response data.");
     }
-    const status = (jsonPathOperator === "custom")
-        ? evaluation.toString() === expected.toString()
-        : evaluation;
     return {
         status,
-        evaluation
+        response
     };
 }
 exports.evaluateJsonQuery = evaluateJsonQuery;

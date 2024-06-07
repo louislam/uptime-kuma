@@ -600,23 +600,12 @@ class Monitor extends BeanModel {
                     } else if (this.type === "json-query") {
                         let data = res.data;
 
-                        // convert data to object
-                        if (typeof data === "string" && res.headers["content-type"] !== "application/json") {
-                            try {
-                                data = JSON.parse(data);
-                            } catch (_) {
-                                // Failed to parse as JSON, just process it as a string
-                            }
-                        }
+                        const { status, response } = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
 
-                        const { status, evaluation } = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
+                        bean.status = status ? UP : DOWN;
+                        bean.msg = `JSON query ${status ? "passes" : "does not pass"} `;
+                        bean.msg += `comparison: ${response} ${this.jsonPathOperator} ${this.expectedValue}.`;
 
-                        if (status) {
-                            bean.msg += ", expected value is found";
-                            bean.status = UP;
-                        } else {
-                            throw new Error(`${bean.msg}, but value is not equal to expected value, value was: [${evaluation}]`);
-                        }
                     }
 
                 } else if (this.type === "port") {

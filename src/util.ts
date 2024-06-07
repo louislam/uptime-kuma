@@ -654,10 +654,8 @@ export function intHash(str : string, length = 10) : number {
  * @returns An object containing the status and the evaluation result.
  * @throws Error if the evaluation returns undefined.
  */
-export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOperator: string, expectedValue: any): Promise<{ status: boolean; evaluation: any }> {
-    // Check if inputs are numeric. If not, re-parse as strings. This ensures comparisons are handled correctly.
-    const expected = isNaN(expectedValue) ? expectedValue.toString() : parseFloat(expectedValue);
-
+export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOperator: string, expectedValue: any): Promise<{ status: boolean; response: any }> {
+    // Attempt to parse data as JSON; if unsuccessful, handle based on data type.
     let response: any;
     try {
         response = JSON.parse(data);
@@ -665,22 +663,31 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
         response = typeof data === "number" || typeof data === "object" ? data : data.toString();
     }
 
+    // If a JSON path is provided, pre-evaluate the data using it.
+    if (jsonPath && typeof data === "object") {
+        try {
+            response = await jsonata(jsonPath).evaluate(response);
+        } catch (err: any) {
+            throw new Error(`Error evaluating JSON query: ${err.message}`);
+        }
+    }
+
+    // Perform the comparison logic using the chosen operator
+    // Perform the comparison logic using the chosen operator
     let jsonQueryExpression;
     switch (jsonPathOperator) {
         case ">":
         case ">=":
         case "<":
         case "<=":
-            jsonQueryExpression = `$.value ${jsonPathOperator} $.control`;
+        case "!=":
+            jsonQueryExpression = `$.value ${jsonPathOperator} $.expected`;
             break;
         case "==":
-            jsonQueryExpression = "$string($.value) = $string($.control)";
+            jsonQueryExpression = "$string($.value) = $string($.expected)";
             break;
         case "contains":
-            jsonQueryExpression = "$contains($string($.value), $string($.control))";
-            break;
-        case "custom":
-            jsonQueryExpression = jsonPath;
+            jsonQueryExpression = "$contains($string($.value), $string($.expected))";
             break;
         default:
             throw new Error(`Invalid condition ${jsonPathOperator}`);
@@ -688,27 +695,17 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
 
     // Evaluate the JSON Query Expression
     const expression = jsonata(jsonQueryExpression);
+    const status = await expression.evaluate({
+        value: response.toString(),
+        expected: expectedValue.toString()
+    });
 
-    let evaluation;
-    if (jsonPathOperator === "custom") {
-        evaluation = await expression.evaluate(response);
-    } else {
-        evaluation = await expression.evaluate({
-            value: response,
-            control: expectedValue
-        });
-    }
-
-    if (evaluation === undefined) {
+    if (response === undefined || status === undefined) {
         throw new Error("Query evaluation returned undefined. Check your query syntax and the structure of the response data.");
     }
 
-    const status = (jsonPathOperator === "custom")
-        ? evaluation.toString() === expected.toString()
-        : evaluation;
-
     return {
-        status,
-        evaluation
+        status,  // The evaluation of the json query
+        response // The response from the server or result from initial json-query evaluation
     };
 }
