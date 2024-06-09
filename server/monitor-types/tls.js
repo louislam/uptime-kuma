@@ -61,7 +61,13 @@ class TlsMonitorType extends MonitorType {
             response: unescape(monitor.tcpStartTlsResponse || ""),
         };
 
-        const tlsSocket = await this.connect(abortController.signal, tlsOptions);
+        const tlsSocket = await this.connect(abortController.signal, tlsOptions)
+            .catch((error) => {
+                abortController.abort();
+                clearTimeout(timeoutID);
+                throw error;
+            })
+        ;
         let tlsSocketClosed = false;
         tlsSocket.on("close", () => {
             tlsSocketClosed = true;
