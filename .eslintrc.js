@@ -1,7 +1,6 @@
 module.exports = {
     ignorePatterns: [
         "test/*.js",
-        "test/cypress",
         "server/modules/apicache/*",
         "src/util.js"
     ],
@@ -19,12 +18,13 @@ module.exports = {
     ],
     parser: "vue-eslint-parser",
     parserOptions: {
-        parser: "@babel/eslint-parser",
+        parser: "@typescript-eslint/parser",
         sourceType: "module",
         requireConfigFile: false,
     },
     plugins: [
-        "jsdoc"
+        "jsdoc",
+        "@typescript-eslint",
     ],
     rules: {
         "yoda": "error",
@@ -83,7 +83,7 @@ module.exports = {
             "checkLoops": false,
         }],
         "space-before-blocks": "warn",
-        //'no-console': 'warn',
+        //"no-console": "warn",
         "no-extra-boolean-cast": "off",
         "no-multiple-empty-lines": [ "warn", {
             "max": 1,
@@ -95,7 +95,8 @@ module.exports = {
         "no-unneeded-ternary": "error",
         "array-bracket-newline": [ "error", "consistent" ],
         "eol-last": [ "error", "always" ],
-        //'prefer-template': 'error',
+        //"prefer-template": "error",
+        "template-curly-spacing": [ "warn", "never" ],
         "comma-dangle": [ "warn", "only-multiline" ],
         "no-empty": [ "error", {
             "allowEmptyCatch": true
@@ -148,21 +149,20 @@ module.exports = {
             }
         },
 
-        // Override for jest puppeteer
+        // Override for TypeScript
         {
             "files": [
-                "**/*.spec.js",
-                "**/*.spec.jsx"
+                "**/*.ts",
             ],
-            env: {
-                jest: true,
-            },
-            globals: {
-                page: true,
-                browser: true,
-                context: true,
-                jestPuppeteer: true,
-            },
+            extends: [
+                "plugin:@typescript-eslint/recommended",
+            ],
+            "rules": {
+                "jsdoc/require-returns-type": "off",
+                "jsdoc/require-param-type": "off",
+                "@typescript-eslint/no-explicit-any": "off",
+                "prefer-const": "off",
+            }
         }
     ]
 };

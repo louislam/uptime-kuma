@@ -1,4 +1,5 @@
 const jsesc = require("jsesc");
+const { escape } = require("html-escaper");
 
 /**
  * Returns a string that represents the javascript that is required to insert the Google Analytics scripts
@@ -7,15 +8,18 @@ const jsesc = require("jsesc");
  * @returns {string} HTML script tags to inject into page
  */
 function getGoogleAnalyticsScript(tagId) {
-    let escapedTagId = jsesc(tagId, { isScriptContext: true });
+    let escapedTagIdJS = jsesc(tagId, { isScriptContext: true });
 
-    if (escapedTagId) {
-        escapedTagId = escapedTagId.trim();
+    if (escapedTagIdJS) {
+        escapedTagIdJS = escapedTagIdJS.trim();
     }
 
+    // Escape the tag ID for use in an HTML attribute.
+    let escapedTagIdHTMLAttribute = escape(tagId);
+
     return `
-        <script async src="https://www.googletagmanager.com/gtag/js?id=${escapedTagId}"></script>
-        <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());gtag('config', '${escapedTagId}'); </script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=${escapedTagIdHTMLAttribute}"></script>
+        <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());gtag('config', '${escapedTagIdJS}'); </script>
     `;
 }
 

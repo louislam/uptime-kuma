@@ -1,3 +1,4 @@
+# Filename: index.ps1
 $pushURL = "https://example.com/api/push/key?status=up&msg=OK&ping="
 $interval = 60
 

@@ -275,7 +275,7 @@ async function createTables() {
         table.boolean("active").notNullable().defaultTo(true);
         table.integer("user_id").unsigned();
         table.boolean("is_default").notNullable().defaultTo(false);
-        table.text("config");
+        table.text("config", "longtext");
     });
 
     // monitor_notification
@@ -318,7 +318,10 @@ async function createTables() {
     // monitor_tls_info
     await knex.schema.createTable("monitor_tls_info", (table) => {
         table.increments("id");
-        table.integer("monitor_id").unsigned().notNullable();         //TODO: no fk ?
+        table.integer("monitor_id").unsigned().notNullable()
+            .references("id").inTable("monitor")
+            .onDelete("CASCADE")
+            .onUpdate("CASCADE");
         table.text("info_json");
     });
 
@@ -493,8 +496,11 @@ ALTER TABLE monitor
     await knex.schema.table("monitor", function (table) {
         table.string("kafka_producer_topic", 255);
         table.text("kafka_producer_brokers");
-        table.integer("kafka_producer_ssl");
-        table.string("kafka_producer_allow_auto_topic_creation", 255);
+
+        // patch-fix-kafka-producer-booleans.sql
+        table.boolean("kafka_producer_ssl").defaultTo(0).notNullable();
+        table.boolean("kafka_producer_allow_auto_topic_creation").defaultTo(0).notNullable();
+
         table.text("kafka_producer_sasl_options");
         table.text("kafka_producer_message");
     });

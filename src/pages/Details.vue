@@ -2,10 +2,18 @@
     <transition name="slide-fade" appear>
         <div v-if="monitor">
             <router-link v-if="group !== ''" :to="monitorURL(monitor.parent)"> {{ group }}</router-link>
-            <h1> {{ monitor.name }}</h1>
+            <h1>
+                {{ monitor.name }}
+                <div class="monitor-id">
+                    <div class="hash">#</div>
+                    <div>{{ monitor.id }}</div>
+                </div>
+            </h1>
             <p v-if="monitor.description">{{ monitor.description }}</p>
-            <div class="tags">
-                <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
+            <div class="d-flex">
+                <div class="tags">
+                    <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
+                </div>
             </div>
             <p class="url">
                 <a v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'mp-health' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ filterPassword(monitor.url) }}</a>
@@ -58,7 +66,7 @@
                     <router-link :to=" '/clone/' + monitor.id " class="btn btn-normal">
                         <font-awesome-icon icon="clone" /> {{ $t("Clone") }}
                     </router-link>
-                    <button class="btn btn-danger" @click="deleteDialog">
+                    <button class="btn btn-normal text-danger" @click="deleteDialog">
                         <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                     </button>
                 </div>
@@ -74,6 +82,34 @@
                         <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;">{{ status.text }}</span>
                     </div>
                 </div>
+            </div>
+
+            <!-- Push Examples -->
+            <div v-if="monitor.type === 'push'" class="shadow-box big-padding">
+                <a href="#" @click="pushMonitor.showPushExamples = !pushMonitor.showPushExamples">{{ $t("pushViewCode") }}</a>
+
+                <transition name="slide-fade" appear>
+                    <div v-if="pushMonitor.showPushExamples" class="mt-3">
+                        <select id="push-current-example" v-model="pushMonitor.currentExample" class="form-select">
+                            <optgroup :label="$t('programmingLanguages')">
+                                <option value="csharp">C#</option>
+                                <option value="go">Go</option>
+                                <option value="java">Java</option>
+                                <option value="javascript-fetch">JavaScript (fetch)</option>
+                                <option value="php">PHP</option>
+                                <option value="python">Python</option>
+                                <option value="typescript-fetch">TypeScript (fetch)</option>
+                            </optgroup>
+                            <optgroup :label="$t('pushOthers')">
+                                <option value="bash-curl">Bash (curl)</option>
+                                <option value="powershell">PowerShell</option>
+                                <option value="docker">Docker</option>
+                            </optgroup>
+                        </select>
+
+                        <prism-editor v-model="pushMonitor.code" class="css-editor mt-3" :highlight="pushExampleHighlighter" line-numbers readonly></prism-editor>
+                    </div>
+                </transition>
             </div>
 
             <!-- Stats -->
@@ -156,9 +192,10 @@
             <!-- Screenshot -->
             <div v-if="monitor.type === 'real-browser'" class="shadow-box">
                 <div class="row">
-                    <div class="col-md-6">
-                        <img :src="screenshotURL" alt style="width: 100%;">
+                    <div class="col-md-6 zoom-cursor">
+                        <img :src="screenshotURL" style="width: 100%;" alt="screenshot of the website" @click="showScreenshotDialog">
                     </div>
+                    <ScreenshotDialog ref="screenshotDialog" :imageURL="screenshotURL" />
                 </div>
             </div>
 
@@ -249,6 +286,13 @@ import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 import { getResBaseURL } from "../util-frontend";
+import { highlight, languages } from "prismjs/components/prism-core";
+import "prismjs/components/prism-clike";
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-css";
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css";
+import ScreenshotDialog from "../components/ScreenshotDialog.vue";
 
 export default {
     components: {
@@ -262,6 +306,8 @@ export default {
         PingChart,
         Tag,
         CertificateInfo,
+        PrismEditor,
+        ScreenshotDialog
     },
     data() {
         return {
@@ -277,6 +323,11 @@ export default {
             cacheTime: Date.now(),
             importantHeartBeatListLength: 0,
             displayedRecords: [],
+            pushMonitor: {
+                showPushExamples: false,
+                currentExample: "javascript-fetch",
+                code: "",
+            },
         };
     },
     computed: {
@@ -339,10 +390,7 @@ export default {
         },
 
         group() {
-            if (!this.monitor.pathName.includes("/")) {
-                return "";
-            }
-            return this.monitor.pathName.substr(0, this.monitor.pathName.lastIndexOf("/"));
+            return this.monitor.path.slice(0, -1).join(" / ");
         },
 
         pushURL() {
@@ -361,13 +409,28 @@ export default {
 
         monitor(to) {
             this.getImportantHeartbeatListLength();
-        }
+        },
+        "monitor.type"() {
+            if (this.monitor && this.monitor.type === "push") {
+                this.loadPushExample();
+            }
+        },
+        "pushMonitor.currentExample"() {
+            this.loadPushExample();
+        },
     },
 
     mounted() {
         this.getImportantHeartbeatListLength();
 
         this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+
+        if (this.monitor && this.monitor.type === "push") {
+            if (this.lastHeartBeat.status === -1) {
+                this.pushMonitor.showPushExamples = true;
+            }
+            this.loadPushExample();
+        }
     },
 
     beforeUnmount() {
@@ -382,7 +445,7 @@ export default {
          */
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
-            toast.success("Test notification is requested.");
+            this.$root.toastSuccess("Test notification is requested.");
         },
 
         /**
@@ -422,6 +485,14 @@ export default {
         },
 
         /**
+         * Show Screenshot Dialog
+         * @returns {void}
+         */
+        showScreenshotDialog() {
+            this.$refs.screenshotDialog.show();
+        },
+
+        /**
          * Show dialog to confirm clearing events
          * @returns {void}
          */
@@ -443,11 +514,9 @@ export default {
          */
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
+                this.$root.toastRes(res);
                 if (res.ok) {
-                    toast.success(res.msg);
                     this.$router.push("/dashboard");
-                } else {
-                    toast.error(res.msg);
                 }
             });
         },
@@ -481,7 +550,7 @@ export default {
         /**
          * Return the correct title for the ping stat
          * @param {boolean} average Is the statistic an average?
-         * @returns {string} Title formatted dependant on monitor type
+         * @returns {string} Title formatted dependent on monitor type
          */
         pingTitle(average = false) {
             let translationPrefix = "";
@@ -569,6 +638,25 @@ export default {
                 }
             }
         },
+
+        /**
+         * Highlight the example code
+         * @param {string} code Code
+         * @returns {string} Highlighted code
+         */
+        pushExampleHighlighter(code) {
+            return highlight(code, languages.js);
+        },
+
+        loadPushExample() {
+            this.pushMonitor.code = "";
+            this.$root.getSocket().emit("getPushExample", this.pushMonitor.currentExample, (res) => {
+                let code = res.code
+                    .replace("60", this.monitor.interval)
+                    .replace("https://example.com/api/push/key?status=up&msg=OK&ping=", this.pushURL);
+                this.pushMonitor.code = code;
+            });
+        }
     },
 };
 </script>
@@ -634,7 +722,7 @@ export default {
 }
 
 .word {
-    color: #aaa;
+    color: $secondary-text;
     font-size: 14px;
 }
 
@@ -648,7 +736,7 @@ table {
 
 .stats p {
     font-size: 13px;
-    color: #aaa;
+    color: $secondary-text;
 }
 
 .stats {
@@ -719,4 +807,20 @@ table {
     margin-left: 0 !important;
 }
 
+.monitor-id {
+    display: inline-flex;
+    font-size: 0.7em;
+    margin-left: 0.3em;
+    color: $secondary-text;
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    .hash {
+        user-select: none;
+    }
+
+    .dark & {
+        opacity: 0.7;
+    }
+}
 </style>

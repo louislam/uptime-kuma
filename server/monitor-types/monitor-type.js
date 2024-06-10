@@ -1,5 +1,4 @@
 class MonitorType {
-
     name = undefined;
 
     /**
@@ -12,7 +11,6 @@ class MonitorType {
     async check(monitor, heartbeat, server) {
         throw new Error("You need to override check()");
     }
-
 }
 
 module.exports = {

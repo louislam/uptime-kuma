@@ -211,6 +211,20 @@ export default {
 @import "../assets/vars.scss";
 
 .nav-link {
+    &:hover {
+        background-color: $primary;
+        color: #fff;
+
+        .dark & {
+            background-color: $primary;
+            color: #000;
+        }
+
+        &.active {
+            background-color: $highlight;
+        }
+    }
+
     &.status-page {
         background-color: rgba(255, 255, 255, 0.1);
     }
@@ -370,12 +384,16 @@ main {
     padding: 9px 15px;
     width: 48px;
     box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+
+    .dark & {
+        box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.5);
+    }
 }
 
 @media (max-width: 770px) {
     .clear-all-toast-btn {
         bottom: 72px;
-        z-index: 100;
     }
 }
 
