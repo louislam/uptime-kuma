@@ -407,6 +407,9 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
     }
     try {
         response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
+        if (typeof response === "object" || Array.isArray(response) || response instanceof Date || typeof response === "function") {
+            throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
+        }
         let jsonQueryExpression;
         switch (jsonPathOperator) {
             case ">":

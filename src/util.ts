@@ -667,6 +667,10 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
         // If a JSON path is provided, pre-evaluate the data using it.
         response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
 
+        if (typeof response === "object" || Array.isArray(response) || response instanceof Date || typeof response === "function") {
+            throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
+        }
+
         // Perform the comparison logic using the chosen operator
         let jsonQueryExpression;
         switch (jsonPathOperator) {
