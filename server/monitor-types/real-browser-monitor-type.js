@@ -228,6 +228,22 @@ async function testRemoteBrowser(remoteBrowserURL) {
         throw new Error(e.message);
     }
 }
+
+/**
+ * Cleanup function to terminate all browser processes and clear cache after each monitoring check.
+ * @returns {Promise<void>}
+ */
+async function cleanupBrowser() {
+    if (browser) {
+        const contexts = browser.contexts();
+        for (const context of contexts) {
+            await context.clearCookies();
+            await context.clearPermissions();
+            await context.close();
+        }
+    }
+}
+
 class RealBrowserMonitorType extends MonitorType {
 
     name = "real-browser";
@@ -251,10 +267,7 @@ class RealBrowserMonitorType extends MonitorType {
             path: path.join(Database.screenshotDir, filename),
         });
 
-        await context.close();
-
-        // Close the browser instance
-        await browser.close();
+        await cleanupBrowser(); // Ensure cleanup is called after each monitoring check
 
         if (res.status() >= 200 && res.status() < 400) {
             heartbeat.status = UP;
