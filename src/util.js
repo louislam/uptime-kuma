@@ -413,24 +413,24 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
             case ">=":
             case "<":
             case "<=":
-                jsonQueryExpression = `$.value ${jsonPathOperator} $.expected`;
+                jsonQueryExpression = `$number($.value) ${jsonPathOperator} $number($.expected)`;
                 break;
             case "!=":
-                jsonQueryExpression = "$string($.value) != $string($.expected)";
+                jsonQueryExpression = "$.value != $.expected";
                 break;
             case "==":
-                jsonQueryExpression = "$string($.value) = $string($.expected)";
+                jsonQueryExpression = "$.value = $.expected";
                 break;
             case "contains":
-                jsonQueryExpression = "$contains($string($.value), $string($.expected))";
+                jsonQueryExpression = "$contains($.value, $.expected)";
                 break;
             default:
                 throw new Error(`Invalid condition ${jsonPathOperator}`);
         }
         const expression = jsonata(jsonQueryExpression);
         const status = await expression.evaluate({
-            value: response,
-            expected: expectedValue
+            value: response.toString(),
+            expected: expectedValue.toString()
         });
         if (response === undefined || status === undefined) {
             throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
