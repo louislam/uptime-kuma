@@ -927,7 +927,6 @@
     "OID (Object Identifier)": "OID (Object Identifier)",
     "snmpOIDHelptext": "Enter the OID for the sensor or status you want to monitor. Use network management tools like MIB browsers or SNMP software if you're unsure about the OID.",
     "Condition": "Condition",
-    "Control Value": "Control Value",
     "SNMP Version": "SNMP Version",
     "Please enter a valid OID.": "Please enter a valid OID."
 }
