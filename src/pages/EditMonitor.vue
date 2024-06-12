@@ -1354,7 +1354,7 @@ message HealthCheckResponse {
 
             // Set default SNMP version
             if (!this.monitor.snmpVersion) {
-                this.monitor.snmpVersion = "1";
+                this.monitor.snmpVersion = "2c";
             }
 
             // Set default jsonPath

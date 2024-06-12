@@ -602,9 +602,12 @@ class Monitor extends BeanModel {
 
                         const { status, response } = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
 
-                        bean.status = status ? UP : DOWN;
-                        bean.msg = `JSON query ${status ? "passes" : "does not pass"} `;
-                        bean.msg += `comparison: ${response} ${this.jsonPathOperator} ${this.expectedValue}.`;
+                        if (status) {
+                            bean.status = UP; 
+                            bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
+                        } else {
+                            throw new Error(`JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`);
+                        }
 
                     }
 

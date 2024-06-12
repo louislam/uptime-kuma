@@ -9,17 +9,15 @@ class SNMPMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-
-        const options = {
-            port: monitor.port || "161",
-            retries: monitor.maxretries,
-            timeout: monitor.timeout * 1000,
-            version: snmp.Version[monitor.snmpVersion],
-        };
-
         let session;
         try {
-            session = snmp.createSession(monitor.hostname, monitor.radiusPassword, options);
+            const sessionOptions = {
+                port: monitor.port || "161",
+                retries: monitor.maxretries,
+                timeout: monitor.timeout * 1000,
+                version: snmp.Version[monitor.snmpVersion],
+            };
+            session = snmp.createSession(monitor.hostname, monitor.radiusPassword, sessionOptions);
 
             // Handle errors during session creation
             session.on("error", (error) => {
@@ -46,13 +44,14 @@ class SNMPMonitorType extends MonitorType {
 
             const { status, response } = await evaluateJsonQuery(value, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
 
-            heartbeat.status = status ? UP : DOWN;
-            heartbeat.msg = `SNMP value ${status ? "passes" : "does not pass"} `;
-            heartbeat.msg += `comparison: ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue}.`;
-
+            if (status) {
+                bean.status = UP; 
+                bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
+            } else {
+                throw new Error(`JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`);
+            }
         } catch (err) {
-            heartbeat.status = DOWN;
-            heartbeat.msg = `Error: ${err.message}`;
+            throw err;
         } finally {
             if (session) {
                 session.close();
