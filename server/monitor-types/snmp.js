@@ -45,8 +45,8 @@ class SNMPMonitorType extends MonitorType {
             const { status, response } = await evaluateJsonQuery(value, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
 
             if (status) {
-                bean.status = UP; 
-                bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
+                heartbeat.status = UP;
+                heartbeat.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
             } else {
                 throw new Error(`JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`);
             }
