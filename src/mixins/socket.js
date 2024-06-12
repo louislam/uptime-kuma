@@ -673,6 +673,17 @@ export default {
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
         },
+
+        /**
+         * Retrieves monitor chart data.
+         * @param {string} monitorID - The ID of the monitor.
+         * @param {number} period - The time period for the chart data, in hours.
+         * @param {socketCB} callback - The callback function to handle the chart data.
+         * @returns {void}
+         */
+        getMonitorChartData(monitorID, period, callback) {
+            socket.emit("getMonitorChartData", monitorID, period, callback);
+        }
     },
 
     computed: {

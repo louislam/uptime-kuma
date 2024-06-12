@@ -5,7 +5,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     SQL_DATETIME_FORMAT, evaluateJsonQuery
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, mongodbPing, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -811,15 +811,6 @@ class Monitor extends BeanModel {
                     bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1", mysqlPassword);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type === "mongodb") {
-                    let startTime = dayjs().valueOf();
-
-                    await mongodbPing(this.databaseConnectionString);
-
-                    bean.msg = "";
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
-
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
@@ -850,7 +841,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "redis") {
                     let startTime = dayjs().valueOf();
 
-                    bean.msg = await redisPingAsync(this.databaseConnectionString);
+                    bean.msg = await redisPingAsync(this.databaseConnectionString, !this.ignoreTls);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
 
@@ -895,7 +886,6 @@ class Monitor extends BeanModel {
                 retries = 0;
 
             } catch (error) {
-
                 if (error?.name === "CanceledError") {
                     bean.msg = `timeout by AbortSignal (${this.timeout}s)`;
                 } else {
@@ -968,6 +958,7 @@ class Monitor extends BeanModel {
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
             } else {
+                beatInterval = this.retryInterval;
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
             }
 

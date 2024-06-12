@@ -1,0 +1,6 @@
+{
+    "Language": "Sprach",
+    "Home": "Dahoam",
+    "setupDatabaseChooseDatabase": "Wos für a Datenbank wuist du?",
+    "setupDatabaseEmbeddedMariaDB": "Da brauchst nix mocha. Des Docker Buidl hod a Datenbank dabai und nimmt MariaDB. Uptime Kuma verbint se mit Unix Socket."
+}

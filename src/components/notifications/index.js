@@ -3,6 +3,7 @@ import AlertNow from "./AlertNow.vue";
 import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bark from "./Bark.vue";
+import Bitrix24 from "./Bitrix24.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
@@ -42,6 +43,7 @@ import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
 import SMSManager from "./SMSManager.vue";
+import SMSPartner from "./SMSPartner.vue";
 import Slack from "./Slack.vue";
 import Squadcast from "./Squadcast.vue";
 import SMSEagle from "./SMSEagle.vue";
@@ -70,6 +72,7 @@ const NotificationFormList = {
     "AliyunSMS": AliyunSMS,
     "apprise": Apprise,
     "Bark": Bark,
+    "Bitrix24": Bitrix24,
     "clicksendsms": ClickSendSMS,
     "CallMeBot": CallMeBot,
     "smsc": SMSC,
@@ -108,6 +111,7 @@ const NotificationFormList = {
     "serwersms": SerwerSMS,
     "signal": Signal,
     "SMSManager": SMSManager,
+    "SMSPartner": SMSPartner,
     "slack": Slack,
     "squadcast": Squadcast,
     "SMSEagle": SMSEagle,
