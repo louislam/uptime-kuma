@@ -741,21 +741,25 @@ class UptimeCalculator {
     }
 
     /**
-     * Get the uptime data by duration
-     * @param {'24h'|'30d'|'1y'} duration Only accept 24h, 30d, 1y
+     * Get the uptime data for given duration.
+     * @param {string} duration  A string with a number and a unit (h, d, or y), such as 24h, 30d, 1y.
      * @returns {UptimeDataResult} UptimeDataResult
      * @throws {Error} Invalid duration
      */
     getDataByDuration(duration) {
-        if (duration === "24h") {
-            return this.get24Hour();
-        } else if (duration === "30d") {
-            return this.get30Day();
-        } else if (duration === "1y") {
-            return this.get1Year();
-        } else {
+        const unit = duration.substring(duration.length - 1);
+        const num = parseInt(duration.substring(0, duration.length - 1));
+
+        const typeMap = {
+            h: "hour",
+            d: "day",
+            y: "year"
+        };
+
+        if (!Object.keys(typeMap).includes(unit)) {
             throw new Error("Invalid duration");
         }
+        return this.getData(num, typeMap[unit]);
     }
 
     /**

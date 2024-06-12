@@ -229,12 +229,8 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
         // if no duration is given, set value to 24 (h)
-        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24";
         const overrideValue = value && parseFloat(value);
-
-        if (requestedDuration === "24") {
-            requestedDuration = "24h";
-        }
 
         let publicMonitor = await R.getRow(`
                 SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -253,7 +249,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.color = badgeConstants.naColor;
         } else {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
-            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
+            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(`${requestedDuration}h`).uptime;
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
             const cleanUptime = (uptime * 100).toPrecision(4);
@@ -299,17 +295,13 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         const requestedMonitorId = parseInt(request.params.id, 10);
 
         // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
-        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24";
         const overrideValue = value && parseFloat(value);
-
-        if (requestedDuration === "24") {
-            requestedDuration = "24h";
-        }
 
         // Check if monitor is public
 
         const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
-        const publicAvgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
+        const publicAvgPing = uptimeCalculator.getDataByDuration(`${requestedDuration}h`).avgPing;
 
         const badgeValues = { style };
 
