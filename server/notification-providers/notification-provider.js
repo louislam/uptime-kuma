@@ -21,13 +21,12 @@ class NotificationProvider {
 
     /**
      * Extracts the address from a monitor JSON object based on its type.
-     *
      * @param {?object} monitorJSON Monitor details (For Up/Down only)
      * @returns {string} The extracted address based on the monitor type.
      */
-    extractAdress(monitorJSON){
+    extractAdress(monitorJSON) {
         if (!monitorJSON) {
-            return ""
+            return "";
         }
         switch (monitorJSON["type"]) {
             case "push":
@@ -41,7 +40,7 @@ class NotificationProvider {
                 if (monitorJSON["port"]) {
                     return monitorJSON["hostname"] + ":" + monitorJSON["port"];
                 }
-                return monitorJSON["hostname"]
+                return monitorJSON["hostname"];
             default:
                 if (![ "https://", "http://", "" ].includes(monitorJSON["url"])) {
                     return monitorJSON["url"];

@@ -32,7 +32,7 @@ class SevenIO extends NotificationProvider {
                 return okMsg;
             }
 
-            let address = extractAdress(monitorJSON);
+            let address = this.extractAdress(monitorJSON);
             if (address !== "") {
                 address = `(${address}) `;
             }
