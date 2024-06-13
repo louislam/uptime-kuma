@@ -310,7 +310,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         const requestedMonitorId = parseInt(request.params.id, 10);
 
         // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
-        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24";
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
 
         if (/^[0-9]+$/.test(requestedDuration)) {
