@@ -11,7 +11,17 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
+const {
+    UP,
+    MAINTENANCE,
+    DOWN,
+    PENDING,
+    flipStatus,
+    log,
+    badgeConstants,
+    durationUnits,
+    isNumeric,
+} = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -232,6 +242,11 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
         let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24";
         const overrideValue = value && parseFloat(value);
 
+        if (isNumeric(requestedDuration)) { // all numeric only
+            requestedDuration = `${requestedDuration}${durationUnits.HOUR}`;
+        }
+        const duration = requestedDuration.slice(0, -1);
+
         let publicMonitor = await R.getRow(`
                 SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
                 WHERE monitor_group.group_id = \`group\`.id
@@ -249,7 +264,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             badgeValues.color = badgeConstants.naColor;
         } else {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
-            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(`${requestedDuration}h`).uptime;
+            const uptime = overrideValue ?? uptimeCalculator.getDataByDuration(requestedDuration).uptime;
 
             // limit the displayed uptime percentage to four (two, when displayed as percent) decimal digits
             const cleanUptime = (uptime * 100).toPrecision(4);
@@ -261,7 +276,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             // build a label string. If a custom label is given, override the default one (requestedDuration)
             badgeValues.label = filterAndJoin([
                 labelPrefix,
-                label ?? `Uptime (${requestedDuration}${labelSuffix})`,
+                label ?? `Uptime (${duration}${labelSuffix})`,
             ]);
             badgeValues.message = filterAndJoin([ prefix, cleanUptime, suffix ]);
         }
@@ -298,13 +313,17 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24";
         const overrideValue = value && parseFloat(value);
 
+        if (isNumeric(requestedDuration)) { // all numeric only
+            requestedDuration = `${requestedDuration}${durationUnits.HOUR}`;
+        }
+        const duration = requestedDuration.slice(0, -1);
+
         // Check if monitor is public
 
         const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(requestedMonitorId);
-        const publicAvgPing = uptimeCalculator.getDataByDuration(`${requestedDuration}h`).avgPing;
+        const publicAvgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
 
         const badgeValues = { style };
-
         if (!publicAvgPing) {
             // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
 
@@ -317,7 +336,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
             // build a lable string. If a custom label is given, override the default one (requestedDuration)
-            badgeValues.label = filterAndJoin([ labelPrefix, label ?? `Avg. Ping (${requestedDuration}${labelSuffix})` ]);
+            badgeValues.label = filterAndJoin([ labelPrefix, label ?? `Avg. Ping (${duration}${labelSuffix})` ]);
             badgeValues.message = filterAndJoin([ prefix, avgPing, suffix ]);
         }
 

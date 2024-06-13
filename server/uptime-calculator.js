@@ -1,5 +1,12 @@
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
+const {
+    UP,
+    MAINTENANCE,
+    DOWN,
+    PENDING,
+    durationUnits,
+    isNumeric
+} = require("../src/util");
 const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
 const { R } = require("redbean-node");
@@ -543,7 +550,9 @@ class UptimeCalculator {
         if (type === "minute" && num > 24 * 60) {
             throw new Error("The maximum number of minutes is 1440");
         }
-
+        if (type === "day" && num > 365) {
+            throw new Error("The maximum number of days is 365");
+        }
         // Get the current time period key based on the type
         let key = this.getKey(this.getCurrentDate(), type);
 
@@ -742,24 +751,36 @@ class UptimeCalculator {
 
     /**
      * Get the uptime data for given duration.
-     * @param {string} duration  A string with a number and a unit (h, d, or y), such as 24h, 30d, 1y.
+     * @param {string} duration  A string with a number and a unit (m,h,d,w,M,y), such as 24h, 30d, 1y.
      * @returns {UptimeDataResult} UptimeDataResult
-     * @throws {Error} Invalid duration
+     * @throws {Error} Invalid duration / Unsupported unit
      */
     getDataByDuration(duration) {
-        const unit = duration.substring(duration.length - 1);
-        const num = parseInt(duration.substring(0, duration.length - 1));
+        const durationNumStr = duration.slice(0, -1);
 
-        const typeMap = {
-            h: "hour",
-            d: "day",
-            y: "year"
-        };
-
-        if (!Object.keys(typeMap).includes(unit)) {
-            throw new Error("Invalid duration");
+        if (!isNumeric(durationNumStr)) {
+            throw new Error(`Invalid duration: ${duration}`);
         }
-        return this.getData(num, typeMap[unit]);
+        const num = Number(durationNumStr);
+        const unit = duration.slice(-1);
+
+        switch (unit) {
+            case durationUnits.MINUTE:
+                return this.getData(num, "minute");
+            case durationUnits.HOUR:
+                return this.getData(num, "hour");
+            case durationUnits.DAY:
+                return this.getData(num, "day");
+            case durationUnits.WEEK:
+                return this.getData(7 * num, "day");
+            case durationUnits.MONTH:
+                return this.getData(30 * num, "day");
+            case durationUnits.YEAR:
+                return this.getData(365 * num, "day");
+            default:
+                throw new Error(`Unsupported unit (${unit}) for badge duration ${duration}`
+                );
+        }
     }
 
     /**
