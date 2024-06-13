@@ -313,8 +313,8 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24";
         const overrideValue = value && parseFloat(value);
 
-        if (isNumeric(requestedDuration)) { // all numeric only
-            requestedDuration = `${requestedDuration}${durationUnits.HOUR}`;
+        if (/^[0-9]+$/.test(requestedDuration)) {
+            requestedDuration = `${requestedDuration}h`;
         }
         const duration = requestedDuration.slice(0, -1);
 
