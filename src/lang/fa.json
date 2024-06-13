@@ -759,7 +759,6 @@
     "filterActive": "فعال",
     "webhookCustomBodyDesc": "یک بدنه HTTP سفارشی برای ریکوئست تعریف کنید. متغیر های قابل استفاده: {msg}, {heartbeat}, {monitor}.",
     "tailscalePingWarning": "برای استفاده از Tailscale Ping monitor، شما باید آپتایم کوما را بدون استفاده از داکر و همچنین Tailscale client را نیز بر روی سرور خود نصب داشته باشید.",
-    "jsonQueryDescription": "یک کوئری json در برابر پاسخ انجام دهید و مقدار مورد انتظار را (مقدار برگشتی برای مقایسه به رشته تبدیل می شود). برای مستندات درباره زبان کوئری، {0} مشاهده کنید. همچنین محیط تست را میتوانید در {1} پیدا کنید.",
     "Enter the list of brokers": "لیست بروکر هارا وارد کنید",
     "Enable Kafka Producer Auto Topic Creation": "فعال سازی ایجاپ موضوع اتوماتیک تهیه کننده",
     "Secret AccessKey": "کلید محرمانه AccessKey",
