@@ -62,7 +62,7 @@
     "Json Query Expression": "Json Query Expression",
     "Friendly Name": "Friendly Name",
     "URL": "URL",
-    "Hostname or IP Address": "Hostname or IP Address",
+    "Hostname": "Hostname",
     "Host URL": "Host URL",
     "locally configured mail transfer agent": "locally configured mail transfer agent",
     "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Either enter the hostname of the server you want to connect to or {localhost} if you intend to use a {local_mta}",
