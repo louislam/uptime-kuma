@@ -82,25 +82,7 @@ class ZohoCliq extends NotificationProvider {
                 return okMsg;
             }
 
-            let address;
 
-            switch (monitorJSON["type"]) {
-                case "ping":
-                    address = monitorJSON["hostname"];
-                    break;
-                case "port":
-                case "dns":
-                case "gamedig":
-                case "steam":
-                    address = monitorJSON["hostname"];
-                    if (monitorJSON["port"]) {
-                        address += ":" + monitorJSON["port"];
-                    }
-                    break;
-                default:
-                    address = monitorJSON["url"];
-                    break;
-            }
 
             const payload = this._notificationPayloadFactory({
                 monitorMessage: heartbeatJSON.msg,
