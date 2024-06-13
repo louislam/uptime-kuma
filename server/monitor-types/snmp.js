@@ -50,8 +50,6 @@ class SNMPMonitorType extends MonitorType {
             } else {
                 throw new Error(`JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`);
             }
-        } catch (err) {
-            throw err;
         } finally {
             if (session) {
                 session.close();
