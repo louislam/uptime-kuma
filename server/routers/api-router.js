@@ -316,7 +316,6 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         if (/^[0-9]+$/.test(requestedDuration)) {
             requestedDuration = `${requestedDuration}h`;
         }
-        const duration = requestedDuration.slice(0, -1);
 
         // Check if monitor is public
 
