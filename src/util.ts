@@ -93,6 +93,11 @@ const consoleLevelColors : Record<string, string> = {
     "DEBUG": CONSOLE_STYLE_FgGray,
 };
 
+/**
+ * Flip the status of s
+ * @param s input status: UP or DOWN
+ * @returns {number} UP or DOWN
+ */
 export const badgeConstants = {
     naColor: "#999",
     defaultUpColor: "#66c20a",
@@ -113,20 +118,7 @@ export const badgeConstants = {
     defaultCertExpireDownDays: "7"
 };
 
-export const durationUnits = {
-    MINUTE: "m",
-    HOUR: "h",
-    DAY: "d",
-    WEEK: "w",
-    MONTH: "M",
-    YEAR: "y"
-};
-
-/**
- * Flip the status of s
- * @param s input status: UP or DOWN
- * @returns {number} UP or DOWN
- */
+/** Flip the status of s */
 export function flipStatus(s: number) {
     if (s === UP) {
         return DOWN;
@@ -651,11 +643,3 @@ export function intHash(str : string, length = 10) : number {
     return (hash % length + length) % length; // Ensure the result is non-negative
 }
 
-/**
- * Check if a string is numeric.
- * @param {string} str - The input string to check
- * @returns {boolean} Returns true if the input string is numeric, false otherwise
- */
-export function isNumeric(str: string): boolean {
-    return /^([0-9]+)$/.test(str);
-}

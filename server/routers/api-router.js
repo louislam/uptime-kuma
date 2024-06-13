@@ -11,17 +11,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const {
-    UP,
-    MAINTENANCE,
-    DOWN,
-    PENDING,
-    flipStatus,
-    log,
-    badgeConstants,
-    durationUnits,
-    isNumeric,
-} = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -239,13 +229,12 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
         // if no duration is given, set value to 24 (h)
-        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24";
+        let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
 
-        if (isNumeric(requestedDuration)) { // all numeric only
-            requestedDuration = `${requestedDuration}${durationUnits.HOUR}`;
+        if (/^[0-9]+$/.test(requestedDuration)) {
+            requestedDuration = `${requestedDuration}h`;
         }
-        const duration = requestedDuration.slice(0, -1);
 
         let publicMonitor = await R.getRow(`
                 SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -276,7 +265,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             // build a label string. If a custom label is given, override the default one (requestedDuration)
             badgeValues.label = filterAndJoin([
                 labelPrefix,
-                label ?? `Uptime (${duration}${labelSuffix})`,
+                label ?? `Uptime (${requestedDuration.slice(0, -1)}${labelSuffix})`,
             ]);
             badgeValues.message = filterAndJoin([ prefix, cleanUptime, suffix ]);
         }
@@ -323,6 +312,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         const publicAvgPing = uptimeCalculator.getDataByDuration(requestedDuration).avgPing;
 
         const badgeValues = { style };
+
         if (!publicAvgPing) {
             // return a "N/A" badge in naColor (grey), if monitor is not public / not available / non exsitant
 

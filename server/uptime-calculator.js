@@ -1,12 +1,5 @@
 const dayjs = require("dayjs");
-const {
-    UP,
-    MAINTENANCE,
-    DOWN,
-    PENDING,
-    durationUnits,
-    isNumeric
-} = require("../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
 const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
 const { R } = require("redbean-node");
@@ -758,24 +751,24 @@ class UptimeCalculator {
     getDataByDuration(duration) {
         const durationNumStr = duration.slice(0, -1);
 
-        if (!isNumeric(durationNumStr)) {
+        if (!/^[0-9]+$/.test(durationNumStr)) {
             throw new Error(`Invalid duration: ${duration}`);
         }
         const num = Number(durationNumStr);
         const unit = duration.slice(-1);
 
         switch (unit) {
-            case durationUnits.MINUTE:
+            case "m":
                 return this.getData(num, "minute");
-            case durationUnits.HOUR:
+            case "h":
                 return this.getData(num, "hour");
-            case durationUnits.DAY:
+            case "d":
                 return this.getData(num, "day");
-            case durationUnits.WEEK:
+            case "w":
                 return this.getData(7 * num, "day");
-            case durationUnits.MONTH:
+            case "M":
                 return this.getData(30 * num, "day");
-            case durationUnits.YEAR:
+            case "y":
                 return this.getData(365 * num, "day");
             default:
                 throw new Error(`Unsupported unit (${unit}) for badge duration ${duration}`
