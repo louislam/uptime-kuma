@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, log, evaluateJsonQuery } = require("../../src/util");
+const { UP, log, evaluateJsonQuery } = require("../../src/util");
 const snmp = require("net-snmp");
 
 class SNMPMonitorType extends MonitorType {
