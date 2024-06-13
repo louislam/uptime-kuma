@@ -709,6 +709,7 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
             response // The response from the server or result from initial json-query evaluation
         };
     } catch (err: any) {
+        response = (response.toString().length > 50) ? `${response.substring(0, 50)}… (truncated)` : response.toString();// Truncate long responses to the console
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }

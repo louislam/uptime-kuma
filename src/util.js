@@ -444,6 +444,7 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         };
     }
     catch (err) {
+        response = (response.toString().length > 50) ? `${response.substring(0, 50)}… (truncated)` : response.toString();
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }
