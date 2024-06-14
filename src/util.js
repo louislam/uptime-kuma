@@ -403,11 +403,14 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         response = JSON.parse(data);
     }
     catch (_a) {
-        response = typeof data === "number" || typeof data === "object" ? data : data.toString();
+        response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
     }
     try {
         response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
-        if (typeof response === "object" || Array.isArray(response) || response instanceof Date || typeof response === "function") {
+        if (response === null || response === undefined) {
+            throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+        if (typeof response === "object" || response instanceof Date || typeof response === "function") {
             throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
         }
         let jsonQueryExpression;
@@ -435,7 +438,7 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
             value: response.toString(),
             expected: expectedValue.toString()
         });
-        if (response === undefined || status === undefined) {
+        if (status === undefined) {
             throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
         }
         return {
@@ -444,7 +447,8 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         };
     }
     catch (err) {
-        response = (response.toString().length > 50) ? `${response.substring(0, 50)}… (truncated)` : response.toString();
+        response = JSON.stringify(response);
+        response = (response && response.length > 50) ? `${response.substring(0, 100)}… (truncated)` : response;
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }

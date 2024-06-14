@@ -660,14 +660,18 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
     try {
         response = JSON.parse(data);
     } catch {
-        response = typeof data === "number" || typeof data === "object" ? data : data.toString();
+        response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
     }
 
     try {
         // If a JSON path is provided, pre-evaluate the data using it.
         response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
 
-        if (typeof response === "object" || Array.isArray(response) || response instanceof Date || typeof response === "function") {
+        if (response === null || response === undefined) {
+            throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+
+        if (typeof response === "object" || response instanceof Date || typeof response === "function") {
             throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
         }
 
@@ -700,7 +704,7 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
             expected: expectedValue.toString()
         });
 
-        if (response === undefined || status === undefined) {
+        if (status === undefined) {
             throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
         }
 
@@ -709,7 +713,8 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
             response // The response from the server or result from initial json-query evaluation
         };
     } catch (err: any) {
-        response = (response.toString().length > 50) ? `${response.substring(0, 50)}… (truncated)` : response.toString();// Truncate long responses to the console
+        response = JSON.stringify(response); // Ensure the response is treated as a string for the console
+        response = (response && response.length > 50) ? `${response.substring(0, 100)}… (truncated)` : response;// Truncate long responses to the console
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }
