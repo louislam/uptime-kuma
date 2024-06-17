@@ -41,41 +41,35 @@ class Threema extends NotificationProvider {
             await axios.post(url, new URLSearchParams(data), config);
             return "Threema notification sent successfully.";
         } catch (error) {
-            this.handleApiError(error);
-            this.throwGeneralAxiosError(error);
+            const errorMessage = this.handleApiError(error);
+            this.throwGeneralAxiosError(errorMessage);
         }
     }
 
     /**
      * Handle Threema API errors
      * @param {any} error The error to handle
-     * @returns {void}
+     * @returns {string} Additional error context
      */
     handleApiError(error) {
-        if (error.response) {
-            const status = error.response.status;
-            switch (status) {
-                case 400:
-                    error.message = "Invalid recipient identity or account not set up for basic mode (400).";
-                    break;
-                case 401:
-                    error.message = "Incorrect API identity or secret (401).";
-                    break;
-                case 402:
-                    error.message = "No credits remaining (402).";
-                    break;
-                case 404:
-                    error.message = "Recipient not found (404).";
-                    break;
-                case 413:
-                    error.message = "Message is too long (413).";
-                    break;
-                case 500:
-                    error.message = "Temporary internal server error (500).";
-                    break;
-                default:
-                    break;
-            }
+        if (!error.response) {
+            return error.message;
+        }
+        switch (error.response.status) {
+            case 400:
+                return "Invalid recipient identity or account not set up for basic mode (400).";
+            case 401:
+                return "Incorrect API identity or secret (401).";
+            case 402:
+                return "No credits remaining (402).";
+            case 404:
+                return "Recipient not found (404).";
+            case 413:
+                return "Message is too long (413).";
+            case 500:
+                return "Temporary internal server error (500).";
+            default:
+                return error.message;
         }
     }
 }
