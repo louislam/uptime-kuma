@@ -52,6 +52,7 @@ import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
+import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
@@ -119,6 +120,7 @@ const NotificationFormList = {
     "stackfield": Stackfield,
     "teams": Teams,
     "telegram": Telegram,
+    "threema": Threema,
     "twilio": Twilio,
     "Splunk": Splunk,
     "webhook": Webhook,

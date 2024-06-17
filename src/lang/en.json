@@ -942,5 +942,17 @@
     "Allow Long SMS": "Allow Long SMS",
     "cellsyntSplitLongMessages": "Split long messages into up to 6 parts. 153 x 6 = 918 characters.",
     "max 15 digits": "max 15 digits",
-    "max 11 alphanumeric characters": "max 11 alphanumeric characters"
+    "max 11 alphanumeric characters": "max 11 alphanumeric characters",
+    "wayToGetThreemaGateway": "You can register for Threema Gateway {0}.",
+    "threemaRecipient": "Recipient",
+    "threemaRecipientType": "Recipient Type",
+    "threemaRecipientTypeIdentity": "Threema-ID",
+    "threemaRecipientTypeIdentityFormat": "8 characters",
+    "threemaRecipientTypePhone": "Phone Number",
+    "threemaRecipientTypePhoneFormat": "E.164, without leading +",
+    "threemaRecipientTypeEmail": "Email Address",
+    "threemaSenderIdentity": "Gateway-ID",
+    "threemaSenderIdentityFormat": "8 characters, usually starts with *",
+    "threemaApiAuthenticationSecret": "Gateway-ID Secret",
+    "threemaBasicModeInfo": "Note: This integration uses Threema Gateway in basic mode (server-based encryption). Further details can be found {0}."
 }
