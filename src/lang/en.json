@@ -951,8 +951,8 @@
     "threemaRecipientTypePhone": "Phone Number",
     "threemaRecipientTypePhoneFormat": "E.164, without leading +",
     "threemaRecipientTypeEmail": "Email Address",
-    "threemaSenderIdentity": "Sender",
-    "threemaSenderIdentityFormat": "8 characters, usually starts with '*'",
-    "threemaApiAuthenticationSecret": "API authentication secret",
+    "threemaSenderIdentity": "Gateway-ID",
+    "threemaSenderIdentityFormat": "8 characters, usually starts with *",
+    "threemaApiAuthenticationSecret": "Gateway-ID Secret",
     "threemaBasicModeInfo": "Note: This integration uses Threema Gateway in basic mode (server-based encryption). Further details can be found {0}."
 }
