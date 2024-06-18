@@ -278,6 +278,10 @@ class Monitor extends BeanModel {
         return Boolean(this.upsideDown);
     }
 
+    /**
+     * Parse to boolean
+     * @returns {boolean} is the monitor watching for changes?
+     */
     getWatchChanges() {
         return Boolean(this.watchChanges);
     }
