@@ -526,6 +526,18 @@
                                 </div>
                             </div>
 
+                            <div class="my-3 form-check">
+                                <input id="monitor-change" v-model="monitor.watchChanges" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="monitor-change">
+                                    <!-- todo use the $t thing here -->
+                                    Monitor Changes
+                                </label>
+                                <div class="form-text">
+                                    <!-- todo use the $t thing here -->
+                                    Watch for changes to the monitor message and notify if changes are detected.
+                                </div>
+                            </div>
+
                             <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
                                 <input id="gamedig-guess-port" v-model="monitor.gamedigGivenPortOnly" :true-value="false" :false-value="true" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="gamedig-guess-port">
@@ -950,6 +962,7 @@ const monitorDefaults = {
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
+    watchChanges: false,
     packetSize: 56,
     expiryNotification: false,
     maxredirects: 10,
