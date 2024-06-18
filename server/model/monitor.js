@@ -125,6 +125,7 @@ class Monitor extends BeanModel {
             expiryNotification: this.isEnabledExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
+            watchChanges: this.getWatchChanges(),
             packetSize: this.packetSize,
             maxredirects: this.maxredirects,
             accepted_statuscodes: this.getAcceptedStatuscodes(),
@@ -275,6 +276,10 @@ class Monitor extends BeanModel {
      */
     isUpsideDown() {
         return Boolean(this.upsideDown);
+    }
+
+    getWatchChanges() {
+        return Boolean(this.watchChanges);
     }
 
     /**
