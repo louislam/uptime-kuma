@@ -925,14 +925,14 @@ class Monitor extends BeanModel {
             bean.retries = retries;
 
             log.debug("monitor", `[${this.name}] Check isImportant`);
-            let isImportant = Monitor.isImportantBeat(isFirstBeat, previousBeat?.status, bean.status);
+            let isImportant = this.isImportantBeat(isFirstBeat, previousBeat, bean);
 
             // Mark as important if status changed, ignore pending pings,
             // Don't notify if disrupted changes to up
             if (isImportant) {
                 bean.important = true;
 
-                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                if (this.isImportantForNotification(isFirstBeat, previousBeat, bean)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
@@ -1244,11 +1244,11 @@ class Monitor extends BeanModel {
     /**
      * Has status of monitor changed since last beat?
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
-     * @param {const} previousBeatStatus Status of the previous beat
-     * @param {const} currentBeatStatus Status of the current beat
+     * @param {const} previousBeat Previous beat
+     * @param {const} currentBeat Current beat
      * @returns {boolean} True if is an important beat else false
      */
-    static isImportantBeat(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+    isImportantBeat(isFirstBeat, previousBeat, currentBeat) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
         // * UP -> DOWN = important
@@ -1264,6 +1264,9 @@ class Monitor extends BeanModel {
         // * MAINTENANCE -> DOWN = important
         // * DOWN -> MAINTENANCE = important
         // * UP -> MAINTENANCE = important
+        // Message changed = important
+        const previousBeatStatus = previousBeat?.status;
+        const currentBeatStatus = currentBeat.status;
         return isFirstBeat ||
             (previousBeatStatus === DOWN && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === UP && currentBeatStatus === MAINTENANCE) ||
@@ -1271,17 +1274,18 @@ class Monitor extends BeanModel {
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN) ||
+            (this.getWatchChanges() && previousBeat.msg !== currentBeat.msg);
     }
 
     /**
      * Is this beat important for notifications?
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
-     * @param {const} previousBeatStatus Status of the previous beat
-     * @param {const} currentBeatStatus Status of the current beat
+     * @param {const} previousBeat Previous beat
+     * @param {const} currentBeat Current beat
      * @returns {boolean} True if is an important beat else false
      */
-    static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+    isImportantForNotification(isFirstBeat, previousBeat, currentBeat) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
         // * UP -> DOWN = important
@@ -1297,11 +1301,15 @@ class Monitor extends BeanModel {
         // * MAINTENANCE -> DOWN = important
         // DOWN -> MAINTENANCE = not important
         // UP -> MAINTENANCE = not important
+        // Message changed = important
+        const previousBeatStatus = previousBeat?.status;
+        const currentBeatStatus = currentBeat.status;
         return isFirstBeat ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN) ||
+            (this.getWatchChanges() && previousBeat.msg !== currentBeat.msg);
     }
 
     /**
