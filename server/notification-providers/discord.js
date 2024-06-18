@@ -88,6 +88,10 @@ class Discord extends NotificationProvider {
                                 value: this.extractAdress(monitorJSON),
                             },
                             {
+                                name: "Message",
+                                value: heartbeatJSON["msg"],
+                            },
+                            {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],
                             },
