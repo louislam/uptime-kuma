@@ -3,7 +3,7 @@ FROM node:20-bookworm-slim AS base2-slim
 ARG TARGETPLATFORM
 
 # Specify --no-install-recommends to skip unused dependencies, make the base much smaller!
-# apprise = for notifications (From testing repo)
+# apprise = for notifications (From bookworm repo)
 # sqlite3 = for debugging
 # iputils-ping = for ping
 # util-linux = for setpriv (Should be dropped in 2.0.0?)
@@ -12,9 +12,9 @@ ARG TARGETPLATFORM
 # ca-certificates = keep the cert up-to-date
 # sudo = for start service nscd with non-root user
 # nscd = for better DNS caching
-RUN echo "deb http://deb.debian.org/debian testing main" >> /etc/apt/sources.list && \
+RUN echo "deb http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list && \
     apt update && \
-    apt --yes --no-install-recommends -t testing install apprise sqlite3 ca-certificates && \
+    apt --yes --no-install-recommends -t bookworm install apprise sqlite3 ca-certificates && \
     apt --yes --no-install-recommends -t stable install  \
         iputils-ping  \
         util-linux  \
