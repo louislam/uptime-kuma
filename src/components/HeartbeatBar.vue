@@ -1,5 +1,19 @@
 <template>
     <div ref="wrap" class="wrap" :style="wrapStyle">
+        <div class="hp-bar-big-copy" :style="barStylecopy" v-if="customData">
+            <div
+                v-for="(percentage,date) in day_data()"
+                :key="date"
+                class="beat"
+                :class="{'down':(percentage<=80),'critical':(percentage>80 && percentage<=85),'poor':(percentage>85 && percentage<=90),'acceptable':(percentage>90 && percentage<=95),'good':(percentage>95 && percentage<=98),'excellent':(percentage>98 && percentage<=100)}"
+                :style="beatStylecopy"
+                :title="date + ' - ' +percentage + '%'"
+            />
+        </div>
+        <div v-if="customData"
+            class="d-flex justify-content-between align-items-center word" :style="timeStylecopy">
+            <div> Past 25 Days Uptime Percentage</div>
+        </div>
         <div class="hp-bar-big" :style="barStyle">
             <div
                 v-for="(beat, index) in shortBeatList"
@@ -40,6 +54,10 @@ export default {
         heartbeatList: {
             type: Array,
             default: null,
+        },
+        customData: {
+            type: Boolean,
+            default: false,
         }
     },
     data() {
@@ -146,6 +164,28 @@ export default {
             };
         },
 
+        barStylecopy() {
+                return {
+                    transition: "all ease-in-out 0.25s",
+                };
+        },
+
+        beatStylecopy() {
+            return {
+                width: "10px",
+                height: "30px",
+                margin: "3px",
+                "--hover-scale": 1.5
+            };
+        },
+
+        timeStylecopy() {
+            return {
+                "margin-left": "5px",
+                "margin-bottom": "5px"
+            };
+        },
+
         /**
          * Returns the style object for positioning the time element.
          * @return {Object} The style object containing the CSS properties for positioning the time element.
@@ -241,6 +281,30 @@ export default {
         this.resize();
     },
     methods: {
+        day_data(){
+            const data = this.beatList;
+            const getDatePart = datetime => datetime.split(' ')[0];
+            const dailyUptimePercentage = {};
+            data.forEach(entry => {
+                const date = getDatePart(entry.time);
+
+                    if (!dailyUptimePercentage[date]) {
+                        dailyUptimePercentage[date] = { total: 0, up: 0 };
+                    }
+
+                    dailyUptimePercentage[date].total++;
+                    if (entry.status === 1) {
+                        dailyUptimePercentage[date].up++;
+                    }
+                });
+
+                Object.keys(dailyUptimePercentage).forEach(date => {
+                    const { total, up } = dailyUptimePercentage[date];
+                    const percentage = (up / total) * 100;
+                    dailyUptimePercentage[date] = Math.round(percentage * 100) / 100; // Round to 2 decimal places
+                });
+                return dailyUptimePercentage;
+        },
         /** Resize the heartbeat bar */
         resize() {
             if (this.$refs.wrap) {
@@ -301,8 +365,51 @@ export default {
     }
 }
 
+.hp-bar-big-copy {
+    .beat {
+        display: inline-block;
+        background-color: $primary;
+        border-radius: $border-radius;
+
+        &.down {
+            background-color: #ff0000;
+        }
+
+        &.critical {
+            background-color: #ff6600;
+        }
+
+        &.poor {
+            background-color: #ffcc00;
+        }
+
+        &.acceptable {
+            background-color: #cccc00;
+        }
+
+        &.good {
+            background-color: #00b300;
+        }
+
+        &.excellent {
+            background-color: #00e600;
+        }
+        &:not(.empty):hover {
+            transition: all ease-in-out 0.15s;
+            opacity: 0.8;
+            transform: scale(var(--hover-scale));
+        }
+    }
+}
+
 .dark {
     .hp-bar-big .beat.empty {
+        background-color: #848484;
+    }
+}
+
+.dark {
+    .hp-bar-big-copy .beat.empty {
         background-color: #848484;
     }
 }

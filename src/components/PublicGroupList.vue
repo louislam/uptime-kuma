@@ -71,7 +71,7 @@
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" :custom-data="true"/>
                                     </div>
                                 </div>
                             </div>
