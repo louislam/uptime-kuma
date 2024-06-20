@@ -107,7 +107,7 @@ class Monitor extends BeanModel {
             pathName,
             parent: this.parent,
             childrenIDs: await Monitor.getAllChildrenIDs(this.id),
-            url: this.url,
+            url: this.getUrl(),
             method: this.method,
             hostname: this.hostname,
             port: this.port,
