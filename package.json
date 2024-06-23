@@ -115,7 +115,7 @@
         "mitt": "~3.0.1",
         "mongodb": "~4.17.1",
         "mqtt": "~4.3.7",
-        "mssql": "~8.1.4",
+        "mssql": "~11.0.0",
         "mysql2": "~3.9.6",
         "nanoid": "~3.3.4",
         "node-cloudflared-tunnel": "~1.0.9",
