@@ -29,7 +29,7 @@ RUN apt update && \
 # python3-paho-mqtt (#4859)
 RUN curl http://ftp.debian.org/debian/pool/main/a/apprise/apprise_1.8.0-2_all.deb --output apprise.deb && \
     apt update && \
-    apt --yes --no-install-recommends install python3-paho-mqtt && \
+    apt --yes --no-install-recommends install ./apprise.deb python3-paho-mqtt && \
     rm -rf /var/lib/apt/lists/* && \
     rm -f apprise.deb && \
     apt --yes autoremove
