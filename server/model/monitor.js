@@ -1493,12 +1493,6 @@ class Monitor extends BeanModel {
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
-
-        // Ensure URL is set to null for monitor types that don't use it,
-        // or the URL may be mistakenly used later (e.g., in notifications)
-        if (![ "http", "keyword", "json-query", "real-browser" ].includes(this.type)) {
-            this.url = null;
-        }
     }
 
     /**
