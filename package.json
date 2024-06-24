@@ -140,7 +140,6 @@
         "socket.io": "~4.7.5",
         "socket.io-client": "~4.7.5",
         "socks-proxy-agent": "6.1.1",
-        "sqlite3": "~5.1.7",
         "tar": "~6.2.1",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2",
