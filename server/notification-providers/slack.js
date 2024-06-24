@@ -48,7 +48,7 @@ class Slack extends NotificationProvider {
 
         }
 
-        if (monitorJSON.url) {
+        if (this.extractAdress(monitorJSON)) {
             actions.push({
                 "type": "button",
                 "text": {
