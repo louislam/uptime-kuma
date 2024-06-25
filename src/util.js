@@ -6,9 +6,12 @@
 //
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.badgeConstants = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isDev = void 0;
-const dayjs = require("dayjs");
+const dayjs_1 = __importDefault(require("dayjs"));
 exports.isDev = process.env.NODE_ENV === "development";
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
@@ -129,11 +132,11 @@ class Logger {
         module = module.toUpperCase();
         level = level.toUpperCase();
         let now;
-        if (dayjs.tz) {
-            now = dayjs.tz(new Date()).format();
+        if (dayjs_1.default.tz) {
+            now = dayjs_1.default.tz(new Date()).format();
         }
         else {
-            now = dayjs().format();
+            now = (0, dayjs_1.default)().format();
         }
         const formattedMessage = (typeof msg === "string") ? `${now} [${module}] ${level}: ${msg}` : msg;
         if (level === "INFO") {
@@ -222,7 +225,7 @@ function polyfill() {
 exports.polyfill = polyfill;
 class TimeLogger {
     constructor() {
-        this.startTime = dayjs().valueOf();
+        this.startTime = (0, dayjs_1.default)().valueOf();
     }
     /**
      * Output time since start of monitor
@@ -230,7 +233,7 @@ class TimeLogger {
      */
     print(name) {
         if (exports.isDev && process.env.TIMELOGGER === "1") {
-            console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
+            console.log(name + ": " + ((0, dayjs_1.default)().valueOf() - this.startTime) + "ms");
         }
     }
 }
@@ -394,21 +397,21 @@ exports.parseTimeFromTimeObject = parseTimeFromTimeObject;
  * @returns ISO Date time
  */
 function isoToUTCDateTime(input) {
-    return dayjs(input).utc().format(exports.SQL_DATETIME_FORMAT);
+    return (0, dayjs_1.default)(input).utc().format(exports.SQL_DATETIME_FORMAT);
 }
 exports.isoToUTCDateTime = isoToUTCDateTime;
 /**
  * @param input
  */
 function utcToISODateTime(input) {
-    return dayjs.utc(input).toISOString();
+    return dayjs_1.default.utc(input).toISOString();
 }
 exports.utcToISODateTime = utcToISODateTime;
 /**
  * For SQL_DATETIME_FORMAT
  */
 function utcToLocal(input, format = exports.SQL_DATETIME_FORMAT) {
-    return dayjs.utc(input).local().format(format);
+    return dayjs_1.default.utc(input).local().format(format);
 }
 exports.utcToLocal = utcToLocal;
 /**
@@ -418,6 +421,6 @@ exports.utcToLocal = utcToLocal;
  * @returns Date in requested format
  */
 function localToUTC(input, format = exports.SQL_DATETIME_FORMAT) {
-    return dayjs(input).utc().format(format);
+    return (0, dayjs_1.default)(input).utc().format(format);
 }
 exports.localToUTC = localToUTC;
