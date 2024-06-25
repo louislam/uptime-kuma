@@ -6,7 +6,7 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 
-import * as dayjs  from "dayjs";
+import dayjs  from "dayjs";
 import * as timezone from "dayjs/plugin/timezone";
 import * as utc from "dayjs/plugin/utc";
 

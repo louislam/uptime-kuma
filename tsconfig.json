@@ -11,7 +11,8 @@
         "removeComments": false,
         "preserveConstEnums": true,
         "sourceMap": false,
-        "strict": true
+        "strict": true,
+        "esModuleInterop": true
     },
     "files": [
         "./src/util.ts"
