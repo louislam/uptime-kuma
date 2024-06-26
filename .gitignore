@@ -7,15 +7,13 @@ dist-ssr
 
 /data
 !/data/.gitkeep
+/data*
 .vscode
 
 /private
 /out
 /tmp
 .env
-
-cypress/videos
-cypress/screenshots
 
 /extra/healthcheck.exe
 /extra/healthcheck

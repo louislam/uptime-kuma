@@ -15,14 +15,14 @@ on:
 
 jobs:
   auto-test:
-    needs: [ check-linters ]
+    needs: [ check-linters, e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
-        node: [ 16, 20.5 ]
+        node: [ 18, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -33,9 +33,9 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
-    - run: npm ci
+    - run: npm install
     - run: npm run build
-    - run: npm test
+    - run: npm run test-backend
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
@@ -45,11 +45,11 @@ jobs:
     needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
-
+    if: ${{ github.repository == 'louislam/uptime-kuma' }}
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 16, 20.5 ]
+        node: [ 18, 20 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -72,36 +72,22 @@ jobs:
     - name: Use Node.js 20
       uses: actions/setup-node@v4
       with:
-        node-version: 20.5
-    - run: npm ci
+        node-version: 20
+    - run: npm install
     - run: npm run lint:prod
 
-  e2e-tests:
+  e2e-test:
     needs: [ check-linters ]
-    runs-on: ubuntu-latest
+    runs-on: ARM64
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    - name: Use Node.js 16
+    - name: Use Node.js 20
       uses: actions/setup-node@v4
       with:
-        node-version: 16
-    - run: npm ci
+        node-version: 20
+    - run: npm install
+    - run: npx playwright install
     - run: npm run build
-    - run: npm run cy:test
-
-  frontend-unit-tests:
-    needs: [ check-linters ]
-    runs-on: ubuntu-latest
-    steps:
-    - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
-
-    - name: Use Node.js 16
-      uses: actions/setup-node@v4
-      with:
-        node-version: 16
-    - run: npm ci
-    - run: npm run build
-    - run: npm run cy:run:unit
+    - run: npm run test-e2e

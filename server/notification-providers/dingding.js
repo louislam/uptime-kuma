@@ -6,8 +6,11 @@ const Crypto = require("crypto");
 class DingDing extends NotificationProvider {
     name = "DingDing";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON != null) {
@@ -16,6 +19,9 @@ class DingDing extends NotificationProvider {
                     markdown: {
                         title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
                         text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                    },
+                    "at": {
+                        "isAtAll": notification.mentioning === "everyone"
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
@@ -39,9 +45,9 @@ class DingDing extends NotificationProvider {
 
     /**
      * Send message to DingDing
-     * @param {BeanModel} notification
-     * @param {Object} params Parameters of message
-     * @returns {boolean} True if successful else false
+     * @param {BeanModel} notification Notification to send
+     * @param {object} params Parameters of message
+     * @returns {Promise<boolean>} True if successful else false
      */
     async sendToDingDing(notification, params) {
         let timestamp = Date.now();
@@ -66,7 +72,7 @@ class DingDing extends NotificationProvider {
      * DingDing sign
      * @param {Date} timestamp Timestamp of message
      * @param {string} secretKey Secret key to sign data with
-     * @returns {string}
+     * @returns {string} Base64 encoded signature
      */
     sign(timestamp, secretKey) {
         return Crypto
@@ -78,7 +84,7 @@ class DingDing extends NotificationProvider {
     /**
      * Convert status constant to string
      * @param {const} status The status constant
-     * @returns {string}
+     * @returns {string} Status
      */
     statusToString(status) {
         // TODO: Move to notification-provider.js to avoid repetition in classes

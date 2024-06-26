@@ -1,0 +1,25 @@
+name: Merge Conflict Labeler
+
+on:
+  push:
+    branches:
+      - master
+  pull_request_target:
+    branches:
+      - master
+    types: [synchronize]
+
+jobs:
+  label:
+    name: Labeling
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'louislam/uptime-kuma' }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Apply label
+        uses: eps1lon/actions-label-merge-conflict@v3
+        with:
+          dirtyLabel: 'needs:resolve-merge-conflict'
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'

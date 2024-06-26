@@ -119,6 +119,9 @@
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
                                     {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
+                                <button class="btn btn-primary" type="button" @click="resetToken">
+                                    {{ $t("Reset Token") }}
+                                </button>
                             </div>
 
                             <!-- Keyword -->
@@ -141,14 +144,39 @@
                                 </div>
                             </div>
 
+                            <!-- Remote Browser -->
+                            <div v-if="monitor.type === 'real-browser'" class="my-3">
+                                <!-- Toggle -->
+                                <div class="my-3 form-check">
+                                    <input id="toggle" v-model="remoteBrowsersToggle" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="toggle">
+                                        {{ $t("useRemoteBrowser") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("remoteBrowserToggle") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="remoteBrowsersToggle">
+                                    <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
+                                    <ActionSelect
+                                        v-model="monitor.remote_browser"
+                                        :options="remoteBrowsersOptions"
+                                        icon="plus"
+                                        :action="() => $refs.remoteBrowserDialog.show()"
+                                    />
+                                </div>
+                            </div>
+
                             <!-- Json Query -->
                             <div v-if="monitor.type === 'json-query'" class="my-3">
                                 <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
                                 <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
 
-                                <!-- eslint-disable-next-line vue/no-v-html -->
-                                <div class="form-text" v-html="$t('jsonQueryDescription')">
-                                </div>
+                                <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
+                                    <a href="https://jsonata.org/">jsonata.org</a>
+                                    <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                </i18n-t>
                                 <br>
 
                                 <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
@@ -322,11 +350,34 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="mqttSuccessMessage" class="form-label">MQTT {{ $t("successMessage") }}</label>
-                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
+                                    <label for="mqttCheckType" class="form-label">MQTT {{ $t("Check Type") }}</label>
+                                    <select id="mqttCheckType" v-model="monitor.mqttCheckType" class="form-select" required>
+                                        <option value="keyword">{{ $t("Keyword") }}</option>
+                                        <option value="json-query">{{ $t("Json Query") }}</option>
+                                    </select>
+                                </div>
+
+                                <div v-if="monitor.mqttCheckType === 'keyword'" class="my-3">
+                                    <label for="mqttSuccessKeyword" class="form-label">MQTT {{ $t("successKeyword") }}</label>
+                                    <input id="mqttSuccessKeyword" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
                                     <div class="form-text">
-                                        {{ $t("successMessageExplanation") }}
+                                        {{ $t("successKeywordExplanation") }}
                                     </div>
+                                </div>
+
+                                <!-- Json Query -->
+                                <div v-if="monitor.mqttCheckType === 'json-query'" class="my-3">
+                                    <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
+
+                                    <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
+                                        <a href="https://jsonata.org/">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                    </i18n-t>
+                                    <br>
+
+                                    <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                                 </div>
                             </template>
 
@@ -384,6 +435,32 @@
                                 </div>
                             </template>
 
+                            <!-- MongoDB -->
+                            <template v-if="monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="mongodbCommand" class="form-label">{{ $t("Command") }}</label>
+                                    <textarea id="mongodbCommand" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ '{ &quot;ping&quot;: 1 }' ])"></textarea>
+                                    <i18n-t tag="div" class="form-text" keypath="mongodbCommandDescription">
+                                        <template #documentation>
+                                            <a href="https://www.mongodb.com/docs/manual/reference/command/">{{ $t('documentationOf', ['MongoDB']) }}</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+                                <div class="my-3">
+                                    <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control">
+
+                                    <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
+                                        <a href="https://jsonata.org/">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                    </i18n-t>
+                                </div>
+                                <div class="my-3">
+                                    <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control">
+                                </div>
+                            </template>
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -432,10 +509,10 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ $t("ignoreTLSError") }}
+                                    {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
                                 </label>
                             </div>
 
@@ -662,6 +739,7 @@
                                     <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
                                     <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
                                         <option value="json">JSON</option>
+                                        <option value="form">x-www-form-urlencoded</option>
                                         <option value="xml">XML</option>
                                     </select>
                                 </div>
@@ -834,6 +912,7 @@
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
+            <RemoteBrowserDialog ref="remoteBrowserDialog" @added="addedRemoteBrowser" />
         </div>
     </transition>
 </template>
@@ -846,13 +925,16 @@ import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
+import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 
-const toast = useToast();
+const toast = useToast;
+
+const pushTokenLength = 32;
 
 const monitorDefaults = {
     type: "http",
@@ -881,6 +963,7 @@ const monitorDefaults = {
     mqttPassword: "",
     mqttTopic: "",
     mqttSuccessMessage: "",
+    mqttCheckType: "keyword",
     authMethod: null,
     oauth_auth_method: "client_secret_basic",
     httpBodyEncoding: "json",
@@ -891,6 +974,7 @@ const monitorDefaults = {
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
+    remote_browser: null
 };
 
 export default {
@@ -902,6 +986,7 @@ export default {
         CreateGroupDialog,
         NotificationDialog,
         DockerHostDialog,
+        RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
     },
@@ -929,6 +1014,7 @@ export default {
                 "mongodb": "mongodb://username:password@host:port/database",
             },
             draftGroupName: null,
+            remoteBrowsersEnabled: false,
         };
     },
 
@@ -952,7 +1038,31 @@ export default {
             }
             return this.$t(name);
         },
-
+        remoteBrowsersOptions() {
+            return this.$root.remoteBrowserList.map(browser => {
+                return {
+                    label: browser.name,
+                    value: browser.id,
+                };
+            });
+        },
+        remoteBrowsersToggle: {
+            get() {
+                return this.remoteBrowsersEnabled || this.monitor.remote_browser != null;
+            },
+            set(value) {
+                if (value) {
+                    this.remoteBrowsersEnabled = true;
+                    if (this.monitor.remote_browser == null && this.$root.remoteBrowserList.length > 0) {
+                        // set a default remote browser if there is one. Otherwise, the user will have to select one manually.
+                        this.monitor.remote_browser = this.$root.remoteBrowserList[0].id;
+                    }
+                } else {
+                    this.remoteBrowsersEnabled = false;
+                    this.monitor.remote_browser = null;
+                }
+            }
+        },
         isAdd() {
             return this.$route.path === "/add";
         },
@@ -1012,6 +1122,9 @@ message HealthCheckResponse {
     <Uptime>Kuma</Uptime>
   </soap:Body>
 </soap:Envelope>` ]);
+            }
+            if (this.monitor && this.monitor.httpBodyEncoding === "form") {
+                return this.$t("Example:", [ "key1=value1&key2=value2" ]);
             }
             return this.$t("Example:", [ `
 {
@@ -1080,8 +1193,7 @@ message HealthCheckResponse {
 
         /**
          * Generates the parent monitor options list based on the sorted group monitor list and draft group name.
-         *
-         * @return {Array} The parent monitor options list.
+         * @returns {Array} The parent monitor options list.
          */
         parentMonitorOptionsList() {
             let list = [];
@@ -1167,7 +1279,9 @@ message HealthCheckResponse {
         "monitor.type"() {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
-                    this.monitor.pushToken = genSecret(10);
+                    // ideally this would require checking if the generated token is already used
+                    // it's very unlikely to get a collision though (62^32 ~ 2.27265788 * 10^57 unique tokens)
+                    this.monitor.pushToken = genSecret(pushTokenLength);
                 }
             }
 
@@ -1188,7 +1302,7 @@ message HealthCheckResponse {
                     if (res.ok) {
                         this.gameList = res.gameList;
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1260,7 +1374,10 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        /** Initialize the edit monitor form */
+        /**
+         * Initialize the edit monitor form
+         * @returns {void}
+         */
         init() {
             if (this.isAdd) {
 
@@ -1305,6 +1422,7 @@ message HealthCheckResponse {
                             // group monitor fields
                             this.monitor.childrenIDs = undefined;
                             this.monitor.forceInactive = undefined;
+                            this.monitor.path = undefined;
                             this.monitor.pathName = undefined;
                             this.monitor.screenshot = undefined;
 
@@ -1330,7 +1448,7 @@ message HealthCheckResponse {
                             this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1373,9 +1491,13 @@ message HealthCheckResponse {
             return true;
         },
 
+        resetToken() {
+            this.monitor.pushToken = genSecret(pushTokenLength);
+        },
+
         /**
          * Submit the form data for processing
-         * @returns {void}
+         * @returns {Promise<void>}
          */
         async submit() {
 
@@ -1426,7 +1548,7 @@ message HealthCheckResponse {
                     createdNewParent = true;
                     this.monitor.parent = res.monitorID;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                     this.processing = false;
                     return;
                 }
@@ -1440,19 +1562,16 @@ message HealthCheckResponse {
 
                         // Start the new parent monitor after edit is done
                         if (createdNewParent) {
-                            this.startParentGroupMonitor();
+                            await this.startParentGroupMonitor();
                         }
-
-                        toast.success(res.msg);
                         this.processing = false;
                         this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
-
                     } else {
-                        toast.error(res.msg);
                         this.processing = false;
                     }
 
+                    this.$root.toastRes(res);
                 });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
@@ -1479,6 +1598,7 @@ message HealthCheckResponse {
          * Added a Notification Event
          * Enable it if the notification is added in EditMonitor.vue
          * @param {number} id ID of notification to add
+         * @returns {void}
          */
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
@@ -1488,21 +1608,26 @@ message HealthCheckResponse {
          * Added a Proxy Event
          * Enable it if the proxy is added in EditMonitor.vue
          * @param {number} id ID of proxy to add
+         * @returns {void}
          */
         addedProxy(id) {
             this.monitor.proxyId = id;
         },
 
-        // Added a Docker Host Event
-        // Enable it if the Docker Host is added in EditMonitor.vue
+        /**
+         * Added a Docker Host Event
+         * Enable it if the Docker Host is added in EditMonitor.vue
+         * @param {number} id ID of docker host
+         * @returns {void}
+         */
         addedDockerHost(id) {
             this.monitor.docker_host = id;
         },
 
         /**
          * Adds a draft group.
-         *
-         * @param {string} draftGroupName - The name of the draft group.
+         * @param {string} draftGroupName The name of the draft group.
+         * @returns {void}
          */
         addedDraftGroup(draftGroupName) {
             this.draftGroupName = draftGroupName;
