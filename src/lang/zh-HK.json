@@ -755,5 +755,8 @@
     "styleElapsedTimeShowNoLine": "顯示（不帶連接線）",
     "styleElapsedTimeShowWithLine": "顯示（帶連接線）",
     "Request Timeout": "請求超時",
-    "timeoutAfter": "{0} 秒後為超時"
+    "timeoutAfter": "{0} 秒後為超時",
+    "settingUpDatabaseMSG": "正在設定資料庫。可能需要一段時間，請耐心等待。",
+    "Host URL": "主機網址",
+    "locally configured mail transfer agent": "本機設定的郵件傳輸代理"
 }

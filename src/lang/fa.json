@@ -76,7 +76,7 @@
     "Accepted Status Codes": "وضعیت‌های (Status Code) های قابل قبول",
     "Save": "ذخیره",
     "Notifications": "اطلاع‌رسانی‌ها",
-    "Not available, please setup.": "هیچ موردی موجود نیست، اولین مورد را راه اندازی کنید.",
+    "Not available, please setup.": "هیچ موردی موجود نیست، اولین مورد را راه‌اندازی کنید.",
     "Setup Notification": "راه اندازی اطلاع‌رسانی‌",
     "Light": "روشن",
     "Dark": "تاریک",
@@ -812,8 +812,8 @@
     "Expected Value": "مقدار مورد انتظار",
     "Json Query": "کوئری جیسون",
     "Saved.": "ذخیره شده.",
-    "setupDatabaseChooseDatabase": "از چه دیتابیسی میخواهید استفاده کنید؟",
-    "setupDatabaseEmbeddedMariaDB": "شما نیازی نیست چیزی را تنظیم کنید . این Image داکر MariaDB را به طور خودکار برای شما جاسازی و پیکربندی کرده است. آپتایم کوما از طریق سوکت یونیکس به این دیتابیس متصل می شود.",
+    "setupDatabaseChooseDatabase": "از چه دیتابیسی می‌خواهید استفاده کنید؟",
+    "setupDatabaseEmbeddedMariaDB": "شما نیازی نیست چیزی را تنظیم کنید . این Image داکر، MariaDB را به طور خودکار برای شما جاسازی و پیکربندی کرده است. آپتایم کوما از طریق سوکت یونیکس به این دیتابیس متصل می شود.",
     "setupDatabaseSQLite": "یک فایل دیتابیس ساده که برای استقرار در مقیاس کوچک توصیه می شود. قبل از نسخه 2.0.0، Uptime Kuma از SQLite به عنوان دیتابیس پیش فرض استفاده می کرد.",
     "enableNSCD": "فعال سازی NSCD (Name Service Cache Daemon) برای کش کردن تمام ریکوئست های DNS",
     "setupDatabaseMariaDB": "به یک دیتابیس خارجی MariaDB متصل شوید. شما باید اطلاعات اتصال دیتابیس را تنظیم کنید.",
@@ -892,5 +892,6 @@
     "documentationOf": "کلید مطلب ها",
     "wayToGetHeiiOnCallDetails": "روش دریافت ایدی کلید و کلید ای پی آی درمطلب توضیح داده شده است",
     "Channel access token (Long-lived)": "توکن دسترسی به کانال",
-    "Your User ID": "آیدی حساب کاربری شما"
+    "Your User ID": "آیدی حساب کاربری شما",
+    "ignoreTLSErrorGeneral": "نادیده گرفتن ارور TLS/SSL برای برقراری ارتباط"
 }
