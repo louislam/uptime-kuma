@@ -1,1 +1,5 @@
-{}
+{
+    "setupDatabaseEmbeddedMariaDB": "Akukho mfuneko yokuba usethe nantoni na. Lo mfanekiso weDocker sele uqulathe kwaye ulungiselele iMariaDB ngokuzenzekelayo. I-Uptime Kuma iya kuqhagamshela kule database nge-unix socket.",
+    "setupDatabaseChooseDatabase": "Ngowuphi umthombo wedatha ofuna ukuwusebenzisa?",
+    "setupDatabaseMariaDB": "Qhagamshela kwi-database yeMariaDB yangaphandle. Kuya kufuneka usethe ulwazi loqhagamshelo lwedathabase."
+}

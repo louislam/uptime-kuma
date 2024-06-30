@@ -822,7 +822,7 @@
     "emailTemplateHeartbeatJSON": "objeto que descreve o batimento cardíaco",
     "emailTemplateMsg": "mensagem da notificação",
     "emailTemplateLimitedToUpDownNotification": "disponível apenas para pulsações UP/DOWN, caso contrário, nulo",
-    "wayToGetFlashDutyKey": "Você pode ir para Canal -> (Selecionar um Canal) -> Integrações -> Adicionar uma nova integração', adicionar um 'Evento Personalizado' para obter um endereço de push, copiar a Chave de Integração no endereço. Para mais informações por favor visite",
+    "wayToGetFlashDutyKey": "Você pode ir em Canal -> (Selecionar um Canal) -> Integrações -> Adicionar uma nova integração, adicione um 'Uptime Kuma' para obter um endereço de push, copie a Chave de Integração no endereço. Para mais informações, visite",
     "FlashDuty Severity": "Gravidade",
     "templateMsg": "mensagem da notificação",
     "templateHeartbeatJSON": "objeto que descreve o batimento cardíaco",
@@ -922,7 +922,7 @@
     "threemaRecipientTypeIdentityFormat": "8 caracteres",
     "threemaRecipientTypePhone": "Número de telefone",
     "threemaRecipientTypeEmail": "Endereço de email",
-    "threemaSenderIdentity": "Gateway-ID",
+    "threemaSenderIdentity": "ID do Gateway",
     "threemaSenderIdentityFormat": "8 caracteres, geralmente começa com *",
     "Command": "Comando",
     "mongodbCommandDescription": "Execute um comando MongoDB no banco de dados. Para informações sobre os comandos disponíveis confira a {documentação}",
@@ -949,5 +949,14 @@
     "Refresh Interval Description": "A página de status fará uma atualização completa do site a cada {0} segundos",
     "locally configured mail transfer agent": "configurado de agente de transferência de e-mail localmente",
     "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Insira o nome do host do servidor ao qual deseja se conectar ou {localhost} se pretende usar um {local_mta}",
-    "ignoreTLSErrorGeneral": "Ignorar erro TLS/SSL para conexão"
+    "ignoreTLSErrorGeneral": "Ignorar erro TLS/SSL para conexão",
+    "threemaRecipientTypePhoneFormat": "E.164, sem o sinal de \"+\" no início",
+    "threemaApiAuthenticationSecret": "ID secreto do Gateway",
+    "threemaBasicModeInfo": "Observação: Esta integração usa o Threema Gateway no modo básico (criptografia baseada em servidor). Mais detalhes podem ser encontrados em {0}.",
+    "bitrix24SupportUserID": "Insira seu ID de usuário no Bitrix24. Você pode encontrar o ID no link ao acessar o perfil do usuário.",
+    "Bitrix24 Webhook URL": "URL do Webhook do Bitrix24",
+    "wayToGetDiscordThreadId": "Obter o ID de uma thread/postagem em um fórum é similar a obter o ID de um canal. Saiba mais sobre como obter IDs {0}",
+    "whatHappensAtForumPost": "Criar um novo tópico no fórum. Isto NÃO publica mensagens em tópicos existentes. Para publicar em um tópico existente, use \"{option}\"",
+    "e.g. {discordThreadID}": "Por exemplo {discordThreadID}",
+    "receiverInfoSevenIO": "Se o número de destino não estiver localizado na Alemanha, você deve adicionar o código do país antes do número (por exemplo, para o código de país 1 dos EUA, use 117612121212 em vez de 017612121212)"
 }
