@@ -92,7 +92,7 @@
     "No": "いいえ",
     "Username": "ユーザー名",
     "Password": "パスワード",
-    "Remember me": "パスワードを忘れた場合",
+    "Remember me": "ログインしたままにする",
     "Login": "ログイン",
     "No Monitors, please": "監視がありません",
     "add one": "add one",
@@ -454,7 +454,7 @@
     "maintenanceStatus-unknown": "不明",
     "Server Timezone": "サーバータイムゾーン",
     "IconUrl": "アイコンURL",
-    "Enable DNS Cache": "DNSキャッシュを有効にする",
+    "Enable DNS Cache": "(非推奨) HTTP(s)の監視に対しDNSキャッシュを有効にする",
     "Enable": "有効",
     "Disable": "無効",
     "Schedule Maintenance": "スケジュールメンテナンス",
@@ -663,5 +663,10 @@
     "lastDay3": "月末の 3 日前",
     "lastDay4": "月末の 4 日前",
     "chromeExecutable": "Chrome/Chromium の実行ファイル",
-    "chromeExecutableDescription": "Docker ユーザーで、Chromium がインストールされていない場合、インストールとテスト結果の表示に数分かかることがあります。1 GB の空き容量を必要とします。"
+    "chromeExecutableDescription": "Docker を使用しており、Chromium がインストールされていない場合、インストールしてからテスト結果の表示するのに数分かかることがあります。1 GB の容量を必要とします。",
+    "jsonQueryDescription": "応答に対して json クエリを実行し、値が期待されたものであるか確認します(戻り値は比較の際文字列に変換されます)。 クエリ言語のドキュメントについては、{0}を参照してください。{1}にプレイグラウンドがあります。",
+    "leave blank for default body": "デフォルトの本文を使用するには空のままにしてください",
+    "apprise": "Apprise (50以上の通知サービスをサポートしています)",
+    "Apprise URL": "AppriseのURL",
+    "emailTemplateHostnameOrURL": "ホスト名またはURL"
 }
