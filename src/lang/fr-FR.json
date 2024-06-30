@@ -975,7 +975,7 @@
     "wayToGetBitrix24Webhook": "Vous pouvez créer un webhook en suivant les étapes de {0}",
     "bitrix24SupportUserID": "Entrez votre identifiant d'utilisateur dans Bitrix24. Vous pouvez trouver l'ID à partir du lien en allant sur le profil de l'utilisateur.",
     "smspartnerPhoneNumber": "Numéro(s) de téléphone",
-    "smspartnerPhoneNumberHelptext": "Le numéro doit être au format international {0}, {1}. Plusieurs nombres doivent être séparés par {2}",
+    "smspartnerPhoneNumberHelptext": "Le numéro doit être au format international {0}, {1}. Plusieurs numéros doivent être séparés par {2}",
     "smspartnerSenderName": "Nom de l'expéditeur SMS",
     "smspartnerSenderNameInfo": "Doit être compris entre 3 et 11 caractères réguliers",
     "smspartnerApiurl": "Vous pouvez trouver votre clé API dans votre tableau de bord à {0}",
