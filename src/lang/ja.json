@@ -668,5 +668,10 @@
     "leave blank for default body": "デフォルトの本文を使用するには空のままにしてください",
     "apprise": "Apprise (50以上の通知サービスをサポートしています)",
     "Apprise URL": "AppriseのURL",
-    "emailTemplateHostnameOrURL": "ホスト名またはURL"
+    "emailTemplateHostnameOrURL": "ホスト名またはURL",
+    "emailCustomisableContent": "カスタマイズ可能なコンテンツ",
+    "emailCustomBody": "カスタム本文",
+    "emailTemplateServiceName": "サービス名",
+    "smtpLiquidIntroduction": "次の 2 つのテンプレート・フィールドは Liquid テンプレート言語で記述できます。これらの使い方は {0} にあります。以下は利用可能な変数です：",
+    "emailTemplateStatus": "ステータス"
 }
