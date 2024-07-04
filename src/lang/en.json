@@ -954,5 +954,6 @@
     "threemaSenderIdentity": "Gateway-ID",
     "threemaSenderIdentityFormat": "8 characters, usually starts with *",
     "threemaApiAuthenticationSecret": "Gateway-ID Secret",
-    "threemaBasicModeInfo": "Note: This integration uses Threema Gateway in basic mode (server-based encryption). Further details can be found {0}."
+    "threemaBasicModeInfo": "Note: This integration uses Threema Gateway in basic mode (server-based encryption). Further details can be found {0}.",
+    "apiKeysDisabledMsg": "API keys are disabled because authentication is disabled."
 }
