@@ -41,8 +41,13 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 
 ```bash
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
-```
 
+# Add `--add-host` flag to reach to local web servers which reside in local machine
+docker run -d --restart=always -p 3001:3001 --add-host host.docker.internal:host-gateway -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+
+# Replace `http://localhost:8000` with `http://host.docker.internal:8000`
+# curl http://host.docker.internal:8000
+```
 Uptime Kuma is now running on <http://0.0.0.0:3001>.
 
 > [!WARNING]
