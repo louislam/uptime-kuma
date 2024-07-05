@@ -68,8 +68,8 @@ pipeline{
         }
         stage('Deploy to Container'){
             steps{
-                sh docker run -d --name Uptime -v /var/run/docker.sock:/var/run/docker.sock -p 3001:3001 monishdockerhub/Uptime:latest //a docker container is self-contained, which means Uptime Kuma cannot access your host. You need to bind the /var/run/docker.sock to your container.
+                sh docker run -d --name Uptime -v /var/run/docker.sock:/var/run/docker.sock -p 3001:3001 monishdockerhub/Uptime:latest 
             }            
         }
     }
-}   
+}       
