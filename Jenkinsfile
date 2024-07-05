@@ -10,7 +10,7 @@ pipeline{
     stages {
         stage('checkout from Git'){ 
             steps{
-                git branch: 'main', url: 'https://github.com/MOHANBV153/uptime-kuma.git' 
+                git branch: 'master', url: 'https://github.com/MOHANBV153/uptime-kuma.git' 
            }
        }
         stage('install dependencies'){
