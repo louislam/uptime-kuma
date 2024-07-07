@@ -1,41 +1,135 @@
-ARG BASE_IMAGE=louislam/uptime-kuma:base2
+ARG BASE_IMAGE=base2
+ARG APP_HOME=/app
+# If the image changed, the second stage image should be changed too
+FROM node:20-bookworm-slim AS base2-slim
+
+ARG APP_HOME
+ARG TARGETPLATFORM
+
+WORKDIR ${APP_HOME}
+
+# Specify --no-install-recommends to skip unused dependencies, make the base much smaller!
+# sqlite3 = for debugging
+# iputils-ping = for ping
+# util-linux = for setpriv (Should be dropped in 2.0.0?)
+# dumb-init = avoid zombie processes (#480)
+# curl = for debugging
+# ca-certificates = keep the cert up-to-date
+# sudo = for start service nscd with non-root user
+# nscd = for better DNS caching
+RUN apt update && \
+    apt --yes --no-install-recommends install  \
+        sqlite3  \
+        ca-certificates \
+        iputils-ping  \
+        util-linux  \
+        dumb-init  \
+        curl  \
+        sudo \
+        nscd && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt --yes autoremove
+
+# apprise = for notifications (Install from the deb package, as the stable one is too old) (workaround for #4867)
+# Switching to testing repo is no longer working, as the testing repo is not bookworm anymore.
+# python3-paho-mqtt (#4859)
+RUN curl http://ftp.debian.org/debian/pool/main/a/apprise/apprise_1.8.0-2_all.deb --output apprise.deb && \
+    apt update && \
+    apt --yes --no-install-recommends install ./apprise.deb python3-paho-mqtt && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -f apprise.deb && \
+    apt --yes autoremove
+
+# Install cloudflared
+RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyrings/cloudflare-main.gpg && \
+    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bullseye main' | tee /etc/apt/sources.list.d/cloudflared.list && \
+    apt update && \
+    apt install --yes --no-install-recommends -t stable cloudflared && \
+    cloudflared version && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt --yes autoremove
+
+# For nscd
+COPY ./docker/etc/nscd.conf /etc/nscd.conf
+COPY ./docker/etc/sudoers /etc/sudoers
+
+# Full Base Image
+# MariaDB, Chromium and fonts
+# Make sure to reuse the slim image here.
+FROM base2-slim AS base2
+ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
+RUN apt update && \
+    apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk mariadb-server && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt --yes autoremove && \
+    chown -R node:node /var/lib/mysql
 
 ############################################
 # Build in Golang
-# Run npm run build-healthcheck-armv7 in the host first, otherwise it will be super slow where it is building the armv7 healthcheck
-# Check file: builder-go.dockerfile
+# Optional: Run npm run build-healthcheck-armv7 in the host first, if building the armv7 healthcheck is slow
 ############################################
-FROM louislam/uptime-kuma:builder-go AS build_healthcheck
+FROM ${BASE_IMAGE} AS build_healthcheck
+
+ENV PATH="/usr/local/go/bin:${PATH}"
+COPY --from=golang:1.19-buster /usr/local/go/ /usr/local/go/
+
+COPY ./extra/ ./extra/
+
+# Compile healthcheck.go
+RUN node ./extra/build-healthcheck.js $TARGETPLATFORM
 
 ############################################
 # Build in Node.js
 ############################################
-FROM louislam/uptime-kuma:base2 AS build
-USER node
-WORKDIR /app
+FROM ${BASE_IMAGE} AS prod_deps
+
+RUN --mount=type=bind,source=.npmrc,target=.npmrc \
+    --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=package-lock.json,target=package-lock.json \
+    --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev
+
+FROM ${BASE_IMAGE} AS build
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
-COPY --chown=node:node .npmrc .npmrc
-COPY --chown=node:node package.json package.json
-COPY --chown=node:node package-lock.json package-lock.json
-RUN npm ci --omit=dev
-COPY . .
-COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
-RUN mkdir ./data
+
+RUN --mount=type=bind,source=.npmrc,target=.npmrc \
+    --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=package-lock.json,target=package-lock.json \
+    --mount=type=cache,target=/root/.npm \
+    npm ci
+
+COPY . ./
+
+RUN npm run build
 
 ############################################
 # ⭐ Main Image
 ############################################
-FROM $BASE_IMAGE AS release
-USER node
-WORKDIR /app
+FROM ${BASE_IMAGE} AS release
+
+RUN mkdir -p ./data
 
 LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
 
 ENV UPTIME_KUMA_IS_CONTAINER=1
+ENV NODE_ENV=production
 
 # Copy app files from build layer
-COPY --chown=node:node --from=build /app /app
+COPY --chown=node:node --from=prod_deps /app/node_modules ./node_modules
+COPY --chown=node:node --from=build /app/src ./src
+COPY --chown=node:node --from=build /app/dist ./dist
+COPY --chown=node:node --from=build /app/server ./server
+COPY --chown=node:node --from=build /app/public ./public
+COPY --chown=node:node --from=build /app/config ./config
+COPY --chown=node:node --from=build /app/db ./db
+COPY --chown=node:node --from=build /app/server ./server
+COPY --chown=node:node --from=build /app/package.json ./
+COPY --chown=node:node --from=build /app/package-lock.json ./
+COPY --chown=node:node --from=build /app/index.html ./
+COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
+
+USER node
 
 EXPOSE 3001
 HEALTHCHECK --interval=60s --timeout=30s --start-period=180s --retries=5 CMD extra/healthcheck
@@ -43,24 +137,16 @@ ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["node", "server/server.js"]
 
 ############################################
-# Rootless Image
-############################################
-FROM release AS rootless
-
-############################################
 # Mark as Nightly
 ############################################
 FROM release AS nightly
 RUN npm run mark-as-nightly
 
-FROM nightly AS nightly-rootless
-USER node
-
 ############################################
 # Build an image for testing pr
 ############################################
-FROM louislam/uptime-kuma:base2 AS pr-test2
-WORKDIR /app
+FROM ${BASE_IMAGE} AS pr-test2
+
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 
 ## Install Git
@@ -88,7 +174,7 @@ CMD ["npm", "run", "start-pr-test"]
 ############################################
 # Upload the artifact to Github
 ############################################
-FROM louislam/uptime-kuma:base2 AS upload-artifact
+FROM ${BASE_IMAGE} AS upload-artifact
 WORKDIR /
 RUN apt update && \
     apt --yes install curl file
@@ -111,4 +197,3 @@ RUN chmod +x /app/extra/upload-github-release-asset.sh
 # Dist only
 RUN cd /app && tar -zcvf $DIST dist
 RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=/app/$DIST
-
