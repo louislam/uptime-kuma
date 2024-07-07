@@ -142,6 +142,15 @@ CMD ["node", "server/server.js"]
 FROM release AS nightly
 RUN npm run mark-as-nightly
 
+FROM nightly AS nightly-rootless
+USER node
+
+############################################
+# Mark as Nightly
+############################################
+FROM release AS nightly
+RUN npm run mark-as-nightly
+
 ############################################
 # Build an image for testing pr
 ############################################
