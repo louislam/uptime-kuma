@@ -86,7 +86,7 @@ async function createTables() {
         table.text("accepted_statuscodes_json").notNullable().defaultTo("[\"200-299\"]");
         table.string("dns_resolve_type", 5);
         table.string("dns_resolve_server", 255);
-        table.string("dns_last_result", 255);
+        table.string("dns_last_result", 2000);
         table.integer("retry_interval").notNullable().defaultTo(0);
         table.string("push_token", 20).defaultTo(null);
         table.text("method").notNullable().defaultTo("GET");
