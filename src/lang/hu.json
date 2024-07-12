@@ -841,5 +841,15 @@
     "e.g. {discordThreadID}": "például. {discordThreadID}",
     "locally configured mail transfer agent": "Helyileg beállított email továbbító",
     "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Adja meg a csatlakoztatni kívánt szerver gazdagép nevét vagy {localhost} ha a {local_mta}-t szeretné használni",
-    "ignoreTLSErrorGeneral": "Mellőzze a TLS/SSL hibákat a csatlakozáshoz"
+    "ignoreTLSErrorGeneral": "Mellőzze a TLS/SSL hibákat a csatlakozáshoz",
+    "threemaRecipientTypeIdentityFormat": "8 karakter",
+    "threemaRecipientTypeEmail": "Email cím",
+    "threemaSenderIdentity": "Gateway-azonosító",
+    "threemaRecipientTypeIdentity": "Threema-azonosító",
+    "threemaSenderIdentityFormat": "8 karakter, általában *-al kezdődik",
+    "threemaRecipientTypePhone": "Telefonszám",
+    "max 15 digits": "max 15 karakter",
+    "cellsyntDestination": "A címzett telefonszáma nemzetközi formátumban megadva. A kezdő 00-t követően az országkód, pl. 003612127654 egy magyarországi 0612127654 szám esetében (max 17 karakter összesen). HTTP lekérdezésenként max 25000, vesszővel elválaszott címzett.",
+    "Telephone number": "Telefonszám",
+    "Allow Long SMS": "Hosszú SMS engedélyezve"
 }
