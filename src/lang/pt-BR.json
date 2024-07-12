@@ -958,5 +958,6 @@
     "wayToGetDiscordThreadId": "Obter o ID de uma thread/postagem em um fórum é similar a obter o ID de um canal. Saiba mais sobre como obter IDs {0}",
     "whatHappensAtForumPost": "Criar um novo tópico no fórum. Isto NÃO publica mensagens em tópicos existentes. Para publicar em um tópico existente, use \"{option}\"",
     "e.g. {discordThreadID}": "Por exemplo {discordThreadID}",
-    "receiverInfoSevenIO": "Se o número de destino não estiver localizado na Alemanha, você deve adicionar o código do país antes do número (por exemplo, para o código de país 1 dos EUA, use 117612121212 em vez de 017612121212)"
+    "receiverInfoSevenIO": "Se o número de destino não estiver localizado na Alemanha, você deve adicionar o código do país antes do número (por exemplo, para o código de país 1 dos EUA, use 117612121212 em vez de 017612121212)",
+    "apiKeysDisabledMsg": "As chaves de API estão desativadas porque a autenticação está desativada."
 }

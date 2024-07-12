@@ -85,5 +85,7 @@
     "locally configured mail transfer agent": "agente de transferência de correio configurado localmente",
     "ignoreTLSErrorGeneral": "Ignorar erro de TLS/SSL para conexão",
     "Max. Redirects": "Máx. Redirecionamentos",
-    "General Monitor Type": "Tipo Geral de Monitoramento"
+    "General Monitor Type": "Tipo Geral de Monitoramento",
+    "needPushEvery": "Você deve chamar essa URL a cada {0} segundos.",
+    "pushOptionalParams": "Parâmetros opcionais: {0}"
 }
