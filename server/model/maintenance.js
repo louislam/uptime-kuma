@@ -254,7 +254,7 @@ class Maintenance extends BeanModel {
                     }
 
                     if (duration === undefined && this.strategy === "recurring-interval") {
-                        duration = this.duration * 1000;
+                        duration = this.duration * 1000; // For recurring-interval, the duration needs to be defined
                     }
 
                     UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
@@ -268,6 +268,7 @@ class Maintenance extends BeanModel {
 
                 // Create Cron
                 if (this.strategy === "recurring-interval") {
+                    // For recurring-interval, Croner needs to have interval and startAt
                     const startDate = dayjs(this.startDate);
                     const [ hour, minute ] = this.startTime.split(":");
                     const startDateTime = startDate.hour(hour).minute(minute);
@@ -410,7 +411,7 @@ class Maintenance extends BeanModel {
         } else if (!this.strategy.startsWith("recurring-")) {
             this.cron = "";
         } else if (this.strategy === "recurring-interval") {
-            this.cron = "* * * * *";
+            this.cron = "* * * * *"; // Because it is interval, it will be calculated in the run function
             this.duration = this.calcDuration();
             log.debug("maintenance", "Cron: " + this.cron);
             log.debug("maintenance", "Duration: " + this.duration);
