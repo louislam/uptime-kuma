@@ -253,6 +253,10 @@ class Maintenance extends BeanModel {
                         duration = this.duration * 1000;
                     }
 
+                    if (duration === undefined && this.strategy === "recurring-interval") {
+                        duration = this.duration * 1000;
+                    }
+
                     UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
 
                     this.beanMeta.durationTimeout = setTimeout(() => {
@@ -263,9 +267,20 @@ class Maintenance extends BeanModel {
                 };
 
                 // Create Cron
-                this.beanMeta.job = new Cron(this.cron, {
-                    timezone: await this.getTimezone(),
-                }, startEvent);
+                if (this.strategy === "recurring-interval") {
+                    const startDate = dayjs(this.startDate);
+                    const [ hour, minute ] = this.startTime.split(":");
+                    const startDateTime = startDate.hour(hour).minute(minute);
+                    this.beanMeta.job = new Cron(this.cron, {
+                        timezone: await this.getTimezone(),
+                        interval: this.interval_day * 24 * 60 * 60,
+                        startAt: startDateTime.toISOString(),
+                    }, startEvent);
+                } else {
+                    this.beanMeta.job = new Cron(this.cron, {
+                        timezone: await this.getTimezone(),
+                    }, startEvent);
+                }
 
                 // Continue if the maintenance is still in the window
                 let runningTimeslot = this.getRunningTimeslot();
@@ -395,10 +410,7 @@ class Maintenance extends BeanModel {
         } else if (!this.strategy.startsWith("recurring-")) {
             this.cron = "";
         } else if (this.strategy === "recurring-interval") {
-            let array = this.start_time.split(":");
-            let hour = parseInt(array[0]);
-            let minute = parseInt(array[1]);
-            this.cron = minute + " " + hour + " */" + this.interval_day + " * *";
+            this.cron = "* * * * *";
             this.duration = this.calcDuration();
             log.debug("maintenance", "Cron: " + this.cron);
             log.debug("maintenance", "Duration: " + this.duration);
