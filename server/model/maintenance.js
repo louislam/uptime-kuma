@@ -411,7 +411,8 @@ class Maintenance extends BeanModel {
         } else if (!this.strategy.startsWith("recurring-")) {
             this.cron = "";
         } else if (this.strategy === "recurring-interval") {
-            this.cron = "* * * * *"; // Because it is interval, it will be calculated in the run function
+            // For intervals, the pattern is calculated in the run function as the interval-option is set
+            this.cron = "* * * * *";
             this.duration = this.calcDuration();
             log.debug("maintenance", "Cron: " + this.cron);
             log.debug("maintenance", "Duration: " + this.duration);
