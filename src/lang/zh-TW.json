@@ -772,7 +772,6 @@
     "Check/Uncheck": "選中/取消選中",
     "tailscalePingWarning": "如需使用 Tailscale Ping 客戶端，您需要以非 docker 方式安裝 Uptime Kuma，並同時安裝 Tailscale 客戶端。",
     "invertKeywordDescription": "出現關鍵詞將令檢測結果設為失敗，而非成功。",
-    "jsonQueryDescription": "對回應結果執行一次 JSON 查詢，其返回值將會被轉換為字串，再與期望值進行比較。可造訪{0}閱讀JSON 查詢語言的文件，或在{1}測試查詢語句。",
     "wayToGetKookGuildID": "在 Kook 設定中打開“開發者模式”，然後右鍵點選頻道可取得其 ID",
     "Notify Channel": "通知該頻道",
     "aboutNotifyChannel": "勾選“通知該頻道”，會令該頻道內所有成員都收到一條桌面端或移動端通知，無論其狀態是在線或離開。",

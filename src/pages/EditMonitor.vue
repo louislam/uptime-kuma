@@ -24,6 +24,9 @@
                                         <option value="ping">
                                             Ping
                                         </option>
+                                        <option value="snmp">
+                                            SNMP
+                                        </option>
                                         <option value="keyword">
                                             HTTP(s) - {{ $t("Keyword") }}
                                         </option>
@@ -168,21 +171,6 @@
                                 </div>
                             </div>
 
-                            <!-- Json Query -->
-                            <div v-if="monitor.type === 'json-query'" class="my-3">
-                                <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
-                                <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
-
-                                <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
-                                    <a href="https://jsonata.org/">jsonata.org</a>
-                                    <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
-                                </i18n-t>
-                                <br>
-
-                                <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
-                                <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
-                            </div>
-
                             <!-- Game -->
                             <!-- GameDig only -->
                             <div v-if="monitor.type === 'gamedig'" class="my-3">
@@ -246,17 +234,77 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT / Radius Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'snmp'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                            </div>
+
+                            <!-- SNMP Monitor Type -->
+                            <div v-if="monitor.type === 'snmp'" class="my-3">
+                                <label for="snmp_community_string" class="form-label">{{ $t("Community String") }}</label>
+                                <!-- TODO: Rename monitor.radiusPassword to monitor.password for general use -->
+                                <HiddenInput id="snmp_community_string" v-model="monitor.radiusPassword" autocomplete="false" required="true" placeholder="public"></HiddenInput>
+
+                                <div class="form-text">{{ $t('snmpCommunityStringHelptext') }}</div>
+                            </div>
+
+                            <div v-if="monitor.type === 'snmp'" class="my-3">
+                                <label for="snmp_oid" class="form-label">{{ $t("OID (Object Identifier)") }}</label>
+                                <input id="snmp_oid" v-model="monitor.snmpOid" :title="$t('Please enter a valid OID.') + ' ' + $t('Example:', ['1.3.6.1.4.1.9.6.1.101'])" type="text" class="form-control" pattern="^([0-2])((\.0)|(\.[1-9][0-9]*))*$" placeholder="1.3.6.1.4.1.9.6.1.101" required>
+                                <div class="form-text">{{ $t('snmpOIDHelptext') }} </div>
+                            </div>
+
+                            <div v-if="monitor.type === 'snmp'" class="my-3">
+                                <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
+                                <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
+                                    <option value="1">
+                                        SNMPv1
+                                    </option>
+                                    <option value="2c">
+                                        SNMPv2c
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Json Query -->
+                            <!-- For Json Query / SNMP -->
+                            <div v-if="monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
+                                <div class="my-2">
+                                    <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
+                                    <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
+                                        <a href="https://jsonata.org/">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
+                                    </i18n-t>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
+                                </div>
+
+                                <div class="d-flex align-items-start">
+                                    <div class="me-2">
+                                        <label for="json_path_operator" class="form-label">{{ $t("Condition") }}</label>
+                                        <select id="json_path_operator" v-model="monitor.jsonPathOperator" class="form-select me-3" required>
+                                            <option value=">">&gt;</option>
+                                            <option value=">=">&gt;=</option>
+                                            <option value="<">&lt;</option>
+                                            <option value="<=">&lt;=</option>
+                                            <option value="!=">&#33;=</option>
+                                            <option value="==">==</option>
+                                            <option value="contains">contains</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                        <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '==' && monitor.jsonPathOperator !== '!='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
+                                        <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- DNS Resolver Server -->
@@ -483,8 +531,8 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
-                            <!-- Timeout: HTTP / Keyword only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'" class="my-3">
+                            <!-- Timeout: HTTP / Keyword / SNMP only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
                                 <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
@@ -946,7 +994,6 @@ const monitorDefaults = {
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
-    timeout: 48,
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
@@ -1158,8 +1205,8 @@ message HealthCheckResponse {
             // Only groups, not itself, not a decendant
             result = result.filter(
                 monitor => monitor.type === "group" &&
-				monitor.id !== this.monitor.id &&
-				!this.monitor.childrenIDs?.includes(monitor.id)
+                monitor.id !== this.monitor.id &&
+                !this.monitor.childrenIDs?.includes(monitor.id)
             );
 
             // Filter result by active state, weight and alphabetical
@@ -1291,9 +1338,33 @@ message HealthCheckResponse {
                     this.monitor.port = "53";
                 } else if (this.monitor.type === "radius") {
                     this.monitor.port = "1812";
+                } else if (this.monitor.type === "snmp") {
+                    this.monitor.port = "161";
                 } else {
                     this.monitor.port = undefined;
                 }
+            }
+
+            if (this.monitor.type === "snmp") {
+                // snmp is not expected to be executed via the internet => we can choose a lower default timeout
+                this.monitor.timeout = 5;
+            } else {
+                this.monitor.timeout = 48;
+            }
+
+            // Set default SNMP version
+            if (!this.monitor.snmpVersion) {
+                this.monitor.snmpVersion = "2c";
+            }
+
+            // Set default jsonPath
+            if (!this.monitor.jsonPath) {
+                this.monitor.jsonPath = "$";
+            }
+
+            // Set default condition for for jsonPathOperator
+            if (!this.monitor.jsonPathOperator) {
+                this.monitor.jsonPathOperator = "==";
             }
 
             // Get the game list from server
