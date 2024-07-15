@@ -223,8 +223,11 @@ class Database {
                 fs.copyFileSync(Database.templatePath, Database.sqlitePath);
             }
 
+            const Dialect = require("knex/lib/dialects/sqlite3/index.js");
+            Dialect.prototype._driver = () => require("@louislam/sqlite3");
+
             config = {
-                client: "sqlite3",
+                client: Dialect,
                 connection: {
                     filename: Database.sqlitePath,
                     acquireConnectionTimeout: acquireConnectionTimeout,

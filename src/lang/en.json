@@ -949,5 +949,18 @@
     "snmpOIDHelptext": "Enter the OID for the sensor or status you want to monitor. Use network management tools like MIB browsers or SNMP software if you're unsure about the OID.",
     "Condition": "Condition",
     "SNMP Version": "SNMP Version",
-    "Please enter a valid OID.": "Please enter a valid OID."
+    "Please enter a valid OID.": "Please enter a valid OID.",
+    "wayToGetThreemaGateway": "You can register for Threema Gateway {0}.",
+    "threemaRecipient": "Recipient",
+    "threemaRecipientType": "Recipient Type",
+    "threemaRecipientTypeIdentity": "Threema-ID",
+    "threemaRecipientTypeIdentityFormat": "8 characters",
+    "threemaRecipientTypePhone": "Phone Number",
+    "threemaRecipientTypePhoneFormat": "E.164, without leading +",
+    "threemaRecipientTypeEmail": "Email Address",
+    "threemaSenderIdentity": "Gateway-ID",
+    "threemaSenderIdentityFormat": "8 characters, usually starts with *",
+    "threemaApiAuthenticationSecret": "Gateway-ID Secret",
+    "threemaBasicModeInfo": "Note: This integration uses Threema Gateway in basic mode (server-based encryption). Further details can be found {0}.",
+    "apiKeysDisabledMsg": "API keys are disabled because authentication is disabled."
 }
