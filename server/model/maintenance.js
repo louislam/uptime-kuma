@@ -239,23 +239,7 @@ class Maintenance extends BeanModel {
                     this.beanMeta.status = "under-maintenance";
                     clearTimeout(this.beanMeta.durationTimeout);
 
-                    // Check if duration is still in the window. If not, use the duration from the current time to the end of the window
-                    let duration;
-
-                    if (customDuration > 0) {
-                        duration = customDuration;
-                    } else if (this.end_date) {
-                        let d = dayjs(this.end_date).diff(dayjs(), "second");
-                        if (d < this.duration) {
-                            duration = d * 1000;
-                        }
-                    } else {
-                        duration = this.duration * 1000;
-                    }
-
-                    if (duration === undefined && this.strategy === "recurring-interval") {
-                        duration = this.duration * 1000; // For recurring-interval, the duration needs to be defined
-                    }
+                    let duration = this.inferDuration(customDuration);
 
                     UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
 
@@ -325,6 +309,24 @@ class Maintenance extends BeanModel {
         } else {
             return null;
         }
+    }
+
+    /**
+    * Calculate the maintenance duration
+    * @returns {number}
+    */
+
+    inferDuration(customDuration) {
+        // Check if duration is still in the window. If not, use the duration from the current time to the end of the window
+        if (customDuration > 0) {
+            return customDuration;
+        } else if (this.end_date) {
+            let d = dayjs(this.end_date).diff(dayjs(), "second");
+            if (d < this.duration) {
+                return d * 1000;
+            }
+        }
+        return this.duration * 1000;
     }
 
     /**
