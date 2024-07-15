@@ -312,10 +312,10 @@ class Maintenance extends BeanModel {
     }
 
     /**
-    * Calculate the maintenance duration
-    * @returns {number}
-    */
-
+     * Calculate the maintenance duration
+     * @param {number} customDuration - The custom duration in milliseconds.
+     * @returns {number} The inferred duration in milliseconds.
+     */
     inferDuration(customDuration) {
         // Check if duration is still in the window. If not, use the duration from the current time to the end of the window
         if (customDuration > 0) {
