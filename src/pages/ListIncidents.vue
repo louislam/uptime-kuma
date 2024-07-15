@@ -29,6 +29,18 @@ export default {
             error: null,
         };
     },
+    computed: {
+        filteredReports() {
+            return this.incidentReports
+                .slice() // Create a copy to avoid mutating the original array
+                .sort(
+                    (a, b) =>
+                        new Date(b._createdDate) - new Date(a._createdDate),
+                )
+                .slice(-25); // Get the last 25 sorted reports
+        },
+    },
+
     mounted() {
         this.fetchIncidentReports();
     },
@@ -53,17 +65,6 @@ export default {
                 month: "long",
                 day: "numeric",
             });
-        },
-    },
-    computed: {
-        filteredReports() {
-            return this.incidentReports
-                .slice() // Create a copy to avoid mutating the original array
-                .sort(
-                    (a, b) =>
-                        new Date(b._createdDate) - new Date(a._createdDate),
-                )
-                .slice(-25); // Get the last 25 sorted reports
         },
     },
 };
