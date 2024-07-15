@@ -1,1 +1,18 @@
-{}
+{
+    "setupDatabaseChooseDatabase": "আপনি কোন ডাটাবেজটি ব্যবহার করতে চান?",
+    "setupDatabaseEmbeddedMariaDB": "আপনাকে কিছু নিযুক্ত করতে হবে না। এই ডকার ইমেজটি (Docker image) স্বয়ংক্রিয়ভাবে আপনার জন্য মারিয়া ডিবি (MariaDB) বসিয়েছে এবং প্রস্তুত করেছে।Uptime Kuma ইউনিক্স সকেটের (Unix Socket) মাধ্যমে এই ডাটাবেসের সাথে সংযুক্ত হবে।",
+    "setupDatabaseMariaDB": "একটি বহিরাগত মারিয়া ডিবি (MariaDB) ডাটাবেসের সাথে সংযোগ করুন। আপনাকে ডাটাবেস সংযোগ তথ্য নিযুক্ত করতে হবে।",
+    "Add": "সংযোগ করুন",
+    "dbName": "ডাটাবেজের নাম",
+    "languageName": "ইংরেজি",
+    "Settings": "সেটিংস",
+    "Dashboard": "ড্যাশবোর্ড",
+    "Help": "সাহায্য",
+    "New Update": "নতুন আপডেট",
+    "Language": "ভাষা",
+    "Version": "সংস্করণ",
+    "Check Update On GitHub": "GitHub-এ আপডেট চেক করুন",
+    "List": "তালিকা",
+    "General": "সাধারণ",
+    "Game": "খেলা"
+}
