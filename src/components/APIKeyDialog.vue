@@ -92,11 +92,9 @@
 
 <script lang="ts">
 import { Modal } from "bootstrap";
-import { useToast } from "vue-toastification";
 import dayjs from "dayjs";
 import Datepicker from "@vuepic/vue-datepicker";
 import CopyableInput from "./CopyableInput.vue";
-const toast = useToast();
 
 export default {
     components: {
@@ -126,6 +124,7 @@ export default {
     methods: {
         /**
          * Show modal
+         * @returns {void}
          */
         show() {
             this.id = null;
@@ -138,7 +137,10 @@ export default {
             this.keyaddmodal.show();
         },
 
-        /** Submit data to server */
+        /**
+         * Submit data to server
+         * @returns {Promise<void>}
+         */
         async submit() {
             this.processing = true;
 
@@ -154,12 +156,15 @@ export default {
                     this.keymodal.show();
                     this.clearForm();
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                 }
             });
         },
 
-        /** Clear Form inputs */
+        /**
+         * Clear Form inputs
+         * @returns {void}
+         */
         clearForm() {
             this.key = {
                 name: "",

@@ -4,8 +4,8 @@ const { escape } = require("html-escaper");
 /**
  * Returns a string that represents the javascript that is required to insert the Google Analytics scripts
  * into a webpage.
- * @param tagId Google UA/G/AW/DC Property ID to use with the Google Analytics script.
- * @returns {string}
+ * @param {string} tagId Google UA/G/AW/DC Property ID to use with the Google Analytics script.
+ * @returns {string} HTML script tags to inject into page
  */
 function getGoogleAnalyticsScript(tagId) {
     let escapedTagIdJS = jsesc(tagId, { isScriptContext: true });

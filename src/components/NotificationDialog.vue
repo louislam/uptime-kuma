@@ -114,12 +114,17 @@ export default {
                 "AlertNow": "AlertNow",
                 "apprise": this.$t("apprise"),
                 "Bark": "Bark",
+                "Bitrix24": "Bitrix24",
                 "clicksendsms": "ClickSend SMS",
+                "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
                 "gotify": "Gotify",
+                "GrafanaOncall": "Grafana Oncall",
+                "HeiiOnCall": "Heii On-Call",
                 "HomeAssistant": "Home Assistant",
+                "Keep": "Keep",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
                 "LineNotify": "LINE Notify",
@@ -142,15 +147,21 @@ export default {
                 "slack": "Slack",
                 "squadcast": "SquadCast",
                 "SMSEagle": "SMSEagle",
+                "SMSPartner": "SMS Partner",
                 "smtp": this.$t("smtp"),
                 "stackfield": "Stackfield",
                 "teams": "Microsoft Teams",
                 "telegram": "Telegram",
+                "threema": "Threema",
                 "twilio": "Twilio",
                 "Splunk": "Splunk",
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
-                "ZohoCliq": "ZohoCliq"
+                "ZohoCliq": "ZohoCliq",
+                "SevenIO": "SevenIO",
+                "whapi": "WhatsApp (Whapi)",
+                "gtxmessaging": "GtxMessaging",
+                "Cellsynt": "Cellsynt",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
@@ -218,7 +229,10 @@ export default {
     },
     methods: {
 
-        /** Show dialog to confirm deletion */
+        /**
+         * Show dialog to confirm deletion
+         * @returns {void}
+         */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
@@ -227,6 +241,7 @@ export default {
         /**
          * Show settings for specified notification
          * @param {number} notificationID ID of notification to show
+         * @returns {void}
          */
         show(notificationID) {
             if (notificationID) {
@@ -250,7 +265,10 @@ export default {
             this.modal.show();
         },
 
-        /** Submit the form to the server */
+        /**
+         * Submit the form to the server
+         * @returns {void}
+         */
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addNotification", this.notification, this.id, (res) => {
@@ -269,7 +287,10 @@ export default {
             });
         },
 
-        /** Test the notification endpoint */
+        /**
+         * Test the notification endpoint
+         * @returns {void}
+         */
         test() {
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
@@ -278,7 +299,10 @@ export default {
             });
         },
 
-        /** Delete the notification endpoint */
+        /**
+         * Delete the notification endpoint
+         * @returns {void}
+         */
         deleteNotification() {
             this.processing = true;
             this.$root.getSocket().emit("deleteNotification", this.id, (res) => {
@@ -293,7 +317,8 @@ export default {
         /**
          * Get a unique default name for the notification
          * @param {keyof NotificationFormList} notificationKey
-         * @return {string}
+         * Notification to retrieve
+         * @returns {string} Default name
          */
         getUniqueDefaultName(notificationKey) {
 

@@ -5,7 +5,9 @@ const AlertNow = require("./notification-providers/alertnow");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bark = require("./notification-providers/bark");
+const Bitrix24 = require("./notification-providers/bitrix24");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
+const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
@@ -14,7 +16,10 @@ const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
+const GrafanaOncall = require("./notification-providers/grafana-oncall");
 const HomeAssistant = require("./notification-providers/home-assistant");
+const HeiiOnCall = require("./notification-providers/heii-oncall");
+const Keep = require("./notification-providers/keep");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
@@ -38,6 +43,7 @@ const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
+const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
 const SMTP = require("./notification-providers/smtp");
 const Squadcast = require("./notification-providers/squadcast");
@@ -45,6 +51,7 @@ const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
+const Threema = require("./notification-providers/threema");
 const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
 const Webhook = require("./notification-providers/webhook");
@@ -53,14 +60,23 @@ const GoAlert = require("./notification-providers/goalert");
 const SMSManager = require("./notification-providers/smsmanager");
 const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
+const SevenIO = require("./notification-providers/sevenio");
+const Whapi = require("./notification-providers/whapi");
+const GtxMessaging = require("./notification-providers/gtx-messaging");
+const Cellsynt = require("./notification-providers/cellsynt");
 
 class Notification {
 
     providerList = {};
 
-    /** Initialize the notification providers */
+    /**
+     * Initialize the notification providers
+     * @returns {void}
+     * @throws Notification provider does not have a name
+     * @throws Duplicate notification providers in list
+     */
     static init() {
-        log.info("notification", "Prepare Notification Providers");
+        log.debug("notification", "Prepare Notification Providers");
 
         this.providerList = {};
 
@@ -70,7 +86,9 @@ class Notification {
             new AliyunSms(),
             new Apprise(),
             new Bark(),
+            new Bitrix24(),
             new ClickSendSMS(),
+            new CallMeBot(),
             new SMSC(),
             new DingDing(),
             new Discord(),
@@ -79,7 +97,10 @@ class Notification {
             new GoogleChat(),
             new Gorush(),
             new Gotify(),
+            new GrafanaOncall(),
             new HomeAssistant(),
+            new HeiiOnCall(),
+            new Keep(),
             new Kook(),
             new Line(),
             new LineNotify(),
@@ -104,6 +125,7 @@ class Notification {
             new SerwerSMS(),
             new Signal(),
             new SMSManager(),
+            new SMSPartner(),
             new Slack(),
             new SMSEagle(),
             new SMTP(),
@@ -112,12 +134,17 @@ class Notification {
             new Teams(),
             new TechulusPush(),
             new Telegram(),
+            new Threema(),
             new Twilio(),
             new Splunk(),
             new Webhook(),
             new WeCom(),
             new GoAlert(),
-            new ZohoCliq()
+            new ZohoCliq(),
+            new SevenIO(),
+            new Whapi(),
+            new GtxMessaging(),
+            new Cellsynt(),
         ];
         for (let item of list) {
             if (! item.name) {
@@ -133,10 +160,10 @@ class Notification {
 
     /**
      * Send a notification
-     * @param {BeanModel} notification
+     * @param {BeanModel} notification Notification to send
      * @param {string} msg General Message
-     * @param {Object} monitorJSON Monitor details (For Up/Down only)
-     * @param {Object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @param {object} monitorJSON Monitor details (For Up/Down only)
+     * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @returns {Promise<string>} Successful msg
      * @throws Error with fail msg
      */
@@ -150,10 +177,10 @@ class Notification {
 
     /**
      * Save a notification
-     * @param {Object} notification Notification to save
+     * @param {object} notification Notification to save
      * @param {?number} notificationID ID of notification to update
      * @param {number} userID ID of user who adds notification
-     * @returns {Promise<Bean>}
+     * @returns {Promise<Bean>} Notification that was saved
      */
     static async save(notification, notificationID, userID) {
         let bean;

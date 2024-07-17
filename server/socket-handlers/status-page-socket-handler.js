@@ -11,6 +11,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 /**
  * Socket handlers for status page
  * @param {Socket} socket Socket.io instance to add listeners on
+ * @returns {void}
  */
 module.exports.statusPageSocketHandler = (socket) => {
 
@@ -147,13 +148,14 @@ module.exports.statusPageSocketHandler = (socket) => {
                 config.logo = `/upload/${filename}?t=` + Date.now();
 
             } else {
-                config.icon = imgDataUrl;
+                config.logo = imgDataUrl;
             }
 
             statusPage.slug = config.slug;
             statusPage.title = config.title;
             statusPage.description = config.description;
             statusPage.icon = config.logo;
+            statusPage.autoRefreshInterval = config.autoRefreshInterval,
             statusPage.theme = config.theme;
             //statusPage.published = ;
             //statusPage.search_engine_index = ;
@@ -279,11 +281,13 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.title = title;
             statusPage.theme = "auto";
             statusPage.icon = "";
+            statusPage.autoRefreshInterval = 300;
             await R.store(statusPage);
 
             callback({
                 ok: true,
-                msg: "OK!"
+                msg: "successAdded",
+                msgi18n: true,
             });
 
         } catch (error) {
@@ -350,6 +354,8 @@ module.exports.statusPageSocketHandler = (socket) => {
  * Check slug a-z, 0-9, - only
  * Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
  * @param {string} slug Slug to test
+ * @returns {void}
+ * @throws Slug is not valid
  */
 function checkSlug(slug) {
     if (typeof slug !== "string") {
