@@ -7,7 +7,7 @@ const { testChrome } = require("../monitor-types/real-browser-monitor-type");
 
 /**
  * Get a game list via GameDig
- * @returns {Object[]} list of games supported by GameDig
+ * @returns {Object} list of games supported by GameDig
  */
 function getGameList() {
     let gamelist = [];
