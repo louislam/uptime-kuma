@@ -19,7 +19,7 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { CacheableDnsHttpAgent } = require("../cacheable-dns-http-agent");
 const { DockerHost } = require("../docker");
 const { UptimeCacheList } = require("../uptime-cache-list");
-const Gamedig = require("gamedig");
+const { GameDig } = require("gamedig");
 const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -722,12 +722,13 @@ class Monitor extends BeanModel {
                     }
                 } else if (this.type === "gamedig") {
                     try {
-                        const state = await Gamedig.query({
+                        const state = await GameDig.query({
                             type: this.game,
                             host: this.hostname,
                             port: this.port,
                             givenPortOnly: this.getGameDigGivenPortOnly(),
                         });
+                        console.log(state);
 
                         bean.msg = state.name;
                         bean.status = UP;
