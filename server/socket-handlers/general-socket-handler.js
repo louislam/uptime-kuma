@@ -14,7 +14,7 @@ function getGameList() {
     gamelist = Object.keys(games).map(key => {
         const item = games[key];
         return {
-            keys: [key ],
+            keys: [ key ],
             pretty: item.name,
             options: item.options,
             extra: item.extra || {}
