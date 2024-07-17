@@ -728,7 +728,6 @@ class Monitor extends BeanModel {
                             port: this.port,
                             givenPortOnly: this.getGameDigGivenPortOnly(),
                         });
-                        console.log(state);
 
                         bean.msg = state.name;
                         bean.status = UP;
