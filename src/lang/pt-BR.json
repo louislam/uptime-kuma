@@ -605,7 +605,6 @@
     "wayToGetLineChannelToken": "Primeiro acesse o {0}, crie um provedor e um canal (API de Mensagens), então você pode obter o token de acesso do canal e o ID do usuário nos itens de menu mencionados acima.",
     "aboutMattermostChannelName": "Você pode substituir o canal padrão para o qual o Webhook envia postagens, inserindo o nome do canal no campo \"Nome do Canal\". Isso precisa ser habilitado nas configurações do Webhook do Mattermost. Por exemplo: #outro-canal",
     "invertKeywordDescription": "Procure pela palavra-chave estar ausente em vez de presente.",
-    "jsonQueryDescription": "Faça uma consulta JSON na resposta e verifique o valor esperado (o valor de retorno será convertido em uma string para comparação). Confira {0} para a documentação sobre a linguagem de consulta. Você pode encontrar um playground {1}.",
     "octopushTypePremium": "Premium (Rápido - recomendado para alertas)",
     "octopushTypeLowCost": "Baixo Custo (Lento - às vezes bloqueado pelo operador)",
     "octopushSMSSender": "Nome do Remetente de SMS: 3-11 caracteres alfanuméricos e espaço (a-zA-Z0-9)",

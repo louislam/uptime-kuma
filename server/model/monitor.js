@@ -2,7 +2,7 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT
+    SQL_DATETIME_FORMAT, evaluateJsonQuery
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
@@ -17,7 +17,6 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
-const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -161,6 +160,9 @@ class Monitor extends BeanModel {
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
             remote_browser: this.remote_browser,
+            snmpOid: this.snmpOid,
+            jsonPathOperator: this.jsonPathOperator,
+            snmpVersion: this.snmpVersion,
         };
 
         if (includeSensitiveData) {
@@ -598,25 +600,15 @@ class Monitor extends BeanModel {
                     } else if (this.type === "json-query") {
                         let data = res.data;
 
-                        // convert data to object
-                        if (typeof data === "string" && res.headers["content-type"] !== "application/json") {
-                            try {
-                                data = JSON.parse(data);
-                            } catch (_) {
-                                // Failed to parse as JSON, just process it as a string
-                            }
-                        }
+                        const { status, response } = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
 
-                        let expression = jsonata(this.jsonPath);
-
-                        let result = await expression.evaluate(data);
-
-                        if (result.toString() === this.expectedValue) {
-                            bean.msg += ", expected value is found";
+                        if (status) {
                             bean.status = UP;
+                            bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
                         } else {
-                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
+                            throw new Error(`JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`);
                         }
+
                     }
 
                 } else if (this.type === "port") {
