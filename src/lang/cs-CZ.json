@@ -987,5 +987,8 @@
     "threemaApiAuthenticationSecret": "Tajný klíč ID brány",
     "apiKeysDisabledMsg": "Klíče API jsou zakázány, protože je zakázáno ověřování.",
     "threemaBasicModeInfo": "Poznámka: Tato integrace využívá bránu Threema v základním režimu (šifrování pomocí serveru). Další podrobnosti naleznete {0}.",
-    "threemaRecipientTypeIdentityFormat": "8 znaků"
+    "threemaRecipientTypeIdentityFormat": "8 znaků",
+    "threemaRecipientTypeIdentity": "Threema-ID",
+    "threemaRecipientTypePhone": "Telefonní číslo",
+    "wayToGetThreemaGateway": "Můžete se zaregistrovat do služby brány Threema {0}."
 }
