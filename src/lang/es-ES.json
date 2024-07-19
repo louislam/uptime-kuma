@@ -924,5 +924,8 @@
     "wayToGetWhapiUrlAndToken": "Puedes obtener la URL de la API y el token accediendo al canal que desee desde {0}",
     "API URL": "API URL",
     "Allow Long SMS": "Permitir SMS largo",
-    "cellsyntDestination": "Número de teléfono del destinatario en formato internacional precedido de 00, seguido del código de país, ej. 00447920110000 para el número del Reino Unido 07920 110 000 (máximo 17 dígitos en total). Máximo 25.000 destinatarios, separados por comas, por solicitud HTTP."
+    "cellsyntDestination": "Número de teléfono del destinatario en formato internacional precedido de 00, seguido del código de país, ej. 00447920110000 para el número del Reino Unido 07920 110 000 (máximo 17 dígitos en total). Máximo 25.000 destinatarios, separados por comas, por solicitud HTTP.",
+    "Refresh Interval Description": "La página de estado se refrescará cada {0} segundos",
+    "Refresh Interval": "Intervalo de refresco",
+    "ignoreTLSErrorGeneral": "Ignorar errores SSL/TLS durante la conexión"
 }
