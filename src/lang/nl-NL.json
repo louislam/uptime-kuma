@@ -970,7 +970,7 @@
     "smspartnerSenderNameInfo": "Moet tussen 3..=11 reguliere karakters zijn",
     "Bitrix24 Webhook URL": "Bitrix24 Webhook URL",
     "wayToGetBitrix24Webhook": "Je kunt een webhook maken door de stappen bij {0} te volgen",
-    "bitrix24SupportUserID": "Voer je gebruikers ID in Bitrix25 in. Je kunt dit achterhalen uit de link naar je gebruikersprofiel.",
+    "bitrix24SupportUserID": "Voer je gebruikers ID van Bitrix25 in. Je kunt dit achterhalen uit de link naar je gebruikersprofiel.",
     "apiKeysDisabledMsg": "API-Sleutels zijn uitgeschakeld omdat authenticatie niet is ingeschakeld.",
     "smspartnerApiurl": "Je kunt je API-sleutel vinden in je dashboard bij {0}",
     "smspartnerPhoneNumberHelptext": "Het nummer moet in het internationale format {0}, {1} zijn. Meerdere nummers moeten gescheiden zijn door {2}",
@@ -988,5 +988,6 @@
     "e.g. {discordThreadID}": "bijv. {discordThreadID}",
     "whatHappensAtForumPost": "Maak een nieuw forum bericht. Dit stuurt GEEN berichten in bestaande forum berichten. Om naar een bestaand forum een nieuw bericht te sturen, gebruik \"{option}\"",
     "postToExistingThread": "Plaats op bestaande thread / forum bericht",
-    "wayToGetDiscordThreadId": "Verkrijgen van een thread / forum bericht id is vergelijkbaar met het verkrijgen van een kanaal id. Lees meer over het verkrijgen van ids {0}"
+    "wayToGetDiscordThreadId": "Verkrijgen van een thread / forum bericht id is vergelijkbaar met het verkrijgen van een kanaal id. Lees meer over het verkrijgen van ids {0}",
+    "threemaRecipientTypeEmail": "E-mailadres"
 }
