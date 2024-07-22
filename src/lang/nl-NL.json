@@ -855,7 +855,7 @@
     "Check/Uncheck": "Vink/Ontvink",
     "tailscalePingWarning": "Om de Tailscale Ping-monitor te kunnen gebruiken, moet u Uptime Kuma zonder Docker installeren en ook de Tailscale-client op uw server installeren.",
     "selectedMonitorCount": "Geselecteerd: {0}",
-    "wayToGetFlashDutyKey": "Ga naar Kanaal -> (Kies een kanaal) -> Integraties -> Voeg een nieuwe integratie toe, voeg een 'Custom Event' toe om een push-adres te verkrijgen, kopieer de integratiesleutel in het adres-veld. Voor meer informatie, zie",
+    "wayToGetFlashDutyKey": "Ga naar Kanaal -> (Kies een kanaal) -> Integraties -> Voeg een nieuwe integratie toe, voeg een nieuwe 'Uptime Kuma' toe om een push-adres te verkrijgen, kopieer de integratiesleutel in het adres-veld. Voor meer informatie, zie",
     "gamedigGuessPortDescription": "De poort die wordt gebruikt door het Valve Server Query Protocol kan verschillen van de clientpoort. Probeer dit als de monitor geen verbinding kan maken met je server.",
     "authUserInactiveOrDeleted": "De gebruiker is inactief of verwijderd.",
     "authInvalidToken": "Ongeldig token.",
@@ -989,5 +989,8 @@
     "whatHappensAtForumPost": "Maak een nieuw forum bericht. Dit stuurt GEEN berichten in bestaande forum berichten. Om naar een bestaand forum een nieuw bericht te sturen, gebruik \"{option}\"",
     "postToExistingThread": "Plaats op bestaande thread / forum bericht",
     "wayToGetDiscordThreadId": "Verkrijgen van een thread / forum bericht id is vergelijkbaar met het verkrijgen van een kanaal id. Lees meer over het verkrijgen van ids {0}",
-    "threemaRecipientTypeEmail": "E-mailadres"
+    "threemaRecipientTypeEmail": "E-mailadres",
+    "threemaSenderIdentity": "Gateway ID",
+    "threemaApiAuthenticationSecret": "Gateway ID Secret",
+    "smspartnerSenderName": "SMS afzender naam"
 }
