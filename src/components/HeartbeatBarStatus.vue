@@ -2,9 +2,12 @@
     <div ref="wrap">
         <div class="hp-bar-big">
             <CalendarHeatmap
-                :style="{ fill: '#fff', fontSize: 'x-small' }"
+                :style="{ fill: 'var(--dark-font-color2)', fontSize: 'xx-small' }"
                 class="heatmap" :values="values" :end-date="endDate" no-data-text="Unknown" tooltip-unit="%"
-                :range-color="['#ebedf0', '#C3D4CB', '#9ABAA7', '#72A182', '#49875E', '#216E39']" :max="100"
+                :range-color="['aliceblue', 'var(--danger)', 'var(--warning)', 'var(--warning)', 'var(--highlight)', 'var(--primary)']"
+                :display-legend="false"
+                round="3"
+                :max="100"
             />
         </div>
     </div>
@@ -52,16 +55,11 @@ export default {
         this.resize();
     },
     methods: {
-        /**
-         * Resize the heartbeat bar
-         * @returns {void}
-         */
         resize() {
             if (this.$refs.wrap) {
                 this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2));
             }
         },
-
     },
 };
 </script>
@@ -69,13 +67,38 @@ export default {
 <style lang="scss">
 @import "../assets/vars.scss";
 
-// This naming is an internal name for the package vue3-calendar-heatmap and it cannot be modified to kebab-case
+:root {
+    --highlight-white: #{$highlight-white};
+    --danger: #{$danger};
+    --warning: #{$warning};
+    --warning2: #ffc100;
+    --highlight: #{$highlight};
+    --primary: #{$primary};
+    --dark-font-color2: #{$dark-font-color2};
+}
+
 /* stylelint-disable */
+// This naming is an internal name for the package vue3-calendar-heatmap and it cannot be modified to kebab-case
 .vch__legend {
-    display: inline-flex;
-    padding: 0.25rem 0.5rem;
-    gap: 1ch;
-    align-items: center;
+    display: none !important;
+}
+
+.hp-bar-big {
+    padding: 10px;
+    overflow: visible;
+    background-color: white;
+    border-radius: 6px;
+}
+
+.heatmap {
+    rect.vch__day__square {
+        stroke: none !important;
+        stroke-width: 0 !important;
+
+        &:hover {
+        fill-opacity: 0.5;
+        }
+    }
 }
 /* stylelint-enable */
 </style>
