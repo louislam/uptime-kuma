@@ -179,7 +179,7 @@ class Teams extends NotificationProvider {
         }
 
         return payload;
-    }
+    };
 
     /**
      * Generate payload for notification
@@ -295,8 +295,7 @@ class Teams extends NotificationProvider {
                 });
 
                 await this._sendNotification(notification.webhookUrl, payload);
-            }
-            else {
+            } else {
                 const payload = this._notificationPayloadFactoryLegacy({
                     monitorMessage: heartbeatJSON.msg,
                     monitorName: monitorJSON.name,
