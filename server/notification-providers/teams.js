@@ -36,6 +36,21 @@ class Teams extends NotificationProvider {
     };
 
     /**
+     * Select the style to use based on status
+     * @param {const} status The status constant
+     * @returns {string} Selected style for adaptive cards
+     */
+    _getStyle = (status) => {
+        if (status === DOWN) {
+            return "attention";
+        }
+        if (status === UP) {
+            return "good";
+        }
+        return "emphasis";
+    };
+
+    /**
      * Generate payload for notification
      * @param {const} status The status of the monitor
      * @param {string} monitorMessage Message to send
@@ -44,6 +59,137 @@ class Teams extends NotificationProvider {
      * @returns {Object}
      */
     _notificationPayloadFactory = ({
+        status,
+        monitorMessage,
+        monitorName,
+        monitorUrl,
+    }) => {
+        const facts = [];
+        const actions = [];
+
+        if (monitorMessage) {
+            facts.push({
+                title: "Description",
+                value: monitorMessage,
+            });
+        }
+
+        if (monitorName) {
+            facts.push({
+                title: "Monitor",
+                value: monitorName,
+            });
+        }
+
+        if (monitorUrl && monitorUrl !== "https://") {
+            facts.push({
+                title: "URL",
+                // format URL as markdown syntax, to be clickable
+                value: `[${monitorUrl}](${monitorUrl})`,
+            });
+            actions.push({
+                "type": "Action.OpenUrl",
+                "title": "Visit Monitor URL",
+                "url": monitorUrl
+            });
+        }
+
+        // if (heartbeatJSON?.localDateTime) {
+        //     facts.push({
+        //         title: "Time",
+        //         value: heartbeatJSON.localDateTime + (heartbeatJSON.timezone ? ` (${heartbeatJSON.timezone})` : ""),
+        //     });
+        // }
+
+        const payload = {
+            "type": "message",
+            // message with status prefix as notification text
+            "summary": this._statusMessageFactory(status, monitorName, true),
+            "attachments": [
+                {
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "contentUrl": "",
+                    "content": {
+                        "type": "AdaptiveCard",
+                        "body": [
+                            {
+                                "type": "Container",
+                                "verticalContentAlignment": "Center",
+                                "items": [
+                                    {
+                                        "type": "ColumnSet",
+                                        "style": this._getStyle(status),
+                                        "columns": [
+                                            {
+                                                "type": "Column",
+                                                "width": "auto",
+                                                "verticalContentAlignment": "Center",
+                                                "items": [
+                                                    {
+                                                        "type": "Image",
+                                                        "width": "32px",
+                                                        "style": "Person",
+                                                        "url": "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
+                                                        "altText": "Uptime Kuma Logo"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "Column",
+                                                "width": "stretch",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "size": "Medium",
+                                                        "weight": "Bolder",
+                                                        "text": `**${this._statusMessageFactory(status, monitorName, false)}**`,
+                                                    },
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "size": "Small",
+                                                        "weight": "Default",
+                                                        "text": "Uptime Kuma Alert",
+                                                        "isSubtle": true,
+                                                        "spacing": "None"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "FactSet",
+                                "separator": false,
+                                "facts": facts
+                            }
+                        ],
+                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                        "version": "1.5"
+                    }
+                }
+            ]
+        };
+
+        if (actions) {
+            payload.attachments[0].content.body.push({
+                "type": "ActionSet",
+                "actions": actions,
+            });
+        }
+
+        return payload;
+    }
+
+    /**
+     * Generate payload for notification
+     * @param {const} status The status of the monitor
+     * @param {string} monitorMessage Message to send
+     * @param {string} monitorName Name of monitor affected
+     * @param {string} monitorUrl URL of monitor affected
+     * @returns {Object}
+     */
+    _notificationPayloadFactoryLegacy = ({
         status,
         monitorMessage,
         monitorName,
@@ -140,14 +286,27 @@ class Teams extends NotificationProvider {
                     break;
             }
 
-            const payload = this._notificationPayloadFactory({
-                monitorMessage: heartbeatJSON.msg,
-                monitorName: monitorJSON.name,
-                monitorUrl: url,
-                status: heartbeatJSON.status,
-            });
+            if (notification.webhookUrl.includes("azure.com")) {
+                const payload = this._notificationPayloadFactory({
+                    monitorMessage: heartbeatJSON.msg,
+                    monitorName: monitorJSON.name,
+                    monitorUrl: url,
+                    status: heartbeatJSON.status,
+                });
 
-            await this._sendNotification(notification.webhookUrl, payload);
+                await this._sendNotification(notification.webhookUrl, payload);
+            }
+            else {
+                const payload = this._notificationPayloadFactoryLegacy({
+                    monitorMessage: heartbeatJSON.msg,
+                    monitorName: monitorJSON.name,
+                    monitorUrl: url,
+                    status: heartbeatJSON.status,
+                });
+
+                await this._sendNotification(notification.webhookUrl, payload);
+            }
+
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
