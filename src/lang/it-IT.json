@@ -697,5 +697,7 @@
     "leave blank for default body": "Lasciare vuoto per messaggio predefinito",
     "emailTemplateHostnameOrURL": "Nome host o URL",
     "emailTemplateStatus": "Stato",
-    "ignoreTLSErrorGeneral": "Ignora gli errori TLS/SSL per la connessione"
+    "ignoreTLSErrorGeneral": "Ignora gli errori TLS/SSL per la connessione",
+    "statusPageSpecialSlugDesc": "Slug speciale {0}: questa pagina verrà mostrata quando non viene fornito alcuno slug",
+    "successKeywordExplanation": "Parola chiave MQTT che verrà considerata come corretta"
 }
