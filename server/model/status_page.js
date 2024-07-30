@@ -51,7 +51,7 @@ class StatusPage extends BeanModel {
         let description155 = "";
         if (statusPage.description) {
             description155 = marked(statusPage.description)
-                .replace(/<[^>]+\>g, "")
+                .replace(/<[^>]+>/g, "")
                 .trim();
             description155 = description155.substring(0, 155);
         }
