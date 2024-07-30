@@ -64,6 +64,7 @@ const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
+const Onesender = require("./notification-providers/onesender");
 
 class Notification {
 
@@ -111,6 +112,7 @@ class Notification {
             new Ntfy(),
             new Octopush(),
             new OneBot(),
+            new Onesender(),
             new Opsgenie(),
             new PagerDuty(),
             new FlashDuty(),
