@@ -14,13 +14,10 @@
 
     <div class="mb-3">
         <label for="receiver-onesender" class="form-label">{{ $t("TokenOnesender") }}</label>
-        <input
-            id="receiver-onesender"
-            v-model="$parent.notification.onesenderToken"
-            type="text"
-            class="form-control"
-            required
-        />
+        <HiddenInput id="receiver-onesender" v-model="$parent.notification.onesenderToken" :required="true" autocomplete="false"></HiddenInput>
+        <i18n-t tag="div" keypath="wayToGetOnesenderUrlandToken" class="form-text">
+            <a href="https://onesender.net/" target="_blank">{{ $t("here") }}</a>
+        </i18n-t>
     </div>
 
     <div class="mb-3">
@@ -35,9 +32,9 @@
             <option value="group">{{ $t("GroupOnesender") }}</option>
         </select>
     </div>
-
+    <div v-if="$parent.notification.onesenderTypeReceiver == 'private'" class="form-text">{{ $t("privateOnesenderDesc", ['"application/json"']) }}</div>
+    <div v-else class="form-text">{{ $t("groupOnesenderDesc") }}</div>
     <div class="mb-3">
-        <label for="type-receiver-onesender" class="form-label">{{ $t("ReceiverOnesender") }}</label>
         <input
             id="type-receiver-onesender"
             v-model="$parent.notification.onesenderReceiver"
@@ -47,12 +44,32 @@
             required
         />
     </div>
+    <div class="mb-3">
+        <input
+            id="type-receiver-onesender"
+            v-model="computedReceiverResult"
+            type="text"
+            class="form-control"
+            disabled
+        />
+    </div>
 </template>
 
 <script>
+import HiddenInput from "../HiddenInput.vue";
+
 export default {
+    components: {
+        HiddenInput,
+    },
     data() {
         return {};
+    },
+    computed: {
+        computedReceiverResult() {
+            let receiver = this.$parent.notification.onesenderReceiver;
+            return this.$parent.notification.onesenderTypeReceiver === "private" ? receiver + "@s.whatsapp.net" : receiver + "@g.us";
+        },
     },
 };
 </script>

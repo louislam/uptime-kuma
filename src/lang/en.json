@@ -966,7 +966,10 @@
     "HostOnesender": "Host Onesender",
     "TokenOnesender": "Token Onesender",
     "ReceiverOnesender": "Group ID / Number",
-    "TypeOnesender": "Group ID / Private",
-    "PrivateOnesender": "private",
-    "GroupOnesender": "group"
+    "TypeOnesender": "Recipient Type",
+    "PrivateOnesender": "Private Number",
+    "privateOnesenderDesc": "Make sure the number phone is valid. To send message into private number phone, ex: 628123456789",
+    "groupOnesenderDesc": "Make sure the GroupID is valid. To send message into Group, ex: 628123456789-342345",
+    "GroupOnesender": "Group ID",
+    "wayToGetOnesenderUrlandToken":"You can get the URL and Token by going to the Onesender website. More info {0}"
 }
