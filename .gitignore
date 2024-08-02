@@ -4,6 +4,7 @@ dist
 dist-ssr
 *.local
 .idea
+.history/
 
 /data
 !/data/.gitkeep
