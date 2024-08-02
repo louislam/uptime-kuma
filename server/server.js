@@ -283,6 +283,16 @@ let needSetup = false;
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
 
+    app.get("/api/incident-reports", async (req, res) => {
+        try {
+            const incidentReports = await R.findAll("incident");
+            res.json(incidentReports);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Failed to fetch incident reports" });
+        }
+    });
+
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
