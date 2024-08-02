@@ -1066,7 +1066,6 @@ export default {
             }
         },
 
-
         /**
          * Generate sanitized HTML from maintenance description
          * @param {number} index Text to sanitize

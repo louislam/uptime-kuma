@@ -26,7 +26,6 @@ module.exports.statusPageSocketHandler = (socket) => {
                 throw new Error("slug is not found");
             }
 
-
             let incidentBean;
 
             if (incident.id) {
