@@ -87,7 +87,9 @@ export default {
                         bottom: 10,
                     },
                 },
-
+                animation: {
+                    duration: 0
+                },
                 elements: {
                     point: {
                         // Hide points on chart unless mouse-over
