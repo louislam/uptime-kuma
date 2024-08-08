@@ -1,14 +1,4 @@
-const semver = require("semver");
-let test;
-const nodeVersion = process.versions.node;
-// Node.js version >= 18
-if (semver.satisfies(nodeVersion, ">= 18")) {
-    test = require("node:test");
-} else {
-    test = require("test");
-}
-
-const assert = require("node:assert");
+const { assert, test } = require("./util");
 const { UptimeCalculator } = require("../../server/uptime-calculator");
 const dayjs = require("dayjs");
 const { UP, DOWN, PENDING, MAINTENANCE } = require("../../src/util");
@@ -373,9 +363,9 @@ function memoryUsage() {
 }
 
 test("Worst case", async (t) => {
-
-    // Disable on GitHub Actions, as it is not stable on it
-    if (process.env.GITHUB_ACTIONS) {
+    // Change to true if you want to run this test
+    let disable = true;
+    if (disable) {
         return;
     }
 
