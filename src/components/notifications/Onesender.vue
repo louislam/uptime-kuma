@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="host-onesender" class="form-label">{{ $t("HostOnesender") }}</label>
+        <label for="host-onesender" class="form-label">{{ $t("Host Onesender") }}</label>
         <input
             id="host-onesender"
             v-model="$parent.notification.onesenderURL"
@@ -13,7 +13,7 @@
     </div>
 
     <div class="mb-3">
-        <label for="receiver-onesender" class="form-label">{{ $t("TokenOnesender") }}</label>
+        <label for="receiver-onesender" class="form-label">{{ $t("Token Onesender") }}</label>
         <HiddenInput id="receiver-onesender" v-model="$parent.notification.onesenderToken" :required="true" autocomplete="false"></HiddenInput>
         <i18n-t tag="div" keypath="wayToGetOnesenderUrlandToken" class="form-text">
             <a href="https://onesender.net/" target="_blank">{{ $t("here") }}</a>
@@ -21,15 +21,15 @@
     </div>
 
     <div class="mb-3">
-        <label for="webhook-request-body" class="form-label">{{ $t("TypeOnesender") }}</label>
+        <label for="webhook-request-body" class="form-label">{{ $t("Recipient Type") }}</label>
         <select
             id="webhook-request-body"
             v-model="$parent.notification.onesenderTypeReceiver"
             class="form-select"
             required
         >
-            <option value="private">{{ $t("PrivateOnesender") }}</option>
-            <option value="group">{{ $t("GroupOnesender") }}</option>
+            <option value="private">{{ $t("Private Number") }}</option>
+            <option value="group">{{ $t("Group ID") }}</option>
         </select>
     </div>
     <div v-if="$parent.notification.onesenderTypeReceiver == 'private'" class="form-text">{{ $t("privateOnesenderDesc", ['"application/json"']) }}</div>
