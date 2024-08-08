@@ -349,7 +349,6 @@
     "No monitors available.": "監視対象がありません。",
     "Add one": "追加",
     "No Monitors": "監視対象なし",
-    "shrinkDatabaseDescription": "SQLiteデーターベースにVACUUMを実行します。データーベースがv1.10.0以降に作成されている場合、AUTO_VACUUMが既に有効なため実行する必要はありません。",
     "enableProxyDescription": "このプロキシは有効化されない限り、監視リクエストには影響しません。無効化した場合、一時的にプロキシをすべての監視から無効化することができます。",
     "Certificate Chain": "証明書チェーン",
     "Valid": "有効",

@@ -287,7 +287,6 @@
     "Don't know how to get the token? Please read the guide:": "Não sabe com pegar o token? Por favor, leia o guia:",
     "smtpDkimheaderFieldNames": "Chaves Do Cabeçalho para assinar (Opcional)",
     "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "A conexão atual pode ser perdida se você estiver se conectando pelo túnel da Cloudflare. Você tem certeza que deseja pará-lo? Digite a sua senha para confirmar.",
-    "shrinkDatabaseDescription": "Acionar a limpeza do banco de dados para o SQLite. Se o seu banco de dados foi criado depois de 1.10.0, a limpeza automática(AUTO_VACUUM) já é habilitada por padrão e essa ação não é necessária.",
     "Powered by": "Fornecido por",
     "deleteProxyMsg": "Você tem certeza que deseja deletar este proxy para todos os monitores?",
     "proxyDescription": "Os proxies devem ser atribuídos a um monitor para funcionar.",

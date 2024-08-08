@@ -349,7 +349,6 @@
     "Discard": "Elvet",
     "Cancel": "Mégsem",
     "Powered by": "A megoldást szállítja az",
-    "shrinkDatabaseDescription": "VACUUM futtatása az SQLite-on. Ha az adatbázisod 1.10.0-nál újabb, akkor az AUTO_VACUUM engedélyezve van, nincs szükség a műveletre.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API felhasználónév (webapi_ előtaggal együtt)",
     "serwersmsAPIPassword": "API jelszó",

@@ -278,7 +278,6 @@
     "Discard": "تجاهل",
     "Cancel": "يلغي",
     "Powered by": "مشغل بواسطة",
-    "shrinkDatabaseDescription": "تشغيل فراغ قاعدة البيانات لـ SQLite. إذا تم إنشاء قاعدة البيانات الخاصة بك بعد تمكين 1.10.0 AUTO_VACUUM بالفعل ولا يلزم هذا الإجراء.",
     "Customize": "يعدل أو يكيف",
     "Custom Footer": "تذييل مخصص",
     "Custom CSS": "لغة تنسيق ويب حسب الطلب",

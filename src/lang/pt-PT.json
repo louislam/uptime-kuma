@@ -405,7 +405,6 @@
     "Please input title and content": "Por favor insira o título e o conteúdo",
     "Hide Tags": "Ocultar Tags",
     "Description": "Descrição",
-    "shrinkDatabaseDescription": "Acionar banco de dados VACUUM para SQLite. Se seu banco de dados for criado após 1.10.0, AUTO_VACUUM já está ativado e esta ação não é necessária.",
     "proxyDescription": "Os proxies devem ser atribuídos a um monitor para funcionar.",
     "enableProxyDescription": "Este proxy não afetará as solicitações do monitor até que seja ativado. Você pode controlar temporariamente a desativação do proxy de todos os monitores pelo status de ativação.",
     "Don't know how to get the token? Please read the guide:": "Não sabe como obter o token? Por favor, leia o guia:",

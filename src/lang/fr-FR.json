@@ -384,7 +384,6 @@
     "Discard": "Abandonner",
     "Cancel": "Annuler",
     "Powered by": "Propulsé par",
-    "shrinkDatabaseDescription": "Déclenche la commande VACUUM pour SQLite. Si votre base de données a été créée après la version 1.10.0, AUTO_VACUUM est déjà activé et cette action n'est pas nécessaire.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "Nom d'utilisateur de l'API (incl. webapi_ prefix)",
     "serwersmsAPIPassword": "Mot de passe API",

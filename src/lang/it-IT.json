@@ -349,7 +349,6 @@
     "Discard": "Scarta modifiche",
     "Cancel": "Annulla",
     "Powered by": "Powered by",
-    "shrinkDatabaseDescription": "Lancia il comando \"VACUUM\" sul database SQLite. Se il database è stato creato dopo la versione 1.10.0, la funzione \"AUTO_VACUUM\" è già abilitata di default e quindi questa azione non è necessaria.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "Nome utente API (incl. prefisso webapi_)",
     "serwersmsAPIPassword": "Password API",

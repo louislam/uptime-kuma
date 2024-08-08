@@ -360,7 +360,6 @@
     "Discard": "Baztertu",
     "Cancel": "Ezeztatu",
     "Powered by": "Honekin egina:",
-    "shrinkDatabaseDescription": "Trigger database VACUUM for SQLite. If your database is created after 1.10.0, AUTO_VACUUM is already enabled and this action is not needed.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API erabiltzailea (webapi_ aurre-hizkia barne)",
     "serwersmsAPIPassword": "API pasahitza",

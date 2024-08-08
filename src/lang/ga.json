@@ -397,7 +397,6 @@
     "steamApiKeyDescription": "Chun monatóireacht a dhéanamh ar Fhreastalaí Cluiche Gaile is gá duit eochair Steam Web-API. Is féidir leat d’eochair API a chlárú anseo: ",
     "Shrink Database": "Laghdaigh Bunachar Sonraí",
     "No monitors available.": "Níl monatóirí ar fáil.",
-    "shrinkDatabaseDescription": "Truicear bunachar sonraí Folamh do SQLite. Má chruthaítear do bhunachar sonraí tar éis 1.10.0, tá AUTO_VACUUM cumasaithe cheana féin agus níl an gníomh seo de dhíth.",
     "deleteStatusPageMsg": "An bhfuil tú cinnte gur mhaith leat an leathanach stádais seo a scriosadh?",
     "deleteProxyMsg": "An bhfuil tú cinnte gur mhaith leat an seachfhreastalaí seo a scriosadh do gach monatóir?",
     "enableProxyDescription": "Ní bheidh éifeacht ag an seachfhreastalaí seo ar iarratais ar mhonatóir go dtí go ngníomhófar é. Is féidir leat an seachfhreastalaí a dhíchumasú go sealadach ó gach monatóir de réir stádas gníomhachtaithe.",

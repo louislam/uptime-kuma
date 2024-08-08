@@ -378,7 +378,6 @@
     "Discard": "捨棄",
     "Cancel": "取消",
     "Powered by": "技術支援",
-    "shrinkDatabaseDescription": "觸發 SQLite 的資料庫清理 (VACUUM)。如果您的資料庫是在 1.10.0 版本後建立，AUTO_VACUUM 已自動啟用，則無需此操作。",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API 使用者名稱 (包括 webapi_ 前綴)",
     "serwersmsAPIPassword": "API 密碼",
