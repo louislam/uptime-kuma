@@ -5,10 +5,11 @@ const { log } = require("../src/util");
  * ⚠️⚠️⚠️⚠️⚠️⚠️ DO NOT ADD ANYTHING HERE!
  * IF YOU NEED TO ADD FIELDS, ADD IT TO ./db/knex_migrations
  * See ./db/knex_migrations/README.md for more information
+ * @param {"mariadb"|"postgres"} dbType database type, should be either "mariadb" or "postgres"
  * @returns {Promise<void>}
  */
-async function createTables() {
-    log.info("mariadb", "Creating basic tables for MariaDB");
+async function createTables(dbType) {
+    log.info(dbType, "Creating basic tables");
     const knex = R.knex;
 
     // TODO: Should check later if it is really the final patch sql file.
