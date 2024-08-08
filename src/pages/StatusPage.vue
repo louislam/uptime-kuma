@@ -56,6 +56,11 @@
                     <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
                 </div>
 
+                <div class="my-3 form-check form-switch">
+                    <input id="showDescriptions" v-model="config.showDescriptions" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="showDescriptions">{{ $t("Show Descriptions") }}</label>
+                </div>
+
                 <!-- Show Powered By -->
                 <div class="my-3 form-check form-switch">
                     <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox">
@@ -327,7 +332,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-descriptions="config.showDescriptions" :show-certificate-expiry="config.showCertificateExpiry" />
             </div>
 
             <footer class="mt-5 mb-4">
