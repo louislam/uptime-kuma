@@ -169,7 +169,7 @@
                 </div>
 
                 <div v-else>
-                    <button class="btn btn-primary btn-add-group me-2" @click="createIncident">
+                    <button class="btn btn-primary btn-add-group me-2" :disabled="enableEditIncidentMode" @click="createIncident">
                         <font-awesome-icon icon="bullhorn" />
                         {{ $t("Create Incident") }}
                     </button>
@@ -177,62 +177,64 @@
             </div>
 
             <!-- Incident -->
-            <div v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass">
-                <strong v-if="editIncidentMode">{{ $t("Title") }}:</strong>
-                <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" />
+            <template v-for="(incidentItem, index) in incidentList" :key="incidentItem.id">
+                <div v-if="incidentItem !== null" :ref="`incident-${index}`" class="shadow-box alert mb-4 p-4 incident incident-hook" role="alert" :class="incidentClass(index)">
+                    <strong v-if="editIncidentMode(index)">{{ $t("Title") }}:</strong>
+                    <Editable v-model="incidentItem.title" tag="h4" :contenteditable="editIncidentMode(index)" :noNL="true" class="alert-heading" />
 
-                <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
-                <Editable v-if="editIncidentMode" v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
-                <div v-if="editIncidentMode" class="form-text">
-                    {{ $t("markdownSupported") }}
-                </div>
-                <!-- eslint-disable-next-line vue/no-v-html-->
-                <div v-if="! editIncidentMode" class="content" v-html="incidentHTML"></div>
+                    <strong v-if="editIncidentMode(index)">{{ $t("Content") }}:</strong>
+                    <Editable v-if="editIncidentMode(index)" v-model="incidentItem.content" tag="div" :contenteditable="editIncidentMode(index)" class="content" />
+                    <div v-if="editIncidentMode(index)" class="form-text">
+                        {{ $t("markdownSupported") }}
+                    </div>
+                    <!-- eslint-disable-next-line vue/no-v-html-->
+                    <div v-if="! editIncidentMode(index)" class="content" v-html="incidentHTML(index)"></div>
 
-                <!-- Incident Date -->
-                <div class="date mt-3">
-                    {{ $t("Date Created") }}: {{ $root.datetime(incident.createdDate) }} ({{ dateFromNow(incident.createdDate) }})<br />
-                    <span v-if="incident.lastUpdatedDate">
-                        {{ $t("Last Updated") }}: {{ $root.datetime(incident.lastUpdatedDate) }} ({{ dateFromNow(incident.lastUpdatedDate) }})
-                    </span>
-                </div>
-
-                <div v-if="editMode" class="mt-3">
-                    <button v-if="editIncidentMode" class="btn btn-light me-2" @click="postIncident">
-                        <font-awesome-icon icon="bullhorn" />
-                        {{ $t("Post") }}
-                    </button>
-
-                    <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="editIncident">
-                        <font-awesome-icon icon="edit" />
-                        {{ $t("Edit") }}
-                    </button>
-
-                    <button v-if="editIncidentMode" class="btn btn-light me-2" @click="cancelIncident">
-                        <font-awesome-icon icon="times" />
-                        {{ $t("Cancel") }}
-                    </button>
-
-                    <div v-if="editIncidentMode" class="dropdown d-inline-block me-2">
-                        <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ $t("Style") }}: {{ $t(incident.style) }}
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
-                        </ul>
+                    <!-- Incident Date -->
+                    <div class="date mt-3">
+                        {{ $t("Date Created") }}: {{ $root.datetime(incidentItem.createdDate) }} ({{ dateFromNow(incidentItem.createdDate) }})<br />
+                        <span v-if="incidentItem.lastUpdatedDate">
+                            {{ $t("Last Updated") }}: {{ $root.datetime(incidentItem.lastUpdatedDate) }} ({{ dateFromNow(incidentItem.lastUpdatedDate) }})
+                        </span>
                     </div>
 
-                    <button v-if="!editIncidentMode && incident.id" class="btn btn-light me-2" @click="unpinIncident">
-                        <font-awesome-icon icon="unlink" />
-                        {{ $t("Delete") }}
-                    </button>
+                    <div v-if="editMode" class="mt-3">
+                        <button v-if="editIncidentMode(index)" class="btn btn-light me-2" @click="postIncident">
+                            <font-awesome-icon icon="bullhorn" />
+                            {{ $t("Post") }}
+                        </button>
+
+                        <button v-if="!editIncidentMode(index) && incidentItem.id" class="btn btn-light me-2" :disabled="editIncidentMode(editIncidentIndex)" @click="editIncident(index)">
+                            <font-awesome-icon icon="edit" />
+                            {{ $t("Edit") }}
+                        </button>
+
+                        <button v-if="editIncidentMode(index)" class="btn btn-light me-2" @click="cancelIncident">
+                            <font-awesome-icon icon="times" />
+                            {{ $t("Cancel") }}
+                        </button>
+
+                        <div v-if="editIncidentMode(index)" class="dropdown d-inline-block me-2">
+                            <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ $t("Style") }}: {{ $t(incidentItem.style) }}
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li><a class="dropdown-item" href="#" @click="incidentItem.style = 'info'">{{ $t("info") }}</a></li>
+                                <li><a class="dropdown-item" href="#" @click="incidentItem.style = 'warning'">{{ $t("warning") }}</a></li>
+                                <li><a class="dropdown-item" href="#" @click="incidentItem.style = 'danger'">{{ $t("danger") }}</a></li>
+                                <li><a class="dropdown-item" href="#" @click="incidentItem.style = 'primary'">{{ $t("primary") }}</a></li>
+                                <li><a class="dropdown-item" href="#" @click="incidentItem.style = 'light'">{{ $t("light") }}</a></li>
+                                <li><a class="dropdown-item" href="#" @click="incidentItem.style = 'dark'">{{ $t("dark") }}</a></li>
+                            </ul>
+                        </div>
+
+                        <button v-if="!editIncidentMode(index) && incidentItem.id" class="btn btn-light me-2" @click="unpinIncident(index)">
+                            <font-awesome-icon icon="unlink" />
+                            {{ $t("Delete") }}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </template>
 
             <!-- Overall Status -->
             <div class="shadow-box list  p-4 overall-status mb-4">
@@ -370,18 +372,18 @@ import "prismjs/components/prism-css";
 import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
 import ImageCropUpload from "vue-image-crop-upload";
 // import Prism Editor
+import DOMPurify from "dompurify";
+import { marked } from "marked";
+import VueMultiselect from "vue-multiselect";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhere
 import { useToast } from "vue-toastification";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
 import Confirm from "../components/Confirm.vue";
-import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
-import { getResBaseURL } from "../util-frontend";
-import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
+import PublicGroupList from "../components/PublicGroupList.vue";
 import Tag from "../components/Tag.vue";
-import VueMultiselect from "vue-multiselect";
+import { getResBaseURL } from "../util-frontend";
+import { MAINTENANCE, STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP } from "../util.ts";
 
 const toast = useToast();
 dayjs.extend(duration);
@@ -434,10 +436,12 @@ export default {
             slug: null,
             enableEditMode: false,
             enableEditIncidentMode: false,
+            editIncidentIndex: -1,
             hasToken: false,
             config: {},
             selectedMonitor: null,
             incident: null,
+            incidentList: [],
             previousIncident: null,
             showImageCropUpload: false,
             imgDataUrl: "/icon.svg",
@@ -508,10 +512,6 @@ export default {
             return this.enableEditMode && this.$root.socket.connected;
         },
 
-        editIncidentMode() {
-            return this.enableEditIncidentMode;
-        },
-
         isPublished() {
             return this.config.published;
         },
@@ -523,10 +523,6 @@ export default {
                 };
             }
             return {};
-        },
-
-        incidentClass() {
-            return "bg-" + this.incident.style;
         },
 
         maintenanceClass() {
@@ -575,14 +571,6 @@ export default {
 
         isMaintenance() {
             return this.overallStatus === STATUS_PAGE_MAINTENANCE;
-        },
-
-        incidentHTML() {
-            if (this.incident.content != null) {
-                return DOMPurify.sanitize(marked(this.incident.content));
-            } else {
-                return "";
-            }
         },
 
         descriptionHTML() {
@@ -710,7 +698,7 @@ export default {
                 this.imgDataUrl = this.config.icon;
             }
 
-            this.incident = res.data.incident;
+            this.incidentList = res.data.incidentList;
             this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
 
@@ -952,17 +940,31 @@ export default {
          * @returns {void}
          */
         createIncident() {
-            this.enableEditIncidentMode = true;
+            const incidentListLength = this.incidentList.length - 1;
+            // if not contain id we assume it wasn't save and if cancel it's will lost all contents
+            if (this.incidentList.some(item => !item.id)) {
+                this.$root.toastError("Please input title and content");
+                return;
+            } else {
+                this.enableEditIncidentMode = true;
+                const incident = {
+                    title: "",
+                    content: "",
+                    style: "primary",
+                };
 
-            if (this.incident) {
-                this.previousIncident = this.incident;
+                this.incidentList.push(incident);
+                this.incident = incident;
             }
 
-            this.incident = {
-                title: "",
-                content: "",
-                style: "primary",
-            };
+            this.editIncidentIndex = incidentListLength + 1;
+
+            // scroll previous into view,cause new not created
+            const lastIncidentRef = this.$refs?.[`incident-${incidentListLength}`]?.[0];
+            lastIncidentRef && lastIncidentRef.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
         },
 
         /**
@@ -979,7 +981,7 @@ export default {
 
                 if (res.ok) {
                     this.enableEditIncidentMode = false;
-                    this.incident = res.incident;
+                    this.incidentList[this.editIncidentIndex] = res.incident;
                 } else {
                     this.$root.toastError(res.msg);
                 }
@@ -990,10 +992,13 @@ export default {
 
         /**
          * Click Edit Button
+         * @param {number} index index of incedentList
          * @returns {void}
          */
-        editIncident() {
+        editIncident(index) {
             this.enableEditIncidentMode = true;
+            this.incident = this.incidentList[index];
+            this.editIncidentIndex = index;
             this.previousIncident = Object.assign({}, this.incident);
         },
 
@@ -1005,18 +1010,28 @@ export default {
             this.enableEditIncidentMode = false;
 
             if (this.previousIncident) {
-                this.incident = this.previousIncident;
+                this.incidentList[this.editIncidentIndex] = this.previousIncident;
                 this.previousIncident = null;
             }
+
+            // a new incident cancel should remove them
+            if (!this.incident?.id) {
+                this.incidentList.splice(this.editIncidentIndex, 1);
+            }
+            this.incident = null;
+            this.editIncidentIndex = -1;
         },
 
         /**
-         * Unpin the incident
+         * Unpin the incident with id
+         * @param {number} index of incident
          * @returns {void}
          */
-        unpinIncident() {
-            this.$root.getSocket().emit("unpinIncident", this.slug, () => {
+        unpinIncident(index) {
+            const incident = this.incidentList[index];
+            this.$root.getSocket().emit("unpinIncident", this.slug, incident, () => {
                 this.incident = null;
+                this.incidentList.splice(index, 1);
             });
         },
 
@@ -1051,6 +1066,36 @@ export default {
             }
         },
 
+        /**
+         * Generate sanitized HTML from maintenance description
+         * @param {number} index Text to sanitize
+         * @returns {string} Sanitized HTML
+         */
+        incidentClass(index) {
+            return "bg-" + this.incidentList[index].style;
+        },
+
+        /**
+         * Generate sanitized HTML from incident description
+         * @param {number} index Text to sanitize
+         * @returns {string} Sanitized HTML
+         */
+        incidentHTML(index) {
+            if (this.incidentList[index].content != null) {
+                return DOMPurify.sanitize(marked(this.incidentList[index].content));
+            } else {
+                return "";
+            }
+        },
+
+        /**
+         * Generate sanitized HTML from incident description
+         * @param {number} index Text to sanitize
+         * @returns {string} Sanitized HTML
+         */
+        editIncidentMode(index) {
+            return this.enableEditIncidentMode && this.editIncidentIndex === index;
+        },
     }
 };
 </script>

@@ -106,16 +106,10 @@ class StatusPage extends BeanModel {
     static async getStatusPageData(statusPage) {
         const config = await statusPage.toPublicJSON();
 
-        // Incident
-        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
-            statusPage.id,
-        ]);
+        // Incident List
+        const incidentList = await StatusPage.getIncidentList(statusPage.id);
 
-        if (incident) {
-            incident = incident.toPublicJSON();
-        }
-
-        let maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
+        const maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
 
         // Public Group List
         const publicGroupList = [];
@@ -133,7 +127,7 @@ class StatusPage extends BeanModel {
         // Response
         return {
             config,
-            incident,
+            incidentList,
             publicGroupList,
             maintenanceList,
         };
@@ -324,6 +318,29 @@ class StatusPage extends BeanModel {
             }
 
             return publicMaintenanceList;
+
+        } catch (error) {
+            return [];
+        }
+    }
+
+    /**
+     * Get list of incidents
+     * @param {number} statusPageId ID of status page to get incidents for
+     * @returns {object} Object representing incidents sanitized for public
+     */
+    static async getIncidentList(statusPageId) {
+        try {
+            const publicIncidentList = [];
+            let incidentList = await R.find("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
+                statusPageId,
+            ]);
+
+            for (const incident of incidentList) {
+                publicIncidentList.push(await incident.toPublicJSON());
+            }
+
+            return publicIncidentList;
 
         } catch (error) {
             return [];

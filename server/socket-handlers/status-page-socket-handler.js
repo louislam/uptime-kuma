@@ -26,10 +26,6 @@ module.exports.statusPageSocketHandler = (socket) => {
                 throw new Error("slug is not found");
             }
 
-            await R.exec("UPDATE incident SET pin = 0 WHERE status_page_id = ? ", [
-                statusPageID
-            ]);
-
             let incidentBean;
 
             if (incident.id) {
@@ -69,14 +65,15 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 
-    socket.on("unpinIncident", async (slug, callback) => {
+    socket.on("unpinIncident", async (slug, incident, callback) => {
         try {
             checkLogin(socket);
 
             let statusPageID = await StatusPage.slugToID(slug);
 
-            await R.exec("UPDATE incident SET pin = 0 WHERE pin = 1 AND status_page_id = ? ", [
-                statusPageID
+            await R.exec("UPDATE incident SET pin = 0 WHERE pin = 1 AND status_page_id = ? AND id = ? ", [
+                statusPageID,
+                incident.id
             ]);
 
             callback({
