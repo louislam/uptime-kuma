@@ -88,6 +88,9 @@
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
+                                        <option value="zookeeper">
+                                            Zookeeper
+                                        </option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -480,6 +483,19 @@
                                 <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
                                     <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'SELECT 1' ])"></textarea>
+                                </div>
+                            </template>
+
+                            <!-- Zookeeper -->
+                            <template v-if="monitor.type === 'zookeeper'">
+                                <div class="my-3">
+                                    <label for="zookeeperHost" class="form-label">{{ $t("Zookeeper Host") }}</label>
+                                    <input id="zookeeperHost" v-model="monitor.zookeeperHost" type="text" class="form-control" required>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="zookeeperTimeout" class="form-label">{{ $t("Zookeeper Timeout") }}</label>
+                                    <input id="zookeeperTimeout" v-model="monitor.zookeeperTimeout" type="number" class="form-control" required min="1000" max="60000" step="1000">
                                 </div>
                             </template>
 
@@ -1392,6 +1408,16 @@ message HealthCheckResponse {
                         this.monitor.databaseConnectionString = this.connectionStringTemplates[monitorType];
                     }
                     break;
+                }
+            }
+
+            // Set the host and timeout template for zookeeper
+            if (this.monitor.type === "zookeeper") {
+                if (! this.monitor.zookeeperHost) {
+                    this.monitor.zookeeperHost = "host:port";
+                }
+                if (! this.monitor.zookeeperTimeout) {
+                    this.monitor.zookeeperTimeout = 5000;
                 }
             }
 

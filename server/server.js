@@ -830,6 +830,8 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation =
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
+                bean.zookeeperHost = monitor.zookeeperHost;
+                bean.zookeeperTimeout = monitor.zookeeperTimeout;
                 bean.remote_browser = monitor.remote_browser;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;

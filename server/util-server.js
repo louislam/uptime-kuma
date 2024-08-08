@@ -19,6 +19,7 @@ const radiusClient = require("node-radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
+const net = require("node:net");
 
 const {
     dictionaries: {
@@ -1061,4 +1062,51 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
             return null;
         }
     }
+};
+
+/**
+ * Connects to zookeeper host and sends "ruok", if response is "imok", then host is UP.
+ * @param {string} zookeeperHost - The connection string for a single host in the form 'host:port'
+ * @param {number} timeoutMs - Timeout in milliseconds under which connection must be established.
+ * @returns {Promise<any>} The result of connection check
+ */
+exports.zookeeperConnect = function (zookeeperHost, timeoutMs = 5000) {
+    const hostPort = zookeeperHost.split(":");
+    const host = hostPort.shift();
+    const port = hostPort.shift();
+
+    return new Promise((resolve, reject) => {
+        let socket = net.connect({
+            host: host,
+            port: port,
+            timeout: timeoutMs,
+            onread: {
+                buffer: Buffer.alloc(1 * 1024), // 1KB fixed to cap very large response
+                callback: function (nread, buf) {
+                    let response = buf.toString("utf8", 0, nread);
+                    log.debug("zookeeper", `got response: [${response}]`);
+                    if (response === "imok") {
+                        resolve("imok");
+                    } else {
+                        reject(Error("zookeeper did not respond with imok"));
+                    }
+                },
+            },
+        });
+
+        socket.once("error", function (err) {
+            log.debug("zookeeper", `error connecting to zookeeper [${err.message}]`);
+            reject(err);
+        });
+
+        socket.on("connect", function () {
+            log.debug("zookeeper", `connected to zookeeper: ${host}:${port}`);
+            socket.write("ruok\n", (err) => {
+                if (err) {
+                    log.debug("zookeeper", `error while writing to host [${err.message}]`);
+                    reject(err);
+                }
+            });
+        });
+    });
 };
