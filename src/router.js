@@ -7,6 +7,7 @@ import DashboardHome from "./pages/DashboardHome.vue";
 import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
 import EditMaintenance from "./pages/EditMaintenance.vue";
+import ListIncidents from "./pages/ListIncidents.vue";
 import List from "./pages/List.vue";
 const Settings = () => import("./pages/Settings.vue");
 import Setup from "./pages/Setup.vue";
@@ -159,6 +160,10 @@ const routes = [
                     {
                         path: "/maintenance/edit/:id",
                         component: EditMaintenance,
+                    },
+                    {
+                        path: "/incident-history",
+                        component: ListIncidents,
                     },
                 ],
             },
