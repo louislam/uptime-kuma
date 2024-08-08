@@ -29,8 +29,13 @@ function getGameList() {
     return gameList;
 }
 
+/**
+ * Handler for general events
+ * @param {Socket} socket Socket.io instance
+ * @param {UptimeKumaServer} server Uptime Kuma server
+ * @returns {void}
+ */
 module.exports.generalSocketHandler = (socket, server) => {
-
     socket.on("initServerTimezone", async (timezone) => {
         try {
             checkLogin(socket);
