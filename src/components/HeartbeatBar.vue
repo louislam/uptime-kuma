@@ -266,10 +266,8 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-.wrap {
-    overflow: hidden;
-    width: 100%;
-    white-space: nowrap;
+.heat-map {
+    font-size: x-small;
 }
 
 .hp-bar-big {

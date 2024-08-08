@@ -162,6 +162,16 @@ optgroup {
     background-color: #161B22;
 }
 
+[data-tippy-root] {
+    color: #333;
+    font-size: small;
+    font-weight: 600;
+    background-color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 2px 2px 2px #333;
+}
+
 .btn-outline-normal {
     padding: 4px 10px;
     border: 1px solid #ced4da;

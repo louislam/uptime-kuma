@@ -191,6 +191,7 @@
         "stylelint-config-standard": "~25.0.0",
         "terser": "~5.15.0",
         "test": "~3.3.0",
+        "tippy.js": "^6.3.7",
         "typescript": "~4.4.4",
         "v-pagination-3": "~0.1.7",
         "vite": "~5.2.8",
@@ -207,6 +208,7 @@
         "vue-qrcode": "~1.0.0",
         "vue-router": "~4.2.5",
         "vue-toastification": "~2.0.0-rc.5",
+        "vue3-calendar-heatmap": "^2.0.5",
         "vuedraggable": "~4.1.0",
         "wait-on": "^7.2.0",
         "whatwg-url": "~12.0.1"
