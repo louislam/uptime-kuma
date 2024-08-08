@@ -57,7 +57,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
+                            <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
@@ -231,6 +231,18 @@ table {
     @media (max-width: 550px) {
         table-layout: fixed;
         overflow-wrap: break-word;
+    }
+}
+
+@media screen and (max-width: 1280px) {
+    .name-column {
+        min-width: 150px;
+    }
+}
+
+@media screen and (min-aspect-ratio: 4/3) {
+    .name-column {
+        min-width: 200px;
     }
 }
 </style>
