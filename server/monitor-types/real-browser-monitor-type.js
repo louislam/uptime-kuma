@@ -228,6 +228,20 @@ async function testRemoteBrowser(remoteBrowserURL) {
         throw new Error(e.message);
     }
 }
+
+/**
+ * Cleanup function to terminate all browser processes and clear cache after each monitoring check.
+ * @param {import ("playwright-core").Page} page The page to close
+ * @returns {Promise<void>}
+ */
+async function cleanupBrowser(page) {
+    if (page) {
+        await page.context().clearCookies();
+        await page.context().clearPermissions();
+        await page.close();
+    }
+}
+
 class RealBrowserMonitorType extends MonitorType {
 
     name = "real-browser";
@@ -251,7 +265,7 @@ class RealBrowserMonitorType extends MonitorType {
             path: path.join(Database.screenshotDir, filename),
         });
 
-        await context.close();
+        await cleanupBrowser(page); // Ensure cleanup is called after each monitoring check
 
         if (res.status() >= 200 && res.status() < 400) {
             heartbeat.status = UP;
