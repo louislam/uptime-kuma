@@ -17,11 +17,15 @@
                                 v-model="tag.name"
                                 type="text"
                                 class="form-control"
-                                :class="{'is-invalid': nameInvalid}"
+                                :class="{'is-invalid': nameInvalid || nameContainsComma}"
                                 required
                             >
                             <div class="invalid-feedback">
-                                {{ $t("Tag with this name already exist.") }}
+                                {{
+                                    nameInvalid
+                                        ? $t("Tag with this name already exist.")
+                                        : $t("Tag name contains a comma.")
+                                }}
                             </div>
                         </div>
 
@@ -160,6 +164,7 @@ export default {
             addingMonitor: [],
             selectedAddMonitor: null,
             nameInvalid: false,
+            nameContainsComma: false,
         };
     },
 
@@ -260,6 +265,13 @@ export default {
                 this.nameInvalid = true;
                 return false;
             }
+
+            this.nameContainsComma = false;
+            if (this.tag?.name?.includes(",")) {
+                this.nameContainsComma = true;
+                return false;
+            }
+
             return true;
         },
 
