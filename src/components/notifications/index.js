@@ -29,6 +29,7 @@ import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
+import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
@@ -98,6 +99,7 @@ const NotificationFormList = {
     "ntfy": Ntfy,
     "octopush": Octopush,
     "OneBot": OneBot,
+    "Onesender": Onesender,
     "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
     "FlashDuty": FlashDuty,
