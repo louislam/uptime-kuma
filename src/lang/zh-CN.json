@@ -1,5 +1,5 @@
 {
-    "languageName": "简体中文",
+    "languageName": "English",
     "checkEverySecond": "检测频率 {0} 秒",
     "retryCheckEverySecond": "重试间隔 {0} 秒",
     "resendEveryXTimes": "每 {0} 次失败则重复发送一次",
