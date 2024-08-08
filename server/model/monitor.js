@@ -5,7 +5,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     SQL_DATETIME_FORMAT, evaluateJsonQuery
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, lookup,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -110,6 +110,7 @@ class Monitor extends BeanModel {
             method: this.method,
             hostname: this.hostname,
             port: this.port,
+            ipFamily: this.ipFamily,
             maxretries: this.maxretries,
             weight: this.weight,
             active: await this.isActive(),
@@ -385,6 +386,16 @@ class Monitor extends BeanModel {
             }
 
             try {
+                let HostnameOrIp = this.hostname;
+                if (this.type === "ping" || this.type === "port" ) {
+                    try {
+                        HostnameOrIp = await lookup(this.hostname, this.ipFamily);
+                    } catch (err) {
+                        log.debug("monitor", `Error resolving ${this.hostname}. Error: ${err}`);
+                        throw new Error(`Error resolving ${this.hostname}. Error: ${err}`);
+                    }
+                }
+
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
@@ -612,12 +623,12 @@ class Monitor extends BeanModel {
                     }
 
                 } else if (this.type === "port") {
-                    bean.ping = await tcping(this.hostname, this.port);
+                    bean.ping = await tcping(HostnameOrIp, this.port);
                     bean.msg = "";
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname, this.packetSize);
+                    bean.ping = await ping(HostnameOrIp, this.packetSize);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
