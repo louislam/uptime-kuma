@@ -71,23 +71,15 @@ class Monitor extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON
+     * @param {object} preloadData Include precalculate data in
      * @param {boolean} includeSensitiveData Include sensitive data in
      * JSON
      * @returns {Promise<object>} Object ready to parse
      */
-    async toJSON(includeSensitiveData = true) {
+    async toJSON(preloadData = {}, includeSensitiveData = true) {
 
-        let notificationIDList = {};
-
-        let list = await R.find("monitor_notification", " monitor_id = ? ", [
-            this.id,
-        ]);
-
-        for (let bean of list) {
-            notificationIDList[bean.notification_id] = true;
-        }
-
-        const tags = await this.getTags();
+        const tags = preloadData.tags[this.id] || [];
+        const notificationIDList = preloadData.notifications[this.id] || {};
 
         let screenshot = null;
 
@@ -105,15 +97,15 @@ class Monitor extends BeanModel {
             path,
             pathName,
             parent: this.parent,
-            childrenIDs: await Monitor.getAllChildrenIDs(this.id),
+            childrenIDs: preloadData.childrenIDs[this.id] || [],
             url: this.url,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
             weight: this.weight,
-            active: await this.isActive(),
-            forceInactive: !await Monitor.isParentActive(this.id),
+            active: preloadData.activeStatus[this.id],
+            forceInactive: preloadData.forceInactive[this.id],
             type: this.type,
             timeout: this.timeout,
             interval: this.interval,
@@ -134,8 +126,8 @@ class Monitor extends BeanModel {
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
             notificationIDList,
-            tags: tags,
-            maintenance: await Monitor.isUnderMaintenance(this.id),
+            tags,
+            maintenance: preloadData.maintenanceStatus[this.id],
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
             mqttCheckType: this.mqttCheckType,
@@ -197,16 +189,6 @@ class Monitor extends BeanModel {
 
         data.includeSensitiveData = includeSensitiveData;
         return data;
-    }
-
-    /**
-     * Checks if the monitor is active based on itself and its parents
-     * @returns {Promise<boolean>} Is the monitor active?
-     */
-    async isActive() {
-        const parentActive = await Monitor.isParentActive(this.id);
-
-        return (this.active === 1) && parentActive;
     }
 
     /**
@@ -1179,6 +1161,18 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Checks if the monitor is active based on itself and its parents
+     * @param {number} monitorID ID of monitor to send
+     * @param {boolean} active is active
+     * @returns {Promise<boolean>} Is the monitor active?
+     */
+    static async isActive(monitorID, active) {
+        const parentActive = await Monitor.isParentActive(monitorID);
+
+        return (active === 1) && parentActive;
+    }
+
+    /**
      * Send statistics to clients
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
@@ -1314,7 +1308,10 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     const heartbeatJSON = bean.toJSON();
-
+                    const monitorData = [{ id: monitor.id,
+                        active: monitor.active
+                    }];
+                    const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     if (!heartbeatJSON["msg"]) {
                         heartbeatJSON["msg"] = "N/A";
@@ -1325,7 +1322,7 @@ class Monitor extends BeanModel {
                     heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
+                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(preloadData, false), heartbeatJSON);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1485,6 +1482,81 @@ class Monitor extends BeanModel {
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
+    }
+
+    /**
+     * Gets monitor notification of multiple monitor
+     * @param {Array} monitorIDs IDs of monitor to get
+     * @returns {Promise<LooseObject<any>>} object
+     */
+    static async getMonitorNotification(monitorIDs) {
+        return await R.getAll(`
+            SELECT monitor_notification.monitor_id, monitor_notification.notification_id
+            FROM monitor_notification
+            WHERE monitor_notification.monitor_id IN (?)
+        `, [
+            monitorIDs,
+        ]);
+    }
+
+    /**
+     * Gets monitor tags of multiple monitor
+     * @param {Array} monitorIDs IDs of monitor to get
+     * @returns {Promise<LooseObject<any>>} object
+     */
+    static async getMonitorTag(monitorIDs) {
+        return await R.getAll(`
+            SELECT monitor_tag.monitor_id, tag.name, tag.color
+            FROM monitor_tag
+            JOIN tag ON monitor_tag.tag_id = tag.id
+            WHERE monitor_tag.monitor_id IN (?)
+        `, [
+            monitorIDs,
+        ]);
+    }
+
+    /**
+     * prepare preloaded data for efficient access
+     * @param {Array} monitorData IDs & active field of monitor to get
+     * @returns {Promise<LooseObject<any>>} object
+     */
+    static async preparePreloadData(monitorData) {
+        const monitorIDs = monitorData.map(monitor => monitor.id);
+        const notifications = await Monitor.getMonitorNotification(monitorIDs);
+        const tags = await Monitor.getMonitorTag(monitorIDs);
+        const maintenanceStatuses = await Promise.all(
+            monitorData.map(monitor => Monitor.isUnderMaintenance(monitor.id))
+        );
+        const childrenIDs = await Promise.all(
+            monitorData.map(monitor => Monitor.getAllChildrenIDs(monitor.id))
+        );
+        const activeStatuses = await Promise.all(
+            monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active))
+        );
+        const forceInactiveStatuses = await Promise.all(
+            monitorData.map(monitor => Monitor.isParentActive(monitor.id))
+        );
+
+        // Organize preloaded data for efficient access
+        return {
+            notifications: notifications.reduce((acc, row) => {
+                acc[row.monitor_id] = acc[row.monitor_id] || {};
+                acc[row.monitor_id][row.notification_id] = true;
+                return acc;
+            }, {}),
+            tags: tags.reduce((acc, row) => {
+                acc[row.monitor_id] = acc[row.monitor_id] || [];
+                acc[row.monitor_id].push({ name: row.name,
+                    color: row.color
+                });
+                return acc;
+            }, {}),
+            maintenanceStatus: Object.fromEntries(monitorData.map((m, index) => [ m.id, maintenanceStatuses[index] ])),
+            childrenIDs: Object.fromEntries(monitorData.map((m, index) => [ m.id, childrenIDs[index] ])),
+            activeStatus: Object.fromEntries(monitorData.map((m, index) => [ m.id, activeStatuses[index] ])),
+            forceInactive: Object.fromEntries(monitorData.map((m, index) => [ m.id, !forceInactiveStatuses[index] ])),
+        };
+
     }
 
     /**

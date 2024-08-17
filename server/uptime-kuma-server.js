@@ -219,9 +219,27 @@ class UptimeKumaServer {
             userID,
         ]);
 
-        for (let monitor of monitorList) {
-            result[monitor.id] = await monitor.toJSON();
-        }
+        // Collect monitor IDs
+        // Create monitorData with id, active
+        const monitorData = monitorList.map(monitor => ({
+            id: monitor.id,
+            active: monitor.active,
+        }));
+        const preloadData = await Monitor.preparePreloadData(monitorData);
+
+        // Create an array of promises to convert each monitor to JSON in parallel
+        const monitorPromises = monitorList.map(monitor => monitor.toJSON(preloadData).then(json => {
+            return { id: monitor.id,
+                json
+            };
+        }));
+        // Wait for all promises to resolve
+        const monitors = await Promise.all(monitorPromises);
+
+        // Populate the result object with monitor IDs as keys, JSON objects as values
+        monitors.forEach(monitor => {
+            result[monitor.id] = monitor.json;
+        });
 
         return result;
     }
@@ -520,3 +538,4 @@ const { DnsMonitorType } = require("./monitor-types/dns");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
 const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
+const Monitor = require("./model/monitor");

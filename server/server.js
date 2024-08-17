@@ -890,14 +890,17 @@ let needSetup = false;
 
                 log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                let bean = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
                 ]);
-
+                const monitorData = [{ id: monitor.id,
+                    active: monitor.active
+                }];
+                const preloadData = await Monitor.preparePreloadData(monitorData);
                 callback({
                     ok: true,
-                    monitor: await bean.toJSON(),
+                    monitor: await monitor.toJSON(preloadData),
                 });
 
             } catch (e) {
@@ -1644,13 +1647,20 @@ async function afterLogin(socket, user) {
 
     await StatusPage.sendStatusPageList(io, socket);
 
+    // Create an array to store the combined promises for both sendHeartbeatList and sendStats
+    const monitorPromises = [];
     for (let monitorID in monitorList) {
-        await sendHeartbeatList(socket, monitorID);
+        // Combine both sendHeartbeatList and sendStats for each monitor into a single Promise
+        monitorPromises.push(
+            Promise.all([
+                sendHeartbeatList(socket, monitorID),
+                Monitor.sendStats(io, monitorID, user.id)
+            ])
+        );
     }
 
-    for (let monitorID in monitorList) {
-        await Monitor.sendStats(io, monitorID, user.id);
-    }
+    // Await all combined promises
+    await Promise.all(monitorPromises);
 
     // Set server timezone from client browser if not set
     // It should be run once only
