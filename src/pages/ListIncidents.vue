@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>Incident Reports</h1>
+        <h1>{{ $t("Incident Reports") }}</h1>
         <div v-if="isLoading">Loading...</div>
         <div v-else-if="filteredReports.length">
             <div
@@ -8,7 +8,7 @@
                 :key="report._id"
                 class="big-padding"
             >
-                <h3>{{ formatDate(report._createdDate) }}</h3>
+                <h3>{{ datetimeFormat(report._createdDate) }}</h3>
                 <hr />
                 <h4>{{ report._title }}</h4>
                 <p>{{ report._content }}</p>
@@ -57,14 +57,6 @@ export default {
             } finally {
                 this.isLoading = false;
             }
-        },
-        formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-            });
         },
     },
 };

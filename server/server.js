@@ -283,16 +283,6 @@ let needSetup = false;
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
 
-    app.get("/api/incident-reports", async (req, res) => {
-        try {
-            const incidentReports = await R.findAll("incident");
-            res.json(incidentReports);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: "Failed to fetch incident reports" });
-        }
-    });
-
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
@@ -672,6 +662,16 @@ let needSetup = false;
             }
         });
 
+        socket.on("fetchIncidentReports", async () => {
+            try {
+                const incidentReports = await R.findAll("incident");
+                socket.emit("incidentReports", incidentReports);
+            } catch (error) {
+                console.error(error);
+                socket.emit("incidentReportsError", { error: "Failed to fetch incident reports" });
+            }
+        });
+
         // ***************************
         // Auth Only API
         // ***************************
@@ -729,7 +729,9 @@ let needSetup = false;
                 });
             }
         });
+        socket.on("incidentReports", async (monitor,callback) => {
 
+        });
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
