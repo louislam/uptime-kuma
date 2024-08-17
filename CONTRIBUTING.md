@@ -127,7 +127,7 @@ Different guidelines exist for different types of pull requests (PRs):
   - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor.
     the `async check(...)`-function should:
     - throw an error for each fault that is detected with an actionable error message
-    - in the happy-path, you should set `heartbeat.msg` to a successfull message and set `heartbeat.status = UP`
+    - in the happy-path, you should set `heartbeat.msg` to a successful message and set `heartbeat.status = UP`
   - `server/uptime-kuma-server.js` is where the monitoring backend needs to be registered.
     *If you have an idea how we can skip this step, we would love to hear about it ^^*
   - `src/pages/EditMonitor.vue` is the shared frontend users interact with.

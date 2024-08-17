@@ -962,5 +962,13 @@
     "threemaSenderIdentityFormat": "8 characters, usually starts with *",
     "threemaApiAuthenticationSecret": "Gateway-ID Secret",
     "threemaBasicModeInfo": "Note: This integration uses Threema Gateway in basic mode (server-based encryption). Further details can be found {0}.",
-    "apiKeysDisabledMsg": "API keys are disabled because authentication is disabled."
+    "apiKeysDisabledMsg": "API keys are disabled because authentication is disabled.",
+    "Host Onesender": "Host Onesender",
+    "Token Onesender": "Token Onesender",
+    "Recipient Type": "Recipient Type",
+    "Private Number": "Private Number",
+    "privateOnesenderDesc": "Make sure the number phone is valid. To send message into private number phone, ex: 628123456789",
+    "groupOnesenderDesc": "Make sure the GroupID is valid. To send message into Group, ex: 628123456789-342345",
+    "Group ID": "Group ID",
+    "wayToGetOnesenderUrlandToken":"You can get the URL and Token by going to the Onesender website. More info {0}"
 }

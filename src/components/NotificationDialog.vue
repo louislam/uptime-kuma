@@ -135,6 +135,7 @@ export default {
                 "ntfy": "Ntfy",
                 "octopush": "Octopush",
                 "OneBot": "OneBot",
+                "Onesender": "Onesender",
                 "Opsgenie": "Opsgenie",
                 "PagerDuty": "PagerDuty",
                 "PagerTree": "PagerTree",

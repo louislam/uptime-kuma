@@ -4,6 +4,7 @@ const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const googleAnalytics = require("../google-analytics");
+const { marked } = require("marked");
 
 class StatusPage extends BeanModel {
 
@@ -46,7 +47,11 @@ class StatusPage extends BeanModel {
      */
     static async renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
-        const description155 = statusPage.description?.substring(0, 155) ?? "";
+
+        const description155 = marked(statusPage.description ?? "")
+            .replace(/<[^>]+>/gm, "")
+            .trim()
+            .substring(0, 155);
 
         $("title").text(statusPage.title);
         $("meta[name=description]").attr("content", description155);
