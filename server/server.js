@@ -729,9 +729,6 @@ let needSetup = false;
                 });
             }
         });
-        socket.on("incidentReports", async (monitor,callback) => {
-
-        });
         // Edit a monitor
         socket.on("editMonitor", async (monitor, callback) => {
             try {
