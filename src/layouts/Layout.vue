@@ -58,12 +58,6 @@
                             </li>
 
                             <li>
-                                <router-link to="/incident-history" class="dropdown-item" :class="{ active: $route.path.includes('manage-incident-history') }">
-                                    <font-awesome-icon icon="bullhorn" /> {{ $t("Incident History") }}
-                                </router-link>
-                            </li>
-
-                            <li>
                                 <router-link to="/settings/general" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
                                     <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
                                 </router-link>
