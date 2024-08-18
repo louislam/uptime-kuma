@@ -846,7 +846,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (await bean.isActive()) {
+                if (await Monitor.isActive(bean.id, bean.active)) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 
