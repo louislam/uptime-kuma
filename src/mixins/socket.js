@@ -5,7 +5,7 @@ import Favico from "favico.js";
 import dayjs from "dayjs";
 import mitt from "mitt";
 
-import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
+import { DOWN, MAINTENANCE, PENDING, UP, OPERATIONS } from "../util.ts";
 import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
@@ -141,7 +141,7 @@ export default {
 
             socket.on("monitorList", (data) => {
                 // Add Helper function
-                Object.entries(data).forEach(([ monitorID, monitor ]) => {
+                Object.entries(data.list).forEach(([ monitorID, monitor ]) => {
                     monitor.getUrl = () => {
                         try {
                             return new URL(monitor.url);
@@ -150,7 +150,16 @@ export default {
                         }
                     };
                 });
-                this.monitorList = data;
+
+                if (data.op === OPERATIONS.ADD) {
+                    this.monitorList = this.updateMonitorList(data.list);
+                } else if (data.op === OPERATIONS.UPDATE) {
+                    this.monitorList = this.updateMonitorList(data.list);
+                } else if (data.op === OPERATIONS.DELETE) {
+                    this.monitorList = this.deleteMonitorList(data.monitorID);
+                } else {
+                    this.monitorList = data.list;
+                }
             });
 
             socket.on("maintenanceList", (data) => {
@@ -283,6 +292,30 @@ export default {
             socket.on("refresh", () => {
                 location.reload();
             });
+        },
+
+        /**
+         * update into existing list
+         * @param {object} list add, updated, pause & resume list
+         * @returns {object} list
+         */
+        updateMonitorList(list) {
+            Object.entries(list).forEach(([ monitorID, updatedMonitor ]) => {
+                this.monitorList[monitorID] = updatedMonitor;
+            });
+            return this.monitorList;
+        },
+
+        /**
+         * delete from existing list
+         * @param {number} monitorID deleted monitorID
+         * @returns {object} list
+         */
+        deleteMonitorList(monitorID) {
+            if (this.monitorList[monitorID]) {
+                delete this.monitorList[monitorID];
+            }
+            return this.monitorList;
         },
 
         /**

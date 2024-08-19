@@ -1636,7 +1636,6 @@ message HealthCheckResponse {
                             await this.startParentGroupMonitor();
                         }
                         this.processing = false;
-                        this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
                     } else {
                         this.processing = false;

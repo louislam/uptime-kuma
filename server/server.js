@@ -37,7 +37,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret, isDev, OPERATIONS } = require("../src/util");
 const config = require("./config");
 
 log.debug("server", "Arguments");
@@ -695,7 +695,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await server.sendMonitorList(socket);
+                await server.sendMonitorList(socket, OPERATIONS.ADD, bean.id);
 
                 if (monitor.active !== false) {
                     await startMonitor(socket.userID, bean.id);
@@ -850,7 +850,7 @@ let needSetup = false;
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await server.sendMonitorList(socket);
+                await server.sendMonitorList(socket, OPERATIONS.UPDATE, bean.id);
 
                 callback({
                     ok: true,
@@ -951,7 +951,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await server.sendMonitorList(socket);
+                await server.sendMonitorList(socket, OPERATIONS.UPDATE, monitorID);
 
                 callback({
                     ok: true,
@@ -971,7 +971,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await server.sendMonitorList(socket);
+                await server.sendMonitorList(socket, OPERATIONS.UPDATE, monitorID);
 
                 callback({
                     ok: true,
@@ -1017,8 +1017,7 @@ let needSetup = false;
                     msg: "successDeleted",
                     msgi18n: true,
                 });
-
-                await server.sendMonitorList(socket);
+                await server.sendMonitorList(socket, OPERATIONS.DELETE, monitorID);
 
             } catch (e) {
                 callback({
@@ -1649,7 +1648,7 @@ async function afterLogin(socket, user) {
 
     // Create an array to store the combined promises for both sendHeartbeatList and sendStats
     const monitorPromises = [];
-    for (let monitorID in monitorList) {
+    for (let monitorID in monitorList.list) {
         // Combine both sendHeartbeatList and sendStats for each monitor into a single Promise
         monitorPromises.push(
             Promise.all([
