@@ -116,14 +116,23 @@ class UptimeCalculator {
         ]);
 
         for (let bean of minutelyStatBeans) {
-            let key = bean.timestamp;
-            this.minutelyUptimeDataList.push(key, {
+            let data = {
                 up: bean.up,
                 down: bean.down,
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
-            });
+            };
+
+            if (bean.extras != null) {
+                data = {
+                    ...data,
+                    ...JSON.parse(bean.extras),
+                };
+            }
+
+            let key = bean.timestamp;
+            this.minutelyUptimeDataList.push(key, data);
         }
 
         // Load hourly data from database (recent 30 days only)
@@ -133,14 +142,22 @@ class UptimeCalculator {
         ]);
 
         for (let bean of hourlyStatBeans) {
-            let key = bean.timestamp;
-            this.hourlyUptimeDataList.push(key, {
+            let data = {
                 up: bean.up,
                 down: bean.down,
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
-            });
+            };
+
+            if (bean.extras != null) {
+                data = {
+                    ...data,
+                    ...JSON.parse(bean.extras),
+                };
+            }
+
+            this.hourlyUptimeDataList.push(bean.timestamp, data);
         }
 
         // Load daily data from database (recent 365 days only)
@@ -150,14 +167,22 @@ class UptimeCalculator {
         ]);
 
         for (let bean of dailyStatBeans) {
-            let key = bean.timestamp;
-            this.dailyUptimeDataList.push(key, {
+            let data = {
                 up: bean.up,
                 down: bean.down,
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
-            });
+            };
+
+            if (bean.extras != null) {
+                data = {
+                    ...data,
+                    ...JSON.parse(bean.extras),
+                };
+            }
+
+            this.dailyUptimeDataList.push(bean.timestamp, data);
         }
     }
 
@@ -169,11 +194,6 @@ class UptimeCalculator {
      */
     async update(status, ping = 0) {
         let date = this.getCurrentDate();
-
-        // Don't count MAINTENANCE into uptime
-        if (status === MAINTENANCE) {
-            return date;
-        }
 
         let flatStatus = this.flatStatus(status);
 
@@ -189,7 +209,12 @@ class UptimeCalculator {
         let hourlyData = this.hourlyUptimeDataList[hourlyKey];
         let dailyData = this.dailyUptimeDataList[dailyKey];
 
-        if (flatStatus === UP) {
+        if (status === MAINTENANCE) {
+            minutelyData.maintenance = minutelyData.maintenance ? minutelyData.maintenance + 1 : 1;
+            hourlyData.maintenance = hourlyData.maintenance ? hourlyData.maintenance + 1 : 1;
+            dailyData.maintenance = dailyData.maintenance ? dailyData.maintenance + 1 : 1;
+
+        } else if (flatStatus === UP) {
             minutelyData.up += 1;
             hourlyData.up += 1;
             dailyData.up += 1;
@@ -233,7 +258,7 @@ class UptimeCalculator {
                 }
             }
 
-        } else {
+        } else if (flatStatus === DOWN) {
             minutelyData.down += 1;
             hourlyData.down += 1;
             dailyData.down += 1;
@@ -263,6 +288,13 @@ class UptimeCalculator {
         dailyStatBean.ping = dailyData.avgPing;
         dailyStatBean.pingMin = dailyData.minPing;
         dailyStatBean.pingMax = dailyData.maxPing;
+        {
+            // eslint-disable-next-line no-unused-vars
+            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = dailyData;
+            if (Object.keys(extras).length > 0) {
+                dailyStatBean.extras = JSON.stringify(extras);
+            }
+        }
         await R.store(dailyStatBean);
 
         let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
@@ -271,6 +303,13 @@ class UptimeCalculator {
         hourlyStatBean.ping = hourlyData.avgPing;
         hourlyStatBean.pingMin = hourlyData.minPing;
         hourlyStatBean.pingMax = hourlyData.maxPing;
+        {
+            // eslint-disable-next-line no-unused-vars
+            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
+            if (Object.keys(extras).length > 0) {
+                hourlyStatBean.extras = JSON.stringify(extras);
+            }
+        }
         await R.store(hourlyStatBean);
 
         let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
@@ -279,6 +318,13 @@ class UptimeCalculator {
         minutelyStatBean.ping = minutelyData.avgPing;
         minutelyStatBean.pingMin = minutelyData.minPing;
         minutelyStatBean.pingMax = minutelyData.maxPing;
+        {
+            // eslint-disable-next-line no-unused-vars
+            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
+            if (Object.keys(extras).length > 0) {
+                minutelyStatBean.extras = JSON.stringify(extras);
+            }
+        }
         await R.store(minutelyStatBean);
 
         // Remove the old data
@@ -467,14 +513,14 @@ class UptimeCalculator {
 
     /**
      * Flat status to UP or DOWN
-     * @param {number} status the status which schould be turned into a flat status
+     * @param {number} status the status which should be turned into a flat status
      * @returns {UP|DOWN|PENDING} The flat status
      * @throws {Error} Invalid status
      */
     flatStatus(status) {
         switch (status) {
             case UP:
-            // case MAINTENANCE:
+            case MAINTENANCE:
                 return UP;
             case DOWN:
             case PENDING:
@@ -497,7 +543,9 @@ class UptimeCalculator {
         if (type === "minute" && num > 24 * 60) {
             throw new Error("The maximum number of minutes is 1440");
         }
-
+        if (type === "day" && num > 365) {
+            throw new Error("The maximum number of days is 365");
+        }
         // Get the current time period key based on the type
         let key = this.getKey(this.getCurrentDate(), type);
 
@@ -548,7 +596,7 @@ class UptimeCalculator {
                 totalPing += data.avgPing * data.up;
             }
 
-            // Set key to the pervious time period
+            // Set key to the previous time period
             switch (type) {
                 case "day":
                     key -= 86400;
@@ -606,7 +654,11 @@ class UptimeCalculator {
             avgPing = totalPing / total.up;
         }
 
-        uptimeData.uptime = total.up / (total.up + total.down);
+        if (total.up + total.down === 0) {
+            uptimeData.uptime = 0;
+        } else {
+            uptimeData.uptime = total.up / (total.up + total.down);
+        }
         uptimeData.avgPing = avgPing;
         return uptimeData;
     }
@@ -671,7 +723,7 @@ class UptimeCalculator {
                 result.push(data);
             }
 
-            // Set key to the pervious time period
+            // Set key to the previous time period
             switch (type) {
                 case "day":
                     key -= 86400;
@@ -691,20 +743,36 @@ class UptimeCalculator {
     }
 
     /**
-     * Get the uptime data by duration
-     * @param {'24h'|'30d'|'1y'} duration Only accept 24h, 30d, 1y
+     * Get the uptime data for given duration.
+     * @param {string} duration  A string with a number and a unit (m,h,d,w,M,y), such as 24h, 30d, 1y.
      * @returns {UptimeDataResult} UptimeDataResult
-     * @throws {Error} Invalid duration
+     * @throws {Error} Invalid duration / Unsupported unit
      */
     getDataByDuration(duration) {
-        if (duration === "24h") {
-            return this.get24Hour();
-        } else if (duration === "30d") {
-            return this.get30Day();
-        } else if (duration === "1y") {
-            return this.get1Year();
-        } else {
-            throw new Error("Invalid duration");
+        const durationNumStr = duration.slice(0, -1);
+
+        if (!/^[0-9]+$/.test(durationNumStr)) {
+            throw new Error(`Invalid duration: ${duration}`);
+        }
+        const num = Number(durationNumStr);
+        const unit = duration.slice(-1);
+
+        switch (unit) {
+            case "m":
+                return this.getData(num, "minute");
+            case "h":
+                return this.getData(num, "hour");
+            case "d":
+                return this.getData(num, "day");
+            case "w":
+                return this.getData(7 * num, "day");
+            case "M":
+                return this.getData(30 * num, "day");
+            case "y":
+                return this.getData(365 * num, "day");
+            default:
+                throw new Error(`Unsupported unit (${unit}) for badge duration ${duration}`
+                );
         }
     }
 

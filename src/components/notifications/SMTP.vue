@@ -5,6 +5,14 @@
             <input id="hostname" v-model="$parent.notification.smtpHost" type="text" class="form-control" required>
         </div>
 
+        <i18n-t tag="div" keypath="Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent" class="form-text">
+            <template #localhost>
+                <code>localhost</code>
+            </template>
+            <template #local_mta>
+                <a href="https://wikipedia.org/wiki/Mail_Transfer_Agent" target="_blank">{{ $t("locally configured mail transfer agent") }}</a>
+            </template>
+        </i18n-t>
         <div class="mb-3">
             <label for="port" class="form-label">{{ $t("Port") }}</label>
             <input id="port" v-model="$parent.notification.smtpPort" type="number" class="form-control" required min="0" max="65535" step="1">

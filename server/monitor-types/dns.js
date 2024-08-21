@@ -5,7 +5,6 @@ const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
 
 class DnsMonitorType extends MonitorType {
-
     name = "dns";
 
     /**

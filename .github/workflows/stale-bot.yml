@@ -9,7 +9,7 @@ jobs:
   stale:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           stale-issue-message: |-
             We are clearing up our old `help`-issues and your issue has been open for 60 days with no activity.
@@ -21,7 +21,7 @@ jobs:
           exempt-issue-labels: 'News,Medium,High,discussion,bug,doc,feature-request'
           exempt-issue-assignees: 'louislam'
           operations-per-run: 200
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           stale-issue-message: |-
             This issue was marked as `cannot-reproduce` by a maintainer.
