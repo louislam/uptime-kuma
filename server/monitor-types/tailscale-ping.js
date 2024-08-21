@@ -2,13 +2,23 @@ const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
 const childProcessAsync = require("promisify-child-process");
 
+/**
+ * A TailscalePing class extends the MonitorType.
+ * It runs Tailscale ping to monitor the status of a specific node.
+ */
 class TailscalePing extends MonitorType {
+
     name = "tailscale-ping";
 
     /**
-     * @inheritdoc
+     * Checks the ping status of the URL associated with the monitor.
+     * It then parses the Tailscale ping command output to update the heatrbeat.
+     * @param {object} monitor The monitor object associated with the check.
+     * @param {object} heartbeat The heartbeat object to update.
+     * @returns {Promise<void>}
+     * @throws Will throw an error if checking Tailscale ping encounters any error
      */
-    async check(monitor, heartbeat, _server) {
+    async check(monitor, heartbeat) {
         try {
             let tailscaleOutput = await this.runTailscalePing(monitor.hostname, monitor.interval);
             this.parseTailscaleOutput(tailscaleOutput, heartbeat);

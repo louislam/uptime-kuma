@@ -11,7 +11,7 @@ class Maintenance extends BeanModel {
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
-     * @returns {Promise<object>} Object ready to parse
+     * @returns {object} Object ready to parse
      */
     async toPublicJSON() {
 
@@ -98,7 +98,7 @@ class Maintenance extends BeanModel {
     /**
      * Return an object that ready to parse to JSON
      * @param {string} timezone If not specified, the timeRange will be in UTC
-     * @returns {Promise<object>} Object ready to parse
+     * @returns {object} Object ready to parse
      */
     async toJSON(timezone = null) {
         return this.toPublicJSON(timezone);
@@ -143,7 +143,7 @@ class Maintenance extends BeanModel {
      * Convert data from socket to bean
      * @param {Bean} bean Bean to fill in
      * @param {object} obj Data to fill bean with
-     * @returns {Promise<Bean>} Filled bean
+     * @returns {Bean} Filled bean
      */
     static async jsonToBean(bean, obj) {
         if (obj.id) {
@@ -189,9 +189,9 @@ class Maintenance extends BeanModel {
     /**
      * Throw error if cron is invalid
      * @param {string|Date} cron Pattern or date
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    static validateCron(cron) {
+    static async validateCron(cron) {
         let job = new Cron(cron, () => {});
         job.stop();
     }
@@ -239,7 +239,19 @@ class Maintenance extends BeanModel {
                     this.beanMeta.status = "under-maintenance";
                     clearTimeout(this.beanMeta.durationTimeout);
 
-                    let duration = this.inferDuration(customDuration);
+                    // Check if duration is still in the window. If not, use the duration from the current time to the end of the window
+                    let duration;
+
+                    if (customDuration > 0) {
+                        duration = customDuration;
+                    } else if (this.end_date) {
+                        let d = dayjs(this.end_date).diff(dayjs(), "second");
+                        if (d < this.duration) {
+                            duration = d * 1000;
+                        }
+                    } else {
+                        duration = this.duration * 1000;
+                    }
 
                     UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
 
@@ -251,21 +263,9 @@ class Maintenance extends BeanModel {
                 };
 
                 // Create Cron
-                if (this.strategy === "recurring-interval") {
-                    // For recurring-interval, Croner needs to have interval and startAt
-                    const startDate = dayjs(this.startDate);
-                    const [ hour, minute ] = this.startTime.split(":");
-                    const startDateTime = startDate.hour(hour).minute(minute);
-                    this.beanMeta.job = new Cron(this.cron, {
-                        timezone: await this.getTimezone(),
-                        interval: this.interval_day * 24 * 60 * 60,
-                        startAt: startDateTime.toISOString(),
-                    }, startEvent);
-                } else {
-                    this.beanMeta.job = new Cron(this.cron, {
-                        timezone: await this.getTimezone(),
-                    }, startEvent);
-                }
+                this.beanMeta.job = new Cron(this.cron, {
+                    timezone: await this.getTimezone(),
+                }, startEvent);
 
                 // Continue if the maintenance is still in the window
                 let runningTimeslot = this.getRunningTimeslot();
@@ -312,24 +312,6 @@ class Maintenance extends BeanModel {
     }
 
     /**
-     * Calculate the maintenance duration
-     * @param {number} customDuration - The custom duration in milliseconds.
-     * @returns {number} The inferred duration in milliseconds.
-     */
-    inferDuration(customDuration) {
-        // Check if duration is still in the window. If not, use the duration from the current time to the end of the window
-        if (customDuration > 0) {
-            return customDuration;
-        } else if (this.end_date) {
-            let d = dayjs(this.end_date).diff(dayjs(), "second");
-            if (d < this.duration) {
-                return d * 1000;
-            }
-        }
-        return this.duration * 1000;
-    }
-
-    /**
      * Stop the maintenance
      * @returns {void}
      */
@@ -342,7 +324,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Is this maintenance currently active
-     * @returns {Promise<boolean>} The maintenance is active?
+     * @returns {boolean} The maintenance is active?
      */
     async isUnderMaintenance() {
         return (await this.getStatus()) === "under-maintenance";
@@ -350,7 +332,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Get the timezone of the maintenance
-     * @returns {Promise<string>} timezone
+     * @returns {string} timezone
      */
     async getTimezone() {
         if (!this.timezone || this.timezone === "SAME_AS_SERVER") {
@@ -361,7 +343,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Get offset for timezone
-     * @returns {Promise<string>} offset
+     * @returns {string} offset
      */
     async getTimezoneOffset() {
         return dayjs.tz(dayjs(), await this.getTimezone()).format("Z");
@@ -369,7 +351,7 @@ class Maintenance extends BeanModel {
 
     /**
      * Get the current status of the maintenance
-     * @returns {Promise<string>} Current status
+     * @returns {string} Current status
      */
     async getStatus() {
         if (!this.active) {
@@ -413,8 +395,10 @@ class Maintenance extends BeanModel {
         } else if (!this.strategy.startsWith("recurring-")) {
             this.cron = "";
         } else if (this.strategy === "recurring-interval") {
-            // For intervals, the pattern is calculated in the run function as the interval-option is set
-            this.cron = "* * * * *";
+            let array = this.start_time.split(":");
+            let hour = parseInt(array[0]);
+            let minute = parseInt(array[1]);
+            this.cron = minute + " " + hour + " */" + this.interval_day + " * *";
             this.duration = this.calcDuration();
             log.debug("maintenance", "Cron: " + this.cron);
             log.debug("maintenance", "Duration: " + this.duration);

@@ -2,21 +2,26 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Twilio extends NotificationProvider {
+
     name = "twilio";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
 
-        let apiKey = notification.twilioApiKey ? notification.twilioApiKey : notification.twilioAccountSID;
+        let okMsg = "Sent Successfully.";
+
+        let accountSID = notification.twilioAccountSID;
+        let apiKey = notification.twilioApiKey ? notification.twilioApiKey : accountSID;
+        let authToken = notification.twilioAuthToken;
 
         try {
+
             let config = {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
-                    "Authorization": "Basic " + Buffer.from(apiKey + ":" + notification.twilioAuthToken).toString("base64"),
+                    "Authorization": "Basic " + Buffer.from(apiKey + ":" + authToken).toString("base64"),
                 }
             };
 
@@ -25,7 +30,9 @@ class Twilio extends NotificationProvider {
             data.append("From", notification.twilioFromNumber);
             data.append("Body", msg);
 
-            await axios.post(`https://api.twilio.com/2010-04-01/Accounts/${(notification.twilioAccountSID)}/Messages.json`, data, config);
+            let url = "https://api.twilio.com/2010-04-01/Accounts/" + accountSID + "/Messages.json";
+
+            await axios.post(url, data, config);
 
             return okMsg;
         } catch (error) {

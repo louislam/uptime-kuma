@@ -3,16 +3,16 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Line extends NotificationProvider {
+
     name = "line";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-        const url = "https://api.line.me/v2/bot/message/push";
-
+        let okMsg = "Sent Successfully.";
         try {
+            let lineAPIUrl = "https://api.line.me/v2/bot/message/push";
             let config = {
                 headers: {
                     "Content-Type": "application/json",
@@ -29,7 +29,7 @@ class Line extends NotificationProvider {
                         }
                     ]
                 };
-                await axios.post(url, testMessage, config);
+                await axios.post(lineAPIUrl, testMessage, config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
                     "to": notification.lineUserID,
@@ -43,7 +43,7 @@ class Line extends NotificationProvider {
                         }
                     ]
                 };
-                await axios.post(url, downMessage, config);
+                await axios.post(lineAPIUrl, downMessage, config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
                     "to": notification.lineUserID,
@@ -57,7 +57,7 @@ class Line extends NotificationProvider {
                         }
                     ]
                 };
-                await axios.post(url, upMessage, config);
+                await axios.post(lineAPIUrl, upMessage, config);
             }
             return okMsg;
         } catch (error) {

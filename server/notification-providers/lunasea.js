@@ -3,23 +3,28 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class LunaSea extends NotificationProvider {
+
     name = "lunasea";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-        const url = "https://notify.lunasea.app/v1";
+        let okMsg = "Sent Successfully.";
+        let lunaseaurl = "";
+        if (notification.lunaseaTarget === "user") {
+            lunaseaurl = "https://notify.lunasea.app/v1/custom/user/" + notification.lunaseaUserID;
+        } else {
+            lunaseaurl = "https://notify.lunasea.app/v1/custom/device/" + notification.lunaseaDevice;
+        }
 
         try {
-            const target = this.getTarget(notification);
             if (heartbeatJSON == null) {
                 let testdata = {
                     "title": "Uptime Kuma Alert",
                     "body": msg,
                 };
-                await axios.post(`${url}/custom/${target}`, testdata);
+                await axios.post(lunaseaurl, testdata);
                 return okMsg;
             }
 
@@ -30,7 +35,7 @@ class LunaSea extends NotificationProvider {
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(`${url}/custom/${target}`, downdata);
+                await axios.post(lunaseaurl, downdata);
                 return okMsg;
             }
 
@@ -41,25 +46,13 @@ class LunaSea extends NotificationProvider {
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(`${url}/custom/${target}`, updata);
+                await axios.post(lunaseaurl, updata);
                 return okMsg;
             }
 
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-    }
-
-    /**
-     * Generates the lunasea target to send the notification to
-     * @param {BeanModel} notification Notification details
-     * @returns {string} The target to send the notification to
-     */
-    getTarget(notification) {
-        if (notification.lunaseaTarget === "user") {
-            return "user/" + notification.lunaseaUserID;
-        }
-        return "device/" + notification.lunaseaDevice;
 
     }
 }

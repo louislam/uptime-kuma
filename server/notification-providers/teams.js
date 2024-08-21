@@ -1,7 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setting } = require("../util-server");
-const { DOWN, UP, getMonitorRelativeURL } = require("../../src/util");
+const { DOWN, UP } = require("../../src/util");
 
 class Teams extends NotificationProvider {
     name = "teams";
@@ -10,172 +9,89 @@ class Teams extends NotificationProvider {
      * Generate the message to send
      * @param {const} status The status constant
      * @param {string} monitorName Name of monitor
-     * @param {boolean} withStatusSymbol If the status should be prepended as symbol
      * @returns {string} Status message
      */
-    _statusMessageFactory = (status, monitorName, withStatusSymbol) => {
+    _statusMessageFactory = (status, monitorName) => {
         if (status === DOWN) {
-            return (withStatusSymbol ? "🔴 " : "") + `[${monitorName}] went down`;
+            return `🔴 Application [${monitorName}] went down`;
         } else if (status === UP) {
-            return (withStatusSymbol ? "✅ " : "") + `[${monitorName}] is back online`;
+            return `✅ Application [${monitorName}] is back online`;
         }
         return "Notification";
     };
 
     /**
-     * Select the style to use based on status
+     * Select theme color to use based on status
      * @param {const} status The status constant
-     * @returns {string} Selected style for adaptive cards
+     * @returns {string} Selected color in hex RGB format
      */
-    _getStyle = (status) => {
+    _getThemeColor = (status) => {
         if (status === DOWN) {
-            return "attention";
+            return "ff0000";
         }
         if (status === UP) {
-            return "good";
+            return "00e804";
         }
-        return "emphasis";
+        return "008cff";
     };
 
     /**
      * Generate payload for notification
      * @param {object} args Method arguments
-     * @param {object} args.heartbeatJSON Heartbeat details
-     * @param {string} args.monitorName Name of the monitor affected
-     * @param {string} args.monitorUrl URL of the monitor affected
-     * @param {string} args.dashboardUrl URL of the dashboard affected
+     * @param {const} args.status The status of the monitor
+     * @param {string} args.monitorMessage Message to send
+     * @param {string} args.monitorName Name of monitor affected
+     * @param {string} args.monitorUrl URL of monitor affected
      * @returns {object} Notification payload
      */
     _notificationPayloadFactory = ({
-        heartbeatJSON,
+        status,
+        monitorMessage,
         monitorName,
         monitorUrl,
-        dashboardUrl,
     }) => {
-        const status = heartbeatJSON?.status;
+        const notificationMessage = this._statusMessageFactory(
+            status,
+            monitorName
+        );
+
         const facts = [];
-        const actions = [];
-
-        if (dashboardUrl) {
-            actions.push({
-                "type": "Action.OpenUrl",
-                "title": "Visit Uptime Kuma",
-                "url": dashboardUrl
-            });
-        }
-
-        if (heartbeatJSON?.msg) {
-            facts.push({
-                title: "Description",
-                value: heartbeatJSON.msg,
-            });
-        }
 
         if (monitorName) {
             facts.push({
-                title: "Monitor",
+                name: "Monitor",
                 value: monitorName,
             });
         }
 
         if (monitorUrl && monitorUrl !== "https://") {
             facts.push({
-                title: "URL",
-                // format URL as markdown syntax, to be clickable
-                value: `[${monitorUrl}](${monitorUrl})`,
-            });
-            actions.push({
-                "type": "Action.OpenUrl",
-                "title": "Visit Monitor URL",
-                "url": monitorUrl
+                name: "URL",
+                value: monitorUrl,
             });
         }
 
-        if (heartbeatJSON?.localDateTime) {
-            facts.push({
-                title: "Time",
-                value: heartbeatJSON.localDateTime + (heartbeatJSON.timezone ? ` (${heartbeatJSON.timezone})` : ""),
-            });
-        }
-
-        const payload = {
-            "type": "message",
-            // message with status prefix as notification text
-            "summary": this._statusMessageFactory(status, monitorName, true),
-            "attachments": [
+        return {
+            "@context": "https://schema.org/extensions",
+            "@type": "MessageCard",
+            themeColor: this._getThemeColor(status),
+            summary: notificationMessage,
+            sections: [
                 {
-                    "contentType": "application/vnd.microsoft.card.adaptive",
-                    "contentUrl": "",
-                    "content": {
-                        "type": "AdaptiveCard",
-                        "body": [
-                            {
-                                "type": "Container",
-                                "verticalContentAlignment": "Center",
-                                "items": [
-                                    {
-                                        "type": "ColumnSet",
-                                        "style": this._getStyle(status),
-                                        "columns": [
-                                            {
-                                                "type": "Column",
-                                                "width": "auto",
-                                                "verticalContentAlignment": "Center",
-                                                "items": [
-                                                    {
-                                                        "type": "Image",
-                                                        "width": "32px",
-                                                        "style": "Person",
-                                                        "url": "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
-                                                        "altText": "Uptime Kuma Logo"
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "type": "Column",
-                                                "width": "stretch",
-                                                "items": [
-                                                    {
-                                                        "type": "TextBlock",
-                                                        "size": "Medium",
-                                                        "weight": "Bolder",
-                                                        "text": `**${this._statusMessageFactory(status, monitorName, false)}**`,
-                                                    },
-                                                    {
-                                                        "type": "TextBlock",
-                                                        "size": "Small",
-                                                        "weight": "Default",
-                                                        "text": "Uptime Kuma Alert",
-                                                        "isSubtle": true,
-                                                        "spacing": "None"
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                "type": "FactSet",
-                                "separator": false,
-                                "facts": facts
-                            }
-                        ],
-                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                        "version": "1.5"
-                    }
-                }
-            ]
+                    activityImage:
+                        "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
+                    activityTitle: "**Uptime Kuma**",
+                },
+                {
+                    activityTitle: notificationMessage,
+                },
+                {
+                    activityTitle: "**Description**",
+                    text: monitorMessage,
+                    facts,
+                },
+            ],
         };
-
-        if (actions) {
-            payload.attachments[0].content.body.push({
-                "type": "ActionSet",
-                "actions": actions,
-            });
-        }
-
-        return payload;
     };
 
     /**
@@ -196,9 +112,7 @@ class Teams extends NotificationProvider {
      */
     _handleGeneralNotification = (webhookUrl, msg) => {
         const payload = this._notificationPayloadFactory({
-            heartbeatJSON: {
-                msg: msg
-            }
+            monitorMessage: msg
         });
 
         return this._sendNotification(webhookUrl, payload);
@@ -208,7 +122,7 @@ class Teams extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
+        let okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON == null) {
@@ -216,17 +130,26 @@ class Teams extends NotificationProvider {
                 return okMsg;
             }
 
-            const baseURL = await setting("primaryBaseURL");
-            let dashboardUrl;
-            if (baseURL) {
-                dashboardUrl = baseURL + getMonitorRelativeURL(monitorJSON.id);
+            let url;
+
+            switch (monitorJSON["type"]) {
+                case "http":
+                case "keywork":
+                    url = monitorJSON["url"];
+                    break;
+                case "docker":
+                    url = monitorJSON["docker_host"];
+                    break;
+                default:
+                    url = monitorJSON["hostname"];
+                    break;
             }
 
             const payload = this._notificationPayloadFactory({
-                heartbeatJSON: heartbeatJSON,
+                monitorMessage: heartbeatJSON.msg,
                 monitorName: monitorJSON.name,
-                monitorUrl: this.extractAdress(monitorJSON),
-                dashboardUrl: dashboardUrl,
+                monitorUrl: url,
+                status: heartbeatJSON.status,
             });
 
             await this._sendNotification(notification.webhookUrl, payload);

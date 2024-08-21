@@ -80,25 +80,23 @@ class Prometheus {
             }
         }
 
-        if (heartbeat) {
-            try {
-                monitorStatus.set(this.monitorLabelValues, heartbeat.status);
-            } catch (e) {
-                log.error("prometheus", "Caught error");
-                log.error("prometheus", e);
-            }
+        try {
+            monitorStatus.set(this.monitorLabelValues, heartbeat.status);
+        } catch (e) {
+            log.error("prometheus", "Caught error");
+            log.error("prometheus", e);
+        }
 
-            try {
-                if (typeof heartbeat.ping === "number") {
-                    monitorResponseTime.set(this.monitorLabelValues, heartbeat.ping);
-                } else {
-                    // Is it good?
-                    monitorResponseTime.set(this.monitorLabelValues, -1);
-                }
-            } catch (e) {
-                log.error("prometheus", "Caught error");
-                log.error("prometheus", e);
+        try {
+            if (typeof heartbeat.ping === "number") {
+                monitorResponseTime.set(this.monitorLabelValues, heartbeat.ping);
+            } else {
+                // Is it good?
+                monitorResponseTime.set(this.monitorLabelValues, -1);
             }
+        } catch (e) {
+            log.error("prometheus", "Caught error");
+            log.error("prometheus", e);
         }
     }
 

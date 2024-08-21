@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
-        node: [ 18, 20.5 ]
+        node: [ 14, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -33,6 +33,7 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
+    - run: npm install npm@9 -g
     - run: npm install
     - run: npm run build
     - run: npm run test-backend
@@ -45,11 +46,11 @@ jobs:
     needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
-    if: ${{ github.repository == 'louislam/uptime-kuma' }}
+
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 18, 20 ]
+        node: [ 14, 20 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -60,6 +61,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - run: npm install npm@9 -g
       - run: npm ci --production
 
   check-linters:

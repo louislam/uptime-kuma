@@ -2,23 +2,23 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class OneBot extends NotificationProvider {
+
     name = "OneBot";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-
+        let okMsg = "Sent Successfully.";
         try {
-            let url = notification.httpAddr;
-            if (!url.startsWith("http")) {
-                url = "http://" + url;
+            let httpAddr = notification.httpAddr;
+            if (!httpAddr.startsWith("http")) {
+                httpAddr = "http://" + httpAddr;
             }
-            if (!url.endsWith("/")) {
-                url += "/";
+            if (!httpAddr.endsWith("/")) {
+                httpAddr += "/";
             }
-            url += "send_msg";
+            let onebotAPIUrl = httpAddr + "send_msg";
             let config = {
                 headers: {
                     "Content-Type": "application/json",
@@ -37,7 +37,7 @@ class OneBot extends NotificationProvider {
                 data["message_type"] = "private";
                 data["user_id"] = notification.recieverId;
             }
-            await axios.post(url, data, config);
+            await axios.post(onebotAPIUrl, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

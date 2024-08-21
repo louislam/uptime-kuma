@@ -10,7 +10,7 @@ class DingDing extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
+        let okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON != null) {
@@ -19,12 +19,9 @@ class DingDing extends NotificationProvider {
                     markdown: {
                         title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
                         text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
-                    },
-                    "at": {
-                        "isAtAll": notification.mentioning === "everyone"
                     }
                 };
-                if (await this.sendToDingDing(notification, params)) {
+                if (this.sendToDingDing(notification, params)) {
                     return okMsg;
                 }
             } else {
@@ -34,7 +31,7 @@ class DingDing extends NotificationProvider {
                         content: msg
                     }
                 };
-                if (await this.sendToDingDing(notification, params)) {
+                if (this.sendToDingDing(notification, params)) {
                     return okMsg;
                 }
             }
@@ -47,7 +44,7 @@ class DingDing extends NotificationProvider {
      * Send message to DingDing
      * @param {BeanModel} notification Notification to send
      * @param {object} params Parameters of message
-     * @returns {Promise<boolean>} True if successful else false
+     * @returns {boolean} True if successful else false
      */
     async sendToDingDing(notification, params) {
         let timestamp = Date.now();
@@ -65,7 +62,7 @@ class DingDing extends NotificationProvider {
         if (result.data.errmsg === "ok") {
             return true;
         }
-        throw new Error(result.data.errmsg);
+        return false;
     }
 
     /**

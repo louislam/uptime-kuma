@@ -4,10 +4,15 @@ const mqtt = require("mqtt");
 const jsonata = require("jsonata");
 
 class MqttMonitorType extends MonitorType {
+
     name = "mqtt";
 
     /**
-     * @inheritdoc
+     * Run the monitoring check on the MQTT monitor
+     * @param {Monitor} monitor Monitor to check
+     * @param {Heartbeat} heartbeat Monitor heartbeat to update
+     * @param {UptimeKumaServer} server Uptime Kuma server
+     * @returns {Promise<void>}
      */
     async check(monitor, heartbeat, server) {
         const receivedMessage = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
@@ -76,8 +81,7 @@ class MqttMonitorType extends MonitorType {
 
             let client = mqtt.connect(mqttUrl, {
                 username,
-                password,
-                clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8)
+                password
             });
 
             client.on("connect", () => {

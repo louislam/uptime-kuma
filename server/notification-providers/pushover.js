@@ -2,14 +2,15 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Pushover extends NotificationProvider {
+
     name = "pushover";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-        const url = "https://api.pushover.net/1/messages.json";
+        let okMsg = "Sent Successfully.";
+        let pushoverlink = "https://api.pushover.net/1/messages.json";
 
         let data = {
             "message": msg,
@@ -32,11 +33,11 @@ class Pushover extends NotificationProvider {
 
         try {
             if (heartbeatJSON == null) {
-                await axios.post(url, data);
+                await axios.post(pushoverlink, data);
                 return okMsg;
             } else {
                 data.message += `\n<b>Time (${heartbeatJSON["timezone"]})</b>:${heartbeatJSON["localDateTime"]}`;
-                await axios.post(url, data);
+                await axios.post(pushoverlink, data);
                 return okMsg;
             }
         } catch (error) {

@@ -10,10 +10,6 @@ const jwt = require("jsonwebtoken");
 const config = require("../config");
 const { RemoteBrowser } = require("../remote-browser");
 
-/**
- * Cached instance of a browser
- * @type {import ("playwright-core").Browser}
- */
 let browser = null;
 
 let allowedList = [];
@@ -75,12 +71,10 @@ async function isAllowedChromeExecutable(executablePath) {
 /**
  * Get the current instance of the browser. If there isn't one, create
  * it.
- * @returns {Promise<import ("playwright-core").Browser>} The browser
+ * @returns {Promise<Browser>} The browser
  */
 async function getBrowser() {
-    if (browser && browser.isConnected()) {
-        return browser;
-    } else {
+    if (!browser) {
         let executablePath = await Settings.get("chromeExecutable");
 
         executablePath = await prepareChromeExecutable(executablePath);
@@ -89,9 +83,8 @@ async function getBrowser() {
             //headless: false,
             executablePath,
         });
-
-        return browser;
     }
+    return browser;
 }
 
 /**

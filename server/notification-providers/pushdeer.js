@@ -3,15 +3,17 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class PushDeer extends NotificationProvider {
+
     name = "PushDeer";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-        const serverUrl = notification.pushdeerServer || "https://api2.pushdeer.com";
-        const url = `${serverUrl.trim().replace(/\/*$/, "")}/message/push`;
+        let okMsg = "Sent Successfully.";
+        let endpoint = "/message/push";
+        let serverUrl = notification.pushdeerServer || "https://api2.pushdeer.com";
+        let pushdeerlink = `${serverUrl.trim().replace(/\/*$/, "")}${endpoint}`;
 
         let valid = msg != null && monitorJSON != null && heartbeatJSON != null;
 
@@ -32,7 +34,7 @@ class PushDeer extends NotificationProvider {
         };
 
         try {
-            let res = await axios.post(url, data);
+            let res = await axios.post(pushdeerlink, data);
 
             if ("error" in res.data) {
                 let error = res.data.error;

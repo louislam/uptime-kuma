@@ -2,24 +2,23 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class SMSManager extends NotificationProvider {
+
     name = "SMSManager";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-        const url = "https://http-api.smsmanager.cz/Send";
-
         try {
             let data = {
                 apikey: notification.smsmanagerApiKey,
+                endpoint: "https://http-api.smsmanager.cz/Send",
                 message: msg.replace(/[^\x00-\x7F]/g, ""),
-                number: notification.numbers,
-                gateway: notification.messageType,
+                to: notification.numbers,
+                messageType: notification.messageType,
             };
-            await axios.get(`${url}?apikey=${data.apikey}&message=${data.message}&number=${data.number}&gateway=${data.messageType}`);
-            return okMsg;
+            await axios.get(`${data.endpoint}?apikey=${data.apikey}&message=${data.message}&number=${data.to}&gateway=${data.messageType}`);
+            return "SMS sent sucessfully.";
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

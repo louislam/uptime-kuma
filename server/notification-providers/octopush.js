@@ -2,15 +2,14 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Octopush extends NotificationProvider {
+
     name = "octopush";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-        const urlV2 = "https://api.octopush.com/v1/public/sms-campaign/send";
-        const urlV1 = "https://www.octopush-dm.com/api/sms/json";
+        let okMsg = "Sent Successfully.";
 
         try {
         // Default - V2
@@ -34,7 +33,7 @@ class Octopush extends NotificationProvider {
                     "purpose": "alert",
                     "sender": notification.octopushSenderName
                 };
-                await axios.post(urlV2, data, config);
+                await axios.post("https://api.octopush.com/v1/public/sms-campaign/send", data, config);
             } else if (notification.octopushVersion === "1") {
                 let data = {
                     "user_login": notification.octopushDMLogin,
@@ -56,7 +55,7 @@ class Octopush extends NotificationProvider {
 
                 // V1 API returns 200 even on error so we must check
                 // response data
-                let response = await axios.post(urlV1, {}, config);
+                let response = await axios.post("https://www.octopush-dm.com/api/sms/json", {}, config);
                 if ("error_code" in response.data) {
                     if (response.data.error_code !== "000") {
                         this.throwGeneralAxiosError(`Octopush error ${JSON.stringify(response.data)}`);

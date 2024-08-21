@@ -2,13 +2,14 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Pushy extends NotificationProvider {
+
     name = "pushy";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
+        let okMsg = "Sent Successfully.";
 
         try {
             await axios.post(`https://api.pushy.me/push?api_key=${notification.pushyAPIKey}`, {

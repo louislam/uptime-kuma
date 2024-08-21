@@ -2,14 +2,13 @@ const NotificationProvider = require("./notification-provider");
 const childProcessAsync = require("promisify-child-process");
 
 class Apprise extends NotificationProvider {
+
     name = "apprise";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-
         const args = [ "-vv", "-b", msg, notification.appriseURL ];
         if (notification.title) {
             args.push("-t");
@@ -24,7 +23,7 @@ class Apprise extends NotificationProvider {
         if (output) {
 
             if (! output.includes("ERROR")) {
-                return okMsg;
+                return "Sent Successfully";
             }
 
             throw new Error(output);

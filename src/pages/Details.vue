@@ -16,7 +16,7 @@
                 </div>
             </div>
             <p class="url">
-                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'mp-health' || monitor.type === 'real-browser' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ filterPassword(monitor.url) }}</a>
+                <a v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'mp-health' " :href="monitor.url" target="_blank" rel="noopener noreferrer">{{ filterPassword(monitor.url) }}</a>
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
@@ -390,7 +390,10 @@ export default {
         },
 
         group() {
-            return this.monitor.path.slice(0, -1).join(" / ");
+            if (!this.monitor.pathName.includes("/")) {
+                return "";
+            }
+            return this.monitor.pathName.substr(0, this.monitor.pathName.lastIndexOf("/"));
         },
 
         pushURL() {
@@ -550,7 +553,7 @@ export default {
         /**
          * Return the correct title for the ping stat
          * @param {boolean} average Is the statistic an average?
-         * @returns {string} Title formatted dependent on monitor type
+         * @returns {string} Title formatted dependant on monitor type
          */
         pingTitle(average = false) {
             let translationPrefix = "";

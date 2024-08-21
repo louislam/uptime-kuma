@@ -3,14 +3,14 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class ServerChan extends NotificationProvider {
+
     name = "ServerChan";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-
+        let okMsg = "Sent Successfully.";
         try {
             await axios.post(`https://sctapi.ftqq.com/${notification.serverChanSendKey}.send`, {
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),

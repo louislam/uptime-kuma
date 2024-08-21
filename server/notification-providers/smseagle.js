@@ -2,13 +2,14 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class SMSEagle extends NotificationProvider {
+
     name = "SMSEagle";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
+        let okMsg = "Sent Successfully.";
 
         try {
             let config = {

@@ -8,9 +8,7 @@ class SMSC extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        const okMsg = "Sent Successfully.";
-        const url = "https://smsc.kz/sys/send.php?";
-
+        let okMsg = "Sent Successfully.";
         try {
             let config = {
                 headers: {
@@ -31,7 +29,7 @@ class SMSC extends NotificationProvider {
                 getArray.push("sender=" + notification.smscSenderName);
             }
 
-            let resp = await axios.get(url + getArray.join("&"), config);
+            let resp = await axios.get("https://smsc.kz/sys/send.php?" + getArray.join("&"), config);
             if (resp.data.id === undefined) {
                 let error = `Something gone wrong. Api returned code ${resp.data.error_code}: ${resp.data.error}`;
                 this.throwGeneralAxiosError(error);

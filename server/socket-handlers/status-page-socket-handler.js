@@ -148,14 +148,13 @@ module.exports.statusPageSocketHandler = (socket) => {
                 config.logo = `/upload/${filename}?t=` + Date.now();
 
             } else {
-                config.logo = imgDataUrl;
+                config.icon = imgDataUrl;
             }
 
             statusPage.slug = config.slug;
             statusPage.title = config.title;
             statusPage.description = config.description;
             statusPage.icon = config.logo;
-            statusPage.autoRefreshInterval = config.autoRefreshInterval,
             statusPage.theme = config.theme;
             //statusPage.published = ;
             //statusPage.search_engine_index = ;
@@ -281,7 +280,6 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.title = title;
             statusPage.theme = "auto";
             statusPage.icon = "";
-            statusPage.autoRefreshInterval = 300;
             await R.store(statusPage);
 
             callback({

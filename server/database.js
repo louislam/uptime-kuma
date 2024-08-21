@@ -105,8 +105,7 @@ class Database {
         "patch-add-gamedig-given-port.sql": true,
         "patch-notification-config.sql": true,
         "patch-fix-kafka-producer-booleans.sql": true,
-        "patch-timeout.sql": true,
-        "patch-monitor-tls-info-add-fk.sql": true, // The last file so far converted to a knex migration file
+        "patch-timeout.sql": true, // The last file so far converted to a knex migration file
     };
 
     /**
@@ -209,9 +208,9 @@ class Database {
         let config = {};
 
         let mariadbPoolConfig = {
-            min: 0,
-            max: 10,
-            idleTimeoutMillis: 30000,
+            afterCreate: function (conn, done) {
+
+            }
         };
 
         log.info("db", `Database Type: ${dbConfig.type}`);
@@ -379,7 +378,7 @@ class Database {
 
     /**
      * Patch the database
-     * @returns {Promise<void>}
+     * @returns {void}
      */
     static async patch() {
         // Still need to keep this for old versions of Uptime Kuma

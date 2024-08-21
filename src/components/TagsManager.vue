@@ -384,7 +384,7 @@ export default {
         /**
          * Submit the form data
          * @param {number} monitorId ID of monitor this change affects
-         * @returns {Promise<void>}
+         * @returns {void}
          */
         async submit(monitorId) {
             console.log(`Submitting tag changes for monitor ${monitorId}...`);
