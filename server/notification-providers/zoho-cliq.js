@@ -3,7 +3,6 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class ZohoCliq extends NotificationProvider {
-
     name = "ZohoCliq";
 
     /**
@@ -14,9 +13,9 @@ class ZohoCliq extends NotificationProvider {
      */
     _statusMessageFactory = (status, monitorName) => {
         if (status === DOWN) {
-            return `🔴 Application [${monitorName}] went down\n`;
+            return `🔴 [${monitorName}] went down\n`;
         } else if (status === UP) {
-            return `✅ Application [${monitorName}] is back online\n`;
+            return `### ✅ [${monitorName}] is back online\n`;
         }
         return "Notification\n";
     };
@@ -47,16 +46,11 @@ class ZohoCliq extends NotificationProvider {
         monitorUrl,
     }) => {
         const payload = [];
-        payload.push("### Uptime Kuma\n");
         payload.push(this._statusMessageFactory(status, monitorName));
         payload.push(`*Description:* ${monitorMessage}`);
 
-        if (monitorName) {
-            payload.push(`*Monitor:* ${monitorName}`);
-        }
-
         if (monitorUrl && monitorUrl !== "https://") {
-            payload.push(`*URL:* [${monitorUrl}](${monitorUrl})`);
+            payload.push(`*URL:* ${monitorUrl}`);
         }
 
         return payload;
@@ -80,7 +74,7 @@ class ZohoCliq extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON == null) {
@@ -88,24 +82,10 @@ class ZohoCliq extends NotificationProvider {
                 return okMsg;
             }
 
-            let url;
-            switch (monitorJSON["type"]) {
-                case "http":
-                case "keywork":
-                    url = monitorJSON["url"];
-                    break;
-                case "docker":
-                    url = monitorJSON["docker_host"];
-                    break;
-                default:
-                    url = monitorJSON["hostname"];
-                    break;
-            }
-
             const payload = this._notificationPayloadFactory({
                 monitorMessage: heartbeatJSON.msg,
                 monitorName: monitorJSON.name,
-                monitorUrl: url,
+                monitorUrl: this.extractAdress(monitorJSON),
                 status: heartbeatJSON.status
             });
 

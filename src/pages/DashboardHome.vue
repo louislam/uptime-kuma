@@ -9,15 +9,30 @@
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <span class="num">{{ $root.stats.up }}</span>
+                        <span
+                            class="num"
+                            :class="$root.stats.up === 0 && 'text-secondary'"
+                        >
+                            {{ $root.stats.up }}
+                        </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <span class="num text-danger">{{ $root.stats.down }}</span>
+                        <span
+                            class="num"
+                            :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'"
+                        >
+                            {{ $root.stats.down }}
+                        </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
-                        <span class="num text-maintenance">{{ $root.stats.maintenance }}</span>
+                        <span
+                            class="num"
+                            :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'"
+                        >
+                            {{ $root.stats.maintenance }}
+                        </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>

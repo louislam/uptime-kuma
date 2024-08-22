@@ -65,7 +65,7 @@ class DockerHost {
     /**
      * Fetches the amount of containers on the Docker host
      * @param {object} dockerHost Docker host to check for
-     * @returns {number} Total amount of containers on the host
+     * @returns {Promise<number>} Total amount of containers on the host
      */
     static async testDockerHost(dockerHost) {
         const options = {
