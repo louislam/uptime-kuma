@@ -576,6 +576,12 @@ optgroup {
     outline: none !important;
 }
 
+.prism-editor__container {
+    .important {
+        font-weight: var(--bs-body-font-weight) !important;
+    }
+}
+
 h5.settings-subheading::after {
     content: "";
     display: block;
