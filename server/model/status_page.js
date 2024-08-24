@@ -5,6 +5,8 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const googleAnalytics = require("../google-analytics");
 const { marked } = require("marked");
+const { Feed } = require("feed");
+const config = require("../config");
 
 class StatusPage extends BeanModel {
 
@@ -13,6 +15,19 @@ class StatusPage extends BeanModel {
      * @type {{}}
      */
     static domainMappingList = { };
+
+    /**
+     * Handle responses to RSS pages
+     * @param {Response} response Response object
+     * @param {string} slug Status page slug
+     * @returns {Promise<void>}
+     */
+    static async handleStatusPageRSSResponse(response, slug) {
+        let statusPage = await R.findOne("status_page", " slug = ? ", [
+            slug
+        ]);
+        response.send(await StatusPage.renderRSS(statusPage, slug));
+    }
 
     /**
      * Handle responses to status page
@@ -37,6 +52,38 @@ class StatusPage extends BeanModel {
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
         }
+    }
+
+    /**
+     * SSR for RSS feed
+     * @param {statusPage} statusPage object
+     * @param {slug} slug from router
+     * @returns {Promise<string>} the rendered html
+     */
+    static async renderRSS(statusPage, slug) {
+        const { heartbeats } = await StatusPage.getRSSPageData(statusPage);
+
+        let proto = config.isSSL ? "https" : "http";
+        let host = `${proto}://${config.hostname || "localhost"}:${config.port}/status/${slug}`;
+
+        const feed = new Feed({
+            title: "uptime kuma rss feed",
+            description: "feed for monitors that are down",
+            link: host,
+            language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
+            updated: new Date(), // optional, default = today
+        });
+
+        heartbeats.forEach(heartbeat => {
+            feed.addItem({
+                title: `${heartbeat.name} is down`,
+                description: `${heartbeat.name} has been down since ${heartbeat.time}`,
+                id: heartbeat.monitorID,
+                date: new Date(heartbeat.time),
+            });
+        });
+
+        return feed.rss2();
     }
 
     /**
@@ -96,6 +143,40 @@ class StatusPage extends BeanModel {
         $("link[rel=manifest]").attr("href", `/api/status-page/${statusPage.slug}/manifest.json`);
 
         return $.root().html();
+    }
+
+    /**
+     * Get all data required for RSS
+     * @param {StatusPage} statusPage Status page to get data for
+     * @returns {object} Status page data
+     */
+    static async getRSSPageData(statusPage) {
+        // get all heartbeats that correspond to this statusPage
+        const config = await statusPage.toPublicJSON();
+
+        // Public Group List
+        const showTags = !!statusPage.show_tags;
+
+        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
+            statusPage.id
+        ]);
+
+        let heartbeats = [];
+
+        for (let groupBean of list) {
+            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+            for (const a of monitorGroup.monitorList) {
+                const id = a.id;
+                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [ id ]);
+                if (heartbeat && !heartbeat.status) {
+                    heartbeats.push({ ...a, status: heartbeat.status, time: heartbeat.time });
+                }
+            }
+        }
+
+        return {
+            heartbeats
+        };
     }
 
     /**
