@@ -771,7 +771,6 @@
     "Json Query": "Consulta Json",
     "invertKeywordDescription": "Comprobar si la palabra clave está ausente en vez de presente.",
     "enableNSCD": "Habilitar NSCD (Demonio de Caché de Servicio de Nombres) para almacenar en caché todas las solicitudes DNS",
-    "jsonQueryDescription": "Realiza una consulta JSON contra la respuesta y verifica el valor esperado (el valor de retorno se convertirá a una cadena para la comparación). Consulta {0} para obtener documentación sobre el lenguaje de consulta. Puede encontrar un espacio de prueba {1}.",
     "Request Timeout": "Tiempo de espera máximo de petición",
     "timeoutAfter": "Expirar después de {0} segundos",
     "chromeExecutableDescription": "Para usuarios de Docker, si Chromium no está instalado, puede que tarde unos minutos en ser instalado y mostrar el resultado de la prueba. Usa 1GB de espacio.",

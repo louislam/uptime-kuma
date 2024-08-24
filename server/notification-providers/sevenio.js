@@ -32,28 +32,7 @@ class SevenIO extends NotificationProvider {
                 return okMsg;
             }
 
-            let address = "";
-
-            switch (monitorJSON["type"]) {
-                case "ping":
-                    address = monitorJSON["hostname"];
-                    break;
-                case "port":
-                case "dns":
-                case "gamedig":
-                case "steam":
-                    address = monitorJSON["hostname"];
-                    if (monitorJSON["port"]) {
-                        address += ":" + monitorJSON["port"];
-                    }
-                    break;
-                default:
-                    if (![ "https://", "http://", "" ].includes(monitorJSON["url"])) {
-                        address = monitorJSON["url"];
-                    }
-                    break;
-            }
-
+            let address = this.extractAdress(monitorJSON);
             if (address !== "") {
                 address = `(${address}) `;
             }

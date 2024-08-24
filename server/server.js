@@ -19,7 +19,7 @@ const nodeVersion = process.versions.node;
 
 // Get the required Node.js version from package.json
 const requiredNodeVersions = require("../package.json").engines.node;
-const bannedNodeVersions = " < 14 || 20.0.* || 20.1.* || 20.2.* || 20.3.* ";
+const bannedNodeVersions = " < 18 || 20.0.* || 20.1.* || 20.2.* || 20.3.* ";
 console.log(`Your Node.js version: ${nodeVersion}`);
 
 const semver = require("semver");
@@ -134,7 +134,7 @@ const testMode = !!args["test"] || false;
 // Must be after io instantiation
 const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
-const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
+const { databaseSocketHandler } = require("./socket-handlers/database-socket-handler");
 const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
@@ -832,6 +832,10 @@ let needSetup = false;
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.remote_browser = monitor.remote_browser;
+                bean.snmpVersion = monitor.snmpVersion;
+                bean.snmpOid = monitor.snmpOid;
+                bean.jsonPathOperator = monitor.jsonPathOperator;
+                bean.timeout = monitor.timeout;
 
                 bean.validate();
 

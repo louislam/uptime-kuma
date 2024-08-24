@@ -29,6 +29,7 @@ import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
+import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
@@ -52,6 +53,7 @@ import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
+import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
@@ -97,6 +99,7 @@ const NotificationFormList = {
     "ntfy": Ntfy,
     "octopush": Octopush,
     "OneBot": OneBot,
+    "Onesender": Onesender,
     "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
     "FlashDuty": FlashDuty,
@@ -119,6 +122,7 @@ const NotificationFormList = {
     "stackfield": Stackfield,
     "teams": Teams,
     "telegram": Telegram,
+    "threema": Threema,
     "twilio": Twilio,
     "Splunk": Splunk,
     "webhook": Webhook,
