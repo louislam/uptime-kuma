@@ -689,7 +689,6 @@
     "emailTemplateLimitedToUpDownNotification": "disponibil numai pentru heartbeat-uri UP/DOWN, altfel nul",
     "emailTemplateStatus": "Stare",
     "invertKeywordDescription": "Căutați după cuvântul cheie să fie absent și nu prezent.",
-    "jsonQueryDescription": "Efectuați o interogare json după răspuns și verificați valoarea așteptată (valoarea returnată va fi convertită în șir pentru comparație). Consultați {0} pentru documentația despre limbajul de interogare. Un playground poate fi găsit {1}.",
     "goAlertInfo": "GoAlert este o aplicație open source pentru programarea apelurilor, escalări automate și notificări (cum ar fi SMS-uri sau apeluri vocale). Angajați automat persoana potrivită, în modul potrivit și la momentul potrivit! {0}",
     "goAlertIntegrationKeyInfo": "Obțineți cheia generică de integrare API pentru serviciu în formatul \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\" de obicei valoarea parametrului token al URL-ului copiat.",
     "SecretAccessKey": "Secret AccessKey",

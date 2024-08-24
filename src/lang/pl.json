@@ -793,7 +793,6 @@
     "styleElapsedTime": "Czas, który upłynął pod paskiem bicia serca",
     "tailscalePingWarning": "Aby korzystać z monitora Tailscale Ping, należy zainstalować Uptime Kuma bez Dockera, a także zainstalować klienta Tailscale na serwerze.",
     "invertKeywordDescription": "Słowo kluczowe powinno być raczej nieobecne niż obecne.",
-    "jsonQueryDescription": "Wykonaj zapytanie json względem odpowiedzi i sprawdź oczekiwaną wartość (wartość zwracana zostanie przekonwertowana na ciąg znaków do porównania). Sprawdź {0}, aby uzyskać dokumentację dotyczącą języka zapytań. Plac zabaw można znaleźć {1}.",
     "Server URL should not contain the nfty topic": "Adres URL serwera nie powinien zawierać tematu nfty",
     "Badge Duration (in hours)": "Czas trwania odznaki (w godzinach)",
     "Enter the list of brokers": "Wprowadź listę brokerów",

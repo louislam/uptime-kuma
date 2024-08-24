@@ -792,7 +792,6 @@
     "emailTemplateLimitedToUpDownNotification": "saatavilla vain YLÖS/ALAS sydämensykkeille, muulloin null",
     "Your User ID": "Käyttäjätunnuksesi",
     "invertKeywordDescription": "Etsi puuttuvaa avainsanaa.",
-    "jsonQueryDescription": "Suorita JSON-kysely vastaukselle ja tarkista odotettu arvo (Paluuarvo muutetaan merkkijonoksi vertailua varten). Katso kyselykielen ohjeita osoitteesta {0}. Leikkikenttä löytyy osoitteesta {1}.",
     "Bark API Version": "Bark API-versio",
     "Notify Channel": "Ilmoitus kanavalle",
     "aboutNotifyChannel": "Ilmoitus kanavalle antaa työpöytä- tai mobiili-ilmoituksen kaikille kanavan jäsenille; riippumatta ovatko he paikalla vai poissa.",
