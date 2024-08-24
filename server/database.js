@@ -101,7 +101,6 @@ class Database {
         "patch-added-kafka-producer.sql": true,
         "patch-add-certificate-expiry-status-page.sql": true,
         "patch-monitor-oauth-cc.sql": true,
-        "patch-add-cache-bust.sql": true,
         "patch-add-timeout-monitor.sql": true,
         "patch-add-gamedig-given-port.sql": true,
         "patch-notification-config.sql": true,
