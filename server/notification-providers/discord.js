@@ -13,6 +13,10 @@ class Discord extends NotificationProvider {
 
         try {
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+            const webhookUrl = new URL(notification.discordWebhookUrl);
+            if (notification.discordChannelType === "postToThread") {
+                webhookUrl.searchParams.append("thread_id", notification.threadId);
+            }
 
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
@@ -20,28 +24,13 @@ class Discord extends NotificationProvider {
                     username: discordDisplayName,
                     content: msg,
                 };
-                await axios.post(notification.discordWebhookUrl, discordtestdata);
+
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordtestdata.thread_name = notification.postName;
+                }
+
+                await axios.post(webhookUrl.toString(), discordtestdata);
                 return okMsg;
-            }
-
-            let address;
-
-            switch (monitorJSON["type"]) {
-                case "ping":
-                    address = monitorJSON["hostname"];
-                    break;
-                case "port":
-                case "dns":
-                case "gamedig":
-                case "steam":
-                    address = monitorJSON["hostname"];
-                    if (monitorJSON["port"]) {
-                        address += ":" + monitorJSON["port"];
-                    }
-                    break;
-                default:
-                    address = monitorJSON["url"];
-                    break;
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
@@ -59,7 +48,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
+                                value: this.extractAdress(monitorJSON),
                             },
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
@@ -72,12 +61,14 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 };
-
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discorddowndata.thread_name = notification.postName;
+                }
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discorddowndata);
+                await axios.post(webhookUrl.toString(), discorddowndata);
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
@@ -94,7 +85,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
+                                value: this.extractAdress(monitorJSON),
                             },
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
@@ -108,11 +99,15 @@ class Discord extends NotificationProvider {
                     }],
                 };
 
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordupdata.thread_name = notification.postName;
+                }
+
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discordupdata);
+                await axios.post(webhookUrl.toString(), discordupdata);
                 return okMsg;
             }
         } catch (error) {

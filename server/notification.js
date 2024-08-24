@@ -5,6 +5,7 @@ const AlertNow = require("./notification-providers/alertnow");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
 const Bark = require("./notification-providers/bark");
+const Bitrix24 = require("./notification-providers/bitrix24");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
 const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
@@ -42,6 +43,7 @@ const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
 const Slack = require("./notification-providers/slack");
+const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
 const SMTP = require("./notification-providers/smtp");
 const Squadcast = require("./notification-providers/squadcast");
@@ -49,6 +51,7 @@ const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
+const Threema = require("./notification-providers/threema");
 const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
 const Webhook = require("./notification-providers/webhook");
@@ -61,6 +64,7 @@ const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
+const Onesender = require("./notification-providers/onesender");
 
 class Notification {
 
@@ -83,6 +87,7 @@ class Notification {
             new AliyunSms(),
             new Apprise(),
             new Bark(),
+            new Bitrix24(),
             new ClickSendSMS(),
             new CallMeBot(),
             new SMSC(),
@@ -107,6 +112,7 @@ class Notification {
             new Ntfy(),
             new Octopush(),
             new OneBot(),
+            new Onesender(),
             new Opsgenie(),
             new PagerDuty(),
             new FlashDuty(),
@@ -121,6 +127,7 @@ class Notification {
             new SerwerSMS(),
             new Signal(),
             new SMSManager(),
+            new SMSPartner(),
             new Slack(),
             new SMSEagle(),
             new SMTP(),
@@ -129,6 +136,7 @@ class Notification {
             new Teams(),
             new TechulusPush(),
             new Telegram(),
+            new Threema(),
             new Twilio(),
             new Splunk(),
             new Webhook(),

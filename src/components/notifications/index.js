@@ -3,6 +3,7 @@ import AlertNow from "./AlertNow.vue";
 import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bark from "./Bark.vue";
+import Bitrix24 from "./Bitrix24.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
@@ -28,6 +29,7 @@ import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
+import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
@@ -42,6 +44,7 @@ import ServerChan from "./ServerChan.vue";
 import SerwerSMS from "./SerwerSMS.vue";
 import Signal from "./Signal.vue";
 import SMSManager from "./SMSManager.vue";
+import SMSPartner from "./SMSPartner.vue";
 import Slack from "./Slack.vue";
 import Squadcast from "./Squadcast.vue";
 import SMSEagle from "./SMSEagle.vue";
@@ -50,6 +53,7 @@ import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
+import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
@@ -70,6 +74,7 @@ const NotificationFormList = {
     "AliyunSMS": AliyunSMS,
     "apprise": Apprise,
     "Bark": Bark,
+    "Bitrix24": Bitrix24,
     "clicksendsms": ClickSendSMS,
     "CallMeBot": CallMeBot,
     "smsc": SMSC,
@@ -94,6 +99,7 @@ const NotificationFormList = {
     "ntfy": Ntfy,
     "octopush": Octopush,
     "OneBot": OneBot,
+    "Onesender": Onesender,
     "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
     "FlashDuty": FlashDuty,
@@ -108,6 +114,7 @@ const NotificationFormList = {
     "serwersms": SerwerSMS,
     "signal": Signal,
     "SMSManager": SMSManager,
+    "SMSPartner": SMSPartner,
     "slack": Slack,
     "squadcast": Squadcast,
     "SMSEagle": SMSEagle,
@@ -115,6 +122,7 @@ const NotificationFormList = {
     "stackfield": Stackfield,
     "teams": Teams,
     "telegram": Telegram,
+    "threema": Threema,
     "twilio": Twilio,
     "Splunk": Splunk,
     "webhook": Webhook,
