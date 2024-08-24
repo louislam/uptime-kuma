@@ -186,9 +186,9 @@ export default {
             if (seconds < tolerance) {
                 return this.$t("now");
             } else if (seconds < 60 * 60) {
-                return $t("time ago", [(seconds / 60).toFixed(0) + "m"]);
+                return this.$t("time ago", [ (seconds / 60).toFixed(0) + "m" ]);
             } else {
-                return $t("time ago", [(seconds / 60 / 60).toFixed(0) + "h"]);
+                return this.$t("time ago", [ (seconds / 60 / 60).toFixed(0) + "h" ]);
             }
         }
     },
