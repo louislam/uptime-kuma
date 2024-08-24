@@ -127,7 +127,7 @@ class Prometheus {
      * @param {object} tlsInfo TLS details
      * @returns {void}
      */
-    async update(heartbeat, tlsInfo) {
+    update(heartbeat, tlsInfo) {
         if (typeof tlsInfo !== "undefined") {
             try {
                 let isValid;
