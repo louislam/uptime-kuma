@@ -10,7 +10,7 @@
 
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
-                                <select id="type" v-model="monitor.type" class="form-select">
+                                <select id="type" v-model="monitor.type" class="form-select" data-testid="monitor-type-select">
                                     <optgroup :label="$t('General Monitor Type')">
                                         <option value="group">
                                             {{ $t("Group") }}
@@ -99,7 +99,7 @@
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required>
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" required data-testid="friendly-name-input">
                             </div>
 
                             <!-- URL -->
@@ -237,7 +237,15 @@
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
                             <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
-                                <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
+                                <input
+                                    id="hostname"
+                                    v-model="monitor.hostname"
+                                    type="text"
+                                    class="form-control"
+                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
+                                    required
+                                    data-testid="hostname-input"
+                                >
                             </div>
 
                             <!-- Port -->
@@ -343,6 +351,7 @@
                                         :preselect-first="false"
                                         :max-height="500"
                                         :taggable="false"
+                                        data-testid="resolve-type-select"
                                     ></VueMultiselect>
 
                                     <div class="form-text">
@@ -508,6 +517,14 @@
                                     <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control">
                                 </div>
                             </template>
+
+                            <!-- Conditions -->
+                            <EditMonitorConditions
+                                v-if="supportsConditions && conditionVariables.length > 0"
+                                v-model="monitor.conditions"
+                                :condition-variables="conditionVariables"
+                                class="my-3"
+                            />
 
                             <!-- Interval -->
                             <div class="my-3">
@@ -991,6 +1008,7 @@ import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
+import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
 const toast = useToast;
 
@@ -1034,7 +1052,8 @@ const monitorDefaults = {
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
-    remote_browser: null
+    remote_browser: null,
+    conditions: []
 };
 
 export default {
@@ -1049,6 +1068,7 @@ export default {
         RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
+        EditMonitorConditions,
     },
 
     data() {
@@ -1303,7 +1323,15 @@ message HealthCheckResponse {
                     value: null,
                 }];
             }
-        }
+        },
+
+        supportsConditions() {
+            return this.$root.monitorTypeList[this.monitor.type]?.supportsConditions || false;
+        },
+
+        conditionVariables() {
+            return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
+        },
     },
     watch: {
         "$root.proxyList"() {
@@ -1336,7 +1364,7 @@ message HealthCheckResponse {
             }
         },
 
-        "monitor.type"() {
+        "monitor.type"(newType, oldType) {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
@@ -1408,6 +1436,10 @@ message HealthCheckResponse {
                 }
             }
 
+            // Reset conditions since condition variables likely change:
+            if (oldType && newType !== oldType) {
+                this.monitor.conditions = [];
+            }
         },
 
         currentGameObject(newGameObject, previousGameObject) {
