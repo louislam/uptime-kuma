@@ -989,7 +989,7 @@
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
-            <RemoteBrowserDialog ref="remoteBrowserDialog" @added="addedRemoteBrowser" />
+            <RemoteBrowserDialog ref="remoteBrowserDialog" />
         </div>
     </transition>
 </template>
