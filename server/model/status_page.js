@@ -26,7 +26,12 @@ class StatusPage extends BeanModel {
         let statusPage = await R.findOne("status_page", " slug = ? ", [
             slug
         ]);
-        response.send(await StatusPage.renderRSS(statusPage, slug));
+
+        if (statusPage) {
+            response.send(await StatusPage.renderRSS(statusPage, slug));
+        } else {
+            response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
+        }
     }
 
     /**
