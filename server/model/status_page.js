@@ -165,11 +165,14 @@ class StatusPage extends BeanModel {
 
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
-            for (const a of monitorGroup.monitorList) {
-                const id = a.id;
-                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [ id ]);
-                if (heartbeat && !heartbeat.status) {
-                    heartbeats.push({ ...a, status: heartbeat.status, time: heartbeat.time });
+            for (const monitor of monitorGroup.monitorList) {
+                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [ monitor.id ]);
+                if (heartbeat) {
+                    heartbeats.push({
+                        ...monitor,
+                        status: heartbeat.status,
+                        time: heartbeat.time
+                    });
                 }
             }
         }
