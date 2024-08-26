@@ -5,8 +5,8 @@
         </button>
 
         <select v-if="!isFirst" v-model="model.andOr" class="form-select and-or-select">
-            <option value="and">and</option>
-            <option value="or">or</option>
+            <option value="and">{{ $t("and") }}</option>
+            <option value="or">{{ $t("or") }}</option>
         </select>
 
         <select v-model="model.variable" class="form-select">
