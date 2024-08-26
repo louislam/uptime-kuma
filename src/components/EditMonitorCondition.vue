@@ -119,7 +119,7 @@ export default {
     margin-left: auto;
 }
 
-@container (min-width: 650px) {
+@container (min-width: 500px) {
     .monitor-condition {
         display: flex;
         flex-wrap: nowrap;
