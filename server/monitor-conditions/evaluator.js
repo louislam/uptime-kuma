@@ -1,5 +1,5 @@
 const { ConditionExpressionGroup, ConditionExpression, LOGICAL } = require("./expression");
-const { ConditionOperator, operatorMap } = require("./operators");
+const { operatorMap } = require("./operators");
 
 /**
  * @param {ConditionExpression} expression Expression to evaluate
@@ -9,7 +9,7 @@ const { ConditionOperator, operatorMap } = require("./operators");
  */
 function evaluateExpression(expression, context) {
     /**
-     * @type {ConditionOperator|null}
+     * @type {import("./operators").ConditionOperator|null}
      */
     const operator = operatorMap.get(expression.operator) || null;
     if (operator === null) {

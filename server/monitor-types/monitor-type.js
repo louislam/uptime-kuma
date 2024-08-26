@@ -1,5 +1,3 @@
-const { ConditionVariable } = require("../monitor-conditions/variables");
-
 class MonitorType {
     name = undefined;
 
@@ -12,7 +10,7 @@ class MonitorType {
     /**
      * Variables supported by this type. e.g. an HTTP type could have a "response_code" variable to test against.
      * This property controls the choices displayed in the monitor edit form.
-     * @type {ConditionVariable[]}
+     * @type {import("../monitor-conditions/variables").ConditionVariable[]}
      */
     conditionVariables = [];
 

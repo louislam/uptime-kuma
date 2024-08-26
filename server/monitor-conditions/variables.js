@@ -1,5 +1,3 @@
-const { ConditionOperator } = require("./operators");
-
 /**
  * Represents a variable used in a condition and the set of operators that can be applied to this variable.
  *
@@ -14,13 +12,13 @@ class ConditionVariable {
     id;
 
     /**
-     * @type {ConditionOperator[]}
+     * @type {import("./operators").ConditionOperator[]}
      */
     operators = {};
 
     /**
      * @param {string} id ID of variable
-     * @param {ConditionOperator[]} operators Operators the condition supports
+     * @param {import("./operators").ConditionOperator[]} operators Operators the condition supports
      */
     constructor(id, operators = []) {
         this.id = id;
