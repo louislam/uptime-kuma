@@ -8,6 +8,8 @@ const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
 
+const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } = require("../../src/util");
+
 class StatusPage extends BeanModel {
 
     /**
@@ -66,14 +68,14 @@ class StatusPage extends BeanModel {
      * @returns {Promise<string>} the rendered html
      */
     static async renderRSS(statusPage, slug) {
-        const { heartbeats } = await StatusPage.getRSSPageData(statusPage);
+        const { heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
 
         let proto = config.isSSL ? "https" : "http";
         let host = `${proto}://${config.hostname || "localhost"}:${config.port}/status/${slug}`;
 
         const feed = new Feed({
             title: "uptime kuma rss feed",
-            description: "feed for monitors that are down",
+            description: `current status: ${statusDescription}`,
             link: host,
             language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
             updated: new Date(), // optional, default = today
@@ -151,6 +153,64 @@ class StatusPage extends BeanModel {
     }
 
     /**
+     * @param {heartbeats} heartbeats from getRSSPageData
+     * @returns {number} status_page constant from util.ts
+     */
+    static overallStatus(heartbeats) {
+        if (heartbeats.length === 0) {
+            return -1;
+        }
+
+        let status = STATUS_PAGE_ALL_UP;
+        let hasUp = false;
+
+        for (let beat of heartbeats) {
+            if (beat.status === MAINTENANCE) {
+                return STATUS_PAGE_MAINTENANCE;
+            } else if (beat.status === UP) {
+                hasUp = true;
+            } else {
+                status = STATUS_PAGE_PARTIAL_DOWN;
+            }
+        }
+
+        if (! hasUp) {
+            status = STATUS_PAGE_ALL_DOWN;
+        }
+
+        return status;
+    }
+
+    /**
+     * @param {number} status from overallStatus
+     * @returns {string} description
+     */
+    static getStatusDescription(status) {
+        if (status === -1) {
+            return "No Services";
+        }
+
+        if (status === STATUS_PAGE_ALL_UP) {
+            return "All Systems Operational";
+        }
+
+        if (status === STATUS_PAGE_PARTIAL_DOWN) {
+            return "Partially Degraded Service";
+        }
+
+        if (status === STATUS_PAGE_ALL_DOWN) {
+            return "Degraded Service";
+        }
+
+        // TODO: show the real maintenance information: title, description, time
+        if (status === MAINTENANCE) {
+            return "Under maintenance";
+        }
+
+        return "?";
+    }
+
+    /**
      * Get all data required for RSS
      * @param {StatusPage} statusPage Status page to get data for
      * @returns {object} Status page data
@@ -182,8 +242,16 @@ class StatusPage extends BeanModel {
             }
         }
 
+        // calculate RSS feed description
+        let status = StatusPage.overallStatus(heartbeats);
+        let statusDescription = StatusPage.getStatusDescription(status);
+
+        // keep only falsy heartbeats in the RSS feed
+        heartbeats = heartbeats.filter(heartbeat => !heartbeat.status);
+
         return {
-            heartbeats
+            heartbeats,
+            statusDescription
         };
     }
 
