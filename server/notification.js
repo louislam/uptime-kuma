@@ -65,6 +65,7 @@ const Whapi = require("./notification-providers/whapi");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
+const Wpush = require("./notification-providers/wpush");
 
 class Notification {
 
@@ -147,6 +148,7 @@ class Notification {
             new Whapi(),
             new GtxMessaging(),
             new Cellsynt(),
+            new Wpush(),
         ];
         for (let item of list) {
             if (! item.name) {

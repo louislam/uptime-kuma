@@ -179,6 +179,7 @@ export default {
                 "WeCom": "WeCom (企业微信群机器人)",
                 "ServerChan": "ServerChan (Server酱)",
                 "smsc": "SMSC",
+                "WPush": "WPush(wpush.cn)",
             };
 
             // Sort by notification name
