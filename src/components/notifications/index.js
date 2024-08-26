@@ -63,6 +63,7 @@ import Splunk from "./Splunk.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import Cellsynt from "./Cellsynt.vue";
+import WPush from "./WPush.vue";
 
 /**
  * Manage all notification form.
@@ -134,6 +135,7 @@ const NotificationFormList = {
     "whapi": Whapi,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
+    "WPush": WPush
 };
 
 export default NotificationFormList;
