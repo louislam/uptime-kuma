@@ -15,7 +15,7 @@
                 :key="variable.id"
                 :value="variable.id"
             >
-                {{ variable.id }}
+                {{ $t(variable.id) }}
             </option>
         </select>
 
