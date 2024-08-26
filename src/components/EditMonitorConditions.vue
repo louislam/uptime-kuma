@@ -1,7 +1,7 @@
 <template>
     <div class="monitor-conditions">
         <label class="form-label">{{ $t("Conditions") }}</label>
-        <div class="monitor-conditions__conditions">
+        <div class="monitor-conditions-conditions">
             <template v-for="(condition, conditionIndex) in model" :key="conditionIndex">
                 <EditMonitorConditionGroup
                     v-if="condition.type === 'group'"
@@ -22,7 +22,7 @@
                 />
             </template>
         </div>
-        <div class="monitor-conditions__buttons">
+        <div class="monitor-conditions-buttons">
             <button class="btn btn-outline-secondary btn-sm me-2" type="button" data-testid="add-condition-button" @click="addCondition">
                 {{ $t("conditionAdd") }}
             </button>
@@ -126,17 +126,17 @@ export default {
 @import "../assets/vars.scss";
 
 .monitor-conditions,
-.monitor-conditions__conditions {
+.monitor-conditions-conditions {
     container-type: inline-size;
 }
 
-.monitor-conditions__buttons {
+.monitor-conditions-buttons {
     display: grid;
     gap: 10px;
 }
 
 @container (min-width: 400px) {
-    .monitor-conditions__buttons {
+    .monitor-conditions-buttons {
         display: flex;
     }
 }

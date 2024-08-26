@@ -7,7 +7,7 @@
             </select>
         </div>
 
-        <div class="condition-group__inner mt-2 pa-2">
+        <div class="condition-group-inner mt-2 pa-2">
             <div class="d-flex mb-3">
                 <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" @click="remove">
                     <font-awesome-icon icon="trash" />
@@ -15,7 +15,7 @@
                 </button>
             </div>
 
-            <div class="condition-group__conditions">
+            <div class="condition-group-conditions">
                 <template v-for="(child, childIndex) in model.children" :key="childIndex">
                     <EditMonitorConditionGroup
                         v-if="child.type === 'group'"
@@ -38,7 +38,7 @@
                 </template>
             </div>
 
-            <div class="condition-group__actions mt-3">
+            <div class="condition-group-actions mt-3">
                 <button class="btn btn-outline-secondary btn-sm" type="button" data-testid="add-condition-button" @click="addCondition">
                     {{ $t("conditionAdd") }}
                 </button>
@@ -145,27 +145,31 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-.condition-group__inner {
+.condition-group-inner {
     background: rgba(0, 0, 0, 0.05);
     padding: 20px;
 }
 
-.dark .condition-group__inner {
+.dark .condition-group-inner {
     background: rgba(255, 255, 255, 0.05);
 }
 
-.condition-group__conditions {
+.condition-group-conditions {
     container-type: inline-size;
 }
 
-.condition-group__actions {
+.condition-group-actions {
     display: grid;
     gap: 10px;
 }
 
 @container (min-width: 400px) {
-    .condition-group__actions {
+    .condition-group-actions {
         display: flex;
+    }
+
+    .btn-delete-group {
+        margin-left: auto;
     }
 }
 </style>
