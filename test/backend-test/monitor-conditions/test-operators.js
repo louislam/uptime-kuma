@@ -1,12 +1,4 @@
-const semver = require("semver");
-let test;
-const nodeVersion = process.versions.node;
-if (semver.satisfies(nodeVersion, ">= 18")) {
-    test = require("node:test");
-} else {
-    test = require("test");
-}
-
+const test = require("node:test");
 const assert = require("node:assert");
 const { operatorMap, OP_EQUALS, OP_NOT_EQUALS, OP_CONTAINS, OP_NOT_CONTAINS, OP_LT, OP_GT, OP_LTE, OP_GTE } = require("../../../server/monitor-conditions/operators.js");
 
