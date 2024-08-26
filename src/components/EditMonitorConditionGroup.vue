@@ -9,9 +9,9 @@
 
         <div class="condition-group__inner mt-2 pa-2">
             <div class="d-flex mb-3">
-                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" :aria-label="$t('Delete')" @click="remove">
+                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" @click="remove">
                     <font-awesome-icon icon="trash" />
-                    Delete Group
+                    {{ $t("Delete Group") }}
                 </button>
             </div>
 
