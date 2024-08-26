@@ -25,7 +25,7 @@
                 :key="operator.id"
                 :value="operator.id"
             >
-                {{ operator.caption }}
+                {{ $t(operator.caption) }}
             </option>
         </select>
 
