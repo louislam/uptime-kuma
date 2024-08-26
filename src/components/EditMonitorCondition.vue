@@ -29,7 +29,14 @@
             </option>
         </select>
 
-        <input v-model="model.value" type="text" class="form-control" :aria-label="$t('conditionValuePlaceholder')" data-testid="condition-value">
+        <input
+            v-model="model.value"
+            type="text"
+            class="form-control"
+            :aria-label="$t('conditionValuePlaceholder')"
+            data-testid="condition-value"
+            required
+        />
     </div>
 </template>
 
