@@ -8,7 +8,7 @@ const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
 
-const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } = require("../../src/util");
+const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
 
 class StatusPage extends BeanModel {
 
@@ -246,8 +246,8 @@ class StatusPage extends BeanModel {
         let status = StatusPage.overallStatus(heartbeats);
         let statusDescription = StatusPage.getStatusDescription(status);
 
-        // keep only falsy heartbeats in the RSS feed
-        heartbeats = heartbeats.filter(heartbeat => !heartbeat.status);
+        // keep only DOWN heartbeats in the RSS feed
+        heartbeats = heartbeats.filter(heartbeat => heartbeat.status === DOWN);
 
         return {
             heartbeats,
