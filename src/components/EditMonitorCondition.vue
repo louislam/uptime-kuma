@@ -1,6 +1,6 @@
 <template>
     <div class="monitor-condition mb-3" data-testid="condition">
-        <button v-if="!isInGroup || !isFirst || !isLast" class="btn btn-secondary remove-button" type="button" :aria-label="$t('Delete')" @click="remove">
+        <button v-if="!isInGroup || !isFirst || !isLast" class="btn btn-secondary remove-button" type="button" :aria-label="$t('conditionDelete')" @click="remove">
             <font-awesome-icon icon="trash" />
         </button>
 
@@ -29,7 +29,7 @@
             </option>
         </select>
 
-        <input v-model="model.value" type="text" class="form-control" :aria-label="$t('Value')" data-testid="condition-value">
+        <input v-model="model.value" type="text" class="form-control" :aria-label="$t('conditionValuePlaceholder')" data-testid="condition-value">
     </div>
 </template>
 

@@ -2,8 +2,8 @@
     <div class="condition-group mb-3" data-testid="condition-group">
         <div class="d-flex">
             <select v-if="!isFirst" v-model="model.andOr" class="form-select" style="width: auto;">
-                <option value="and">and</option>
-                <option value="or">or</option>
+                <option value="and">{{ $t("and") }}</option>
+                <option value="or">{{ $t("or") }}</option>
             </select>
         </div>
 
@@ -11,7 +11,7 @@
             <div class="d-flex mb-3">
                 <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" @click="remove">
                     <font-awesome-icon icon="trash" />
-                    {{ $t("Delete Group") }}
+                    {{ $t("conditionDeleteGroup") }}
                 </button>
             </div>
 
@@ -40,10 +40,10 @@
 
             <div class="condition-group__actions mt-3">
                 <button class="btn btn-outline-secondary btn-sm" type="button" data-testid="add-condition-button" @click="addCondition">
-                    {{ $t("Add Condition") }}
+                    {{ $t("conditionAdd") }}
                 </button>
                 <button class="btn btn-outline-secondary btn-sm" type="button" data-testid="add-group-button" @click="addGroup">
-                    {{ $t("Add Group") }}
+                    {{ $t("conditionAddGroup") }}
                 </button>
             </div>
         </div>
