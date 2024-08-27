@@ -1,8 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const FormData = require("form-data");
 const { Liquid } = require("liquidjs");
-const { UP, DOWN, getMonitorRelativeURL } = require("../../src/util");
+const { UP, DOWN } = require("../../src/util");
 
 class SIGNL4 extends NotificationProvider {
 
@@ -25,12 +24,12 @@ class SIGNL4 extends NotificationProvider {
 
             // Source system
             data["X-S4-SourceSystem"] = "UptimeKuma";
-            
+
             // Monitor URL
             let monitorUrl;
             if (monitorJSON) {
                 if (monitorJSON.type === "port") {
-                    monitorUrl = monitorInfo.hostname;
+                    monitorUrl = monitorJSON.hostname;
                     if (monitorJSON.port) {
                         monitorUrl += ":" + monitorJSON.port;
                     }
@@ -44,14 +43,12 @@ class SIGNL4 extends NotificationProvider {
             if (heartbeatJSON == null) {
                 // Test alert
                 data.title = "Uptime Kuma Alert";
-                data.message = "Uptime Kuma Test Alert"
-            }
-            else if (heartbeatJSON.status === UP) {
+                data.message = "Uptime Kuma Test Alert";
+            } else if (heartbeatJSON.status === UP) {
                 data.title = "Uptime Kuma Monitor ✅ Up";
                 data["X-S4-ExternalID"] = "UptimeKuma" + monitorUrl;
                 data["X-S4-Status"] = "resolved";
-            }
-            else if (heartbeatJSON.status === DOWN) {
+            } else if (heartbeatJSON.status === DOWN) {
                 data.title = "Uptime Kuma Monitor 🔴 Down";
                 data["X-S4-ExternalID"] = "UptimeKuma" + monitorUrl;
                 data["X-S4-Status"] = "new";

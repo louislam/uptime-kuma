@@ -52,7 +52,6 @@
             :placeholder="customBodyPlaceholder"
         ></textarea>
     </div>
-
 </template>
 
 <script>
