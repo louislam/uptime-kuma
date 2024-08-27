@@ -150,6 +150,7 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+const { e2eMiddleware } = require("./e2e-middleware");
 
 app.use(express.json());
 
@@ -246,6 +247,10 @@ let needSetup = false;
             log.debug("test", request.body);
             response.send("OK");
         });
+    }
+
+    if (process.env.NODE_ENV === "e2e") {
+        app.use(e2eMiddleware);
     }
 
     // Robots.txt
