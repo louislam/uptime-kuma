@@ -150,7 +150,6 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
-const { e2eMiddleware } = require("./e2e-middleware");
 
 app.use(express.json());
 
@@ -247,10 +246,36 @@ let needSetup = false;
             log.debug("test", request.body);
             response.send("OK");
         });
-    }
 
-    if (process.env.NODE_ENV === "e2e") {
-        app.use(e2eMiddleware);
+        const fs = require("fs");
+
+        app.get("/_e2e/take-sqlite-snapshot", async (request, response) => {
+            await Database.close();
+            try {
+                fs.cpSync(Database.sqlitePath, `${Database.sqlitePath}.e2e-snapshot`);
+            } catch (err) {
+                throw new Error("Unable to copy SQLite DB.");
+            }
+            await Database.connect();
+
+            response.send("Snapshot taken.");
+        });
+
+        app.get("/_e2e/restore-sqlite-snapshot", async (request, response) => {
+            if (!fs.existsSync(`${Database.sqlitePath}.e2e-snapshot`)) {
+                throw new Error("Snapshot doesn't exist.");
+            }
+
+            await Database.close();
+            try {
+                fs.cpSync(`${Database.sqlitePath}.e2e-snapshot`, Database.sqlitePath);
+            } catch (err) {
+                throw new Error("Unable to copy snapshot file.");
+            }
+            await Database.connect();
+
+            response.send("Snapshot restored.");
+        });
     }
 
     // Robots.txt
