@@ -7,6 +7,9 @@ class SIGNL4 extends NotificationProvider {
 
     name = "SIGNL4";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
