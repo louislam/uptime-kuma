@@ -14,6 +14,8 @@ test.describe("Uptime Kuma Setup", () => {
         await page.getByText("SQLite").click();
         await page.getByRole("button", { name: "Next" }).click();
         await screenshot(testInfo, page);
+        await page.waitForURL("/setup"); // ensures the server is ready to continue to the next test
+        await screenshot(testInfo, page);
     });
 
     test("setup admin", async ({ page }, testInfo) => {
