@@ -29,6 +29,7 @@ class Pushover extends NotificationProvider {
         const baseURL = await setting("primaryBaseURL");
         if (baseURL && monitorJSON) {
             data["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
+            data["url_title"] = "Link to Monitor";
         }
 
         if (notification.pushoverdevice) {
