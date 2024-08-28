@@ -30,6 +30,7 @@ class Pushover extends NotificationProvider {
         if (baseURL && monitorJSON) {
             data["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
             data["url_title"] = "Link to Monitor";
+            data["url_title"] = "Link to Monitor";
         }
 
         if (notification.pushoverdevice) {
