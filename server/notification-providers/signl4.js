@@ -34,7 +34,7 @@ class SIGNL4 extends NotificationProvider {
             } else if (heartbeatJSON.status === UP) {
                 data.title = "Uptime Kuma Monitor ✅ Up";
                 data["X-S4-ExternalID"] = "UptimeKuma-" + monitorJSON.monitorID;
-                    data["X-S4-Status"] = "resolved";
+                data["X-S4-Status"] = "resolved";
             } else if (heartbeatJSON.status === DOWN) {
                 data.title = "Uptime Kuma Monitor 🔴 Down";
                 data["X-S4-ExternalID"] = "UptimeKuma-" + monitorJSON.monitorID;
