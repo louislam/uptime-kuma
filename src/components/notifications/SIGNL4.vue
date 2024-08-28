@@ -13,7 +13,6 @@
             <a href="https://docs.signl4.com/integrations/uptime-kuima/uptime-kuma.html" target="_blank">SIGNL4 Docs</a>
         </i18n-t>
     </div>
-
 </template>
 
 <style lang="scss" scoped>

@@ -1,6 +1,5 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { Liquid } = require("liquidjs");
 const { UP, DOWN } = require("../../src/util");
 
 class SIGNL4 extends NotificationProvider {
