@@ -994,9 +994,5 @@
     "Cannot connect to the socket server.": "Cannot connect to the socket server.",
     "SIGNL4": "SIGNL4",
     "SIGNL4 Webhook URL": "SIGNL4 Webhook URL",
-    "Alert Body": "Alert Body",
-    "signl4WebhookDefault": "Default",
-    "signl4WebhookCustom": "Custom",
-    "signl4WebhookDefaultDesc": "Use default alert data.",
-    "signl4WebhookCustomDesc": "Send a custom alert data"
+    "signl4Docs": "You can find more information about how to configure SIGNL4 and how to obtain the SIGNL4 webhook URL in the {0}."
 }

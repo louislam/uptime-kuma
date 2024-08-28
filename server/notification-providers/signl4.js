@@ -11,7 +11,7 @@ class SIGNL4 extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             let data = {
@@ -19,34 +19,24 @@ class SIGNL4 extends NotificationProvider {
                 monitor: monitorJSON,
                 msg,
             };
-            let config = {
+            // Source system
+            data["X-S4-SourceSystem"] = "UptimeKuma";
+            const config = {
                 headers: {
                     "Content-Type": "application/json"
                 }
             };
 
-            // Source system
-            data["X-S4-SourceSystem"] = "UptimeKuma";
-
             // Monitor URL
             let monitorUrl;
             if (monitorJSON) {
-                if (monitorJSON.type === "port") {
-                    monitorUrl = monitorJSON.hostname;
-                    if (monitorJSON.port) {
-                        monitorUrl += ":" + monitorJSON.port;
-                    }
-                } else if (monitorJSON.hostname != null) {
-                    monitorUrl = monitorJSON.hostname;
-                } else {
-                    monitorUrl = monitorJSON.url;
-                }
+                monitorUrl = this.extractAdress(monitorJSON);
             }
 
             if (heartbeatJSON == null) {
                 // Test alert
                 data.title = "Uptime Kuma Alert";
-                data.message = "Uptime Kuma Test Alert";
+                data.message = msg;
             } else if (heartbeatJSON.status === UP) {
                 data.title = "Uptime Kuma Monitor ✅ Up";
                 data["X-S4-ExternalID"] = "UptimeKuma" + monitorUrl;
@@ -55,20 +45,6 @@ class SIGNL4 extends NotificationProvider {
                 data.title = "Uptime Kuma Monitor 🔴 Down";
                 data["X-S4-ExternalID"] = "UptimeKuma" + monitorUrl;
                 data["X-S4-Status"] = "new";
-            }
-
-            if (notification.webhookContentType === "custom") {
-                // Initialize LiquidJS and parse the custom Body Template
-                const engine = new Liquid();
-                const tpl = engine.parse(notification.webhookCustomBody);
-
-                // Insert templated values into Body
-                data = await engine.render(tpl,
-                    {
-                        msg,
-                        heartbeatJSON,
-                        monitorJSON
-                    });
             }
 
             await axios.post(notification.webhookURL, data, config);
