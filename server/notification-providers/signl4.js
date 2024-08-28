@@ -3,7 +3,6 @@ const axios = require("axios");
 const { UP, DOWN } = require("../../src/util");
 
 class SIGNL4 extends NotificationProvider {
-
     name = "SIGNL4";
 
     /**
@@ -18,7 +17,8 @@ class SIGNL4 extends NotificationProvider {
                 monitor: monitorJSON,
                 msg,
                 // Source system
-                "X-S4-SourceSystem": "UptimeKuma"
+                "X-S4-SourceSystem": "UptimeKuma",
+                monitorUrl = this.extractAdress(monitorJSON),
             };
 
             const config = {
@@ -27,39 +27,26 @@ class SIGNL4 extends NotificationProvider {
                 }
             };
 
-            // Monitor URL and ID
-            let monitorID = "";
-            if (monitorJSON) {
-                monitorID = monitorJSON.monitorID;
-            }
-            data.monitorUrl = this.extractAdress(monitorJSON);
-
             if (heartbeatJSON == null) {
                 // Test alert
                 data.title = "Uptime Kuma Alert";
                 data.message = msg;
             } else if (heartbeatJSON.status === UP) {
                 data.title = "Uptime Kuma Monitor ✅ Up";
-                data["X-S4-ExternalID"] = "UptimeKuma-" + monitorID;
-                if (monitorID !== "") {
-                    // Only close the alert if there is a valid ID
+                data["X-S4-ExternalID"] = "UptimeKuma-" + monitorJSON.monitorID;
                     data["X-S4-Status"] = "resolved";
-                }
             } else if (heartbeatJSON.status === DOWN) {
                 data.title = "Uptime Kuma Monitor 🔴 Down";
-                data["X-S4-ExternalID"] = "UptimeKuma-" + monitorID;
+                data["X-S4-ExternalID"] = "UptimeKuma-" + monitorJSON.monitorID;
                 data["X-S4-Status"] = "new";
             }
 
             await axios.post(notification.webhookURL, data, config);
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
-
 }
 
 module.exports = SIGNL4;
