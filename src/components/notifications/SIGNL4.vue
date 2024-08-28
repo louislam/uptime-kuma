@@ -14,9 +14,3 @@
         </i18n-t>
     </div>
 </template>
-
-<style lang="scss" scoped>
-textarea {
-    min-height: 200px;
-}
-</style>

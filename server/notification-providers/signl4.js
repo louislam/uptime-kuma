@@ -17,20 +17,22 @@ class SIGNL4 extends NotificationProvider {
                 heartbeat: heartbeatJSON,
                 monitor: monitorJSON,
                 msg,
+                // Source system
+                "X-S4-SourceSystem": "UptimeKuma"
             };
-            // Source system
-            data["X-S4-SourceSystem"] = "UptimeKuma";
+
             const config = {
                 headers: {
                     "Content-Type": "application/json"
                 }
             };
 
-            // Monitor URL
-            let monitorUrl;
+            // Monitor URL and ID
+            let monitorID = "";
             if (monitorJSON) {
-                monitorUrl = this.extractAdress(monitorJSON);
+                monitorID = monitorJSON.monitorID;
             }
+            data.monitorUrl = this.extractAdress(monitorJSON);
 
             if (heartbeatJSON == null) {
                 // Test alert
@@ -38,11 +40,14 @@ class SIGNL4 extends NotificationProvider {
                 data.message = msg;
             } else if (heartbeatJSON.status === UP) {
                 data.title = "Uptime Kuma Monitor ✅ Up";
-                data["X-S4-ExternalID"] = "UptimeKuma" + monitorUrl;
-                data["X-S4-Status"] = "resolved";
+                data["X-S4-ExternalID"] = "UptimeKuma-" + monitorID;
+                if (monitorID !== "") {
+                    // Only close the alert if there is a valid ID
+                    data["X-S4-Status"] = "resolved";
+                }
             } else if (heartbeatJSON.status === DOWN) {
                 data.title = "Uptime Kuma Monitor 🔴 Down";
-                data["X-S4-ExternalID"] = "UptimeKuma" + monitorUrl;
+                data["X-S4-ExternalID"] = "UptimeKuma-" + monitorID;
                 data["X-S4-Status"] = "new";
             }
 
