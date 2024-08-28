@@ -42,6 +42,7 @@ const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
+const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
@@ -127,6 +128,7 @@ class Notification {
             new ServerChan(),
             new SerwerSMS(),
             new Signal(),
+            new SIGNL4(),
             new SMSManager(),
             new SMSPartner(),
             new Slack(),

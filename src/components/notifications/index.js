@@ -64,6 +64,7 @@ import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
+import SIGNL4 from "./SIGNL4.vue";
 
 /**
  * Manage all notification form.
@@ -114,6 +115,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     "serwersms": SerwerSMS,
     "signal": Signal,
+    "SIGNL4": SIGNL4,
     "SMSManager": SMSManager,
     "SMSPartner": SMSPartner,
     "slack": Slack,

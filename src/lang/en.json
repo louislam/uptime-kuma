@@ -991,5 +991,8 @@
     "Go back to home page.": "Go back to home page.",
     "No tags found.": "No tags found.",
     "Lost connection to the socket server.": "Lost connection to the socket server.",
-    "Cannot connect to the socket server.": "Cannot connect to the socket server."
+    "Cannot connect to the socket server.": "Cannot connect to the socket server.",
+    "SIGNL4": "SIGNL4",
+    "SIGNL4 Webhook URL": "SIGNL4 Webhook URL",
+    "signl4Docs": "You can find more information about how to configure SIGNL4 and how to obtain the SIGNL4 webhook URL in the {0}."
 }

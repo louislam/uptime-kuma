@@ -145,6 +145,7 @@ export default {
                 "pushy": "Pushy",
                 "rocket.chat": "Rocket.Chat",
                 "signal": "Signal",
+                "SIGNL4": "SIGNL4",
                 "slack": "Slack",
                 "squadcast": "SquadCast",
                 "SMSEagle": "SMSEagle",
