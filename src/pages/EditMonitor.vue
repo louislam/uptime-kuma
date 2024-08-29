@@ -980,7 +980,15 @@
                     </div>
 
                     <div class="fixed-bottom-bar p-3">
-                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                        <button
+                            id="monitor-submit-btn"
+                            class="btn btn-primary"
+                            type="submit"
+                            :disabled="processing"
+                            data-testid="save-button"
+                        >
+                            {{ $t("Save") }}
+                        </button>
                     </div>
                 </div>
             </form>

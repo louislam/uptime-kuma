@@ -1,15 +1,22 @@
 <template>
     <div class="monitor-condition mb-3" data-testid="condition">
-        <button v-if="!isInGroup || !isFirst || !isLast" class="btn btn-secondary remove-button" type="button" :aria-label="$t('conditionDelete')" @click="remove">
+        <button
+            v-if="!isInGroup || !isFirst || !isLast"
+            class="btn btn-secondary remove-button"
+            type="button"
+            :aria-label="$t('conditionDelete')"
+            data-testid="remove-condition"
+            @click="remove"
+        >
             <font-awesome-icon icon="trash" />
         </button>
 
-        <select v-if="!isFirst" v-model="model.andOr" class="form-select and-or-select">
+        <select v-if="!isFirst" v-model="model.andOr" class="form-select and-or-select" data-testid="condition-and-or">
             <option value="and">{{ $t("and") }}</option>
             <option value="or">{{ $t("or") }}</option>
         </select>
 
-        <select v-model="model.variable" class="form-select">
+        <select v-model="model.variable" class="form-select" data-testid="condition-variable">
             <option
                 v-for="variable in conditionVariables"
                 :key="variable.id"
@@ -19,7 +26,7 @@
             </option>
         </select>
 
-        <select v-model="model.operator" class="form-select">
+        <select v-model="model.operator" class="form-select" data-testid="condition-operator">
             <option
                 v-for="operator in getVariableOperators(model.variable)"
                 :key="operator.id"

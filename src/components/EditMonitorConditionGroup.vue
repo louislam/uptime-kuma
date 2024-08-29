@@ -1,7 +1,7 @@
 <template>
     <div class="condition-group mb-3" data-testid="condition-group">
         <div class="d-flex">
-            <select v-if="!isFirst" v-model="model.andOr" class="form-select" style="width: auto;">
+            <select v-if="!isFirst" v-model="model.andOr" class="form-select" style="width: auto;" data-testid="condition-group-and-or">
                 <option value="and">{{ $t("and") }}</option>
                 <option value="or">{{ $t("or") }}</option>
             </select>
@@ -9,7 +9,7 @@
 
         <div class="condition-group-inner mt-2 pa-2">
             <div class="d-flex mb-3">
-                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" @click="remove">
+                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" data-testid="remove-condition-group" @click="remove">
                     <font-awesome-icon icon="trash" />
                     {{ $t("conditionDeleteGroup") }}
                 </button>
