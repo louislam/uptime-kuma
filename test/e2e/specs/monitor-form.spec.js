@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { getMonitorStatus, login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
 test.describe("Monitor Form", () => {
 
