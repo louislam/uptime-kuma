@@ -716,6 +716,8 @@ let needSetup = false;
                 monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
                 monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
 
+                monitor.conditions = JSON.stringify(monitor.conditions);
+
                 bean.import(monitor);
                 bean.user_id = socket.userID;
 
