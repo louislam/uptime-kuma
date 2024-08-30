@@ -19,6 +19,14 @@ const OP_CONTAINS = "contains";
 
 const OP_NOT_CONTAINS = "not_contains";
 
+const OP_STARTS_WITH = "starts_with";
+
+const OP_NOT_STARTS_WITH = "not_starts_with";
+
+const OP_ENDS_WITH = "ends_with";
+
+const OP_NOT_ENDS_WITH = "not_ends_with";
+
 const OP_NUM_EQUALS = "num_equals";
 
 const OP_NUM_NOT_EQUALS = "num_not_equals";
@@ -98,6 +106,66 @@ class NotContainsOperator extends ConditionOperator {
         }
 
         return variable.indexOf(value) === -1;
+    }
+}
+
+/**
+ * Asserts a variable starts with a value.
+ */
+class StartsWithOperator extends ConditionOperator {
+    id = OP_STARTS_WITH;
+    caption = "starts with";
+
+    /**
+     * @inheritdoc
+     */
+    test(variable, value) {
+        return variable.startsWith(value);
+    }
+}
+
+/**
+ * Asserts a variable does not start with a value.
+ */
+class NotStartsWithOperator extends ConditionOperator {
+    id = OP_NOT_STARTS_WITH;
+    caption = "not starts with";
+
+    /**
+     * @inheritdoc
+     */
+    test(variable, value) {
+        return !variable.startsWith(value);
+    }
+}
+
+/**
+ * Asserts a variable ends with a value.
+ */
+class EndsWithOperator extends ConditionOperator {
+    id = OP_ENDS_WITH;
+    caption = "ends with";
+
+    /**
+     * @inheritdoc
+     */
+    test(variable, value) {
+        return variable.endsWith(value);
+    }
+}
+
+/**
+ * Asserts a variable does not end with a value.
+ */
+class NotEndsWithOperator extends ConditionOperator {
+    id = OP_NOT_ENDS_WITH;
+    caption = "not ends with";
+
+    /**
+     * @inheritdoc
+     */
+    test(variable, value) {
+        return !variable.endsWith(value);
     }
 }
 
@@ -196,6 +264,10 @@ const operatorMap = new Map([
     [ OP_STR_NOT_EQUALS, new StringNotEqualsOperator ],
     [ OP_CONTAINS, new ContainsOperator ],
     [ OP_NOT_CONTAINS, new NotContainsOperator ],
+    [ OP_STARTS_WITH, new StartsWithOperator ],
+    [ OP_NOT_STARTS_WITH, new NotStartsWithOperator ],
+    [ OP_ENDS_WITH, new EndsWithOperator ],
+    [ OP_NOT_ENDS_WITH, new NotEndsWithOperator ],
     [ OP_NUM_EQUALS, new NumberEqualsOperator ],
     [ OP_NUM_NOT_EQUALS, new NumberNotEqualsOperator ],
     [ OP_LT, new LessThanOperator ],
@@ -208,7 +280,11 @@ const defaultStringOperators = [
     operatorMap.get(OP_STR_EQUALS),
     operatorMap.get(OP_STR_NOT_EQUALS),
     operatorMap.get(OP_CONTAINS),
-    operatorMap.get(OP_NOT_CONTAINS)
+    operatorMap.get(OP_NOT_CONTAINS),
+    operatorMap.get(OP_STARTS_WITH),
+    operatorMap.get(OP_NOT_STARTS_WITH),
+    operatorMap.get(OP_ENDS_WITH),
+    operatorMap.get(OP_NOT_ENDS_WITH)
 ];
 
 const defaultNumberOperators = [
@@ -225,6 +301,10 @@ module.exports = {
     OP_STR_NOT_EQUALS,
     OP_CONTAINS,
     OP_NOT_CONTAINS,
+    OP_STARTS_WITH,
+    OP_NOT_STARTS_WITH,
+    OP_ENDS_WITH,
+    OP_NOT_ENDS_WITH,
     OP_NUM_EQUALS,
     OP_NUM_NOT_EQUALS,
     OP_LT,

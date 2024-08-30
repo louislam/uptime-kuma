@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert");
-const { operatorMap, OP_CONTAINS, OP_NOT_CONTAINS, OP_LT, OP_GT, OP_LTE, OP_GTE, OP_STR_EQUALS, OP_STR_NOT_EQUALS, OP_NUM_EQUALS, OP_NUM_NOT_EQUALS } = require("../../../server/monitor-conditions/operators.js");
+const { operatorMap, OP_CONTAINS, OP_NOT_CONTAINS, OP_LT, OP_GT, OP_LTE, OP_GTE, OP_STR_EQUALS, OP_STR_NOT_EQUALS, OP_NUM_EQUALS, OP_NUM_NOT_EQUALS, OP_STARTS_WITH, OP_ENDS_WITH, OP_NOT_STARTS_WITH, OP_NOT_ENDS_WITH } = require("../../../server/monitor-conditions/operators.js");
 
 test("Test StringEqualsOperator", async (t) => {
     const op = operatorMap.get(OP_STR_EQUALS);
@@ -38,6 +38,30 @@ test("Test NotContainsOperator with array", async (t) => {
     const op = operatorMap.get(OP_NOT_CONTAINS);
     assert.strictEqual(true, op.test([ "example.org" ], "example.com"));
     assert.strictEqual(false, op.test([ "example.org" ], "example.org"));
+});
+
+test("Test StartsWithOperator", async (t) => {
+    const op = operatorMap.get(OP_STARTS_WITH);
+    assert.strictEqual(true, op.test("mx1.example.com", "mx1"));
+    assert.strictEqual(false, op.test("mx1.example.com", "mx2"));
+});
+
+test("Test NotStartsWithOperator", async (t) => {
+    const op = operatorMap.get(OP_NOT_STARTS_WITH);
+    assert.strictEqual(true, op.test("mx1.example.com", "mx2"));
+    assert.strictEqual(false, op.test("mx1.example.com", "mx1"));
+});
+
+test("Test EndsWithOperator", async (t) => {
+    const op = operatorMap.get(OP_ENDS_WITH);
+    assert.strictEqual(true, op.test("mx1.example.com", "example.com"));
+    assert.strictEqual(false, op.test("mx1.example.com", "example.net"));
+});
+
+test("Test NotEndsWithOperator", async (t) => {
+    const op = operatorMap.get(OP_NOT_ENDS_WITH);
+    assert.strictEqual(true, op.test("mx1.example.com", "example.net"));
+    assert.strictEqual(false, op.test("mx1.example.com", "example.com"));
 });
 
 test("Test NumberEqualsOperator", async (t) => {
