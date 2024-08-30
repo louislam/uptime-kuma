@@ -23,10 +23,10 @@
             </template>
         </div>
         <div class="monitor-conditions-buttons">
-            <button class="btn btn-outline-secondary btn-sm me-2" type="button" data-testid="add-condition-button" @click="addCondition">
+            <button class="btn btn-outline-secondary me-2" type="button" data-testid="add-condition-button" @click="addCondition">
                 {{ $t("conditionAdd") }}
             </button>
-            <button class="btn btn-outline-secondary btn-sm me-2" type="button" data-testid="add-group-button" @click="addGroup">
+            <button class="btn btn-outline-secondary me-2" type="button" data-testid="add-group-button" @click="addGroup">
                 {{ $t("conditionAddGroup") }}
             </button>
         </div>

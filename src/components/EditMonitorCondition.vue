@@ -2,7 +2,7 @@
     <div class="monitor-condition mb-3" data-testid="condition">
         <button
             v-if="!isInGroup || !isFirst || !isLast"
-            class="btn btn-secondary remove-button"
+            class="btn btn-outline-danger remove-button"
             type="button"
             :aria-label="$t('conditionDelete')"
             data-testid="remove-condition"

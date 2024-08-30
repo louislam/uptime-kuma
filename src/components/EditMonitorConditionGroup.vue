@@ -8,13 +8,6 @@
         </div>
 
         <div class="condition-group-inner mt-2 pa-2">
-            <div class="d-flex mb-3">
-                <button class="btn btn-outline-secondary btn-sm ms-auto" type="button" data-testid="remove-condition-group" @click="remove">
-                    <font-awesome-icon icon="trash" />
-                    {{ $t("conditionDeleteGroup") }}
-                </button>
-            </div>
-
             <div class="condition-group-conditions">
                 <template v-for="(child, childIndex) in model.children" :key="childIndex">
                     <EditMonitorConditionGroup
@@ -39,11 +32,20 @@
             </div>
 
             <div class="condition-group-actions mt-3">
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-testid="add-condition-button" @click="addCondition">
+                <button class="btn btn-outline-secondary me-2" type="button" data-testid="add-condition-button" @click="addCondition">
                     {{ $t("conditionAdd") }}
                 </button>
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-testid="add-group-button" @click="addGroup">
+                <button class="btn btn-outline-secondary me-2" type="button" data-testid="add-group-button" @click="addGroup">
                     {{ $t("conditionAddGroup") }}
+                </button>
+                <button
+                    class="btn btn-outline-danger"
+                    type="button"
+                    :aria-label="$t('conditionDeleteGroup')"
+                    data-testid="remove-condition-group"
+                    @click="remove"
+                >
+                    <font-awesome-icon icon="trash" />
                 </button>
             </div>
         </div>
@@ -163,9 +165,21 @@ export default {
     gap: 10px;
 }
 
+// Delete button
+.condition-group-actions > :last-child {
+    margin-left: auto;
+    margin-top: 14px;
+}
+
 @container (min-width: 400px) {
     .condition-group-actions {
         display: flex;
+    }
+
+    // Delete button
+    .condition-group-actions > :last-child {
+        margin-left: auto;
+        margin-top: 0;
     }
 
     .btn-delete-group {
