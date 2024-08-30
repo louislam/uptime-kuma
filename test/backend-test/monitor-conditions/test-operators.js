@@ -4,22 +4,22 @@ const { operatorMap, OP_CONTAINS, OP_NOT_CONTAINS, OP_LT, OP_GT, OP_LTE, OP_GTE,
 
 test("Test StringEqualsOperator", async (t) => {
     const op = operatorMap.get(OP_STR_EQUALS);
-    assert.strictEqual(true, op.test("foo", "foo"));
-    assert.strictEqual(false, op.test("foo", "bar"));
+    assert.strictEqual(true, op.test("mx1.example.com", "mx1.example.com"));
+    assert.strictEqual(false, op.test("mx1.example.com", "mx1.example.org"));
     assert.strictEqual(false, op.test("1", 1)); // strict equality
 });
 
 test("Test StringNotEqualsOperator", async (t) => {
     const op = operatorMap.get(OP_STR_NOT_EQUALS);
-    assert.strictEqual(true, op.test("foo", "bar"));
-    assert.strictEqual(false, op.test("foo", "foo"));
+    assert.strictEqual(true, op.test("mx1.example.com", "mx1.example.org"));
+    assert.strictEqual(false, op.test("mx1.example.com", "mx1.example.com"));
     assert.strictEqual(true, op.test(1, "1")); // variable is not typecasted (strict equality)
 });
 
 test("Test ContainsOperator with scalar", async (t) => {
     const op = operatorMap.get(OP_CONTAINS);
-    assert.strictEqual(true, op.test("example.org", ".org"));
-    assert.strictEqual(false, op.test("example.org", ".com"));
+    assert.strictEqual(true, op.test("mx1.example.org", "example.org"));
+    assert.strictEqual(false, op.test("mx1.example.org", "example.com"));
 });
 
 test("Test ContainsOperator with array", async (t) => {
