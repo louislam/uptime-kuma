@@ -28,8 +28,8 @@ class DnsMonitorType extends MonitorType {
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
-        let conditionsResult = null;
-        const handleConditions = (data) => conditions ? evaluateExpressionGroup(conditions, data) : null;
+        let conditionsResult = true;
+        const handleConditions = (data) => conditions ? evaluateExpressionGroup(conditions, data) : true;
 
         switch (monitor.dns_resolve_type) {
             case "A":
@@ -76,7 +76,7 @@ class DnsMonitorType extends MonitorType {
         }
 
         heartbeat.msg = dnsMessage;
-        heartbeat.status = conditionsResult !== null ? (conditionsResult ? UP : DOWN) : UP;
+        heartbeat.status = conditionsResult ? UP : DOWN;
     }
 }
 
