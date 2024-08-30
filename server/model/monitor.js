@@ -164,6 +164,7 @@ class Monitor extends BeanModel {
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
+            conditions: JSON.parse(this.conditions),
         };
 
         if (includeSensitiveData) {
