@@ -57,7 +57,7 @@ class ConditionExpressionGroup {
      * @returns {ConditionExpressionGroup|null} A ConditionExpressionGroup with the Monitor's conditions
      */
     static fromMonitor(monitor) {
-        const conditions = monitor.getConditions();
+        const conditions = JSON.parse(monitor.conditions);
         if (conditions.length === 0) {
             return null;
         }

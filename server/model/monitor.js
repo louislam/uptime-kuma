@@ -164,7 +164,7 @@ class Monitor extends BeanModel {
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
-            conditions: this.getConditions(),
+            conditions: JSON.parse(this.conditions),
         };
 
         if (includeSensitiveData) {
@@ -1633,14 +1633,6 @@ class Monitor extends BeanModel {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
             await this.checkCertExpiryNotifications(tlsInfo);
         }
-    }
-
-    /**
-     * Get monitor's conditions. Handles parsing JSON from database.
-     * @returns {Array} Array of conditions
-     */
-    getConditions() {
-        return this.conditions ? JSON.parse(this.conditions) : [];
     }
 }
 

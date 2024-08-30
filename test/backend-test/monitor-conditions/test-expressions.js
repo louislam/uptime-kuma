@@ -4,43 +4,41 @@ const { ConditionExpressionGroup, ConditionExpression } = require("../../../serv
 
 test("Test ConditionExpressionGroup.fromMonitor", async (t) => {
     const monitor = {
-        getConditions() {
-            return [
-                {
-                    "type": "expression",
-                    "andOr": "and",
-                    "operator": "contains",
-                    "value": "foo",
-                    "variable": "record"
-                },
-                {
-                    "type": "group",
-                    "andOr": "and",
-                    "children": [
-                        {
-                            "type": "expression",
-                            "andOr": "and",
-                            "operator": "contains",
-                            "value": "bar",
-                            "variable": "record"
-                        },
-                        {
-                            "type": "group",
-                            "andOr": "and",
-                            "children": [
-                                {
-                                    "type": "expression",
-                                    "andOr": "and",
-                                    "operator": "contains",
-                                    "value": "car",
-                                    "variable": "record"
-                                }
-                            ]
-                        },
-                    ]
-                },
-            ];
-        }
+        conditions: JSON.stringify([
+            {
+                "type": "expression",
+                "andOr": "and",
+                "operator": "contains",
+                "value": "foo",
+                "variable": "record"
+            },
+            {
+                "type": "group",
+                "andOr": "and",
+                "children": [
+                    {
+                        "type": "expression",
+                        "andOr": "and",
+                        "operator": "contains",
+                        "value": "bar",
+                        "variable": "record"
+                    },
+                    {
+                        "type": "group",
+                        "andOr": "and",
+                        "children": [
+                            {
+                                "type": "expression",
+                                "andOr": "and",
+                                "operator": "contains",
+                                "value": "car",
+                                "variable": "record"
+                            }
+                        ]
+                    },
+                ]
+            },
+        ]),
     };
     const root = ConditionExpressionGroup.fromMonitor(monitor);
     assert.strictEqual(true, root.children.length === 2);
