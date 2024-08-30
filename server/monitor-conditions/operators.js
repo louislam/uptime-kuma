@@ -11,13 +11,17 @@ class ConditionOperator {
     }
 }
 
-const OP_EQUALS = "equals";
+const OP_STR_EQUALS = "equals";
 
-const OP_NOT_EQUALS = "not_equals";
+const OP_STR_NOT_EQUALS = "not_equals";
 
 const OP_CONTAINS = "contains";
 
 const OP_NOT_CONTAINS = "not_contains";
+
+const OP_NUM_EQUALS = "num_equals";
+
+const OP_NUM_NOT_EQUALS = "num_not_equals";
 
 const OP_LT = "lt";
 
@@ -30,42 +34,30 @@ const OP_GTE = "gte";
 /**
  * Asserts a variable is equal to a value.
  */
-class EqualsOperator extends ConditionOperator {
-    id = OP_EQUALS;
+class StringEqualsOperator extends ConditionOperator {
+    id = OP_STR_EQUALS;
     caption = "equals";
 
     /**
      * @inheritdoc
      */
     test(variable, value) {
-        /*
-        Condition values are always stored as strings. This operator is used to check
-        equality against variables that may be either a string or a number. Therefore,
-        a loose equality comparison is necessary.
-        */
-        // eslint-disable-next-line eqeqeq
-        return variable == value;
+        return variable === value;
     }
 }
 
 /**
  * Asserts a variable is not equal to a value.
  */
-class NotEqualsOperator extends ConditionOperator {
-    id = OP_NOT_EQUALS;
+class StringNotEqualsOperator extends ConditionOperator {
+    id = OP_STR_NOT_EQUALS;
     caption = "not equals";
 
     /**
      * @inheritdoc
      */
     test(variable, value) {
-        /*
-        Condition values are always stored as strings. This operator is used to check
-        equality against variables that may be either a string or a number. Therefore,
-        a loose equality comparison is necessary.
-        */
-        // eslint-disable-next-line eqeqeq
-        return variable != value;
+        return variable !== value;
     }
 }
 
@@ -106,6 +98,36 @@ class NotContainsOperator extends ConditionOperator {
         }
 
         return variable.indexOf(value) === -1;
+    }
+}
+
+/**
+ * Asserts a numeric variable is equal to a value.
+ */
+class NumberEqualsOperator extends ConditionOperator {
+    id = OP_NUM_EQUALS;
+    caption = "equals";
+
+    /**
+     * @inheritdoc
+     */
+    test(variable, value) {
+        return variable === Number(value);
+    }
+}
+
+/**
+ * Asserts a numeric variable is not equal to a value.
+ */
+class NumberNotEqualsOperator extends ConditionOperator {
+    id = OP_NUM_NOT_EQUALS;
+    caption = "not equals";
+
+    /**
+     * @inheritdoc
+     */
+    test(variable, value) {
+        return variable !== Number(value);
     }
 }
 
@@ -170,10 +192,12 @@ class GreaterThanOrEqualToOperator extends ConditionOperator {
 }
 
 const operatorMap = new Map([
-    [ OP_EQUALS, new EqualsOperator ],
-    [ OP_NOT_EQUALS, new NotEqualsOperator ],
+    [ OP_STR_EQUALS, new StringEqualsOperator ],
+    [ OP_STR_NOT_EQUALS, new StringNotEqualsOperator ],
     [ OP_CONTAINS, new ContainsOperator ],
     [ OP_NOT_CONTAINS, new NotContainsOperator ],
+    [ OP_NUM_EQUALS, new NumberEqualsOperator ],
+    [ OP_NUM_NOT_EQUALS, new NumberNotEqualsOperator ],
     [ OP_LT, new LessThanOperator ],
     [ OP_GT, new GreaterThanOperator ],
     [ OP_LTE, new LessThanOrEqualToOperator ],
@@ -181,14 +205,15 @@ const operatorMap = new Map([
 ]);
 
 const defaultStringOperators = [
-    operatorMap.get(OP_EQUALS),
-    operatorMap.get(OP_NOT_EQUALS),
+    operatorMap.get(OP_STR_EQUALS),
+    operatorMap.get(OP_STR_NOT_EQUALS),
     operatorMap.get(OP_CONTAINS),
     operatorMap.get(OP_NOT_CONTAINS)
 ];
 
 const defaultNumberOperators = [
-    operatorMap.get(OP_EQUALS),
+    operatorMap.get(OP_NUM_EQUALS),
+    operatorMap.get(OP_NUM_NOT_EQUALS),
     operatorMap.get(OP_LT),
     operatorMap.get(OP_GT),
     operatorMap.get(OP_LTE),
@@ -196,10 +221,12 @@ const defaultNumberOperators = [
 ];
 
 module.exports = {
-    OP_EQUALS,
-    OP_NOT_EQUALS,
+    OP_STR_EQUALS,
+    OP_STR_NOT_EQUALS,
     OP_CONTAINS,
     OP_NOT_CONTAINS,
+    OP_NUM_EQUALS,
+    OP_NUM_NOT_EQUALS,
     OP_LT,
     OP_GT,
     OP_LTE,
