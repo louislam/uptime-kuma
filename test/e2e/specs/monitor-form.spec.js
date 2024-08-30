@@ -21,8 +21,7 @@ test.describe("Monitor Form", () => {
 
         // Add Conditions & verify:
         await page.getByTestId("add-condition-button").click();
-        await page.getByTestId("add-condition-button").click();
-        expect(await page.getByTestId("condition").count()).toEqual(2);
+        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 added by default + 1 explicitly added
 
         // Add a Condition Group & verify:
         await page.getByTestId("add-group-button").click();
@@ -64,8 +63,7 @@ test.describe("Monitor Form", () => {
         await resolveTypeSelect.getByRole("option", { name: "NS" }).click();
 
         await page.getByTestId("add-condition-button").click();
-        await page.getByTestId("add-condition-button").click();
-        expect(await page.getByTestId("condition").count()).toEqual(2);
+        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 added by default + 1 explicitly added
         await page.getByTestId("condition-value").nth(0).fill("a.iana-servers.net");
         await page.getByTestId("condition-and-or").nth(0).selectOption("or");
         await page.getByTestId("condition-value").nth(1).fill("b.iana-servers.net");
@@ -98,8 +96,7 @@ test.describe("Monitor Form", () => {
         await resolveTypeSelect.click();
         await resolveTypeSelect.getByRole("option", { name: "NS" }).click();
 
-        await page.getByTestId("add-condition-button").click();
-        expect(await page.getByTestId("condition").count()).toEqual(1);
+        expect(await page.getByTestId("condition").count()).toEqual(1); // 1 added by default
         await page.getByTestId("condition-value").nth(0).fill("definitely-not.net");
         await screenshot(testInfo, page);
 
