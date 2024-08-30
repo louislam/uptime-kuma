@@ -38,6 +38,11 @@ class EqualsOperator extends ConditionOperator {
      * @inheritdoc
      */
     test(variable, value) {
+        /*
+        Condition values are always stored as strings. This operator is used to check
+        equality against variables that may be either a string or a number. Therefore,
+        a loose equality comparison is necessary.
+        */
         // eslint-disable-next-line eqeqeq
         return variable == value;
     }
@@ -54,6 +59,11 @@ class NotEqualsOperator extends ConditionOperator {
      * @inheritdoc
      */
     test(variable, value) {
+        /*
+        Condition values are always stored as strings. This operator is used to check
+        equality against variables that may be either a string or a number. Therefore,
+        a loose equality comparison is necessary.
+        */
         // eslint-disable-next-line eqeqeq
         return variable != value;
     }
