@@ -795,7 +795,6 @@
     "pushoverDesc1": "Nödprioritet (2) har 30 sekunders timeout mellan försök och löper ut efter 1 timme som standard.",
     "octopushTypePremium": "Premium (Snabb - rekommenderas för varningar)",
     "octopushTypeLowCost": "Låg kostnad (långsam - blockeras ibland av operatören)",
-    "jsonQueryDescription": "Gör en json-förfrågan mot svaret och kontrollera det förväntade värdet (returvärde konverteras till en sträng för jämförelse). Se {0} för dokumentation angående frågespråket. En lekplats kan hittas här {1}.",
     "Check octopush prices": "Kontrollera octopush priser {0}.",
     "octopushSMSSender": "SMS avsändarnamn: 3-11 alfanumeriska tecken och mellanslag (a-zA-Z0-9)",
     "LunaSea Device ID": "LunaSea enhetsid",

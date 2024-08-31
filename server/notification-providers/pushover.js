@@ -1,3 +1,6 @@
+const { getMonitorRelativeURL } = require("../../src/util");
+const { setting } = require("../util-server");
+
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
@@ -22,6 +25,12 @@ class Pushover extends NotificationProvider {
             "expire": "3600",
             "html": 1,
         };
+
+        const baseURL = await setting("primaryBaseURL");
+        if (baseURL && monitorJSON) {
+            data["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
+            data["url_title"] = "Link to Monitor";
+        }
 
         if (notification.pushoverdevice) {
             data.device = notification.pushoverdevice;

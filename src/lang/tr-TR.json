@@ -794,7 +794,6 @@
     "webhookBodyPresetOption": "Ön ayar - {0}",
     "webhookBodyCustomOption": "Özel Gövde",
     "Request Body": "İstek Gövdesi",
-    "jsonQueryDescription": "Yanıta karşı bir json sorgusu yapın ve beklenen değeri kontrol edin (Dönüş değeri, karşılaştırma için dizgeye dönüştürülür). Sorgu diliyle ilgili belgeler için {0}'a bakın. Bir oyun alanı {1} bulunabilir.",
     "twilioApiKey": "Api Anahtarı (isteğe bağlı)",
     "Expected Value": "Beklenen Değer",
     "Json Query": "Json Sorgusu",

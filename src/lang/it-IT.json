@@ -620,7 +620,6 @@
     "enableNSCD": "Abilita NSCD (Name Service Cache Daemon) per abilitare la cache su tutte le richieste DNS",
     "recurringIntervalMessage": "Esegui una volta al giorno | Esegui una volta ogni {0} giorni",
     "affectedMonitorsDescription": "Seleziona i monitoraggi che sono influenzati da questa manutenzione",
-    "jsonQueryDescription": "Fai una query JSON verso la risposta e controlla se è presente il valore richiesto. (Il valore di ritorno verrà convertito in stringa ai fini della comparazione). Puoi controllare la documentazione su <a href='https://jsonata.org/'>jsonata.org</a> per conoscere come scrivere una query. Un area dimostrativa può essere trovata <a href='https://try.jsonata.org/'>qui</a>.",
     "For safety, must use secret key": "Per sicurezza, devi usare una chiave segreta",
     "Proxy server has authentication": "Il server Proxy ha una autenticazione",
     "smseaglePriority": "Priorità messaggio (0-9, default = 0)",

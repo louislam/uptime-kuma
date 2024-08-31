@@ -812,7 +812,6 @@
     "Json Query": "Json-Abfrage",
     "filterActive": "Aktiv",
     "filterActivePaused": "Pausiert",
-    "jsonQueryDescription": "Führe eine JSON-Abfrage gegen die Antwort durch und prüfe den erwarteten Wert (der Rückgabewert wird zum Vergleich in eine Zeichenkette umgewandelt). Auf {0} findest du die Dokumentation zur Abfragesprache. {1} kannst du Abfragen üben.",
     "Badge Duration (in hours)": "Abzeichen Dauer (in Stunden)",
     "Badge Preview": "Abzeichen Vorschau",
     "tailscalePingWarning": "Um den Tailscale Ping Monitor nutzen zu können, musst du Uptime Kuma ohne Docker installieren und den Tailscale Client auf dem Server installieren.",

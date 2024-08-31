@@ -682,7 +682,6 @@
     "confirmDisableTwoFAMsg": "An bhfuil tú cinnte gur mhaith leat 2FA a dhíchumasú?",
     "affectedStatusPages": "Taispeáin an teachtaireacht cothabhála seo ar leathanaigh stádais roghnaithe",
     "keywordDescription": "Cuardaigh eochairfhocal i ngnáthfhreagra HTML nó JSON. Tá an cuardach cás-íogair.",
-    "jsonQueryDescription": "Déan Iarratas json in aghaidh an fhreagra agus seiceáil an luach a bhfuiltear ag súil leis (Déanfar an luach fillte a thiontú ina theaghrán le haghaidh comparáide). Seiceáil {0} le haghaidh na gcáipéisí faoin teanga iarratais. Is féidir clós súgartha a aimsiú {1}.",
     "backupDescription": "Is féidir leat gach monatóir agus fógra a chúltaca isteach i gcomhad JSON.",
     "backupDescription2": "Nóta: níl sonraí staire agus imeachta san áireamh.",
     "octopushAPIKey": "\"Eochair API\" ó dhintiúir API HTTP sa phainéal rialaithe",

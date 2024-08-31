@@ -838,7 +838,6 @@
     "emailTemplateHeartbeatJSON": "objek yang menggambarkan heartbeat",
     "emailTemplateMsg": "pesan pemberitahuan",
     "emailCustomBody": "Kustomisasi Body",
-    "jsonQueryDescription": "Lakukan Query json terhadap respons dan periksa nilai yang diharapkan (Nilai yang dikembalikan akan diubah menjadi string untuk perbandingan). Lihat {0} untuk dokumentasi tentang bahasa kueri. Taman bermain dapat ditemukan {1}.",
     "Notify Channel": "Beritahu Saluran",
     "Server URL should not contain the nfty topic": "URL server tidak boleh berisi topik nfty",
     "PushDeer Server": "Server PushDeer",

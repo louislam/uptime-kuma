@@ -797,7 +797,6 @@
     "emailTemplateHeartbeatJSON": "a szívverést leíró objektum",
     "emailTemplateMsg": "az értesítés üzenete",
     "emailTemplateLimitedToUpDownNotification": "csak FEL/LE szívverés esetén érhető el, egyébként null érték",
-    "jsonQueryDescription": "Végezzen JSON-lekérdezést a válasz alapján, és ellenőrizze a várt értéket (a visszatérési értéket a rendszer karakterlánccá alakítja az összehasonlításhoz). Nézze meg a {0} webhelyet a lekérdezés paramétereivel kapcsolatos dokumentációért. A test környezet itt található: {1}.",
     "pushoverMessageTtl": "TTL üzenet (másodperc)",
     "Platform": "Platform",
     "aboutNotifyChannel": "A Csatorna értesítése opció, értesítést fog küldeni a csatorna összes tagjának, függetlenül a tagok elérhetőségétől.",

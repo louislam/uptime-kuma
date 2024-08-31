@@ -797,7 +797,6 @@
     "twilioApiKey": "Clé API (facultatif)",
     "Expected Value": "Valeur attendue",
     "Json Query": "Requête Json",
-    "jsonQueryDescription": "Faites une requête json contre la réponse et vérifiez la valeur attendue (la valeur de retour sera convertie en chaîne pour comparaison). Consultez {0} pour la documentation sur le langage de requête. Une aire de jeux peut être trouvée {1}.",
     "Badge Duration (in hours)": "Durée du badge (en heures)",
     "Badge Preview": "Aperçu du badge",
     "aboutNotifyChannel": "Notifier le canal déclenchera une notification de bureau ou mobile pour tous les membres du canal, que leur disponibilité soit active ou absente.",

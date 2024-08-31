@@ -804,7 +804,6 @@
     "Reconnecting...": "Opnieuw verbinden...",
     "Expected Value": "Verwachte waarde",
     "Json Query": "Json zoekopdracht",
-    "jsonQueryDescription": "Voer een JSON-query uit op de respons en controleer de verwachte waarde (De retourwaarde wordt omgezet naar een string voor vergelijking). Bekijk {0} voor de documentatie over de querytaal. Een speelplaats is beschikbaar {1}.",
     "pushViewCode": "Hoe gebruik je Push monitor?(View Code)",
     "setupDatabaseChooseDatabase": "Welke database wil je gebruiken?",
     "setupDatabaseEmbeddedMariaDB": "Je hoeft niks in te stellen. Dit docker image heeft een ingebouwde en geconfigureerde MariaDB instantie. Uptime Kuma verbindt met deze database via een unix socket.",

@@ -29,6 +29,7 @@ import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
+import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
@@ -62,6 +63,8 @@ import Splunk from "./Splunk.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import Cellsynt from "./Cellsynt.vue";
+import WPush from "./WPush.vue";
+import SIGNL4 from "./SIGNL4.vue";
 
 /**
  * Manage all notification form.
@@ -98,6 +101,7 @@ const NotificationFormList = {
     "ntfy": Ntfy,
     "octopush": Octopush,
     "OneBot": OneBot,
+    "Onesender": Onesender,
     "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
     "FlashDuty": FlashDuty,
@@ -111,6 +115,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     "serwersms": SerwerSMS,
     "signal": Signal,
+    "SIGNL4": SIGNL4,
     "SMSManager": SMSManager,
     "SMSPartner": SMSPartner,
     "slack": Slack,
@@ -132,6 +137,7 @@ const NotificationFormList = {
     "whapi": Whapi,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
+    "WPush": WPush
 };
 
 export default NotificationFormList;

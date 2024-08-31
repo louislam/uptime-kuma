@@ -14,8 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
+exports.evaluateJsonQuery = exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = void 0;
 exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = void 0;
 const dayjs_1 = __importDefault(require("dayjs"));
+const dayjs = require("dayjs");
+const jsonata = require("jsonata");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
 exports.appName = "Uptime Kuma";
@@ -399,3 +402,59 @@ function intHash(str, length = 10) {
     return (hash % length + length) % length;
 }
 exports.intHash = intHash;
+async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue) {
+    let response;
+    try {
+        response = JSON.parse(data);
+    }
+    catch (_a) {
+        response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
+    }
+    try {
+        response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
+        if (response === null || response === undefined) {
+            throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+        if (typeof response === "object" || response instanceof Date || typeof response === "function") {
+            throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
+        }
+        let jsonQueryExpression;
+        switch (jsonPathOperator) {
+            case ">":
+            case ">=":
+            case "<":
+            case "<=":
+                jsonQueryExpression = `$number($.value) ${jsonPathOperator} $number($.expected)`;
+                break;
+            case "!=":
+                jsonQueryExpression = "$.value != $.expected";
+                break;
+            case "==":
+                jsonQueryExpression = "$.value = $.expected";
+                break;
+            case "contains":
+                jsonQueryExpression = "$contains($.value, $.expected)";
+                break;
+            default:
+                throw new Error(`Invalid condition ${jsonPathOperator}`);
+        }
+        const expression = jsonata(jsonQueryExpression);
+        const status = await expression.evaluate({
+            value: response.toString(),
+            expected: expectedValue.toString()
+        });
+        if (status === undefined) {
+            throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
+        }
+        return {
+            status,
+            response
+        };
+    }
+    catch (err) {
+        response = JSON.stringify(response);
+        response = (response && response.length > 50) ? `${response.substring(0, 100)}… (truncated)` : response;
+        throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
+    }
+}
+exports.evaluateJsonQuery = evaluateJsonQuery;

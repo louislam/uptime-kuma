@@ -799,7 +799,6 @@
     "affectedStatusPages": "Prikazuje poruku o održavanju na odabranim statusnim stranicama",
     "atLeastOneMonitor": "Odaberite barem jedan zahvaćeni Monitor",
     "invertKeywordDescription": "Postavi da ključna riječ mora biti odsutna umjesto prisutna.",
-    "jsonQueryDescription": "Izvršite JSON upit nad primljenim odgovorom i provjerite očekivanu povrtanu vrijednost. Ona će se za usporedbu pretvoriti u niz znakova (string). Pogledajte stranicu {0} za dokumentaciju o jeziku upita. Testno okruženje možete pronaći {1}.",
     "Strategy": "Strategija",
     "Free Mobile User Identifier": "Besplatni mobilni korisnički identifikator",
     "Free Mobile API Key": "Besplatni mobilni ključ za API",

@@ -823,7 +823,6 @@
     "Enable Kafka Producer Auto Topic Creation": "Povolit Kafka zprostředkovateli automatické vytváření vláken",
     "Kafka Producer Message": "Zpráva Kafka zprostředkovatele",
     "tailscalePingWarning": "Abyste mohli používat Tailscale Ping monitor, je nutné Uptime Kuma nainstalovat mimo Docker, a dále na váš server nainstalovat Tailscale klienta.",
-    "jsonQueryDescription": "Proveďte JSON dotaz vůči odpovědi a zkontrolujte očekávaný výstup (za účelem porovnání bude návratová hodnota převedena na řetězec). Dokumentaci k dotazovacímu jazyku naleznete na {0}, a využít můžete též {1}.",
     "Select": "Vybrat",
     "selectedMonitorCount": "Vybráno: {0}",
     "Check/Uncheck": "Vybrat/Zrušit výběr",
