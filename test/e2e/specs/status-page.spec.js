@@ -8,11 +8,12 @@ test.describe("Status Page", () => {
     });
 
     test("create and edit", async ({ page }, testInfo) => {
-        await page.goto("./add-status-page");
-        await login(page);
-        await screenshot(testInfo, page);
+        // Monitor
+        const monitorName = "Monitor for Status Page";
+        const tagName = "Client";
+        const tagValue = "Acme Inc";
 
-        const randomSlugAffix = Math.random().toString(36).substring(2, 5); // Allows test to be ran multiple times in Playwright UI
+        // Status Page
         const footerText = "This is footer text.";
         const refreshInterval = 30;
         const theme = "dark";
@@ -23,11 +24,30 @@ test.describe("Status Page", () => {
         const incidentContent = "Sample incident message.";
         const groupName = "Example Group 1";
 
+        // Set up a monitor that can be added to the Status Page
+        await page.goto("./add");
+        await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(monitorName);
+        await page.getByTestId("url-input").fill("https://www.example.com/");
+        await page.getByTestId("add-tag-button").click();
+        await page.getByTestId("tag-name-input").fill(tagName);
+        await page.getByTestId("tag-value-input").fill(tagValue);
+        await page.getByTestId("tag-color-select").click(); // Vue-Multiselect component
+        await page.getByTestId("tag-color-select").getByRole("option", { name: "Orange" }).click();
+        await page.getByTestId("tag-submit-button").click();
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
+
         // Create a new status page
+        await page.goto("./add-status-page");
+        await screenshot(testInfo, page);
+
         await page.getByTestId("name-input").fill("Example");
-        await page.getByTestId("slug-input").fill(`example-${randomSlugAffix}`);
+        await page.getByTestId("slug-input").fill("example");
         await page.getByTestId("submit-button").click();
-        await page.waitForURL(`/status/example-${randomSlugAffix}?edit`); // wait for the page to be created
+        await page.waitForURL("/status/example?edit"); // wait for the page to be created
 
         // Fill in some details
         await page.getByTestId("description-input").fill(descriptionText);
@@ -53,6 +73,12 @@ test.describe("Status Page", () => {
         await page.getByTestId("add-group-button").click();
         await page.getByTestId("group-name").isEditable();
         await page.getByTestId("group-name").fill(groupName);
+
+        // Add the monitor
+        await page.getByTestId("monitor-select").click(); // Vue-Multiselect component
+        await page.getByTestId("monitor-select").getByRole("option", { name: monitorName }).click();
+        await expect(page.getByTestId("monitor")).toHaveCount(1);
+        await expect(page.getByTestId("monitor-name")).toContainText(monitorName);
 
         // Save the changes
         await screenshot(testInfo, page);
@@ -81,18 +107,23 @@ test.describe("Status Page", () => {
 
         await screenshot(testInfo, page);
 
-        // Flip the "Show Powered By" switch:
+        // Flip the "Show Tags" and "Show Powered By" switches:
         await page.getByTestId("edit-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(1);
+        await page.getByTestId("show-tags-checkbox").setChecked(true);
         await page.getByTestId("show-powered-by-checkbox").setChecked(true);
+
+        await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
+
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
-        await expect(page.getByTestId("powered-by")).toHaveCount(1);
+        await expect(page.getByTestId("powered-by")).toContainText("Powered by");
+        await expect(page.getByTestId("monitor-tag")).toContainText(tagValue);
+
+        await screenshot(testInfo, page);
     });
 
-    // @todo Test tags
     // @todo Test certificate expiry
     // @todo Test domain names
-    // @todo Test monitors
 
 });

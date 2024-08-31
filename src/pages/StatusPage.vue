@@ -307,6 +307,7 @@
                             label="name"
                             trackBy="name"
                             class="mt-3"
+                            data-testid="monitor-select"
                         >
                             <template #option="{ option }">
                                 <div class="d-inline-flex">
