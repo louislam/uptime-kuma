@@ -11,6 +11,17 @@ const DEFAULT_KEEP_PERIOD = 180;
  */
 
 const clearOldData = async () => {
+
+    /*
+    * TODO:
+    * Since we have aggregated table now, we don't need so much data in heartbeat table.
+    * But we still need to keep the important rows, because they contain the message.
+    *
+    * In the heartbeat table:
+    *    - important rows: keep according to the setting (keepDataPeriodDays) (default 180 days)
+    *    - not important rows: keep 2 days
+    */
+
     let period = await setting("keepDataPeriodDays");
 
     // Set Default Period

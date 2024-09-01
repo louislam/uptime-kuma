@@ -711,6 +711,15 @@ class Database {
         }
     }
 
+    /**
+     * TODO: Migrate the old data in the heartbeat table to the new format (stat_daily, stat_hourly, stat_minutely)
+     * It should be run once while upgrading V1 to V2
+     * @returns {Promise<void>}
+     */
+    static async migrateAggregateTable() {
+
+    }
+
 }
 
 module.exports = Database;
