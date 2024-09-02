@@ -17,7 +17,6 @@ README.md
 .vscode
 .eslint*
 .stylelint*
-/.devcontainer
 /.github
 yarn.lock
 app.json
