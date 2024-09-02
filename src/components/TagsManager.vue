@@ -14,6 +14,7 @@
                 type="button"
                 class="btn btn-outline-secondary btn-add"
                 :disabled="processing"
+                data-testid="add-tag-button"
                 @click.stop="showAddDialog"
             >
                 <font-awesome-icon class="me-1" icon="plus" /> {{ $t("Add") }}
@@ -59,6 +60,7 @@
                                     v-model="newDraftTag.name" class="form-control"
                                     :class="{'is-invalid': validateDraftTag.nameInvalid}"
                                     :placeholder="$t('Name')"
+                                    data-testid="tag-name-input"
                                     @keydown.enter.prevent="onEnter"
                                 />
                                 <div class="invalid-feedback">
@@ -76,6 +78,7 @@
                                     label="name"
                                     select-label=""
                                     deselect-label=""
+                                    data-testid="tag-color-select"
                                 >
                                     <template #option="{ option }">
                                         <div
@@ -103,6 +106,7 @@
                                 v-model="newDraftTag.value" class="form-control"
                                 :class="{'is-invalid': validateDraftTag.valueInvalid}"
                                 :placeholder="$t('value (optional)')"
+                                data-testid="tag-value-input"
                                 @keydown.enter.prevent="onEnter"
                             />
                             <div class="invalid-feedback">
@@ -114,6 +118,7 @@
                                 type="button"
                                 class="btn btn-secondary float-end"
                                 :disabled="processing || validateDraftTag.invalid"
+                                data-testid="tag-submit-button"
                                 @click.stop="addDraftTag"
                             >
                                 {{ $t("Add") }}

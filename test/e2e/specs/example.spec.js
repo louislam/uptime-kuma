@@ -13,25 +13,26 @@ test.describe("Example Spec", () => {
         await screenshot(testInfo, page);
     });
 
-    test("change display timezone", async ({ page }, testInfo) => {
-        await page.goto("./settings/general");
+    test("set up monitor", async ({ page }, testInfo) => {
+        await page.goto("./add");
         await login(page);
-        await page.getByLabel("Display Timezone").selectOption("Pacific/Fiji");
-        await page.getByRole("button", { name: "Save" }).click();
-        await screenshot(testInfo, page);
 
-        await page.goto("./dashboard");
-        await page.goto("./settings/general");
-        await expect(page.getByLabel("Display Timezone")).toHaveValue("Pacific/Fiji");
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill("example.com");
+        await page.getByTestId("url-input").fill("https://www.example.com/");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
+
+        await expect(page.getByTestId("monitor-list")).toContainText("example.com");
+        await screenshot(testInfo, page);
     });
 
     test("database is reset after previous test", async ({ page }, testInfo) => {
-        await page.goto("./settings/general");
+        await page.goto("./dashboard");
         await login(page);
 
-        const timezoneEl = page.getByLabel("Display Timezone");
-        await expect(timezoneEl).toBeVisible();
-        await expect(timezoneEl).toHaveValue("auto");
+        await expect(page.getByTestId("monitor-list")).not.toContainText("example.com");
         await screenshot(testInfo, page);
     });
 

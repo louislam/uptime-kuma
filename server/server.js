@@ -132,7 +132,7 @@ const twoFAVerifyOptions = {
 const testMode = !!args["test"] || false;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList, sendMonitorTypeList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const { databaseSocketHandler } = require("./socket-handlers/database-socket-handler");
 const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
@@ -716,6 +716,8 @@ let needSetup = false;
                 monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
                 monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
 
+                monitor.conditions = JSON.stringify(monitor.conditions);
+
                 bean.import(monitor);
                 bean.user_id = socket.userID;
 
@@ -866,6 +868,7 @@ let needSetup = false;
                 bean.snmpOid = monitor.snmpOid;
                 bean.jsonPathOperator = monitor.jsonPathOperator;
                 bean.timeout = monitor.timeout;
+                bean.conditions = JSON.stringify(monitor.conditions);
 
                 bean.validate();
 
@@ -1671,6 +1674,7 @@ async function afterLogin(socket, user) {
         sendDockerHostList(socket),
         sendAPIKeyList(socket),
         sendRemoteBrowserList(socket),
+        sendMonitorTypeList(socket),
     ]);
 
     await StatusPage.sendStatusPageList(io, socket);
