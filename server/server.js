@@ -1646,10 +1646,8 @@ async function afterLogin(socket, user) {
 
     await StatusPage.sendStatusPageList(io, socket);
 
-    // Create an array to store the combined promises for both sendHeartbeatList and sendStats
     const monitorPromises = [];
     for (let monitorID in monitorList.list) {
-        // Combine both sendHeartbeatList and sendStats for each monitor into a single Promise
         monitorPromises.push(
             Promise.all([
                 sendHeartbeatList(socket, monitorID),
@@ -1658,7 +1656,6 @@ async function afterLogin(socket, user) {
         );
     }
 
-    // Await all combined promises
     await Promise.all(monitorPromises);
 
     // Set server timezone from client browser if not set

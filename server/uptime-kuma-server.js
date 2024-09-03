@@ -227,11 +227,9 @@ class UptimeKumaServer {
     async getMonitorJSONList(userID, monitorID = null) {
         let result = {};
 
-        // Initialize query and parameters
         let query = " user_id = ? ";
         let queryParams = [ userID ];
 
-        // Add condition for monitorID if provided
         if (monitorID) {
             query += "AND id = ? ";
             queryParams.push(monitorID);
@@ -239,24 +237,19 @@ class UptimeKumaServer {
 
         let monitorList = await R.find("monitor", query + "ORDER BY weight DESC, name", queryParams);
 
-        // Collect monitor IDs
-        // Create monitorData with id, active
         const monitorData = monitorList.map(monitor => ({
             id: monitor.id,
             active: monitor.active,
         }));
         const preloadData = await Monitor.preparePreloadData(monitorData);
 
-        // Create an array of promises to convert each monitor to JSON in parallel
         const monitorPromises = monitorList.map(monitor => monitor.toJSON(preloadData).then(json => {
             return { id: monitor.id,
                 json
             };
         }));
-        // Wait for all promises to resolve
         const monitors = await Promise.all(monitorPromises);
 
-        // Populate the result object with monitor IDs as keys, JSON objects as values
         monitors.forEach(monitor => {
             result[monitor.id] = monitor.json;
         });
