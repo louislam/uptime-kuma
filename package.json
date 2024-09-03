@@ -94,6 +94,7 @@
         "express": "~4.19.2",
         "express-basic-auth": "~1.2.1",
         "express-static-gzip": "~2.1.7",
+        "feed": "^4.2.2",
         "form-data": "~4.0.0",
         "gamedig": "^4.2.0",
         "html-escaper": "^3.0.3",
