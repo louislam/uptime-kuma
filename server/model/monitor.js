@@ -1523,11 +1523,11 @@ class Monitor extends BeanModel {
     static async preparePreloadData(monitorData) {
         const monitorIDs = monitorData.map(monitor => monitor.id);
         const notifications = await Monitor.getMonitorNotification(monitorIDs);
-        const tags = await  Monitor.getMonitorTag(monitorIDs);
-        const maintenanceStatuses = await  Promise.all(monitorData.map(monitor => Monitor.isUnderMaintenance(monitor.id)));
-        const childrenIDs = await  Promise.all(monitorData.map(monitor => Monitor.getAllChildrenIDs(monitor.id)));
-        const activeStatuses = await  Promise.all(monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active)));
-        const forceInactiveStatuses = await  Promise.all(monitorData.map(monitor => Monitor.isParentActive(monitor.id)));
+        const tags = await Monitor.getMonitorTag(monitorIDs);
+        const maintenanceStatuses = await Promise.all(monitorData.map(monitor => Monitor.isUnderMaintenance(monitor.id)));
+        const childrenIDs = await Promise.all(monitorData.map(monitor => Monitor.getAllChildrenIDs(monitor.id)));
+        const activeStatuses = await Promise.all(monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active)));
+        const forceInactiveStatuses = await Promise.all(monitorData.map(monitor => Monitor.isParentActive(monitor.id)));
 
         const notificationsMap = new Map();
         notifications.forEach(row => {
@@ -1542,7 +1542,10 @@ class Monitor extends BeanModel {
             if (!tagsMap.has(row.monitor_id)) {
                 tagsMap.set(row.monitor_id, []);
             }
-            tagsMap.get(row.monitor_id).push({ name: row.name, color: row.color });
+            tagsMap.get(row.monitor_id).push({
+                name: row.name,
+                color: row.color
+            });
         });
 
         const maintenanceStatusMap = new Map();
