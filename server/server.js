@@ -1648,12 +1648,8 @@ async function afterLogin(socket, user) {
 
     const monitorPromises = [];
     for (let monitorID in monitorList.list) {
-        monitorPromises.push(
-            Promise.all([
-                sendHeartbeatList(socket, monitorID),
-                Monitor.sendStats(io, monitorID, user.id)
-            ])
-        );
+        monitorPromises.push(sendHeartbeatList(socket, monitorID));
+        monitorPromises.push(Monitor.sendStats(io, monitorID, user.id));
     }
 
     await Promise.all(monitorPromises);
