@@ -78,8 +78,8 @@ class Monitor extends BeanModel {
      */
     async toJSON(preloadData = {}, includeSensitiveData = true) {
 
-        const tags = preloadData.tags[this.id] || [];
-        const notificationIDList = preloadData.notifications[this.id] || {};
+        const tags = preloadData.tags.get(this.id) || [];
+        const notificationIDList = preloadData.notifications.get(this.id) || new Map();
 
         let screenshot = null;
 
@@ -97,15 +97,15 @@ class Monitor extends BeanModel {
             path,
             pathName,
             parent: this.parent,
-            childrenIDs: preloadData.childrenIDs[this.id] || [],
+            childrenIDs: preloadData.childrenIDs.get(this.id) || [],
             url: this.url,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
             weight: this.weight,
-            active: preloadData.activeStatus[this.id],
-            forceInactive: preloadData.forceInactive[this.id],
+            active: preloadData.activeStatus.get(this.id),
+            forceInactive: preloadData.forceInactive.get(this.id),
             type: this.type,
             timeout: this.timeout,
             interval: this.interval,
@@ -127,7 +127,7 @@ class Monitor extends BeanModel {
             proxyId: this.proxy_id,
             notificationIDList,
             tags,
-            maintenance: preloadData.maintenanceStatus[this.id],
+            maintenance: preloadData.maintenanceStatus.get(this.id),
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
             mqttCheckType: this.mqttCheckType,
@@ -1523,40 +1523,56 @@ class Monitor extends BeanModel {
     static async preparePreloadData(monitorData) {
         const monitorIDs = monitorData.map(monitor => monitor.id);
         const notifications = await Monitor.getMonitorNotification(monitorIDs);
-        const tags = await Monitor.getMonitorTag(monitorIDs);
-        const maintenanceStatuses = await Promise.all(
-            monitorData.map(monitor => Monitor.isUnderMaintenance(monitor.id))
-        );
-        const childrenIDs = await Promise.all(
-            monitorData.map(monitor => Monitor.getAllChildrenIDs(monitor.id))
-        );
-        const activeStatuses = await Promise.all(
-            monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active))
-        );
-        const forceInactiveStatuses = await Promise.all(
-            monitorData.map(monitor => Monitor.isParentActive(monitor.id))
-        );
+        const tags = await  Monitor.getMonitorTag(monitorIDs);
+        const maintenanceStatuses = await  Promise.all(monitorData.map(monitor => Monitor.isUnderMaintenance(monitor.id)));
+        const childrenIDs = await  Promise.all(monitorData.map(monitor => Monitor.getAllChildrenIDs(monitor.id)));
+        const activeStatuses = await  Promise.all(monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active)));
+        const forceInactiveStatuses = await  Promise.all(monitorData.map(monitor => Monitor.isParentActive(monitor.id)));
 
-        // Organize preloaded data for efficient access
+        const notificationsMap = new Map();
+        notifications.forEach(row => {
+            if (!notificationsMap.has(row.monitor_id)) {
+                notificationsMap.set(row.monitor_id, new Map());
+            }
+            notificationsMap.get(row.monitor_id).set(row.notification_id, true);
+        });
+
+        const tagsMap = new Map();
+        tags.forEach(row => {
+            if (!tagsMap.has(row.monitor_id)) {
+                tagsMap.set(row.monitor_id, []);
+            }
+            tagsMap.get(row.monitor_id).push({ name: row.name, color: row.color });
+        });
+
+        const maintenanceStatusMap = new Map();
+        monitorData.forEach((monitor, index) => {
+            maintenanceStatusMap.set(monitor.id, maintenanceStatuses[index]);
+        });
+
+        const childrenIDsMap = new Map();
+        monitorData.forEach((monitor, index) => {
+            childrenIDsMap.set(monitor.id, childrenIDs[index]);
+        });
+
+        const activeStatusMap = new Map();
+        monitorData.forEach((monitor, index) => {
+            activeStatusMap.set(monitor.id, activeStatuses[index]);
+        });
+
+        const forceInactiveMap = new Map();
+        monitorData.forEach((monitor, index) => {
+            forceInactiveMap.set(monitor.id, !forceInactiveStatuses[index]);
+        });
+
         return {
-            notifications: notifications.reduce((acc, row) => {
-                acc[row.monitor_id] = acc[row.monitor_id] || {};
-                acc[row.monitor_id][row.notification_id] = true;
-                return acc;
-            }, {}),
-            tags: tags.reduce((acc, row) => {
-                acc[row.monitor_id] = acc[row.monitor_id] || [];
-                acc[row.monitor_id].push({ name: row.name,
-                    color: row.color
-                });
-                return acc;
-            }, {}),
-            maintenanceStatus: Object.fromEntries(monitorData.map((m, index) => [ m.id, maintenanceStatuses[index] ])),
-            childrenIDs: Object.fromEntries(monitorData.map((m, index) => [ m.id, childrenIDs[index] ])),
-            activeStatus: Object.fromEntries(monitorData.map((m, index) => [ m.id, activeStatuses[index] ])),
-            forceInactive: Object.fromEntries(monitorData.map((m, index) => [ m.id, !forceInactiveStatuses[index] ])),
+            notifications: notificationsMap,
+            tags: tagsMap,
+            maintenanceStatus: maintenanceStatusMap,
+            childrenIDs: childrenIDsMap,
+            activeStatus: activeStatusMap,
+            forceInactive: forceInactiveMap,
         };
-
     }
 
     /**
