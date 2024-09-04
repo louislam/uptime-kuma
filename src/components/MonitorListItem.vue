@@ -43,12 +43,15 @@
             <div v-if="!isCollapsed" class="childs">
                 <MonitorListItem
                     v-for="(item, index) in sortedChildMonitorList"
-                    :key="index" :monitor="item"
+                    :key="index"
+                    :monitor="item"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"
                     :select="select"
                     :deselect="deselect"
                     :depth="depth + 1"
+                    :filter-func="filterFunc"
+                    :sort-func="sortFunc"
                 />
             </div>
         </transition>
