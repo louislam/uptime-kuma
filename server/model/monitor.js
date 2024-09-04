@@ -76,7 +76,7 @@ class Monitor extends BeanModel {
      * JSON
      * @returns {Promise<object>} Object ready to parse
      */
-    async toJSON(preloadData = {}, includeSensitiveData = true) {
+    toJSON(preloadData = {}, includeSensitiveData = true) {
 
         const tags = preloadData.tags.get(this.id) || [];
         const notificationIDList = preloadData.notifications.get(this.id) || new Map();
@@ -87,7 +87,7 @@ class Monitor extends BeanModel {
             screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
         }
 
-        const path = await this.getPath();
+        const path = preloadData.paths.get(this.id) || [];
         const pathName = path.join(" / ");
 
         let data = {
@@ -1322,7 +1322,7 @@ class Monitor extends BeanModel {
                     heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(preloadData, false), heartbeatJSON);
+                    await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1521,52 +1521,62 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>>} object
      */
     static async preparePreloadData(monitorData) {
-        const monitorIDs = monitorData.map(monitor => monitor.id);
-        const notifications = await Monitor.getMonitorNotification(monitorIDs);
-        const tags = await Monitor.getMonitorTag(monitorIDs);
-        const maintenanceStatuses = await Promise.all(monitorData.map(monitor => Monitor.isUnderMaintenance(monitor.id)));
-        const childrenIDs = await Promise.all(monitorData.map(monitor => Monitor.getAllChildrenIDs(monitor.id)));
-        const activeStatuses = await Promise.all(monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active)));
-        const forceInactiveStatuses = await Promise.all(monitorData.map(monitor => Monitor.isParentActive(monitor.id)));
 
         const notificationsMap = new Map();
-        notifications.forEach(row => {
-            if (!notificationsMap.has(row.monitor_id)) {
-                notificationsMap.set(row.monitor_id, new Map());
-            }
-            notificationsMap.get(row.monitor_id).set(row.notification_id, true);
-        });
-
         const tagsMap = new Map();
-        tags.forEach(row => {
-            if (!tagsMap.has(row.monitor_id)) {
-                tagsMap.set(row.monitor_id, []);
-            }
-            tagsMap.get(row.monitor_id).push({
-                name: row.name,
-                color: row.color
-            });
-        });
-
         const maintenanceStatusMap = new Map();
-        monitorData.forEach((monitor, index) => {
-            maintenanceStatusMap.set(monitor.id, maintenanceStatuses[index]);
-        });
-
         const childrenIDsMap = new Map();
-        monitorData.forEach((monitor, index) => {
-            childrenIDsMap.set(monitor.id, childrenIDs[index]);
-        });
-
         const activeStatusMap = new Map();
-        monitorData.forEach((monitor, index) => {
-            activeStatusMap.set(monitor.id, activeStatuses[index]);
-        });
-
         const forceInactiveMap = new Map();
-        monitorData.forEach((monitor, index) => {
-            forceInactiveMap.set(monitor.id, !forceInactiveStatuses[index]);
-        });
+        const pathsMap = new Map();
+
+        if (monitorData.length > 0) {
+            const monitorIDs = monitorData.map(monitor => monitor.id);
+            const notifications = await Monitor.getMonitorNotification(monitorIDs);
+            const tags = await Monitor.getMonitorTag(monitorIDs);
+            const maintenanceStatuses = await Promise.all(monitorData.map(monitor => Monitor.isUnderMaintenance(monitor.id)));
+            const childrenIDs = await Promise.all(monitorData.map(monitor => Monitor.getAllChildrenIDs(monitor.id)));
+            const activeStatuses = await Promise.all(monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active)));
+            const forceInactiveStatuses = await Promise.all(monitorData.map(monitor => Monitor.isParentActive(monitor.id)));
+            const paths = await Promise.all(monitorData.map(monitor => Monitor.getAllPath(monitor.id, monitor.name)));
+
+            notifications.forEach(row => {
+                if (!notificationsMap.has(row.monitor_id)) {
+                    notificationsMap.set(row.monitor_id, new Map());
+                }
+                notificationsMap.get(row.monitor_id).set(row.notification_id, true);
+            });
+
+            tags.forEach(row => {
+                if (!tagsMap.has(row.monitor_id)) {
+                    tagsMap.set(row.monitor_id, []);
+                }
+                tagsMap.get(row.monitor_id).push({
+                    name: row.name,
+                    color: row.color
+                });
+            });
+
+            monitorData.forEach((monitor, index) => {
+                maintenanceStatusMap.set(monitor.id, maintenanceStatuses[index]);
+            });
+
+            monitorData.forEach((monitor, index) => {
+                childrenIDsMap.set(monitor.id, childrenIDs[index]);
+            });
+
+            monitorData.forEach((monitor, index) => {
+                activeStatusMap.set(monitor.id, activeStatuses[index]);
+            });
+
+            monitorData.forEach((monitor, index) => {
+                forceInactiveMap.set(monitor.id, !forceInactiveStatuses[index]);
+            });
+
+            monitorData.forEach((monitor, index) => {
+                pathsMap.set(monitor.id, paths[index]);
+            });
+        }
 
         return {
             notifications: notificationsMap,
@@ -1575,6 +1585,7 @@ class Monitor extends BeanModel {
             childrenIDs: childrenIDsMap,
             activeStatus: activeStatusMap,
             forceInactive: forceInactiveMap,
+            paths: pathsMap,
         };
     }
 
@@ -1610,16 +1621,18 @@ class Monitor extends BeanModel {
 
     /**
      * Gets the full path
+     * @param {number} monitorID ID of the monitor to get
+     * @param {string} name of the monitor to get
      * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
-    async getPath() {
-        const path = [ this.name ];
+    static async getAllPath(monitorID, name) {
+        const path = [ name ];
 
         if (this.parent === null) {
             return path;
         }
 
-        let parent = await Monitor.getParent(this.id);
+        let parent = await Monitor.getParent(monitorID);
         while (parent !== null) {
             path.unshift(parent.name);
             parent = await Monitor.getParent(parent.id);

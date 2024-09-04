@@ -900,7 +900,7 @@ let needSetup = false;
                 const preloadData = await Monitor.preparePreloadData(monitorData);
                 callback({
                     ok: true,
-                    monitor: await monitor.toJSON(preloadData),
+                    monitor: monitor.toJSON(preloadData),
                 });
 
             } catch (e) {

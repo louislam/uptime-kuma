@@ -240,14 +240,16 @@ class UptimeKumaServer {
         const monitorData = monitorList.map(monitor => ({
             id: monitor.id,
             active: monitor.active,
+            name: monitor.name,
         }));
         const preloadData = await Monitor.preparePreloadData(monitorData);
 
-        const monitorPromises = monitorList.map(monitor => monitor.toJSON(preloadData).then(json => {
+        const monitorPromises = monitorList.map(monitor => {
+            const json = monitor.toJSON(preloadData);
             return { id: monitor.id,
                 json
             };
-        }));
+        });
         const monitors = await Promise.all(monitorPromises);
 
         monitors.forEach(monitor => {
