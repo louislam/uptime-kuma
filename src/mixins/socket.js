@@ -288,9 +288,10 @@ export default {
         /**
          * parse all urls from list.
          * @param {object} data Monitor data to modify
+         * @returns {object} list
          */
         assignMonitorUrlParser(data) {
-            Object.entries(data).forEach(([monitorID, monitor]) => {
+            Object.entries(data).forEach(([ monitorID, monitor ]) => {
                 monitor.getUrl = () => {
                     try {
                         return new URL(monitor.url);
@@ -299,6 +300,7 @@ export default {
                     }
                 };
             });
+            return data;
         },
         /**
          * update into existing list

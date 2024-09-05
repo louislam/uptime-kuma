@@ -221,9 +221,11 @@ class UptimeKumaServer {
      * Delete Monitor from list
      * @param {Socket} socket Socket to send list on
      * @param {number} monitorID update or deleted monitor id
+     * @returns {number} deletion monitor id
      */
     async sendDeleteMonitorFromList(socket, monitorID) {
         this.io.to(socket.userID).emit("deleteMonitorFromList", monitorID);
+        return monitorID;
     }
 
     /**
