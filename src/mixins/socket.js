@@ -5,7 +5,7 @@ import Favico from "favico.js";
 import dayjs from "dayjs";
 import mitt from "mitt";
 
-import { DOWN, MAINTENANCE, PENDING, UP, OPERATIONS } from "../util.ts";
+import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
 import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
 const toast = useToast();
 
@@ -140,26 +140,18 @@ export default {
             });
 
             socket.on("monitorList", (data) => {
-                // Add Helper function
-                Object.entries(data.list).forEach(([ monitorID, monitor ]) => {
-                    monitor.getUrl = () => {
-                        try {
-                            return new URL(monitor.url);
-                        } catch (_) {
-                            return null;
-                        }
-                    };
-                });
+                this.assignMonitorUrlParser(data);
+                console.log(data);
+                this.monitorList = data;
+            });
 
-                if (data.op === OPERATIONS.ADD) {
-                    this.monitorList = this.updateMonitorList(data.list);
-                } else if (data.op === OPERATIONS.UPDATE) {
-                    this.monitorList = this.updateMonitorList(data.list);
-                } else if (data.op === OPERATIONS.DELETE) {
-                    this.monitorList = this.deleteMonitorList(data.monitorID);
-                } else {
-                    this.monitorList = data.list;
-                }
+            socket.on("updateMonitorIntoList", (data) => {
+                this.assignMonitorUrlParser(data);
+                this.monitorList = this.updateMonitorList(data);
+            });
+
+            socket.on("deleteMonitorFromList", (monitorID) => {
+                this.monitorList = this.deleteMonitorList(monitorID);
             });
 
             socket.on("maintenanceList", (data) => {
@@ -293,7 +285,21 @@ export default {
                 location.reload();
             });
         },
-
+        /**
+         * parse all urls from list.
+         * @param {object} data Monitor data to modify
+         */
+        assignMonitorUrlParser(data) {
+            Object.entries(data).forEach(([monitorID, monitor]) => {
+                monitor.getUrl = () => {
+                    try {
+                        return new URL(monitor.url);
+                    } catch (_) {
+                        return null;
+                    }
+                };
+            });
+        },
         /**
          * update into existing list
          * @param {object} list add, updated, pause & resume list

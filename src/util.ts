@@ -75,13 +75,6 @@ export const CONSOLE_STYLE_BgCyan = "\x1b[46m";
 export const CONSOLE_STYLE_BgWhite = "\x1b[47m";
 export const CONSOLE_STYLE_BgGray = "\x1b[100m";
 
-export const OPERATIONS = {
-    LIST: "list",
-    ADD: "add",
-    UPDATE: "update",
-    DELETE: "delete",
-};
-
 const consoleModuleColors = [
     CONSOLE_STYLE_FgCyan,
     CONSOLE_STYLE_FgGreen,

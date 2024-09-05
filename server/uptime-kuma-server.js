@@ -4,7 +4,7 @@ const fs = require("fs");
 const http = require("http");
 const { Server } = require("socket.io");
 const { R } = require("redbean-node");
-const { log, isDev, OPERATIONS } = require("../src/util");
+const { log, isDev } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
 const { Settings } = require("./settings");
@@ -197,23 +197,33 @@ class UptimeKumaServer {
     /**
      * Send list of monitors to client
      * @param {Socket} socket Socket to send list on
-     * @param {string} op list, add, update, delete
+     * @returns {Promise<object>} List of monitors
+     */
+    async sendMonitorList(socket) {
+        let list = await this.getMonitorJSONList(socket.userID);
+        this.io.to(socket.userID).emit("monitorList", list);
+        return list;
+    }
+
+    /**
+     * Update Monitor into list
+     * @param {Socket} socket Socket to send list on
      * @param {number} monitorID update or deleted monitor id
      * @returns {Promise<object>} List of monitors
      */
-    async sendMonitorList(socket, op = OPERATIONS.LIST, monitorID = null) {
-        let result = {};
-        let list = {};
+    async sendUpdateMonitorIntoList(socket, monitorID) {
+        let list = await this.getMonitorJSONList(socket.userID, monitorID);
+        this.io.to(socket.userID).emit("updateMonitorIntoList", list);
+        return list;
+    }
 
-        if (op !== OPERATIONS.DELETE) {
-            list = await this.getMonitorJSONList(socket.userID, monitorID);
-        }
-
-        result["op"] = op;
-        result["monitorID"] = monitorID;
-        result["list"] = list;
-        this.io.to(socket.userID).emit("monitorList", result);
-        return result;
+    /**
+     * Delete Monitor from list
+     * @param {Socket} socket Socket to send list on
+     * @param {number} monitorID update or deleted monitor id
+     */
+    async sendDeleteMonitorFromList(socket, monitorID) {
+        this.io.to(socket.userID).emit("deleteMonitorFromList", monitorID);
     }
 
     /**

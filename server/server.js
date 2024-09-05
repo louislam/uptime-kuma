@@ -37,7 +37,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, isDev, OPERATIONS } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
 const config = require("./config");
 
 log.debug("server", "Arguments");
@@ -695,7 +695,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await server.sendMonitorList(socket, OPERATIONS.ADD, bean.id);
+                await server.sendUpdateMonitorIntoList(socket, bean.id);
 
                 if (monitor.active !== false) {
                     await startMonitor(socket.userID, bean.id);
@@ -850,7 +850,7 @@ let needSetup = false;
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await server.sendMonitorList(socket, OPERATIONS.UPDATE, bean.id);
+                await server.sendUpdateMonitorIntoList(socket, bean.id);
 
                 callback({
                     ok: true,
@@ -951,7 +951,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await server.sendMonitorList(socket, OPERATIONS.UPDATE, monitorID);
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
                     ok: true,
@@ -971,7 +971,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await server.sendMonitorList(socket, OPERATIONS.UPDATE, monitorID);
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
                     ok: true,
@@ -1017,7 +1017,7 @@ let needSetup = false;
                     msg: "successDeleted",
                     msgi18n: true,
                 });
-                await server.sendMonitorList(socket, OPERATIONS.DELETE, monitorID);
+                await server.sendDeleteMonitorFromList(socket, monitorID);
 
             } catch (e) {
                 callback({
@@ -1647,7 +1647,7 @@ async function afterLogin(socket, user) {
     await StatusPage.sendStatusPageList(io, socket);
 
     const monitorPromises = [];
-    for (let monitorID in monitorList.list) {
+    for (let monitorID in monitorList) {
         monitorPromises.push(sendHeartbeatList(socket, monitorID));
         monitorPromises.push(Monitor.sendStats(io, monitorID, user.id));
     }
