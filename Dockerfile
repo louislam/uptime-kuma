@@ -6,8 +6,11 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 COPY .npmrc .npmrc
 COPY package.json package.json
 COPY package-lock.json package-lock.json
-RUN npm ci --omit=dev
+RUN npm ci
 COPY . .
+
+RUN npm run build
+
 COPY --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
 
 FROM louislam/uptime-kuma:base-debian AS release
