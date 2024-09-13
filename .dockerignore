@@ -1,7 +1,6 @@
 /.idea
 /node_modules
 /data*
-/cypress
 /out
 /test
 /kubernetes
@@ -18,7 +17,6 @@ README.md
 .vscode
 .eslint*
 .stylelint*
-/.devcontainer
 /.github
 yarn.lock
 app.json

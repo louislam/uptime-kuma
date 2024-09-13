@@ -19,7 +19,7 @@ const nodeVersion = process.versions.node;
 
 // Get the required Node.js version from package.json
 const requiredNodeVersions = require("../package.json").engines.node;
-const bannedNodeVersions = " < 14 || 20.0.* || 20.1.* || 20.2.* || 20.3.* ";
+const bannedNodeVersions = " < 18 || 20.0.* || 20.1.* || 20.2.* || 20.3.* ";
 console.log(`Your Node.js version: ${nodeVersion}`);
 
 const semver = require("semver");
@@ -132,9 +132,9 @@ const twoFAVerifyOptions = {
 const testMode = !!args["test"] || false;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList } = require("./client");
+const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList, sendMonitorTypeList } = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
-const databaseSocketHandler = require("./socket-handlers/database-socket-handler");
+const { databaseSocketHandler } = require("./socket-handlers/database-socket-handler");
 const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
@@ -245,6 +245,36 @@ let needSetup = false;
             log.debug("test", request.headers);
             log.debug("test", request.body);
             response.send("OK");
+        });
+
+        const fs = require("fs");
+
+        app.get("/_e2e/take-sqlite-snapshot", async (request, response) => {
+            await Database.close();
+            try {
+                fs.cpSync(Database.sqlitePath, `${Database.sqlitePath}.e2e-snapshot`);
+            } catch (err) {
+                throw new Error("Unable to copy SQLite DB.");
+            }
+            await Database.connect();
+
+            response.send("Snapshot taken.");
+        });
+
+        app.get("/_e2e/restore-sqlite-snapshot", async (request, response) => {
+            if (!fs.existsSync(`${Database.sqlitePath}.e2e-snapshot`)) {
+                throw new Error("Snapshot doesn't exist.");
+            }
+
+            await Database.close();
+            try {
+                fs.cpSync(`${Database.sqlitePath}.e2e-snapshot`, Database.sqlitePath);
+            } catch (err) {
+                throw new Error("Unable to copy snapshot file.");
+            }
+            await Database.connect();
+
+            response.send("Snapshot restored.");
         });
     }
 
@@ -686,6 +716,8 @@ let needSetup = false;
                 monitor.kafkaProducerBrokers = JSON.stringify(monitor.kafkaProducerBrokers);
                 monitor.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
 
+                monitor.conditions = JSON.stringify(monitor.conditions);
+
                 bean.import(monitor);
                 bean.user_id = socket.userID;
 
@@ -701,7 +733,7 @@ let needSetup = false;
                     await startMonitor(socket.userID, bean.id);
                 }
 
-                log.info("monitor", `Added Monitor: ${monitor.id} User ID: ${socket.userID}`);
+                log.info("monitor", `Added Monitor: ${bean.id} User ID: ${socket.userID}`);
 
                 callback({
                     ok: true,
@@ -826,11 +858,17 @@ let needSetup = false;
                 bean.kafkaProducerAllowAutoTopicCreation = monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.kafkaProducerSaslOptions = JSON.stringify(monitor.kafkaProducerSaslOptions);
                 bean.kafkaProducerMessage = monitor.kafkaProducerMessage;
+                bean.cacheBust = monitor.cacheBust;
                 bean.kafkaProducerSsl = monitor.kafkaProducerSsl;
                 bean.kafkaProducerAllowAutoTopicCreation =
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.remote_browser = monitor.remote_browser;
+                bean.snmpVersion = monitor.snmpVersion;
+                bean.snmpOid = monitor.snmpOid;
+                bean.jsonPathOperator = monitor.jsonPathOperator;
+                bean.timeout = monitor.timeout;
+                bean.conditions = JSON.stringify(monitor.conditions);
 
                 bean.validate();
 
@@ -1636,6 +1674,7 @@ async function afterLogin(socket, user) {
         sendDockerHostList(socket),
         sendAPIKeyList(socket),
         sendRemoteBrowserList(socket),
+        sendMonitorTypeList(socket),
     ]);
 
     await StatusPage.sendStatusPageList(io, socket);

@@ -135,6 +135,7 @@ export default {
                 "ntfy": "Ntfy",
                 "octopush": "Octopush",
                 "OneBot": "OneBot",
+                "Onesender": "Onesender",
                 "Opsgenie": "Opsgenie",
                 "PagerDuty": "PagerDuty",
                 "PagerTree": "PagerTree",
@@ -144,6 +145,7 @@ export default {
                 "pushy": "Pushy",
                 "rocket.chat": "Rocket.Chat",
                 "signal": "Signal",
+                "SIGNL4": "SIGNL4",
                 "slack": "Slack",
                 "squadcast": "SquadCast",
                 "SMSEagle": "SMSEagle",
@@ -152,6 +154,7 @@ export default {
                 "stackfield": "Stackfield",
                 "teams": "Microsoft Teams",
                 "telegram": "Telegram",
+                "threema": "Threema",
                 "twilio": "Twilio",
                 "Splunk": "Splunk",
                 "webhook": "Webhook",
@@ -177,6 +180,7 @@ export default {
                 "WeCom": "WeCom (企业微信群机器人)",
                 "ServerChan": "ServerChan (Server酱)",
                 "smsc": "SMSC",
+                "WPush": "WPush(wpush.cn)",
             };
 
             // Sort by notification name

@@ -47,7 +47,8 @@ class Slack extends NotificationProvider {
 
         }
 
-        if (monitorJSON.url) {
+        const address = this.extractAdress(monitorJSON);
+        if (address) {
             actions.push({
                 "type": "button",
                 "text": {
@@ -55,7 +56,7 @@ class Slack extends NotificationProvider {
                     "text": "Visit site",
                 },
                 "value": "Site",
-                "url": monitorJSON.url,
+                "url": address,
             });
         }
 

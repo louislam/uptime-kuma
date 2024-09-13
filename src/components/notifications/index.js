@@ -29,6 +29,7 @@ import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
 import OneBot from "./OneBot.vue";
+import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
@@ -52,6 +53,7 @@ import STMP from "./SMTP.vue";
 import Teams from "./Teams.vue";
 import TechulusPush from "./TechulusPush.vue";
 import Telegram from "./Telegram.vue";
+import Threema from "./Threema.vue";
 import Twilio from "./Twilio.vue";
 import Webhook from "./Webhook.vue";
 import WeCom from "./WeCom.vue";
@@ -61,6 +63,8 @@ import Splunk from "./Splunk.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import Cellsynt from "./Cellsynt.vue";
+import WPush from "./WPush.vue";
+import SIGNL4 from "./SIGNL4.vue";
 
 /**
  * Manage all notification form.
@@ -97,6 +101,7 @@ const NotificationFormList = {
     "ntfy": Ntfy,
     "octopush": Octopush,
     "OneBot": OneBot,
+    "Onesender": Onesender,
     "Opsgenie": Opsgenie,
     "PagerDuty": PagerDuty,
     "FlashDuty": FlashDuty,
@@ -110,6 +115,7 @@ const NotificationFormList = {
     "rocket.chat": RocketChat,
     "serwersms": SerwerSMS,
     "signal": Signal,
+    "SIGNL4": SIGNL4,
     "SMSManager": SMSManager,
     "SMSPartner": SMSPartner,
     "slack": Slack,
@@ -119,6 +125,7 @@ const NotificationFormList = {
     "stackfield": Stackfield,
     "teams": Teams,
     "telegram": Telegram,
+    "threema": Threema,
     "twilio": Twilio,
     "Splunk": Splunk,
     "webhook": Webhook,
@@ -130,6 +137,7 @@ const NotificationFormList = {
     "whapi": Whapi,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
+    "WPush": WPush
 };
 
 export default NotificationFormList;
