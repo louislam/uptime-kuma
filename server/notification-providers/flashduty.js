@@ -62,6 +62,15 @@ class FlashDuty extends NotificationProvider {
      * @returns {string} Success message
      */
     async postNotification(notification, title, body, monitorInfo, eventStatus) {
+        let labels = {
+            resource: this.genMonitorUrl(monitorInfo),
+            check: monitorInfo.name,
+        };
+        if (monitorInfo.tags && monitorInfo.tags.length > 0) {
+            for (let tag of monitorInfo.tags) {
+                labels[tag.name] = tag.value;
+            }
+        }
         const options = {
             method: "POST",
             url: "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
@@ -71,9 +80,7 @@ class FlashDuty extends NotificationProvider {
                 title,
                 event_status: eventStatus || "Info",
                 alert_key: String(monitorInfo.id) || Math.random().toString(36).substring(7),
-                labels: monitorInfo?.tags?.reduce((acc, item) => ({ ...acc,
-                    [item.name]: item.value
-                }), { resource: this.genMonitorUrl(monitorInfo) }),
+                labels,
             }
         };
 

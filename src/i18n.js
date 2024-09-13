@@ -6,6 +6,7 @@ const languageList = {
     "cs-CZ": "Čeština",
     "zh-HK": "繁體中文 (香港)",
     "bg-BG": "Български",
+    "be": "Беларуская",
     "de-DE": "Deutsch (Deutschland)",
     "de-CH": "Deutsch (Schweiz)",
     "nl-NL": "Nederlands",
@@ -44,6 +45,7 @@ const languageList = {
     "ur": "Urdu",
     "ge": "ქართული",
     "uz": "O'zbek tili",
+    "ga": "Gaeilge",
 };
 
 let messages = {
@@ -56,12 +58,31 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = [ "fa", "ar-SY", "ur" ];
+const rtlLangs = [ "he-IL", "fa", "ar-SY", "ur" ];
 
-export const currentLocale = () => localStorage.locale
-    || languageList[navigator.language] && navigator.language
-    || languageList[navigator.language.substring(0, 2)] && navigator.language.substring(0, 2)
-    || "en";
+/**
+ * Find the best matching locale to display
+ * If no locale can be matched, the default is "en"
+ * @returns {string} the locale that should be displayed
+ */
+export function currentLocale() {
+    for (const locale of [ localStorage.locale, navigator.language, ...navigator.languages ]) {
+        // localstorage might not have a value or there might not be a language in `navigator.language`
+        if (!locale) {
+            continue;
+        }
+        if (locale in messages) {
+            return locale;
+        }
+        // some locales are further specified such as "en-US".
+        // If we only have a generic locale for this, we can use it too
+        const genericLocale = locale.split("-")[0];
+        if (genericLocale in messages) {
+            return genericLocale;
+        }
+    }
+    return "en";
+}
 
 export const localeDirection = () => {
     return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr";

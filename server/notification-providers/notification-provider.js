@@ -20,6 +20,36 @@ class NotificationProvider {
     }
 
     /**
+     * Extracts the address from a monitor JSON object based on its type.
+     * @param {?object} monitorJSON Monitor details (For Up/Down only)
+     * @returns {string} The extracted address based on the monitor type.
+     */
+    extractAdress(monitorJSON) {
+        if (!monitorJSON) {
+            return "";
+        }
+        switch (monitorJSON["type"]) {
+            case "push":
+                return "Heartbeat";
+            case "ping":
+                return monitorJSON["hostname"];
+            case "port":
+            case "dns":
+            case "gamedig":
+            case "steam":
+                if (monitorJSON["port"]) {
+                    return monitorJSON["hostname"] + ":" + monitorJSON["port"];
+                }
+                return monitorJSON["hostname"];
+            default:
+                if (![ "https://", "http://", "" ].includes(monitorJSON["url"])) {
+                    return monitorJSON["url"];
+                }
+                return "";
+        }
+    }
+
+    /**
      * Throws an error
      * @param {any} error The error to throw
      * @returns {void}
