@@ -108,6 +108,14 @@ Please read:
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 
+## Self-Hosting Uptime Kuma
+
+### Elestio
+
+You can deploy Uptime Kuma on Elestio using one-click deployment.
+
+[![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/uptime-kuma)
+
 ## 🆕 What's Next?
 
 I will assign requests/issues to the next milestone.
