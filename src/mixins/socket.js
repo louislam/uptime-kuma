@@ -154,7 +154,7 @@ export default {
             socket.on("deleteMonitorFromList", (monitorID) => {
                 this.monitorList = this.deleteMonitorList(monitorID);
             });
-          
+
             socket.on("monitorTypeList", (data) => {
                 this.monitorTypeList = data;
             });
