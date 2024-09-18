@@ -1,7 +1,7 @@
 <template>
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
-        <div v-if="enableEditMode" class="sidebar">
+        <div v-if="enableEditMode" class="sidebar" data-testid="edit-sidebar">
             <div class="sidebar-body">
                 <div class="my-3">
                     <label for="slug" class="form-label">{{ $t("Slug") }}</label>
@@ -19,7 +19,7 @@
                 <!-- Description -->
                 <div class="my-3">
                     <label for="description" class="form-label">{{ $t("Description") }}</label>
-                    <textarea id="description" v-model="config.description" class="form-control"></textarea>
+                    <textarea id="description" v-model="config.description" class="form-control" data-testid="description-input"></textarea>
                     <div class="form-text">
                         {{ $t("markdownSupported") }}
                     </div>
@@ -28,7 +28,7 @@
                 <!-- Footer Text -->
                 <div class="my-3">
                     <label for="footer-text" class="form-label">{{ $t("Footer Text") }}</label>
-                    <textarea id="footer-text" v-model="config.footerText" class="form-control"></textarea>
+                    <textarea id="footer-text" v-model="config.footerText" class="form-control" data-testid="footer-text-input"></textarea>
                     <div class="form-text">
                         {{ $t("markdownSupported") }}
                     </div>
@@ -36,7 +36,7 @@
 
                 <div class="my-3">
                     <label for="auto-refresh-interval" class="form-label">{{ $t("Refresh Interval") }}</label>
-                    <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number" class="form-control" :min="5">
+                    <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number" class="form-control" :min="5" data-testid="refresh-interval-input">
                     <div class="form-text">
                         {{ $t("Refresh Interval Description", [config.autoRefreshInterval]) }}
                     </div>
@@ -44,7 +44,7 @@
 
                 <div class="my-3">
                     <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
-                    <select id="switch-theme" v-model="config.theme" class="form-select">
+                    <select id="switch-theme" v-model="config.theme" class="form-select" data-testid="theme-select">
                         <option value="auto">{{ $t("Auto") }}</option>
                         <option value="light">{{ $t("Light") }}</option>
                         <option value="dark">{{ $t("Dark") }}</option>
@@ -52,19 +52,19 @@
                 </div>
 
                 <div class="my-3 form-check form-switch">
-                    <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox">
+                    <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox" data-testid="show-tags-checkbox">
                     <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
                 </div>
 
                 <!-- Show Powered By -->
                 <div class="my-3 form-check form-switch">
-                    <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox">
+                    <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox" data-testid="show-powered-by-checkbox">
                     <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
                 </div>
 
                 <!-- Show certificate expiry -->
                 <div class="my-3 form-check form-switch">
-                    <input id="show-certificate-expiry" v-model="config.showCertificateExpiry" class="form-check-input" type="checkbox">
+                    <input id="show-certificate-expiry" v-model="config.showCertificateExpiry" class="form-check-input" type="checkbox" data-testid="show-certificate-expiry-checkbox">
                     <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
                 </div>
 
@@ -95,13 +95,13 @@
                 <!-- Google Analytics -->
                 <div class="my-3">
                     <label for="googleAnalyticsTag" class="form-label">{{ $t("Google Analytics ID") }}</label>
-                    <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control">
+                    <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control" data-testid="google-analytics-input">
                 </div>
 
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
-                    <prism-editor v-model="config.customCSS" class="css-editor" :highlight="highlighter" line-numbers></prism-editor>
+                    <prism-editor v-model="config.customCSS" class="css-editor" data-testid="custom-css-input" :highlight="highlighter" line-numbers></prism-editor>
                 </div>
 
                 <div class="danger-zone">
@@ -114,7 +114,7 @@
 
             <!-- Sidebar Footer -->
             <div class="sidebar-footer">
-                <button class="btn btn-success me-2" :disabled="loading" @click="save">
+                <button class="btn btn-success me-2" :disabled="loading" data-testid="save-button" @click="save">
                     <font-awesome-icon icon="save" />
                     {{ $t("Save") }}
                 </button>
@@ -157,7 +157,7 @@
             <!-- Admin functions -->
             <div v-if="hasToken" class="mb-4">
                 <div v-if="!enableEditMode">
-                    <button class="btn btn-info me-2" @click="edit">
+                    <button class="btn btn-info me-2" data-testid="edit-button" @click="edit">
                         <font-awesome-icon icon="edit" />
                         {{ $t("Edit Status Page") }}
                     </button>
@@ -169,7 +169,7 @@
                 </div>
 
                 <div v-else>
-                    <button class="btn btn-primary btn-add-group me-2" @click="createIncident">
+                    <button class="btn btn-primary btn-add-group me-2" data-testid="create-incident-button" @click="createIncident">
                         <font-awesome-icon icon="bullhorn" />
                         {{ $t("Create Incident") }}
                     </button>
@@ -177,17 +177,17 @@
             </div>
 
             <!-- Incident -->
-            <div v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass">
+            <div v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass" data-testid="incident">
                 <strong v-if="editIncidentMode">{{ $t("Title") }}:</strong>
-                <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" />
+                <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true" class="alert-heading" data-testid="incident-title" />
 
                 <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
-                <Editable v-if="editIncidentMode" v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" />
+                <Editable v-if="editIncidentMode" v-model="incident.content" tag="div" :contenteditable="editIncidentMode" class="content" data-testid="incident-content-editable" />
                 <div v-if="editIncidentMode" class="form-text">
                     {{ $t("markdownSupported") }}
                 </div>
                 <!-- eslint-disable-next-line vue/no-v-html-->
-                <div v-if="! editIncidentMode" class="content" v-html="incidentHTML"></div>
+                <div v-if="! editIncidentMode" class="content" data-testid="incident-content" v-html="incidentHTML"></div>
 
                 <!-- Incident Date -->
                 <div class="date mt-3">
@@ -198,7 +198,7 @@
                 </div>
 
                 <div v-if="editMode" class="mt-3">
-                    <button v-if="editIncidentMode" class="btn btn-light me-2" @click="postIncident">
+                    <button v-if="editIncidentMode" class="btn btn-light me-2" data-testid="post-incident-button" @click="postIncident">
                         <font-awesome-icon icon="bullhorn" />
                         {{ $t("Post") }}
                     </button>
@@ -283,13 +283,13 @@
 
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
-            <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
+            <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" data-testid="description-editable" />
             <!-- eslint-disable-next-line vue/no-v-html-->
-            <div v-if="! enableEditMode" class="alert-heading p-2" v-html="descriptionHTML"></div>
+            <div v-if="! enableEditMode" class="alert-heading p-2" data-testid="description" v-html="descriptionHTML"></div>
 
             <div v-if="editMode" class="mb-4">
                 <div>
-                    <button class="btn btn-primary btn-add-group me-2" @click="addGroup">
+                    <button class="btn btn-primary btn-add-group me-2" data-testid="add-group-button" @click="addGroup">
                         <font-awesome-icon icon="plus" />
                         {{ $t("Add Group") }}
                     </button>
@@ -307,6 +307,7 @@
                             label="name"
                             trackBy="name"
                             class="mt-3"
+                            data-testid="monitor-select"
                         >
                             <template #option="{ option }">
                                 <div class="d-inline-flex">
@@ -334,17 +335,17 @@
                 <div class="custom-footer-text text-start">
                     <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
                 </div>
-                <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" />
+                <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" data-testid="custom-footer-editable" />
                 <!-- eslint-disable-next-line vue/no-v-html-->
-                <div v-if="! enableEditMode" class="alert-heading p-2" v-html="footerHTML"></div>
+                <div v-if="! enableEditMode" class="alert-heading p-2" data-testid="footer-text" v-html="footerHTML"></div>
 
-                <p v-if="config.showPoweredBy">
+                <p v-if="config.showPoweredBy" data-testid="powered-by">
                     {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
                 </p>
 
                 <div class="refresh-info mb-2">
                     <div>{{ $t("Last Updated") }}:  {{ lastUpdateTimeDisplay }}</div>
-                    <div>{{ $tc("statusPageRefreshIn", [ updateCountdownText]) }}</div>
+                    <div data-testid="update-countdown-text">{{ $tc("statusPageRefreshIn", [ updateCountdownText]) }}</div>
                 </div>
             </footer>
         </div>

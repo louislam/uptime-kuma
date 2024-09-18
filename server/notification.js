@@ -42,6 +42,7 @@ const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
+const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
@@ -65,6 +66,7 @@ const Whapi = require("./notification-providers/whapi");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
+const Wpush = require("./notification-providers/wpush");
 
 class Notification {
 
@@ -126,6 +128,7 @@ class Notification {
             new ServerChan(),
             new SerwerSMS(),
             new Signal(),
+            new SIGNL4(),
             new SMSManager(),
             new SMSPartner(),
             new Slack(),
@@ -147,6 +150,7 @@ class Notification {
             new Whapi(),
             new GtxMessaging(),
             new Cellsynt(),
+            new Wpush(),
         ];
         for (let item of list) {
             if (! item.name) {

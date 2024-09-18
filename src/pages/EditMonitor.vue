@@ -10,7 +10,7 @@
 
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
-                                <select id="type" v-model="monitor.type" class="form-select">
+                                <select id="type" v-model="monitor.type" class="form-select" data-testid="monitor-type-select">
                                     <optgroup :label="$t('General Monitor Type')">
                                         <option value="group">
                                             {{ $t("Group") }}
@@ -99,13 +99,13 @@
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required>
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" required data-testid="friendly-name-input">
                             </div>
 
                             <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
+                                <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
                             </div>
 
                             <!-- gRPC URL -->
@@ -237,7 +237,15 @@
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
                             <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
-                                <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
+                                <input
+                                    id="hostname"
+                                    v-model="monitor.hostname"
+                                    type="text"
+                                    class="form-control"
+                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
+                                    required
+                                    data-testid="hostname-input"
+                                >
                             </div>
 
                             <!-- Port -->
@@ -343,6 +351,7 @@
                                         :preselect-first="false"
                                         :max-height="500"
                                         :taggable="false"
+                                        data-testid="resolve-type-select"
                                     ></VueMultiselect>
 
                                     <div class="form-text">
@@ -509,6 +518,14 @@
                                 </div>
                             </template>
 
+                            <!-- Conditions -->
+                            <EditMonitorConditions
+                                v-if="supportsConditions && conditionVariables.length > 0"
+                                v-model="monitor.conditions"
+                                :condition-variables="conditionVariables"
+                                class="my-3"
+                            />
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -562,6 +579,18 @@
                                 <label class="form-check-label" for="ignore-tls">
                                     {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
                                 </label>
+                            </div>
+
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+                                <input id="cache-bust" v-model="monitor.cacheBust" class="form-check-input" type="checkbox" value="">
+                                <label class="form-check-label" for="cache-bust">
+                                    <i18n-t tag="label" keypath="cacheBusterParam" class="form-check-label" for="cache-bust">
+                                        <code>uptime_kuma_cachebuster</code>
+                                    </i18n-t>
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("cacheBusterParamDescription") }}
+                                </div>
                             </div>
 
                             <div class="my-3 form-check">
@@ -951,7 +980,15 @@
                     </div>
 
                     <div class="fixed-bottom-bar p-3">
-                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                        <button
+                            id="monitor-submit-btn"
+                            class="btn btn-primary"
+                            type="submit"
+                            :disabled="processing"
+                            data-testid="save-button"
+                        >
+                            {{ $t("Save") }}
+                        </button>
                     </div>
                 </div>
             </form>
@@ -960,7 +997,7 @@
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
-            <RemoteBrowserDialog ref="remoteBrowserDialog" @added="addedRemoteBrowser" />
+            <RemoteBrowserDialog ref="remoteBrowserDialog" />
         </div>
     </transition>
 </template>
@@ -979,6 +1016,7 @@ import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
+import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
 const toast = useToast;
 
@@ -1018,10 +1056,12 @@ const monitorDefaults = {
     kafkaProducerSaslOptions: {
         mechanism: "None",
     },
+    cacheBust: false,
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
-    remote_browser: null
+    remote_browser: null,
+    conditions: []
 };
 
 export default {
@@ -1036,6 +1076,7 @@ export default {
         RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
+        EditMonitorConditions,
     },
 
     data() {
@@ -1290,7 +1331,15 @@ message HealthCheckResponse {
                     value: null,
                 }];
             }
-        }
+        },
+
+        supportsConditions() {
+            return this.$root.monitorTypeList[this.monitor.type]?.supportsConditions || false;
+        },
+
+        conditionVariables() {
+            return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
+        },
     },
     watch: {
         "$root.proxyList"() {
@@ -1323,7 +1372,7 @@ message HealthCheckResponse {
             }
         },
 
-        "monitor.type"() {
+        "monitor.type"(newType, oldType) {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
@@ -1395,6 +1444,10 @@ message HealthCheckResponse {
                 }
             }
 
+            // Reset conditions since condition variables likely change:
+            if (oldType && newType !== oldType) {
+                this.monitor.conditions = [];
+            }
         },
 
         currentGameObject(newGameObject, previousGameObject) {

@@ -236,12 +236,6 @@ The goal is to make the Uptime Kuma installation as easy as installing a mobile 
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using [`IntelliJ IDEA`](https://www.jetbrains.com/idea/))
 - A SQLite GUI tool (f.ex. [`SQLite Expert Personal`](https://www.sqliteexpert.com/download.html) or [`DBeaver Community`](https://dbeaver.io/download/))
 
-### GitHub Codespaces
-
-If you don't want to setup an local environment, you can now develop on GitHub Codespaces, read more:
-
-https://github.com/louislam/uptime-kuma/tree/master/.devcontainer
-
 ## Git Branches
 
 - `master`: 2.X.X development. If you want to add a new feature, your pull request should base on this.
