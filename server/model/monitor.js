@@ -79,8 +79,7 @@ class Monitor extends BeanModel {
     toJSON(preloadData = {}, includeSensitiveData = true) {
 
         const tags = preloadData.tags.get(this.id) || [];
-        const notificationIDList = preloadData.notifications.get(this.id) || new Map();
-
+        const notificationIDList = preloadData.notifications.get(this.id) || {};
         let screenshot = null;
 
         if (this.type === "real-browser") {
@@ -1560,9 +1559,9 @@ class Monitor extends BeanModel {
 
             notifications.forEach(row => {
                 if (!notificationsMap.has(row.monitor_id)) {
-                    notificationsMap.set(row.monitor_id, new Map());
+                    notificationsMap.set(row.monitor_id, {});
                 }
-                notificationsMap.get(row.monitor_id).set(row.notification_id, true);
+                notificationsMap.get(row.monitor_id)[row.notification_id] = true;
             });
 
             tags.forEach(row => {
