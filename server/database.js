@@ -515,12 +515,12 @@ class Database {
         let title = await Settings.get("title");
 
         if (title) {
-            console.log("Migrating Status Page");
+            log.info("database", "Migrating Status Page");
 
             let statusPageCheck = await R.findOne("status_page", " slug = 'default' ");
 
             if (statusPageCheck !== null) {
-                console.log("Migrating Status Page - Skip, default slug record is already existing");
+                log.info("database", "Migrating Status Page - Skip, default slug record is already existing");
                 return;
             }
 
@@ -566,7 +566,7 @@ class Database {
                 await Settings.set("entryPage", "statusPage-default", "general");
             }
 
-            console.log("Migrating Status Page - Done");
+            log.info("database", "Migrating Status Page - Done");
         }
 
     }
