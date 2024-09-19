@@ -1,26 +1,25 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setSettings, setting } = require("../util-server");
 const { getMonitorRelativeURL, UP } = require("../../src/util");
+const { Settings } = require("../settings");
 
 class Slack extends NotificationProvider {
     name = "slack";
 
     /**
      * Deprecated property notification.slackbutton
-     * Set it as primary base url if this is not yet set.
+     * Set it as 
+     ry base url if this is not yet set.
      * @deprecated
      * @param {string} url The primary base URL to use
      * @returns {Promise<void>}
      */
     static async deprecateURL(url) {
-        let currentPrimaryBaseURL = await setting("primaryBaseURL");
+        let currentPrimaryBaseURL = await Settings.get("primaryBaseURL");
 
         if (!currentPrimaryBaseURL) {
             console.log("Move the url to be the primary base URL");
-            await setSettings("general", {
-                primaryBaseURL: url,
-            });
+            await Settings.set("primaryBaseURL", url, "general");
         } else {
             console.log("Already there, no need to move the primary base URL");
         }
