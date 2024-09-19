@@ -304,9 +304,9 @@ function ApiCache() {
                     // display log entry
                     let elapsed = new Date() - req.apicacheTimer;
                     log.debug("apicache", `adding cache entry for "${key}" @ ${strDuration} ${logDuration(elapsed)}`);
-                    log.debug("apicache", `_apicache.headers: ${res._apicache.headers}`);
-                    log.debug("apicache", `res.getHeaders(): ${getSafeHeaders(res)}`);
-                    log.debug("apicache", `cacheObject: ${cacheObject}`);
+                    log.debug("apicache", `_apicache.headers: ${JSON.stringify(res._apicache.headers)}`);
+                    log.debug("apicache", `res.getHeaders(): ${JSON.stringify(getSafeHeaders(res))}`);
+                    log.debug("apicache", `cacheObject: ${JSON.stringify(cacheObject)}`);
                 }
             }
 
