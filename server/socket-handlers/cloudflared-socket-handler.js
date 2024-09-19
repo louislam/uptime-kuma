@@ -101,11 +101,11 @@ module.exports.autoStart = async (token) => {
     } else {
         // Override the current token via args or env var
         await Settings.set("cloudflaredTunnelToken", token);
-        console.log("Use cloudflared token from args or env var");
+        log.info("cloudflare", "Use cloudflared token from args or env var");
     }
 
     if (token) {
-        console.log("Start cloudflared");
+        log.info("cloudflare", "Start cloudflared");
         cloudflared.token = token;
         cloudflared.start();
     }

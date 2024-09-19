@@ -201,12 +201,13 @@ class Logger {
 
     /**
      * Write a message to the log
+     * @private
      * @param module The module the log comes from
      * @param msg Message to write
-     * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @param level {"INFO"|"WARN"|"ERROR"|"DEBUG"} Log level
      * @returns {void}
      */
-    log(module: string, msg: any, level: string) {
+    log(module: string, msg: unknown, level: "INFO"|"WARN"|"ERROR"|"DEBUG"): void {
         if (level === "DEBUG" && !isDev) {
             return;
         }
@@ -216,7 +217,6 @@ class Logger {
         }
 
         module = module.toUpperCase();
-        level = level.toUpperCase();
 
         let now;
         if (dayjs.tz) {
@@ -303,8 +303,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    info(module: string, msg: unknown) {
-        this.log(module, msg, "info");
+    info(module: string, msg: string): void {
+        this.log(module, msg, "INFO");
     }
 
     /**
@@ -313,8 +313,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    warn(module: string, msg: unknown) {
-        this.log(module, msg, "warn");
+    warn(module: string, msg: string): void {
+        this.log(module, msg, "WARN");
     }
 
     /**
@@ -323,8 +323,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    error(module: string, msg: unknown) {
-        this.log(module, msg, "error");
+    error(module: string, msg: string): void {
+        this.log(module, msg, "ERROR");
     }
 
     /**
@@ -333,8 +333,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    debug(module: string, msg: unknown) {
-        this.log(module, msg, "debug");
+    debug(module: string, msg: string): void {
+        this.log(module, msg, "DEBUG");
     }
 
     /**
@@ -351,7 +351,7 @@ class Logger {
             finalMessage = `${msg}: ${exception}`;
         }
 
-        this.log(module, finalMessage, "error");
+        this.log(module, finalMessage, "ERROR");
     }
 }
 
@@ -395,7 +395,7 @@ export class TimeLogger {
      * @param name Name of monitor
      * @returns {void}
      */
-    print(name: string) {
+    print(name: string): void {
         if (isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }

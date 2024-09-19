@@ -2,6 +2,7 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { getMonitorRelativeURL, UP } = require("../../src/util");
 const { Settings } = require("../settings");
+const { log } = require("../../src/util");
 
 class Slack extends NotificationProvider {
     name = "slack";
@@ -17,10 +18,10 @@ class Slack extends NotificationProvider {
         let currentPrimaryBaseURL = await Settings.get("primaryBaseURL");
 
         if (!currentPrimaryBaseURL) {
-            console.log("Move the url to be the primary base URL");
+            log.error("notification", "Move the url to be the primary base URL");
             await Settings.set("primaryBaseURL", url, "general");
         } else {
-            console.log("Already there, no need to move the primary base URL");
+            log.debug("notification", "Already there, no need to move the primary base URL");
         }
     }
 
