@@ -212,8 +212,6 @@ class Logger {
             return;
         }
 
-        module = module.toUpperCase();
-
         let now;
         if (dayjs.tz) {
             now = dayjs.tz(new Date()).format();
@@ -221,75 +219,81 @@ class Logger {
             now = dayjs().format();
         }
 
+        const structuredLogging = process.env.UPTIME_KUMA_LOG_FORMAT === "json";
+
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
 
-        let timePart: string;
-        let modulePart: string;
-        let levelPart: string;
-        let msgPart: string;
+        let timePart: string = now;
+        let modulePart: string = module;
+        let levelPart: string = level;
+        let msgPart: unknown = msg;
 
-        if (isNode) {
-            // Add console colors
-            switch (level) {
-                case "DEBUG":
-                    timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
-                    break;
-                default:
-                    timePart = CONSOLE_STYLE_FgCyan + now + CONSOLE_STYLE_Reset;
-                    break;
+        if (!structuredLogging) {
+            // Console rendering:
+            module = module.toUpperCase();
+
+            if (isNode) {
+                // Add console colors
+                switch (level) {
+                    case "DEBUG":
+                        timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
+                        break;
+                    default:
+                        timePart = CONSOLE_STYLE_FgCyan + now + CONSOLE_STYLE_Reset;
+                        break;
+                }
+
+                modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
+
+                levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
+
+                switch (level) {
+                    case "ERROR":
+                        if (typeof msg === "string") {
+                            msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
+                        }
+                        break;
+                    case "DEBUG":
+                        if (typeof msg === "string") {
+                            msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
+                        }
+                        break;
+                }
+            } else {
+                // No console colors
+                timePart = now;
+                modulePart = `[${module}]`;
+                levelPart = `${level}:`;
             }
 
-            modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
-
-            levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
-
+            // Write to console
             switch (level) {
                 case "ERROR":
-                    if (typeof msg === "string") {
-                        msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
-                    }
+                    console.error(timePart, modulePart, levelPart, msgPart);
+                    break;
+                case "WARN":
+                    console.warn(timePart, modulePart, levelPart, msgPart);
+                    break;
+                case "INFO":
+                    console.info(timePart, modulePart, levelPart, msgPart);
                     break;
                 case "DEBUG":
-                    if (typeof msg === "string") {
-                        msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
+                    if (isDev) {
+                        console.debug(timePart, modulePart, levelPart, msgPart);
                     }
                     break;
                 default:
-                    msgPart = msg;
+                    console.log(timePart, modulePart, levelPart, msgPart);
                     break;
             }
         } else {
-            // No console colors
-            timePart = now;
-            modulePart = `[${module}]`;
-            levelPart = `${level}:`;
-            msgPart = msg;
-        }
-
-        // Write to console
-        switch (level) {
-            case "ERROR":
-                console.error(timePart, modulePart, levelPart, msgPart);
-                break;
-            case "WARN":
-                console.warn(timePart, modulePart, levelPart, msgPart);
-                break;
-            case "INFO":
-                console.info(timePart, modulePart, levelPart, msgPart);
-                break;
-            case "DEBUG":
-                if (isDev) {
-                    console.debug(timePart, modulePart, levelPart, msgPart);
-                }
-                break;
-            default:
-                console.log(timePart, modulePart, levelPart, msgPart);
-                break;
+            console.log(JSON.stringify({
+                time: timePart,
+                module: modulePart,
+                level: levelPart,
+                msg: typeof msg === "string" ? msg : JSON.stringify(msg),
+            }))
         }
     }
 
