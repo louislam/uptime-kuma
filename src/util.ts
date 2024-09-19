@@ -216,8 +216,6 @@ class Logger {
             return;
         }
 
-        module = module.toUpperCase();
-
         let now;
         if (dayjs.tz) {
             now = dayjs.tz(new Date()).format();
@@ -228,10 +226,23 @@ class Logger {
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
 
-        let timePart: string;
-        let modulePart: string;
-        let levelPart: string;
-        let msgPart: string;
+        let timePart: string = now;
+        let modulePart: string = module;
+        let levelPart: string = level;
+        let msgPart: unknown = msg;
+
+        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
+            console.log(JSON.stringify({
+                time: timePart,
+                module: modulePart,
+                level: levelPart,
+                msg: typeof msg === "string" ? msg : JSON.stringify(msg),
+            }));
+            return;
+        }
+
+        // Console rendering:
+        module = module.toUpperCase();
 
         if (isNode) {
             // Add console colors
@@ -252,27 +263,18 @@ class Logger {
                 case "ERROR":
                     if (typeof msg === "string") {
                         msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
                     }
                     break;
                 case "DEBUG":
                     if (typeof msg === "string") {
                         msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
                     }
-                    break;
-                default:
-                    msgPart = msg;
                     break;
             }
         } else {
             // No console colors
-            timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
-            msgPart = msg;
         }
 
         // Write to console

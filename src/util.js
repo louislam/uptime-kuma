@@ -168,7 +168,6 @@ class Logger {
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
-        module = module.toUpperCase();
         let now;
         if (dayjs_1.default.tz) {
             now = dayjs_1.default.tz(new Date()).format();
@@ -178,10 +177,20 @@ class Logger {
         }
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
-        let timePart;
-        let modulePart;
-        let levelPart;
-        let msgPart;
+        let timePart = now;
+        let modulePart = module;
+        let levelPart = level;
+        let msgPart = msg;
+        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
+            console.log(JSON.stringify({
+                time: timePart,
+                module: modulePart,
+                level: levelPart,
+                msg: typeof msg === "string" ? msg : JSON.stringify(msg),
+            }));
+            return;
+        }
+        module = module.toUpperCase();
         if (exports.isNode) {
             switch (level) {
                 case "DEBUG":
@@ -198,28 +207,17 @@ class Logger {
                     if (typeof msg === "string") {
                         msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
                     }
-                    else {
-                        msgPart = msg;
-                    }
                     break;
                 case "DEBUG":
                     if (typeof msg === "string") {
                         msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
                     }
-                    else {
-                        msgPart = msg;
-                    }
-                    break;
-                default:
-                    msgPart = msg;
                     break;
             }
         }
         else {
-            timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
-            msgPart = msg;
         }
         switch (level) {
             case "ERROR":
