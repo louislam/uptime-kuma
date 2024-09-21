@@ -156,6 +156,10 @@ class DockerHost {
         let certPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameCert);
         let keyPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameKey);
 
+        let key;
+        let cert;
+        let ca;
+
         if (dockerType === "tcp") {
             if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
                 // Load the key and cert
