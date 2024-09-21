@@ -1,6 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { getMonitorRelativeURL, DOWN, UP } = require("../../src/util");
+const { getMonitorRelativeURL, UP } = require("../../src/util");
 const { Settings } = require("../settings");
 
 class GoogleChat extends NotificationProvider {
@@ -34,7 +34,6 @@ class GoogleChat extends NotificationProvider {
                     },
                 },
             ];
-
 
             // add time if available
             if (heartbeatJSON) {

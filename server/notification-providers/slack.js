@@ -8,8 +8,7 @@ class Slack extends NotificationProvider {
 
     /**
      * Deprecated property notification.slackbutton
-     * Set it as 
-     ry base url if this is not yet set.
+     * Set it as primary base url if this is not yet set.
      * @deprecated
      * @param {string} url The primary base URL to use
      * @returns {Promise<void>}
