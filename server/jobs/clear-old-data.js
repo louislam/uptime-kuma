@@ -20,6 +20,9 @@ const clearOldData = async () => {
     * In the heartbeat table:
     *    - important rows: keep according to the setting (keepDataPeriodDays) (default 180 days)
     *    - not important rows: keep 2 days
+    *
+    * stat_* tables:
+    *   - keep according to the setting (keepDataPeriodDays) (default 180 days)
     */
 
     let period = await setting("keepDataPeriodDays");
