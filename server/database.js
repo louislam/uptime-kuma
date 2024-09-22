@@ -6,6 +6,7 @@ const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
+const { Settings } = require("./settings");
 
 /**
  * Database & App Data Folder
@@ -391,9 +392,23 @@ class Database {
         // https://knexjs.org/guide/migrations.html
         // https://gist.github.com/NigelEarle/70db130cc040cc2868555b29a0278261
         try {
+            // Disable foreign key check for SQLite
+            // Known issue of knex: https://github.com/drizzle-team/drizzle-orm/issues/1813
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA foreign_keys = OFF");
+            }
+
             await R.knex.migrate.latest({
                 directory: Database.knexMigrationsPath,
             });
+
+            // Enable foreign key check for SQLite
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA foreign_keys = ON");
+            }
+
+            await this.migrateAggregateTable();
+
         } catch (e) {
             // Allow missing patch files for downgrade or testing pr.
             if (e.message.includes("the following files are missing:")) {
@@ -717,7 +732,37 @@ class Database {
      * @returns {Promise<void>}
      */
     static async migrateAggregateTable() {
+        log.debug("db", "Enter Migrate Aggregate Table function");
 
+        //
+        let migrated = false;
+
+        if (migrated) {
+            log.debug("db", "Migrated, skip migration");
+            return;
+        }
+
+        log.info("db", "Migrating Aggregate Table");
+
+        // Migrate heartbeat to stat_minutely, using knex transaction
+        const trx = await R.knex.transaction();
+
+        // Get a list of unique dates from the heartbeat table, using raw sql
+        let dates = await trx.raw(`
+            SELECT DISTINCT DATE(time) AS date
+            FROM heartbeat
+        `);
+
+        // Get a list of unique monitors from the heartbeat table, using raw sql
+        let monitors = await trx.raw(`
+            SELECT DISTINCT monitor_id
+            FROM heartbeat
+        `);
+
+        console.log("Dates", dates);
+        console.log("Monitors", monitors);
+
+        trx.commit();
     }
 
 }
