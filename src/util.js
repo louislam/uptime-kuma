@@ -175,73 +175,68 @@ class Logger {
         else {
             now = (0, dayjs_1.default)().format();
         }
-        const structuredLogging = process.env.UPTIME_KUMA_LOG_FORMAT === "json";
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
         let timePart = now;
         let modulePart = module;
         let levelPart = level;
         let msgPart = msg;
-        if (!structuredLogging) {
-            module = module.toUpperCase();
-            if (exports.isNode) {
-                switch (level) {
-                    case "DEBUG":
-                        timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
-                        break;
-                    default:
-                        timePart = exports.CONSOLE_STYLE_FgCyan + now + exports.CONSOLE_STYLE_Reset;
-                        break;
-                }
-                modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
-                levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
-                switch (level) {
-                    case "ERROR":
-                        if (typeof msg === "string") {
-                            msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
-                        }
-                        break;
-                    case "DEBUG":
-                        if (typeof msg === "string") {
-                            msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else {
-                timePart = now;
-                modulePart = `[${module}]`;
-                levelPart = `${level}:`;
-            }
-            switch (level) {
-                case "ERROR":
-                    console.error(timePart, modulePart, levelPart, msgPart);
-                    break;
-                case "WARN":
-                    console.warn(timePart, modulePart, levelPart, msgPart);
-                    break;
-                case "INFO":
-                    console.info(timePart, modulePart, levelPart, msgPart);
-                    break;
-                case "DEBUG":
-                    if (exports.isDev) {
-                        console.debug(timePart, modulePart, levelPart, msgPart);
-                    }
-                    break;
-                default:
-                    console.log(timePart, modulePart, levelPart, msgPart);
-                    break;
-            }
-        }
-        else {
+        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
             console.log(JSON.stringify({
                 time: timePart,
                 module: modulePart,
                 level: levelPart,
                 msg: typeof msg === "string" ? msg : JSON.stringify(msg),
             }));
+            return;
+        }
+        module = module.toUpperCase();
+        if (exports.isNode) {
+            switch (level) {
+                case "DEBUG":
+                    timePart = exports.CONSOLE_STYLE_FgGray + now + exports.CONSOLE_STYLE_Reset;
+                    break;
+                default:
+                    timePart = exports.CONSOLE_STYLE_FgCyan + now + exports.CONSOLE_STYLE_Reset;
+                    break;
+            }
+            modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
+            levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
+            switch (level) {
+                case "ERROR":
+                    if (typeof msg === "string") {
+                        msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
+                    }
+                    break;
+                case "DEBUG":
+                    if (typeof msg === "string") {
+                        msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
+                    }
+                    break;
+            }
+        }
+        else {
+            modulePart = `[${module}]`;
+            levelPart = `${level}:`;
+        }
+        switch (level) {
+            case "ERROR":
+                console.error(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "WARN":
+                console.warn(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "INFO":
+                console.info(timePart, modulePart, levelPart, msgPart);
+                break;
+            case "DEBUG":
+                if (exports.isDev) {
+                    console.debug(timePart, modulePart, levelPart, msgPart);
+                }
+                break;
+            default:
+                console.log(timePart, modulePart, levelPart, msgPart);
+                break;
         }
     }
     info(module, msg) {
