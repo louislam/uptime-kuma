@@ -189,11 +189,14 @@ class UptimeCalculator {
     /**
      * @param {number} status status
      * @param {number} ping Ping
+     * @param {dayjs.Dayjs} date Date (Only for migration)
      * @returns {dayjs.Dayjs} date
      * @throws {Error} Invalid status
      */
-    async update(status, ping = 0) {
-        let date = this.getCurrentDate();
+    async update(status, ping = 0, date) {
+        if (!date) {
+            date = this.getCurrentDate();
+        }
 
         let flatStatus = this.flatStatus(status);
 

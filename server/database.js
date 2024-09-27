@@ -6,6 +6,8 @@ const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
 const { Settings } = require("./settings");
+const { UptimeCalculator } = require("./uptime-calculator");
+const dayjs = require("dayjs");
 
 /**
  * Database & App Data Folder
@@ -734,7 +736,7 @@ class Database {
         log.debug("db", "Enter Migrate Aggregate Table function");
 
         //
-        let migrated = Settings.get("migratedAggregateTable");
+        let migrated = await Settings.get("migratedAggregateTable");
 
         if (migrated) {
             log.debug("db", "Migrated, skip migration");
@@ -750,6 +752,7 @@ class Database {
         let dates = await trx.raw(`
             SELECT DISTINCT DATE(time) AS date
             FROM heartbeat
+            ORDER BY date ASC
         `);
 
         // Get a list of unique monitors from the heartbeat table, using raw sql
@@ -758,16 +761,40 @@ class Database {
             FROM heartbeat
         `);
 
-        // Show warning if stat_* tables are not empty
+        // Stop if stat_* tables are not empty
         for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
-            let count = await trx(table).count("*").first();
-            if (count.count > 0) {
-                log.warn("db", `Table ${table} is not empty, migration may cause data loss (Maybe you were using 2.0.0-dev?)`);
+            let countResult = await trx.raw(`SELECT COUNT(*) AS count FROM ${table}`);
+            let count = countResult[0].count;
+            if (count > 0) {
+                log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
+                return;
             }
         }
 
         console.log("Dates", dates);
         console.log("Monitors", monitors);
+
+        for (let monitor of monitors) {
+            for (let date of dates) {
+                log.info("db", `Migrating monitor ${monitor.monitor_id} on date ${date.date}`);
+
+                // New Uptime Calculator
+                let calculator = new UptimeCalculator();
+
+                // TODO: Pass transaction to the calculator
+                // calculator.setTransaction(trx);
+
+                // Get all the heartbeats for this monitor and date
+                let heartbeats = await trx("heartbeat")
+                    .where("monitor_id", monitor.monitor_id)
+                    .whereRaw("DATE(time) = ?", [ date.date ])
+                    .orderBy("time", "asc");
+
+                for (let heartbeat of heartbeats) {
+                    calculator.update(heartbeat.status, heartbeat.ping, dayjs(heartbeat.time));
+                }
+            }
+        }
 
         trx.commit();
 
