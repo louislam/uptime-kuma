@@ -735,7 +735,7 @@ class Database {
         log.debug("db", "Enter Migrate Aggregate Table function");
 
         //
-        let migrated = false;
+        let migrated = Settings.get("migratedAggregateTable");
 
         if (migrated) {
             log.debug("db", "Migrated, skip migration");
@@ -759,10 +759,20 @@ class Database {
             FROM heartbeat
         `);
 
+        // Show warning if stat_* tables are not empty
+        for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
+            let count = await trx(table).count("*").first();
+            if (count.count > 0) {
+                log.warn("db", `Table ${table} is not empty, migration may cause data loss (Maybe you were using 2.0.0-dev?)`);
+            }
+        }
+
         console.log("Dates", dates);
         console.log("Monitors", monitors);
 
         trx.commit();
+
+        //await Settings.set("migratedAggregateTable", true);
     }
 
 }
