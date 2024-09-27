@@ -1,7 +1,8 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setSettings, setting } = require("../util-server");
 const { getMonitorRelativeURL, UP } = require("../../src/util");
+const { Settings } = require("../settings");
+const { log } = require("../../src/util");
 
 class Slack extends NotificationProvider {
     name = "slack";
@@ -14,15 +15,13 @@ class Slack extends NotificationProvider {
      * @returns {Promise<void>}
      */
     static async deprecateURL(url) {
-        let currentPrimaryBaseURL = await setting("primaryBaseURL");
+        let currentPrimaryBaseURL = await Settings.get("primaryBaseURL");
 
         if (!currentPrimaryBaseURL) {
-            console.log("Move the url to be the primary base URL");
-            await setSettings("general", {
-                primaryBaseURL: url,
-            });
+            log.error("notification", "Move the url to be the primary base URL");
+            await Settings.set("primaryBaseURL", url, "general");
         } else {
-            console.log("Already there, no need to move the primary base URL");
+            log.debug("notification", "Already there, no need to move the primary base URL");
         }
     }
 
@@ -136,7 +135,7 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const baseURL = await setting("primaryBaseURL");
+            const baseURL = await Settings.get("primaryBaseURL");
 
             const title = "Uptime Kuma Alert";
             let data = {
