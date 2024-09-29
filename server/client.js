@@ -6,8 +6,8 @@ const { R } = require("redbean-node");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const server = UptimeKumaServer.getInstance();
 const io = server.io;
-const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
+const { Settings } = require("./settings");
 const Database = require("./database");
 
 /**
@@ -158,8 +158,8 @@ async function sendInfo(socket, hideVersion = false) {
         version,
         latestVersion,
         isContainer,
+        primaryBaseURL: await Settings.get("primaryBaseURL"),
         dbType,
-        primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
     });
@@ -213,6 +213,32 @@ async function sendRemoteBrowserList(socket) {
     return list;
 }
 
+/**
+ * Send list of monitor types to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<void>}
+ */
+async function sendMonitorTypeList(socket) {
+    const result = Object.entries(UptimeKumaServer.monitorTypeList).map(([ key, type ]) => {
+        return [ key, {
+            supportsConditions: type.supportsConditions,
+            conditionVariables: type.conditionVariables.map(v => {
+                return {
+                    id: v.id,
+                    operators: v.operators.map(o => {
+                        return {
+                            id: o.id,
+                            caption: o.caption,
+                        };
+                    }),
+                };
+            }),
+        }];
+    });
+
+    io.to(socket.userID).emit("monitorTypeList", Object.fromEntries(result));
+}
+
 module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
@@ -222,4 +248,5 @@ module.exports = {
     sendInfo,
     sendDockerHostList,
     sendRemoteBrowserList,
+    sendMonitorTypeList,
 };

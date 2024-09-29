@@ -17,6 +17,8 @@ import * as timezone from "dayjs/plugin/timezone";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as utc from "dayjs/plugin/utc";
 
+import * as jsonata from "jsonata";
+
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
 export const appName = "Uptime Kuma";
@@ -154,15 +156,6 @@ export function ucfirst(str: string) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 
-/**
- * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
- * @param msg Message to write
- * @returns {void}
- */
-export function debug(msg: unknown) {
-    log.log("", msg, "debug");
-}
-
 class Logger {
 
     /**
@@ -204,12 +197,13 @@ class Logger {
 
     /**
      * Write a message to the log
+     * @private
      * @param module The module the log comes from
      * @param msg Message to write
-     * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @param level {"INFO"|"WARN"|"ERROR"|"DEBUG"} Log level
      * @returns {void}
      */
-    log(module: string, msg: any, level: string) {
+    log(module: string, msg: unknown, level: "INFO"|"WARN"|"ERROR"|"DEBUG"): void {
         if (level === "DEBUG" && !isDev) {
             return;
         }
@@ -217,9 +211,6 @@ class Logger {
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
-
-        module = module.toUpperCase();
-        level = level.toUpperCase();
 
         let now;
         if (dayjs.tz) {
@@ -231,10 +222,23 @@ class Logger {
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
 
-        let timePart: string;
-        let modulePart: string;
-        let levelPart: string;
-        let msgPart: string;
+        let timePart: string = now;
+        let modulePart: string = module;
+        let levelPart: string = level;
+        let msgPart: unknown = msg;
+
+        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
+            console.log(JSON.stringify({
+                time: timePart,
+                module: modulePart,
+                level: levelPart,
+                msg: typeof msg === "string" ? msg : JSON.stringify(msg),
+            }));
+            return;
+        }
+
+        // Console rendering:
+        module = module.toUpperCase();
 
         if (isNode) {
             // Add console colors
@@ -255,27 +259,18 @@ class Logger {
                 case "ERROR":
                     if (typeof msg === "string") {
                         msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
                     }
                     break;
                 case "DEBUG":
                     if (typeof msg === "string") {
                         msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
                     }
-                    break;
-                default:
-                    msgPart = msg;
                     break;
             }
         } else {
             // No console colors
-            timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
-            msgPart = msg;
         }
 
         // Write to console
@@ -306,8 +301,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    info(module: string, msg: unknown) {
-        this.log(module, msg, "info");
+    info(module: string, msg: string): void {
+        this.log(module, msg, "INFO");
     }
 
     /**
@@ -316,8 +311,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    warn(module: string, msg: unknown) {
-        this.log(module, msg, "warn");
+    warn(module: string, msg: string): void {
+        this.log(module, msg, "WARN");
     }
 
     /**
@@ -326,8 +321,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    error(module: string, msg: unknown) {
-        this.log(module, msg, "error");
+    error(module: string, msg: string): void {
+        this.log(module, msg, "ERROR");
     }
 
     /**
@@ -336,8 +331,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    debug(module: string, msg: unknown) {
-        this.log(module, msg, "debug");
+    debug(module: string, msg: string): void {
+        this.log(module, msg, "DEBUG");
     }
 
     /**
@@ -354,7 +349,7 @@ class Logger {
             finalMessage = `${msg}: ${exception}`;
         }
 
-        this.log(module, finalMessage, "error");
+        this.log(module, finalMessage, "ERROR");
     }
 }
 
@@ -398,7 +393,7 @@ export class TimeLogger {
      * @param name Name of monitor
      * @returns {void}
      */
-    print(name: string) {
+    print(name: string): void {
         if (isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
@@ -643,3 +638,76 @@ export function intHash(str : string, length = 10) : number {
     return (hash % length + length) % length; // Ensure the result is non-negative
 }
 
+/**
+ * Evaluate a JSON query expression against the provided data.
+ * @param data The data to evaluate the JSON query against.
+ * @param jsonPath The JSON path or custom JSON query expression.
+ * @param jsonPathOperator The operator to use for comparison.
+ * @param expectedValue The expected value to compare against.
+ * @returns An object containing the status and the evaluation result.
+ * @throws Error if the evaluation returns undefined.
+ */
+export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOperator: string, expectedValue: any): Promise<{ status: boolean; response: any }> {
+    // Attempt to parse data as JSON; if unsuccessful, handle based on data type.
+    let response: any;
+    try {
+        response = JSON.parse(data);
+    } catch {
+        response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
+    }
+
+    try {
+        // If a JSON path is provided, pre-evaluate the data using it.
+        response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
+
+        if (response === null || response === undefined) {
+            throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+
+        if (typeof response === "object" || response instanceof Date || typeof response === "function") {
+            throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
+        }
+
+        // Perform the comparison logic using the chosen operator
+        let jsonQueryExpression;
+        switch (jsonPathOperator) {
+            case ">":
+            case ">=":
+            case "<":
+            case "<=":
+                jsonQueryExpression = `$number($.value) ${jsonPathOperator} $number($.expected)`;
+                break;
+            case "!=":
+                jsonQueryExpression = "$.value != $.expected";
+                break;
+            case "==":
+                jsonQueryExpression = "$.value = $.expected";
+                break;
+            case "contains":
+                jsonQueryExpression = "$contains($.value, $.expected)";
+                break;
+            default:
+                throw new Error(`Invalid condition ${jsonPathOperator}`);
+        }
+
+        // Evaluate the JSON Query Expression
+        const expression = jsonata(jsonQueryExpression);
+        const status = await expression.evaluate({
+            value: response.toString(),
+            expected: expectedValue.toString()
+        });
+
+        if (status === undefined) {
+            throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
+        }
+
+        return {
+            status,  // The evaluation of the json query
+            response // The response from the server or result from initial json-query evaluation
+        };
+    } catch (err: any) {
+        response = JSON.stringify(response); // Ensure the response is treated as a string for the console
+        response = (response && response.length > 50) ? `${response.substring(0, 100)}… (truncated)` : response;// Truncate long responses to the console
+        throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
+    }
+}

@@ -2,9 +2,9 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT
+    SQL_DATETIME_FORMAT, evaluateJsonQuery
 } = require("../../src/util");
-const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
+const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, mssqlQuery, postgresQuery, mysqlQuery, httpNtlm, radius, grpcQuery,
     redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
 } = require("../util-server");
 const { R } = require("redbean-node");
@@ -17,7 +17,6 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
-const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -25,6 +24,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const { Settings } = require("../settings");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -160,7 +160,12 @@ class Monitor extends BeanModel {
             kafkaProducerAllowAutoTopicCreation: this.getKafkaProducerAllowAutoTopicCreation(),
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
+            cacheBust: this.getCacheBust(),
             remote_browser: this.remote_browser,
+            snmpOid: this.snmpOid,
+            jsonPathOperator: this.jsonPathOperator,
+            snmpVersion: this.snmpVersion,
+            conditions: JSON.parse(this.conditions),
         };
 
         if (includeSensitiveData) {
@@ -294,6 +299,14 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Parse to boolean
+     * @returns {boolean} if cachebusting is enabled
+     */
+    getCacheBust() {
+        return Boolean(this.cacheBust);
+    }
+
+    /**
      * Get accepted status codes
      * @returns {object} Accepted status codes
      */
@@ -334,7 +347,7 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
-        this.prometheus = new Prometheus(this);
+        this.prometheus = await Prometheus.createAndInitMetrics(this);
 
         const beat = async () => {
 
@@ -498,6 +511,14 @@ class Monitor extends BeanModel {
                         options.data = bodyValue;
                     }
 
+                    if (this.cacheBust) {
+                        const randomFloatString = Math.random().toString(36);
+                        const cacheBust = randomFloatString.substring(2);
+                        options.params = {
+                            uptime_kuma_cachebuster: cacheBust,
+                        };
+                    }
+
                     if (this.proxy_id) {
                         const proxy = await R.load("proxy", this.proxy_id);
 
@@ -598,25 +619,15 @@ class Monitor extends BeanModel {
                     } else if (this.type === "json-query") {
                         let data = res.data;
 
-                        // convert data to object
-                        if (typeof data === "string" && res.headers["content-type"] !== "application/json") {
-                            try {
-                                data = JSON.parse(data);
-                            } catch (_) {
-                                // Failed to parse as JSON, just process it as a string
-                            }
-                        }
+                        const { status, response } = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
 
-                        let expression = jsonata(this.jsonPath);
-
-                        let result = await expression.evaluate(data);
-
-                        if (result.toString() === this.expectedValue) {
-                            bean.msg += ", expected value is found";
+                        if (status) {
                             bean.status = UP;
+                            bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
                         } else {
-                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
+                            throw new Error(`JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`);
                         }
+
                     }
 
                 } else if (this.type === "port") {
@@ -662,7 +673,7 @@ class Monitor extends BeanModel {
 
                 } else if (this.type === "steam") {
                     const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
-                    const steamAPIKey = await setting("steamAPIKey");
+                    const steamAPIKey = await Settings.get("steamAPIKey");
                     const filter = `addr\\${this.hostname}:${this.port}`;
 
                     if (!steamAPIKey) {
@@ -988,7 +999,7 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            this.prometheus?.update(bean, tlsInfo);
+            await this.prometheus?.update(bean, tlsInfo);
 
             previousBeat = bean;
 
@@ -1369,11 +1380,12 @@ class Monitor extends BeanModel {
                 return;
             }
 
-            let notifyDays = await setting("tlsExpiryNotifyDays");
+            let notifyDays = await Settings.get("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
                 // Reset Default
-                await setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+                await Settings.set("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
                 notifyDays = [ 7, 14, 21 ];
+                await Settings.set("tlsExpiryNotifyDays", notifyDays, "general");
             }
 
             if (Array.isArray(notifyDays)) {

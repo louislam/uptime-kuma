@@ -14,7 +14,7 @@
             v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
             class="d-flex justify-content-between align-items-center word" :style="timeStyle"
         >
-            <div>{{ timeSinceFirstBeat }} ago</div>
+            <div>{{ timeSinceFirstBeat }}</div>
             <div v-if="$root.styleElapsedTime === 'with-line'" class="connecting-line"></div>
             <div>{{ timeSinceLastBeat }}</div>
         </div>
@@ -184,11 +184,11 @@ export default {
             }
 
             if (seconds < tolerance) {
-                return "now";
+                return this.$t("now");
             } else if (seconds < 60 * 60) {
-                return (seconds / 60).toFixed(0) + "m ago";
+                return this.$t("time ago", [ (seconds / 60).toFixed(0) + "m" ]);
             } else {
-                return (seconds / 60 / 60).toFixed(0) + "h ago";
+                return this.$t("time ago", [ (seconds / 60 / 60).toFixed(0) + "h" ]);
             }
         }
     },

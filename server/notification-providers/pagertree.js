@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { UP, DOWN, getMonitorRelativeURL } = require("../../src/util");
-const { setting } = require("../util-server");
+const { Settings } = require("../settings");
 let successMessage = "Sent Successfully.";
 
 class PagerTree extends NotificationProvider {
@@ -74,7 +74,7 @@ class PagerTree extends NotificationProvider {
             }
         };
 
-        const baseURL = await setting("primaryBaseURL");
+        const baseURL = await Settings.get("primaryBaseURL");
         if (baseURL && monitorJSON) {
             options.client = "Uptime Kuma";
             options.client_url = baseURL + getMonitorRelativeURL(monitorJSON.id);

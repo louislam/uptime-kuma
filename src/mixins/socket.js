@@ -38,6 +38,7 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
+            monitorTypeList: {},
             maintenanceList: {},
             apiKeyList: {},
             heartbeatList: { },
@@ -153,6 +154,10 @@ export default {
                 this.monitorList = data;
             });
 
+            socket.on("monitorTypeList", (data) => {
+                this.monitorTypeList = data;
+            });
+
             socket.on("maintenanceList", (data) => {
                 this.maintenanceList = data;
             });
@@ -251,7 +256,7 @@ export default {
 
             socket.on("disconnect", () => {
                 console.log("disconnect");
-                this.connectionErrorMsg = "Lost connection to the socket server. Reconnecting...";
+                this.connectionErrorMsg = `${this.$t("Lost connection to the socket server.")} ${this.$t("Reconnecting...")}`;
                 this.socket.connected = false;
             });
 

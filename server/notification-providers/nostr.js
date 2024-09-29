@@ -1,4 +1,3 @@
-const { log } = require("../../src/util");
 const NotificationProvider = require("./notification-provider");
 const {
     relayInit,
@@ -12,16 +11,7 @@ const {
 // polyfills for node versions
 const semver = require("semver");
 const nodeVersion = process.version;
-if (semver.lt(nodeVersion, "16.0.0")) {
-    log.warn("monitor", "Node <= 16 is unsupported for nostr, sorry :(");
-} else if (semver.lt(nodeVersion, "18.0.0")) {
-    // polyfills for node 16
-    global.crypto = require("crypto");
-    global.WebSocket = require("isomorphic-ws");
-    if (typeof crypto !== "undefined" && !crypto.subtle && crypto.webcrypto) {
-        crypto.subtle = crypto.webcrypto.subtle;
-    }
-} else if (semver.lt(nodeVersion, "20.0.0")) {
+if (semver.lt(nodeVersion, "20.0.0")) {
     // polyfills for node 18
     global.crypto = require("crypto");
     global.WebSocket = require("isomorphic-ws");

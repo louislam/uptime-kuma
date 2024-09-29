@@ -4,6 +4,11 @@ const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const googleAnalytics = require("../google-analytics");
+const { marked } = require("marked");
+const { Feed } = require("feed");
+const config = require("../config");
+
+const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
 
 class StatusPage extends BeanModel {
 
@@ -12,6 +17,24 @@ class StatusPage extends BeanModel {
      * @type {{}}
      */
     static domainMappingList = { };
+
+    /**
+     * Handle responses to RSS pages
+     * @param {Response} response Response object
+     * @param {string} slug Status page slug
+     * @returns {Promise<void>}
+     */
+    static async handleStatusPageRSSResponse(response, slug) {
+        let statusPage = await R.findOne("status_page", " slug = ? ", [
+            slug
+        ]);
+
+        if (statusPage) {
+            response.send(await StatusPage.renderRSS(statusPage, slug));
+        } else {
+            response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
+        }
+    }
 
     /**
      * Handle responses to status page
@@ -39,6 +62,38 @@ class StatusPage extends BeanModel {
     }
 
     /**
+     * SSR for RSS feed
+     * @param {statusPage} statusPage object
+     * @param {slug} slug from router
+     * @returns {Promise<string>} the rendered html
+     */
+    static async renderRSS(statusPage, slug) {
+        const { heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
+
+        let proto = config.isSSL ? "https" : "http";
+        let host = `${proto}://${config.hostname || "localhost"}:${config.port}/status/${slug}`;
+
+        const feed = new Feed({
+            title: "uptime kuma rss feed",
+            description: `current status: ${statusDescription}`,
+            link: host,
+            language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
+            updated: new Date(), // optional, default = today
+        });
+
+        heartbeats.forEach(heartbeat => {
+            feed.addItem({
+                title: `${heartbeat.name} is down`,
+                description: `${heartbeat.name} has been down since ${heartbeat.time}`,
+                id: heartbeat.monitorID,
+                date: new Date(heartbeat.time),
+            });
+        });
+
+        return feed.rss2();
+    }
+
+    /**
      * SSR for status pages
      * @param {string} indexHTML HTML page to render
      * @param {StatusPage} statusPage Status page populate HTML with
@@ -46,7 +101,11 @@ class StatusPage extends BeanModel {
      */
     static async renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
-        const description155 = statusPage.description?.substring(0, 155) ?? "";
+
+        const description155 = marked(statusPage.description ?? "")
+            .replace(/<[^>]+>/gm, "")
+            .trim()
+            .substring(0, 155);
 
         $("title").text(statusPage.title);
         $("meta[name=description]").attr("content", description155);
@@ -91,6 +150,109 @@ class StatusPage extends BeanModel {
         $("link[rel=manifest]").attr("href", `/api/status-page/${statusPage.slug}/manifest.json`);
 
         return $.root().html();
+    }
+
+    /**
+     * @param {heartbeats} heartbeats from getRSSPageData
+     * @returns {number} status_page constant from util.ts
+     */
+    static overallStatus(heartbeats) {
+        if (heartbeats.length === 0) {
+            return -1;
+        }
+
+        let status = STATUS_PAGE_ALL_UP;
+        let hasUp = false;
+
+        for (let beat of heartbeats) {
+            if (beat.status === MAINTENANCE) {
+                return STATUS_PAGE_MAINTENANCE;
+            } else if (beat.status === UP) {
+                hasUp = true;
+            } else {
+                status = STATUS_PAGE_PARTIAL_DOWN;
+            }
+        }
+
+        if (! hasUp) {
+            status = STATUS_PAGE_ALL_DOWN;
+        }
+
+        return status;
+    }
+
+    /**
+     * @param {number} status from overallStatus
+     * @returns {string} description
+     */
+    static getStatusDescription(status) {
+        if (status === -1) {
+            return "No Services";
+        }
+
+        if (status === STATUS_PAGE_ALL_UP) {
+            return "All Systems Operational";
+        }
+
+        if (status === STATUS_PAGE_PARTIAL_DOWN) {
+            return "Partially Degraded Service";
+        }
+
+        if (status === STATUS_PAGE_ALL_DOWN) {
+            return "Degraded Service";
+        }
+
+        // TODO: show the real maintenance information: title, description, time
+        if (status === MAINTENANCE) {
+            return "Under maintenance";
+        }
+
+        return "?";
+    }
+
+    /**
+     * Get all data required for RSS
+     * @param {StatusPage} statusPage Status page to get data for
+     * @returns {object} Status page data
+     */
+    static async getRSSPageData(statusPage) {
+        // get all heartbeats that correspond to this statusPage
+        const config = await statusPage.toPublicJSON();
+
+        // Public Group List
+        const showTags = !!statusPage.show_tags;
+
+        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
+            statusPage.id
+        ]);
+
+        let heartbeats = [];
+
+        for (let groupBean of list) {
+            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+            for (const monitor of monitorGroup.monitorList) {
+                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [ monitor.id ]);
+                if (heartbeat) {
+                    heartbeats.push({
+                        ...monitor,
+                        status: heartbeat.status,
+                        time: heartbeat.time
+                    });
+                }
+            }
+        }
+
+        // calculate RSS feed description
+        let status = StatusPage.overallStatus(heartbeats);
+        let statusDescription = StatusPage.getStatusDescription(status);
+
+        // keep only DOWN heartbeats in the RSS feed
+        heartbeats = heartbeats.filter(heartbeat => heartbeat.status === DOWN);
+
+        return {
+            heartbeats,
+            statusDescription
+        };
     }
 
     /**
