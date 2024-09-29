@@ -89,7 +89,7 @@
         "cacheable-lookup": "~6.0.4",
         "chardet": "~1.4.0",
         "check-password-strength": "^2.0.5",
-        "cheerio": "~1.0.0-rc.12",
+        "cheerio": "1.0.0-rc.12",
         "chroma-js": "~2.4.2",
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
