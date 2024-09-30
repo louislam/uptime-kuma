@@ -778,5 +778,8 @@
     "Add a domain": "도메인 추가",
     "Remove domain": "도메인 '{0}' 제거",
     "Monitor Group": "모니터링 그룹",
-    "Monitor Setting": "{0}의 모니터 설정"
+    "Monitor Setting": "{0}의 모니터 설정",
+    "now": "지금",
+    "time ago": "{0} 전",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "연결하려는 서버의 호스트 이름을 입력하거나 {local_mta}를 사용하려는 경우 {localhost}를 입력합니다"
 }
