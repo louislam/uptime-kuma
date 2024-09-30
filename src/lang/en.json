@@ -976,7 +976,7 @@
     "privateOnesenderDesc": "Make sure the number phone is valid. To send message into private number phone, ex: 628123456789",
     "groupOnesenderDesc": "Make sure the GroupID is valid. To send message into Group, ex: 628123456789-342345",
     "Group ID": "Group ID",
-    "wayToGetOnesenderUrlandToken":"You can get the URL and Token by going to the Onesender website. More info {0}",
+    "wayToGetOnesenderUrlandToken": "You can get the URL and Token by going to the Onesender website. More info {0}",
     "Add Remote Browser": "Add Remote Browser",
     "New Group": "New Group",
     "Group Name": "Group Name",
