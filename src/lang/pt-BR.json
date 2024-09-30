@@ -967,5 +967,18 @@
     "cacheBusterParam": "Adicionar o parâmetro {0}",
     "snmpCommunityStringHelptext": "Esta string funciona como uma senha para autenticar e controlar o acesso a dispositivos habilitados para SNMP. Combine-a com a configuração do seu dispositivo SNMP.",
     "OID (Object Identifier)": "OID (Identificador do Objeto)",
-    "Condition": "Condição"
+    "Condition": "Condição",
+    "Recipient Type": "Tipo de destinatário",
+    "wayToGetOnesenderUrlandToken": "Você pode obter a URL e o Token acessando o site da Onesender. Mais informações {0}",
+    "cacheBusterParamDescription": "Parâmetro gerado randomicamente para ignorar cache.",
+    "SNMP Version": "Versão SNMP",
+    "Please enter a valid OID.": "Por favor, insira um OID válido.",
+    "Private Number": "Número Privado",
+    "Group ID": "ID do Grupo",
+    "Add Remote Browser": "Adicionar Navegador Remoto",
+    "New Group": "Novo Grupo",
+    "Group Name": "Nome do Grupo",
+    "OAuth2: Client Credentials": "OAuth2: Client Credentials",
+    "Authentication Method": "Método de Autenticação",
+    "Authorization Header": "Header de Autorização"
 }
