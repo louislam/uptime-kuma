@@ -736,5 +736,6 @@
     "and": "e",
     "whatHappensAtForumPost": "Crea un nuovo post sul forum. Questo NON pubblica messaggi in post esistenti. Per pubblicare in un post esistente utilizzare \"{option}\"",
     "invertKeywordDescription": "Cerca la parola chiave essere assente anziché presente.",
-    "octopushAPIKey": "\"API Key\" dalle credenziali API HTTP nel pannello di controllo"
+    "octopushAPIKey": "\"API Key\" dalle credenziali API HTTP nel pannello di controllo",
+    "Enable TLS": "Abilita TLS"
 }
