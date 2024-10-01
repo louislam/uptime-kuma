@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { step } from "../tools/step";
 
 test.describe("Status Page", () => {
 
@@ -8,6 +9,7 @@ test.describe("Status Page", () => {
     });
 
     test("create and edit", async ({ page }, testInfo) => {
+        step("Setting up monitor details");
         // Monitor
         const monitorName = "Monitor for Status Page";
         const tagName = "Client";
@@ -24,6 +26,7 @@ test.describe("Status Page", () => {
         const incidentContent = "Sample incident message.";
         const groupName = "Example Group 1";
 
+        step("Navigating to add monitor page and creating a new monitor");
         // Set up a monitor that can be added to the Status Page
         await page.goto("./add");
         await login(page);
@@ -40,6 +43,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
 
+        step("Creating a new status page");
         // Create a new status page
         await page.goto("./add-status-page");
         await screenshot(testInfo, page);
@@ -49,6 +53,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("submit-button").click();
         await page.waitForURL("/status/example?edit"); // wait for the page to be created
 
+        step("Filling status page details");
         // Fill in some details
         await page.getByTestId("description-input").fill(descriptionText);
         await page.getByTestId("footer-text-input").fill(footerText);
@@ -62,6 +67,7 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("description-editable")).toHaveText(descriptionText);
         await expect(page.getByTestId("custom-footer-editable")).toHaveText(footerText);
 
+        step("Adding incident and group");
         // Add an incident
         await page.getByTestId("create-incident-button").click();
         await page.getByTestId("incident-title").isEditable();
@@ -74,12 +80,14 @@ test.describe("Status Page", () => {
         await page.getByTestId("group-name").isEditable();
         await page.getByTestId("group-name").fill(groupName);
 
+        step("Adding monitor to the group");
         // Add the monitor
         await page.getByTestId("monitor-select").click(); // Vue-Multiselect component
         await page.getByTestId("monitor-select").getByRole("option", { name: monitorName }).click();
         await expect(page.getByTestId("monitor")).toHaveCount(1);
         await expect(page.getByTestId("monitor-name")).toContainText(monitorName);
 
+        step("Saving changes and verifying");
         // Save the changes
         await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
@@ -95,7 +103,7 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("powered-by")).toHaveCount(0);
 
         await expect(page.getByTestId("update-countdown-text")).toContainText("00:");
-        const updateCountdown = Number((await page.getByTestId("update-countdown-text").textContent()).match(/(\d+):(\d+)/)[2]) ;
+        const updateCountdown = Number((await page.getByTestId("update-countdown-text").textContent()).match(/(\d+):(\d+)/)[2]);
         expect(updateCountdown).toBeGreaterThanOrEqual(refreshInterval); // cant be certain when the timer will start, so ensure it's within expected range
         expect(updateCountdown).toBeLessThanOrEqual(refreshInterval + 10);
 
@@ -107,6 +115,7 @@ test.describe("Status Page", () => {
 
         await screenshot(testInfo, page);
 
+        step("Toggling show tags and powered by");
         // Flip the "Show Tags" and "Show Powered By" switches:
         await page.getByTestId("edit-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(1);
