@@ -1,19 +1,37 @@
 import { expect, test } from "@playwright/test";
 import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
+/**
+ * Represents the status page functionality for the application.
+ */
 export class StatusPage {
+    /**
+     * @param {import('@playwright/test').Page} page - The Playwright page object.
+     */
     constructor(page) {
         this.page = page;
     }
 
+    /**
+     * Navigates to the monitor add page.
+     */
     async goToMonitorAddPage() {
         await this.page.goto("./add");
     }
 
+    /**
+     * Navigates to the status page add.
+     */
     async goToStatusPageAdd() {
         await this.page.goto("./add-status-page");
     }
 
+    /**
+     * Fills in the monitor details form.
+     * @param {string} monitorName - The name of the monitor.
+     * @param {string} tagName - The name of the tag to be added.
+     * @param {string} tagValue - The value of the tag to be added.
+     */
     async fillMonitorDetails(monitorName, tagName, tagValue) {
         await this.page.getByTestId("monitor-type-select").selectOption("http");
         await this.page.getByTestId("friendly-name-input").fill(monitorName);
@@ -32,6 +50,15 @@ export class StatusPage {
         await this.page.getByTestId("save-button").click();
     }
 
+    /**
+     * Fills in the status page details form.
+     * @param {string} descriptionText - The description for the status page.
+     * @param {string} footerText - The footer text for the status page.
+     * @param {number} refreshInterval - The refresh interval for the status page.
+     * @param {string} theme - The selected theme for the status page.
+     * @param {string} googleAnalyticsId - The Google Analytics ID.
+     * @param {string} customCss - Custom CSS to apply to the status page.
+     */
     async fillStatusPageDetails(
         descriptionText,
         footerText,
@@ -60,6 +87,11 @@ export class StatusPage {
             .fill(customCss);
     }
 
+    /**
+     * Adds an incident to the status page.
+     * @param {string} incidentTitle - The title of the incident.
+     * @param {string} incidentContent - The content of the incident.
+     */
     async addIncident(incidentTitle, incidentContent) {
         await this.page.getByTestId("create-incident-button").click();
         await this.page.getByTestId("incident-title").fill(incidentTitle);
@@ -69,11 +101,19 @@ export class StatusPage {
         await this.page.getByTestId("post-incident-button").click();
     }
 
+    /**
+     * Adds a group to the status page.
+     * @param {string} groupName - The name of the group to be added.
+     */
     async addGroup(groupName) {
         await this.page.getByTestId("add-group-button").click();
         await this.page.getByTestId("group-name").fill(groupName);
     }
 
+    /**
+     * Adds a monitor to a specified group.
+     * @param {string} monitorName - The name of the monitor to be added.
+     */
     async addMonitorToGroup(monitorName) {
         await this.page.getByTestId("monitor-select").click();
         await this.page
@@ -82,10 +122,25 @@ export class StatusPage {
             .click();
     }
 
+    /**
+     * Saves changes made on the status page.
+     */
     async saveChanges() {
         await this.page.getByTestId("save-button").click();
     }
 
+    /**
+     * Verifies that the changes made are reflected correctly on the status page.
+     * @param {string} descriptionText - The expected description text.
+     * @param {string} footerText - The expected footer text.
+     * @param {string} incidentTitle - The expected incident title.
+     * @param {string} incidentContent - The expected incident content.
+     * @param {string} groupName - The expected group name.
+     * @param {string} tagValue - The expected tag value.
+     * @param {string} theme - The expected theme.
+     * @param {string} googleAnalyticsId - The expected Google Analytics ID.
+     * @param {number} refreshInterval - The expected refresh interval.
+     */
     async verifyChanges(
         descriptionText,
         footerText,
@@ -137,6 +192,9 @@ export class StatusPage {
         );
     }
 
+    /**
+     * Toggles the visibility of tags and the powered-by section on the status page.
+     */
     async toggleShowTagsPoweredBy() {
         await this.page.getByTestId("edit-button").click();
         await this.page.getByTestId("show-tags-checkbox").setChecked(true);

@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { restoreSqliteSnapshot } from "../util-test";
+import { restoreSqliteSnapshot, screenshot } from "../util-test";
 import { MonitorForm } from "./MonitorForm";
 
 test.describe("Monitor Form", () => {
