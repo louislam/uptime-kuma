@@ -14,6 +14,7 @@ export class SetupProcess {
     /**
      * Sets up the SQLite database.
      * @param {import('@playwright/test').TestInfo} testInfo - The test information for logging.
+     * @returns {Promise<void>} - A promise that resolves when the setup is complete.
      */
     async setupSqlite(testInfo) {
         await this.page.goto("./");
@@ -29,6 +30,7 @@ export class SetupProcess {
      * @param {import('@playwright/test').TestInfo} testInfo - The test information for logging.
      * @param {string} username - The username for the admin account.
      * @param {string} password - The password for the admin account.
+     * @returns {Promise<void>} - A promise that resolves when the setup is complete.
      */
     async setupAdmin(testInfo, username = "admin", password = "admin123") {
         await this.page.goto("./");
@@ -49,6 +51,7 @@ export class SetupProcess {
     /**
      * Logs in to the dashboard.
      * @param {import('@playwright/test').TestInfo} testInfo - The test information for logging.
+     * @returns {Promise<void>} - A promise that resolves when login is complete.
      */
     async login(testInfo) {
         await this.page.goto("./dashboard");
@@ -59,6 +62,7 @@ export class SetupProcess {
     /**
      * Logs out of the dashboard.
      * @param {import('@playwright/test').TestInfo} testInfo - The test information for logging.
+     * @returns {Promise<void>} - A promise that resolves when logout is complete.
      */
     async logout(testInfo) {
         await this.page.goto("./dashboard");
@@ -71,6 +75,7 @@ export class SetupProcess {
     /**
      * Takes a snapshot of the SQLite database.
      * @param {import('@playwright/test').TestInfo} testInfo - The test information for logging.
+     * @returns {Promise<void>} - A promise that resolves when the snapshot is taken.
      */
     async takeSqliteSnapshot(testInfo) {
         await takeSqliteSnapshot(this.page);

@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { expect } from "@playwright/test";
 
 /**
  * Represents the status page functionality for the application.
@@ -14,6 +13,7 @@ export class StatusPage {
 
     /**
      * Navigates to the monitor add page.
+     * @returns {Promise<void>} - A promise that resolves when navigation is complete.
      */
     async goToMonitorAddPage() {
         await this.page.goto("./add");
@@ -21,6 +21,7 @@ export class StatusPage {
 
     /**
      * Navigates to the status page add.
+     * @returns {Promise<void>} - A promise that resolves when navigation is complete.
      */
     async goToStatusPageAdd() {
         await this.page.goto("./add-status-page");
@@ -31,6 +32,7 @@ export class StatusPage {
      * @param {string} monitorName - The name of the monitor.
      * @param {string} tagName - The name of the tag to be added.
      * @param {string} tagValue - The value of the tag to be added.
+     * @returns {Promise<void>} - A promise that resolves when the form filling is complete.
      */
     async fillMonitorDetails(monitorName, tagName, tagValue) {
         await this.page.getByTestId("monitor-type-select").selectOption("http");
@@ -58,6 +60,7 @@ export class StatusPage {
      * @param {string} theme - The selected theme for the status page.
      * @param {string} googleAnalyticsId - The Google Analytics ID.
      * @param {string} customCss - Custom CSS to apply to the status page.
+     * @returns {Promise<void>} - A promise that resolves when the form filling is complete.
      */
     async fillStatusPageDetails(
         descriptionText,
@@ -91,6 +94,7 @@ export class StatusPage {
      * Adds an incident to the status page.
      * @param {string} incidentTitle - The title of the incident.
      * @param {string} incidentContent - The content of the incident.
+     * @returns {Promise<void>} - A promise that resolves when the incident is added.
      */
     async addIncident(incidentTitle, incidentContent) {
         await this.page.getByTestId("create-incident-button").click();
@@ -104,6 +108,7 @@ export class StatusPage {
     /**
      * Adds a group to the status page.
      * @param {string} groupName - The name of the group to be added.
+     * @returns {Promise<void>} - A promise that resolves when the group is added.
      */
     async addGroup(groupName) {
         await this.page.getByTestId("add-group-button").click();
@@ -113,6 +118,7 @@ export class StatusPage {
     /**
      * Adds a monitor to a specified group.
      * @param {string} monitorName - The name of the monitor to be added.
+     * @returns {Promise<void>} - A promise that resolves when the monitor is added to the group.
      */
     async addMonitorToGroup(monitorName) {
         await this.page.getByTestId("monitor-select").click();
@@ -124,6 +130,7 @@ export class StatusPage {
 
     /**
      * Saves changes made on the status page.
+     * @returns {Promise<void>} - A promise that resolves when changes are saved.
      */
     async saveChanges() {
         await this.page.getByTestId("save-button").click();
@@ -140,6 +147,7 @@ export class StatusPage {
      * @param {string} theme - The expected theme.
      * @param {string} googleAnalyticsId - The expected Google Analytics ID.
      * @param {number} refreshInterval - The expected refresh interval.
+     * @returns {Promise<void>} - A promise that resolves when verification is complete.
      */
     async verifyChanges(
         descriptionText,
@@ -174,6 +182,7 @@ export class StatusPage {
         const backgroundColor = await this.page.evaluate(
             () => window.getComputedStyle(document.body).backgroundColor
         );
+
         expect(backgroundColor).toEqual("rgb(0, 128, 128)");
 
         const updateCountdown = Number(
@@ -183,6 +192,7 @@ export class StatusPage {
                     .textContent()
             ).match(/(\d+):(\d+)/)[2]
         );
+
         expect(updateCountdown).toBeGreaterThanOrEqual(refreshInterval);
         expect(updateCountdown).toBeLessThanOrEqual(refreshInterval + 10);
 
@@ -194,6 +204,7 @@ export class StatusPage {
 
     /**
      * Toggles the visibility of tags and the powered-by section on the status page.
+     * @returns {Promise<void>} - A promise that resolves when toggling is complete.
      */
     async toggleShowTagsPoweredBy() {
         await this.page.getByTestId("edit-button").click();

@@ -1,4 +1,4 @@
-import { screenshot, login } from "../util-test"; // Removed restoreSqliteSnapshot since it was unused
+import { screenshot, login } from "../util-test";
 import { expect } from "@playwright/test";
 
 /**
@@ -14,6 +14,7 @@ export class MonitorForm {
 
     /**
      * Navigates to the add monitor page.
+     * @returns {Promise<void>}
      */
     async navigateToAddPage() {
         await this.page.goto("./add");
@@ -22,6 +23,7 @@ export class MonitorForm {
     /**
      * Logs in and takes a screenshot.
      * @param {import('@playwright/test').TestInfo} testInfo - The test information.
+     * @returns {Promise<void>}
      */
     async login(testInfo) {
         await login(this.page);
@@ -31,6 +33,7 @@ export class MonitorForm {
     /**
      * Selects a monitor type from the dropdown.
      * @param {string} type - The type of monitor to select.
+     * @returns {Promise<void>}
      */
     async selectMonitorType(type) {
         const monitorTypeSelect = this.page.getByTestId("monitor-type-select");
@@ -44,6 +47,7 @@ export class MonitorForm {
 
     /**
      * Adds a new condition to the monitor form.
+     * @returns {Promise<void>}
      */
     async addCondition() {
         await this.page.getByTestId("add-condition-button").click();
@@ -51,6 +55,7 @@ export class MonitorForm {
 
     /**
      * Removes the first condition from the monitor form.
+     * @returns {Promise<void>}
      */
     async removeCondition() {
         await this.page.getByTestId("remove-condition").first().click();
@@ -58,6 +63,7 @@ export class MonitorForm {
 
     /**
      * Adds a new condition group to the monitor form.
+     * @returns {Promise<void>}
      */
     async addConditionGroup() {
         await this.page.getByTestId("add-group-button").click();
@@ -65,6 +71,7 @@ export class MonitorForm {
 
     /**
      * Removes the first condition group from the monitor form.
+     * @returns {Promise<void>}
      */
     async removeConditionGroup() {
         await this.page.getByTestId("remove-condition-group").first().click();
@@ -73,6 +80,7 @@ export class MonitorForm {
     /**
      * Sets the values of conditions in the monitor form.
      * @param {string[]} values - The condition values to set.
+     * @returns {Promise<void>}
      */
     async setConditionValues(values) {
         for (let i = 0; i < values.length; i++) {
@@ -86,6 +94,7 @@ export class MonitorForm {
     /**
      * Verifies the number of conditions in the monitor form.
      * @param {number} expectedCount - The expected number of conditions.
+     * @returns {Promise<void>}
      */
     async verifyConditionCount(expectedCount) {
         expect(await this.page.getByTestId("condition").count()).toEqual(
@@ -96,6 +105,7 @@ export class MonitorForm {
     /**
      * Verifies the number of condition groups in the monitor form.
      * @param {number} expectedCount - The expected number of condition groups.
+     * @returns {Promise<void>}
      */
     async verifyConditionGroupCount(expectedCount) {
         expect(await this.page.getByTestId("condition-group").count()).toEqual(
@@ -107,6 +117,7 @@ export class MonitorForm {
      * Fills in the monitor details.
      * @param {string} friendlyName - The friendly name for the monitor.
      * @param {string} hostname - The hostname for the monitor.
+     * @returns {Promise<void>}
      */
     async fillMonitorDetails(friendlyName, hostname) {
         await this.page.getByTestId("friendly-name-input").fill(friendlyName);
@@ -116,6 +127,7 @@ export class MonitorForm {
     /**
      * Selects the resolve type from the dropdown.
      * @param {string} type - The type of resolve to select.
+     * @returns {Promise<void>}
      */
     async selectResolveType(type) {
         const resolveTypeSelect = this.page.getByTestId("resolve-type-select");
@@ -125,6 +137,7 @@ export class MonitorForm {
 
     /**
      * Saves the monitor configuration.
+     * @returns {Promise<void>}
      */
     async saveMonitor() {
         await this.page.getByTestId("save-button").click();
@@ -133,6 +146,7 @@ export class MonitorForm {
     /**
      * Verifies the status of the monitor.
      * @param {string} expectedStatus - The expected status of the monitor.
+     * @returns {Promise<void>}
      */
     async verifyMonitorStatus(expectedStatus) {
         await this.page.waitForURL("/dashboard/*");

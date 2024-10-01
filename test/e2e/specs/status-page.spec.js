@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { test } from "@playwright/test";
 import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 import { StatusPage } from "../pageHelpers/StatusPage";
 
