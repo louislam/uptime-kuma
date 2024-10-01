@@ -11,7 +11,8 @@ class ServerChan extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
-        const url = String(notification.serverChanSendKey).startsWith('sctp')
+        // serverchan3 requires sending via ft07.com
+        const url = String(notification.serverChanSendKey).startsWith("sctp")
             ? `https://${notification.serverChanSendKey}.push.ft07.com/send`
             : `https://sctapi.ftqq.com/${notification.serverChanSendKey}.send`;
 
