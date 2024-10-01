@@ -15,7 +15,6 @@ class ServerChan extends NotificationProvider {
             ? `https://${notification.serverChanSendKey}.push.ft07.com/send`
             : `https://sctapi.ftqq.com/${notification.serverChanSendKey}.send`;
 
-
         try {
             await axios.post(url, {
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),
