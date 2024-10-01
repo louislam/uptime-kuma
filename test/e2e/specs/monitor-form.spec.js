@@ -1,109 +1,89 @@
-import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { test } from "@playwright/test";
+import { restoreSqliteSnapshot } from "../util-test";
+import { MonitorForm } from "./MonitorForm";
 
 test.describe("Monitor Form", () => {
-
     test.beforeEach(async ({ page }) => {
         await restoreSqliteSnapshot(page);
     });
 
+    let monitorForm;
+
+    test.beforeEach(async ({ page }) => {
+        monitorForm = new MonitorForm(page);
+    });
+
     test("condition ui", async ({ page }, testInfo) => {
-        await page.goto("./add");
-        await login(page);
-        await screenshot(testInfo, page);
+        await monitorForm.navigateToAddPage();
+        await monitorForm.login(testInfo);
 
-        const monitorTypeSelect = page.getByTestId("monitor-type-select");
-        await expect(monitorTypeSelect).toBeVisible();
+        await monitorForm.selectMonitorType("dns");
 
-        await monitorTypeSelect.selectOption("dns");
-        const selectedValue = await monitorTypeSelect.evaluate(select => select.value);
-        expect(selectedValue).toBe("dns");
+        // Add Conditions & verify
+        await monitorForm.addCondition();
+        await monitorForm.verifyConditionCount(2); // 1 added by default + 1 explicitly added
 
-        // Add Conditions & verify:
-        await page.getByTestId("add-condition-button").click();
-        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 added by default + 1 explicitly added
-
-        // Add a Condition Group & verify:
-        await page.getByTestId("add-group-button").click();
-        expect(await page.getByTestId("condition-group").count()).toEqual(1);
-        expect(await page.getByTestId("condition").count()).toEqual(3); // 2 solo conditions + 1 condition in group
+        // Add a Condition Group & verify
+        await monitorForm.addConditionGroup();
+        await monitorForm.verifyConditionGroupCount(1);
+        await monitorForm.verifyConditionCount(3); // 2 solo conditions + 1 condition in group
 
         await screenshot(testInfo, page);
 
-        // Remove a condition & verify:
-        await page.getByTestId("remove-condition").first().click();
-        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 solo condition + 1 condition in group
+        // Remove a condition & verify
+        await monitorForm.removeCondition();
+        await monitorForm.verifyConditionCount(2); // 1 solo condition + 1 condition in group
 
-        // Remove a condition group & verify:
-        await page.getByTestId("remove-condition-group").first().click();
-        expect(await page.getByTestId("condition-group").count()).toEqual(0);
+        // Remove a condition group & verify
+        await monitorForm.removeConditionGroup();
+        await monitorForm.verifyConditionGroupCount(0);
 
         await screenshot(testInfo, page);
     });
 
     test("successful condition", async ({ page }, testInfo) => {
-        await page.goto("./add");
-        await login(page);
-        await screenshot(testInfo, page);
+        await monitorForm.navigateToAddPage();
+        await monitorForm.login(testInfo);
 
-        const monitorTypeSelect = page.getByTestId("monitor-type-select");
-        await expect(monitorTypeSelect).toBeVisible();
-
-        await monitorTypeSelect.selectOption("dns");
-        const selectedValue = await monitorTypeSelect.evaluate(select => select.value);
-        expect(selectedValue).toBe("dns");
+        await monitorForm.selectMonitorType("dns");
 
         const friendlyName = "Example DNS NS";
-        await page.getByTestId("friendly-name-input").fill(friendlyName);
-        await page.getByTestId("hostname-input").fill("example.com");
+        await monitorForm.fillMonitorDetails(friendlyName, "example.com");
+        await monitorForm.selectResolveType("NS");
 
-        // Vue-Multiselect component
-        const resolveTypeSelect = page.getByTestId("resolve-type-select");
-        await resolveTypeSelect.click();
-        await resolveTypeSelect.getByRole("option", { name: "NS" }).click();
+        // Add Conditions & fill values
+        await monitorForm.addCondition();
+        await monitorForm.verifyConditionCount(2); // 1 added by default + 1 explicitly added
+        await monitorForm.setConditionValues([
+            "a.iana-servers.net",
+            "b.iana-servers.net",
+        ]);
 
-        await page.getByTestId("add-condition-button").click();
-        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 added by default + 1 explicitly added
-        await page.getByTestId("condition-value").nth(0).fill("a.iana-servers.net");
-        await page.getByTestId("condition-and-or").nth(0).selectOption("or");
-        await page.getByTestId("condition-value").nth(1).fill("b.iana-servers.net");
         await screenshot(testInfo, page);
+        await monitorForm.saveMonitor();
+        await monitorForm.verifyMonitorStatus("up");
 
-        await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
-        await expect(page.getByTestId("monitor-status")).toHaveText("up", { ignoreCase: true });
         await screenshot(testInfo, page);
     });
 
     test("failing condition", async ({ page }, testInfo) => {
-        await page.goto("./add");
-        await login(page);
-        await screenshot(testInfo, page);
+        await monitorForm.navigateToAddPage();
+        await monitorForm.login(testInfo);
 
-        const monitorTypeSelect = page.getByTestId("monitor-type-select");
-        await expect(monitorTypeSelect).toBeVisible();
-
-        await monitorTypeSelect.selectOption("dns");
-        const selectedValue = await monitorTypeSelect.evaluate(select => select.value);
-        expect(selectedValue).toBe("dns");
+        await monitorForm.selectMonitorType("dns");
 
         const friendlyName = "Example DNS NS";
-        await page.getByTestId("friendly-name-input").fill(friendlyName);
-        await page.getByTestId("hostname-input").fill("example.com");
+        await monitorForm.fillMonitorDetails(friendlyName, "example.com");
+        await monitorForm.selectResolveType("NS");
 
-        // Vue-Multiselect component
-        const resolveTypeSelect = page.getByTestId("resolve-type-select");
-        await resolveTypeSelect.click();
-        await resolveTypeSelect.getByRole("option", { name: "NS" }).click();
+        // Verify initial condition
+        await monitorForm.verifyConditionCount(1); // 1 added by default
+        await monitorForm.setConditionValues(["definitely-not.net"]);
 
-        expect(await page.getByTestId("condition").count()).toEqual(1); // 1 added by default
-        await page.getByTestId("condition-value").nth(0).fill("definitely-not.net");
         await screenshot(testInfo, page);
+        await monitorForm.saveMonitor();
+        await monitorForm.verifyMonitorStatus("down");
 
-        await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
-        await expect(page.getByTestId("monitor-status")).toHaveText("down", { ignoreCase: true });
         await screenshot(testInfo, page);
     });
-
 });
