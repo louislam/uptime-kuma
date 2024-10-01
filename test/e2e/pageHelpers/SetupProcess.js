@@ -27,8 +27,8 @@ export class SetupProcess {
     /**
      * Sets up the admin account.
      * @param {import('@playwright/test').TestInfo} testInfo - The test information for logging.
-     * @param {string} [username="admin"] - The username for the admin account.
-     * @param {string} [password="admin123"] - The password for the admin account.
+     * @param {string} username - The username for the admin account.
+     * @param {string} password - The password for the admin account.
      */
     async setupAdmin(testInfo, username = "admin", password = "admin123") {
         await this.page.goto("./");
