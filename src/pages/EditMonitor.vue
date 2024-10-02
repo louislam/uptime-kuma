@@ -982,12 +982,22 @@
                     <div class="fixed-bottom-bar p-3">
                         <button
                             id="monitor-submit-btn"
-                            class="btn btn-primary"
+                            class="btn btn-primary me-2"
                             type="submit"
                             :disabled="processing"
                             data-testid="save-button"
                         >
                             {{ $t("Save") }}
+                        </button>
+                        <button
+                            v-if="monitor.type === 'http'"
+                            id="monitor-debug-btn"
+                            class="btn btn-outline-primary"
+                            type="button"
+                            :disabled="processing"
+                            @click.stop="showDebugDialog"
+                        >
+                            {{ $t("Debug") }}
                         </button>
                     </div>
                 </div>
@@ -1000,9 +1010,20 @@
             <RemoteBrowserDialog ref="remoteBrowserDialog" />
         </div>
     </transition>
+    <div ref="modal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <textarea id="curlDebug" v-model="curlCommand" class="form-control mb-3" placeholder="curl -v 'https://example.com/healthcheck'" readonly></textarea>
+                    <button id="debug-copy-btn" class="btn btn-primary" type="button" @click.stop="copyToClipboard">{{ $t("Copy") }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
+import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
@@ -1081,6 +1102,7 @@ export default {
 
     data() {
         return {
+            modal: null,
             minInterval: MIN_INTERVAL_SECOND,
             maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
@@ -1107,6 +1129,47 @@ export default {
     },
 
     computed: {
+
+        curlCommand() {
+            let method = "";
+            let headers = "";
+            let body = "";
+            let basicAuth = "";
+            if (this.monitor.method !== "GET") {
+                method = ` -X ${this.monitor.method}`;
+            }
+            if (this.monitor.headers) {
+                try {
+                    const jsonParsed = JSON.parse(this.monitor.headers);
+                    for (const [ key, value ] of Object.entries(jsonParsed)) {
+                        headers += ` -H '${key}: ${value}'`;
+                    }
+                } catch (e) {
+                    headers = ` -H '${this.monitor.headers.replace(/\n/g, "")}'`;
+                }
+            }
+            if (this.monitor.body && this.monitor.httpBodyEncoding === "json") {
+                let json = "";
+                try {
+                    const jsonParsed = JSON.parse(this.monitor.body);
+                    json = JSON.stringify(jsonParsed);
+                    body = ` --json '${json}'`;
+                } catch (e) {
+                    json = this.monitor.body.replace(/\n/g, "");
+                    body = ` --json '${json}'`;
+                }
+                method = "";
+            } else if (this.monitor.body && this.monitor.method === "POST" && this.monitor.httpBodyEncoding === "xml") {
+                headers += " -H 'Content-Type: application/xml'";
+                body = ` -d ${this.monitor.body.replace(/\n/g, "")}`;
+            } else if (this.monitor.body) {
+                body = ` -d ${this.monitor.body.replace(/\n/g, "")}`;
+            }
+            if (this.monitor.authMethod === "basic") {
+                basicAuth = ` -u ${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}`;
+            }
+            return `curl -v${method}${this.monitor.timeout ? ` -m ${this.monitor.timeout}` : ""}${this.monitor.ignoreTls ? " -k" : ""}${basicAuth} '${this.monitor.url}'${headers}${body}`;
+        },
 
         ipRegex() {
 
@@ -1464,6 +1527,7 @@ message HealthCheckResponse {
         },
     },
     mounted() {
+        this.modal = new Modal(this.$refs.modal);
         this.init();
 
         let acceptedStatusCodeOptions = [
@@ -1504,6 +1568,17 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
+        showDebugDialog() {
+            this.modal.show();
+        },
+        async copyToClipboard() {
+            try {
+                await navigator.clipboard.writeText(this.curlCommand);
+                toast.success(this.$t("CopyToClipboardSuccess"));
+            } catch (err) {
+                toast.error(this.$t("CopyToClipboardError") + err.message);
+            }
+        },
         /**
          * Initialize the edit monitor form
          * @returns {void}
