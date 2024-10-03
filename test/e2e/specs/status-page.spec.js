@@ -95,7 +95,7 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("powered-by")).toHaveCount(0);
 
         await expect(page.getByTestId("update-countdown-text")).toContainText("00:");
-        const updateCountdown = Number((await page.getByTestId("update-countdown-text").textContent()).match(/(\d+):(\d+)/)[2]) ;
+        const updateCountdown = Number((await page.getByTestId("update-countdown-text").textContent()).match(/(\d+):(\d+)/)[2]);
         expect(updateCountdown).toBeGreaterThanOrEqual(refreshInterval); // cant be certain when the timer will start, so ensure it's within expected range
         expect(updateCountdown).toBeLessThanOrEqual(refreshInterval + 10);
 
