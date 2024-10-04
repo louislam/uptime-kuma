@@ -251,7 +251,7 @@
     "PushUrl": "Push URL",
     "HeadersInvalidFormat": "The request headers are not valid JSON: ",
     "BodyInvalidFormat": "The request body is not valid JSON: ",
-    "CopyToClipboardError": "Couldn't copy to clipbard: ",
+    "CopyToClipboardError": "Couldn't copy to clipbard: {error}",
     "CopyToClipboardSuccess": "Copied!",
     "Monitor History": "Monitor History",
     "clearDataOlderThan": "Keep monitor history data for {0} days.",

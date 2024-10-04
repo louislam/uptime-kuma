@@ -995,7 +995,7 @@
                             class="btn btn-outline-primary"
                             type="button"
                             :disabled="processing"
-                            @click.stop="showDebugDialog"
+                            @click.stop="modal.show()"
                         >
                             {{ $t("Debug") }}
                         </button>
@@ -1014,7 +1014,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body">
-                    <textarea id="curlDebug" v-model="curlCommand" class="form-control mb-3" placeholder="curl -v 'https://example.com/healthcheck'" readonly></textarea>
+                    <textarea id="curlDebug" v-model="curlCommand" class="form-control mb-3" readonly wrap="off"></textarea>
                     <button id="debug-copy-btn" class="btn btn-primary" type="button" @click.stop="copyToClipboard">{{ $t("Copy") }}</button>
                 </div>
             </div>
@@ -1131,44 +1131,50 @@ export default {
     computed: {
 
         curlCommand() {
-            let method = "";
-            let headers = "";
-            let body = "";
-            let basicAuth = "";
-            if (this.monitor.method !== "GET") {
-                method = ` -X ${this.monitor.method}`;
+            const command = [ "curl", "--verbose", "--head", "--request", this.monitor.method, "\\\n" ];
+            if (this.monitor.ignoreTls) {
+                command.push("--insecure", "\\\n");
             }
             if (this.monitor.headers) {
                 try {
-                    const jsonParsed = JSON.parse(this.monitor.headers);
-                    for (const [ key, value ] of Object.entries(jsonParsed)) {
-                        headers += ` -H '${key}: ${value}'`;
+                    // trying to parse the supplied data as json to trim whitespace
+                    for (const [ key, value ] of Object.entries(JSON.parse(this.monitor.headers))) {
+                        command.push("--header", `'${key}: ${value}'`, "\\\n");
                     }
                 } catch (e) {
-                    headers = ` -H '${this.monitor.headers.replace(/\n/g, "")}'`;
+                    command.push("--header", `'${this.monitor.headers}'`, "\\\n");
                 }
+            }
+            if (this.monitor.authMethod === "basic") {
+                command.push("--user", `${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}`, "--basic", "\\\n");
+            } else if (this.monitor.authmethod === "mtls") {
+                command.push("--cacert", `'${this.monitor.tlsCa}'`, "\\\n", "--key", `'${this.monitor.tlsKey}'`, "\\\n", "--cert", `'${this.monitor.tlsCert}'`, "\\\n");
+            } else if (this.monitor.authMethod === "ntlm") {
+                command.push("--user", `'${this.monitor.authDomain ? `${this.monitor.authDomain}/` : ""}${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}'`, "--ntlm", "\\\n");
             }
             if (this.monitor.body && this.monitor.httpBodyEncoding === "json") {
                 let json = "";
                 try {
-                    const jsonParsed = JSON.parse(this.monitor.body);
-                    json = JSON.stringify(jsonParsed);
-                    body = ` --json '${json}'`;
+                    // trying to parse the supplied data as json to trim whitespace
+                    json = JSON.stringify(JSON.parse(this.monitor.body));
                 } catch (e) {
-                    json = this.monitor.body.replace(/\n/g, "");
-                    body = ` --json '${json}'`;
+                    json = this.monitor.body;
                 }
-                method = "";
-            } else if (this.monitor.body && this.monitor.method === "POST" && this.monitor.httpBodyEncoding === "xml") {
-                headers += " -H 'Content-Type: application/xml'";
-                body = ` -d ${this.monitor.body.replace(/\n/g, "")}`;
-            } else if (this.monitor.body) {
-                body = ` -d ${this.monitor.body.replace(/\n/g, "")}`;
+                command.push("--header", "'Content-Type: application/json'", "\\\n", "--data" `'${json}'`, "\\\n");
+            } else if (this.monitor.body && this.monitor.httpBodyEncoding === "xml") {
+                command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}''`, "\\\n");
             }
-            if (this.monitor.authMethod === "basic") {
-                basicAuth = ` -u ${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}`;
+            if (this.monitor.maxredirects) {
+                command.push("--location", "--max-redirs", this.monitor.maxredirects, "\\\n");
             }
-            return `curl -v${method}${this.monitor.timeout ? ` -m ${this.monitor.timeout}` : ""}${this.monitor.ignoreTls ? " -k" : ""}${basicAuth} '${this.monitor.url}'${headers}${body}`;
+            if (this.monitor.timeout) {
+                command.push("--max-time", this.monitor.timeout, "\\\n");
+            }
+            if (this.monitor.maxretries) {
+                command.push("--retry", this.monitor.maxretries, "\\\n");
+            }
+            command.push("--url", this.monitor.url);
+            return command.join(" ");
         },
 
         ipRegex() {
@@ -1568,15 +1574,12 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        showDebugDialog() {
-            this.modal.show();
-        },
         async copyToClipboard() {
             try {
                 await navigator.clipboard.writeText(this.curlCommand);
                 toast.success(this.$t("CopyToClipboardSuccess"));
             } catch (err) {
-                toast.error(this.$t("CopyToClipboardError") + err.message);
+                toast.error(this.$t("CopyToClipboardError", { error: err.message }));
             }
         },
         /**
@@ -1866,5 +1869,10 @@ message HealthCheckResponse {
 
     textarea {
         min-height: 200px;
+    }
+
+    #curlDebug {
+        font-family: monospace;
+        overflow: auto;
     }
 </style>
