@@ -1014,8 +1014,10 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body">
-                    <textarea id="curlDebug" v-model="curlCommand" class="form-control mb-3" readonly wrap="off"></textarea>
-                    <button id="debug-copy-btn" class="btn btn-primary" type="button" @click.stop="copyToClipboard">{{ $t("Copy") }}</button>
+                    <textarea id="curlDebug" v-model="curlCommand" class="form-control" readonly wrap="off"></textarea>
+                    <button id="debug-copy-btn" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-3 border-0" type="button" @click.stop="copyToClipboard">
+                        <font-awesome-icon icon="copy" />
+                    </button>
                 </div>
             </div>
         </div>
@@ -1039,7 +1041,7 @@ import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
-const toast = useToast;
+const toast = useToast();
 
 const pushTokenLength = 32;
 
