@@ -1014,7 +1014,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-body">
-                    <textarea id="curlDebug" v-model="curlCommand" class="form-control mb-3" readonly wrap="off"></textarea>
+                    <textarea id="curl-debug" v-model="curlCommand" class="form-control mb-3" readonly wrap="off"></textarea>
                     <button id="debug-copy-btn" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-3 border-0" type="button" @click.stop="copyToClipboard">
                         <font-awesome-icon icon="copy" />
                     </button>
@@ -1874,7 +1874,7 @@ message HealthCheckResponse {
         min-height: 200px;
     }
 
-    #curlDebug {
+    #curl-debug {
         font-family: monospace;
         overflow: auto;
     }
