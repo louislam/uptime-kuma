@@ -1168,7 +1168,7 @@ export default {
                 } catch (e) {
                     json = this.monitor.body;
                 }
-                command.push("--header", "'Content-Type: application/json'", "\\\n", "--data" `'${json}'`, "\\\n");
+                command.push("--header", "'Content-Type: application/json'", "\\\n", "--data", `'${json}'`, "\\\n");
             } else if (this.monitor.body && this.monitor.httpBodyEncoding === "xml") {
                 command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}''`, "\\\n");
             }
