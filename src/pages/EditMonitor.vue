@@ -1018,7 +1018,10 @@
                     <button id="debug-copy-btn" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-3 border-0" type="button" @click.stop="copyToClipboard">
                         <font-awesome-icon icon="copy" />
                     </button>
-                    <p>{{ $t('CurlDebugInfo') }}</p>
+                    <p>{{ $t('CurlDebugInfoLine0') }}</p>
+                    <p>{{ $t('CurlDebugInfoLine1') }}</p>
+                    <p>{{ $t('CurlDebugInfoLine2') }}</p>
+                    <p v-if="monitor.proxyId">{{ $t('CurlDebugInfoProxiesUnsupported') }}</p>
                 </div>
             </div>
         </div>
@@ -1041,6 +1044,8 @@ import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } fro
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
+import { version } from "../../package.json";
+const userAgent = `'Uptime-Kuma/${version}'`;
 
 const toast = useToast();
 
@@ -1134,7 +1139,7 @@ export default {
     computed: {
 
         curlCommand() {
-            const command = [ "curl", "--verbose", "--head", "--request", this.monitor.method, "\\\n" ];
+            const command = [ "curl", "--verbose", "--head", "--request", this.monitor.method, "\\\n", "--user-agent", userAgent, "\\\n" ];
             if (this.monitor.ignoreTls) {
                 command.push("--insecure", "\\\n");
             }
