@@ -640,7 +640,6 @@
     "light": "vaalea",
     "Switch to Light Theme": "Vaihda vaaleaan teemaan",
     "Powered by": "Voimanlähteenä",
-    "shrinkDatabaseDescription": "Käynnistä tietokannan VACUUM SQLitelle. Jos tietokanta on luotu 1.10.0:n jälkeen, AUTO_VACUUM on jo käytössä eikä tätä toimintoa tarvita.",
     "Accept characters:": "Hyväksy merkit:",
     "New Status Page": "Uusi tilasivu",
     "wayToGetCloudflaredURL": "(Lataa cloudflared osoitteesta {0})",

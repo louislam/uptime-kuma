@@ -351,7 +351,6 @@
     "Discard": "İptal Et",
     "Cancel": "İptal Et",
     "Powered by": "Tarafından desteklenmektedir",
-    "shrinkDatabaseDescription": "SQLite için veritabanı VACUUM'unu tetikleyin. Veritabanınız 1.10.0'dan sonra oluşturulduysa, AUTO_VACUUM zaten etkinleştirilmiştir ve bu eyleme gerek yoktur.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Kullanıcı Adı (webapi_ öneki dahil)",
     "serwersmsAPIPassword": "API Şifre",

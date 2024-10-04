@@ -355,7 +355,6 @@
     "Discard": "Verwerfen",
     "Cancel": "Abbrechen",
     "Powered by": "Erstellt mit",
-    "shrinkDatabaseDescription": "Löse VACUUM für die SQLite Datenbank aus. Wenn die Datenbank nach 1.10.0 erstellt wurde, ist AUTO_VACUUM bereits aktiviert und diese Aktion ist nicht erforderlich.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Benutzername (inkl. webapi_ prefix)",
     "serwersmsAPIPassword": "API Passwort",
