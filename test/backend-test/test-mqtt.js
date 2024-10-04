@@ -51,10 +51,9 @@ async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage) {
     return heartbeat;
 }
 
-const isInCIWithRuntime = !!process.env.CI && process.platform === "linux" && process.arch === "x64";
 describe("MqttMonitorType", {
     concurrency: true,
-    skip: !process.env.CI || isInCIWithRuntime
+    skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")
 }, () => {
     test("valid keywords (type=default)", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-");
