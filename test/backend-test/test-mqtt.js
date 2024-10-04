@@ -5,8 +5,8 @@ const mqtt = require("mqtt");
 const { MqttMonitorType } = require("../../server/monitor-types/mqtt");
 const { UP, PENDING } = require("../../src/util");
 
-if (!!process.env.CI && process.platform !== "linux") {
-    console.log("testcontainers are not available in the github CI on non-linux platforms. Skipping");
+if (!!process.env.CI && process.platform !== "linux" && process.arch !== "x64") {
+    console.log("testcontainers are not available in the github CI on non-linux or non-x64 platforms. Skipping");
     return;
 }
 
