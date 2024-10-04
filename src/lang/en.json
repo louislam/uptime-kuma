@@ -82,6 +82,7 @@
     "resendEveryXTimes": "Resend every {0} times",
     "resendDisabled": "Resend disabled",
     "retriesDescription": "Maximum retries before the service is marked as down and a notification is sent",
+    "ignoredTLSError": "TLS/SSL errors have been ignored",
     "ignoreTLSError": "Ignore TLS/SSL errors for HTTPS websites",
     "ignoreTLSErrorGeneral": "Ignore TLS/SSL error for connection",
     "upsideDownModeDescription": "Flip the status upside down. If the service is reachable, it is DOWN.",
