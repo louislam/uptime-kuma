@@ -5,11 +5,6 @@ const mqtt = require("mqtt");
 const { MqttMonitorType } = require("../../server/monitor-types/mqtt");
 const { UP, PENDING } = require("../../src/util");
 
-if (!!process.env.CI && process.platform !== "linux" && process.arch !== "x64") {
-    console.log("testcontainers are not available in the github CI on non-linux or non-x64 platforms. Skipping");
-    return;
-}
-
 /**
  * Runs an MQTT test with the
  * @param  {string} mqttSuccessMessage the message that the monitor expects
@@ -56,7 +51,11 @@ async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage) {
     return heartbeat;
 }
 
-describe("MqttMonitorType", { concurrency: true }, () => {
+const isInCIWithRuntime = !!process.env.CI && process.platform === "linux" && process.arch === "x64";
+describe("MqttMonitorType", {
+    concurrency: true,
+    skip: !process.env.CI || isInCIWithRuntime
+}, () => {
     test("valid keywords (type=default)", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-");
         assert.strictEqual(heartbeat.status, UP);
