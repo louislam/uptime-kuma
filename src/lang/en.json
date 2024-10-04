@@ -253,6 +253,7 @@
     "BodyInvalidFormat": "The request body is not valid JSON: ",
     "CopyToClipboardError": "Couldn't copy to clipbard: {error}",
     "CopyToClipboardSuccess": "Copied!",
+    "CurlDebugInfo": "To debug the monitor, you can either paste this into your own machines terminal or into the machines terminal which uptime kuma is running on and see what you are requesting. Please be aware of networking differences like firewalls, dns resolvers or docker networks The full oauth client credential flow is not supported.",
     "Monitor History": "Monitor History",
     "clearDataOlderThan": "Keep monitor history data for {0} days.",
     "PasswordsDoNotMatch": "Passwords do not match.",
