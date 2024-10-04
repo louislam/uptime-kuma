@@ -5,6 +5,11 @@ const mqtt = require("mqtt");
 const { MqttMonitorType } = require("../../server/monitor-types/mqtt");
 const { UP, PENDING } = require("../../src/util");
 
+if (!!process.env.CI && process.platform !== "linux") {
+    console.log("testcontainers are not available in the github CI on non-linux platforms. Skipping");
+    return;
+}
+
 /**
  * Runs an MQTT test with the
  * @param  {string} mqttSuccessMessage the message that the monitor expects
