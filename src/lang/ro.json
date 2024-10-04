@@ -511,7 +511,6 @@
     "No Monitors": "Niciun monitor",
     "Untitled Group": "Grup fără nume",
     "Services": "Servicii",
-    "shrinkDatabaseDescription": "Declanșează database VACUUM pentru SQLite. Dacă baza ta de date a fost creată după 1.10.0, AUTO_VACUUM este deja activat și această acțiune nu este necesară.",
     "proxyDescription": "Proxy-urile trebuie să fie atribuite unui monitor pentru a funcționa.",
     "enableProxyDescription": "Acest proxy nu va avea efect asupra solicitărilor monitoarelor până când nu este activat. Puteți controla dezactivarea temporară a proxy-ului de pe toate monitoarele prin starea de activare.",
     "setAsDefaultProxyDescription": "Acest proxy va fi activat în mod implicit pentru monitoare noi. Puteți dezactiva în continuare proxy-ul separat pentru fiecare monitor.",

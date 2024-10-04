@@ -349,7 +349,6 @@
     "Discard": "zavrzi",
     "Cancel": "Prekliči",
     "Powered by": "Poganja ga",
-    "shrinkDatabaseDescription": "Sprožitev podatkovne zbirke VACUUM za SQLite. Če je vaša zbirka podatkov ustvarjena po različici 1.10.0, je funkcija AUTO_VACUUM že omogočena in ta ukrep ni potreben.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API uporabniško ime (vključno z webapi_ prefix)",
     "serwersmsAPIPassword": "API geslo",

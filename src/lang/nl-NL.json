@@ -356,7 +356,6 @@
     "Discard": "Weggooien",
     "Cancel": "Annuleren",
     "Powered by": "Mogelijk gemaakt door",
-    "shrinkDatabaseDescription": "Activeer database VACUUM voor SQLite. Als de database na 1.10.0 aangemaakt is, dan staat AUTO_VACUUM al aan en is deze actie niet nodig.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Gebruikersnaam (incl. webapi_ prefix)",
     "serwersmsAPIPassword": "API Wachtwoord",
