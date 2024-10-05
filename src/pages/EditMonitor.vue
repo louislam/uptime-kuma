@@ -1019,23 +1019,39 @@
                         <font-awesome-icon icon="copy" />
                     </button>
                     <i18n-t keypath="CurlDebugInfo" tag="p" class="form-text">
-                        <br>
-                        <a href="https://xkcd.com/2259/" target="_blank">{{ $t('CurlDebugInfoFirewalls') }}</a>
-                        <a href="https://www.reddit.com/r/sysadmin/comments/rxho93/thank_you_for_the_running_its_always_dns_joke_its/" target="_blank">{{ $t('CurlDebugInfoDnsResolvers') }}</a>
-                        <a href="https://youtu.be/bKFMS5C4CG0" target="_blank">{{ $t('CurlDebugInfoDockerNetworks') }}</a>
+                        <template #newiline>
+                            <br>
+                        </template>
+                        <template #firewalls>
+                            <a href="https://xkcd.com/2259/" target="_blank">{{ $t('firewalls') }}</a>
+                        </template>
+                        <template #dns_resolvers>
+                            <a href="https://www.reddit.com/r/sysadmin/comments/rxho93/thank_you_for_the_running_its_always_dns_joke_its/" target="_blank">{{ $t('dns resolvers') }}</a>
+                        </template>
+                        <template #docker_networks>
+                            <a href="https://youtu.be/bKFMS5C4CG0" target="_blank">{{ $t('docker networks') }}</a>
+                        </template>
                     </i18n-t>
                     <div v-if="monitor.authMethod === 'oauth2-cc'" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
                         <div role="img" aria-label="Warning:">⚠️</div>
                         <i18n-t keypath="CurlDebugInfoOAuth2CCUnsupported" tag="div">
-                            <code>curl</code>
-                            <br>
-                            <code>--oauth2-bearer TOKEN</code>
+                            <template #curl>
+                                <code>curl</code>
+                            </template>
+                            <template #newline>
+                                <br>
+                            </template>
+                            <template #oauth2_bearer>
+                                <code>--oauth2-bearer TOKEN</code>
+                            </template>
                         </i18n-t>
                     </div>
                     <div v-if="monitor.proxyId" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
                         <div role="img" aria-label="Warning:">⚠️</div>
                         <i18n-t keypath="CurlDebugInfoProxiesUnsupported" tag="div">
-                            <code>curl</code>
+                            <template #curl>
+                                <code>curl</code>
+                            </template>
                         </i18n-t>
                     </div>
                 </div>
