@@ -1018,10 +1018,26 @@
                     <button id="debug-copy-btn" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-3 border-0" type="button" @click.stop="copyToClipboard">
                         <font-awesome-icon icon="copy" />
                     </button>
-                    <p>{{ $t('CurlDebugInfoLine0') }}</p>
-                    <p>{{ $t('CurlDebugInfoLine1') }}</p>
-                    <p>{{ $t('CurlDebugInfoLine2') }}</p>
-                    <p v-if="monitor.proxyId">{{ $t('CurlDebugInfoProxiesUnsupported') }}</p>
+                    <i18n-t keypath="CurlDebugInfo" tag="p" class="form-text">
+                        <br>
+                        <a href="https://xkcd.com/2259/" target="_blank">{{ $t('CurlDebugInfoFirewalls') }}</a>
+                        <a href="https://www.reddit.com/r/sysadmin/comments/rxho93/thank_you_for_the_running_its_always_dns_joke_its/" target="_blank">{{ $t('CurlDebugInfoDnsResolvers') }}</a>
+                        <a href="https://youtu.be/bKFMS5C4CG0" target="_blank">{{ $t('CurlDebugInfoDockerNetworks') }}</a>
+                    </i18n-t>
+                    <div v-if="monitor.authMethod === 'oauth2-cc'" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                        <div role="img" aria-label="Warning:">⚠️</div>
+                        <i18n-t keypath="CurlDebugInfoOAuth2CCUnsupported" tag="div">
+                            <code>curl</code>
+                            <br>
+                            <code>--oauth2-bearer TOKEN</code>
+                        </i18n-t>
+                    </div>
+                    <div v-if="monitor.proxyId" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                        <div role="img" aria-label="Warning:">⚠️</div>
+                        <i18n-t keypath="CurlDebugInfoProxiesUnsupported" tag="div">
+                            <code>curl</code>
+                        </i18n-t>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1170,7 +1186,7 @@ export default {
                 }
                 command.push("--header", "'Content-Type: application/json'", "\\\n", "--data", `'${json}'`, "\\\n");
             } else if (this.monitor.body && this.monitor.httpBodyEncoding === "xml") {
-                command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}''`, "\\\n");
+                command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}'`, "\\\n");
             }
             if (this.monitor.maxredirects) {
                 command.push("--location", "--max-redirs", this.monitor.maxredirects, "\\\n");
