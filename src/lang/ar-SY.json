@@ -388,7 +388,6 @@
     "Discard": "تجاهل",
     "Cancel": "يلغي",
     "Powered by": "مشغل بواسطة",
-    "shrinkDatabaseDescription": "تشغيل فراغ قاعدة البيانات لـ SQLite. إذا تم إنشاء قاعدة البيانات الخاصة بك بعد تمكين 1.10.0 AUTO_VACUUM بالفعل ولا يلزم هذا الإجراء.",
     "serwersms": "Serwersms.pl",
     "serwersmsAPIUser": "اسم مستخدم API (بما في ذلك بادئة WebAPI_)",
     "serwersmsAPIPassword": "كلمة مرور API",

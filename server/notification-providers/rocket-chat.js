@@ -1,8 +1,8 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const Slack = require("./slack");
-const { setting } = require("../util-server");
 const { getMonitorRelativeURL, DOWN } = require("../../src/util");
+const { Settings } = require("../settings");
 
 class RocketChat extends NotificationProvider {
     name = "rocket.chat";
@@ -49,7 +49,7 @@ class RocketChat extends NotificationProvider {
                 await Slack.deprecateURL(notification.rocketbutton);
             }
 
-            const baseURL = await setting("primaryBaseURL");
+            const baseURL = await Settings.get("primaryBaseURL");
 
             if (baseURL) {
                 data.attachments[0].title_link = baseURL + getMonitorRelativeURL(monitorJSON.id);

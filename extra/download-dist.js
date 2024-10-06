@@ -4,7 +4,6 @@ const tar = require("tar");
 
 const packageJSON = require("../package.json");
 const fs = require("fs");
-const rmSync = require("./fs-rmSync.js");
 const version = packageJSON.version;
 
 const filename = "dist.tar.gz";
@@ -29,8 +28,9 @@ function download(url) {
             if (fs.existsSync("./dist")) {
 
                 if (fs.existsSync("./dist-backup")) {
-                    rmSync("./dist-backup", {
-                        recursive: true
+                    fs.rmSync("./dist-backup", {
+                        recursive: true,
+                        force: true,
                     });
                 }
 
@@ -43,8 +43,9 @@ function download(url) {
 
             tarStream.on("close", () => {
                 if (fs.existsSync("./dist-backup")) {
-                    rmSync("./dist-backup", {
-                        recursive: true
+                    fs.rmSync("./dist-backup", {
+                        recursive: true,
+                        force: true,
                     });
                 }
                 console.log("Done");

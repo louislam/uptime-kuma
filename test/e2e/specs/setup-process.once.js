@@ -5,6 +5,10 @@ test.describe("Uptime Kuma Setup", () => {
 
     test.skip(() => getSqliteDatabaseExists(), "Must only run once per session");
 
+    test.afterEach(async ({ page }, testInfo) => {
+        await screenshot(testInfo, page);
+    });
+
     /*
      * Setup
      */
@@ -15,10 +19,9 @@ test.describe("Uptime Kuma Setup", () => {
         await page.getByRole("button", { name: "Next" }).click();
         await screenshot(testInfo, page);
         await page.waitForURL("/setup"); // ensures the server is ready to continue to the next test
-        await screenshot(testInfo, page);
     });
 
-    test("setup admin", async ({ page }, testInfo) => {
+    test("setup admin", async ({ page }) => {
         await page.goto("./");
         await page.getByPlaceholder("Username").click();
         await page.getByPlaceholder("Username").fill("admin");
@@ -27,30 +30,26 @@ test.describe("Uptime Kuma Setup", () => {
         await page.getByPlaceholder("Password", { exact: true }).press("Tab");
         await page.getByPlaceholder("Repeat Password").fill("admin123");
         await page.getByRole("button", { name: "Create" }).click();
-        await screenshot(testInfo, page);
     });
 
     /*
      * All other tests should be run after setup
      */
 
-    test("login", async ({ page }, testInfo) => {
+    test("login", async ({ page }) => {
         await page.goto("./dashboard");
         await login(page);
-        await screenshot(testInfo, page);
     });
 
-    test("logout", async ({ page }, testInfo) => {
+    test("logout", async ({ page }) => {
         await page.goto("./dashboard");
         await login(page);
         await page.getByText("A", { exact: true }).click();
         await page.getByRole("button", { name: "Log out" }).click();
-        await screenshot(testInfo, page);
     });
 
-    test("take sqlite snapshot", async ({ page }, testInfo) => {
+    test("take sqlite snapshot", async ({ page }) => {
         await takeSqliteSnapshot(page);
-        await screenshot(testInfo, page);
     });
 
 });
