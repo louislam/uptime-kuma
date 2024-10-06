@@ -83,6 +83,7 @@ exports.CONSOLE_STYLE_BgMagenta = "\x1b[45m";
 exports.CONSOLE_STYLE_BgCyan = "\x1b[46m";
 exports.CONSOLE_STYLE_BgWhite = "\x1b[47m";
 exports.CONSOLE_STYLE_BgGray = "\x1b[100m";
+
 const consoleModuleColors = [
     exports.CONSOLE_STYLE_FgCyan,
     exports.CONSOLE_STYLE_FgGreen,
