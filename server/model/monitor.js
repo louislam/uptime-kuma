@@ -124,7 +124,7 @@ class Monitor extends BeanModel {
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
             notificationIDList: preloadData.notifications.get(this.id) || {},
-            tags: preloadData.tags.get(this.id) || [];,
+            tags: preloadData.tags.get(this.id) || [],
             maintenance: preloadData.maintenanceStatus.get(this.id),
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
