@@ -2,6 +2,9 @@
     <div class="mb-3">
         <label for="push-api-key" class="form-label">{{ $t("API Key") }}</label>
         <HiddenInput id="push-api-key" v-model="$parent.notification.pushAPIKey" :required="true" autocomplete="new-password"></HiddenInput>
+
+        <label for="push-api-channel" class="form-label">{{ $t("Channel") }}</label>
+        <input id="push-api-channel" v-model="$parent.notification.pushChannel" type="text" class="form-control">
     </div>
 
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
