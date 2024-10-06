@@ -148,11 +148,15 @@ export default {
 
             socket.on("updateMonitorIntoList", (data) => {
                 this.assignMonitorUrlParser(data);
-                this.monitorList = this.updateMonitorList(data);
+                Object.entries(list).forEach(([ monitorID, updatedMonitor ]) => {
+                    this.monitorList[monitorID] = updatedMonitor;
+                });
             });
 
             socket.on("deleteMonitorFromList", (monitorID) => {
-                this.monitorList = this.deleteMonitorList(monitorID);
+                if (this.monitorList[monitorID]) {
+                    delete this.monitorList[monitorID];
+                }
             });
 
             socket.on("monitorTypeList", (data) => {
@@ -306,29 +310,6 @@ export default {
                 };
             });
             return data;
-        },
-        /**
-         * update into existing list
-         * @param {object} list add, updated, pause & resume list
-         * @returns {object} list
-         */
-        updateMonitorList(list) {
-            Object.entries(list).forEach(([ monitorID, updatedMonitor ]) => {
-                this.monitorList[monitorID] = updatedMonitor;
-            });
-            return this.monitorList;
-        },
-
-        /**
-         * delete from existing list
-         * @param {number} monitorID deleted monitorID
-         * @returns {object} list
-         */
-        deleteMonitorList(monitorID) {
-            if (this.monitorList[monitorID]) {
-                delete this.monitorList[monitorID];
-            }
-            return this.monitorList;
         },
 
         /**
