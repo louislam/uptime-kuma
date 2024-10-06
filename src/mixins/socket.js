@@ -148,7 +148,7 @@ export default {
 
             socket.on("updateMonitorIntoList", (data) => {
                 this.assignMonitorUrlParser(data);
-                Object.entries(list).forEach(([ monitorID, updatedMonitor ]) => {
+                Object.entries(data).forEach(([ monitorID, updatedMonitor ]) => {
                     this.monitorList[monitorID] = updatedMonitor;
                 });
             });
