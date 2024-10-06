@@ -71,15 +71,13 @@ class Monitor extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON
-     * @param {object} preloadData Include precalculate data in
+     * @param {object} preloadData to prevent n+1 problems, we query the data in a batch outside of this function
      * @param {boolean} includeSensitiveData Include sensitive data in
      * JSON
-     * @returns {Promise<object>} Object ready to parse
+     * @returns {object} Object ready to parse
      */
     toJSON(preloadData = {}, includeSensitiveData = true) {
 
-        const tags = preloadData.tags.get(this.id) || [];
-        const notificationIDList = preloadData.notifications.get(this.id) || {};
         let screenshot = null;
 
         if (this.type === "real-browser") {
@@ -124,8 +122,8 @@ class Monitor extends BeanModel {
             docker_container: this.docker_container,
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
-            notificationIDList,
-            tags,
+            notificationIDList: preloadData.notifications.get(this.id) || {},
+            tags: preloadData.tags.get(this.id) || [];,
             maintenance: preloadData.maintenanceStatus.get(this.id),
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,

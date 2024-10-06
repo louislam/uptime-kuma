@@ -142,7 +142,6 @@ export default {
 
             socket.on("monitorList", (data) => {
                 this.assignMonitorUrlParser(data);
-                console.log(data);
                 this.monitorList = data;
             });
 
