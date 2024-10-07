@@ -19,6 +19,10 @@ class TechulusPush extends NotificationProvider {
             data.channel = notification.pushChannel;
         }
 
+        if (notification.pushSound) {
+            data.sound = notification.pushSound;
+        }
+
         try {
             await axios.post(`https://push.techulus.com/api/v1/notify/${notification.pushAPIKey}`, data);
             return okMsg;

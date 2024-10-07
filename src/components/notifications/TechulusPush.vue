@@ -3,8 +3,27 @@
         <label for="push-api-key" class="form-label">{{ $t("API Key") }}</label>
         <HiddenInput id="push-api-key" v-model="$parent.notification.pushAPIKey" :required="true" autocomplete="new-password"></HiddenInput>
 
-        <label for="push-api-channel" class="form-label">{{ $t("Channel") }}</label>
+        <label for="push-api-channel" class="form-label">{{ $t("Notification Channel") }}</label>
         <input id="push-api-channel" v-model="$parent.notification.pushChannel" type="text" class="form-control">
+
+        <label for="push-api-sound" class="form-label">{{ $t("Notification Sound") }}</label>
+        <select id="push-api-sound" v-model="$parent.notification.pushSound" class="form-select">
+            <option value="default">{{ $t("Default") }}</option>
+            <option value="arcade">{{ $t("Arcade") }}</option>
+            <option value="correct">{{ $t("Correct") }}</option>
+            <option value="fail">{{ $t("Fail") }}</option>
+            <option value="harp">{{ $t("Harp") }}</option>
+            <option value="reveal">{{ $t("Reveal") }}</option>
+            <option value="bubble">{{ $t("Bubble") }}</option>
+            <option value="doorbell">{{ $t("Doorbell") }}</option>
+            <option value="flute">{{ $t("Flute") }}</option>
+            <option value="money">{{ $t("Money") }}</option>
+            <option value="scifi">{{ $t("Scifi") }}</option>
+            <option value="clear">{{ $t("Clear") }}</option>
+            <option value="elevator">{{ $t("Elevator") }}</option>
+            <option value="guitar">{{ $t("Guitar") }}</option>
+            <option value="pop">{{ $t("Pop") }}</option>
+        </select>
     </div>
 
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
