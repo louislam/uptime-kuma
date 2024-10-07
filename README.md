@@ -192,4 +192,5 @@ If you want to translate Uptime Kuma into your language, please visit [Weblate R
 Feel free to correct the grammar in the documentation or code.
 My mother language is not English and my grammar is not that great.
 
-
+### One Click Deployment ButtonFollowing is the One Click Deployment Link.
+[Click here](https://elest.io/open-source/uptime-kuma)
