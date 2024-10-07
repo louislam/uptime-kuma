@@ -767,6 +767,7 @@ class Database {
             let count = countResult[0].count;
             if (count > 0) {
                 log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
+                trx.commit();
                 return;
             }
         }
