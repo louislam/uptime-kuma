@@ -1,12 +1,11 @@
 const NotificationProvider = require("./notification-provider");
-const { DOWN, UP } = require("../../src/util");
 const { default: axios } = require("axios");
 const Crypto = require("crypto");
 const qs = require("qs");
+const { statusToString } = require("../../src/util");
 
 class AliyunSMS extends NotificationProvider {
     name = "AliyunSMS";
-
     /**
      * @inheritdoc
      */
@@ -18,7 +17,7 @@ class AliyunSMS extends NotificationProvider {
                 let msgBody = JSON.stringify({
                     name: monitorJSON["name"],
                     time: heartbeatJSON["time"],
-                    status: this.statusToString(heartbeatJSON["status"]),
+                    status: statusToString(heartbeatJSON["status"]),
                     msg: heartbeatJSON["msg"],
                 });
                 if (await this.sendSms(notification, msgBody)) {
@@ -121,22 +120,6 @@ class AliyunSMS extends NotificationProvider {
             .createHmac("sha1", `${AccessKeySecret}&`)
             .update(Buffer.from(StringToSign))
             .digest("base64");
-    }
-
-    /**
-     * Convert status constant to string
-     * @param {const} status The status constant
-     * @returns {string} Status
-     */
-    statusToString(status) {
-        switch (status) {
-            case DOWN:
-                return "DOWN";
-            case UP:
-                return "UP";
-            default:
-                return status;
-        }
     }
 }
 

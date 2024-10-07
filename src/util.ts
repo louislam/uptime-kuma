@@ -17,7 +17,7 @@ import * as timezone from "dayjs/plugin/timezone";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as utc from "dayjs/plugin/utc";
 
-import * as jsonata from "jsonata";
+import jsonata from "jsonata";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
@@ -95,11 +95,6 @@ const consoleLevelColors : Record<string, string> = {
     "DEBUG": CONSOLE_STYLE_FgGray,
 };
 
-/**
- * Flip the status of s
- * @param s input status: UP or DOWN
- * @returns {number} UP or DOWN
- */
 export const badgeConstants = {
     naColor: "#999",
     defaultUpColor: "#66c20a",
@@ -120,7 +115,11 @@ export const badgeConstants = {
     defaultCertExpireDownDays: "7"
 };
 
-/** Flip the status of s */
+/**
+ * Flip the status of s
+ * @param s input status: UP or DOWN
+ * @returns {number} UP or DOWN
+ */
 export function flipStatus(s: number) {
     if (s === UP) {
         return DOWN;
@@ -131,6 +130,24 @@ export function flipStatus(s: number) {
     }
 
     return s;
+}
+
+/**
+ * Convert status constant to string
+ * @param {const} status The status constant
+ * @returns {string} Status
+ */
+export function statusToString(status: number) {
+    // TODO: Move to notification-provider.js to avoid repetition in classes
+    console.log("stat to string");
+    switch (status) {
+        case DOWN:
+            return "DOWN";
+        case UP:
+            return "UP";
+        default:
+            return status;
+    }
 }
 
 /**
@@ -331,7 +348,7 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    debug(module: string, msg: string): void {
+    debug(module: string, msg: unknown): void {
         this.log(module, msg, "DEBUG");
     }
 

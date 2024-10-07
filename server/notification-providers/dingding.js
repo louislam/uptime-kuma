@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
-const { DOWN, UP } = require("../../src/util");
 const { default: axios } = require("axios");
 const Crypto = require("crypto");
+const { statusToString } = require("../../src/util");
 
 class DingDing extends NotificationProvider {
     name = "DingDing";
@@ -17,8 +17,8 @@ class DingDing extends NotificationProvider {
                 let params = {
                     msgtype: "markdown",
                     markdown: {
-                        title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
-                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        title: `[${statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
+                        text: `## [${statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                     },
                     "at": {
                         "isAtAll": notification.mentioning === "everyone"
@@ -79,23 +79,6 @@ class DingDing extends NotificationProvider {
             .createHmac("sha256", Buffer.from(secretKey, "utf8"))
             .update(Buffer.from(`${timestamp}\n${secretKey}`, "utf8"))
             .digest("base64");
-    }
-
-    /**
-     * Convert status constant to string
-     * @param {const} status The status constant
-     * @returns {string} Status
-     */
-    statusToString(status) {
-        // TODO: Move to notification-provider.js to avoid repetition in classes
-        switch (status) {
-            case DOWN:
-                return "DOWN";
-            case UP:
-                return "UP";
-            default:
-                return status;
-        }
     }
 }
 
