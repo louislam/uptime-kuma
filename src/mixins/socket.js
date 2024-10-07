@@ -141,17 +141,21 @@ export default {
             });
 
             socket.on("monitorList", (data) => {
-                // Add Helper function
-                Object.entries(data).forEach(([ monitorID, monitor ]) => {
-                    monitor.getUrl = () => {
-                        try {
-                            return new URL(monitor.url);
-                        } catch (_) {
-                            return null;
-                        }
-                    };
-                });
+                this.assignMonitorUrlParser(data);
                 this.monitorList = data;
+            });
+
+            socket.on("updateMonitorIntoList", (data) => {
+                this.assignMonitorUrlParser(data);
+                Object.entries(data).forEach(([ monitorID, updatedMonitor ]) => {
+                    this.monitorList[monitorID] = updatedMonitor;
+                });
+            });
+
+            socket.on("deleteMonitorFromList", (monitorID) => {
+                if (this.monitorList[monitorID]) {
+                    delete this.monitorList[monitorID];
+                }
             });
 
             socket.on("monitorTypeList", (data) => {
@@ -288,6 +292,23 @@ export default {
             socket.on("refresh", () => {
                 location.reload();
             });
+        },
+        /**
+         * parse all urls from list.
+         * @param {object} data Monitor data to modify
+         * @returns {object} list
+         */
+        assignMonitorUrlParser(data) {
+            Object.entries(data).forEach(([ monitorID, monitor ]) => {
+                monitor.getUrl = () => {
+                    try {
+                        return new URL(monitor.url);
+                    } catch (_) {
+                        return null;
+                    }
+                };
+            });
+            return data;
         },
 
         /**

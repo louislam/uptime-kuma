@@ -109,7 +109,6 @@
     "Passive Monitor Type": "غیر فعال مانیٹر کی قسم",
     "No important events": "کوئی اہم واقعات نہیں",
     "-hour": "-گھنٹہ",
-    "shrinkDatabaseDescription": "SQLite کے لیے ڈیٹا بیس ویکیوم کو متحرک کریں۔ اگر آپ کا ڈیٹا بیس 1.10.0 کے بعد بنتا ہے، تو AUTO_VACUUM پہلے ہی فعال ہے اور اس کارروائی کی ضرورت نہیں ہے۔",
     "goAlertIntegrationKeyInfo": "اس فارمیٹ میں سروس کے لیے عام API انٹیگریشن کلید حاصل کریں \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeee\" عام طور پر کاپی شدہ URL کے ٹوکن پیرامیٹر کی قدر۔",
     "Sms template must contain parameters: ": "ایس ایم ایس ٹیمپلیٹ میں پیرامیٹرز ہونا ضروری ہے: ",
     "Keyword": "کلیدی لفظ",
