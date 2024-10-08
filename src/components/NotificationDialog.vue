@@ -226,9 +226,25 @@ export default {
                 this.notification.name = this.getUniqueDefaultName(to);
             }
         },
+        $route(to, from) {
+            if (this.modal) {
+                this.modal.hide();
+            }
+        }
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal);
+    },
+    beforeUnmount() {
+        if (this.modal) {
+            this.modal.dispose();
+        }
+    },
+    beforeRouteLeave(to, from, next) {
+        if (this.modal) {
+            this.modal.hide();
+        }
+        next();
     },
     methods: {
 
