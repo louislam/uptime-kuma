@@ -128,7 +128,6 @@ function flipStatus(s) {
     return s;
 }
 function statusToString(status) {
-    console.log("stat to string");
     switch (status) {
         case exports.DOWN:
             return "DOWN";

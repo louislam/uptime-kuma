@@ -116,9 +116,9 @@ export const badgeConstants = {
 };
 
 /**
- * Flip the status of s
- * @param s input status: UP or DOWN
- * @returns {number} UP or DOWN
+ * Flip the status of s between UP and DOWN if this is possible
+ * @param s {number} status
+ * @returns {number} flipped status
  */
 export function flipStatus(s: number) {
     if (s === UP) {
@@ -139,7 +139,6 @@ export function flipStatus(s: number) {
  */
 export function statusToString(status: number) {
     // TODO: Move to notification-provider.js to avoid repetition in classes
-    console.log("stat to string");
     switch (status) {
         case DOWN:
             return "DOWN";
