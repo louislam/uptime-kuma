@@ -10,8 +10,11 @@ Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
 <img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
 </a>
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam)
+[![](https://img.shields.io/badge/Gurubase-ASK%20UPTIME%20KUMA%20GURU-006BFF)](https://gurubase.io/g/uptime-kuma)
 
 <img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="" />
+
 
 ## 🥔 Live Demo
 
