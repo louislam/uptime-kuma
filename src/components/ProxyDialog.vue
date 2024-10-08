@@ -105,6 +105,10 @@ export default {
     components: {
         Confirm,
     },
+    beforeRouteLeave(to, from, next) {
+        this.cleanupModal();
+        next();
+    },
     props: {},
     emits: [ "added" ],
     data() {
@@ -125,26 +129,17 @@ export default {
             }
         };
     },
-
-    mounted() {
-        this.modal = new Modal(this.$refs.modal);
-    },
-
-    beforeRouteLeave(to, from, next) {
-        this.cleanupModal();
-        next();
-    },
-
     watch: {
         $route(to, from) {
             this.cleanupModal();
         }
     },
-
+    mounted() {
+        this.modal = new Modal(this.$refs.modal);
+    },
     beforeUnmount() {
         this.cleanupModal();
     },
-
     methods: {
         /**
          * Show dialog to confirm deletion

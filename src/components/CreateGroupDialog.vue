@@ -33,26 +33,26 @@
 import { Modal } from "bootstrap";
 
 export default {
+    beforeRouteLeave(to, from, next) {
+        this.cleanupModal();
+        next();
+    },
     props: {},
     emits: [ "added" ],
     data: () => ({
         modal: null,
         groupName: null,
     }),
-    mounted() {
-        this.modal = new Modal(this.$refs.modal);
-    },
     watch: {
         $route(to, from) {
             this.cleanupModal();
         }
     },
+    mounted() {
+        this.modal = new Modal(this.$refs.modal);
+    },
     beforeUnmount() {
         this.cleanupModal();
-    },
-    beforeRouteLeave(to, from, next) {
-        this.cleanupModal();
-        next();
     },
     methods: {
         /**

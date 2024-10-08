@@ -155,6 +155,10 @@ export default {
         Tag,
         VueMultiselect,
     },
+    beforeRouteLeave(to, from, next) {
+        this.cleanupModal();
+        next();
+    },
     props: {
         /**
          * Array of tags to be pre-selected
@@ -244,21 +248,15 @@ export default {
             };
         },
     },
-    mounted() {
-        this.modal = new Modal(this.$refs.modal);
-        this.getExistingTags();
-    },
-    beforeRouteLeave(to, from, next) {
-        this.cleanupModal();
-        next();
-    },
-
     watch: {
         $route(to, from) {
             this.cleanupModal();
         }
     },
-
+    mounted() {
+        this.modal = new Modal(this.$refs.modal);
+        this.getExistingTags();
+    },
     beforeUnmount() {
         this.cleanupModal();
     },
