@@ -1,8 +1,7 @@
-const { checkLogin, doubleCheckPassword } = require("../util-server");
+const { checkLogin, setSetting, setting, doubleCheckPassword } = require("../util-server");
 const { CloudflaredTunnel } = require("node-cloudflared-tunnel");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { log } = require("../../src/util");
-const { Settings } = require("../settings");
 const io = UptimeKumaServer.getInstance().io;
 
 const prefix = "cloudflared_";
@@ -41,7 +40,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
             socket.join("cloudflared");
             io.to(socket.userID).emit(prefix + "installed", cloudflared.checkInstalled());
             io.to(socket.userID).emit(prefix + "running", cloudflared.running);
-            io.to(socket.userID).emit(prefix + "token", await Settings.get("cloudflaredTunnelToken"));
+            io.to(socket.userID).emit(prefix + "token", await setting("cloudflaredTunnelToken"));
         } catch (error) { }
     });
 
@@ -56,7 +55,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
         try {
             checkLogin(socket);
             if (token && typeof token === "string") {
-                await Settings.set("cloudflaredTunnelToken", token);
+                await setSetting("cloudflaredTunnelToken", token);
                 cloudflared.token = token;
             } else {
                 cloudflared.token = null;
@@ -68,7 +67,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
     socket.on(prefix + "stop", async (currentPassword, callback) => {
         try {
             checkLogin(socket);
-            const disabledAuth = await Settings.get("disableAuth");
+            const disabledAuth = await setting("disableAuth");
             if (!disabledAuth) {
                 await doubleCheckPassword(socket, currentPassword);
             }
@@ -84,7 +83,7 @@ module.exports.cloudflaredSocketHandler = (socket) => {
     socket.on(prefix + "removeToken", async () => {
         try {
             checkLogin(socket);
-            await Settings.set("cloudflaredTunnelToken", "");
+            await setSetting("cloudflaredTunnelToken", "");
         } catch (error) { }
     });
 
@@ -97,15 +96,15 @@ module.exports.cloudflaredSocketHandler = (socket) => {
  */
 module.exports.autoStart = async (token) => {
     if (!token) {
-        token = await Settings.get("cloudflaredTunnelToken");
+        token = await setting("cloudflaredTunnelToken");
     } else {
         // Override the current token via args or env var
-        await Settings.set("cloudflaredTunnelToken", token);
-        log.info("cloudflare", "Use cloudflared token from args or env var");
+        await setSetting("cloudflaredTunnelToken", token);
+        console.log("Use cloudflared token from args or env var");
     }
 
     if (token) {
-        log.info("cloudflare", "Start cloudflared");
+        console.log("Start cloudflared");
         cloudflared.token = token;
         cloudflared.start();
     }

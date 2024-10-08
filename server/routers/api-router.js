@@ -1,5 +1,6 @@
 let express = require("express");
 const {
+    setting,
     allowDevAllOrigin,
     allowAllOrigin,
     percentageToColor,
@@ -17,7 +18,6 @@ const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
-const { Settings } = require("../settings");
 
 let router = express.Router();
 
@@ -30,7 +30,7 @@ router.get("/api/entry-page", async (request, response) => {
 
     let result = { };
     let hostname = request.hostname;
-    if ((await Settings.get("trustProxy")) && request.headers["x-forwarded-host"]) {
+    if ((await setting("trustProxy")) && request.headers["x-forwarded-host"]) {
         hostname = request.headers["x-forwarded-host"];
     }
 

@@ -528,7 +528,7 @@ function ApiCache() {
 
     /**
      * Get index of a group
-     * @param {string} group
+     * @param {string} group 
      * @returns {number}
      */
     this.getIndex = function (group) {
@@ -543,9 +543,9 @@ function ApiCache() {
      * Express middleware
      * @param {(string|number)} strDuration Duration to cache responses
      * for.
-     * @param {function(Object, Object):boolean} middlewareToggle
+     * @param {function(Object, Object):boolean} middlewareToggle 
      * @param {Object} localOptions Options for APICache
-     * @returns
+     * @returns 
      */
     this.middleware = function cache(strDuration, middlewareToggle, localOptions) {
         let duration = instance.getDuration(strDuration);
@@ -859,7 +859,7 @@ function ApiCache() {
 
     /**
      * Process options
-     * @param {Object} options
+     * @param {Object} options 
      * @returns {Object}
      */
     this.options = function (options) {

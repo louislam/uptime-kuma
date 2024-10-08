@@ -1,7 +1,7 @@
 const { R } = require("redbean-node");
 const { log } = require("../../src/util");
+const { setSetting, setting } = require("../util-server");
 const Database = require("../database");
-const { Settings } = require("../settings");
 
 const DEFAULT_KEEP_PERIOD = 180;
 
@@ -25,7 +25,7 @@ const clearOldData = async () => {
     *   - keep according to the setting (keepDataPeriodDays) (default 180 days)
     */
 
-    let period = await Settings.get("keepDataPeriodDays");
+    let period = await setting("keepDataPeriodDays");
 
     // Set Default Period
     if (period == null) {
@@ -39,7 +39,7 @@ const clearOldData = async () => {
         parsedPeriod = parseInt(period);
     } catch (_) {
         log.warn("clearOldData", "Failed to parse setting, resetting to default..");
-        await Settings.set("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
+        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
         parsedPeriod = DEFAULT_KEEP_PERIOD;
     }
 
