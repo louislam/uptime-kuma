@@ -741,6 +741,14 @@ class Database {
             await Settings.set("migratedAggregateTable", true);
         }
 
+        // Empty the aggregate table if FORCE_MIGRATE_AGGREGATE_TABLE is set to 1
+        if (process.env.FORCE_MIGRATE_AGGREGATE_TABLE === "1") {
+            log.warn("db", "FORCE_MIGRATE_AGGREGATE_TABLE is set to 1, forcing aggregate table migration");
+            await R.exec("DELETE FROM stat_minutely");
+            await R.exec("DELETE FROM stat_hourly");
+            await R.exec("DELETE FROM stat_daily");
+        }
+
         //
         let migrated = await Settings.get("migratedAggregateTable");
 
@@ -751,60 +759,61 @@ class Database {
 
         log.info("db", "Migrating Aggregate Table");
 
-        // Migrate heartbeat to stat_minutely, using knex transaction
-        const trx = await R.knex.transaction();
+        log.info("db", "Getting list of unique dates and monitors");
 
         // Get a list of unique dates from the heartbeat table, using raw sql
-        let dates = await trx.raw(`
+        let dates = await R.getAll(`
             SELECT DISTINCT DATE(time) AS date
             FROM heartbeat
             ORDER BY date ASC
         `);
 
         // Get a list of unique monitors from the heartbeat table, using raw sql
-        let monitors = await trx.raw(`
+        let monitors = await R.getAll(`
             SELECT DISTINCT monitor_id
             FROM heartbeat
+            ORDER BY monitor_id ASC
         `);
-
-        // Stop if stat_* tables are not empty
-        // SQL to empty these tables: DELETE FROM stat_minutely; DELETE FROM stat_hourly; DELETE FROM stat_daily;
-        for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
-            let countResult = await trx.raw(`SELECT COUNT(*) AS count FROM ${table}`);
-            let count = countResult[0].count;
-            if (count > 0) {
-                log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
-                trx.rollback();
-                return;
-            }
-        }
 
         console.log("Dates", dates);
         console.log("Monitors", monitors);
 
-        for (let monitor of monitors) {
-            for (let date of dates) {
-                log.info("db", `Migrating monitor ${monitor.monitor_id} on date ${date.date}`);
-
-                // New Uptime Calculator
-                let calculator = new UptimeCalculator();
-
-                // TODO: Pass transaction to the calculator
-                // calculator.setTransaction(trx);
-
-                // Get all the heartbeats for this monitor and date
-                let heartbeats = await trx("heartbeat")
-                    .where("monitor_id", monitor.monitor_id)
-                    .whereRaw("DATE(time) = ?", [ date.date ])
-                    .orderBy("time", "asc");
-
-                for (let heartbeat of heartbeats) {
-                    calculator.update(heartbeat.status, heartbeat.ping, dayjs(heartbeat.time));
-                }
+        // Stop if stat_* tables are not empty
+        for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
+            let countResult = await R.getRow(`SELECT COUNT(*) AS count FROM ${table}`);
+            let count = countResult.count;
+            if (count > 0) {
+                log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
+                return;
             }
         }
 
-        trx.commit();
+        for (let monitor of monitors) {
+            for (let date of dates) {
+
+                // New Uptime Calculator
+                let calculator = new UptimeCalculator();
+                calculator.monitorID = monitor.monitor_id;
+                calculator.setMigrationMode(true);
+
+                // Get all the heartbeats for this monitor and date
+                let heartbeats = await R.getAll(`
+                    SELECT status, ping, time
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                    AND DATE(time) = ?
+                    ORDER BY time ASC
+                `, [ monitor.monitor_id, date.date ]);
+
+                if (heartbeats.length > 0) {
+                    log.info("db", `Migrating monitor ${monitor.monitor_id} on date ${date.date}`);
+                }
+
+                for (let heartbeat of heartbeats) {
+                    await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs(heartbeat.time));
+                }
+            }
+        }
 
         //await Settings.set("migratedAggregateTable", true);
     }
