@@ -42,7 +42,7 @@ class WeCom extends NotificationProvider {
         return {
             msgtype: "text",
             text: {
-                content: title + msg
+                content: title + "\n" + msg
             }
         };
     }
