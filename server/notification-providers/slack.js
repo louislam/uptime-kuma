@@ -49,10 +49,11 @@ class Slack extends NotificationProvider {
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
                 "icon_emoji": notification.slackiconemo,
+                "attachments": [],
             };
 
             if (notification.slackrichmessage) {
-                data["attachments"] = [
+                data.attachments.push(
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
                         "blocks": [
@@ -76,9 +77,9 @@ class Slack extends NotificationProvider {
                             }
                         ],
                     }
-                ];
+                );
             } else {
-                data["text"] = `${textMsg}\n${msg}`;
+                data.text = `${textMsg}\n${msg}`;
             }
 
             if (notification.slackbutton) {
