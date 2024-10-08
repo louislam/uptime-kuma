@@ -46,11 +46,13 @@ class Slack extends NotificationProvider {
 
             const textMsg = "Uptime Kuma Alert";
             let data = {
-                "text": `${textMsg}\n${msg}`,
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
                 "icon_emoji": notification.slackiconemo,
-                "attachments": [
+            };
+
+            if(notification.slackrichmessage){
+                data["attachments"] = [
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
                         "blocks": [
@@ -74,8 +76,10 @@ class Slack extends NotificationProvider {
                             }
                         ],
                     }
-                ]
-            };
+                ];
+            }else{
+                data["text"] = `${textMsg}\n${msg}`;
+            }
 
             if (notification.slackbutton) {
                 await Slack.deprecateURL(notification.slackbutton);
