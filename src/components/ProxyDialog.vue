@@ -105,10 +105,6 @@ export default {
     components: {
         Confirm,
     },
-    beforeRouteLeave(to, from, next) {
-        this.cleanupModal();
-        next();
-    },
     props: {},
     emits: [ "added" ],
     data() {
@@ -128,11 +124,6 @@ export default {
                 applyExisting: false,
             }
         };
-    },
-    watch: {
-        $route(to, from) {
-            this.cleanupModal();
-        }
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal);
@@ -232,9 +223,6 @@ export default {
                     console.warn("Modal hide failed:", e);
                 }
             }
-            document.body.classList.remove("modal-open");
-            document.body.style.paddingRight = "";
-            document.body.style.overflow = "";
         }
     },
 };
