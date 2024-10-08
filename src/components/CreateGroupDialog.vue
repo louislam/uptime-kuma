@@ -42,6 +42,18 @@ export default {
     mounted() {
         this.modal = new Modal(this.$refs.modal);
     },
+    watch: {
+        $route(to, from) {
+            this.cleanupModal();
+        }
+    },
+    beforeUnmount() {
+        this.cleanupModal();
+    },
+    beforeRouteLeave(to, from, next) {
+        this.cleanupModal();
+        next();
+    },
     methods: {
         /**
          * Show the confirm dialog
@@ -58,6 +70,22 @@ export default {
             this.$emit("added", this.groupName);
             this.modal.hide();
         },
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+         cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
+            document.body.classList.remove('modal-open');
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
+        }
     },
 };
 </script>

@@ -231,8 +231,11 @@ export default {
          */
          cleanupModal() {
             if (this.modal) {
-                this.modal.hide();
-                this.modal.dispose();
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
             }
             document.body.classList.remove('modal-open');
             document.body.style.paddingRight = '';

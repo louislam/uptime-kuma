@@ -248,6 +248,20 @@ export default {
         this.modal = new Modal(this.$refs.modal);
         this.getExistingTags();
     },
+    beforeRouteLeave(to, from, next) {
+        this.cleanupModal();
+        next();
+    },
+
+    watch: {
+        $route(to, from) {
+            this.cleanupModal();
+        }
+    },
+
+    beforeUnmount() {
+        this.cleanupModal();
+    },
     methods: {
         /**
          * Show the add tag dialog
@@ -459,6 +473,22 @@ export default {
             this.newTags = [];
             this.deleteTags = [];
             this.processing = false;
+        },
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+         cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
+            document.body.classList.remove('modal-open');
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
         }
     },
 };
