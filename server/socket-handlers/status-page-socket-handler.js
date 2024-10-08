@@ -1,5 +1,5 @@
 const { R } = require("redbean-node");
-const { checkLogin } = require("../util-server");
+const { checkLogin, setSetting } = require("../util-server");
 const dayjs = require("dayjs");
 const { log } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
@@ -7,7 +7,6 @@ const Database = require("../database");
 const apicache = require("../modules/apicache");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
-const { Settings } = require("../settings");
 
 /**
  * Socket handlers for status page
@@ -234,7 +233,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             // Also change entry page to new slug if it is the default one, and slug is changed.
             if (server.entryPage === "statusPage-" + slug && statusPage.slug !== slug) {
                 server.entryPage = "statusPage-" + statusPage.slug;
-                await Settings.set("entryPage", server.entryPage, "general");
+                await setSetting("entryPage", server.entryPage, "general");
             }
 
             apicache.clear();
@@ -292,7 +291,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             });
 
         } catch (error) {
-            log.error("socket", error);
+            console.error(error);
             callback({
                 ok: false,
                 msg: error.message,
@@ -314,7 +313,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 // Reset entry page if it is the default one.
                 if (server.entryPage === "statusPage-" + slug) {
                     server.entryPage = "dashboard";
-                    await Settings.set("entryPage", server.entryPage, "general");
+                    await setSetting("entryPage", server.entryPage, "general");
                 }
 
                 // No need to delete records from `status_page_cname`, because it has cascade foreign key.
