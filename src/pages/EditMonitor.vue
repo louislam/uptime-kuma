@@ -10,7 +10,7 @@
 
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
-                                <select id="type" v-model="monitor.type" class="form-select">
+                                <select id="type" v-model="monitor.type" class="form-select" data-testid="monitor-type-select">
                                     <optgroup :label="$t('General Monitor Type')">
                                         <option value="group">
                                             {{ $t("Group") }}
@@ -23,6 +23,9 @@
                                         </option>
                                         <option value="ping">
                                             Ping
+                                        </option>
+                                        <option value="snmp">
+                                            SNMP
                                         </option>
                                         <option value="keyword">
                                             HTTP(s) - {{ $t("Keyword") }}
@@ -96,13 +99,13 @@
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required>
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" required data-testid="friendly-name-input">
                             </div>
 
                             <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required>
+                                <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
                             </div>
 
                             <!-- gRPC URL -->
@@ -119,6 +122,9 @@
                                     {{ $t("needPushEvery", [monitor.interval]) }}<br />
                                     {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
+                                <button class="btn btn-primary" type="button" @click="resetToken">
+                                    {{ $t("Reset Token") }}
+                                </button>
                             </div>
 
                             <!-- Keyword -->
@@ -141,18 +147,28 @@
                                 </div>
                             </div>
 
-                            <!-- Json Query -->
-                            <div v-if="monitor.type === 'json-query'" class="my-3">
-                                <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
-                                <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
-
-                                <!-- eslint-disable-next-line vue/no-v-html -->
-                                <div class="form-text" v-html="$t('jsonQueryDescription')">
+                            <!-- Remote Browser -->
+                            <div v-if="monitor.type === 'real-browser'" class="my-3">
+                                <!-- Toggle -->
+                                <div class="my-3 form-check">
+                                    <input id="toggle" v-model="remoteBrowsersToggle" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="toggle">
+                                        {{ $t("useRemoteBrowser") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("remoteBrowserToggle") }}
+                                    </div>
                                 </div>
-                                <br>
 
-                                <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
-                                <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                                <div v-if="remoteBrowsersToggle">
+                                    <label for="remote-browser" class="form-label">{{ $t("Remote Browser") }}</label>
+                                    <ActionSelect
+                                        v-model="monitor.remote_browser"
+                                        :options="remoteBrowsersOptions"
+                                        icon="plus"
+                                        :action="() => $refs.remoteBrowserDialog.show()"
+                                    />
+                                </div>
                             </div>
 
                             <!-- Game -->
@@ -218,17 +234,85 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' ||monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
-                                <input id="hostname" v-model="monitor.hostname" type="text" class="form-control" :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`" required>
+                                <input
+                                    id="hostname"
+                                    v-model="monitor.hostname"
+                                    type="text"
+                                    class="form-control"
+                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
+                                    required
+                                    data-testid="hostname-input"
+                                >
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT / Radius Type -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'snmp'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                            </div>
+
+                            <!-- SNMP Monitor Type -->
+                            <div v-if="monitor.type === 'snmp'" class="my-3">
+                                <label for="snmp_community_string" class="form-label">{{ $t("Community String") }}</label>
+                                <!-- TODO: Rename monitor.radiusPassword to monitor.password for general use -->
+                                <HiddenInput id="snmp_community_string" v-model="monitor.radiusPassword" autocomplete="false" required="true" placeholder="public"></HiddenInput>
+
+                                <div class="form-text">{{ $t('snmpCommunityStringHelptext') }}</div>
+                            </div>
+
+                            <div v-if="monitor.type === 'snmp'" class="my-3">
+                                <label for="snmp_oid" class="form-label">{{ $t("OID (Object Identifier)") }}</label>
+                                <input id="snmp_oid" v-model="monitor.snmpOid" :title="$t('Please enter a valid OID.') + ' ' + $t('Example:', ['1.3.6.1.4.1.9.6.1.101'])" type="text" class="form-control" pattern="^([0-2])((\.0)|(\.[1-9][0-9]*))*$" placeholder="1.3.6.1.4.1.9.6.1.101" required>
+                                <div class="form-text">{{ $t('snmpOIDHelptext') }} </div>
+                            </div>
+
+                            <div v-if="monitor.type === 'snmp'" class="my-3">
+                                <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
+                                <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
+                                    <option value="1">
+                                        SNMPv1
+                                    </option>
+                                    <option value="2c">
+                                        SNMPv2c
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Json Query -->
+                            <!-- For Json Query / SNMP -->
+                            <div v-if="monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
+                                <div class="my-2">
+                                    <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
+                                    <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
+                                        <a href="https://jsonata.org/">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
+                                    </i18n-t>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
+                                </div>
+
+                                <div class="d-flex align-items-start">
+                                    <div class="me-2">
+                                        <label for="json_path_operator" class="form-label">{{ $t("Condition") }}</label>
+                                        <select id="json_path_operator" v-model="monitor.jsonPathOperator" class="form-select me-3" required>
+                                            <option value=">">&gt;</option>
+                                            <option value=">=">&gt;=</option>
+                                            <option value="<">&lt;</option>
+                                            <option value="<=">&lt;=</option>
+                                            <option value="!=">&#33;=</option>
+                                            <option value="==">==</option>
+                                            <option value="contains">contains</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                        <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '==' && monitor.jsonPathOperator !== '!='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
+                                        <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- DNS Resolver Server -->
@@ -267,6 +351,7 @@
                                         :preselect-first="false"
                                         :max-height="500"
                                         :taggable="false"
+                                        data-testid="resolve-type-select"
                                     ></VueMultiselect>
 
                                     <div class="form-text">
@@ -322,11 +407,34 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="mqttSuccessMessage" class="form-label">MQTT {{ $t("successMessage") }}</label>
-                                    <input id="mqttSuccessMessage" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
+                                    <label for="mqttCheckType" class="form-label">MQTT {{ $t("Check Type") }}</label>
+                                    <select id="mqttCheckType" v-model="monitor.mqttCheckType" class="form-select" required>
+                                        <option value="keyword">{{ $t("Keyword") }}</option>
+                                        <option value="json-query">{{ $t("Json Query") }}</option>
+                                    </select>
+                                </div>
+
+                                <div v-if="monitor.mqttCheckType === 'keyword'" class="my-3">
+                                    <label for="mqttSuccessKeyword" class="form-label">MQTT {{ $t("successKeyword") }}</label>
+                                    <input id="mqttSuccessKeyword" v-model="monitor.mqttSuccessMessage" type="text" class="form-control">
                                     <div class="form-text">
-                                        {{ $t("successMessageExplanation") }}
+                                        {{ $t("successKeywordExplanation") }}
                                     </div>
+                                </div>
+
+                                <!-- Json Query -->
+                                <div v-if="monitor.mqttCheckType === 'json-query'" class="my-3">
+                                    <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
+
+                                    <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
+                                        <a href="https://jsonata.org/">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                    </i18n-t>
+                                    <br>
+
+                                    <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
                                 </div>
                             </template>
 
@@ -384,6 +492,40 @@
                                 </div>
                             </template>
 
+                            <!-- MongoDB -->
+                            <template v-if="monitor.type === 'mongodb'">
+                                <div class="my-3">
+                                    <label for="mongodbCommand" class="form-label">{{ $t("Command") }}</label>
+                                    <textarea id="mongodbCommand" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ '{ &quot;ping&quot;: 1 }' ])"></textarea>
+                                    <i18n-t tag="div" class="form-text" keypath="mongodbCommandDescription">
+                                        <template #documentation>
+                                            <a href="https://www.mongodb.com/docs/manual/reference/command/">{{ $t('documentationOf', ['MongoDB']) }}</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+                                <div class="my-3">
+                                    <label for="jsonPath" class="form-label">{{ $t("Json Query") }}</label>
+                                    <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control">
+
+                                    <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
+                                        <a href="https://jsonata.org/">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                    </i18n-t>
+                                </div>
+                                <div class="my-3">
+                                    <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control">
+                                </div>
+                            </template>
+
+                            <!-- Conditions -->
+                            <EditMonitorConditions
+                                v-if="supportsConditions && conditionVariables.length > 0"
+                                v-model="monitor.conditions"
+                                :condition-variables="conditionVariables"
+                                class="my-3"
+                            />
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -406,8 +548,8 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
-                            <!-- Timeout: HTTP / Keyword only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'" class="my-3">
+                            <!-- Timeout: HTTP / Keyword / SNMP only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
                                 <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
@@ -423,8 +565,8 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
-                                <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
+                                <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox" :disabled="monitor.ignoreTls">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
                                 </label>
@@ -432,11 +574,23 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ $t("ignoreTLSError") }}
+                                    {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
                                 </label>
+                            </div>
+
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+                                <input id="cache-bust" v-model="monitor.cacheBust" class="form-check-input" type="checkbox" value="">
+                                <label class="form-check-label" for="cache-bust">
+                                    <i18n-t tag="label" keypath="cacheBusterParam" class="form-check-label" for="cache-bust">
+                                        <code>uptime_kuma_cachebuster</code>
+                                    </i18n-t>
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("cacheBusterParamDescription") }}
+                                </div>
                             </div>
 
                             <div class="my-3 form-check">
@@ -662,6 +816,7 @@
                                     <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
                                     <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
                                         <option value="json">JSON</option>
+                                        <option value="form">x-www-form-urlencoded</option>
                                         <option value="xml">XML</option>
                                     </select>
                                 </div>
@@ -825,7 +980,25 @@
                     </div>
 
                     <div class="fixed-bottom-bar p-3">
-                        <button id="monitor-submit-btn" class="btn btn-primary" type="submit" :disabled="processing">{{ $t("Save") }}</button>
+                        <button
+                            id="monitor-submit-btn"
+                            class="btn btn-primary me-2"
+                            type="submit"
+                            :disabled="processing"
+                            data-testid="save-button"
+                        >
+                            {{ $t("Save") }}
+                        </button>
+                        <button
+                            v-if="monitor.type === 'http'"
+                            id="monitor-debug-btn"
+                            class="btn btn-outline-primary"
+                            type="button"
+                            :disabled="processing"
+                            @click.stop="modal.show()"
+                        >
+                            {{ $t("Debug") }}
+                        </button>
                     </div>
                 </div>
             </form>
@@ -834,11 +1007,61 @@
             <DockerHostDialog ref="dockerHostDialog" @added="addedDockerHost" />
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
+            <RemoteBrowserDialog ref="remoteBrowserDialog" />
         </div>
     </transition>
+    <div ref="modal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <textarea id="curl-debug" v-model="curlCommand" class="form-control mb-3" readonly wrap="off"></textarea>
+                    <button id="debug-copy-btn" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-3 border-0" type="button" @click.stop="copyToClipboard">
+                        <font-awesome-icon icon="copy" />
+                    </button>
+                    <i18n-t keypath="CurlDebugInfo" tag="p" class="form-text">
+                        <template #newiline>
+                            <br>
+                        </template>
+                        <template #firewalls>
+                            <a href="https://xkcd.com/2259/" target="_blank">{{ $t('firewalls') }}</a>
+                        </template>
+                        <template #dns_resolvers>
+                            <a href="https://www.reddit.com/r/sysadmin/comments/rxho93/thank_you_for_the_running_its_always_dns_joke_its/" target="_blank">{{ $t('dns resolvers') }}</a>
+                        </template>
+                        <template #docker_networks>
+                            <a href="https://youtu.be/bKFMS5C4CG0" target="_blank">{{ $t('docker networks') }}</a>
+                        </template>
+                    </i18n-t>
+                    <div v-if="monitor.authMethod === 'oauth2-cc'" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                        <div role="img" aria-label="Warning:">⚠️</div>
+                        <i18n-t keypath="CurlDebugInfoOAuth2CCUnsupported" tag="div">
+                            <template #curl>
+                                <code>curl</code>
+                            </template>
+                            <template #newline>
+                                <br>
+                            </template>
+                            <template #oauth2_bearer>
+                                <code>--oauth2-bearer TOKEN</code>
+                            </template>
+                        </i18n-t>
+                    </div>
+                    <div v-if="monitor.proxyId" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+                        <div role="img" aria-label="Warning:">⚠️</div>
+                        <i18n-t keypath="CurlDebugInfoProxiesUnsupported" tag="div">
+                            <template #curl>
+                                <code>curl</code>
+                            </template>
+                        </i18n-t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
+import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
@@ -846,13 +1069,19 @@ import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
+import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
+import EditMonitorConditions from "../components/EditMonitorConditions.vue";
+import { version } from "../../package.json";
+const userAgent = `'Uptime-Kuma/${version}'`;
 
 const toast = useToast();
+
+const pushTokenLength = 32;
 
 const monitorDefaults = {
     type: "http",
@@ -864,7 +1093,6 @@ const monitorDefaults = {
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
-    timeout: 48,
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
@@ -881,6 +1109,7 @@ const monitorDefaults = {
     mqttPassword: "",
     mqttTopic: "",
     mqttSuccessMessage: "",
+    mqttCheckType: "keyword",
     authMethod: null,
     oauth_auth_method: "client_secret_basic",
     httpBodyEncoding: "json",
@@ -888,9 +1117,12 @@ const monitorDefaults = {
     kafkaProducerSaslOptions: {
         mechanism: "None",
     },
+    cacheBust: false,
     kafkaProducerSsl: false,
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
+    remote_browser: null,
+    conditions: []
 };
 
 export default {
@@ -902,12 +1134,15 @@ export default {
         CreateGroupDialog,
         NotificationDialog,
         DockerHostDialog,
+        RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
+        EditMonitorConditions,
     },
 
     data() {
         return {
+            modal: null,
             minInterval: MIN_INTERVAL_SECOND,
             maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
@@ -929,10 +1164,58 @@ export default {
                 "mongodb": "mongodb://username:password@host:port/database",
             },
             draftGroupName: null,
+            remoteBrowsersEnabled: false,
         };
     },
 
     computed: {
+
+        curlCommand() {
+            const command = [ "curl", "--verbose", "--head", "--request", this.monitor.method, "\\\n", "--user-agent", userAgent, "\\\n" ];
+            if (this.monitor.ignoreTls) {
+                command.push("--insecure", "\\\n");
+            }
+            if (this.monitor.headers) {
+                try {
+                    // trying to parse the supplied data as json to trim whitespace
+                    for (const [ key, value ] of Object.entries(JSON.parse(this.monitor.headers))) {
+                        command.push("--header", `'${key}: ${value}'`, "\\\n");
+                    }
+                } catch (e) {
+                    command.push("--header", `'${this.monitor.headers}'`, "\\\n");
+                }
+            }
+            if (this.monitor.authMethod === "basic") {
+                command.push("--user", `${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}`, "--basic", "\\\n");
+            } else if (this.monitor.authmethod === "mtls") {
+                command.push("--cacert", `'${this.monitor.tlsCa}'`, "\\\n", "--key", `'${this.monitor.tlsKey}'`, "\\\n", "--cert", `'${this.monitor.tlsCert}'`, "\\\n");
+            } else if (this.monitor.authMethod === "ntlm") {
+                command.push("--user", `'${this.monitor.authDomain ? `${this.monitor.authDomain}/` : ""}${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}'`, "--ntlm", "\\\n");
+            }
+            if (this.monitor.body && this.monitor.httpBodyEncoding === "json") {
+                let json = "";
+                try {
+                    // trying to parse the supplied data as json to trim whitespace
+                    json = JSON.stringify(JSON.parse(this.monitor.body));
+                } catch (e) {
+                    json = this.monitor.body;
+                }
+                command.push("--header", "'Content-Type: application/json'", "\\\n", "--data", `'${json}'`, "\\\n");
+            } else if (this.monitor.body && this.monitor.httpBodyEncoding === "xml") {
+                command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}'`, "\\\n");
+            }
+            if (this.monitor.maxredirects) {
+                command.push("--location", "--max-redirs", this.monitor.maxredirects, "\\\n");
+            }
+            if (this.monitor.timeout) {
+                command.push("--max-time", this.monitor.timeout, "\\\n");
+            }
+            if (this.monitor.maxretries) {
+                command.push("--retry", this.monitor.maxretries, "\\\n");
+            }
+            command.push("--url", this.monitor.url);
+            return command.join(" ");
+        },
 
         ipRegex() {
 
@@ -952,7 +1235,31 @@ export default {
             }
             return this.$t(name);
         },
-
+        remoteBrowsersOptions() {
+            return this.$root.remoteBrowserList.map(browser => {
+                return {
+                    label: browser.name,
+                    value: browser.id,
+                };
+            });
+        },
+        remoteBrowsersToggle: {
+            get() {
+                return this.remoteBrowsersEnabled || this.monitor.remote_browser != null;
+            },
+            set(value) {
+                if (value) {
+                    this.remoteBrowsersEnabled = true;
+                    if (this.monitor.remote_browser == null && this.$root.remoteBrowserList.length > 0) {
+                        // set a default remote browser if there is one. Otherwise, the user will have to select one manually.
+                        this.monitor.remote_browser = this.$root.remoteBrowserList[0].id;
+                    }
+                } else {
+                    this.remoteBrowsersEnabled = false;
+                    this.monitor.remote_browser = null;
+                }
+            }
+        },
         isAdd() {
             return this.$route.path === "/add";
         },
@@ -1013,6 +1320,9 @@ message HealthCheckResponse {
   </soap:Body>
 </soap:Envelope>` ]);
             }
+            if (this.monitor && this.monitor.httpBodyEncoding === "form") {
+                return this.$t("Example:", [ "key1=value1&key2=value2" ]);
+            }
             return this.$t("Example:", [ `
 {
     "key": "value"
@@ -1045,8 +1355,8 @@ message HealthCheckResponse {
             // Only groups, not itself, not a decendant
             result = result.filter(
                 monitor => monitor.type === "group" &&
-				monitor.id !== this.monitor.id &&
-				!this.monitor.childrenIDs?.includes(monitor.id)
+                monitor.id !== this.monitor.id &&
+                !this.monitor.childrenIDs?.includes(monitor.id)
             );
 
             // Filter result by active state, weight and alphabetical
@@ -1080,8 +1390,7 @@ message HealthCheckResponse {
 
         /**
          * Generates the parent monitor options list based on the sorted group monitor list and draft group name.
-         *
-         * @return {Array} The parent monitor options list.
+         * @returns {Array} The parent monitor options list.
          */
         parentMonitorOptionsList() {
             let list = [];
@@ -1131,7 +1440,15 @@ message HealthCheckResponse {
                     value: null,
                 }];
             }
-        }
+        },
+
+        supportsConditions() {
+            return this.$root.monitorTypeList[this.monitor.type]?.supportsConditions || false;
+        },
+
+        conditionVariables() {
+            return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
+        },
     },
     watch: {
         "$root.proxyList"() {
@@ -1164,10 +1481,12 @@ message HealthCheckResponse {
             }
         },
 
-        "monitor.type"() {
+        "monitor.type"(newType, oldType) {
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
-                    this.monitor.pushToken = genSecret(10);
+                    // ideally this would require checking if the generated token is already used
+                    // it's very unlikely to get a collision though (62^32 ~ 2.27265788 * 10^57 unique tokens)
+                    this.monitor.pushToken = genSecret(pushTokenLength);
                 }
             }
 
@@ -1177,9 +1496,33 @@ message HealthCheckResponse {
                     this.monitor.port = "53";
                 } else if (this.monitor.type === "radius") {
                     this.monitor.port = "1812";
+                } else if (this.monitor.type === "snmp") {
+                    this.monitor.port = "161";
                 } else {
                     this.monitor.port = undefined;
                 }
+            }
+
+            if (this.monitor.type === "snmp") {
+                // snmp is not expected to be executed via the internet => we can choose a lower default timeout
+                this.monitor.timeout = 5;
+            } else {
+                this.monitor.timeout = 48;
+            }
+
+            // Set default SNMP version
+            if (!this.monitor.snmpVersion) {
+                this.monitor.snmpVersion = "2c";
+            }
+
+            // Set default jsonPath
+            if (!this.monitor.jsonPath) {
+                this.monitor.jsonPath = "$";
+            }
+
+            // Set default condition for for jsonPathOperator
+            if (!this.monitor.jsonPathOperator) {
+                this.monitor.jsonPathOperator = "==";
             }
 
             // Get the game list from server
@@ -1188,7 +1531,7 @@ message HealthCheckResponse {
                     if (res.ok) {
                         this.gameList = res.gameList;
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1210,6 +1553,10 @@ message HealthCheckResponse {
                 }
             }
 
+            // Reset conditions since condition variables likely change:
+            if (oldType && newType !== oldType) {
+                this.monitor.conditions = [];
+            }
         },
 
         currentGameObject(newGameObject, previousGameObject) {
@@ -1218,8 +1565,15 @@ message HealthCheckResponse {
             }
             this.monitor.game = newGameObject.keys[0];
         },
+
+        "monitor.ignoreTls"(newVal) {
+            if (newVal) {
+                this.monitor.expiryNotification = false;
+            }
+        },
     },
     mounted() {
+        this.modal = new Modal(this.$refs.modal);
         this.init();
 
         let acceptedStatusCodeOptions = [
@@ -1260,7 +1614,18 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        /** Initialize the edit monitor form */
+        async copyToClipboard() {
+            try {
+                await navigator.clipboard.writeText(this.curlCommand);
+                toast.success(this.$t("CopyToClipboardSuccess"));
+            } catch (err) {
+                toast.error(this.$t("CopyToClipboardError", { error: err.message }));
+            }
+        },
+        /**
+         * Initialize the edit monitor form
+         * @returns {void}
+         */
         init() {
             if (this.isAdd) {
 
@@ -1305,6 +1670,7 @@ message HealthCheckResponse {
                             // group monitor fields
                             this.monitor.childrenIDs = undefined;
                             this.monitor.forceInactive = undefined;
+                            this.monitor.path = undefined;
                             this.monitor.pathName = undefined;
                             this.monitor.screenshot = undefined;
 
@@ -1330,7 +1696,7 @@ message HealthCheckResponse {
                             this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                         }
                     } else {
-                        toast.error(res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             }
@@ -1373,9 +1739,13 @@ message HealthCheckResponse {
             return true;
         },
 
+        resetToken() {
+            this.monitor.pushToken = genSecret(pushTokenLength);
+        },
+
         /**
          * Submit the form data for processing
-         * @returns {void}
+         * @returns {Promise<void>}
          */
         async submit() {
 
@@ -1426,7 +1796,7 @@ message HealthCheckResponse {
                     createdNewParent = true;
                     this.monitor.parent = res.monitorID;
                 } else {
-                    toast.error(res.msg);
+                    this.$root.toastError(res.msg);
                     this.processing = false;
                     return;
                 }
@@ -1440,19 +1810,15 @@ message HealthCheckResponse {
 
                         // Start the new parent monitor after edit is done
                         if (createdNewParent) {
-                            this.startParentGroupMonitor();
+                            await this.startParentGroupMonitor();
                         }
-
-                        toast.success(res.msg);
                         this.processing = false;
-                        this.$root.getMonitorList();
                         this.$router.push("/dashboard/" + res.monitorID);
-
                     } else {
-                        toast.error(res.msg);
                         this.processing = false;
                     }
 
+                    this.$root.toastRes(res);
                 });
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
@@ -1479,6 +1845,7 @@ message HealthCheckResponse {
          * Added a Notification Event
          * Enable it if the notification is added in EditMonitor.vue
          * @param {number} id ID of notification to add
+         * @returns {void}
          */
         addedNotification(id) {
             this.monitor.notificationIDList[id] = true;
@@ -1488,21 +1855,26 @@ message HealthCheckResponse {
          * Added a Proxy Event
          * Enable it if the proxy is added in EditMonitor.vue
          * @param {number} id ID of proxy to add
+         * @returns {void}
          */
         addedProxy(id) {
             this.monitor.proxyId = id;
         },
 
-        // Added a Docker Host Event
-        // Enable it if the Docker Host is added in EditMonitor.vue
+        /**
+         * Added a Docker Host Event
+         * Enable it if the Docker Host is added in EditMonitor.vue
+         * @param {number} id ID of docker host
+         * @returns {void}
+         */
         addedDockerHost(id) {
             this.monitor.docker_host = id;
         },
 
         /**
          * Adds a draft group.
-         *
-         * @param {string} draftGroupName - The name of the draft group.
+         * @param {string} draftGroupName The name of the draft group.
+         * @returns {void}
          */
         addedDraftGroup(draftGroupName) {
             this.draftGroupName = draftGroupName;
@@ -1536,5 +1908,10 @@ message HealthCheckResponse {
 
     textarea {
         min-height: 200px;
+    }
+
+    #curl-debug {
+        font-family: monospace;
+        overflow: auto;
     }
 </style>

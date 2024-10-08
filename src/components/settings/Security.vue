@@ -93,10 +93,16 @@
         <TwoFADialog ref="TwoFADialog" />
 
         <Confirm ref="confirmDisableAuth" btn-style="btn-danger" :yes-text="$t('I understand, please disable')" :no-text="$t('Leave')" @yes="disableAuth">
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <p v-html="$t('disableauth.message1')"></p>
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <p v-html="$t('disableauth.message2')"></p>
+            <i18n-t tag="p" keypath="disableauth.message1">
+                <template #disableAuth>
+                    <strong>{{ $t('disable authentication') }}</strong>
+                </template>
+            </i18n-t>
+            <i18n-t tag="p" keypath="disableauth.message2">
+                <template #intendThirdPartyAuth>
+                    <strong>{{ $t('intend to implement third-party authentication') }}</strong>
+                </template>
+            </i18n-t>
             <p>{{ $t("Please use this option carefully!") }}</p>
 
             <div class="mb-3">
@@ -155,7 +161,10 @@ export default {
     },
 
     methods: {
-        /** Check new passwords match before saving them */
+        /**
+         * Check new passwords match before saving them
+         * @returns {void}
+         */
         savePassword() {
             if (this.password.newPassword !== this.password.repeatNewPassword) {
                 this.invalidPassword = true;
@@ -168,12 +177,21 @@ export default {
                             this.password.currentPassword = "";
                             this.password.newPassword = "";
                             this.password.repeatNewPassword = "";
+
+                            // Update token of the current session
+                            if (res.token) {
+                                this.$root.storage().token = res.token;
+                                this.$root.socket.token = res.token;
+                            }
                         }
                     });
             }
         },
 
-        /** Disable authentication for web app access */
+        /**
+         * Disable authentication for web app access
+         * @returns {void}
+         */
         disableAuth() {
             this.settings.disableAuth = true;
 
@@ -186,7 +204,10 @@ export default {
             }, this.password.currentPassword);
         },
 
-        /** Enable authentication for web app access */
+        /**
+         * Enable authentication for web app access
+         * @returns {void}
+         */
         enableAuth() {
             this.settings.disableAuth = false;
             this.saveSettings();
@@ -194,7 +215,10 @@ export default {
             location.reload();
         },
 
-        /** Show confirmation dialog for disable auth */
+        /**
+         * Show confirmation dialog for disable auth
+         * @returns {void}
+         */
         confirmDisableAuth() {
             this.$refs.confirmDisableAuth.show();
         },

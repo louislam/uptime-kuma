@@ -1,12 +1,15 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { UP, DOWN, getMonitorRelativeURL } = require("../../src/util");
-const { setting } = require("../util-server");
+const { Settings } = require("../settings");
 const successMessage = "Sent Successfully.";
 
 class FlashDuty extends NotificationProvider {
     name = "FlashDuty";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         try {
             if (heartbeatJSON == null) {
@@ -33,12 +36,12 @@ class FlashDuty extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
+
     /**
      * Generate a monitor url from the monitors infomation
-     * @param {Object} monitorInfo Monitor details
-     * @returns {string|undefined}
+     * @param {object} monitorInfo Monitor details
+     * @returns {string|undefined} Monitor URL
      */
-
     genMonitorUrl(monitorInfo) {
         if (monitorInfo.type === "port" && monitorInfo.port) {
             return monitorInfo.hostname + ":" + monitorInfo.port;
@@ -54,11 +57,20 @@ class FlashDuty extends NotificationProvider {
      * @param {BeanModel} notification Message title
      * @param {string} title Message
      * @param {string} body Message
-     * @param {Object} monitorInfo Monitor details
+     * @param {object} monitorInfo Monitor details
      * @param {string} eventStatus Monitor status (Info, Warning, Critical, Ok)
-     * @returns {string}
+     * @returns {string} Success message
      */
     async postNotification(notification, title, body, monitorInfo, eventStatus) {
+        let labels = {
+            resource: this.genMonitorUrl(monitorInfo),
+            check: monitorInfo.name,
+        };
+        if (monitorInfo.tags && monitorInfo.tags.length > 0) {
+            for (let tag of monitorInfo.tags) {
+                labels[tag.name] = tag.value;
+            }
+        }
         const options = {
             method: "POST",
             url: "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
@@ -68,13 +80,11 @@ class FlashDuty extends NotificationProvider {
                 title,
                 event_status: eventStatus || "Info",
                 alert_key: String(monitorInfo.id) || Math.random().toString(36).substring(7),
-                labels: monitorInfo?.tags?.reduce((acc, item) => ({ ...acc,
-                    [item.name]: item.value
-                }), { resource: this.genMonitorUrl(monitorInfo) }),
+                labels,
             }
         };
 
-        const baseURL = await setting("primaryBaseURL");
+        const baseURL = await Settings.get("primaryBaseURL");
         if (baseURL && monitorInfo) {
             options.client = "Uptime Kuma";
             options.client_url = baseURL + getMonitorRelativeURL(monitorInfo.id);

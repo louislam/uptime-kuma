@@ -1,14 +1,17 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setting } = require("../util-server");
 const { getMonitorRelativeURL } = require("../../src/util");
+const { Settings } = require("../settings");
 
 class Stackfield extends NotificationProvider {
-
     name = "stackfield";
 
-    async send(notification, msg, monitorJSON = null) {
-        let okMsg = "Sent Successfully.";
+    /**
+     * @inheritdoc
+     */
+    async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
+
         try {
             // Stackfield message formatting: https://www.stackfield.com/help/formatting-messages-2001
 
@@ -20,7 +23,7 @@ class Stackfield extends NotificationProvider {
 
             textMsg += `\n${msg}`;
 
-            const baseURL = await setting("primaryBaseURL");
+            const baseURL = await Settings.get("primaryBaseURL");
             if (baseURL) {
                 textMsg += `\n${baseURL + getMonitorRelativeURL(monitorJSON.id)}`;
             }

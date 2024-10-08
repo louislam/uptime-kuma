@@ -2,8 +2,10 @@ const { R } = require("redbean-node");
 const HttpProxyAgent = require("http-proxy-agent");
 const HttpsProxyAgent = require("https-proxy-agent");
 const SocksProxyAgent = require("socks-proxy-agent");
-const { debug } = require("../src/util");
+const { log } = require("../src/util");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
+const { CookieJar } = require("tough-cookie");
+const { createCookieAgent } = require("http-cookie-agent/http");
 
 class Proxy {
 
@@ -11,11 +13,10 @@ class Proxy {
 
     /**
      * Saves and updates given proxy entity
-     *
-     * @param proxy
-     * @param proxyID
-     * @param userID
-     * @return {Promise<Bean>}
+     * @param {object} proxy Proxy to store
+     * @param {number} proxyID ID of proxy to update
+     * @param {number} userID ID of user the proxy belongs to
+     * @returns {Promise<Bean>} Updated proxy
      */
     static async save(proxy, proxyID, userID) {
         let bean;
@@ -65,10 +66,9 @@ class Proxy {
 
     /**
      * Deletes proxy with given id and removes it from monitors
-     *
-     * @param proxyID
-     * @param userID
-     * @return {Promise<void>}
+     * @param {number} proxyID ID of proxy to delete
+     * @param {number} userID ID of proxy owner
+     * @returns {Promise<void>}
      */
     static async delete(proxyID, userID) {
         const bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
@@ -86,10 +86,10 @@ class Proxy {
 
     /**
      * Create HTTP and HTTPS agents related with given proxy bean object
-     *
-     * @param proxy proxy bean object
-     * @param options http and https agent options
-     * @return {{httpAgent: Agent, httpsAgent: Agent}}
+     * @param {object} proxy proxy bean object
+     * @param {object} options http and https agent options
+     * @returns {{httpAgent: Agent, httpsAgent: Agent}} New HTTP and HTTPS agents
+     * @throws Proxy protocol is unsupported
      */
     static createAgents(proxy, options) {
         const { httpAgentOptions, httpsAgentOptions } = options || {};
@@ -97,29 +97,37 @@ class Proxy {
         let httpAgent;
         let httpsAgent;
 
+        let jar = new CookieJar();
+
         const proxyOptions = {
             protocol: proxy.protocol,
             host: proxy.host,
             port: proxy.port,
+            cookies: { jar },
         };
 
         if (proxy.auth) {
             proxyOptions.auth = `${proxy.username}:${proxy.password}`;
         }
 
-        debug(`Proxy Options: ${JSON.stringify(proxyOptions)}`);
-        debug(`HTTP Agent Options: ${JSON.stringify(httpAgentOptions)}`);
-        debug(`HTTPS Agent Options: ${JSON.stringify(httpsAgentOptions)}`);
+        log.debug("update-proxy", `Proxy Options: ${JSON.stringify(proxyOptions)}`);
+        log.debug("update-proxy", `HTTP Agent Options: ${JSON.stringify(httpAgentOptions)}`);
+        log.debug("update-proxy", `HTTPS Agent Options: ${JSON.stringify(httpsAgentOptions)}`);
 
         switch (proxy.protocol) {
             case "http":
             case "https":
-                httpAgent = new HttpProxyAgent({
+                // eslint-disable-next-line no-case-declarations
+                const HttpCookieProxyAgent = createCookieAgent(HttpProxyAgent);
+                // eslint-disable-next-line no-case-declarations
+                const HttpsCookieProxyAgent = createCookieAgent(HttpsProxyAgent);
+
+                httpAgent = new HttpCookieProxyAgent({
                     ...httpAgentOptions || {},
-                    ...proxyOptions
+                    ...proxyOptions,
                 });
 
-                httpsAgent = new HttpsProxyAgent({
+                httpsAgent = new HttpsCookieProxyAgent({
                     ...httpsAgentOptions || {},
                     ...proxyOptions,
                 });
@@ -128,7 +136,9 @@ class Proxy {
             case "socks5":
             case "socks5h":
             case "socks4":
-                agent = new SocksProxyAgent({
+                // eslint-disable-next-line no-case-declarations
+                const SocksCookieProxyAgent = createCookieAgent(SocksProxyAgent);
+                agent = new SocksCookieProxyAgent({
                     ...httpAgentOptions,
                     ...httpsAgentOptions,
                     ...proxyOptions,
@@ -171,10 +181,9 @@ class Proxy {
 
 /**
  * Applies given proxy id to monitors
- *
- * @param proxyID
- * @param userID
- * @return {Promise<void>}
+ * @param {number} proxyID ID of proxy to apply
+ * @param {number} userID ID of proxy owner
+ * @returns {Promise<void>}
  */
 async function applyProxyEveryMonitor(proxyID, userID) {
     // Find all monitors with id and proxy id

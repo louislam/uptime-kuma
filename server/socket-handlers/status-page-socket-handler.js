@@ -1,5 +1,5 @@
 const { R } = require("redbean-node");
-const { checkLogin, setSetting } = require("../util-server");
+const { checkLogin } = require("../util-server");
 const dayjs = require("dayjs");
 const { log } = require("../../src/util");
 const ImageDataURI = require("../image-data-uri");
@@ -7,10 +7,12 @@ const Database = require("../database");
 const apicache = require("../modules/apicache");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
+const { Settings } = require("../settings");
 
 /**
  * Socket handlers for status page
  * @param {Socket} socket Socket.io instance to add listeners on
+ * @returns {void}
  */
 module.exports.statusPageSocketHandler = (socket) => {
 
@@ -154,6 +156,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.title = config.title;
             statusPage.description = config.description;
             statusPage.icon = config.logo;
+            statusPage.autoRefreshInterval = config.autoRefreshInterval,
             statusPage.theme = config.theme;
             //statusPage.published = ;
             //statusPage.search_engine_index = ;
@@ -231,7 +234,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             // Also change entry page to new slug if it is the default one, and slug is changed.
             if (server.entryPage === "statusPage-" + slug && statusPage.slug !== slug) {
                 server.entryPage = "statusPage-" + statusPage.slug;
-                await setSetting("entryPage", server.entryPage, "general");
+                await Settings.set("entryPage", server.entryPage, "general");
             }
 
             apicache.clear();
@@ -279,15 +282,17 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.title = title;
             statusPage.theme = "auto";
             statusPage.icon = "";
+            statusPage.autoRefreshInterval = 300;
             await R.store(statusPage);
 
             callback({
                 ok: true,
-                msg: "OK!"
+                msg: "successAdded",
+                msgi18n: true,
             });
 
         } catch (error) {
-            console.error(error);
+            log.error("socket", error);
             callback({
                 ok: false,
                 msg: error.message,
@@ -309,7 +314,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 // Reset entry page if it is the default one.
                 if (server.entryPage === "statusPage-" + slug) {
                     server.entryPage = "dashboard";
-                    await setSetting("entryPage", server.entryPage, "general");
+                    await Settings.set("entryPage", server.entryPage, "general");
                 }
 
                 // No need to delete records from `status_page_cname`, because it has cascade foreign key.
@@ -350,6 +355,8 @@ module.exports.statusPageSocketHandler = (socket) => {
  * Check slug a-z, 0-9, - only
  * Regex from: https://stackoverflow.com/questions/22454258/js-regex-string-validation-for-slug
  * @param {string} slug Slug to test
+ * @returns {void}
+ * @throws Slug is not valid
  */
 function checkSlug(slug) {
     if (typeof slug !== "string") {

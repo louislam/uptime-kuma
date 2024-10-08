@@ -19,6 +19,10 @@ const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_S
 
 const isSSL = sslKey && sslCert;
 
+/**
+ * Get the local WebSocket URL
+ * @returns {string} The local WebSocket URL
+ */
 function getLocalWebSocketURL() {
     const protocol = isSSL ? "wss" : "ws";
     const host = hostname || "localhost";

@@ -1,14 +1,17 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setting } = require("../util-server");
 const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
+const { Settings } = require("../settings");
 
 class AlertNow extends NotificationProvider {
-
     name = "AlertNow";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let textMsg = "";
             let status = "open";
@@ -26,7 +29,7 @@ class AlertNow extends NotificationProvider {
 
             textMsg += ` - ${msg}`;
 
-            const baseURL = await setting("primaryBaseURL");
+            const baseURL = await Settings.get("primaryBaseURL");
             if (baseURL && monitorJSON) {
                 textMsg += ` >> ${baseURL + getMonitorRelativeURL(monitorJSON.id)}`;
             }

@@ -1,7 +1,6 @@
 const basicAuth = require("express-basic-auth");
 const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
-const { setting } = require("./util-server");
 const { log } = require("../src/util");
 const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
 const { Settings } = require("./settings");
@@ -9,9 +8,9 @@ const dayjs = require("dayjs");
 
 /**
  * Login to web app
- * @param {string} username
- * @param {string} password
- * @returns {Promise<(Bean|null)>}
+ * @param {string} username Username to login with
+ * @param {string} password Password to login with
+ * @returns {Promise<(Bean|null)>} User or null if login failed
  */
 exports.login = async function (username, password) {
     if (typeof username !== "string" || typeof password !== "string") {
@@ -39,6 +38,7 @@ exports.login = async function (username, password) {
 /**
  * Validate a provided API key
  * @param {string} key API key to verify
+ * @returns {boolean} API is ok?
  */
 async function verifyAPIKey(key) {
     if (typeof key !== "string") {
@@ -73,9 +73,10 @@ async function verifyAPIKey(key) {
 
 /**
  * Custom authorizer for express-basic-auth
- * @param {string} username
- * @param {string} password
- * @param {authCallback} callback
+ * @param {string} username Username to login with
+ * @param {string} password Password to login with
+ * @param {authCallback} callback Callback to handle login result
+ * @returns {void}
  */
 function apiAuthorizer(username, password, callback) {
     // API Rate Limit
@@ -99,9 +100,10 @@ function apiAuthorizer(username, password, callback) {
 
 /**
  * Custom authorizer for express-basic-auth
- * @param {string} username
- * @param {string} password
- * @param {authCallback} callback
+ * @param {string} username Username to login with
+ * @param {string} password Password to login with
+ * @param {authCallback} callback Callback to handle login result
+ * @returns {void}
  */
 function userAuthorizer(username, password, callback) {
     // Login Rate Limit
@@ -126,7 +128,8 @@ function userAuthorizer(username, password, callback) {
  * Use basic auth if auth is not disabled
  * @param {express.Request} req Express request object
  * @param {express.Response} res Express response object
- * @param {express.NextFunction} next
+ * @param {express.NextFunction} next Next handler in chain
+ * @returns {Promise<void>}
  */
 exports.basicAuth = async function (req, res, next) {
     const middleware = basicAuth({
@@ -135,7 +138,7 @@ exports.basicAuth = async function (req, res, next) {
         challenge: true,
     });
 
-    const disabledAuth = await setting("disableAuth");
+    const disabledAuth = await Settings.get("disableAuth");
 
     if (!disabledAuth) {
         middleware(req, res, next);
@@ -148,7 +151,8 @@ exports.basicAuth = async function (req, res, next) {
  * Use use API Key if API keys enabled, else use basic auth
  * @param {express.Request} req Express request object
  * @param {express.Response} res Express response object
- * @param {express.NextFunction} next
+ * @param {express.NextFunction} next Next handler in chain
+ * @returns {Promise<void>}
  */
 exports.apiAuth = async function (req, res, next) {
     if (!await Settings.get("disableAuth")) {

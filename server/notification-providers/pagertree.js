@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { UP, DOWN, getMonitorRelativeURL } = require("../../src/util");
-const { setting } = require("../util-server");
+const { Settings } = require("../settings");
 let successMessage = "Sent Successfully.";
 
 class PagerTree extends NotificationProvider {
@@ -32,7 +32,8 @@ class PagerTree extends NotificationProvider {
 
     /**
      * Check if result is successful, result code should be in range 2xx
-     * @param {Object} result Axios response object
+     * @param {object} result Axios response object
+     * @returns {void}
      * @throws {Error} The status code is not in range 2xx
      */
     checkResult(result) {
@@ -48,9 +49,10 @@ class PagerTree extends NotificationProvider {
      * Send the message
      * @param {BeanModel} notification Message title
      * @param {string} title Message title
-     * @param {Object} monitorJSON Monitor details (For Up/Down only)
+     * @param {object} monitorJSON Monitor details (For Up/Down only)
+     * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @param {?string} eventAction Action event for PagerTree (create, resolve)
-     * @returns {string}
+     * @returns {Promise<string>} Success state
      */
     async postNotification(notification, title, monitorJSON, heartbeatJSON, eventAction = "create") {
 
@@ -72,7 +74,7 @@ class PagerTree extends NotificationProvider {
             }
         };
 
-        const baseURL = await setting("primaryBaseURL");
+        const baseURL = await Settings.get("primaryBaseURL");
         if (baseURL && monitorJSON) {
             options.client = "Uptime Kuma";
             options.client_url = baseURL + getMonitorRelativeURL(monitorJSON.id);

@@ -1,32 +1,123 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setSettings, setting } = require("../util-server");
 const { getMonitorRelativeURL, UP } = require("../../src/util");
+const { Settings } = require("../settings");
+const { log } = require("../../src/util");
 
 class Slack extends NotificationProvider {
-
     name = "slack";
 
     /**
      * Deprecated property notification.slackbutton
      * Set it as primary base url if this is not yet set.
+     * @deprecated
      * @param {string} url The primary base URL to use
+     * @returns {Promise<void>}
      */
     static async deprecateURL(url) {
-        let currentPrimaryBaseURL = await setting("primaryBaseURL");
+        let currentPrimaryBaseURL = await Settings.get("primaryBaseURL");
 
         if (!currentPrimaryBaseURL) {
-            console.log("Move the url to be the primary base URL");
-            await setSettings("general", {
-                primaryBaseURL: url,
-            });
+            log.error("notification", "Move the url to be the primary base URL");
+            await Settings.set("primaryBaseURL", url, "general");
         } else {
-            console.log("Already there, no need to move the primary base URL");
+            log.debug("notification", "Already there, no need to move the primary base URL");
         }
     }
 
+    /**
+     * Builds the actions available in the slack message
+     * @param {string} baseURL Uptime Kuma base URL
+     * @param {object} monitorJSON The monitor config
+     * @returns {Array} The relevant action objects
+     */
+    static buildActions(baseURL, monitorJSON) {
+        const actions = [];
+
+        if (baseURL) {
+            actions.push({
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Visit Uptime Kuma",
+                },
+                "value": "Uptime-Kuma",
+                "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
+            });
+
+        }
+
+        const address = this.extractAdress(monitorJSON);
+        if (address) {
+            actions.push({
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Visit site",
+                },
+                "value": "Site",
+                "url": address,
+            });
+        }
+
+        return actions;
+    }
+
+    /**
+     * Builds the different blocks the Slack message consists of.
+     * @param {string} baseURL Uptime Kuma base URL
+     * @param {object} monitorJSON The monitor object
+     * @param {object} heartbeatJSON The heartbeat object
+     * @param {string} title The message title
+     * @param {string} msg The message body
+     * @returns {Array<object>} The rich content blocks for the Slack message
+     */
+    static buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
+
+        //create an array to dynamically add blocks
+        const blocks = [];
+
+        // the header block
+        blocks.push({
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": title,
+            },
+        });
+
+        // the body block, containing the details
+        blocks.push({
+            "type": "section",
+            "fields": [
+                {
+                    "type": "mrkdwn",
+                    "text": "*Message*\n" + msg,
+                },
+                {
+                    "type": "mrkdwn",
+                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
+                }
+            ],
+        });
+
+        const actions = this.buildActions(baseURL, monitorJSON);
+        if (actions.length > 0) {
+            //the actions block, containing buttons
+            blocks.push({
+                "type": "actions",
+                "elements": actions,
+            });
+        }
+
+        return blocks;
+    }
+
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         if (notification.slackchannelnotify) {
             msg += " <!channel>";
@@ -44,7 +135,9 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const textMsg = "Uptime Kuma Alert";
+            const baseURL = await Settings.get("primaryBaseURL");
+
+            const title = "Uptime Kuma Alert";
             let data = {
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
@@ -56,54 +149,15 @@ class Slack extends NotificationProvider {
                 data.attachments.push(
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": [
-                            {
-                                "type": "header",
-                                "text": {
-                                    "type": "plain_text",
-                                    "text": textMsg,
-                                },
-                            },
-                            {
-                                "type": "section",
-                                "fields": [{
-                                    "type": "mrkdwn",
-                                    "text": "*Message*\n" + msg,
-                                },
-                                {
-                                    "type": "mrkdwn",
-                                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
-                                }],
-                            }
-                        ],
+                        "blocks": Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
                     }
                 );
             } else {
-                data.text = `${textMsg}\n${msg}`;
+                data.text = `${title}\n${msg}`;
             }
 
             if (notification.slackbutton) {
                 await Slack.deprecateURL(notification.slackbutton);
-            }
-
-            const baseURL = await setting("primaryBaseURL");
-
-            // Button
-            if (baseURL) {
-                data.attachments.forEach(element => {
-                    element.blocks.push({
-                        "type": "actions",
-                        "elements": [{
-                            "type": "button",
-                            "text": {
-                                "type": "plain_text",
-                                "text": "Visit Uptime Kuma",
-                            },
-                            "value": "Uptime-Kuma",
-                            "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
-                        }],
-                    });
-                });
             }
 
             await axios.post(notification.slackwebhookURL, data);

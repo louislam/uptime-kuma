@@ -4,9 +4,9 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
-const Monitor = require("../model/monitor");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
+const { UptimeCalculator } = require("../uptime-calculator");
 
 let router = express.Router();
 
@@ -16,6 +16,11 @@ const server = UptimeKumaServer.getInstance();
 router.get("/status/:slug", cache("5 minutes"), async (request, response) => {
     let slug = request.params.slug;
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
+});
+
+router.get("/status/:slug/rss", cache("5 minutes"), async (request, response) => {
+    let slug = request.params.slug;
+    await StatusPage.handleStatusPageRSSResponse(response, slug);
 });
 
 router.get("/status", cache("5 minutes"), async (request, response) => {
@@ -40,15 +45,11 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         ]);
 
         if (!statusPage) {
+            sendHttpError(response, "Status Page Not Found");
             return null;
         }
 
         let statusPageData = await StatusPage.getStatusPageData(statusPage);
-
-        if (!statusPageData) {
-            sendHttpError(response, "Not Found");
-            return;
-        }
 
         // Response
         response.json(statusPageData);
@@ -92,8 +93,8 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             list = R.convertToBeans("heartbeat", list);
             heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
 
-            const type = 24;
-            uptimeList[`${monitorID}_${type}`] = await Monitor.calcUptime(type, monitorID);
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+            uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
         }
 
         response.json({

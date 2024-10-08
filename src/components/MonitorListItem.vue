@@ -20,7 +20,7 @@
                             <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
                                 <font-awesome-icon icon="chevron-down" class="animated" :class="{ collapsed: isCollapsed}" />
                             </span>
-                            {{ monitorName }}
+                            {{ monitor.name }}
                         </div>
                         <div v-if="monitor.tags.length > 0" class="tags">
                             <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
@@ -43,13 +43,15 @@
             <div v-if="!isCollapsed" class="childs">
                 <MonitorListItem
                     v-for="(item, index) in sortedChildMonitorList"
-                    :key="index" :monitor="item"
-                    :showPathName="showPathName"
+                    :key="index"
+                    :monitor="item"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"
                     :select="select"
                     :deselect="deselect"
                     :depth="depth + 1"
+                    :filter-func="filterFunc"
+                    :sort-func="sortFunc"
                 />
             </div>
         </transition>
@@ -74,11 +76,6 @@ export default {
         monitor: {
             type: Object,
             default: null,
-        },
-        /** Should the monitor name show it's parent */
-        showPathName: {
-            type: Boolean,
-            default: false,
         },
         /** If the user is in select mode */
         isSelectMode: {
@@ -105,6 +102,16 @@ export default {
             type: Function,
             default: () => {}
         },
+        /** Function to filter child monitors */
+        filterFunc: {
+            type: Function,
+            default: () => {}
+        },
+        /** Function to sort child monitors */
+        sortFunc: {
+            type: Function,
+            default: () => {},
+        }
     },
     data() {
         return {
@@ -115,32 +122,13 @@ export default {
         sortedChildMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
+            // Get children
             result = result.filter(childMonitor => childMonitor.parent === this.monitor.id);
 
-            result.sort((m1, m2) => {
+            // Run filter on children
+            result = result.filter(this.filterFunc);
 
-                if (m1.active !== m2.active) {
-                    if (m1.active === 0) {
-                        return 1;
-                    }
-
-                    if (m2.active === 0) {
-                        return -1;
-                    }
-                }
-
-                if (m1.weight !== m2.weight) {
-                    if (m1.weight > m2.weight) {
-                        return -1;
-                    }
-
-                    if (m1.weight < m2.weight) {
-                        return 1;
-                    }
-                }
-
-                return m1.name.localeCompare(m2.name);
-            });
+            result.sort(this.sortFunc);
 
             return result;
         },
@@ -152,13 +140,6 @@ export default {
                 marginLeft: `${31 * this.depth}px`,
             };
         },
-        monitorName() {
-            if (this.showPathName) {
-                return this.monitor.pathName;
-            } else {
-                return this.monitor.name;
-            }
-        }
     },
     watch: {
         isSelectMode() {
@@ -189,7 +170,9 @@ export default {
     },
     methods: {
         /**
-         * Changes the collapsed value of the current monitor and saves it to local storage
+         * Changes the collapsed value of the current monitor and saves
+         * it to local storage
+         * @returns {void}
          */
         changeCollapsed() {
             this.isCollapsed = !this.isCollapsed;
@@ -214,6 +197,7 @@ export default {
         },
         /**
          * Toggle selection of monitor
+         * @returns {void}
          */
         toggleSelection() {
             if (this.isSelected(this.monitor.id)) {
