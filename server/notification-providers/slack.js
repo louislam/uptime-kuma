@@ -196,6 +196,7 @@ class Slack extends NotificationProvider {
      * Track an open alert for a specific monitor
      * @param {string} monitorId The monitor id
      * @param {object} data The object representing the message
+     * @returns {void}
      */
     static trackAlert(monitorId, data) {
         Slack.openAlerts[monitorId] = Slack.openAlerts[monitorId] || [];
@@ -209,6 +210,7 @@ class Slack extends NotificationProvider {
     /**
      * Clears the open alerts for a specific monitor
      * @param {string} monitorId The monitor id
+     * @returns {void}
      */
     static clearAlerts(monitorId) {
         Slack.openAlerts[monitorId] = [];
