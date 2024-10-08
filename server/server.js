@@ -1803,7 +1803,11 @@ async function startMonitors() {
     }
 
     for (let monitor of list) {
-        await monitor.start(io);
+        try {
+            await monitor.start(io);
+        } catch (e) {
+            log.error("monitor", e);
+        }
         // Give some delays, so all monitors won't make request at the same moment when just start the server.
         await sleep(getRandomInt(300, 1000));
     }
