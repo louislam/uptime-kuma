@@ -138,7 +138,6 @@ export function flipStatus(s: number) {
  * @returns {string} Status
  */
 export function statusToString(status: number) {
-    // TODO: Move to notification-provider.js to avoid repetition in classes
     switch (status) {
         case DOWN:
             return "DOWN";
