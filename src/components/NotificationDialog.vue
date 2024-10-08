@@ -226,11 +226,9 @@ export default {
                 this.notification.name = this.getUniqueDefaultName(to);
             }
         },
-        watch: {
         $route(to, from) {
             this.cleanupModal();
         }
-    },
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal);
@@ -352,7 +350,7 @@ export default {
          * Clean up modal and restore scroll behavior
          * @returns {void}
          */
-         cleanupModal() {
+        cleanupModal() {
             if (this.modal) {
                 try {
                     this.modal.hide();
@@ -360,9 +358,9 @@ export default {
                     console.warn("Modal hide failed:", e);
                 }
             }
-            document.body.classList.remove('modal-open');
-            document.body.style.paddingRight = '';
-            document.body.style.overflow = '';
+            document.body.classList.remove("modal-open");
+            document.body.style.paddingRight = "";
+            document.body.style.overflow = "";
         }
     },
 };
