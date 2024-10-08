@@ -130,6 +130,27 @@ export default {
         this.modal = new Modal(this.$refs.modal);
     },
 
+    beforeRouteLeave(to, from, next) {
+        if (this.modal) {
+            this.modal.hide();
+        }
+        next();
+    },
+
+    watch: {
+        $route(to, from) {
+            if (this.modal) {
+                this.modal.hide();
+            }
+        }
+    },
+
+    beforeUnmount() {
+        if (this.modal) {
+            this.modal.dispose();
+        }
+    },
+
     methods: {
         /**
          * Show dialog to confirm deletion
