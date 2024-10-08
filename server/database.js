@@ -735,6 +735,12 @@ class Database {
     static async migrateAggregateTable() {
         log.debug("db", "Enter Migrate Aggregate Table function");
 
+        // Add a setting for 2.0.0-dev users to skip this migration
+        if (process.env.SET_MIGRATE_AGGREGATE_TABLE_TO_TRUE === "1") {
+            log.warn("db", "SET_MIGRATE_AGGREGATE_TABLE_TO_TRUE is set to 1, skipping aggregate table migration forever (for 2.0.0-dev users)");
+            await Settings.set("migratedAggregateTable", true);
+        }
+
         //
         let migrated = await Settings.get("migratedAggregateTable");
 
@@ -762,12 +768,13 @@ class Database {
         `);
 
         // Stop if stat_* tables are not empty
+        // SQL to empty these tables: DELETE FROM stat_minutely; DELETE FROM stat_hourly; DELETE FROM stat_daily;
         for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
             let countResult = await trx.raw(`SELECT COUNT(*) AS count FROM ${table}`);
             let count = countResult[0].count;
             if (count > 0) {
                 log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
-                trx.commit();
+                trx.rollback();
                 return;
             }
         }
