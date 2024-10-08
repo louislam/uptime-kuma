@@ -51,7 +51,7 @@ class Slack extends NotificationProvider {
                 "icon_emoji": notification.slackiconemo,
             };
 
-            if(notification.slackrichmessage){
+            if (notification.slackrichmessage) {
                 data["attachments"] = [
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
@@ -77,7 +77,7 @@ class Slack extends NotificationProvider {
                         ],
                     }
                 ];
-            }else{
+            } else {
                 data["text"] = `${textMsg}\n${msg}`;
             }
 

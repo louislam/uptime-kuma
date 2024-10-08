@@ -9,7 +9,6 @@
         <label for="slack-channel" class="form-label">{{ $t("Channel Name") }}</label>
         <input id="slack-channel-name" v-model="$parent.notification.slackchannel" type="text" class="form-control">
 
-
         <label class="form-label">{{ $t("Message format") }}</label>
         <div class="form-check form-switch">
             <input id="slack-text-message" v-model="$parent.notification.slackrichmessage" type="checkbox" class="form-check-input">
