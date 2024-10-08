@@ -131,24 +131,18 @@ export default {
     },
 
     beforeRouteLeave(to, from, next) {
-        if (this.modal) {
-            this.modal.hide();
-        }
+        this.cleanupModal();
         next();
     },
 
     watch: {
         $route(to, from) {
-            if (this.modal) {
-                this.modal.hide();
-            }
+            this.cleanupModal();
         }
     },
 
     beforeUnmount() {
-        if (this.modal) {
-            this.modal.dispose();
-        }
+        this.cleanupModal();
     },
 
     methods: {
@@ -230,6 +224,20 @@ export default {
                 }
             });
         },
+
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+         cleanupModal() {
+            if (this.modal) {
+                this.modal.hide();
+                this.modal.dispose();
+            }
+            document.body.classList.remove('modal-open');
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
+        }
     },
 };
 </script>
