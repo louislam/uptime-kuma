@@ -226,24 +226,20 @@ export default {
                 this.notification.name = this.getUniqueDefaultName(to);
             }
         },
+        watch: {
         $route(to, from) {
-            if (this.modal) {
-                this.modal.hide();
-            }
+            this.cleanupModal();
         }
+    },
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal);
     },
     beforeUnmount() {
-        if (this.modal) {
-            this.modal.dispose();
-        }
+        this.cleanupModal();
     },
     beforeRouteLeave(to, from, next) {
-        if (this.modal) {
-            this.modal.hide();
-        }
+        this.cleanupModal();
         next();
     },
     methods: {
@@ -350,6 +346,20 @@ export default {
                 });
             } while (this.$root.notificationList.find(it => it.name === name));
             return name;
+        },
+
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+         cleanupModal() {
+            if (this.modal) {
+                this.modal.hide();
+                this.modal.dispose();
+            }
+            document.body.classList.remove('modal-open');
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
         }
     },
 };
