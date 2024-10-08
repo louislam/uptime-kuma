@@ -63,7 +63,7 @@ if (process.platform === "win32") {
  * @returns {Promise<boolean>} The executable is allowed?
  */
 async function isAllowedChromeExecutable(executablePath) {
-    log.info("Chromium", config.args);
+    console.log(config.args);
     if (config.args["allow-all-chrome-exec"] || process.env.UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC === "1") {
         return true;
     }
@@ -102,8 +102,7 @@ async function getBrowser() {
  */
 async function getRemoteBrowser(remoteBrowserID, userId) {
     let remoteBrowser = await RemoteBrowser.get(remoteBrowserID, userId);
-    log.debug("Chromium", `Using remote browser: ${remoteBrowser.name} (${remoteBrowser.id})`);
-    browser = chromium.connect(remoteBrowser.url);
+    log.debug("MONITOR", `Using remote browser: ${remoteBrowser.name} (${remoteBrowser.id})`);
     browser = await chromium.connect(remoteBrowser.url);
     return browser;
 }

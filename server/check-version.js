@@ -1,7 +1,7 @@
+const { setSetting, setting } = require("./util-server");
 const axios = require("axios");
 const compareVersions = require("compare-versions");
 const { log } = require("../src/util");
-const { Settings } = require("./settings");
 
 exports.version = require("../package.json").version;
 exports.latestVersion = null;
@@ -14,7 +14,7 @@ let interval;
 
 exports.startInterval = () => {
     let check = async () => {
-        if (await Settings.get("checkUpdate") === false) {
+        if (await setting("checkUpdate") === false) {
             return;
         }
 
@@ -28,7 +28,7 @@ exports.startInterval = () => {
                 res.data.slow = "1000.0.0";
             }
 
-            let checkBeta = await Settings.get("checkBeta");
+            let checkBeta = await setting("checkBeta");
 
             if (checkBeta && res.data.beta) {
                 if (compareVersions.compare(res.data.beta, res.data.slow, ">")) {
@@ -57,7 +57,7 @@ exports.startInterval = () => {
  * @returns {Promise<void>}
  */
 exports.enableCheckUpdate = async (value) => {
-    await Settings.set("checkUpdate", value);
+    await setSetting("checkUpdate", value);
 
     clearInterval(interval);
 
