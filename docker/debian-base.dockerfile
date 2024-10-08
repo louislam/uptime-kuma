@@ -53,6 +53,7 @@ COPY ./docker/etc/sudoers /etc/sudoers
 # Make sure to reuse the slim image here. Uncomment the above line if you want to build it from scratch.
 # FROM base2-slim AS base2
 FROM louislam/uptime-kuma:base2-slim AS base2
+LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
 ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
 RUN apt update && \
     apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk mariadb-server && \
