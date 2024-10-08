@@ -80,6 +80,10 @@ export default {
     components: {
         Confirm,
     },
+    beforeRouteLeave(to, from, next) {
+        this.cleanupModal();
+        next();
+    },
     props: {},
     emits: [ "added" ],
     data() {
@@ -235,10 +239,6 @@ export default {
     },
     beforeUnmount() {
         this.cleanupModal();
-    },
-    beforeRouteLeave(to, from, next) {
-        this.cleanupModal();
-        next();
     },
     methods: {
 
