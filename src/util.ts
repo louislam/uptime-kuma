@@ -120,7 +120,11 @@ export const badgeConstants = {
     defaultCertExpireDownDays: "7"
 };
 
-/** Flip the status of s */
+/**
+ * Flip the status of s between UP and DOWN if this is possible
+ * @param s {number} status
+ * @returns {number} flipped status
+ */
 export function flipStatus(s: number) {
     if (s === UP) {
         return DOWN;
