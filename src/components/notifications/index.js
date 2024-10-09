@@ -83,7 +83,7 @@ const NotificationFormList = {
     "smsc": SMSC,
     "DingDing": DingDing,
     "discord": Discord,
-    "46elks" : Elks,
+    "Elks" : Elks,
     "Feishu": Feishu,
     "FreeMobile": FreeMobile,
     "GoogleChat": GoogleChat,
