@@ -67,7 +67,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             });
 
         } catch (e) {
-            log.error("maintenance", e);
+            console.error(e);
             callback({
                 ok: false,
                 msg: e.message,
@@ -177,7 +177,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 ok: true,
             });
         } catch (e) {
-            log.error("maintenance", e);
+            console.error(e);
             callback({
                 ok: false,
                 msg: e.message,
@@ -201,7 +201,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             });
 
         } catch (e) {
-            log.error("maintenance", e);
+            console.error(e);
             callback({
                 ok: false,
                 msg: e.message,
@@ -225,7 +225,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
             });
 
         } catch (e) {
-            log.error("maintenance", e);
+            console.error(e);
             callback({
                 ok: false,
                 msg: e.message,

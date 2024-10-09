@@ -90,7 +90,8 @@ const Monitor = require("./model/monitor");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
-const { initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
+} = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -200,7 +201,7 @@ let needSetup = false;
     // Entry Page
     app.get("/", async (request, response) => {
         let hostname = request.hostname;
-        if (await Settings.get("trustProxy")) {
+        if (await setting("trustProxy")) {
             const proxy = request.headers["x-forwarded-host"];
             if (proxy) {
                 hostname = proxy;
@@ -280,7 +281,7 @@ let needSetup = false;
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
-        if (!await Settings.get("searchEngineIndex")) {
+        if (!await setting("searchEngineIndex")) {
             txt += " /";
         }
         response.setHeader("Content-Type", "text/plain");
@@ -1326,7 +1327,7 @@ let needSetup = false;
         socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket);
-                const data = await Settings.getSettings("general");
+                const data = await getSettings("general");
 
                 if (!data.serverTimezone) {
                     data.serverTimezone = await server.getTimezone();
@@ -1354,7 +1355,7 @@ let needSetup = false;
                 // Disabled Auth + Want to Enable Auth => No Check
                 // Enabled Auth + Want to Disable Auth => Check!!
                 // Enabled Auth + Want to Enable Auth => No Check
-                const currentDisabledAuth = await Settings.get("disableAuth");
+                const currentDisabledAuth = await setting("disableAuth");
                 if (!currentDisabledAuth && data.disableAuth) {
                     await doubleCheckPassword(socket, currentPassword);
                 }
@@ -1368,7 +1369,7 @@ let needSetup = false;
                 const previousChromeExecutable = await Settings.get("chromeExecutable");
                 const previousNSCDStatus = await Settings.get("nscd");
 
-                await Settings.setSettings("general", data);
+                await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
                 // Also need to apply timezone globally
@@ -1464,7 +1465,7 @@ let needSetup = false;
                 });
 
             } catch (e) {
-                log.error("server", e);
+                console.error(e);
 
                 callback({
                     ok: false,
@@ -1577,7 +1578,7 @@ let needSetup = false;
         // ***************************
 
         log.debug("auth", "check auto login");
-        if (await Settings.get("disableAuth")) {
+        if (await setting("disableAuth")) {
             log.info("auth", "Disabled Auth: auto login to admin");
             await afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");

@@ -895,6 +895,8 @@
     "cacheBusterParamDescription": "Randomly generated parameter to skip caches.",
     "gamedigGuessPort": "Gamedig: Guess Port",
     "gamedigGuessPortDescription": "The port used by Valve Server Query Protocol may be different from the client port. Try this if the monitor cannot connect to your server.",
+    "Message format": "Message format",
+    "Send rich messages": "Send rich messages",
     "Bitrix24 Webhook URL": "Bitrix24 Webhook URL",
     "wayToGetBitrix24Webhook": "You can create a webhook by following the steps at {0}",
     "bitrix24SupportUserID": "Enter your user ID in Bitrix24. You can find out the ID from the link by going to the user's profile.",
