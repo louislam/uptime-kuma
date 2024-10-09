@@ -15,7 +15,7 @@ class Elks extends NotificationProvider {
 
             // API credentials
             const username = notification.elksApiUser;
-            const password = notification.elksApiKey;
+            const password = notification.elksAuthToken;
             const authKey     = Buffer.from(username + ":" + password).toString("base64");
         
             // Set the SMS endpoint
