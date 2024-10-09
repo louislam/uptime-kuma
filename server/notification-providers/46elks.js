@@ -54,4 +54,4 @@ class Elks extends NotificationProvider {
 
 }
 
-module.exports = Twilio;
+module.exports = Elks;
