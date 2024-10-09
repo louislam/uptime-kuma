@@ -24,7 +24,7 @@ class NotificationProvider {
      * @param {?object} monitorJSON Monitor details (For Up/Down only)
      * @returns {string} The extracted address based on the monitor type.
      */
-    extractAdress(monitorJSON) {
+    extractAddress(monitorJSON) {
         if (!monitorJSON) {
             return "";
         }
