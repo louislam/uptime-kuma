@@ -66,6 +66,7 @@ exports.CONSOLE_STYLE_BgMagenta = "\x1b[45m";
 exports.CONSOLE_STYLE_BgCyan = "\x1b[46m";
 exports.CONSOLE_STYLE_BgWhite = "\x1b[47m";
 exports.CONSOLE_STYLE_BgGray = "\x1b[100m";
+
 const consoleModuleColors = [
     exports.CONSOLE_STYLE_FgCyan,
     exports.CONSOLE_STYLE_FgGreen,
@@ -111,9 +112,11 @@ function flipStatus(s) {
     }
     return s;
 }
+exports.flipStatus = flipStatus;
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+exports.sleep = sleep;
 function ucfirst(str) {
     if (!str) {
         return str;
@@ -258,6 +261,7 @@ function polyfill() {
         };
     }
 }
+exports.polyfill = polyfill;
 class TimeLogger {
     constructor() {
         this.startTime = (0, dayjs_1.default)().valueOf();
@@ -272,11 +276,13 @@ exports.TimeLogger = TimeLogger;
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 }
+exports.getRandomArbitrary = getRandomArbitrary;
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+exports.getRandomInt = getRandomInt;
 const getRandomBytes = ((typeof window !== "undefined" && window.crypto)
     ? function () {
         return (numBytes) => {
@@ -320,6 +326,7 @@ function getCryptoRandomInt(min, max) {
         return getCryptoRandomInt(min, max);
     }
 }
+exports.getCryptoRandomInt = getCryptoRandomInt;
 function genSecret(length = 64) {
     let secret = "";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -329,12 +336,15 @@ function genSecret(length = 64) {
     }
     return secret;
 }
+exports.genSecret = genSecret;
 function getMonitorRelativeURL(id) {
     return "/dashboard/" + id;
 }
+exports.getMonitorRelativeURL = getMonitorRelativeURL;
 function getMaintenanceRelativeURL(id) {
     return "/maintenance/" + id;
 }
+exports.getMaintenanceRelativeURL = getMaintenanceRelativeURL;
 function parseTimeObject(time) {
     if (!time) {
         return {
@@ -356,6 +366,7 @@ function parseTimeObject(time) {
     }
     return obj;
 }
+exports.parseTimeObject = parseTimeObject;
 function parseTimeFromTimeObject(obj) {
     if (!obj) {
         return obj;
@@ -367,18 +378,23 @@ function parseTimeFromTimeObject(obj) {
     }
     return result;
 }
+exports.parseTimeFromTimeObject = parseTimeFromTimeObject;
 function isoToUTCDateTime(input) {
     return (0, dayjs_1.default)(input).utc().format(exports.SQL_DATETIME_FORMAT);
 }
+exports.isoToUTCDateTime = isoToUTCDateTime;
 function utcToISODateTime(input) {
     return dayjs_1.default.utc(input).toISOString();
 }
+exports.utcToISODateTime = utcToISODateTime;
 function utcToLocal(input, format = exports.SQL_DATETIME_FORMAT) {
     return dayjs_1.default.utc(input).local().format(format);
 }
+exports.utcToLocal = utcToLocal;
 function localToUTC(input, format = exports.SQL_DATETIME_FORMAT) {
     return (0, dayjs_1.default)(input).utc().format(format);
 }
+exports.localToUTC = localToUTC;
 function intHash(str, length = 10) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -386,6 +402,7 @@ function intHash(str, length = 10) {
     }
     return (hash % length + length) % length;
 }
+exports.intHash = intHash;
 async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue) {
     let response;
     try {
@@ -441,3 +458,4 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }
+exports.evaluateJsonQuery = evaluateJsonQuery;
