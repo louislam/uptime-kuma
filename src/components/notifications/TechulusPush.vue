@@ -1,6 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="push-api-key" class="form-label">{{ $t("API Key (required)") }}</label>
+        <label for="push-api-key" class="form-label">{{ $t("API Key") }}</label>
         <HiddenInput id="push-api-key" v-model="$parent.notification.pushAPIKey" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
 
@@ -12,6 +12,9 @@
     <div class="mb-3">
         <label for="push-api-channel" class="form-label">{{ $t("Channel") }}</label>
         <input id="push-api-channel" v-model="$parent.notification.pushChannel" type="text" class="form-control">
+        <div class="form-text">
+            {{ $t("Notification channel, alphanumerical string and hyphens only.") }}
+        </div>
     </div>
 
     <div class="mb-3">
@@ -33,6 +36,19 @@
             <option value="guitar">{{ $t("Guitar") }}</option>
             <option value="pop">{{ $t("Pop") }}</option>
         </select>
+        <div class="form-text">
+            {{ $t("Custom Notification sound") }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.pushTimeSensitive" class="form-check-input" type="checkbox">
+            <label class="form-check-label">{{ $t("Time Sensitive (iOS Only)") }}</label>
+        </div>
+        <div class="form-text">
+            {{ $t("Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.") }}
+        </div>
     </div>
 
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
@@ -46,6 +62,20 @@ import HiddenInput from "../HiddenInput.vue";
 export default {
     components: {
         HiddenInput,
+    },
+    mounted() {
+        if (typeof this.$parent.notification.pushTitle === "undefined") {
+            this.$parent.notification.pushTitle = "Uptime-Kuma";
+        }
+        if (typeof this.$parent.notification.pushChannel === "undefined") {
+            this.$parent.notification.pushChannel = "uptime-kuma";
+        }
+        if (typeof this.$parent.notification.pushSound === "undefined") {
+            this.$parent.notification.pushSound = "default";
+        }
+        if (typeof this.$parent.notification.pushTimeSensitive === "undefined") {
+            this.$parent.notification.pushTimeSensitive = true;
+        }
     },
 };
 </script>

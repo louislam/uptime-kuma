@@ -13,7 +13,7 @@ class TechulusPush extends NotificationProvider {
         let data = {
             "title": notification?.pushTitle?.length ? notification.pushTitle : "Uptime-Kuma",
             "body": msg,
-            "timeSensitive": true,
+            "timeSensitive": notification.pushTimeSensitive ?? false,
         };
 
         if (notification.pushChannel) {
