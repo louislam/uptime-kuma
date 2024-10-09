@@ -2,6 +2,7 @@ const { R } = require("redbean-node");
 const { log } = require("../../src/util");
 const { setSetting, setting } = require("../util-server");
 const Database = require("../database");
+const Settings = require("../models/settings");
 
 const DEFAULT_KEEP_PERIOD = 180;
 
