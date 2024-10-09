@@ -11,8 +11,9 @@ class TechulusPush extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         let data = {
-            "title": "Uptime-Kuma",
+            "title": notification?.pushTitle?.length ? notification.pushTitle : "Uptime-Kuma",
             "body": msg,
+            "timeSensitive": true,
         };
 
         if (notification.pushChannel) {

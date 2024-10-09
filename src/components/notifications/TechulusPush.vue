@@ -1,12 +1,21 @@
 <template>
     <div class="mb-3">
-        <label for="push-api-key" class="form-label">{{ $t("API Key") }}</label>
+        <label for="push-api-key" class="form-label">{{ $t("API Key (required)") }}</label>
         <HiddenInput id="push-api-key" v-model="$parent.notification.pushAPIKey" :required="true" autocomplete="new-password"></HiddenInput>
+    </div>
 
-        <label for="push-api-channel" class="form-label">{{ $t("Notification Channel") }}</label>
+    <div class="mb-3">
+        <label for="push-api-title" class="form-label">{{ $t("Title") }}</label>
+        <input id="push-api-title" v-model="$parent.notification.pushTitle" type="text" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label for="push-api-channel" class="form-label">{{ $t("Channel") }}</label>
         <input id="push-api-channel" v-model="$parent.notification.pushChannel" type="text" class="form-control">
+    </div>
 
-        <label for="push-api-sound" class="form-label">{{ $t("Notification Sound") }}</label>
+    <div class="mb-3">
+        <label for="push-api-sound" class="form-label">{{ $t("Sound") }}</label>
         <select id="push-api-sound" v-model="$parent.notification.pushSound" class="form-select">
             <option value="default">{{ $t("Default") }}</option>
             <option value="arcade">{{ $t("Arcade") }}</option>
