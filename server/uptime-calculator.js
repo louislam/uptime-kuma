@@ -339,6 +339,7 @@ class UptimeCalculator {
         }
         await R.store(minutelyStatBean);
 
+        // TODO: it seems that it is also necessary to remove the old data in the migration mode
         if (!this.migrationMode) {
             // Remove the old data
             log.debug("uptime-calc", "Remove old data");

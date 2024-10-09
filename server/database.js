@@ -776,9 +776,6 @@ class Database {
             ORDER BY monitor_id ASC
         `);
 
-        console.log("Dates", dates);
-        console.log("Monitors", monitors);
-
         // Stop if stat_* tables are not empty
         for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
             let countResult = await R.getRow(`SELECT COUNT(*) AS count FROM ${table}`);
@@ -790,6 +787,8 @@ class Database {
         }
 
         for (let monitor of monitors) {
+
+            // TODO: Get the date list for each monitor
             for (let date of dates) {
 
                 // New Uptime Calculator
@@ -816,7 +815,7 @@ class Database {
             }
         }
 
-        //await Settings.set("migratedAggregateTable", true);
+        await Settings.set("migratedAggregateTable", true);
     }
 
 }
