@@ -8,6 +8,29 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -15,9 +38,9 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimeLogger = exports.log = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
 exports.flipStatus = flipStatus;
-exports.statusToString = statusToString;
 exports.sleep = sleep;
 exports.ucfirst = ucfirst;
+exports.debug = debug;
 exports.polyfill = polyfill;
 exports.getRandomArbitrary = getRandomArbitrary;
 exports.getRandomInt = getRandomInt;
@@ -34,7 +57,7 @@ exports.localToUTC = localToUTC;
 exports.intHash = intHash;
 exports.evaluateJsonQuery = evaluateJsonQuery;
 const dayjs_1 = __importDefault(require("dayjs"));
-const jsonata_1 = __importDefault(require("jsonata"));
+const jsonata = __importStar(require("jsonata"));
 exports.isDev = process.env.NODE_ENV === "development";
 exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
 exports.appName = "Uptime Kuma";
@@ -127,16 +150,6 @@ function flipStatus(s) {
     }
     return s;
 }
-function statusToString(status) {
-    switch (status) {
-        case exports.DOWN:
-            return "DOWN";
-        case exports.UP:
-            return "UP";
-        default:
-            return status;
-    }
-}
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -146,6 +159,9 @@ function ucfirst(str) {
     }
     const firstLetter = str.substr(0, 1);
     return firstLetter.toUpperCase() + str.substr(1);
+}
+function debug(msg) {
+    exports.log.log("", msg, "debug");
 }
 class Logger {
     constructor() {
@@ -174,6 +190,8 @@ class Logger {
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
+        module = module.toUpperCase();
+        level = level.toUpperCase();
         let now;
         if (dayjs_1.default.tz) {
             now = dayjs_1.default.tz(new Date()).format();
@@ -183,20 +201,10 @@ class Logger {
         }
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
-        let timePart = now;
-        let modulePart = module;
-        let levelPart = level;
-        let msgPart = msg;
-        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
-            console.log(JSON.stringify({
-                time: timePart,
-                module: modulePart,
-                level: levelPart,
-                msg: typeof msg === "string" ? msg : JSON.stringify(msg),
-            }));
-            return;
-        }
-        module = module.toUpperCase();
+        let timePart;
+        let modulePart;
+        let levelPart;
+        let msgPart;
         if (exports.isNode) {
             switch (level) {
                 case "DEBUG":
@@ -213,17 +221,28 @@ class Logger {
                     if (typeof msg === "string") {
                         msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
                     }
+                    else {
+                        msgPart = msg;
+                    }
                     break;
                 case "DEBUG":
                     if (typeof msg === "string") {
                         msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
                     }
+                    else {
+                        msgPart = msg;
+                    }
+                    break;
+                default:
+                    msgPart = msg;
                     break;
             }
         }
         else {
+            timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
+            msgPart = msg;
         }
         switch (level) {
             case "ERROR":
@@ -246,23 +265,23 @@ class Logger {
         }
     }
     info(module, msg) {
-        this.log(module, msg, "INFO");
+        this.log(module, msg, "info");
     }
     warn(module, msg) {
-        this.log(module, msg, "WARN");
+        this.log(module, msg, "warn");
     }
     error(module, msg) {
-        this.log(module, msg, "ERROR");
+        this.log(module, msg, "error");
     }
     debug(module, msg) {
-        this.log(module, msg, "DEBUG");
+        this.log(module, msg, "debug");
     }
     exception(module, exception, msg) {
         let finalMessage = exception;
         if (msg) {
             finalMessage = `${msg}: ${exception}`;
         }
-        this.log(module, finalMessage, "ERROR");
+        this.log(module, finalMessage, "error");
     }
 }
 exports.log = new Logger();
@@ -413,7 +432,7 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
     }
     try {
-        response = (jsonPath) ? await (0, jsonata_1.default)(jsonPath).evaluate(response) : response;
+        response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
         }
@@ -440,7 +459,7 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
             default:
                 throw new Error(`Invalid condition ${jsonPathOperator}`);
         }
-        const expression = (0, jsonata_1.default)(jsonQueryExpression);
+        const expression = jsonata(jsonQueryExpression);
         const status = await expression.evaluate({
             value: response.toString(),
             expected: expectedValue.toString()

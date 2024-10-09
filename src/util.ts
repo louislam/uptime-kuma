@@ -17,7 +17,7 @@ import * as timezone from "dayjs/plugin/timezone";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as utc from "dayjs/plugin/utc";
 
-import jsonata from "jsonata";
+import * as jsonata from "jsonata";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
@@ -95,6 +95,11 @@ const consoleLevelColors : Record<string, string> = {
     "DEBUG": CONSOLE_STYLE_FgGray,
 };
 
+/**
+ * Flip the status of s
+ * @param s input status: UP or DOWN
+ * @returns {number} UP or DOWN
+ */
 export const badgeConstants = {
     naColor: "#999",
     defaultUpColor: "#66c20a",
@@ -133,22 +138,6 @@ export function flipStatus(s: number) {
 }
 
 /**
- * Convert status constant to string
- * @param {const} status The status constant
- * @returns {string} Status
- */
-export function statusToString(status: number) {
-    switch (status) {
-        case DOWN:
-            return "DOWN";
-        case UP:
-            return "UP";
-        default:
-            return status;
-    }
-}
-
-/**
  * Delays for specified number of seconds
  * @param ms Number of milliseconds to sleep for
  * @returns {Promise<void>} Promise that resolves after ms
@@ -169,6 +158,15 @@ export function ucfirst(str: string) {
 
     const firstLetter = str.substr(0, 1);
     return firstLetter.toUpperCase() + str.substr(1);
+}
+
+/**
+ * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
+ * @param msg Message to write
+ * @returns {void}
+ */
+export function debug(msg: unknown) {
+    log.log("", msg, "debug");
 }
 
 class Logger {
@@ -212,13 +210,12 @@ class Logger {
 
     /**
      * Write a message to the log
-     * @private
      * @param module The module the log comes from
      * @param msg Message to write
-     * @param level {"INFO"|"WARN"|"ERROR"|"DEBUG"} Log level
+     * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
      * @returns {void}
      */
-    log(module: string, msg: unknown, level: "INFO"|"WARN"|"ERROR"|"DEBUG"): void {
+    log(module: string, msg: any, level: string) {
         if (level === "DEBUG" && !isDev) {
             return;
         }
@@ -226,6 +223,9 @@ class Logger {
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
+
+        module = module.toUpperCase();
+        level = level.toUpperCase();
 
         let now;
         if (dayjs.tz) {
@@ -237,23 +237,10 @@ class Logger {
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
 
-        let timePart: string = now;
-        let modulePart: string = module;
-        let levelPart: string = level;
-        let msgPart: unknown = msg;
-
-        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
-            console.log(JSON.stringify({
-                time: timePart,
-                module: modulePart,
-                level: levelPart,
-                msg: typeof msg === "string" ? msg : JSON.stringify(msg),
-            }));
-            return;
-        }
-
-        // Console rendering:
-        module = module.toUpperCase();
+        let timePart: string;
+        let modulePart: string;
+        let levelPart: string;
+        let msgPart: string;
 
         if (isNode) {
             // Add console colors
@@ -274,18 +261,27 @@ class Logger {
                 case "ERROR":
                     if (typeof msg === "string") {
                         msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
+                    } else {
+                        msgPart = msg;
                     }
                     break;
                 case "DEBUG":
                     if (typeof msg === "string") {
                         msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
+                    } else {
+                        msgPart = msg;
                     }
+                    break;
+                default:
+                    msgPart = msg;
                     break;
             }
         } else {
             // No console colors
+            timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
+            msgPart = msg;
         }
 
         // Write to console
@@ -316,8 +312,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    info(module: string, msg: string): void {
-        this.log(module, msg, "INFO");
+    info(module: string, msg: unknown) {
+        this.log(module, msg, "info");
     }
 
     /**
@@ -326,8 +322,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    warn(module: string, msg: string): void {
-        this.log(module, msg, "WARN");
+    warn(module: string, msg: unknown) {
+        this.log(module, msg, "warn");
     }
 
     /**
@@ -336,8 +332,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    error(module: string, msg: string): void {
-        this.log(module, msg, "ERROR");
+    error(module: string, msg: unknown) {
+        this.log(module, msg, "error");
     }
 
     /**
@@ -346,8 +342,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    debug(module: string, msg: unknown): void {
-        this.log(module, msg, "DEBUG");
+    debug(module: string, msg: unknown) {
+        this.log(module, msg, "debug");
     }
 
     /**
@@ -364,7 +360,7 @@ class Logger {
             finalMessage = `${msg}: ${exception}`;
         }
 
-        this.log(module, finalMessage, "ERROR");
+        this.log(module, finalMessage, "error");
     }
 }
 
@@ -408,7 +404,7 @@ export class TimeLogger {
      * @param name Name of monitor
      * @returns {void}
      */
-    print(name: string): void {
+    print(name: string) {
         if (isDev && process.env.TIMELOGGER === "1") {
             console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
