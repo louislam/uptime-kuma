@@ -1077,7 +1077,6 @@ import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 import { version } from "../../package.json";
-const userAgent = `'Uptime-Kuma/${version}'`;
 
 const toast = useToast();
 
@@ -1169,28 +1168,38 @@ export default {
     },
 
     computed: {
-
         curlCommand() {
-            const command = [ "curl", "--verbose", "--head", "--request", this.monitor.method, "\\\n", "--user-agent", userAgent, "\\\n" ];
+            let method = this.monitor.method;
+            if ([ "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS" ].indexOf(method) === -1) {
+                // set to a custom value => could lead to injections
+                method = this.escapeShell(method);
+            }
+            const command = [ "curl", "--verbose", "--head", "--request", method, "\\\n" ];
+            command.push("--user-agent", `'Uptime-Kuma/${version}'`, "\\\n");
             if (this.monitor.ignoreTls) {
                 command.push("--insecure", "\\\n");
             }
             if (this.monitor.headers) {
                 try {
-                    // trying to parse the supplied data as json to trim whitespace
                     for (const [ key, value ] of Object.entries(JSON.parse(this.monitor.headers))) {
-                        command.push("--header", `'${key}: ${value}'`, "\\\n");
+                        command.push("--header", `'${this.escapeShellNoQuotes(key)}: ${this.escapeShellNoQuotes(value)}'`, "\\\n");
                     }
                 } catch (e) {
-                    command.push("--header", `'${this.monitor.headers}'`, "\\\n");
+                    command.push("--header", this.escapeShell(this.monitor.headers), "\\\n");
                 }
             }
             if (this.monitor.authMethod === "basic") {
-                command.push("--user", `${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}`, "--basic", "\\\n");
-            } else if (this.monitor.authmethod === "mtls") {
-                command.push("--cacert", `'${this.monitor.tlsCa}'`, "\\\n", "--key", `'${this.monitor.tlsKey}'`, "\\\n", "--cert", `'${this.monitor.tlsCert}'`, "\\\n");
+                command.push("--basic", "--user", `'${this.escapeShellNoQuotes(this.monitor.basic_auth_user)}:${this.escapeShellNoQuotes(this.monitor.basic_auth_pass)}'`, "\\\n");
+            } else if (this.monitor.authMethod === "mtls") {
+                command.push("--cacert", this.escapeShell(this.monitor.tlsCa), "\\\n");
+                command.push("--key", this.escapeShell(this.monitor.tlsKey), "\\\n");
+                command.push( "--cert", this.escapeShell(this.monitor.tlsCert), "\\\n");
             } else if (this.monitor.authMethod === "ntlm") {
-                command.push("--user", `'${this.monitor.authDomain ? `${this.monitor.authDomain}/` : ""}${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}'`, "--ntlm", "\\\n");
+                let domain = "";
+                if (this.monitor.authDomain) {
+                    domain = `${this.monitor.authDomain}/`;
+                }
+                command.push("--ntlm", "--user", `'${this.escapeShellNoQuotes(domain)}${this.escapeShellNoQuotes(this.monitor.basic_auth_user)}:${this.escapeShellNoQuotes(this.monitor.basic_auth_pass)}'`, "\\\n");
             }
             if (this.monitor.body && this.monitor.httpBodyEncoding === "json") {
                 let json = "";
@@ -1200,27 +1209,29 @@ export default {
                 } catch (e) {
                     json = this.monitor.body;
                 }
-                command.push("--header", "'Content-Type: application/json'", "\\\n", "--data", `'${json}'`, "\\\n");
+                command.push("--header", "'Content-Type: application/json'", "\\\n");
+                command.push("--data", this.escapeShell(json), "\\\n");
             } else if (this.monitor.body && this.monitor.httpBodyEncoding === "xml") {
-                command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}'`, "\\\n");
+                command.push("--headers", "'Content-Type: application/xml'", "\\\n");
+                command.push("--data", this.escapeShell(this.monitor.body), "\\\n");
             }
             if (this.monitor.maxredirects) {
-                command.push("--location", "--max-redirs", this.monitor.maxredirects, "\\\n");
+                command.push("--location", "--max-redirs", this.escapeShell(this.monitor.maxredirects), "\\\n");
             }
             if (this.monitor.timeout) {
-                command.push("--max-time", this.monitor.timeout, "\\\n");
+                command.push("--max-time", this.escapeShell(this.monitor.timeout), "\\\n");
             }
             if (this.monitor.maxretries) {
-                command.push("--retry", this.monitor.maxretries, "\\\n");
+                command.push("--retry", this.escapeShell(this.monitor.maxretries), "\\\n");
             }
-            command.push("--url", this.monitor.url);
+            command.push("--url", this.escapeShell(this.monitor.url));
             return command.join(" ");
         },
 
         ipRegex() {
 
             // Allow to test with simple dns server with port (127.0.0.1:5300)
-            if (! isDev) {
+            if (!isDev) {
                 return this.ipRegexPattern;
             }
             return null;
@@ -1614,6 +1625,28 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
+        /**
+         * Escape a string for use in a shell
+         * @param {string|number} s string to escape
+         * @returns {string} escaped, quoted string
+         */
+        escapeShell(s) {
+            if (typeof s == 'number')
+                return s.toString()
+            return "\"" + this.escapeShellNoQuotes(s) + "\"";
+        },
+        /**
+         * Escape a string for use in a shell
+         * @param {string} s string to escape
+         * @returns {string} escaped string
+         */
+        escapeShellNoQuotes(s) {
+            return s.replace(/(["'$`\\])/g, "\\$1");
+        },
+        /**
+         * Copies a value to the clipboard and shows toasts with the success/error
+         * @returns {void}
+         */
         async copyToClipboard() {
             try {
                 await navigator.clipboard.writeText(this.curlCommand);
