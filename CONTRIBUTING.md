@@ -9,7 +9,7 @@ The project was created with `vite.js` and is written in `vue3`.
 Our backend lives in the `server`-directory and mostly communicates via websockets.
 Both frontend and backend share the same `package.json`.
 
-For production, the frontend is built into `dist`-directory and the server (`express.js`) exposes the `dist` directory as the root of the endpoint.
+For production, the frontend is built into the `dist`-directory and the server (`express.js`) exposes the `dist` directory as the root of the endpoint.
 For development, we run vite in development mode on another port. 
 
 ## Directories
