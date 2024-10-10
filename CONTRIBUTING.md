@@ -28,7 +28,7 @@ For development, we run vite in development mode on another port.
 ## Can I create a pull request for Uptime Kuma?
 
 Yes or no, it depends on what you will try to do.
-Both yours and our maintainers' time is precious, and we don't want to waste either
+Both yours and our maintainers' time is precious, and we don't want to waste either.
 
 If you have any questions about any process/.. is not clear, you are likely not alone => please ask them ^^
 
@@ -89,7 +89,7 @@ Different guidelines exist for different types of pull requests (PRs):
       ```
   - `server/notification.js` is where the backend of the notification provider needs to be registered.
     *If you have an idea how we can skip this step, we would love to hear about it ^^*
-  - `src/components/NotificationDialog.vue` you need to decide if the provider is a regional or global one and add it with a name to the respective list
+  - `src/components/NotificationDialog.vue` you need to decide if the provider is a regional or a global one and add it with a name to the respective list
   - `src/components/notifications/PROVIDER_NAME.vue` is where the frontend of each provider lives.
     Please make sure that you have:
     - used `HiddenInput` for secret credentials
