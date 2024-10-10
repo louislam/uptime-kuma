@@ -41,8 +41,7 @@ class Elks extends NotificationProvider {
             await axios.post(url, data, config);
 
             return okMsg;
-        }
-        catch (error) {
+        } catch (error) {
             this.throwGeneralAxiosError(error);
         }
 
