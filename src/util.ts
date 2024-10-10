@@ -212,7 +212,7 @@ class Logger {
             return;
         }
 
-        if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
+        if (this.hideLog[level.toLowerCase()] && this.hideLog[level.toLowerCase()].includes(module.toLowerCase())) {
             return;
         }
 
