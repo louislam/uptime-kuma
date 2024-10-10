@@ -1,11 +1,25 @@
 <template>
     <div class="mb-3">
-        <label for="slack-webhook-url" class="form-label">{{ $t("Webhook URL") }}<span style="color: red;"><sup>*</sup></span></label>
-        <input id="slack-webhook-url" v-model="$parent.notification.slackwebhookURL" type="text" class="form-control" required>
-        <label for="slack-username" class="form-label">{{ $t("Username") }}</label>
-        <input id="slack-username" v-model="$parent.notification.slackusername" type="text" class="form-control">
-        <label for="slack-iconemo" class="form-label">{{ $t("Icon Emoji") }}</label>
-        <input id="slack-iconemo" v-model="$parent.notification.slackiconemo" type="text" class="form-control">
+        <label for="slack-mode">API mode</label>
+        <select id="slack-mode" v-model="$parent.notification.mode" class="form-control">
+            <option value="webhook">Webhook</option>
+            <option value="app">App</option>
+        </select>
+
+        <fieldset v-if="$parent.notification.mode == 'webhook'">
+            <label for="slack-webhook-url" class="form-label">{{ $t("Webhook URL") }}<span style="color: red;"><sup>*</sup></span></label>
+            <input id="slack-webhook-url" v-model="$parent.notification.slackwebhookURL" type="text" class="form-control" required>
+            <label for="slack-username" class="form-label">{{ $t("Username") }}</label>
+            <input id="slack-username" v-model="$parent.notification.slackusername" type="text" class="form-control">
+            <label for="slack-iconemo" class="form-label">{{ $t("Icon Emoji") }}</label>
+            <input id="slack-iconemo" v-model="$parent.notification.slackiconemo" type="text" class="form-control">
+        </fieldset>
+
+        <fieldset v-if="$parent.notification.mode == 'app'">
+            <label for="slack-token" class="form-label">{{ $t("Token") }}</label>
+            <input id="slack-token" v-model="$parent.notification.botToken" type="text" class="form-control">
+        </fieldset>
+
         <label for="slack-channel" class="form-label">{{ $t("Channel Name") }}</label>
         <input id="slack-channel-name" v-model="$parent.notification.slackchannel" type="text" class="form-control">
 
