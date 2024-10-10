@@ -40,8 +40,6 @@ class Elks extends NotificationProvider {
           
            // Send request
             await axios.post(url, data, config);
-            //const res = await axios.post(url, data, config);
-            //console.log(res.data);
           
            return okMsg;
         } 
