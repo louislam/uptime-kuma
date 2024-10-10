@@ -22,7 +22,7 @@ class Proxy {
         let bean;
 
         if (proxyID) {
-            bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
+            bean = await R.findOne("proxy", " id = ? ", [ proxyID ]);
 
             if (!bean) {
                 throw new Error("proxy not found");
@@ -67,11 +67,10 @@ class Proxy {
     /**
      * Deletes proxy with given id and removes it from monitors
      * @param {number} proxyID ID of proxy to delete
-     * @param {number} userID ID of proxy owner
      * @returns {Promise<void>}
      */
-    static async delete(proxyID, userID) {
-        const bean = await R.findOne("proxy", " id = ? AND user_id = ? ", [ proxyID, userID ]);
+    static async delete(proxyID) {
+        const bean = await R.findOne("proxy", " id = ? ", [ proxyID ]);
 
         if (!bean) {
             throw new Error("proxy not found");
@@ -182,12 +181,11 @@ class Proxy {
 /**
  * Applies given proxy id to monitors
  * @param {number} proxyID ID of proxy to apply
- * @param {number} userID ID of proxy owner
  * @returns {Promise<void>}
  */
-async function applyProxyEveryMonitor(proxyID, userID) {
+async function applyProxyEveryMonitor(proxyID) {
     // Find all monitors with id and proxy id
-    const monitors = await R.getAll("SELECT id, proxy_id FROM monitor WHERE user_id = ?", [ userID ]);
+    const monitors = await R.getAll("SELECT id, proxy_id FROM monitor");
 
     // Update proxy id not match with given proxy id
     for (const monitor of monitors) {
