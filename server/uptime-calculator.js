@@ -12,7 +12,6 @@ class UptimeCalculator {
      * @private
      * @type {{string:UptimeCalculator}}
      */
-
     static list = {};
 
     /**
@@ -54,6 +53,12 @@ class UptimeCalculator {
     lastDailyStatBean = null;
     lastHourlyStatBean = null;
     lastMinutelyStatBean = null;
+
+    /**
+     * For migration purposes.
+     * @type {boolean}
+     */
+    migrationMode = false;
 
     /**
      * Get the uptime calculator for a monitor
@@ -189,11 +194,18 @@ class UptimeCalculator {
     /**
      * @param {number} status status
      * @param {number} ping Ping
+     * @param {dayjs.Dayjs} date Date (Only for migration)
      * @returns {dayjs.Dayjs} date
      * @throws {Error} Invalid status
      */
-    async update(status, ping = 0) {
-        let date = this.getCurrentDate();
+    async update(status, ping = 0, date) {
+        if (!this.monitorID) {
+            throw new Error("Monitor ID is required");
+        }
+
+        if (!date) {
+            date = this.getCurrentDate();
+        }
 
         let flatStatus = this.flatStatus(status);
 
@@ -327,17 +339,20 @@ class UptimeCalculator {
         }
         await R.store(minutelyStatBean);
 
-        // Remove the old data
-        log.debug("uptime-calc", "Remove old data");
-        await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
-            this.monitorID,
-            this.getMinutelyKey(date.subtract(24, "hour")),
-        ]);
+        // TODO: it seems that it is also necessary to remove the old data in the migration mode
+        if (!this.migrationMode) {
+            // Remove the old data
+            log.debug("uptime-calc", "Remove old data");
+            await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
+                this.monitorID,
+                this.getMinutelyKey(date.subtract(24, "hour")),
+            ]);
 
-        await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ? AND timestamp < ?", [
-            this.monitorID,
-            this.getHourlyKey(date.subtract(30, "day")),
-        ]);
+            await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ? AND timestamp < ?", [
+                this.monitorID,
+                this.getHourlyKey(date.subtract(30, "day")),
+            ]);
+        }
 
         return date;
     }
@@ -812,6 +827,14 @@ class UptimeCalculator {
         return dayjs.utc();
     }
 
+    /**
+     * For migration purposes.
+     * @param {boolean} value Migration mode on/off
+     * @returns {void}
+     */
+    setMigrationMode(value) {
+        this.migrationMode = value;
+    }
 }
 
 class UptimeDataResult {

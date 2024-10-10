@@ -6,6 +6,9 @@ const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
+const { Settings } = require("./settings");
+const { UptimeCalculator } = require("./uptime-calculator");
+const dayjs = require("dayjs");
 
 /**
  * Database & App Data Folder
@@ -391,9 +394,23 @@ class Database {
         // https://knexjs.org/guide/migrations.html
         // https://gist.github.com/NigelEarle/70db130cc040cc2868555b29a0278261
         try {
+            // Disable foreign key check for SQLite
+            // Known issue of knex: https://github.com/drizzle-team/drizzle-orm/issues/1813
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA foreign_keys = OFF");
+            }
+
             await R.knex.migrate.latest({
                 directory: Database.knexMigrationsPath,
             });
+
+            // Enable foreign key check for SQLite
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA foreign_keys = ON");
+            }
+
+            await this.migrateAggregateTable();
+
         } catch (e) {
             // Allow missing patch files for downgrade or testing pr.
             if (e.message.includes("the following files are missing:")) {
@@ -709,6 +726,96 @@ class Database {
         } else {
             return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
         }
+    }
+
+    /**
+     * TODO: Migrate the old data in the heartbeat table to the new format (stat_daily, stat_hourly, stat_minutely)
+     * It should be run once while upgrading V1 to V2
+     * @returns {Promise<void>}
+     */
+    static async migrateAggregateTable() {
+        log.debug("db", "Enter Migrate Aggregate Table function");
+
+        // Add a setting for 2.0.0-dev users to skip this migration
+        if (process.env.SET_MIGRATE_AGGREGATE_TABLE_TO_TRUE === "1") {
+            log.warn("db", "SET_MIGRATE_AGGREGATE_TABLE_TO_TRUE is set to 1, skipping aggregate table migration forever (for 2.0.0-dev users)");
+            await Settings.set("migratedAggregateTable", true);
+        }
+
+        // Empty the aggregate table if FORCE_MIGRATE_AGGREGATE_TABLE is set to 1
+        if (process.env.FORCE_MIGRATE_AGGREGATE_TABLE === "1") {
+            log.warn("db", "FORCE_MIGRATE_AGGREGATE_TABLE is set to 1, forcing aggregate table migration");
+            await R.exec("DELETE FROM stat_minutely");
+            await R.exec("DELETE FROM stat_hourly");
+            await R.exec("DELETE FROM stat_daily");
+        }
+
+        //
+        let migrated = await Settings.get("migratedAggregateTable");
+
+        if (migrated) {
+            log.debug("db", "Migrated, skip migration");
+            return;
+        }
+
+        log.info("db", "Migrating Aggregate Table");
+
+        log.info("db", "Getting list of unique dates and monitors");
+
+        // Get a list of unique dates from the heartbeat table, using raw sql
+        let dates = await R.getAll(`
+            SELECT DISTINCT DATE(time) AS date
+            FROM heartbeat
+            ORDER BY date ASC
+        `);
+
+        // Get a list of unique monitors from the heartbeat table, using raw sql
+        let monitors = await R.getAll(`
+            SELECT DISTINCT monitor_id
+            FROM heartbeat
+            ORDER BY monitor_id ASC
+        `);
+
+        // Stop if stat_* tables are not empty
+        for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
+            let countResult = await R.getRow(`SELECT COUNT(*) AS count FROM ${table}`);
+            let count = countResult.count;
+            if (count > 0) {
+                log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
+                return;
+            }
+        }
+
+        for (let monitor of monitors) {
+
+            // TODO: Get the date list for each monitor
+            for (let date of dates) {
+
+                // New Uptime Calculator
+                let calculator = new UptimeCalculator();
+                calculator.monitorID = monitor.monitor_id;
+                calculator.setMigrationMode(true);
+
+                // Get all the heartbeats for this monitor and date
+                let heartbeats = await R.getAll(`
+                    SELECT status, ping, time
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                    AND DATE(time) = ?
+                    ORDER BY time ASC
+                `, [ monitor.monitor_id, date.date ]);
+
+                if (heartbeats.length > 0) {
+                    log.info("db", `Migrating monitor ${monitor.monitor_id} on date ${date.date}`);
+                }
+
+                for (let heartbeat of heartbeats) {
+                    await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs(heartbeat.time));
+                }
+            }
+        }
+
+        await Settings.set("migratedAggregateTable", true);
     }
 
 }
