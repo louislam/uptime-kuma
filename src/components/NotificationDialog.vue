@@ -118,6 +118,7 @@ export default {
                 "clicksendsms": "ClickSend SMS",
                 "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",
+                "Elks": "46elks",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
                 "gotify": "Gotify",

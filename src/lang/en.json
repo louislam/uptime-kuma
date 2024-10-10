@@ -1027,5 +1027,7 @@
     "greater than": "greater than",
     "less than or equal to": "less than or equal to",
     "greater than or equal to": "greater than or equal to",
-    "record": "record"
+    "record": "record",
+    "elksUsername": "Username",
+    "elksPassword": "Password"
 }

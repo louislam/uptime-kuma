@@ -11,6 +11,7 @@ const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
+const Elks = require("./notification-providers/46elks");
 const Feishu = require("./notification-providers/feishu");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
@@ -95,6 +96,7 @@ class Notification {
             new SMSC(),
             new DingDing(),
             new Discord(),
+            new Elks(),
             new Feishu(),
             new FreeMobile(),
             new GoogleChat(),
