@@ -44,7 +44,7 @@ class Discord extends NotificationProvider {
                 },
                 {
                     name: "Error",
-                    value: heartbeatJSON["msg"] == null ? "N/A" : heartbeatJSON["msg"],
+                    value: msg,
                 },
             ];
 
