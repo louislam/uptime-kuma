@@ -10,10 +10,10 @@
     </div>
 
     <div class="mb-3">
-        <label for="push-api-channel" class="form-label">{{ $t("Channel") }}</label>
-        <input id="push-api-channel" v-model="$parent.notification.pushChannel" type="text" class="form-control">
+        <label for="push-api-channel" class="form-label">{{ $t("Notification Channel") }}</label>
+        <input id="push-api-channel" v-model="$parent.notification.pushChannel" type="text" class="form-control" patttern="[A-Za-z0-9-]+">
         <div class="form-text">
-            {{ $t("Notification channel, alphanumerical string and hyphens only.") }}
+            {{ $t("Alphanumerical string and hyphens only") }}
         </div>
     </div>
 
@@ -37,7 +37,7 @@
             <option value="pop">{{ $t("Pop") }}</option>
         </select>
         <div class="form-text">
-            {{ $t("Custom Notification sound") }}
+            {{ $t("Custom sound to override default notification sound") }}
         </div>
     </div>
 
