@@ -33,11 +33,17 @@ class Discord extends NotificationProvider {
                 return okMsg;
             }
 
+            const address = this.extractAddress(monitorJSON);
+
             const embedFields = [
                 {
                     name: "Service Name",
                     value: monitorJSON["name"],
                 },
+                ...((address !== "" && address !== monitorJSON["hostname"]) ? [{
+                    name: "Service URL",
+                    value: address
+                }] : []),
                 {
                     name: `Time (${heartbeatJSON["timezone"]})`,
                     value: heartbeatJSON["localDateTime"],
