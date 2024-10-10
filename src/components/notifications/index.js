@@ -9,7 +9,7 @@ import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
 import DingDing from "./DingDing.vue";
 import Discord from "./Discord.vue";
-import Elks from "./46elks.vue"
+import Elks from "./46elks.vue";
 import Feishu from "./Feishu.vue";
 import FreeMobile from "./FreeMobile.vue";
 import GoogleChat from "./GoogleChat.vue";
@@ -83,7 +83,7 @@ const NotificationFormList = {
     "smsc": SMSC,
     "DingDing": DingDing,
     "discord": Discord,
-    "Elks" : Elks,
+    "Elks": Elks,
     "Feishu": Feishu,
     "FreeMobile": FreeMobile,
     "GoogleChat": GoogleChat,
