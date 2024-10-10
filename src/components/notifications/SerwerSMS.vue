@@ -8,7 +8,7 @@
         <HiddenInput id="serwersms-key" v-model="$parent.notification.serwersmsPassword" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <div class="mb-3">
-        <label for="serwersms-phone-number" class="form-label">{{ $t("serwersmsPhoneNumber") }}</label>
+        <label for="serwersms-phone-number" class="form-label">{{ $t("serwersmsPhoneNumberGroupId") }}</label>
         <input id="serwersms-phone-number" v-model="$parent.notification.serwersmsPhoneNumber" type="text" class="form-control" required>
     </div>
     <div class="mb-3">

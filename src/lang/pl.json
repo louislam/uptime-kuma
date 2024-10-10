@@ -360,6 +360,7 @@
     "serwersmsAPIUser": "Nazwa użytkownika API (z prefiksem webapi_)",
     "serwersmsAPIPassword": "Hasło API",
     "serwersmsPhoneNumber": "Numer telefonu",
+    "serwersmsPhoneNumberGroupId": "Numer telefonu lub ID Grupy",
     "serwersmsSenderName": "Nazwa nadawcy (zatwierdzona w panelu klienta)",
     "smseagle": "SMSEagle",
     "smseagleTo": "Numer/y telefonu",
