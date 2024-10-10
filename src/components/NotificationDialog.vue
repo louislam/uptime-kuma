@@ -230,6 +230,9 @@ export default {
     mounted() {
         this.modal = new Modal(this.$refs.modal);
     },
+    beforeUnmount() {
+        this.cleanupModal();
+    },
     methods: {
 
         /**
@@ -334,6 +337,20 @@ export default {
                 });
             } while (this.$root.notificationList.find(it => it.name === name));
             return name;
+        },
+
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
         }
     },
 };
