@@ -1,12 +1,17 @@
 <template>
+    <div class="form-text">
+        <p>
+            You find the API-Username and API-password at <a href="https://46elks.com/account">https://46elks.com/account</a>
+        </p>
+    </div>
     <div class="mb-3">
-        <label for="Elks-account-sid" class="form-label">{{ $t("Account SID") }}</label>
-        <input id="Elks-account-sid" v-model="$parent.notification.elksAccountSID" type="text" class="form-control" required>
+        <label for="ElksUsername" class="form-label">{{ $t("elksUsername") }}</label>
+        <input id="ElksUsername" v-model="$parent.notification.elksUsername" type="text" class="form-control" required>
     </div>
 
     <div class="mb-3">
-        <label for="Elks-auth-token" class="form-label">{{ $t("Auth Token / Api Key Secret") }}</label>
-        <input id="Elks-auth-token" v-model="$parent.notification.elksAuthToken" type="text" class="form-control" required>
+        <label for="ElksPassword" class="form-label">{{ $t("elksPassword") }}</label>
+        <input id="ElksPassword" v-model="$parent.notification.elksAuthToken" type="text" class="form-control" required>
     </div>
 
     <div class="mb-3">
@@ -21,7 +26,7 @@
 
     <div class="mb-3">
         <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
-            <a href="https://www.twilio.com/docs/sms" target="_blank">https://www.twilio.com/docs/sms</a>
+            <a href="https://46elks.com/docs/send-sms" target="_blank">https://46elks.com/docs/send-sms</a>
         </i18n-t>
     </div>
 </template>

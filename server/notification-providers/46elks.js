@@ -14,7 +14,7 @@ class Elks extends NotificationProvider {
       try {
 
         // API credentials
-        const username = notification.elksAccountSID;
+        const username = notification.elksUsername;
         const password = notification.elksAuthToken;
         const authKey  = Buffer.from(username + ":" + password).toString("base64");
     
