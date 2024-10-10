@@ -1,6 +1,6 @@
 # Project Info
 
-First of all, I want to thank everyone who have wrote issues or shared pull requests for Uptime Kuma.
+First of all, I want to thank everyone who has submitted issues or shared pull requests for Uptime Kuma.
 I never thought the GitHub community would be so nice!
 Because of this, I also never thought that other people would actually read and edit my code.
 Parts of the code are not very well-structured or commented, sorry about that.
@@ -9,7 +9,7 @@ The project was created with `vite.js` and is written in `vue3`.
 Our backend lives in the `server`-directory and mostly communicates via websockets.
 Both frontend and backend share the same `package.json`.
 
-For production, the frontend is build into `dist`-directory and the server (`express.js`) exposes the `dist` directory as the root of the endpoint.
+For production, the frontend is built into the `dist`-directory and the server (`express.js`) exposes the `dist` directory as the root of the endpoint.
 For development, we run vite in development mode on another port. 
 
 ## Directories
@@ -28,7 +28,7 @@ For development, we run vite in development mode on another port.
 ## Can I create a pull request for Uptime Kuma?
 
 Yes or no, it depends on what you will try to do.
-Both your and our maintainers time is precious, and we don't want to waste both time.
+Both yours and our maintainers' time is precious, and we don't want to waste either.
 
 If you have any questions about any process/.. is not clear, you are likely not alone => please ask them ^^
 
@@ -49,11 +49,11 @@ Different guidelines exist for different types of pull requests (PRs):
   <p>
   
   If you come across a bug and think you can solve, we appreciate your work.
-  Please make sure that you follow by these rules:
+  Please make sure that you follow these rules:
   - keep the PR as small as possible, fix only one thing at a time => keeping it reviewable
-  - test that your code does what you came it does.
+  - test that your code does what you claim it does.
   
-  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  <sub>Because maintainer time is precious, junior maintainers may merge uncontroversial PRs in this area.</sub>
   </p>
   </details> 
 - <details><summary><b>translations / internationalisation (i18n)</b></summary>
@@ -68,7 +68,7 @@ Different guidelines exist for different types of pull requests (PRs):
   - language keys need to be **added to `en.json`** to be visible in weblate. If this has not happened, a PR is appreciated.
   - **Adding a new language** requires a new file see [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md)
   
-  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  <sub>Because maintainer time is precious, junior maintainers may merge uncontroversial PRs in this area.</sub>
   </p>
   </details> 
 - <details><summary><b>new notification providers</b></summary>
@@ -102,7 +102,7 @@ Different guidelines exist for different types of pull requests (PRs):
   Therefore, making sure that they work is also really important.
   Because testing notification providers is quite time intensive, we mostly offload this onto the person contributing a notification provider.
   
-  To make shure you have tested the notification provider, please include screenshots of the following events in the pull-request description:
+  To make sure you have tested the notification provider, please include screenshots of the following events in the pull-request description:
     - `UP`/`DOWN`
     - Certificate Expiry via https://expired.badssl.com/
     - Testing (the test button on the notification provider setup page)
@@ -117,7 +117,7 @@ Different guidelines exist for different types of pull requests (PRs):
   | Testing | paste-image-here | paste-image-here |
   ```
 
-  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  <sub>Because maintainer time is precious, junior maintainers may merge uncontroversial PRs in this area.</sub>
   </p>
   </details>
 - <details><summary><b>new monitoring types</b></summary>
@@ -138,14 +138,14 @@ Different guidelines exist for different types of pull requests (PRs):
   - 
 
 
-  <sub>Because maintainer time is precious junior maintainers may merge uncontroversial PRs in this area.</sub>
+  <sub>Because maintainer time is precious, junior maintainers may merge uncontroversial PRs in this area.</sub>
   </p>
   </details> 
 - <details><summary><b>new features/ major changes / breaking bugfixes</b></summary>
   <p>
   
   be sure to **create an empty draft pull request or open an issue, so we can have a discussion first**.
-  This is especially important for a large pull request or you don't know if it will be merged or not.
+  This is especially important for a large pull request or when you don't know if it will be merged or not.
   
   <sub>Because of the large impact of this work, only senior maintainers may merge PRs in this area.</sub>
   </p>
@@ -201,7 +201,7 @@ The rationale behind this is that we can align the direction and scope of the fe
 
 ## Project Styles
 
-I personally do not like something that requires so many configurations before you can finally start the app.
+I personally do not like something that requires a lot of configuration before you can finally start the app.
 The goal is to make the Uptime Kuma installation as easy as installing a mobile app.
 
 - Easy to install for non-Docker users
@@ -260,7 +260,7 @@ Port `3000` and port `3001` will be used.
 npm run dev
 ```
 
-But sometimes, you would like to restart the server, but not the frontend, you can run these commands in two terminals:
+But sometimes you may want to restart the server without restarting the frontend. In that case, you can run these commands in two terminals:
 
 ```bash
 npm run start-frontend-dev
@@ -409,7 +409,7 @@ https://github.com/louislam/uptime-kuma/issues?q=sort%3Aupdated-desc
 
 ### What is a maintainer and what are their roles?
 
-This project has multiple maintainers which specialise in different areas.
+This project has multiple maintainers who specialise in different areas.
 Currently, there are 3 maintainers:
 
 | Person            | Role              | Main Area        |
