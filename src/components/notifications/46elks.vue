@@ -35,7 +35,6 @@
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
         <a href="https://46elks.com/docs/send-sms" target="_blank">https://46elks.com/docs/send-sms</a>
     </i18n-t>
-
 </template>
 
 <script>
