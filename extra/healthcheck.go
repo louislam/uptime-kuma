@@ -32,20 +32,20 @@ func main() {
 	}
 
 	sslKey := os.Getenv("UPTIME_KUMA_SSL_KEY")
-	if len(sslKey) == 0 {
+	if sslKey == "" {
 		sslKey = os.Getenv("SSL_KEY")
 	}
 
 	sslCert := os.Getenv("UPTIME_KUMA_SSL_CERT")
-	if len(sslCert) == 0 {
+	if sslCert == "" {
 		sslCert = os.Getenv("SSL_CERT")
 	}
 
 	hostname := os.Getenv("UPTIME_KUMA_HOST")
-	if len(hostname) == 0 && !isFreeBSD {
+	if hostname == "" && !isFreeBSD {
 		hostname = os.Getenv("HOST")
 	}
-	if len(hostname) == 0 {
+	if hostname == "" {
 		hostname = "127.0.0.1"
 	}
 
@@ -54,15 +54,15 @@ func main() {
 	if !isK8s {
 		port = os.Getenv("UPTIME_KUMA_PORT")
 	}
-	if len(port) == 0 {
+	if port == "" {
 		port = os.Getenv("PORT")
 	}
-	if len(port) == 0 {
+	if port == "" {
 		port = "3001"
 	}
 
 	protocol := ""
-	if len(sslKey) != 0 && len(sslCert) != 0 {
+	if sslKey != "" && sslCert != "" {
 		protocol = "https"
 	} else {
 		protocol = "http"
