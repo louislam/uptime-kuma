@@ -34,7 +34,7 @@ class Squadcast extends NotificationProvider {
                     data.status = "resolve";
                 }
 
-                data.tags["AlertAddress"] = this.extractAdress(monitorJSON);
+                data.tags["AlertAddress"] = this.extractAddress(monitorJSON);
 
                 monitorJSON["tags"].forEach(tag => {
                     data.tags[tag["name"]] = {
