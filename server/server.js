@@ -1599,17 +1599,19 @@ let needSetup = false;
 
     await server.start();
 
-    server.httpServer.listen(port, hostname, () => {
+    server.httpServer.listen(port, hostname, async () => {
         if (hostname) {
             log.info("server", `Listening on ${hostname}:${port}`);
         } else {
             log.info("server", `Listening on ${port}`);
         }
-        startMonitors();
+        await startMonitors();
+
+        // Put this here. Start background jobs after the db and server is ready to prevent clear up during db migration.
+        await initBackgroundJobs();
+
         checkVersion.startInterval();
     });
-
-    await initBackgroundJobs();
 
     // Start cloudflared at the end if configured
     await cloudflaredAutoStart(cloudflaredToken);

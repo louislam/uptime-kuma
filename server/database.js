@@ -739,35 +739,26 @@ class Database {
         // Add a setting for 2.0.0-dev users to skip this migration
         if (process.env.SET_MIGRATE_AGGREGATE_TABLE_TO_TRUE === "1") {
             log.warn("db", "SET_MIGRATE_AGGREGATE_TABLE_TO_TRUE is set to 1, skipping aggregate table migration forever (for 2.0.0-dev users)");
-            await Settings.set("migratedAggregateTable", true);
+            await Settings.set("migrateAggregateTableState", "migrated");
         }
 
-        // Empty the aggregate table if FORCE_MIGRATE_AGGREGATE_TABLE is set to 1
-        if (process.env.FORCE_MIGRATE_AGGREGATE_TABLE === "1") {
-            log.warn("db", "FORCE_MIGRATE_AGGREGATE_TABLE is set to 1, forcing aggregate table migration");
-            await R.exec("DELETE FROM stat_minutely");
-            await R.exec("DELETE FROM stat_hourly");
-            await R.exec("DELETE FROM stat_daily");
-        }
+        let migrateState = await Settings.get("migrateAggregateTableState");
 
-        //
-        let migrated = await Settings.get("migratedAggregateTable");
-
-        if (migrated) {
-            log.debug("db", "Migrated, skip migration");
+        // Skip if already migrated
+        // If it is migrating, it possibly means the migration was interrupted, or the migration is in progress
+        if (migrateState === "migrated") {
+            log.debug("db", "Migrated aggregate table already, skip");
             return;
+        } else if (migrateState === "migrating") {
+            log.warn("db", "Aggregate table migration is already in progress, or it was interrupted");
+            throw new Error("Aggregate table migration is already in progress");
         }
+
+        await Settings.set("migrateAggregateTableState", "migrating");
 
         log.info("db", "Migrating Aggregate Table");
 
-        log.info("db", "Getting list of unique dates and monitors");
-
-        // Get a list of unique dates from the heartbeat table, using raw sql
-        let dates = await R.getAll(`
-            SELECT DISTINCT DATE(time) AS date
-            FROM heartbeat
-            ORDER BY date ASC
-        `);
+        log.info("db", "Getting list of unique monitors");
 
         // Get a list of unique monitors from the heartbeat table, using raw sql
         let monitors = await R.getAll(`
@@ -786,11 +777,23 @@ class Database {
             }
         }
 
+        let progressPercent = 0;
+        let part = 100 / monitors.length;
+        let i = 1;
         for (let monitor of monitors) {
 
-            // TODO: Get the date list for each monitor
-            for (let date of dates) {
+            // TODO: Get two or three days at the same to speed up???
+            // Get a list of unique dates from the heartbeat table, using raw sql
+            let dates = await R.getAll(`
+                SELECT DISTINCT DATE(time) AS date
+                FROM heartbeat
+                WHERE monitor_id = ?
+                ORDER BY date ASC
+            `, [
+                monitor.monitor_id
+            ]);
 
+            for (let date of dates) {
                 // New Uptime Calculator
                 let calculator = new UptimeCalculator();
                 calculator.monitorID = monitor.monitor_id;
@@ -806,16 +809,34 @@ class Database {
                 `, [ monitor.monitor_id, date.date ]);
 
                 if (heartbeats.length > 0) {
-                    log.info("db", `Migrating monitor ${monitor.monitor_id} on date ${date.date}`);
+                    log.info("db", `[DON'T STOP] Migrating monitor data ${monitor.monitor_id} - ${date.date} [${progressPercent.toFixed(2)}%][${i}/${monitors.length}]`);
                 }
 
                 for (let heartbeat of heartbeats) {
                     await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs(heartbeat.time));
                 }
+
+                progressPercent += (Math.round(part / dates.length * 100) / 100);
+
+                // Lazy to fix the floating point issue, it is acceptable since it is just a progress bar
+                if (progressPercent > 100) {
+                    progressPercent = 100;
+                }
             }
+
+            i++;
         }
 
-        await Settings.set("migratedAggregateTable", true);
+        // TODO: Remove all non-important heartbeats from heartbeat table
+        log.info("db", "[DON'T STOP] Deleting all data from heartbeat table");
+
+        await Settings.set("migrateAggregateTableState", "migrated");
+
+        if (monitors.length > 0) {
+            log.info("db", "Aggregate Table Migration Completed");
+        } else {
+            log.info("db", "No data to migrate");
+        }
     }
 
 }
