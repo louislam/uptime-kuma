@@ -1,3 +1,4 @@
+<!-- eslint-disable linebreak-style -->
 <template>
     <transition name="slide-fade" appear>
         <div v-if="monitor">
@@ -411,7 +412,7 @@ export default {
             const minutes = Math.floor((this.timeRemaining % 3600) / 60);
             const seconds = this.timeRemaining % 60;
 
-            let formattedTime = '';
+            let formattedTime = "";
             if (days > 0) {
                 formattedTime += `${days}:`;
             }
@@ -446,7 +447,7 @@ export default {
     },
     created() {
         if (this.lastHeartBeat.end_time) {
-            const lastpingtime = dayjs().utc().diff(dayjs.utc(this.lastHeartBeat.end_time), "seconds")
+            const lastpingtime = dayjs().utc().diff(dayjs.utc(this.lastHeartBeat.end_time), "seconds");
             this.timeRemaining = this.monitor.interval - lastpingtime;
         } else {
             this.timeRemaining = this.monitor.interval;
