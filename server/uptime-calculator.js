@@ -199,10 +199,6 @@ class UptimeCalculator {
      * @throws {Error} Invalid status
      */
     async update(status, ping = 0, date) {
-        if (!this.monitorID) {
-            throw new Error("Monitor ID is required");
-        }
-
         if (!date) {
             date = this.getCurrentDate();
         }
