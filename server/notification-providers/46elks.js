@@ -15,13 +15,13 @@ class Elks extends NotificationProvider {
             const url = "https://api.46elks.com/a1/sms";
 
             let data = new URLSearchParams();
-            data.append("from", notification.elksFromNumber)
-            data.append("to", notification.elksToNumber )
-            data.append("message", msg)
+            data.append("from", notification.elksFromNumber);
+            data.append("to", notification.elksToNumber );
+            data.append("message", msg);
 
             const config = {
                 headers: {
-                  "Authorization": "Basic " + Buffer.from(`${notification.elksUsername}:${notification.elksAuthToken}`).toString("base64")
+                    "Authorization": "Basic " + Buffer.from(`${notification.elksUsername}:${notification.elksAuthToken}`).toString("base64")
                 }
             };
 
