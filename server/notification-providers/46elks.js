@@ -12,32 +12,19 @@ class Elks extends NotificationProvider {
 
         try {
 
-            // API credentials
-            const username = notification.elksUsername;
-            const password = notification.elksAuthToken;
-            const authKey = Buffer.from(username + ":" + password).toString("base64");
-
-            // Set the SMS endpoint
             const url = "https://api.46elks.com/a1/sms";
 
-            // Request data object
-            let data = {
-                from: notification.elksFromNumber,
-                to: notification.elksToNumber,
-                message: msg
-            };
+            let data = new URLSearchParams();
+            data.append("from", notification.elksFromNumber)
+            data.append("to", notification.elksToNumber )
+            data.append("message", msg)
 
-            data = new URLSearchParams(data);
-            data = data.toString();
-
-            // Set the headers
             const config = {
                 headers: {
-                    "Authorization": "Basic " + authKey
+                  "Authorization": "Basic " + Buffer.from(`${notification.elksUsername}:${notification.elksAuthToken}`).toString("base64")
                 }
             };
 
-            // Send request
             await axios.post(url, data, config);
 
             return okMsg;

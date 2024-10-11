@@ -1028,6 +1028,7 @@
     "less than or equal to": "less than or equal to",
     "greater than or equal to": "greater than or equal to",
     "record": "record",
-    "elksUsername": "Username",
-    "elksPassword": "Password"
+    "Can be found on:": "Can be found on: {0}",
+    "The phone number of the recipient in E.164 format.": "The phone number of the recipient in E.164 format.",
+    "Either a text  sender ID or a phone number in E.164 format if you want to be able to receive replies.":"Either a text  sender ID or a phone number in E.164 format if you want to be able to receive replies."
 }
