@@ -14,7 +14,7 @@
         <label for="Elks-from-number" class="form-label">{{ $t("From") }}</label>
         <input id="Elks-from-number" v-model="$parent.notification.elksFromNumber" type="text" class="form-control" required>
         <div class="form-text">
-            {{ $t("Either a text  sender ID or a phone number in E.164 format if you want to be able to receive replies.") }}
+            {{ $t("Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.") }}
             <i18n-t tag="p" keypath="More info on:">
                 <a href="https://46elks.se/kb/text-sender-id" target="_blank">https://46elks.se/kb/text-sender-id</a>
             </i18n-t>
