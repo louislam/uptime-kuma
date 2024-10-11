@@ -406,9 +406,24 @@ export default {
         },
 
         formattedTime() {
-            const minutes = Math.floor(this.timeRemaining / 60);
+            const days = Math.floor(this.timeRemaining / 86400);
+            const hours = Math.floor((this.timeRemaining % 86400) / 3600);
+            const minutes = Math.floor((this.timeRemaining % 3600) / 60);
             const seconds = this.timeRemaining % 60;
-            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            let formattedTime = '';
+            if (days > 0) {
+                formattedTime += `${days}:`;
+            }
+            if (hours > 0 || days > 0) {
+                formattedTime += `${hours}:`;
+            }
+            if (minutes > 0 || hours > 0 || days > 0) {
+                formattedTime += `${minutes}:`;
+            }
+            formattedTime += `${seconds}`;
+
+            return formattedTime.trim();
         },
     },
 
