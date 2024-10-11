@@ -9,11 +9,9 @@ class Elks extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+        const url = "https://api.46elks.com/a1/sms";
 
         try {
-
-            const url = "https://api.46elks.com/a1/sms";
-
             let data = new URLSearchParams();
             data.append("from", notification.elksFromNumber);
             data.append("to", notification.elksToNumber );
@@ -31,9 +29,7 @@ class Elks extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
-
 }
 
 module.exports = Elks;
