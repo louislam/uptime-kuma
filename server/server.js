@@ -987,10 +987,10 @@ let needSetup = false;
                 await startMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
-				const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
-				for (let childID of childrenIDs) {
-					await server.sendUpdateMonitorIntoList(socket, childID);
-				}
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                for (let childID of childrenIDs) {
+                    await server.sendUpdateMonitorIntoList(socket, childID);
+                }
 
                 callback({
                     ok: true,
@@ -1012,10 +1012,10 @@ let needSetup = false;
                 await pauseMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
-				const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
-				for (let childID of childrenIDs) {
-					await server.sendUpdateMonitorIntoList(socket, childID);
-				}
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                for (let childID of childrenIDs) {
+                    await server.sendUpdateMonitorIntoList(socket, childID);
+                }
 
                 callback({
                     ok: true,
