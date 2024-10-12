@@ -382,8 +382,8 @@ class Monitor extends BeanModel {
 
                     if (children.length > 0) {
                         bean.status = UP;
-						bean.msg = "";
-						let errorChildNames = [];
+                        bean.msg = "";
+                        let errorChildNames = [];
                         for (const child of children) {
                             if (!child.active) {
                                 // Ignore inactive childs
@@ -401,23 +401,24 @@ class Monitor extends BeanModel {
                                 bean.status = lastBeat.status;
                             }
 
-							if(lastBeat && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
-								console.log(lastBeat.monitor_id);
-								const childMonitor = await Monitor.getMonitor(lastBeat.monitor_id);
-								console.log(childMonitor)
-								if(errorChildNames.length > 0)
-									bean.msg += "\r\n";
+                            if (lastBeat && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                                console.log(lastBeat.monitor_id);
+                                const childMonitor = await Monitor.getMonitor(lastBeat.monitor_id);
+                                console.log(childMonitor);
+                                if (errorChildNames.length > 0) {
+                                    bean.msg += "\r\n";
+                                }
 
-								bean.msg += "- " + childMonitor.name + ":\r\n" + lastBeat.msg.trim().replace(/^/gm, "  ");
-								errorChildNames.push(childMonitor.name);
-							}
+                                bean.msg += "- " + childMonitor.name + ":\r\n" + lastBeat.msg.trim().replace(/^/gm, "  ");
+                                errorChildNames.push(childMonitor.name);
+                            }
                         }
 
                         if (bean.status === UP) {
-							bean.msg = "All children up and running";
-                        } else if(bean.status === PENDING || bean.status === DOWN) {
-							bean.msg = "Some Children are having problems (" + errorChildNames.join(', ') + ")\r\n" + bean.msg;
-						}
+                            bean.msg = "All children up and running";
+                        } else if (bean.status === PENDING || bean.status === DOWN) {
+                            bean.msg = "Some Children are having problems (" + errorChildNames.join(", ") + ")\r\n" + bean.msg;
+                        }
                     } else {
                         // Set status pending if group is empty
                         bean.status = PENDING;
@@ -1618,7 +1619,7 @@ class Monitor extends BeanModel {
         };
     }
 
-	/**
+    /**
      * Gets Monitor with specific ID
      * @param {number} monitorID ID of monitor to get
      * @returns {Promise<LooseObject<any>>} Children
