@@ -1758,6 +1758,41 @@ async function startMonitor(userID, monitorID) {
 
     server.monitorList[monitor.id] = monitor;
     await monitor.start(io);
+
+    const children = await Monitor.getChildren(monitorID);
+    for (let child of children) {
+        await startMonitorAsChild(userID, child.id);
+    }
+}
+
+/**
+ * Start the specified monitor as child
+ * @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of monitor to start
+ * @returns {Promise<void>}
+ */
+async function startMonitorAsChild(userID, monitorID) {
+
+    let monitor = await R.findOne("monitor", " id = ? ", [
+        monitorID,
+    ]);
+    if (monitor.active !== 1) {
+        return;
+    }
+
+    log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
+
+    if (monitor.id in server.monitorList) {
+        await server.monitorList[monitor.id].stop();
+    }
+
+    server.monitorList[monitor.id] = monitor;
+    await monitor.start(io);
+
+    const children = await Monitor.getChildren(monitorID);
+    for (let child of children) {
+        await startMonitorAsChild(userID, child.id);
+    }
 }
 
 /**
@@ -1790,6 +1825,37 @@ async function pauseMonitor(userID, monitorID) {
         await server.monitorList[monitorID].stop();
         server.monitorList[monitorID].active = 0;
     }
+
+    const children = await Monitor.getChildren(monitorID);
+    for (let child of children) {
+        await pauseMonitorAsChild(userID, child.id);
+    }
+}
+
+/**
+ * Pause a given monitor as child
+ * @param {number} userID ID of user who owns monitor
+ * @param {number} monitorID ID of monitor to start
+ * @returns {Promise<void>}
+ */
+async function pauseMonitorAsChild(userID, monitorID) {
+    let monitor = await R.findOne("monitor", " id = ? ", [
+        monitorID,
+    ]);
+    if (monitor.active !== 1) {
+        return;
+    }
+
+    log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
+
+    if (monitorID in server.monitorList) {
+        await server.monitorList[monitorID].stop();
+    }
+
+    const children = await Monitor.getChildren(monitorID);
+    for (let child of children) {
+        await pauseMonitorAsChild(userID, child.id);
+    }
 }
 
 /**
@@ -1798,6 +1864,7 @@ async function pauseMonitor(userID, monitorID) {
  */
 async function startMonitors() {
     let list = await R.find("monitor", " active = 1 ");
+    list = list.filter((monitor) => Monitor.isActive(monitor.id, monitor.active));
 
     for (let monitor of list) {
         server.monitorList[monitor.id] = monitor;
