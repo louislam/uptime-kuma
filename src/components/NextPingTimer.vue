@@ -28,13 +28,13 @@ export default {
                 formattedTime = seconds > 1 ? `${seconds}secs` : `${seconds}sec`;
             }
             if (minutes > 0) {
-                formattedTime = minutes > 1 ? `${minutes}mins` : `${minutes}min`;
+                formattedTime = minutes > 1 ? `~ ${minutes}mins` : `~ ${minutes}min`;
             }
             if (hours > 0) {
-                formattedTime = hours > 1 ? `${hours}hrs` : `${hours}hr`;
+                formattedTime = hours > 1 ? `~ ${hours}hrs` : `~ ${hours}hr`;
             }
             if (days > 0) {
-                formattedTime = days > 1 ? `${days}days` : `${days}day`;
+                formattedTime = days > 1 ? `~ ${days}days` : `~ ${days}day`;
             }
 
             return formattedTime.trim();
@@ -45,8 +45,10 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
 .word {
     color: $secondary-text;
     font-size: 12px;
 }
+
 </style>
