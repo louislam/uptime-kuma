@@ -402,9 +402,7 @@ class Monitor extends BeanModel {
                             }
 
                             if (lastBeat && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
-                                console.log(lastBeat.monitor_id);
                                 const childMonitor = await Monitor.getMonitor(lastBeat.monitor_id);
-                                console.log(childMonitor);
                                 if (errorChildNames.length > 0) {
                                     bean.msg += "\r\n";
                                 }
