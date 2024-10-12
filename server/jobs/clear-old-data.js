@@ -13,6 +13,9 @@ const DEFAULT_KEEP_PERIOD = 180;
 
 const clearOldData = async () => {
 
+    // TODO: Temporary disable for testing
+    return;
+
     /*
     * TODO:
     * Since we have aggregated table now, we don't need so much data in heartbeat table.

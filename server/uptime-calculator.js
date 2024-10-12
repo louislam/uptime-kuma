@@ -305,37 +305,40 @@ class UptimeCalculator {
         }
         await R.store(dailyStatBean);
 
-        let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
-        hourlyStatBean.up = hourlyData.up;
-        hourlyStatBean.down = hourlyData.down;
-        hourlyStatBean.ping = hourlyData.avgPing;
-        hourlyStatBean.pingMin = hourlyData.minPing;
-        hourlyStatBean.pingMax = hourlyData.maxPing;
-        {
-            // eslint-disable-next-line no-unused-vars
-            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
-            if (Object.keys(extras).length > 0) {
-                hourlyStatBean.extras = JSON.stringify(extras);
+        // TODO: For migration mode, we don't need to store old hourly and minutely data, but we need 24-hour's minutely data and 30-day's hourly data
+        if (false) {
+            let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
+            hourlyStatBean.up = hourlyData.up;
+            hourlyStatBean.down = hourlyData.down;
+            hourlyStatBean.ping = hourlyData.avgPing;
+            hourlyStatBean.pingMin = hourlyData.minPing;
+            hourlyStatBean.pingMax = hourlyData.maxPing;
+            {
+                // eslint-disable-next-line no-unused-vars
+                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
+                if (Object.keys(extras).length > 0) {
+                    hourlyStatBean.extras = JSON.stringify(extras);
+                }
             }
-        }
-        await R.store(hourlyStatBean);
+            await R.store(hourlyStatBean);
 
-        let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
-        minutelyStatBean.up = minutelyData.up;
-        minutelyStatBean.down = minutelyData.down;
-        minutelyStatBean.ping = minutelyData.avgPing;
-        minutelyStatBean.pingMin = minutelyData.minPing;
-        minutelyStatBean.pingMax = minutelyData.maxPing;
-        {
-            // eslint-disable-next-line no-unused-vars
-            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
-            if (Object.keys(extras).length > 0) {
-                minutelyStatBean.extras = JSON.stringify(extras);
+            let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
+            minutelyStatBean.up = minutelyData.up;
+            minutelyStatBean.down = minutelyData.down;
+            minutelyStatBean.ping = minutelyData.avgPing;
+            minutelyStatBean.pingMin = minutelyData.minPing;
+            minutelyStatBean.pingMax = minutelyData.maxPing;
+            {
+                // eslint-disable-next-line no-unused-vars
+                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
+                if (Object.keys(extras).length > 0) {
+                    minutelyStatBean.extras = JSON.stringify(extras);
+                }
             }
+            await R.store(minutelyStatBean);
         }
-        await R.store(minutelyStatBean);
 
-        // TODO: it seems that it is also necessary to remove the old data in the migration mode
+        // No need to remove old data in migration mode
         if (!this.migrationMode) {
             // Remove the old data
             log.debug("uptime-calc", "Remove old data");
