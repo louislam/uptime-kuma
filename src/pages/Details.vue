@@ -1,4 +1,3 @@
-<!-- eslint-disable linebreak-style -->
 <template>
     <transition name="slide-fade" appear>
         <div v-if="monitor">
@@ -77,7 +76,10 @@
                 <div class="row">
                     <div class="col-md-8">
                         <HeartbeatBar :monitor-id="monitor.id" />
-                        <div><span v-if="monitor.active" class="mr-2">Next in {{ formattedTime }}&nbsp;</span><span class="word">({{ $t("checkEverySecond", [ monitor.interval ]) }})</span></div>
+                        <div>
+                            <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
+                            <span class="word"><NextPingTimer :timeRemaining="timeRemaining" /></span>
+                        </div>
                     </div>
                     <div class="col-md-4 text-center">
                         <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;" data-testid="monitor-status">{{ status.text }}</span>
@@ -276,6 +278,7 @@ import { useToast } from "vue-toastification";
 const toast = useToast();
 import Confirm from "../components/Confirm.vue";
 import HeartbeatBar from "../components/HeartbeatBar.vue";
+import NextPingTimer from "../components/NextPingTimer.vue";
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
@@ -302,6 +305,7 @@ export default {
         CountUp,
         Datetime,
         HeartbeatBar,
+        NextPingTimer,
         Confirm,
         Status,
         Pagination,
@@ -404,27 +408,6 @@ export default {
 
         screenshotURL() {
             return getResBaseURL() + this.monitor.screenshot + "?time=" + this.cacheTime;
-        },
-
-        formattedTime() {
-            const days = Math.floor(this.timeRemaining / 86400);
-            const hours = Math.floor((this.timeRemaining % 86400) / 3600);
-            const minutes = Math.floor((this.timeRemaining % 3600) / 60);
-            const seconds = this.timeRemaining % 60;
-
-            let formattedTime = "";
-            if (days > 0) {
-                formattedTime += `${days}:`;
-            }
-            if (hours > 0 || days > 0) {
-                formattedTime += `${hours}:`;
-            }
-            if (minutes > 0 || hours > 0 || days > 0) {
-                formattedTime += `${minutes}:`;
-            }
-            formattedTime += `${seconds}`;
-
-            return formattedTime.trim();
         },
     },
 
