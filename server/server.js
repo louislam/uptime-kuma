@@ -986,8 +986,8 @@ let needSetup = false;
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
 
-				const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
-                await server.sendUpdateMonitorsIntoList(socket, [monitorID, ...childrenIDs]);
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                await server.sendUpdateMonitorsIntoList(socket, [ monitorID, ...childrenIDs ]);
 
                 callback({
                     ok: true,
@@ -1008,8 +1008,8 @@ let needSetup = false;
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
 
-				const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
-                await server.sendUpdateMonitorsIntoList(socket, [monitorID, ...childrenIDs]);
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                await server.sendUpdateMonitorsIntoList(socket, [ monitorID, ...childrenIDs ]);
 
                 callback({
                     ok: true,

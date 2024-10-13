@@ -212,9 +212,9 @@ class UptimeKumaServer {
      * @returns {Promise<void>}
      */
     async sendUpdateMonitorsIntoList(socket, monitorIDs) {
-		if(!Array.isArray(monitorIDs)) {
-			monitorIDs = [monitorIDs];
-		}
+        if (!Array.isArray(monitorIDs)) {
+            monitorIDs = [ monitorIDs ];
+        }
 
         let list = await this.getMonitorJSONList(socket.userID, monitorIDs);
         this.io.to(socket.userID).emit("updateMonitorsIntoList", list);
@@ -246,7 +246,7 @@ class UptimeKumaServer {
             query += `AND id IN (${monitorIDs.join(",")}) `;
         }
 
-        let monitorList = await R.find("monitor", query + "ORDER BY weight DESC, name", [userID]);
+        let monitorList = await R.find("monitor", query + "ORDER BY weight DESC, name", [ userID ]);
 
         const monitorData = monitorList.map(monitor => ({
             id: monitor.id,
