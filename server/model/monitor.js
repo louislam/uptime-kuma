@@ -1510,7 +1510,7 @@ class Monitor extends BeanModel {
             FROM monitor_notification
             WHERE monitor_notification.monitor_id IN (?)
         `, [
-            monitorIDs,
+            monitorIDs.join(","),
         ]);
     }
 
@@ -1526,7 +1526,7 @@ class Monitor extends BeanModel {
             JOIN tag ON monitor_tag.tag_id = tag.id
             WHERE monitor_tag.monitor_id IN (?)
         `, [
-            monitorIDs,
+            monitorIDs.join(","),
         ]);
     }
 
