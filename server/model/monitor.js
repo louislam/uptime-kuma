@@ -380,7 +380,11 @@ class Monitor extends BeanModel {
                 } else if (this.type === "group") {
                     const children = await Monitor.getChildren(this.id);
 
-                    if (children.length > 0) {
+                    if (children.length > 0 && children.filter(child => child.active).length === 0) {
+                        // Set status pending if all children are paused
+                        bean.status = PENDING;
+                        bean.msg = "All Children are paused.";
+                    } else if (children.length > 0) {
                         bean.status = UP;
                         bean.msg = "All children up and running";
                         for (const child of children) {
