@@ -6,6 +6,7 @@ const languageList = {
     "cs-CZ": "Čeština",
     "zh-HK": "繁體中文 (香港)",
     "bg-BG": "Български",
+    "be": "Беларуская",
     "de-DE": "Deutsch (Deutschland)",
     "de-CH": "Deutsch (Schweiz)",
     "nl-NL": "Nederlands",

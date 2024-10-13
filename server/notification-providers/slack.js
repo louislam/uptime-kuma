@@ -48,7 +48,8 @@ class Slack extends NotificationProvider {
 
         }
 
-        if (monitorJSON.url) {
+        const address = this.extractAddress(monitorJSON);
+        if (address) {
             actions.push({
                 "type": "button",
                 "text": {
@@ -56,7 +57,7 @@ class Slack extends NotificationProvider {
                     "text": "Visit site",
                 },
                 "value": "Site",
-                "url": monitorJSON.url,
+                "url": address,
             });
         }
 
@@ -139,17 +140,22 @@ class Slack extends NotificationProvider {
 
             const title = "Uptime Kuma Alert";
             let data = {
-                "text": `${title}\n${msg}`,
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
                 "icon_emoji": notification.slackiconemo,
-                "attachments": [
+                "attachments": [],
+            };
+
+            if (notification.slackrichmessage) {
+                data.attachments.push(
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
                         "blocks": Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
                     }
-                ]
-            };
+                );
+            } else {
+                data.text = `${title}\n${msg}`;
+            }
 
             if (notification.slackbutton) {
                 await Slack.deprecateURL(notification.slackbutton);

@@ -11,6 +11,7 @@ const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
+const Elks = require("./notification-providers/46elks");
 const Feishu = require("./notification-providers/feishu");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
@@ -42,6 +43,7 @@ const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
+const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
 const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
@@ -51,6 +53,7 @@ const Stackfield = require("./notification-providers/stackfield");
 const Teams = require("./notification-providers/teams");
 const TechulusPush = require("./notification-providers/techulus-push");
 const Telegram = require("./notification-providers/telegram");
+const Threema = require("./notification-providers/threema");
 const Twilio = require("./notification-providers/twilio");
 const Splunk = require("./notification-providers/splunk");
 const Webhook = require("./notification-providers/webhook");
@@ -63,6 +66,8 @@ const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
+const Onesender = require("./notification-providers/onesender");
+const Wpush = require("./notification-providers/wpush");
 
 class Notification {
 
@@ -91,6 +96,7 @@ class Notification {
             new SMSC(),
             new DingDing(),
             new Discord(),
+            new Elks(),
             new Feishu(),
             new FreeMobile(),
             new GoogleChat(),
@@ -110,6 +116,7 @@ class Notification {
             new Ntfy(),
             new Octopush(),
             new OneBot(),
+            new Onesender(),
             new Opsgenie(),
             new PagerDuty(),
             new FlashDuty(),
@@ -123,6 +130,7 @@ class Notification {
             new ServerChan(),
             new SerwerSMS(),
             new Signal(),
+            new SIGNL4(),
             new SMSManager(),
             new SMSPartner(),
             new Slack(),
@@ -133,6 +141,7 @@ class Notification {
             new Teams(),
             new TechulusPush(),
             new Telegram(),
+            new Threema(),
             new Twilio(),
             new Splunk(),
             new Webhook(),
@@ -143,6 +152,7 @@ class Notification {
             new Whapi(),
             new GtxMessaging(),
             new Cellsynt(),
+            new Wpush(),
         ];
         for (let item of list) {
             if (! item.name) {

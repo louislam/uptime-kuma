@@ -2,7 +2,7 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT
+    SQL_DATETIME_FORMAT, evaluateJsonQuery
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
@@ -17,7 +17,6 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
-const jsonata = require("jsonata");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -72,23 +71,12 @@ class Monitor extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON
+     * @param {object} preloadData to prevent n+1 problems, we query the data in a batch outside of this function
      * @param {boolean} includeSensitiveData Include sensitive data in
      * JSON
-     * @returns {Promise<object>} Object ready to parse
+     * @returns {object} Object ready to parse
      */
-    async toJSON(includeSensitiveData = true) {
-
-        let notificationIDList = {};
-
-        let list = await R.find("monitor_notification", " monitor_id = ? ", [
-            this.id,
-        ]);
-
-        for (let bean of list) {
-            notificationIDList[bean.notification_id] = true;
-        }
-
-        const tags = await this.getTags();
+    toJSON(preloadData = {}, includeSensitiveData = true) {
 
         let screenshot = null;
 
@@ -96,7 +84,7 @@ class Monitor extends BeanModel {
             screenshot = "/screenshots/" + jwt.sign(this.id, UptimeKumaServer.getInstance().jwtSecret) + ".png";
         }
 
-        const path = await this.getPath();
+        const path = preloadData.paths.get(this.id) || [];
         const pathName = path.join(" / ");
 
         let data = {
@@ -106,15 +94,15 @@ class Monitor extends BeanModel {
             path,
             pathName,
             parent: this.parent,
-            childrenIDs: await Monitor.getAllChildrenIDs(this.id),
+            childrenIDs: preloadData.childrenIDs.get(this.id) || [],
             url: this.url,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
             maxretries: this.maxretries,
             weight: this.weight,
-            active: await this.isActive(),
-            forceInactive: !await Monitor.isParentActive(this.id),
+            active: preloadData.activeStatus.get(this.id),
+            forceInactive: preloadData.forceInactive.get(this.id),
             type: this.type,
             timeout: this.timeout,
             interval: this.interval,
@@ -134,9 +122,9 @@ class Monitor extends BeanModel {
             docker_container: this.docker_container,
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
-            notificationIDList,
-            tags: tags,
-            maintenance: await Monitor.isUnderMaintenance(this.id),
+            notificationIDList: preloadData.notifications.get(this.id) || {},
+            tags: preloadData.tags.get(this.id) || [],
+            maintenance: preloadData.maintenanceStatus.get(this.id),
             mqttTopic: this.mqttTopic,
             mqttSuccessMessage: this.mqttSuccessMessage,
             mqttCheckType: this.mqttCheckType,
@@ -160,7 +148,12 @@ class Monitor extends BeanModel {
             kafkaProducerAllowAutoTopicCreation: this.getKafkaProducerAllowAutoTopicCreation(),
             kafkaProducerMessage: this.kafkaProducerMessage,
             screenshot,
+            cacheBust: this.getCacheBust(),
             remote_browser: this.remote_browser,
+            snmpOid: this.snmpOid,
+            jsonPathOperator: this.jsonPathOperator,
+            snmpVersion: this.snmpVersion,
+            conditions: JSON.parse(this.conditions),
         };
 
         if (includeSensitiveData) {
@@ -195,16 +188,6 @@ class Monitor extends BeanModel {
 
         data.includeSensitiveData = includeSensitiveData;
         return data;
-    }
-
-    /**
-     * Checks if the monitor is active based on itself and its parents
-     * @returns {Promise<boolean>} Is the monitor active?
-     */
-    async isActive() {
-        const parentActive = await Monitor.isParentActive(this.id);
-
-        return (this.active === 1) && parentActive;
     }
 
     /**
@@ -291,6 +274,14 @@ class Monitor extends BeanModel {
      */
     getGrpcEnableTls() {
         return Boolean(this.grpcEnableTls);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} if cachebusting is enabled
+     */
+    getCacheBust() {
+        return Boolean(this.cacheBust);
     }
 
     /**
@@ -465,6 +456,14 @@ class Monitor extends BeanModel {
                         options.data = bodyValue;
                     }
 
+                    if (this.cacheBust) {
+                        const randomFloatString = Math.random().toString(36);
+                        const cacheBust = randomFloatString.substring(2);
+                        options.params = {
+                            uptime_kuma_cachebuster: cacheBust,
+                        };
+                    }
+
                     if (this.proxy_id) {
                         const proxy = await R.load("proxy", this.proxy_id);
 
@@ -565,25 +564,15 @@ class Monitor extends BeanModel {
                     } else if (this.type === "json-query") {
                         let data = res.data;
 
-                        // convert data to object
-                        if (typeof data === "string" && res.headers["content-type"] !== "application/json") {
-                            try {
-                                data = JSON.parse(data);
-                            } catch (_) {
-                                // Failed to parse as JSON, just process it as a string
-                            }
-                        }
+                        const { status, response } = await evaluateJsonQuery(data, this.jsonPath, this.jsonPathOperator, this.expectedValue);
 
-                        let expression = jsonata(this.jsonPath);
-
-                        let result = await expression.evaluate(data);
-
-                        if (result.toString() === this.expectedValue) {
-                            bean.msg += ", expected value is found";
+                        if (status) {
                             bean.status = UP;
+                            bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
                         } else {
-                            throw new Error(bean.msg + ", but value is not equal to expected value, value was: [" + result + "]");
+                            throw new Error(`JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`);
                         }
+
                     }
 
                 } else if (this.type === "port") {
@@ -1154,6 +1143,18 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Checks if the monitor is active based on itself and its parents
+     * @param {number} monitorID ID of monitor to send
+     * @param {boolean} active is active
+     * @returns {Promise<boolean>} Is the monitor active?
+     */
+    static async isActive(monitorID, active) {
+        const parentActive = await Monitor.isParentActive(monitorID);
+
+        return (active === 1) && parentActive;
+    }
+
+    /**
      * Send statistics to clients
      * @param {Server} io Socket server instance
      * @param {number} monitorID ID of monitor to send
@@ -1289,7 +1290,10 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     const heartbeatJSON = bean.toJSON();
-
+                    const monitorData = [{ id: monitor.id,
+                        active: monitor.active
+                    }];
+                    const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     if (!heartbeatJSON["msg"]) {
                         heartbeatJSON["msg"] = "N/A";
@@ -1300,7 +1304,7 @@ class Monitor extends BeanModel {
                     heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
-                    await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
+                    await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1463,6 +1467,111 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Gets monitor notification of multiple monitor
+     * @param {Array} monitorIDs IDs of monitor to get
+     * @returns {Promise<LooseObject<any>>} object
+     */
+    static async getMonitorNotification(monitorIDs) {
+        return await R.getAll(`
+            SELECT monitor_notification.monitor_id, monitor_notification.notification_id
+            FROM monitor_notification
+            WHERE monitor_notification.monitor_id IN (?)
+        `, [
+            monitorIDs,
+        ]);
+    }
+
+    /**
+     * Gets monitor tags of multiple monitor
+     * @param {Array} monitorIDs IDs of monitor to get
+     * @returns {Promise<LooseObject<any>>} object
+     */
+    static async getMonitorTag(monitorIDs) {
+        return await R.getAll(`
+            SELECT monitor_tag.monitor_id, tag.name, tag.color
+            FROM monitor_tag
+            JOIN tag ON monitor_tag.tag_id = tag.id
+            WHERE monitor_tag.monitor_id IN (?)
+        `, [
+            monitorIDs,
+        ]);
+    }
+
+    /**
+     * prepare preloaded data for efficient access
+     * @param {Array} monitorData IDs & active field of monitor to get
+     * @returns {Promise<LooseObject<any>>} object
+     */
+    static async preparePreloadData(monitorData) {
+
+        const notificationsMap = new Map();
+        const tagsMap = new Map();
+        const maintenanceStatusMap = new Map();
+        const childrenIDsMap = new Map();
+        const activeStatusMap = new Map();
+        const forceInactiveMap = new Map();
+        const pathsMap = new Map();
+
+        if (monitorData.length > 0) {
+            const monitorIDs = monitorData.map(monitor => monitor.id);
+            const notifications = await Monitor.getMonitorNotification(monitorIDs);
+            const tags = await Monitor.getMonitorTag(monitorIDs);
+            const maintenanceStatuses = await Promise.all(monitorData.map(monitor => Monitor.isUnderMaintenance(monitor.id)));
+            const childrenIDs = await Promise.all(monitorData.map(monitor => Monitor.getAllChildrenIDs(monitor.id)));
+            const activeStatuses = await Promise.all(monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active)));
+            const forceInactiveStatuses = await Promise.all(monitorData.map(monitor => Monitor.isParentActive(monitor.id)));
+            const paths = await Promise.all(monitorData.map(monitor => Monitor.getAllPath(monitor.id, monitor.name)));
+
+            notifications.forEach(row => {
+                if (!notificationsMap.has(row.monitor_id)) {
+                    notificationsMap.set(row.monitor_id, {});
+                }
+                notificationsMap.get(row.monitor_id)[row.notification_id] = true;
+            });
+
+            tags.forEach(row => {
+                if (!tagsMap.has(row.monitor_id)) {
+                    tagsMap.set(row.monitor_id, []);
+                }
+                tagsMap.get(row.monitor_id).push({
+                    name: row.name,
+                    color: row.color
+                });
+            });
+
+            monitorData.forEach((monitor, index) => {
+                maintenanceStatusMap.set(monitor.id, maintenanceStatuses[index]);
+            });
+
+            monitorData.forEach((monitor, index) => {
+                childrenIDsMap.set(monitor.id, childrenIDs[index]);
+            });
+
+            monitorData.forEach((monitor, index) => {
+                activeStatusMap.set(monitor.id, activeStatuses[index]);
+            });
+
+            monitorData.forEach((monitor, index) => {
+                forceInactiveMap.set(monitor.id, !forceInactiveStatuses[index]);
+            });
+
+            monitorData.forEach((monitor, index) => {
+                pathsMap.set(monitor.id, paths[index]);
+            });
+        }
+
+        return {
+            notifications: notificationsMap,
+            tags: tagsMap,
+            maintenanceStatus: maintenanceStatusMap,
+            childrenIDs: childrenIDsMap,
+            activeStatus: activeStatusMap,
+            forceInactive: forceInactiveMap,
+            paths: pathsMap,
+        };
+    }
+
+    /**
      * Gets Parent of the monitor
      * @param {number} monitorID ID of monitor to get
      * @returns {Promise<LooseObject<any>>} Parent
@@ -1494,16 +1603,18 @@ class Monitor extends BeanModel {
 
     /**
      * Gets the full path
+     * @param {number} monitorID ID of the monitor to get
+     * @param {string} name of the monitor to get
      * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
-    async getPath() {
-        const path = [ this.name ];
+    static async getAllPath(monitorID, name) {
+        const path = [ name ];
 
         if (this.parent === null) {
             return path;
         }
 
-        let parent = await Monitor.getParent(this.id);
+        let parent = await Monitor.getParent(monitorID);
         while (parent !== null) {
             path.unshift(parent.name);
             parent = await Monitor.getParent(parent.id);

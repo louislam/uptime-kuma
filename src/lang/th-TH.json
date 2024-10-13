@@ -355,7 +355,6 @@
     "Discard": "ทิ้ง",
     "Cancel": "ยกเลิก",
     "Powered by": "ขับเคลื่อนโดย",
-    "shrinkDatabaseDescription": "ทริกเกอร์ฐานข้อมูล VACUUM สำหรับ SQLite หากฐานข้อมูลของคุณถูกสร้างขึ้นหลังจากเวอร์ชั่น 1.10.0 แสดงว่า AUTO_VACUUM เปิดใช้งานอยู่แล้วและไม่จำเป็นต้องดำเนินการนี้",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Username (incl. webapi_ prefix)",
     "serwersmsAPIPassword": "API Password",
@@ -682,5 +681,17 @@
     "setupDatabaseMariaDB": "เชื่อมต่อไปยัง MariaDB ภายนอก คุณจำเป็นจะต้องตั่งค่าการเชื่อมต่อฐานข้อมูล",
     "setupDatabaseSQLite": "ไฟล์ฐานข้อมูลอย่างง่าย แนะนำสำหรับการปรับใช้ขนาดเล็ก ก่อนเวอร์ชัน 2.0.0 Uptime Kuma ใช้ SQLite เป็นฐานข้อมูลเริ่มต้น",
     "dbName": "ชื่อฐานข้อมูล",
-    "Passive Monitor Type": "ชนิดมอนิเตอร์แบบพาสซีฟ"
+    "Passive Monitor Type": "ชนิดมอนิเตอร์แบบพาสซีฟ",
+    "documentationOf": "{0} คู่มือ",
+    "successDeleted": "ลบสำเร็จ.",
+    "Command": "คำสั่ง",
+    "authUserInactiveOrDeleted": "ผู้ใช้งานถูกปิดหรือถูกลบแล้ว",
+    "Saved.": "บันทึกแล้ว",
+    "authInvalidToken": "โทเค็นไม่ถูกต้อง.",
+    "successDisabled": "ปิดการใช้งาน สำเร็จ.",
+    "max 11 alphanumeric characters": "ตัวอักษรสูงสุดไม่เกิน 11 ตัว",
+    "showCertificateExpiry": "แสดง Certificate ที่หมดอายุ",
+    "Telephone number": "เบอร์โทรศัพท์",
+    "successAuthChangePassword": "รหัสผ่านถูกเปลื่ยนเรียบร้อยแล้ว.",
+    "successEdited": "แก้ไขสำเร็จ"
 }

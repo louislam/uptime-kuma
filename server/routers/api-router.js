@@ -232,8 +232,8 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
         let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
 
-        if (requestedDuration === "24") {
-            requestedDuration = "24h";
+        if (/^[0-9]+$/.test(requestedDuration)) {
+            requestedDuration = `${requestedDuration}h`;
         }
 
         let publicMonitor = await R.getRow(`
@@ -265,7 +265,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
             // build a label string. If a custom label is given, override the default one (requestedDuration)
             badgeValues.label = filterAndJoin([
                 labelPrefix,
-                label ?? `Uptime (${requestedDuration}${labelSuffix})`,
+                label ?? `Uptime (${requestedDuration.slice(0, -1)}${labelSuffix})`,
             ]);
             badgeValues.message = filterAndJoin([ prefix, cleanUptime, suffix ]);
         }
@@ -302,8 +302,8 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
         let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
 
-        if (requestedDuration === "24") {
-            requestedDuration = "24h";
+        if (/^[0-9]+$/.test(requestedDuration)) {
+            requestedDuration = `${requestedDuration}h`;
         }
 
         // Check if monitor is public
@@ -325,7 +325,7 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
             // use a given, custom labelColor or use the default badge label color (defined by badge-maker)
             badgeValues.labelColor = labelColor ?? "";
             // build a lable string. If a custom label is given, override the default one (requestedDuration)
-            badgeValues.label = filterAndJoin([ labelPrefix, label ?? `Avg. Ping (${requestedDuration}${labelSuffix})` ]);
+            badgeValues.label = filterAndJoin([ labelPrefix, label ?? `Avg. Ping (${requestedDuration.slice(0, -1)}${labelSuffix})` ]);
             badgeValues.message = filterAndJoin([ prefix, avgPing, suffix ]);
         }
 

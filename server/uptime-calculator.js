@@ -543,7 +543,9 @@ class UptimeCalculator {
         if (type === "minute" && num > 24 * 60) {
             throw new Error("The maximum number of minutes is 1440");
         }
-
+        if (type === "day" && num > 365) {
+            throw new Error("The maximum number of days is 365");
+        }
         // Get the current time period key based on the type
         let key = this.getKey(this.getCurrentDate(), type);
 
@@ -741,20 +743,36 @@ class UptimeCalculator {
     }
 
     /**
-     * Get the uptime data by duration
-     * @param {'24h'|'30d'|'1y'} duration Only accept 24h, 30d, 1y
+     * Get the uptime data for given duration.
+     * @param {string} duration  A string with a number and a unit (m,h,d,w,M,y), such as 24h, 30d, 1y.
      * @returns {UptimeDataResult} UptimeDataResult
-     * @throws {Error} Invalid duration
+     * @throws {Error} Invalid duration / Unsupported unit
      */
     getDataByDuration(duration) {
-        if (duration === "24h") {
-            return this.get24Hour();
-        } else if (duration === "30d") {
-            return this.get30Day();
-        } else if (duration === "1y") {
-            return this.get1Year();
-        } else {
-            throw new Error("Invalid duration");
+        const durationNumStr = duration.slice(0, -1);
+
+        if (!/^[0-9]+$/.test(durationNumStr)) {
+            throw new Error(`Invalid duration: ${duration}`);
+        }
+        const num = Number(durationNumStr);
+        const unit = duration.slice(-1);
+
+        switch (unit) {
+            case "m":
+                return this.getData(num, "minute");
+            case "h":
+                return this.getData(num, "hour");
+            case "d":
+                return this.getData(num, "day");
+            case "w":
+                return this.getData(7 * num, "day");
+            case "M":
+                return this.getData(30 * num, "day");
+            case "y":
+                return this.getData(365 * num, "day");
+            default:
+                throw new Error(`Unsupported unit (${unit}) for badge duration ${duration}`
+                );
         }
     }
 

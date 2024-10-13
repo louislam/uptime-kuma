@@ -349,7 +349,6 @@
     "Discard": "취소",
     "Cancel": "취소",
     "Powered by": "Powered by",
-    "shrinkDatabaseDescription": "SQLite 데이터베이스 VACUUM을 트리거해요. 만약 데이터베이스가 1.10.0 버전 이후에 생성되었다면 AUTO_VACUUM이 설정되어 있어 이 작업은 필요 없을 거에요.",
     "serwersms": "SerwerSMS.pl",
     "serwersmsAPIUser": "API Usename (webapi_ 접두사 포함)",
     "serwersmsAPIPassword": "API 비밀번호",
@@ -779,5 +778,12 @@
     "Add a domain": "도메인 추가",
     "Remove domain": "도메인 '{0}' 제거",
     "Monitor Group": "모니터링 그룹",
-    "Monitor Setting": "{0}의 모니터 설정"
+    "Monitor Setting": "{0}의 모니터 설정",
+    "now": "지금",
+    "time ago": "{0} 전",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "연결하려는 서버의 호스트 이름을 입력하거나 {local_mta}를 사용하려는 경우 {localhost}를 입력합니다",
+    "-year": "-연도",
+    "Json Query Expression": "Json 쿼리 표현식",
+    "Host URL": "호스트 URL",
+    "locally configured mail transfer agent": "로컬로 구성된 메일 전송 에이전트"
 }
