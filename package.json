@@ -69,7 +69,7 @@
         "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly2",
         "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
         "rebase-pr-to-1.23.X": "node extra/rebase-pr.js 1.23.X",
-        "reset-migrate-aggregate-table-status": "node extra/reset-migrate-aggregate-table-status.js"
+        "reset-migrate-aggregate-table-state": "node extra/reset-migrate-aggregate-table-state.js"
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.8.22",

@@ -729,8 +729,12 @@ class Database {
     }
 
     /**
-     * TODO: Migrate the old data in the heartbeat table to the new format (stat_daily, stat_hourly, stat_minutely)
+     * Migrate the old data in the heartbeat table to the new format (stat_daily, stat_hourly, stat_minutely)
      * It should be run once while upgrading V1 to V2
+     *
+     * Normally, it should be in transaction, but UptimeCalculator wasn't designed to be in transaction before that.
+     * I don't want to heavily modify the UptimeCalculator, so it is not in transaction.
+     * Run `npm run reset-migrate-aggregate-table-state` to reset, in case the migration is interrupted.
      * @returns {Promise<void>}
      */
     static async migrateAggregateTable() {
