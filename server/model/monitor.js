@@ -1508,9 +1508,9 @@ class Monitor extends BeanModel {
         return await R.getAll(`
             SELECT monitor_notification.monitor_id, monitor_notification.notification_id
             FROM monitor_notification
-            WHERE monitor_notification.monitor_id IN (?)
+            WHERE monitor_notification.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
         `, [
-            monitorIDs.join(","),
+            ...monitorIDs,
         ]);
     }
 
@@ -1524,9 +1524,9 @@ class Monitor extends BeanModel {
             SELECT monitor_tag.monitor_id, tag.name, tag.color
             FROM monitor_tag
             JOIN tag ON monitor_tag.tag_id = tag.id
-            WHERE monitor_tag.monitor_id IN (?)
+            WHERE monitor_tag.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
         `, [
-            monitorIDs.join(","),
+            ...monitorIDs,
         ]);
     }
 

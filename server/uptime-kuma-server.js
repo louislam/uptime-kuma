@@ -241,12 +241,14 @@ class UptimeKumaServer {
     async getMonitorJSONList(userID, monitorIDs = null) {
 
         let query = " user_id = ? ";
+        let queryParams = [ userID ];
 
         if (monitorIDs) {
-            query += `AND id IN (${monitorIDs.join(",")}) `;
+            query += `AND id IN (${monitorIDs.map((_) => "?").join(",")}) `;
+            queryParams.push(...monitorIDs);
         }
 
-        let monitorList = await R.find("monitor", query + "ORDER BY weight DESC, name", [ userID ]);
+        let monitorList = await R.find("monitor", query + "ORDER BY weight DESC, name", queryParams);
 
         const monitorData = monitorList.map(monitor => ({
             id: monitor.id,
