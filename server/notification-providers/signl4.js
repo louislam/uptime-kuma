@@ -18,7 +18,7 @@ class SIGNL4 extends NotificationProvider {
                 msg,
                 // Source system
                 "X-S4-SourceSystem": "UptimeKuma",
-                monitorUrl: this.extractAdress(monitorJSON),
+                monitorUrl: this.extractAddress(monitorJSON),
             };
 
             const config = {

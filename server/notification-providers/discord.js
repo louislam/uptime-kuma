@@ -48,7 +48,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAdress(monitorJSON),
+                                value: this.extractAddress(monitorJSON),
                             },
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
@@ -85,7 +85,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAdress(monitorJSON),
+                                value: this.extractAddress(monitorJSON),
                             },
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,

@@ -90,7 +90,8 @@ const Monitor = require("./model/monitor");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
-const { initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin } = require("./util-server");
+const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
+} = require("./util-server");
 
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
@@ -200,7 +201,7 @@ let needSetup = false;
     // Entry Page
     app.get("/", async (request, response) => {
         let hostname = request.hostname;
-        if (await Settings.get("trustProxy")) {
+        if (await setting("trustProxy")) {
             const proxy = request.headers["x-forwarded-host"];
             if (proxy) {
                 hostname = proxy;
@@ -280,7 +281,7 @@ let needSetup = false;
     // Robots.txt
     app.get("/robots.txt", async (_request, response) => {
         let txt = "User-agent: *\nDisallow:";
-        if (!await Settings.get("searchEngineIndex")) {
+        if (!await setting("searchEngineIndex")) {
             txt += " /";
         }
         response.setHeader("Content-Type", "text/plain");
@@ -726,7 +727,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await server.sendMonitorList(socket);
+                await server.sendUpdateMonitorIntoList(socket, bean.id);
 
                 if (monitor.active !== false) {
                     await startMonitor(socket.userID, bean.id);
@@ -879,11 +880,11 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, monitor.notificationIDList);
 
-                if (await bean.isActive()) {
+                if (await Monitor.isActive(bean.id, bean.active)) {
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await server.sendMonitorList(socket);
+                await server.sendUpdateMonitorIntoList(socket, bean.id);
 
                 callback({
                     ok: true,
@@ -923,14 +924,17 @@ let needSetup = false;
 
                 log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                let bean = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
                 ]);
-
+                const monitorData = [{ id: monitor.id,
+                    active: monitor.active
+                }];
+                const preloadData = await Monitor.preparePreloadData(monitorData);
                 callback({
                     ok: true,
-                    monitor: await bean.toJSON(),
+                    monitor: monitor.toJSON(preloadData),
                 });
 
             } catch (e) {
@@ -981,7 +985,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await server.sendMonitorList(socket);
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
                     ok: true,
@@ -1001,7 +1005,7 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await server.sendMonitorList(socket);
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
                     ok: true,
@@ -1047,8 +1051,7 @@ let needSetup = false;
                     msg: "successDeleted",
                     msgi18n: true,
                 });
-
-                await server.sendMonitorList(socket);
+                await server.sendDeleteMonitorFromList(socket, monitorID);
 
             } catch (e) {
                 callback({
@@ -1324,7 +1327,7 @@ let needSetup = false;
         socket.on("getSettings", async (callback) => {
             try {
                 checkLogin(socket);
-                const data = await Settings.getSettings("general");
+                const data = await getSettings("general");
 
                 if (!data.serverTimezone) {
                     data.serverTimezone = await server.getTimezone();
@@ -1352,7 +1355,7 @@ let needSetup = false;
                 // Disabled Auth + Want to Enable Auth => No Check
                 // Enabled Auth + Want to Disable Auth => Check!!
                 // Enabled Auth + Want to Enable Auth => No Check
-                const currentDisabledAuth = await Settings.get("disableAuth");
+                const currentDisabledAuth = await setting("disableAuth");
                 if (!currentDisabledAuth && data.disableAuth) {
                     await doubleCheckPassword(socket, currentPassword);
                 }
@@ -1366,7 +1369,7 @@ let needSetup = false;
                 const previousChromeExecutable = await Settings.get("chromeExecutable");
                 const previousNSCDStatus = await Settings.get("nscd");
 
-                await Settings.setSettings("general", data);
+                await setSettings("general", data);
                 server.entryPage = data.entryPage;
 
                 // Also need to apply timezone globally
@@ -1462,7 +1465,7 @@ let needSetup = false;
                 });
 
             } catch (e) {
-                log.error("server", e);
+                console.error(e);
 
                 callback({
                     ok: false,
@@ -1575,7 +1578,7 @@ let needSetup = false;
         // ***************************
 
         log.debug("auth", "check auto login");
-        if (await Settings.get("disableAuth")) {
+        if (await setting("disableAuth")) {
             log.info("auth", "Disabled Auth: auto login to admin");
             await afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
@@ -1678,13 +1681,13 @@ async function afterLogin(socket, user) {
 
     await StatusPage.sendStatusPageList(io, socket);
 
+    const monitorPromises = [];
     for (let monitorID in monitorList) {
-        await sendHeartbeatList(socket, monitorID);
+        monitorPromises.push(sendHeartbeatList(socket, monitorID));
+        monitorPromises.push(Monitor.sendStats(io, monitorID, user.id));
     }
 
-    for (let monitorID in monitorList) {
-        await Monitor.sendStats(io, monitorID, user.id);
-    }
+    await Promise.all(monitorPromises);
 
     // Set server timezone from client browser if not set
     // It should be run once only

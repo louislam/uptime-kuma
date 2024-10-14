@@ -9,6 +9,12 @@
         <label for="slack-channel" class="form-label">{{ $t("Channel Name") }}</label>
         <input id="slack-channel-name" v-model="$parent.notification.slackchannel" type="text" class="form-control">
 
+        <label class="form-label">{{ $t("Message format") }}</label>
+        <div class="form-check form-switch">
+            <input id="slack-text-message" v-model="$parent.notification.slackrichmessage" type="checkbox" class="form-check-input">
+            <label for="slack-text-message" class="form-label">{{ $t("Send rich messages") }}</label>
+        </div>
+
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
             <i18n-t tag="p" keypath="aboutWebhooks" style="margin-top: 8px;">
