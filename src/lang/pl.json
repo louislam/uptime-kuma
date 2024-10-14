@@ -989,5 +989,9 @@
     "wayToGetThreemaGateway": "Możesz zarejestrować się w Threema Gateway {0}.",
     "threemaSenderIdentityFormat": "8 znaków, zwykle zaczyna się od *",
     "threemaBasicModeInfo": "Uwaga: Ta integracja korzysta z Threema Gateway w trybie podstawowym (szyfrowanie po stronie serwera). Więcej szczegółów można znaleźć {0}.",
-    "apiKeysDisabledMsg": "Klucze API są wyłączone, ponieważ wyłączone jest uwierzytelnianie."
+    "apiKeysDisabledMsg": "Klucze API są wyłączone, ponieważ wyłączone jest uwierzytelnianie.",
+    "-year": "-rok",
+    "and": "i",
+    "now": "teraz",
+    "cacheBusterParam": "Dodaj parametr {0}"
 }
