@@ -145,7 +145,7 @@ export default {
                 this.monitorList = data;
             });
 
-            socket.on("updateMonitorIntoList", (data) => {
+            socket.on("updateMonitorsIntoList", (data) => {
                 this.assignMonitorUrlParser(data);
                 Object.entries(data).forEach(([ monitorID, updatedMonitor ]) => {
                     this.monitorList[monitorID] = updatedMonitor;

@@ -727,7 +727,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await server.sendUpdateMonitorIntoList(socket, bean.id);
+                await server.sendUpdateMonitorsIntoList(socket, bean.id);
 
                 if (monitor.active !== false) {
                     await startMonitor(socket.userID, bean.id);
@@ -884,7 +884,7 @@ let needSetup = false;
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await server.sendUpdateMonitorIntoList(socket, bean.id);
+                await server.sendUpdateMonitorsIntoList(socket, bean.id);
 
                 callback({
                     ok: true,
@@ -985,7 +985,9 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                await server.sendUpdateMonitorsIntoList(socket, [ monitorID, ...childrenIDs ]);
 
                 callback({
                     ok: true,
@@ -1005,7 +1007,9 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                await server.sendUpdateMonitorsIntoList(socket, [ monitorID, ...childrenIDs ]);
 
                 callback({
                     ok: true,
