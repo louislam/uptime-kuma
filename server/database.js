@@ -785,8 +785,6 @@ class Database {
         let part = 100 / monitors.length;
         let i = 1;
         for (let monitor of monitors) {
-
-            // TODO: Get two or three days at the same to speed up???
             // Get a list of unique dates from the heartbeat table, using raw sql
             let dates = await R.getAll(`
                 SELECT DISTINCT DATE(time) AS date
