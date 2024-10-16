@@ -1,7 +1,7 @@
 {
     "languageName": "Deutsch (Schweiz)",
     "Settings": "Einstellungen",
-    "Dashboard": "Dashboard",
+    "Dashboard": "Überblick",
     "New Update": "Update verfügbar",
     "Language": "Sprache",
     "Appearance": "Erscheinungsbild",
@@ -1047,5 +1047,6 @@
     "greater than": "mehr als",
     "less than or equal to": "kleiner als oder gleich",
     "greater than or equal to": "grösser als oder gleich",
-    "record": "Eintrag"
+    "record": "Eintrag",
+    "shrinkDatabaseDescriptionSqlite": "Datenbank {vacuum} für SQLite auslösen. {auto_vacuum} ist bereits aktiviert, aber dies defragmentiert die Datenbank nicht und packt auch nicht einzelne Datenbankseiten neu, wie es der Befehl {vacuum} tut."
 }
