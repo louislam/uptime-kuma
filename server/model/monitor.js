@@ -1689,7 +1689,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<number[]>} IDs of all children
      */
     static async getAllChildrenIDs(monitorID) {
-        const children = await R.getAll(`
+        return await R.getCol(`
 			WITH RECURSIVE MonitorHierarchy(id) AS (
 				SELECT id FROM monitor WHERE id = ?
 				UNION ALL
@@ -1700,8 +1700,6 @@ class Monitor extends BeanModel {
             monitorID,
             monitorID
         ]);
-
-        return children.map((child) => child.id);
     }
 
     /**
