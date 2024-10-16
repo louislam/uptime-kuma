@@ -8,7 +8,7 @@ class Slack extends NotificationProvider {
 
     /**
      * Deprecated property notification.slackbutton
-     * Set it as primary base url if this is not yet set.
+     * Set it as primary base URL if this is not yet set.
      * @deprecated
      * @param {string} url The primary base URL to use
      * @returns {Promise<void>}
@@ -24,6 +24,17 @@ class Slack extends NotificationProvider {
         } else {
             console.log("Already there, no need to move the primary base URL");
         }
+    }
+
+    /**
+     * Extracts the address from the monitor JSON.
+     * @param {object} monitorJSON The monitor config
+     * @returns {string} The extracted address
+     */
+    static extractAddress(monitorJSON) {
+        // Implementation of extractAddress
+        // For example:
+        return monitorJSON.address || "";
     }
 
     /**
@@ -45,10 +56,9 @@ class Slack extends NotificationProvider {
                 "value": "Uptime-Kuma",
                 "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
             });
-
         }
 
-        const address = this.extractAddress(monitorJSON);
+        const address = Slack.extractAddress(monitorJSON);
         if (address) {
             actions.push({
                 "type": "button",
@@ -74,8 +84,6 @@ class Slack extends NotificationProvider {
      * @returns {Array<object>} The rich content blocks for the Slack message
      */
     static buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
-
-        //create an array to dynamically add blocks
         const blocks = [];
 
         // the header block
@@ -102,9 +110,9 @@ class Slack extends NotificationProvider {
             ],
         });
 
-        const actions = this.buildActions(baseURL, monitorJSON);
+        const actions = Slack.buildActions(baseURL, monitorJSON);
         if (actions.length > 0) {
-            //the actions block, containing buttons
+            // the actions block, containing buttons
             blocks.push({
                 "type": "actions",
                 "elements": actions,
@@ -147,12 +155,10 @@ class Slack extends NotificationProvider {
             };
 
             if (notification.slackrichmessage) {
-                data.attachments.push(
-                    {
-                        "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
-                    }
-                );
+                data.attachments.push({
+                    "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
+                    "blocks": Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
+                });
             } else {
                 data.text = `${title}\n${msg}`;
             }
@@ -166,8 +172,180 @@ class Slack extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 
 module.exports = Slack;
+// const NotificationProvider = require("./notification-provider");
+// const axios = require("axios");
+// const { setSettings, setting } = require("../util-server");
+// const { getMonitorRelativeURL, UP } = require("../../src/util");
+
+// class Slack extends NotificationProvider {
+//     name = "slack";
+
+//     /**
+//      * Deprecated property notification.slackbutton
+//      * Set it as primary base url if this is not yet set.
+//      * @deprecated
+//      * @param {string} url The primary base URL to use
+//      * @returns {Promise<void>}
+//      */
+//     static async deprecateURL(url) {
+//         let currentPrimaryBaseURL = await setting("primaryBaseURL");
+
+//         if (!currentPrimaryBaseURL) {
+//             console.log("Move the url to be the primary base URL");
+//             await setSettings("general", {
+//                 primaryBaseURL: url,
+//             });
+//         } else {
+//             console.log("Already there, no need to move the primary base URL");
+//         }
+//     }
+
+//     /**
+//      * Builds the actions available in the slack message
+//      * @param {string} baseURL Uptime Kuma base URL
+//      * @param {object} monitorJSON The monitor config
+//      * @returns {Array} The relevant action objects
+//      */
+//     static buildActions(baseURL, monitorJSON) {
+//         const actions = [];
+
+//         if (baseURL) {
+//             actions.push({
+//                 "type": "button",
+//                 "text": {
+//                     "type": "plain_text",
+//                     "text": "Visit Uptime Kuma",
+//                 },
+//                 "value": "Uptime-Kuma",
+//                 "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
+//             });
+
+//         }
+
+//         const address = this.extractAddress(monitorJSON);
+//         if (address) {
+//             actions.push({
+//                 "type": "button",
+//                 "text": {
+//                     "type": "plain_text",
+//                     "text": "Visit site",
+//                 },
+//                 "value": "Site",
+//                 "url": address,
+//             });
+//         }
+
+//         return actions;
+//     }
+
+//     /**
+//      * Builds the different blocks the Slack message consists of.
+//      * @param {string} baseURL Uptime Kuma base URL
+//      * @param {object} monitorJSON The monitor object
+//      * @param {object} heartbeatJSON The heartbeat object
+//      * @param {string} title The message title
+//      * @param {string} msg The message body
+//      * @returns {Array<object>} The rich content blocks for the Slack message
+//      */
+//     static buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
+
+//         //create an array to dynamically add blocks
+//         const blocks = [];
+
+//         // the header block
+//         blocks.push({
+//             "type": "header",
+//             "text": {
+//                 "type": "plain_text",
+//                 "text": title,
+//             },
+//         });
+
+//         // the body block, containing the details
+//         blocks.push({
+//             "type": "section",
+//             "fields": [
+//                 {
+//                     "type": "mrkdwn",
+//                     "text": "*Message*\n" + msg,
+//                 },
+//                 {
+//                     "type": "mrkdwn",
+//                     "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
+//                 }
+//             ],
+//         });
+
+//         const actions = this.buildActions(baseURL, monitorJSON);
+//         if (actions.length > 0) {
+//             //the actions block, containing buttons
+//             blocks.push({
+//                 "type": "actions",
+//                 "elements": actions,
+//             });
+//         }
+
+//         return blocks;
+//     }
+
+//     /**
+//      * @inheritdoc
+//      */
+//     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+//         const okMsg = "Sent Successfully.";
+
+//         if (notification.slackchannelnotify) {
+//             msg += " <!channel>";
+//         }
+
+//         try {
+//             if (heartbeatJSON == null) {
+//                 let data = {
+//                     "text": msg,
+//                     "channel": notification.slackchannel,
+//                     "username": notification.slackusername,
+//                     "icon_emoji": notification.slackiconemo,
+//                 };
+//                 await axios.post(notification.slackwebhookURL, data);
+//                 return okMsg;
+//             }
+
+//             const baseURL = await setting("primaryBaseURL");
+
+//             const title = "Uptime Kuma Alert";
+//             let data = {
+//                 "channel": notification.slackchannel,
+//                 "username": notification.slackusername,
+//                 "icon_emoji": notification.slackiconemo,
+//                 "attachments": [],
+//             };
+
+//             if (notification.slackrichmessage) {
+//                 data.attachments.push(
+//                     {
+//                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
+//                         "blocks": Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
+//                     }
+//                 );
+//             } else {
+//                 data.text = `${title}\n${msg}`;
+//             }
+
+//             if (notification.slackbutton) {
+//                 await Slack.deprecateURL(notification.slackbutton);
+//             }
+
+//             await axios.post(notification.slackwebhookURL, data);
+//             return okMsg;
+//         } catch (error) {
+//             this.throwGeneralAxiosError(error);
+//         }
+
+//     }
+// }
+
+// module.exports = Slack;
