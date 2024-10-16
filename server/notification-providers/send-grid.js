@@ -2,7 +2,7 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class SendGrid extends NotificationProvider {
-  name = "sendgrid";
+  name = "SendGrid";
 
   /**
    * @inheritdoc
