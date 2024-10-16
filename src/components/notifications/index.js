@@ -141,7 +141,7 @@ const NotificationFormList = {
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
     "WPush": WPush,
-    "SendGrid": SendGrid
+    "SendGrid": SendGrid,
 };
 
 export default NotificationFormList;
