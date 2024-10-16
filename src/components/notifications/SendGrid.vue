@@ -1,5 +1,4 @@
 <template>    
-    <!-- SendGrid fields -->
     <div class="mb-3">
       <label for="sendgrid-api-key" class="form-label">{{ $t("SendGrid API Key") }}</label>
       <input id="sendgrid-api-key" v-model="$parent.notification.sendgridApiKey" type="text" class="form-control" required>
