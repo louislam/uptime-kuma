@@ -1661,25 +1661,24 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Gets recursive all child ids
+     * Gets recursive all children ids
      * @param {number} monitorID ID of the monitor to get
-     * @returns {Promise<Array>} IDs of all children
+     * @returns {Promise<number[]>} IDs of all children
      */
     static async getAllChildrenIDs(monitorID) {
-        const childs = await Monitor.getChildren(monitorID);
+        const children = await R.getAll(`
+			WITH RECURSIVE MonitorHierarchy(id) AS (
+				SELECT id FROM monitor WHERE id = ?
+				UNION ALL
+				SELECT m.id FROM monitor m INNER JOIN MonitorHierarchy mh ON m.parent = mh.id
+			)
+			SELECT id FROM MonitorHierarchy WHERE id != ?;
+		`, [
+            monitorID,
+            monitorID
+        ]);
 
-        if (childs === null) {
-            return [];
-        }
-
-        let childrenIDs = [];
-
-        for (const child of childs) {
-            childrenIDs.push(child.id);
-            childrenIDs = childrenIDs.concat(await Monitor.getAllChildrenIDs(child.id));
-        }
-
-        return childrenIDs;
+        return children.map((child) => child.id);
     }
 
     /**
