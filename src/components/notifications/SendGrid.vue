@@ -15,7 +15,7 @@
     <div class="mb-3">
       <label for="sendgrid-cc-email" class="form-label">{{ $t("CC Email") }}</label>
       <input id="sendgrid-cc-email" v-model="$parent.notification.sendgridCcEmail" type="email" class="form-control">
-      <small class="form-text text-muted">{{ $t("Separate multiple email addresses with commas") }}</small>
+      <div class="form-text">{{ $t("Separate multiple email addresses with commas") }}</div>
     </div>
     <div class="mb-3">
       <label for="sendgrid-bcc-email" class="form-label">{{ $t("BCC Email") }}</label>
