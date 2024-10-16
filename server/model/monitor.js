@@ -1609,6 +1609,24 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Gets all active monitors
+     * @returns {Promise<Bean[]>} Active Monitors
+     */
+    static async getAllActiveMonitors() {
+        return R.convertToBeans("monitor", await R.getAll(`
+            WITH RECURSIVE MonitorHierarchy AS (
+				SELECT * FROM monitor
+				WHERE parent IS NULL AND active = 1
+				UNION ALL
+				SELECT m.* FROM monitor m
+				INNER JOIN MonitorHierarchy mh ON m.parent = mh.id
+				WHERE m.active = 1
+			)
+			SELECT * FROM MonitorHierarchy;
+        `));
+    }
+
+    /**
      * Gets Parent of the monitor
      * @param {number} monitorID ID of monitor to get
      * @returns {Promise<LooseObject<any>>} Parent

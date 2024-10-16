@@ -1810,8 +1810,7 @@ async function pauseMonitor(userID, monitorID) {
  * @returns {Promise<void>}
  */
 async function startMonitors() {
-    let list = await R.find("monitor", " active = 1 ");
-    list = list.filter((monitor) => Monitor.isActive(monitor.id, monitor.active));
+    let list = await Monitor.getAllActiveMonitors();
 
     for (let monitor of list) {
         server.monitorList[monitor.id] = monitor;
