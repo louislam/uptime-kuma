@@ -1629,10 +1629,10 @@ class Monitor extends BeanModel {
     /**
      * Gets Parent of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>} Parent
+     * @returns {Promise<Bean | null>} Parent
      */
     static async getParent(monitorID) {
-        return await R.getRow(`
+        const result = await R.getRow(`
             SELECT parent.* FROM monitor parent
     		LEFT JOIN monitor child
     			ON child.parent = parent.id
@@ -1640,20 +1640,25 @@ class Monitor extends BeanModel {
         `, [
             monitorID,
         ]);
+
+        if (!result) {
+            return null;
+        }
+        return R.convertToBean("monitor", result);
     }
 
     /**
      * Gets all Children of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>} Children
+     * @returns {Promise<Bean[]>} Children
      */
     static async getChildren(monitorID) {
-        return await R.getAll(`
+        return R.convertToBeans("monitor", await R.getAll(`
             SELECT * FROM monitor
             WHERE parent = ?
         `, [
             monitorID,
-        ]);
+        ]));
     }
 
     /**
