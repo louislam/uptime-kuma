@@ -12,19 +12,19 @@
         <input id="sendgrid-to-email" v-model="$parent.notification.sendgridToEmail" type="email" class="form-control" required>
     </div>
     <div class="mb-3">
-        <label for="sendgrid-cc-email" class="form-label">{{ $t("CC Email") }}</label>
+        <label for="sendgrid-cc-email" class="form-label">{{ $t("smtpCC") }}</label>
         <input id="sendgrid-cc-email" v-model="$parent.notification.sendgridCcEmail" type="email" class="form-control">
         <div class="form-text">{{ $t("Separate multiple email addresses with commas") }}</div>
     </div>
     <div class="mb-3">
-        <label for="sendgrid-bcc-email" class="form-label">{{ $t("BCC Email") }}</label>
+        <label for="sendgrid-bcc-email" class="form-label">{{ $t("smtpBCC") }}</label>
         <input id="sendgrid-bcc-email" v-model="$parent.notification.sendgridBccEmail" type="email" class="form-control">
         <small class="form-text text-muted">{{ $t("Separate multiple email addresses with commas") }}</small>
     </div>
     <div class="mb-3">
-        <label for="sendgrid-subject" class="form-label">{{ $t("Email Subject") }}</label>
+        <label for="sendgrid-subject" class="form-label">{{ $t("Subject:") }}</label>
         <input id="sendgrid-subject" v-model="$parent.notification.sendgridSubject" type="text" class="form-control">
-        <small class="form-text text-muted">{{ $t("Default subject will be used if left empty") }}</small>
+        <small class="form-text text-muted">{{ $t("leave blank for default subject") }}</small>
     </div>
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
         <a href="https://docs.sendgrid.com/api-reference/mail-send/mail-send" target="_blank">https://docs.sendgrid.com/api-reference/mail-send/mail-send</a>
