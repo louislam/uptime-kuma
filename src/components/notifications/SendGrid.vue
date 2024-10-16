@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="sendgrid-api-key" class="form-label">{{ $t("SendGrid API Key") }}</label>
-        <input id="sendgrid-api-key" v-model="$parent.notification.sendgridApiKey" type="text" class="form-control" required>
+        <HiddenInput id="push-api-key" v-model="$parent.notification.sendgridApiKey" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <div class="mb-3">
         <label for="sendgrid-from-email" class="form-label">{{ $t("From Email") }}</label>
@@ -30,3 +30,18 @@
         <a href="https://docs.sendgrid.com/api-reference/mail-send/mail-send" target="_blank">https://docs.sendgrid.com/api-reference/mail-send/mail-send</a>
     </i18n-t>
 </template>
+
+<script>
+import HiddenInput from "../HiddenInput.vue";
+
+export default {
+    components: {
+        HiddenInput,
+    },
+    mounted() {
+        if (typeof this.$parent.notification.sendgridSubject === "undefined") {
+            this.$parent.notification.sendgridApiKey = "Uptime-Kuma";
+        }
+    },
+};
+</script>
