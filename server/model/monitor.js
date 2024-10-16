@@ -1469,21 +1469,18 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
     static async isUnderMaintenance(monitorID) {
+        const ancestorIDs = await Monitor.getAllAncestorIDs(monitorID);
+        const allIDs = [ monitorID, ...ancestorIDs ];
         const maintenanceIDList = await R.getCol(`
             SELECT maintenance_id FROM monitor_maintenance
-            WHERE monitor_id = ?
-        `, [ monitorID ]);
+            WHERE monitor_id IN (${allIDs.map((_) => "?").join(",")})
+        `, allIDs);
 
         for (const maintenanceID of maintenanceIDList) {
             const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
             if (maintenance && await maintenance.isUnderMaintenance()) {
                 return true;
             }
-        }
-
-        const parent = await Monitor.getParent(monitorID);
-        if (parent != null) {
-            return await Monitor.isUnderMaintenance(parent.id);
         }
 
         return false;
@@ -1681,6 +1678,27 @@ class Monitor extends BeanModel {
         }
 
         return path;
+    }
+
+    /**
+     * Gets recursive all ancestor ids
+     * @param {number} monitorID ID of the monitor to get
+     * @returns {Promise<number[]>} IDs of all ancestors
+     */
+    static async getAllAncestorIDs(monitorID) {
+        return await R.getCol(`
+			WITH RECURSIVE Ancestors AS (
+				SELECT parent FROM monitor
+				WHERE id = ?
+				UNION ALL
+				SELECT m.parent FROM monitor m
+				JOIN Ancestors a ON m.id = a.parent
+			)
+			SELECT parent AS ancestor_id FROM Ancestors
+			WHERE parent IS NOT NULL;
+		`, [
+            monitorID,
+        ]);
     }
 
     /**
