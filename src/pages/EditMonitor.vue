@@ -269,7 +269,7 @@
 
                                 <div class="my-3">
                                     <label for="rabbitmqPassword" class="form-label">RabbitMQ {{ $t("Password") }}</label>
-                                    <input id="rabbitmqPassword" v-model="monitor.rabbitmqPassword" type="password" required class="form-control">
+                                    <HiddenInput id="rabbitmqPassword" v-model="monitor.rabbitmqPassword" autocomplete="false" required="true"></HiddenInput>
                                 </div>
                             </template>
 
