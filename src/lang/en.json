@@ -1052,8 +1052,8 @@
     "Can be found on:": "Can be found on: {0}",
     "The phone number of the recipient in E.164 format.": "The phone number of the recipient in E.164 format.",
     "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.":"Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.",
-    "RabbitMQ Nodes": "RabbitMQ Nodes",
-    "rabbitmqNodesDescription": "Enter the URL for the RabbitMQ management nodes including protocol and port.",
-    "rabbitmqNodesRequired": "At least one RabbitMQ node is required.",
-    "rabbitmqNodesInvalid": "Please enter URL for RabbitMQ nodes."
+    "RabbitMQ Nodes": "RabbitMQ Management Nodes",
+    "rabbitmqNodesDescription": "Enter the URL for the RabbitMQ management nodes including protocol and port. Example: https://node1.rabbitmq.com:15672",
+    "rabbitmqNodesRequired": "Please set the nodes for this monitor.",
+    "rabbitmqNodesInvalid": "Please use complete URL for RabbitMQ nodes."
 }
