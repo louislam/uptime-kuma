@@ -23,7 +23,7 @@
     </div>
     <div class="mb-3">
         <label for="sendgrid-subject" class="form-label">{{ $t("Email Subject") }}</label>
-        <input id="sendgrid-subject" v-model="$parent.notification.sendgridSubject" type="text" class="form-control" required>
+        <input id="sendgrid-subject" v-model="$parent.notification.sendgridSubject" type="text" class="form-control">
         <small class="form-text text-muted">{{ $t("Default subject will be used if left empty") }}</small>
     </div>
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
