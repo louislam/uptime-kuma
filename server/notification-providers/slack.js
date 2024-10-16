@@ -32,7 +32,7 @@ class Slack extends NotificationProvider {
      * @param {object} monitorJSON The monitor config
      * @returns {Array} The relevant action objects
      */
-    static buildActions(baseURL, monitorJSON) {
+    buildActions(baseURL, monitorJSON) {
         const actions = [];
 
         if (baseURL) {
@@ -73,7 +73,7 @@ class Slack extends NotificationProvider {
      * @param {string} msg The message body
      * @returns {Array<object>} The rich content blocks for the Slack message
      */
-    static buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
+    buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
 
         //create an array to dynamically add blocks
         const blocks = [];
@@ -150,7 +150,7 @@ class Slack extends NotificationProvider {
                 data.attachments.push(
                     {
                         "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": Slack.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
+                        "blocks": this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
                     }
                 );
             } else {

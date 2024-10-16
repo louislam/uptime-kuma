@@ -1509,10 +1509,8 @@ class Monitor extends BeanModel {
         return await R.getAll(`
             SELECT monitor_notification.monitor_id, monitor_notification.notification_id
             FROM monitor_notification
-            WHERE monitor_notification.monitor_id IN (?)
-        `, [
-            monitorIDs,
-        ]);
+            WHERE monitor_notification.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
+        `, monitorIDs);
     }
 
     /**
@@ -1522,13 +1520,11 @@ class Monitor extends BeanModel {
      */
     static async getMonitorTag(monitorIDs) {
         return await R.getAll(`
-            SELECT monitor_tag.monitor_id, tag.name, tag.color
+            SELECT monitor_tag.monitor_id, monitor_tag.tag_id, tag.name, tag.color
             FROM monitor_tag
             JOIN tag ON monitor_tag.tag_id = tag.id
-            WHERE monitor_tag.monitor_id IN (?)
-        `, [
-            monitorIDs,
-        ]);
+            WHERE monitor_tag.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
+        `, monitorIDs);
     }
 
     /**
@@ -1568,6 +1564,7 @@ class Monitor extends BeanModel {
                     tagsMap.set(row.monitor_id, []);
                 }
                 tagsMap.get(row.monitor_id).push({
+                    tag_id: row.tag_id,
                     name: row.name,
                     color: row.color
                 });
