@@ -27,9 +27,7 @@
       <input id="sendgrid-subject" v-model="$parent.notification.sendgridSubject" type="text" class="form-control" required>
       <small class="form-text text-muted">{{ $t("Default subject will be used if left empty") }}</small>
     </div>
-    <div class="mb-3">
-      <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
-        <a href="https://docs.sendgrid.com/api-reference/mail-send/mail-send" target="_blank">https://docs.sendgrid.com/api-reference/mail-send/mail-send</a>
-      </i18n-t>
-    </div>
+    <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
+      <a href="https://docs.sendgrid.com/api-reference/mail-send/mail-send" target="_blank">https://docs.sendgrid.com/api-reference/mail-send/mail-send</a>
+    </i18n-t>
   </template>
