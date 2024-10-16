@@ -1719,14 +1719,31 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>} Is the parent monitor active?
      */
     static async isParentActive(monitorID) {
-        const parent = await Monitor.getParent(monitorID);
+        const result = await R.getRow(`
+			WITH RECURSIVE MonitorHierarchy AS (
+				SELECT parent FROM monitor
+				WHERE id = ?
+				UNION ALL
+				SELECT m.parent FROM monitor m
+				JOIN MonitorHierarchy mh ON m.id = mh.parent
+			)
+			SELECT 
+				CASE 
+					WHEN (SELECT parent FROM monitor WHERE id = ?) IS NULL THEN 1
+					ELSE 
+						CASE 
+							WHEN COUNT(m.id) = SUM(m.active) THEN 1 
+							ELSE 0 
+						END 
+				END AS all_active
+			FROM MonitorHierarchy mh
+			LEFT JOIN monitor m ON mh.parent = m.id;
+		`, [
+            monitorID,
+            monitorID
+        ]);
 
-        if (parent === null) {
-            return true;
-        }
-
-        const parentActive = await Monitor.isParentActive(parent.id);
-        return parent.active && parentActive;
+        return result.all_active === 1;
     }
 
     /**
