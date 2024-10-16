@@ -257,6 +257,9 @@
                                         :preselect-first="false"
                                         @tag="addRabbitmqNode"
                                     ></VueMultiselect>
+                                    <div class="form-text">
+                                        {{ $t("rabbitmqNodesDescription") }}
+                                    </div>
                                 </div>
 
                                 <div class="my-3">
@@ -1777,6 +1780,17 @@ message HealthCheckResponse {
             if (this.monitor.type === "docker") {
                 if (this.monitor.docker_host == null) {
                     toast.error(this.$t("DockerHostRequired"));
+                    return false;
+                }
+            }
+
+            if (this.monitor.type === "rabbitmq") {
+                if (this.monitor.rabbitmqNodes.length === 0) {
+                    toast.error(this.$t("rabbitmqNodesRequired"));
+                    return false;
+                }
+                if (!this.monitor.rabbitmqNodes.every(node => node.startsWith("http://" || node.startsWith("https://")))) {
+                    toast.error(this.$t("rabbitmqNodesInvalid"));
                     return false;
                 }
             }
