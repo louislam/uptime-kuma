@@ -1051,5 +1051,6 @@
     "Pop": "",
     "Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.": "",
     "From": "",
-    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": ""
+    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "",
+    "CopyToClipboardError": ""
 }
