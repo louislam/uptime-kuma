@@ -1081,5 +1081,6 @@
     "Press Enter to add broker": "",
     "Enable Kafka SSL": "",
     "Enable Kafka Producer Auto Topic Creation": "",
-    "Kafka SASL Options": ""
+    "Kafka SASL Options": "",
+    "CopyToClipboardError": ""
 }
