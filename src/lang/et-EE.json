@@ -1063,5 +1063,6 @@
     "trustProxyDescription": "",
     "Enable DNS Cache": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "CopyToClipboardError": ""
 }
