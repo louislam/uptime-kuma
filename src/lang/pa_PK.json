@@ -1046,5 +1046,6 @@
     "Can be found on:": "",
     "The phone number of the recipient in E.164 format.": "",
     "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "CopyToClipboardError": ""
 }
