@@ -1044,5 +1044,6 @@
     "backupOutdatedWarning": "",
     "Enable DNS Cache": "",
     "Create your admin account": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "CopyToClipboardError": ""
 }
