@@ -1045,5 +1045,6 @@
     "setupDatabaseEmbeddedMariaDB": "",
     "ignoreTLSError": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "grpcMethodDescription": ""
+    "grpcMethodDescription": "",
+    "CopyToClipboardError": ""
 }
