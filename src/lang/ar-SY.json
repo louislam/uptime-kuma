@@ -1098,5 +1098,6 @@
     "pushViewCode": "",
     "setupDatabaseEmbeddedMariaDB": "",
     "Pick a SASL Mechanism...": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "CopyToClipboardError": ""
 }
