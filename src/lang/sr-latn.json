@@ -1039,5 +1039,6 @@
     "Reconnecting...": "",
     "high": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "CopyToClipboardError": ""
 }
