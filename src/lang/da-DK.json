@@ -1069,5 +1069,6 @@
     "enableGRPCTls": "",
     "ntfyPriorityHelptextAllEvents": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "CopyToClipboardError": ""
 }
