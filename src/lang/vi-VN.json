@@ -1076,5 +1076,6 @@
     "ntfyPriorityHelptextAllEvents": "",
     "high": "",
     "Pick a SASL Mechanism...": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "CopyToClipboardError": ""
 }
