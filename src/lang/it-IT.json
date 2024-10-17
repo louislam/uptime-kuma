@@ -1073,5 +1073,6 @@
     "Guild ID": "",
     "nostrRecipientsHelp": "",
     "showCertificateExpiry": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "CopyToClipboardError": ""
 }
