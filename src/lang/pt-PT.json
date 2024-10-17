@@ -1055,5 +1055,6 @@
     "From Name/Number": "",
     "Pick a SASL Mechanism...": "",
     "Enable DNS Cache": "",
-    "wayToGetDiscordURL": ""
+    "wayToGetDiscordURL": "",
+    "CopyToClipboardError": ""
 }
