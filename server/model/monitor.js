@@ -1607,6 +1607,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<Bean[]>} Active Monitors
      */
     static async getAllActiveMonitors() {
+        // Gets all monitors but only if they and all their ancestors are active
         return R.convertToBeans("monitor", await R.getAll(`
             WITH RECURSIVE MonitorHierarchy AS (
 				SELECT * FROM monitor
@@ -1683,6 +1684,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<number[]>} IDs of all ancestors
      */
     static async getAllAncestorIDs(monitorID) {
+        // Gets all ancestor monitor ids recursive
         return await R.getCol(`
 			WITH RECURSIVE Ancestors AS (
 				SELECT parent FROM monitor
@@ -1754,6 +1756,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>} Is the parent monitor active?
      */
     static async isParentActive(monitorID) {
+        // Checks recursive if the parent and all its ancestors are active
         const result = await R.getRow(`
 			WITH RECURSIVE MonitorHierarchy AS (
 				SELECT parent FROM monitor
