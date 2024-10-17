@@ -44,28 +44,31 @@ export default {
         /**
          * Converts a Unix timestamp to a formatted date and time string.
          * @param {number} value - The Unix timestamp to convert.
+         * @param {string} timezone - The timezone to use for the conversion.
          * @returns {string} The formatted date and time string.
          */
-        unixToDateTime(value) {
-            return dayjs.unix(value).tz(this.timezone).format("YYYY-MM-DD HH:mm:ss");
+        unixToDateTime(value, timezone) {
+            return dayjs.unix(value).tz(timezone === "auto" ? this.timezone : timezone).format("YYYY-MM-DD HH:mm:ss");
         },
 
         /**
          * Converts a Unix timestamp to a dayjs object.
          * @param {number} value - The Unix timestamp to convert.
+         * @param {string} timezone - The timezone to use for the conversion.
          * @returns {dayjs.Dayjs} The dayjs object representing the given timestamp.
          */
-        unixToDayjs(value) {
-            return dayjs.unix(value).tz(this.timezone);
+        unixToDayjs(value, timezone) {
+            return dayjs.unix(value).tz(timezone === "auto" ? this.timezone : timezone);
         },
 
         /**
          * Converts the given value to a dayjs object.
-         * @param {string} value - the value to be converted
-         * @returns {dayjs.Dayjs} a dayjs object in the timezone of this instance
+         * @param {string} value - The value to be converted.
+         * @param {string} timezone - The timezone to use for the conversion.
+         * @returns {dayjs.Dayjs} The dayjs object in the timezone of this instance.
          */
-        toDayjs(value) {
-            return dayjs.utc(value).tz(this.timezone);
+        toDayjs(value, timezone) {
+            return dayjs.utc(value).tz(timezone === "auto" ? this.timezone : timezone);
         },
 
         /**

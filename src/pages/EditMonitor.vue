@@ -8,6 +8,7 @@
                         <div class="col-md-6">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
 
+                            <!-- Monitor Type -->
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select" data-testid="monitor-type-select">
@@ -563,6 +564,23 @@
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
 
+                            <!-- Monitor Timezone -->
+                            <div class="my-3">
+                                <label for="timezone" class="form-label">{{ $t("Monitor Timezone") }}</label>
+                                <select id="timezone" v-model="monitor.timezone" class="form-select">
+                                    <option value="auto">
+                                        {{ $t("Default") }}: {{ getUserTimezone }}
+                                    </option>
+                                    <option
+                                        v-for="(timezone, index) in timezoneList"
+                                        :key="index"
+                                        :value="timezone.value"
+                                    >
+                                        {{ timezone.name }}
+                                    </option>
+                                </select>
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
@@ -1077,6 +1095,8 @@ import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 import { version } from "../../package.json";
+import dayjs from "dayjs";
+import { timezoneList } from "../util-frontend";
 const userAgent = `'Uptime-Kuma/${version}'`;
 
 const toast = useToast();
@@ -1122,7 +1142,8 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     remote_browser: null,
-    conditions: []
+    conditions: [],
+    timezone: "auto"
 };
 
 export default {
@@ -1165,6 +1186,7 @@ export default {
             },
             draftGroupName: null,
             remoteBrowsersEnabled: false,
+            timezoneList: timezoneList(),
         };
     },
 
@@ -1215,6 +1237,18 @@ export default {
             }
             command.push("--url", this.monitor.url);
             return command.join(" ");
+        },
+
+        getUserTimezone() {
+            let timezone = localStorage.timezone;
+            if (timezone === null || timezone === "auto") {
+                timezone = this.guessTimezone;
+            }
+            return timezone;
+        },
+
+        guessTimezone() {
+            return dayjs.tz.guess();
         },
 
         ipRegex() {
