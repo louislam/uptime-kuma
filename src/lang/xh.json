@@ -1048,5 +1048,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "ignoreTLSError": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "Enable DNS Cache": ""
+    "Enable DNS Cache": "",
+    "CopyToClipboardError": ""
 }
