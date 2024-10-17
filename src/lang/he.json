@@ -1047,5 +1047,6 @@
     "Custom sound to override default notification sound": "",
     "Pick a SASL Mechanism...": "",
     "grpcMethodDescription": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "CopyToClipboardError": ""
 }
