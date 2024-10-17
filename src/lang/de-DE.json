@@ -1059,7 +1059,7 @@
     "Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.": "Zeitkritische Benachrichtigungen werden sofort zugestellt, auch wenn sich das Gerät im Nicht stören-Modus befindet.",
     "Debug": "Debug",
     "Copy": "Kopieren",
-    "CopyToClipboardError": "Konnte nicht in die Zwischenablage kopiert werden: {Fehler}",
+    "CopyToClipboardError": "Konnte nicht in die Zwischenablage kopiert werden: {error}",
     "CopyToClipboardSuccess": "Kopiert!",
     "CurlDebugInfo": "Um den Monitor zu debuggen, kannst du dies entweder in das Terminal deines eigenen Rechners oder in das Terminal der Maschine, auf der Uptime Kuma läuft, einfügen und überprüfen, was du anforderst.{newiline}Bitte beachte Netzwerkunterschiede wie {firewalls}, {dns_resolvers} oder {docker_networks}.",
     "firewalls": "Firewalls",
@@ -1073,7 +1073,7 @@
     "Doorbell": "Türklingel",
     "Flute": "Flöte",
     "Money": "Geld",
-    "Scifi": "Scifi",
+    "Scifi": "Science Fiction",
     "Elevator": "Aufzug",
     "Guitar": "Gitarre",
     "Sound": "Benachrichtigungston",
@@ -1081,5 +1081,12 @@
     "From": "Von",
     "Can be found on:": "Ist zu finden auf: {0}",
     "The phone number of the recipient in E.164 format.": "Die Telefonnummer des Empfängers im E.164-Format.",
-    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Entweder eine Text-Absender-ID oder eine Telefonnummer im E.164-Format, wenn du Antworten erhalten möchtest."
+    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Entweder eine Text-Absender-ID oder eine Telefonnummer im E.164-Format, wenn du Antworten erhalten möchtest.",
+    "Send rich messages": "Sende Rich-Text-Nachrichten",
+    "Fail": "Fehlgeschlagen",
+    "Reveal": "Enthüllen",
+    "Bubble": "Blase",
+    "Clear": "Klar",
+    "Pop": "Pop",
+    "Arcade": "Spielhalle"
 }
