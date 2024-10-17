@@ -1072,5 +1072,6 @@
     "Pick a SASL Mechanism...": "",
     "Enable DNS Cache": "",
     "backupOutdatedWarning": "",
-    "trustProxyDescription": ""
+    "trustProxyDescription": "",
+    "CopyToClipboardError": ""
 }
