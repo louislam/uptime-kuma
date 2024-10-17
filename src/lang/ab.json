@@ -1050,5 +1050,6 @@
     "Elevator": "",
     "Guitar": "",
     "Pop": "",
-    "The phone number of the recipient in E.164 format.": ""
+    "The phone number of the recipient in E.164 format.": "",
+    "CopyToClipboardError": ""
 }
