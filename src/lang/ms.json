@@ -1041,5 +1041,6 @@
     "promosmsTypeFlash": "",
     "promosmsTypeFull": "",
     "pauseDashboardHome": "",
-    "Name": ""
+    "Name": "",
+    "CopyToClipboardError": ""
 }
