@@ -1046,5 +1046,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "Enable DNS Cache": "",
     "setupDatabaseEmbeddedMariaDB": "",
-    "ignoreTLSError": ""
+    "ignoreTLSError": "",
+    "CopyToClipboardError": ""
 }
