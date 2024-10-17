@@ -1050,5 +1050,6 @@
     "conditionAddGroup": "",
     "conditionValuePlaceholder": "",
     "not contains": "",
-    "starts with": ""
+    "starts with": "",
+    "CopyToClipboardError": ""
 }
