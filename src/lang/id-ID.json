@@ -1046,5 +1046,11 @@
     "Group Name": "Nama Grup",
     "OAuth2: Client Credentials": "OAuth2: Kredensial Klien",
     "Authentication Method": "Metode Autentikasi",
-    "shrinkDatabaseDescriptionSqlite": "Memicu pangkalan data {vacuum} untuk SQLite. {auto_vacuum} sudah diaktifkan, tetapi tidak mendefragmentasi pangkalan data atau mengemas ulang halaman individual dari pangkalan data seperti yang dilakukan oleh perintah {vacuum}."
+    "shrinkDatabaseDescriptionSqlite": "Memicu pangkalan data {vacuum} untuk SQLite. {auto_vacuum} sudah diaktifkan, tetapi tidak mendefragmentasi pangkalan data atau mengemas ulang halaman individual dari pangkalan data seperti yang dilakukan oleh perintah {vacuum}.",
+    "ignoredTLSError": "Galat TLS/SSL sudah diabaikan",
+    "Debug": "Awakutu",
+    "Copy": "Salin",
+    "CopyToClipboardError": "Tidak bisa menyalin ke papan klip: {galat}",
+    "CopyToClipboardSuccess": "Tersalin!",
+    "CurlDebugInfo": "Untuk pengawakutuan monitor, Anda bisa menempelkan ini ke terminal mesin Anda sendiri atau ke terminal mesin di mana uptime kuma sedang berjalan dan melihat apa yang Anda harapkan. Mohon perhatikan perbedaan jaringan seperti {firewalls}, {dns_resolvers}, atau {docker_networks}."
 }
