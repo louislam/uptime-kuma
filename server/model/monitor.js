@@ -1701,9 +1701,29 @@ class Monitor extends BeanModel {
     /**
      * Gets recursive all children ids
      * @param {number} monitorID ID of the monitor to get
+     * @param {boolean} onlyActive Return only monitors which are active (including all ancestors)
      * @returns {Promise<number[]>} IDs of all children
      */
-    static async getAllChildrenIDs(monitorID) {
+    static async getAllChildrenIDs(monitorID, onlyActive = false) {
+        if (onlyActive) {
+            // Gets all children monitor ids recursive but only if they and all their ancestors are active
+            return await R.getCol(`
+				WITH RECURSIVE MonitorHierarchy(id, active_chain) AS (
+					SELECT id, active FROM monitor
+					WHERE id = ?
+					UNION ALL
+					SELECT m.id, m.active * mh.active_chain FROM monitor m
+					INNER JOIN MonitorHierarchy mh ON m.parent = mh.id
+					WHERE mh.active_chain = 1
+				)
+				SELECT id FROM MonitorHierarchy
+				WHERE id != ? AND active_chain = 1;
+			`, [
+                monitorID,
+                monitorID
+            ]);
+        }
+        // Gets all children monitor ids recursive
         return await R.getCol(`
 			WITH RECURSIVE MonitorHierarchy(id) AS (
 				SELECT id FROM monitor WHERE id = ?

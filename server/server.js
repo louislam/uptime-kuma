@@ -1752,7 +1752,7 @@ async function startMonitor(userID, monitorID) {
         userID,
     ]);
 
-    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID, true);
     const monitorIDs = [ monitorID, ...childrenIDs ];
 
     let monitors = await R.find("monitor", ` id IN (${monitorIDs.map((_) => "?").join(",")})`, monitorIDs);
