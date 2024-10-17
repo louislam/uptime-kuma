@@ -1051,5 +1051,6 @@
     "ntfyPriorityHelptextAllExceptDown": "",
     "grpcMethodDescription": "",
     "Pick a SASL Mechanism...": "",
-    "ntfyPriorityHelptextAllEvents": ""
+    "ntfyPriorityHelptextAllEvents": "",
+    "CopyToClipboardError": ""
 }
