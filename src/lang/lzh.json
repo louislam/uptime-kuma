@@ -1050,5 +1050,6 @@
     "Pop": "",
     "Custom sound to override default notification sound": "",
     "Can be found on:": "",
-    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": ""
+    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "",
+    "CopyToClipboardError": ""
 }
