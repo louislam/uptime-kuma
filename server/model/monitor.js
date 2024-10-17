@@ -1336,8 +1336,10 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     const heartbeatJSON = bean.toJSON();
-                    const monitorData = [{ id: monitor.id,
-                        active: monitor.active
+                    const monitorData = [{
+                        id: monitor.id,
+                        name: monitor.name,
+                        active: monitor.active,
                     }];
                     const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.

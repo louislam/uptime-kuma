@@ -26,7 +26,15 @@ async function sendNotificationList(socket) {
     for (let bean of list) {
         let notificationObject = bean.export();
         notificationObject.isDefault = (notificationObject.isDefault === 1);
+        notificationObject.usePathAsName = (notificationObject.usePathAsName === 1);
         notificationObject.active = (notificationObject.active === 1);
+
+        const configObject = JSON.parse(notificationObject.config);
+        if ( !("usePathAsName" in configObject)) {
+            configObject.usePathAsName = notificationObject.usePathAsName;
+            notificationObject.config = JSON.stringify(configObject);
+        }
+
         result.push(notificationObject);
     }
 
