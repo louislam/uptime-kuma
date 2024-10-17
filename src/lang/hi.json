@@ -1044,5 +1044,6 @@
     "Can be found on:": "",
     "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "",
     "Expected Value": "",
-    "Enable DNS Cache": ""
+    "Enable DNS Cache": "",
+    "CopyToClipboardError": ""
 }
