@@ -1075,5 +1075,6 @@
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
     "setupDatabaseEmbeddedMariaDB": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "CopyToClipboardError": ""
 }
