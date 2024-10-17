@@ -1079,5 +1079,6 @@
     "Secret AccessKey": "",
     "Session Token": "",
     "jsonQueryDescription": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "CopyToClipboardError": ""
 }
