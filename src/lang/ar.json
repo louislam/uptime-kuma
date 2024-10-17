@@ -1052,5 +1052,6 @@
     "cronExpression": "",
     "cronSchedule": "",
     "chromeExecutable": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "CopyToClipboardError": ""
 }
