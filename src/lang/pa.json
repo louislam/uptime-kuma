@@ -1046,5 +1046,6 @@
     "Custom sound to override default notification sound": "",
     "Can be found on:": "",
     "The phone number of the recipient in E.164 format.": "",
-    "ignoreTLSError": ""
+    "ignoreTLSError": "",
+    "CopyToClipboardError": ""
 }
