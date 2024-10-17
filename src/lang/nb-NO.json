@@ -1064,5 +1064,6 @@
     "plugin": "",
     "grpcMethodDescription": "",
     "ntfyPriorityHelptextAllExceptDown": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "CopyToClipboardError": ""
 }
