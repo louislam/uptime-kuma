@@ -1082,5 +1082,6 @@
     "Badge Type": "",
     "Badge Duration (in hours)": "",
     "Badge Label Color": "",
-    "ntfyPriorityHelptextAllExceptDown": ""
+    "ntfyPriorityHelptextAllExceptDown": "",
+    "CopyToClipboardError": ""
 }
