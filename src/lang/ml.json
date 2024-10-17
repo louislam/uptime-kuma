@@ -1043,5 +1043,6 @@
     "Uptime": "",
     "Cert Exp.": "",
     "Monitor": "",
-    "pushViewCode": ""
+    "pushViewCode": "",
+    "CopyToClipboardError": ""
 }
