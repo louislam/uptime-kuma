@@ -1048,5 +1048,6 @@
     "Notification Sound": "",
     "enableGRPCTls": "",
     "ntfyPriorityHelptextAllEvents": "",
-    "Pick a SASL Mechanism...": ""
+    "Pick a SASL Mechanism...": "",
+    "CopyToClipboardError": ""
 }
