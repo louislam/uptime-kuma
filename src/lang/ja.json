@@ -672,5 +672,10 @@
     "emailCustomBody": "カスタム本文",
     "emailTemplateServiceName": "サービス名",
     "smtpLiquidIntroduction": "次の 2 つのテンプレート・フィールドは Liquid テンプレート言語で記述できます。これらの使い方は {0} にあります。以下は利用可能な変数です：",
-    "emailTemplateStatus": "ステータス"
+    "emailTemplateStatus": "ステータス",
+    "now": "現在",
+    "time ago": "{0}前",
+    "-year": "年",
+    "Json Query Expression": "Jsonクエリ表現",
+    "ignoredTLSError": "TLS/SSLエラーは無視されました"
 }
