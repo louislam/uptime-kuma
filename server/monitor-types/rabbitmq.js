@@ -10,16 +10,16 @@ class RabbitMqMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        // HTTP basic auth
-        let basicAuthHeader = {};
-        basicAuthHeader = {
-            "Authorization": "Basic " + this.encodeBase64(monitor.rabbitmqUsername, monitor.rabbitmqPassword),
-        };
+        let baseUrls = [];
+        try {
+            baseUrls = JSON.parse(monitor.rabbitmqNodes);
+        }
+        catch (error) {
+            throw new Error("Invalid RabbitMQ Nodes");
+        }
 
-        let status = DOWN;
-        let msg = "";
-
-        for (const baseUrl of JSON.parse(monitor.rabbitmqNodes)) {
+        heartbeat.status = DOWN;
+        for (const baseUrl of baseUrls) {
             try {
                 const options = {
                     url: new URL("/api/health/checks/alarms", baseUrl).href,
@@ -27,8 +27,9 @@ class RabbitMqMonitorType extends MonitorType {
                     timeout: monitor.timeout * 1000,
                     headers: {
                         "Accept": "application/json",
-                        ...(basicAuthHeader),
+                        "Authorization": "Basic " + Buffer.from(`${monitor.rabbitmqUsername || ""}:${monitor.rabbitmqPassword || ""}`).toString("base64"),
                     },
+                    // Use axios signal to handle connection timeouts https://stackoverflow.com/a/74739938
                     signal: axiosAbortSignal((monitor.timeout + 10) * 1000),
                     validateStatus: () => true,
                 };
@@ -36,36 +37,22 @@ class RabbitMqMonitorType extends MonitorType {
                 const res = await axios.request(options);
                 log.debug("monitor", `[${monitor.name}] Axios Response: status=${res.status} body=${JSON.stringify(res.data)}`);
                 if (res.status === 200) {
-                    status = UP;
-                    msg = "OK";
+                    heartbeat.status = UP;
+                    heartbeat.msg = "OK";
                     break;
                 } else {
-                    msg = `${res.status} - ${res.statusText}`;
+                    heartbeat.msg = `${res.status} - ${res.statusText}`;
                 }
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    msg = "Request timed out";
+                    heartbeat.msg = "Request timed out";
                     log.debug("monitor", `[${monitor.name}] Request timed out`);
                 } else {
                     log.debug("monitor", `[${monitor.name}] Axios Error: ${JSON.stringify(error.message)}`);
-                    msg = error.message;
+                    heartbeat.msg = error.message;
                 }
             }
         }
-
-        heartbeat.msg = msg;
-        heartbeat.status = status;
-    }
-
-    /**
-     * Encode user and password to Base64 encoding
-     * for HTTP "basic" auth, as per RFC-7617
-     * @param {string|null} user - The username (nullable if not changed by a user)
-     * @param {string|null} pass - The password (nullable if not changed by a user)
-     * @returns {string} Encoded Base64 string
-     */
-    encodeBase64(user, pass) {
-        return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
     }
 }
 

@@ -258,17 +258,17 @@
                                         @tag="addRabbitmqNode"
                                     ></VueMultiselect>
                                     <div class="form-text">
-                                        {{ $t("rabbitmqNodesDescription") }}
+                                        {{ $t("rabbitmqNodesDescription", ["https://node1.rabbitmq.com:15672"]) }}
                                     </div>
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="rabbitmqUsername" class="form-label">RabbitMQ {{ $t("Username") }}</label>
+                                    <label for="rabbitmqUsername" class="form-label">RabbitMQ {{ $t("RabbitMQ Username") }}</label>
                                     <input id="rabbitmqUsername" v-model="monitor.rabbitmqUsername" type="text" required class="form-control">
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="rabbitmqPassword" class="form-label">RabbitMQ {{ $t("Password") }}</label>
+                                    <label for="rabbitmqPassword" class="form-label">{{ $t("RabbitMQ Password") }}</label>
                                     <HiddenInput id="rabbitmqPassword" v-model="monitor.rabbitmqPassword" autocomplete="false" required="true"></HiddenInput>
                                 </div>
                             </template>
