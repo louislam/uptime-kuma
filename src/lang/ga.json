@@ -1015,5 +1015,6 @@
     "less than": "níos lú ná",
     "greater than": "níos mó ná",
     "less than or equal to": "níos lú ná nó cothrom le",
-    "record": "taifead"
+    "record": "taifead",
+    "shrinkDatabaseDescriptionSqlite": "Bunachar sonraí truicear {vacuum} le haghaidh SQLite. Tá {auto_vacuum} cumasaithe cheana féin ach ní dhéanann sé seo scoilt ar an mbunachar sonraí ná athphacáil leathanaigh aonair an bhunachair sonraí mar a dhéanann an t-ordú {vacuum}."
 }

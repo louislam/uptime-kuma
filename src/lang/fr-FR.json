@@ -1050,5 +1050,6 @@
     "greater than": "supérieur à",
     "less than or equal to": "inférieur ou égal à",
     "greater than or equal to": "supérieur ou égal à",
-    "record": "enregistrer"
+    "record": "enregistrer",
+    "shrinkDatabaseDescriptionSqlite": "Déclencher la commande {vacuum} pour la base de données SQLite. {auto_vacuum} est déjà activé, mais cela ne défragmente pas la base de données ni ne réorganise les pages individuelles de la base de données de la même manière que la commande {vacuum}."
 }
