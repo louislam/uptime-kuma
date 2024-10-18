@@ -33,6 +33,27 @@ class Discord extends NotificationProvider {
                 return okMsg;
             }
 
+            const address = this.extractAddress(monitorJSON);
+
+            const embedFields = [
+                {
+                    name: "Service Name",
+                    value: monitorJSON["name"],
+                },
+                ...((address !== "" && address !== monitorJSON["hostname"]) ? [{
+                    name: "Service URL",
+                    value: address
+                }] : []),
+                {
+                    name: `Time (${heartbeatJSON["timezone"]})`,
+                    value: heartbeatJSON["localDateTime"],
+                },
+                {
+                    name: "Error",
+                    value: msg,
+                },
+            ];
+
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
@@ -41,24 +62,7 @@ class Discord extends NotificationProvider {
                         title: "❌ Your service " + monitorJSON["name"] + " went down. ❌",
                         color: 16711680,
                         timestamp: heartbeatJSON["time"],
-                        fields: [
-                            {
-                                name: "Service Name",
-                                value: monitorJSON["name"],
-                            },
-                            {
-                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
-                            },
-                            {
-                                name: `Time (${heartbeatJSON["timezone"]})`,
-                                value: heartbeatJSON["localDateTime"],
-                            },
-                            {
-                                name: "Error",
-                                value: heartbeatJSON["msg"] == null ? "N/A" : heartbeatJSON["msg"],
-                            },
-                        ],
+                        fields: embedFields,
                     }],
                 };
                 if (notification.discordChannelType === "createNewForumPost") {
@@ -78,24 +82,7 @@ class Discord extends NotificationProvider {
                         title: "✅ Your service " + monitorJSON["name"] + " is up! ✅",
                         color: 65280,
                         timestamp: heartbeatJSON["time"],
-                        fields: [
-                            {
-                                name: "Service Name",
-                                value: monitorJSON["name"],
-                            },
-                            {
-                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
-                            },
-                            {
-                                name: `Time (${heartbeatJSON["timezone"]})`,
-                                value: heartbeatJSON["localDateTime"],
-                            },
-                            {
-                                name: "Ping",
-                                value: heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms",
-                            },
-                        ],
+                        fields: embedFields,
                     }],
                 };
 
