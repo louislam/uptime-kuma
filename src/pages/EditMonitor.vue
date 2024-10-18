@@ -530,6 +530,9 @@
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
+                                 <div class="form-text">
+                                    {{ monitor.humanReadableInterval }}
+                                </div>
                             </div>
 
                             <div class="my-3">
@@ -1073,7 +1076,7 @@ import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
-import { hostNameRegexPattern } from "../util-frontend";
+import { hostNameRegexPattern, rtf } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 import { version } from "../../package.json";
@@ -1090,6 +1093,7 @@ const monitorDefaults = {
     url: "https://",
     method: "GET",
     interval: 60,
+    humanReadableInterval: rtf.secondsToHumanReadableFormat(60),
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
@@ -1472,6 +1476,8 @@ message HealthCheckResponse {
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
+            // Converting monitor.interval to human readable format.
+            this.monitor.humanReadableInterval = rtf.secondsToHumanReadableFormat(value);
         },
 
         "monitor.timeout"(value, oldValue) {
