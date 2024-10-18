@@ -23,7 +23,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 
 ## ⭐ Features
 
-- Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Ping / DNS Record / Push / Steam Game Server / Docker Containers
+- Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Ping / DNS Record / Push / Steam Game Server / Docker Containers / Docker Services
 - Fancy, Reactive, Fast UI/UX
 - Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
 - 20-second intervals
