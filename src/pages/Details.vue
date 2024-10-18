@@ -184,7 +184,7 @@
             <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
                 <div class="row">
                     <div class="col">
-                        <PingChart :monitor-id="monitor.id" />
+                        <PingChart :monitor-id="monitor.id" :monitor-timezone="monitor.timezone" />
                     </div>
                 </div>
             </div>

@@ -40,6 +40,11 @@ export default {
             type: Number,
             required: true,
         },
+        /** Monitor Timezone */
+        monitorTimezone: {
+            type: String,
+            required: true,
+        },
     },
     data() {
         return {
@@ -251,7 +256,7 @@ export default {
         },
         // push datapoint to chartData
         pushDatapoint(datapoint, avgPingData, minPingData, maxPingData, downData, colorData) {
-            const x = this.$root.unixToDateTime(datapoint.timestamp);
+            const x = this.$root.unixToDateTime(datapoint.timestamp, this.monitorTimezone);
 
             // Show ping values if it was up in this period
             avgPingData.push({
@@ -306,7 +311,7 @@ export default {
             let heartbeatList = (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
 
             for (const beat of heartbeatList) {
-                const beatTime = this.$root.toDayjs(beat.time);
+                const beatTime = this.$root.toDayjs(beat.time, this.monitorTimezone);
                 const x = beatTime.format("YYYY-MM-DD HH:mm:ss");
 
                 // Insert empty datapoint to separate big gaps
@@ -407,7 +412,7 @@ export default {
                         continue;
                     }
 
-                    const beatTime = this.$root.unixToDayjs(datapoint.timestamp);
+                    const beatTime = this.$root.unixToDayjs(datapoint.timestamp, this.monitorTimezone);
 
                     // Insert empty datapoint to separate big gaps
                     if (lastHeartbeatTime && monitorInterval) {
@@ -427,7 +432,7 @@ export default {
 
                             const gapX = [
                                 lastHeartbeatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
-                                this.$root.unixToDateTime(datapoint.timestamp + 60),
+                                this.$root.unixToDateTime(datapoint.timestamp + 60, this.monitorTimezone),
                             ];
 
                             for (const x of gapX) {

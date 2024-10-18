@@ -154,6 +154,7 @@ class Monitor extends BeanModel {
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
             conditions: JSON.parse(this.conditions),
+            timezone: this.timezone,
         };
 
         if (includeSensitiveData) {
