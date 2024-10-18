@@ -213,3 +213,62 @@ export function getToastErrorTimeout() {
 
     return errorTimeout;
 }
+
+class RelativeTimeFormatter {
+    // Default locale and options
+    constructor() {
+        this.locale = currentLocale();
+        this.options = { numeric: "auto" };
+        this.rtf = new Intl.RelativeTimeFormat(this.locale, this.options);
+    }
+
+    // Method to get the singleton instance
+    getInstance() {
+        return this.rtf;
+    }
+
+    // Method to update the locale and options
+    updateLocale(locale, options = {}) {
+        this.locale = locale;
+        this.options = { ...this.options, ...options };
+        this.rtf = new Intl.RelativeTimeFormat(this.locale, this.options);
+    }
+
+    secondsToHumanReadableFormat(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor(((seconds % 86400) % 3600) / 60);
+        const secs = ((seconds % 86400) % 3600) % 60;
+        const parts = [];
+        // Build the formatted string from parts
+        const toFormattedPart = (value, unitOfTime) => {
+            const res = this.getInstance().formatToParts(value, unitOfTime);
+            console.log(res)
+            let formattedString = res
+                .map((part, _idx) => {
+                    if ((part.type === "literal" || part.type === "integer") && _idx > 0) {
+                        return part.value;
+                    }
+                    return "";
+                })
+                .join("");
+            formattedString = formattedString.trim();
+            parts.push(formattedString);
+        };
+
+        if (days > 0) toFormattedPart(days, "days");
+        if (hours > 0) toFormattedPart(hours, "hour");
+        if (minutes > 0) toFormattedPart(minutes, "minute");
+        if (secs > 0) toFormattedPart(secs, "second");
+
+        const result =
+            parts.length > 0
+                ? `~ ${parts.join(" ")}`
+                : this.getInstance().format(0, "second"); // Handle case for 0 seconds
+
+        return result;
+    }
+}
+
+export const rtf = new RelativeTimeFormatter();
+
