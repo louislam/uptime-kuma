@@ -1051,5 +1051,7 @@
     "From":"From",
     "Can be found on:": "Can be found on: {0}",
     "The phone number of the recipient in E.164 format.": "The phone number of the recipient in E.164 format.",
-    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.":"Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies."
+    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.":"Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.",
+    "SendGrid API Key": "SendGrid API Key",
+    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas"
 }
