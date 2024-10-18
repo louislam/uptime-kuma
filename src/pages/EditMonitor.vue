@@ -64,6 +64,9 @@
                                         <option value="mqtt">
                                             MQTT
                                         </option>
+                                        <option value="rabbitmq">
+                                            RabbitMQ
+                                        </option>
                                         <option value="kafka-producer">
                                             Kafka Producer
                                         </option>
@@ -230,6 +233,43 @@
                                     <label class="form-check-label" for="kafkaProducerAllowAutoTopicCreation">
                                         {{ $t("Enable Kafka Producer Auto Topic Creation") }}
                                     </label>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'rabbitmq'">
+                                <!-- RabbitMQ Nodes List -->
+                                <div class="my-3">
+                                    <label for="rabbitmqNodes" class="form-label">{{ $t("RabbitMQ Nodes") }}</label>
+                                    <VueMultiselect
+                                        id="rabbitmqNodes"
+                                        v-model="monitor.rabbitmqNodes"
+                                        :required="true"
+                                        :multiple="true"
+                                        :options="[]"
+                                        :placeholder="$t('Enter the list of nodes')"
+                                        :tag-placeholder="$t('Press Enter to add node')"
+                                        :max-height="500"
+                                        :taggable="true"
+                                        :show-no-options="false"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :preselect-first="false"
+                                        @tag="addRabbitmqNode"
+                                    ></VueMultiselect>
+                                    <div class="form-text">
+                                        {{ $t("rabbitmqNodesDescription", ["https://node1.rabbitmq.com:15672"]) }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="rabbitmqUsername" class="form-label">RabbitMQ {{ $t("RabbitMQ Username") }}</label>
+                                    <input id="rabbitmqUsername" v-model="monitor.rabbitmqUsername" type="text" required class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="rabbitmqPassword" class="form-label">{{ $t("RabbitMQ Password") }}</label>
+                                    <HiddenInput id="rabbitmqPassword" v-model="monitor.rabbitmqPassword" autocomplete="false" required="true"></HiddenInput>
                                 </div>
                             </template>
 
@@ -549,7 +589,7 @@
                             </div>
 
                             <!-- Timeout: HTTP / Keyword / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp' || monitor.type === 'rabbitmq'" class="my-3">
                                 <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
@@ -1122,6 +1162,9 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     remote_browser: null,
+    rabbitmqNodes: [],
+    rabbitmqUsername: "",
+    rabbitmqPassword: "",
     conditions: []
 };
 
@@ -1709,6 +1752,10 @@ message HealthCheckResponse {
             this.monitor.kafkaProducerBrokers.push(newBroker);
         },
 
+        addRabbitmqNode(newNode) {
+            this.monitor.rabbitmqNodes.push(newNode);
+        },
+
         /**
          * Validate form input
          * @returns {boolean} Is the form input valid?
@@ -1733,6 +1780,17 @@ message HealthCheckResponse {
             if (this.monitor.type === "docker") {
                 if (this.monitor.docker_host == null) {
                     toast.error(this.$t("DockerHostRequired"));
+                    return false;
+                }
+            }
+
+            if (this.monitor.type === "rabbitmq") {
+                if (this.monitor.rabbitmqNodes.length === 0) {
+                    toast.error(this.$t("rabbitmqNodesRequired"));
+                    return false;
+                }
+                if (!this.monitor.rabbitmqNodes.every(node => node.startsWith("http://" || node.startsWith("https://")))) {
+                    toast.error(this.$t("rabbitmqNodesInvalid"));
                     return false;
                 }
             }

@@ -718,6 +718,8 @@ let needSetup = false;
 
                 monitor.conditions = JSON.stringify(monitor.conditions);
 
+                monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
+
                 bean.import(monitor);
                 bean.user_id = socket.userID;
 
@@ -868,6 +870,9 @@ let needSetup = false;
                 bean.snmpOid = monitor.snmpOid;
                 bean.jsonPathOperator = monitor.jsonPathOperator;
                 bean.timeout = monitor.timeout;
+                bean.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
+                bean.rabbitmqUsername = monitor.rabbitmqUsername;
+                bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
 
                 bean.validate();
