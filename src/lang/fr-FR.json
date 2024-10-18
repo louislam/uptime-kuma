@@ -1053,7 +1053,7 @@
     "record": "enregistrer",
     "shrinkDatabaseDescriptionSqlite": "Déclencher la commande {vacuum} pour la base de données SQLite. {auto_vacuum} est déjà activé, mais cela ne défragmente pas la base de données ni ne réorganise les pages individuelles de la base de données de la même manière que la commande {vacuum}.",
     "ignoredTLSError": "Les erreurs TLS/SSL ont été ignorées",
-    "CopyToClipboardError": "Impossible de copier dans Clipbard : {error}",
+    "CopyToClipboardError": "Impossible de copier dans le presse-papiers : {error}",
     "CurlDebugInfo": "Pour déboguer la sonde, vous pouvez soit le coller dans le terminal de votre propre machine, soit dans le terminal de la machine sur lequel kuma de disponibilité s'exécute et voir ce qui vous est demandé. {newiline} Veuillez être conscient des différences de réseau telles que {firewalls}, {dns_resolvers}. ou {docker_networks}.",
     "Notification Channel": "Canal de notification",
     "Alphanumerical string and hyphens only": "Chaîne alphanumérique et tirets uniquement",
