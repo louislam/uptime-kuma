@@ -65,7 +65,7 @@
                                             MQTT
                                         </option>
                                         <option value="rabbitmq">
-                                            RabbitMQ
+                                            RabbitMQ (using Management Plugin)
                                         </option>
                                         <option value="kafka-producer">
                                             Kafka Producer
