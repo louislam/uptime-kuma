@@ -1057,5 +1057,7 @@
     "rabbitmqNodesRequired": "Please set the nodes for this monitor.",
     "rabbitmqNodesInvalid": "Please use a complete URL for RabbitMQ nodes.",
     "RabbitMQ Username": "RabbitMQ Username",
-    "RabbitMQ Password": "RabbitMQ Password"
+    "RabbitMQ Password": "RabbitMQ Password",
+    "SendGrid API Key": "SendGrid API Key",
+    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas"
 }
