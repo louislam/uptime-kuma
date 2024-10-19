@@ -235,15 +235,10 @@ class RelativeTimeFormatter {
     /**
      * Method to update the instance locale and options
      * @param {string} locale Localization identifier (e.g., "en", "ar-sy") to update the instance with.
-     * @param {object} options Instance options to be passed.
      * @returns {void} No return value.
      */
-    updateLocale(locale, options = {}) {
+    updateLocale(locale) {
         this.locale = locale;
-        this.options = {
-            ...this.options,
-            ...options,
-        };
         this.rtf = new Intl.RelativeTimeFormat(this.locale, this.options);
     }
 
@@ -266,7 +261,6 @@ class RelativeTimeFormatter {
          */
         const toFormattedPart = (value, unitOfTime) => {
             const res = this.getInstance().formatToParts(value, unitOfTime);
-            console.log(res);
             let formattedString = res
                 .map((part, _idx) => {
                     if (
@@ -297,7 +291,7 @@ class RelativeTimeFormatter {
 
         const result =
             parts.length > 0
-                ? `~ ${parts.join(" ")}`
+                ? `${parts.join(" ")}`
                 : this.getInstance().format(0, "second"); // Handle case for 0 seconds
 
         return result;
