@@ -1,6 +1,6 @@
 <template>
     <transition name="slide-fade" appear>
-        <MonitorList :scrollbar="true" />
+        <MonitorList v-if="$root.isMobile" :scrollbar="true" />
     </transition>
 </template>
 
