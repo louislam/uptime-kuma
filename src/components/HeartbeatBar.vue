@@ -286,6 +286,7 @@ export default {
 .hp-bar-big {
     .beat-hover-area {
         display: inline-block;
+
         &:not(.empty):hover {
             transition: all ease-in-out 0.15s;
             opacity: 0.8;
