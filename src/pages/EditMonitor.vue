@@ -1789,7 +1789,7 @@ message HealthCheckResponse {
                     toast.error(this.$t("rabbitmqNodesRequired"));
                     return false;
                 }
-                if (!this.monitor.rabbitmqNodes.every(node => node.startsWith("http://" || node.startsWith("https://")))) {
+                if (!this.monitor.rabbitmqNodes.every(node => node.startsWith("http://") || node.startsWith("https://"))) {
                     toast.error(this.$t("rabbitmqNodesInvalid"));
                     return false;
                 }
