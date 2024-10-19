@@ -530,7 +530,7 @@
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
-                                 <div class="form-text">
+                                <div class="form-text">
                                     {{ monitor.humanReadableInterval }}
                                 </div>
                             </div>

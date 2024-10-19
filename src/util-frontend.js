@@ -215,38 +215,64 @@ export function getToastErrorTimeout() {
 }
 
 class RelativeTimeFormatter {
-    // Default locale and options
+    /**
+     * Default locale and options for Relative Time Formatter
+     */
     constructor() {
         this.locale = currentLocale();
         this.options = { numeric: "auto" };
         this.rtf = new Intl.RelativeTimeFormat(this.locale, this.options);
     }
 
-    // Method to get the singleton instance
+    /**
+     * Method to get the singleton instance
+     * @returns {object} Intl.RelativeTimeFormat instance
+     */
     getInstance() {
         return this.rtf;
     }
 
-    // Method to update the locale and options
+    /**
+     * Method to update the instance locale and options
+     * @param {string} locale Localization identifier (e.g., "en", "ar-sy") to update the instance with.
+     * @param {object} options Instance options to be passed.
+     * @returns {void} No return value.
+     */
     updateLocale(locale, options = {}) {
         this.locale = locale;
-        this.options = { ...this.options, ...options };
+        this.options = {
+            ...this.options,
+            ...options,
+        };
         this.rtf = new Intl.RelativeTimeFormat(this.locale, this.options);
     }
 
+    /**
+     * Method to convert seconds into Human readable format
+     * @param {number} seconds Receive value in seconds.
+     * @returns {string} String converted to Days Mins Seconds Format
+     */
     secondsToHumanReadableFormat(seconds) {
         const days = Math.floor(seconds / 86400);
         const hours = Math.floor((seconds % 86400) / 3600);
         const minutes = Math.floor(((seconds % 86400) % 3600) / 60);
         const secs = ((seconds % 86400) % 3600) % 60;
         const parts = [];
-        // Build the formatted string from parts
+        /**
+         * Build the formatted string from parts
+         * @param {number} value Receives value in seconds.
+         * @param {string} unitOfTime Expected unit of time after conversion.
+         * @returns {void}
+         */
         const toFormattedPart = (value, unitOfTime) => {
             const res = this.getInstance().formatToParts(value, unitOfTime);
-            console.log(res)
+            console.log(res);
             let formattedString = res
                 .map((part, _idx) => {
-                    if ((part.type === "literal" || part.type === "integer") && _idx > 0) {
+                    if (
+                        (part.type === "literal" || part.type === "integer") &&
+                        _idx > 0
+                    ) {
                         return part.value;
                     }
                     return "";
@@ -256,10 +282,18 @@ class RelativeTimeFormatter {
             parts.push(formattedString);
         };
 
-        if (days > 0) toFormattedPart(days, "days");
-        if (hours > 0) toFormattedPart(hours, "hour");
-        if (minutes > 0) toFormattedPart(minutes, "minute");
-        if (secs > 0) toFormattedPart(secs, "second");
+        if (days > 0) {
+            toFormattedPart(days, "days");
+        }
+        if (hours > 0) {
+            toFormattedPart(hours, "hour");
+        }
+        if (minutes > 0) {
+            toFormattedPart(minutes, "minute");
+        }
+        if (secs > 0) {
+            toFormattedPart(secs, "second");
+        }
 
         const result =
             parts.length > 0

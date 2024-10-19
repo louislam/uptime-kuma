@@ -661,7 +661,7 @@ export default {
         secondsToHumanReadableFormat(seconds) {
             return rtf.secondsToHumanReadableFormat(seconds);
         }
-    
+
     },
 };
 </script>
