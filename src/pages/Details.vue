@@ -285,7 +285,7 @@ import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
-import { getResBaseURL, rtf } from "../util-frontend";
+import { getResBaseURL, relativeTimeFormatter } from "../util-frontend";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
@@ -659,7 +659,7 @@ export default {
         },
 
         secondsToHumanReadableFormat(seconds) {
-            return rtf.secondsToHumanReadableFormat(seconds);
+            return relativeTimeFormatter.secondsToHumanReadableFormat(seconds);
         }
 
     },

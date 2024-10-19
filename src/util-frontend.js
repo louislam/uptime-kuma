@@ -219,17 +219,8 @@ class RelativeTimeFormatter {
      * Default locale and options for Relative Time Formatter
      */
     constructor() {
-        this.locale = currentLocale();
         this.options = { numeric: "auto" };
-        this.rtf = new Intl.RelativeTimeFormat(this.locale, this.options);
-    }
-
-    /**
-     * Method to get the singleton instance
-     * @returns {object} Intl.RelativeTimeFormat instance
-     */
-    getInstance() {
-        return this.rtf;
+        this.instance = new Intl.RelativeTimeFormat(currentLocale(), this.options);
     }
 
     /**
@@ -238,8 +229,7 @@ class RelativeTimeFormatter {
      * @returns {void} No return value.
      */
     updateLocale(locale) {
-        this.locale = locale;
-        this.rtf = new Intl.RelativeTimeFormat(this.locale, this.options);
+        this.instance = new Intl.RelativeTimeFormat(locale, this.options);
     }
 
     /**
@@ -255,24 +245,24 @@ class RelativeTimeFormatter {
         const parts = [];
         /**
          * Build the formatted string from parts
+         * 1. Get the relative time formatted parts from the instance.
+         * 2. Filter out the relevant parts literal (unit of time) or integer (value).
+         * 3. Map out the required values.
          * @param {number} value Receives value in seconds.
          * @param {string} unitOfTime Expected unit of time after conversion.
          * @returns {void}
          */
         const toFormattedPart = (value, unitOfTime) => {
-            const res = this.getInstance().formatToParts(value, unitOfTime);
-            let formattedString = res
-                .map((part, _idx) => {
-                    if (
+            const partsArray = this.instance.formatToParts(value, unitOfTime);
+            const filteredParts = partsArray
+                .filter(
+                    (part, index) =>
                         (part.type === "literal" || part.type === "integer") &&
-                        _idx > 0
-                    ) {
-                        return part.value;
-                    }
-                    return "";
-                })
-                .join("");
-            formattedString = formattedString.trim();
+                        index > 0
+                )
+                .map((part) => part.value);
+
+            const formattedString = filteredParts.join("").trim();
             parts.push(formattedString);
         };
 
@@ -289,14 +279,12 @@ class RelativeTimeFormatter {
             toFormattedPart(secs, "second");
         }
 
-        const result =
-            parts.length > 0
-                ? `${parts.join(" ")}`
-                : this.getInstance().format(0, "second"); // Handle case for 0 seconds
-
-        return result;
+        if (parts.length > 0) {
+            return `${parts.join(" ")}`;
+        }
+        return this.instance.format(0, "second"); // Handle case for 0 seconds
     }
 }
 
-export const rtf = new RelativeTimeFormatter();
+export const relativeTimeFormatter = new RelativeTimeFormatter();
 
