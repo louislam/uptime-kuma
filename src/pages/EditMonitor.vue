@@ -65,7 +65,7 @@
                                             MQTT
                                         </option>
                                         <option value="rabbitmq">
-                                            RabbitMQ (using Management Plugin)
+                                            {{ $t("RabbitMQ (using Management Plugin)") }}
                                         </option>
                                         <option value="kafka-producer">
                                             Kafka Producer
