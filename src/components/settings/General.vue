@@ -37,6 +37,42 @@
                 </select>
             </div>
 
+            <!-- Time Format -->
+            <div class="mb-4">
+                <label class="form-label">
+                    {{ $t("Time Format") }}
+                </label>
+
+                <div class="form-check">
+                    <input
+                        id="timeFormatIndex12Hour"
+                        v-model="settings.use12HourTimeFormat"
+                        class="form-check-input"
+                        type="radio"
+                        name="timeFormatIndex"
+                        :value="true"
+                        required
+                    />
+                    <label class="form-check-label" for="timeFormatIndex12Hour">
+                        {{ $t("12-hour") }}
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input
+                        id="timeFormatIndex24Hour"
+                        v-model="settings.use12HourTimeFormat"
+                        class="form-check-input"
+                        type="radio"
+                        name="timeFormatIndex"
+                        :value="false"
+                        required
+                    />
+                    <label class="form-check-label" for="timeFormatIndex24Hour">
+                        {{ $t("24-hour") }}
+                    </label>
+                </div>
+            </div>
+
             <!-- Search Engine -->
             <div class="mb-4">
                 <label class="form-label">
@@ -259,6 +295,7 @@ export default {
          */
         saveGeneral() {
             localStorage.timezone = this.$root.userTimezone;
+            this.$root.use12HourTimeFormat = this.settings.use12HourTimeFormat;
             this.saveSettings();
         },
         /**
