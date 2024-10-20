@@ -93,6 +93,11 @@
                                         </option>
                                     </optgroup>
                                 </select>
+                                <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
+                                    <a href="https://www.rabbitmq.com/management" target="_blank" rel="noopener noreferrer">
+                                        RabbitMQ documentation
+                                    </a>.
+                                </i18n-t>
                             </div>
 
                             <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
