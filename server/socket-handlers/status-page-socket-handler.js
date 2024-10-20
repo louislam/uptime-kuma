@@ -160,6 +160,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             //statusPage.published = ;
             //statusPage.search_engine_index = ;
             statusPage.show_tags = config.showTags;
+            statusPage.show_locale_selector = config.showLocaleSelector;
+            statusPage.default_locale = config.defaultLocale;
             //statusPage.password = null;
             statusPage.footer_text = config.footerText;
             statusPage.custom_css = config.customCSS;
