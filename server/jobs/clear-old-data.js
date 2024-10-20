@@ -2,6 +2,7 @@ const { R } = require("redbean-node");
 const { log } = require("../../src/util");
 const { setSetting, setting } = require("../util-server");
 const Database = require("../database");
+const { Settings } = require("../settings");
 
 const DEFAULT_KEEP_PERIOD = 180;
 
@@ -11,11 +12,28 @@ const DEFAULT_KEEP_PERIOD = 180;
  */
 
 const clearOldData = async () => {
+
+    // TODO: Temporary disable for testing
+    return;
+
+    /*
+    * TODO:
+    * Since we have aggregated table now, we don't need so much data in heartbeat table.
+    * But we still need to keep the important rows, because they contain the message.
+    *
+    * In the heartbeat table:
+    *    - important rows: keep according to the setting (keepDataPeriodDays) (default 180 days)
+    *    - not important rows: keep 2 days
+    *
+    * stat_* tables:
+    *   - keep according to the setting (keepDataPeriodDays) (default 180 days)
+    */
+
     let period = await setting("keepDataPeriodDays");
 
     // Set Default Period
     if (period == null) {
-        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
+        await Settings.set("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
         period = DEFAULT_KEEP_PERIOD;
     }
 
