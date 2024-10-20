@@ -869,6 +869,7 @@ let needSetup = false;
                 bean.jsonPathOperator = monitor.jsonPathOperator;
                 bean.timeout = monitor.timeout;
                 bean.conditions = JSON.stringify(monitor.conditions);
+                bean.timezone = monitor.timezone;
 
                 bean.validate();
 
