@@ -297,10 +297,10 @@ export default {
             background-color: $primary;
             border-radius: $border-radius;
 
-                        /*
-                        pointer-events needs to be changed because
-                        tooltip momentarily disappears when crossing between .beat-hover-area and .beat
-                        */
+            /*
+            pointer-events needs to be changed because
+            tooltip momentarily disappears when crossing between .beat-hover-area and .beat
+            */
             pointer-events: none;
 
             &.empty {
