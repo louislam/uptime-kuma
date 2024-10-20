@@ -213,3 +213,78 @@ export function getToastErrorTimeout() {
 
     return errorTimeout;
 }
+
+class RelativeTimeFormatter {
+    /**
+     * Default locale and options for Relative Time Formatter
+     */
+    constructor() {
+        this.options = { numeric: "auto" };
+        this.instance = new Intl.RelativeTimeFormat(currentLocale(), this.options);
+    }
+
+    /**
+     * Method to update the instance locale and options
+     * @param {string} locale Localization identifier (e.g., "en", "ar-sy") to update the instance with.
+     * @returns {void} No return value.
+     */
+    updateLocale(locale) {
+        this.instance = new Intl.RelativeTimeFormat(locale, this.options);
+    }
+
+    /**
+     * Method to convert seconds into Human readable format
+     * @param {number} seconds Receive value in seconds.
+     * @returns {string} String converted to Days Mins Seconds Format
+     */
+    secondsToHumanReadableFormat(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor(((seconds % 86400) % 3600) / 60);
+        const secs = ((seconds % 86400) % 3600) % 60;
+        const parts = [];
+        /**
+         * Build the formatted string from parts
+         * 1. Get the relative time formatted parts from the instance.
+         * 2. Filter out the relevant parts literal (unit of time) or integer (value).
+         * 3. Map out the required values.
+         * @param {number} value Receives value in seconds.
+         * @param {string} unitOfTime Expected unit of time after conversion.
+         * @returns {void}
+         */
+        const toFormattedPart = (value, unitOfTime) => {
+            const partsArray = this.instance.formatToParts(value, unitOfTime);
+            const filteredParts = partsArray
+                .filter(
+                    (part, index) =>
+                        (part.type === "literal" || part.type === "integer") &&
+                        index > 0
+                )
+                .map((part) => part.value);
+
+            const formattedString = filteredParts.join("").trim();
+            parts.push(formattedString);
+        };
+
+        if (days > 0) {
+            toFormattedPart(days, "days");
+        }
+        if (hours > 0) {
+            toFormattedPart(hours, "hour");
+        }
+        if (minutes > 0) {
+            toFormattedPart(minutes, "minute");
+        }
+        if (secs > 0) {
+            toFormattedPart(secs, "second");
+        }
+
+        if (parts.length > 0) {
+            return `${parts.join(" ")}`;
+        }
+        return this.instance.format(0, "second"); // Handle case for 0 seconds
+    }
+}
+
+export const relativeTimeFormatter = new RelativeTimeFormatter();
+
