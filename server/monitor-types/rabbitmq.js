@@ -18,10 +18,15 @@ class RabbitMqMonitorType extends MonitorType {
         }
 
         heartbeat.status = DOWN;
-        for (const baseUrl of baseUrls) {
+        for (let baseUrl of baseUrls) {
             try {
+                // Without a trailing slash, path in baseUrl will be removed. https://example.com/api -> https://example.com
+                if ( !baseUrl.endsWith("/") ) {
+                    baseUrl += "/";
+                }
                 const options = {
-                    url: new URL("/api/health/checks/alarms", baseUrl).href,
+                    // Do not start with slash, it will strip the trailing slash from baseUrl
+                    url: new URL("api/health/checks/alarms/", baseUrl).href,
                     method: "get",
                     timeout: monitor.timeout * 1000,
                     headers: {
