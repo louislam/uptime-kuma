@@ -65,7 +65,7 @@
                                             MQTT
                                         </option>
                                         <option value="rabbitmq">
-                                            {{ $t("RabbitMQ") }}
+                                            RabbitMQ
                                         </option>
                                         <option value="kafka-producer">
                                             Kafka Producer
@@ -94,9 +94,11 @@
                                     </optgroup>
                                 </select>
                                 <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
-                                    <a href="https://www.rabbitmq.com/management" target="_blank" rel="noopener noreferrer">
-                                        RabbitMQ documentation
-                                    </a>.
+                                    <template #rabitmq_documentation>
+                                        <a href="https://www.rabbitmq.com/management" target="_blank" rel="noopener noreferrer">
+                                            RabbitMQ documentation
+                                        </a>
+                                    </template>
                                 </i18n-t>
                             </div>
 
