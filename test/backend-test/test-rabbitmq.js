@@ -1,8 +1,8 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { RabbitMQContainer } = require("@testcontainers/rabbitmq");
-const { RabbitMqMonitorType } = require("../../../server/monitor-types/rabbitmq");
-const { UP, DOWN, PENDING } = require("../../../src/util");
+const { RabbitMqMonitorType } = require("../../server/monitor-types/rabbitmq");
+const { UP, DOWN, PENDING } = require("../../src/util");
 
 describe("RabbitMQ Single Node", {
     skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
