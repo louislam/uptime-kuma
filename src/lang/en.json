@@ -1055,7 +1055,7 @@
     "RabbitMQ Nodes": "RabbitMQ Management Nodes",
     "rabbitmqNodesDescription": "Enter the URL for the RabbitMQ management nodes including protocol and port. Example: {0}",
     "rabbitmqNodesRequired": "Please set the nodes for this monitor.",
-    "rabbitmqNodesInvalid": "Please use a complete URL for RabbitMQ nodes.",
+    "rabbitmqNodesInvalid": "Please use a fully qualified (starting with 'http') URL for RabbitMQ nodes.",
     "RabbitMQ Username": "RabbitMQ Username",
     "RabbitMQ Password": "RabbitMQ Password",
     "RabbitMQ (using Management Plugin)": "RabbitMQ (using Management Plugin)",
