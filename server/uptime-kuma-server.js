@@ -115,6 +115,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["mqtt"] = new MqttMonitorType();
         UptimeKumaServer.monitorTypeList["snmp"] = new SNMPMonitorType();
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
+        UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -552,4 +553,5 @@ const { DnsMonitorType } = require("./monitor-types/dns");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
 const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
+const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
 const Monitor = require("./model/monitor");

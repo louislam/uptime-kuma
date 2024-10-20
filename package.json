@@ -155,6 +155,7 @@
         "@playwright/test": "~1.39.0",
         "@popperjs/core": "~2.10.2",
         "@testcontainers/hivemq": "^10.13.1",
+        "@testcontainers/rabbitmq": "^10.13.2",
         "@types/bootstrap": "~5.1.9",
         "@types/node": "^20.8.6",
         "@typescript-eslint/eslint-plugin": "^6.7.5",
