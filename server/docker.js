@@ -156,15 +156,38 @@ class DockerHost {
         let certPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameCert);
         let keyPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameKey);
 
-        if (dockerType === "tcp" && fs.existsSync(caPath) && fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-            let ca = fs.readFileSync(caPath);
-            let key = fs.readFileSync(keyPath);
-            let cert = fs.readFileSync(certPath);
-            certOptions = {
-                ca,
-                key,
-                cert
-            };
+        let key;
+        let cert;
+        let ca;
+
+        if (dockerType === "tcp") {
+            if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+                // Load the key and cert
+                key = fs.readFileSync(keyPath);
+                cert = fs.readFileSync(certPath);
+
+                if (fs.existsSync(caPath)) {
+                    // Condition 1: Mutual TLS with self-signed certificate
+                    ca = fs.readFileSync(caPath);
+                    certOptions = {
+                        ca,
+                        key,
+                        cert
+                    };
+                } else {
+                    // Condition 2: Mutual TLS with certificate in the standard trust store
+                    certOptions = {
+                        key,
+                        cert
+                    };
+                }
+            } else if (fs.existsSync(caPath)) {
+                // Condition 3: TLS using self-signed certificate (without mutual TLS)
+                ca = fs.readFileSync(caPath);
+                certOptions = {
+                    ca
+                };
+            }
         }
 
         return {
