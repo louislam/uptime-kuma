@@ -35,7 +35,8 @@ class RabbitMqMonitorType extends MonitorType {
                     },
                     // Use axios signal to handle connection timeouts https://stackoverflow.com/a/74739938
                     signal: axiosAbortSignal((monitor.timeout + 10) * 1000),
-                    validateStatus: () => true,
+                    // Capture reason for 503 status
+                    validateStatus: (status) => status === 200 || status === 503,
                 };
                 log.debug("monitor", `[${monitor.name}] Axios Request: ${JSON.stringify(options)}`);
                 const res = await axios.request(options);
@@ -44,6 +45,8 @@ class RabbitMqMonitorType extends MonitorType {
                     heartbeat.status = UP;
                     heartbeat.msg = "OK";
                     break;
+                } else if (res.status === 503) {
+                    heartbeat.msg = res.data.reason;
                 } else {
                     heartbeat.msg = `${res.status} - ${res.statusText}`;
                 }
