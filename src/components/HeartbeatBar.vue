@@ -296,6 +296,7 @@ export default {
         .beat {
             background-color: $primary;
             border-radius: $border-radius;
+            /* Added because the tooltip momentarily disappears when crossing between the beat-hover-area and the beat */
             pointer-events: none;
 
             &.empty {
