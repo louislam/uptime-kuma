@@ -12,7 +12,6 @@ const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
 const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
-const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const radiusClient = require("node-radius-client");
@@ -519,46 +518,6 @@ exports.redisPingAsync = function (dsn, rejectUnauthorized) {
             }).catch(error => reject(error));
         });
     });
-};
-
-/**
- * Retrieve value of setting based on key
- * @param {string} key Key of setting to retrieve
- * @returns {Promise<any>} Value
- * @deprecated Use await Settings.get(key)
- */
-exports.setting = async function (key) {
-    return await Settings.get(key);
-};
-
-/**
- * Sets the specified setting to specified value
- * @param {string} key Key of setting to set
- * @param {any} value Value to set to
- * @param {?string} type Type of setting
- * @returns {Promise<void>}
- */
-exports.setSetting = async function (key, value, type = null) {
-    await Settings.set(key, value, type);
-};
-
-/**
- * Get settings based on type
- * @param {string} type The type of setting
- * @returns {Promise<Bean>} Settings of requested type
- */
-exports.getSettings = async function (type) {
-    return await Settings.getSettings(type);
-};
-
-/**
- * Set settings based on type
- * @param {string} type Type of settings to set
- * @param {object} data Values of settings
- * @returns {Promise<void>}
- */
-exports.setSettings = async function (type, data) {
-    await Settings.setSettings(type, data);
 };
 
 // ssl-checker by @dyaa

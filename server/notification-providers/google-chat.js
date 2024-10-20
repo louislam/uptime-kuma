@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setting } = require("../util-server");
 const { getMonitorRelativeURL, UP } = require("../../src/util");
+const { Settings } = require("../settings");
 
 class GoogleChat extends NotificationProvider {
     name = "GoogleChat";
@@ -45,7 +45,7 @@ class GoogleChat extends NotificationProvider {
             }
 
             // add button for monitor link if available
-            const baseURL = await setting("primaryBaseURL");
+            const baseURL = await Settings.get("primaryBaseURL");
             if (baseURL) {
                 const urlPath = monitorJSON ? getMonitorRelativeURL(monitorJSON.id) : "/";
                 sectionWidgets.push({

@@ -2,7 +2,7 @@ const { R } = require("redbean-node");
 const HttpProxyAgent = require("http-proxy-agent");
 const HttpsProxyAgent = require("https-proxy-agent");
 const SocksProxyAgent = require("socks-proxy-agent");
-const { debug } = require("../src/util");
+const { log } = require("../src/util");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const { CookieJar } = require("tough-cookie");
 const { createCookieAgent } = require("http-cookie-agent/http");
@@ -110,9 +110,9 @@ class Proxy {
             proxyOptions.auth = `${proxy.username}:${proxy.password}`;
         }
 
-        debug(`Proxy Options: ${JSON.stringify(proxyOptions)}`);
-        debug(`HTTP Agent Options: ${JSON.stringify(httpAgentOptions)}`);
-        debug(`HTTPS Agent Options: ${JSON.stringify(httpsAgentOptions)}`);
+        log.debug("update-proxy", `Proxy Options: ${JSON.stringify(proxyOptions)}`);
+        log.debug("update-proxy", `HTTP Agent Options: ${JSON.stringify(httpAgentOptions)}`);
+        log.debug("update-proxy", `HTTPS Agent Options: ${JSON.stringify(httpsAgentOptions)}`);
 
         switch (proxy.protocol) {
             case "http":

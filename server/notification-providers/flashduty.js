@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { UP, DOWN, getMonitorRelativeURL } = require("../../src/util");
-const { setting } = require("../util-server");
+const { Settings } = require("../settings");
 const successMessage = "Sent Successfully.";
 
 class FlashDuty extends NotificationProvider {
@@ -84,7 +84,7 @@ class FlashDuty extends NotificationProvider {
             }
         };
 
-        const baseURL = await setting("primaryBaseURL");
+        const baseURL = await Settings.get("primaryBaseURL");
         if (baseURL && monitorInfo) {
             options.client = "Uptime Kuma";
             options.client_url = baseURL + getMonitorRelativeURL(monitorInfo.id);
