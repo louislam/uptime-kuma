@@ -1052,6 +1052,13 @@
     "Can be found on:": "Can be found on: {0}",
     "The phone number of the recipient in E.164 format.": "The phone number of the recipient in E.164 format.",
     "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.":"Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.",
+    "RabbitMQ Nodes": "RabbitMQ Management Nodes",
+    "rabbitmqNodesDescription": "Enter the URL for the RabbitMQ management nodes including protocol and port. Example: {0}",
+    "rabbitmqNodesRequired": "Please set the nodes for this monitor.",
+    "rabbitmqNodesInvalid": "Please use a fully qualified (starting with 'http') URL for RabbitMQ nodes.",
+    "RabbitMQ Username": "RabbitMQ Username",
+    "RabbitMQ Password": "RabbitMQ Password",
+    "rabbitmqHelpText": "To use the monitor, you will need to enable the Management Plugin in your RabbitMQ setup. For more information, please consult the {rabitmq_documentation}.",
     "nextCheckIn": "Next in ",
     "SendGrid API Key": "SendGrid API Key",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas"
