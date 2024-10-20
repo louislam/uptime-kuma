@@ -1045,5 +1045,6 @@
     "New Group": "Grup Baru",
     "Group Name": "Nama Grup",
     "OAuth2: Client Credentials": "OAuth2: Kredensial Klien",
-    "Authentication Method": "Metode Autentikasi"
+    "Authentication Method": "Metode Autentikasi",
+    "shrinkDatabaseDescriptionSqlite": "Memicu pangkalan data {vacuum} untuk SQLite. {auto_vacuum} sudah diaktifkan, tetapi tidak mendefragmentasi pangkalan data atau mengemas ulang halaman individual dari pangkalan data seperti yang dilakukan oleh perintah {vacuum}."
 }

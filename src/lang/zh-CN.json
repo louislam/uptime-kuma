@@ -1052,5 +1052,6 @@
     "less than or equal to": "不多于",
     "greater than or equal to": "不少于",
     "record": "记录",
-    "jsonQueryDescription": "使用 JSON 查询解析并提取服务器 JSON 响应中的特定数据，或者，如果不期望得到 JSON 响应，则可使用 \"$\" 获取原始响应。然后将结果转为字符串并与期望值进行字符串比较。有关更多文档，请参阅 {0}，亦可使用 {1} 来尝试查询。"
+    "jsonQueryDescription": "使用 JSON 查询解析并提取服务器 JSON 响应中的特定数据，或者，如果不期望得到 JSON 响应，则可使用 \"$\" 获取原始响应。然后将结果转为字符串并与期望值进行字符串比较。有关更多文档，请参阅 {0}，亦可使用 {1} 来尝试查询。",
+    "shrinkDatabaseDescriptionSqlite": "触发 SQLite 数据库的 {vacuum} 命令。{auto_vacuum} 已经启用，但它不会像 {vacuum} 命令那样对数据库进行碎片整理，也不会重新打包各个数据库页面。"
 }

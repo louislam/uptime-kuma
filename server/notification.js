@@ -11,6 +11,7 @@ const CallMeBot = require("./notification-providers/call-me-bot");
 const SMSC = require("./notification-providers/smsc");
 const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
+const Elks = require("./notification-providers/46elks");
 const Feishu = require("./notification-providers/feishu");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
@@ -67,6 +68,7 @@ const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
+const SendGrid = require("./notification-providers/send-grid");
 
 class Notification {
 
@@ -95,6 +97,7 @@ class Notification {
             new SMSC(),
             new DingDing(),
             new Discord(),
+            new Elks(),
             new Feishu(),
             new FreeMobile(),
             new GoogleChat(),
@@ -151,6 +154,7 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
+            new SendGrid()
         ];
         for (let item of list) {
             if (! item.name) {

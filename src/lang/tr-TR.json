@@ -1050,5 +1050,6 @@
     "less than": "daha küçük",
     "greater than or equal to": "büyük veya eşit",
     "record": "kayıt",
-    "jsonQueryDescription": "JSON sorgusunu kullanarak sunucunun JSON yanıtından belirli verileri ayrıştırın ve çıkarın. JSON beklemiyorsanız ham yanıt için \"$\" sembolünü kullanın. Sonuç daha sonra metin olarak beklenen değerle karşılaştırılır. Belgeler için {0}'a bakın ve sorgularla denemeler yapmak için {1}'i kullanın."
+    "jsonQueryDescription": "JSON sorgusunu kullanarak sunucunun JSON yanıtından belirli verileri ayrıştırın ve çıkarın. JSON beklemiyorsanız ham yanıt için \"$\" sembolünü kullanın. Sonuç daha sonra metin olarak beklenen değerle karşılaştırılır. Belgeler için {0}'a bakın ve sorgularla denemeler yapmak için {1}'i kullanın.",
+    "shrinkDatabaseDescriptionSqlite": "SQLite için {vacuum} veritabanını tetikle. {auto_vacuum} zaten etkin ancak bu, {vacuum} komutunun yaptığı gibi veritabanını birleştirmez veya tek tek veritabanı sayfalarını yeniden paketlemez."
 }

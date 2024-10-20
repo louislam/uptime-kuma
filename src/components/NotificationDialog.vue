@@ -118,6 +118,7 @@ export default {
                 "clicksendsms": "ClickSend SMS",
                 "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",
+                "Elks": "46elks",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
                 "gotify": "Gotify",
@@ -164,6 +165,7 @@ export default {
                 "whapi": "WhatsApp (Whapi)",
                 "gtxmessaging": "GtxMessaging",
                 "Cellsynt": "Cellsynt",
+                "SendGrid": "SendGrid"
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
