@@ -17,6 +17,8 @@ class SerwerSMS extends NotificationProvider {
                     "Content-Type": "application/json",
                 }
             };
+
+            // Use phone as first option
             let data = {
                 "username": notification.serwersmsUsername,
                 "password": notification.serwersmsPassword,
@@ -26,6 +28,13 @@ class SerwerSMS extends NotificationProvider {
             };
 
             let resp = await axios.post(url, data, config);
+
+            if (!resp.data.success) {
+                // If unsuccessful, try using group_id
+                data.phone = null; // Clear phone number
+                data.group_id = notification.serwersmsPhoneNumber;
+                resp = await axios.post(url, data, config);
+            }
 
             if (!resp.data.success) {
                 if (resp.data.error) {
