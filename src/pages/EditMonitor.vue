@@ -1042,7 +1042,7 @@
                             class="btn btn-outline-primary"
                             type="button"
                             :disabled="processing"
-                            @click.stop="modal.show()"
+                            @click="$refs.debugMonitorDialog.show()"
                         >
                             {{ $t("Debug") }}
                         </button>
@@ -1057,58 +1057,10 @@
             <RemoteBrowserDialog ref="remoteBrowserDialog" />
         </div>
     </transition>
-    <div ref="modal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <textarea id="curl-debug" v-model="curlCommand" class="form-control mb-3" readonly wrap="off"></textarea>
-                    <button id="debug-copy-btn" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-3 border-0" type="button" @click.stop="copyToClipboard">
-                        <font-awesome-icon icon="copy" />
-                    </button>
-                    <i18n-t keypath="CurlDebugInfo" tag="p" class="form-text">
-                        <template #newiline>
-                            <br>
-                        </template>
-                        <template #firewalls>
-                            <a href="https://xkcd.com/2259/" target="_blank">{{ $t('firewalls') }}</a>
-                        </template>
-                        <template #dns_resolvers>
-                            <a href="https://www.reddit.com/r/sysadmin/comments/rxho93/thank_you_for_the_running_its_always_dns_joke_its/" target="_blank">{{ $t('dns resolvers') }}</a>
-                        </template>
-                        <template #docker_networks>
-                            <a href="https://youtu.be/bKFMS5C4CG0" target="_blank">{{ $t('docker networks') }}</a>
-                        </template>
-                    </i18n-t>
-                    <div v-if="monitor.authMethod === 'oauth2-cc'" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
-                        <div role="img" aria-label="Warning:">⚠️</div>
-                        <i18n-t keypath="CurlDebugInfoOAuth2CCUnsupported" tag="div">
-                            <template #curl>
-                                <code>curl</code>
-                            </template>
-                            <template #newline>
-                                <br>
-                            </template>
-                            <template #oauth2_bearer>
-                                <code>--oauth2-bearer TOKEN</code>
-                            </template>
-                        </i18n-t>
-                    </div>
-                    <div v-if="monitor.proxyId" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
-                        <div role="img" aria-label="Warning:">⚠️</div>
-                        <i18n-t keypath="CurlDebugInfoProxiesUnsupported" tag="div">
-                            <template #curl>
-                                <code>curl</code>
-                            </template>
-                        </i18n-t>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <DebugMonitorDialog ref="debugMonitorDialog" :monitor="monitor" />
 </template>
 
 <script>
-import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
@@ -1123,8 +1075,7 @@ import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } fro
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
-import { version } from "../../package.json";
-const userAgent = `'Uptime-Kuma/${version}'`;
+import DebugMonitorDialog from "../components/DebugMonitorDialog.vue";
 
 const toast = useToast();
 
@@ -1177,6 +1128,7 @@ const monitorDefaults = {
 
 export default {
     components: {
+        DebugMonitorDialog,
         HiddenInput,
         ActionSelect,
         ProxyDialog,
@@ -1219,58 +1171,9 @@ export default {
     },
 
     computed: {
-
-        curlCommand() {
-            const command = [ "curl", "--verbose", "--head", "--request", this.monitor.method, "\\\n", "--user-agent", userAgent, "\\\n" ];
-            if (this.monitor.ignoreTls) {
-                command.push("--insecure", "\\\n");
-            }
-            if (this.monitor.headers) {
-                try {
-                    // trying to parse the supplied data as json to trim whitespace
-                    for (const [ key, value ] of Object.entries(JSON.parse(this.monitor.headers))) {
-                        command.push("--header", `'${key}: ${value}'`, "\\\n");
-                    }
-                } catch (e) {
-                    command.push("--header", `'${this.monitor.headers}'`, "\\\n");
-                }
-            }
-            if (this.monitor.authMethod === "basic") {
-                command.push("--user", `${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}`, "--basic", "\\\n");
-            } else if (this.monitor.authmethod === "mtls") {
-                command.push("--cacert", `'${this.monitor.tlsCa}'`, "\\\n", "--key", `'${this.monitor.tlsKey}'`, "\\\n", "--cert", `'${this.monitor.tlsCert}'`, "\\\n");
-            } else if (this.monitor.authMethod === "ntlm") {
-                command.push("--user", `'${this.monitor.authDomain ? `${this.monitor.authDomain}/` : ""}${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}'`, "--ntlm", "\\\n");
-            }
-            if (this.monitor.body && this.monitor.httpBodyEncoding === "json") {
-                let json = "";
-                try {
-                    // trying to parse the supplied data as json to trim whitespace
-                    json = JSON.stringify(JSON.parse(this.monitor.body));
-                } catch (e) {
-                    json = this.monitor.body;
-                }
-                command.push("--header", "'Content-Type: application/json'", "\\\n", "--data", `'${json}'`, "\\\n");
-            } else if (this.monitor.body && this.monitor.httpBodyEncoding === "xml") {
-                command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}'`, "\\\n");
-            }
-            if (this.monitor.maxredirects) {
-                command.push("--location", "--max-redirs", this.monitor.maxredirects, "\\\n");
-            }
-            if (this.monitor.timeout) {
-                command.push("--max-time", this.monitor.timeout, "\\\n");
-            }
-            if (this.monitor.maxretries) {
-                command.push("--retry", this.monitor.maxretries, "\\\n");
-            }
-            command.push("--url", this.monitor.url);
-            return command.join(" ");
-        },
-
         ipRegex() {
-
             // Allow to test with simple dns server with port (127.0.0.1:5300)
-            if (! isDev) {
+            if (!isDev) {
                 return this.ipRegexPattern;
             }
             return null;
@@ -1623,7 +1526,6 @@ message HealthCheckResponse {
         },
     },
     mounted() {
-        this.modal = new Modal(this.$refs.modal);
         this.init();
 
         let acceptedStatusCodeOptions = [
@@ -1664,14 +1566,6 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        async copyToClipboard() {
-            try {
-                await navigator.clipboard.writeText(this.curlCommand);
-                toast.success(this.$t("CopyToClipboardSuccess"));
-            } catch (err) {
-                toast.error(this.$t("CopyToClipboardError", { error: err.message }));
-            }
-        },
         /**
          * Initialize the edit monitor form
          * @returns {void}
@@ -1975,8 +1869,4 @@ message HealthCheckResponse {
         min-height: 200px;
     }
 
-    #curl-debug {
-        font-family: monospace;
-        overflow: auto;
-    }
 </style>
