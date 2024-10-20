@@ -33,7 +33,6 @@ class RabbitMqMonitorType extends MonitorType {
                         "Accept": "application/json",
                         "Authorization": "Basic " + Buffer.from(`${monitor.rabbitmqUsername || ""}:${monitor.rabbitmqPassword || ""}`).toString("base64"),
                     },
-                    // Use axios signal to handle connection timeouts https://stackoverflow.com/a/74739938
                     signal: axiosAbortSignal((monitor.timeout + 10) * 1000),
                     // Capture reason for 503 status
                     validateStatus: (status) => status === 200 || status === 503,
