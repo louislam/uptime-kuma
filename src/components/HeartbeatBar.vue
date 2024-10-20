@@ -4,11 +4,17 @@
             <div
                 v-for="(beat, index) in shortBeatList"
                 :key="index"
-                class="beat"
-                :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
-                :style="beatStyle"
+                class="beat-hover-area"
+                :class="{ 'empty': (beat === 0) }"
+                :style="beatHoverAreaStyle"
                 :title="getBeatTitle(beat)"
-            />
+            >
+                <div
+                    class="beat"
+                    :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
+                    :style="beatStyle"
+                />
+            </div>
         </div>
         <div
             v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
@@ -47,7 +53,7 @@ export default {
             beatWidth: 10,
             beatHeight: 30,
             hoverScale: 1.5,
-            beatMargin: 4,
+            beatHoverAreaPadding: 4,
             move: false,
             maxBeat: -1,
         };
@@ -123,7 +129,7 @@ export default {
 
         barStyle() {
             if (this.move && this.shortBeatList.length > this.maxBeat) {
-                let width = -(this.beatWidth + this.beatMargin * 2);
+                let width = -(this.beatWidth + this.beatHoverAreaPadding * 2);
 
                 return {
                     transition: "all ease-in-out 0.25s",
@@ -137,12 +143,17 @@ export default {
 
         },
 
+        beatHoverAreaStyle() {
+            return {
+                padding: this.beatHoverAreaPadding + "px",
+                "--hover-scale": this.hoverScale,
+            };
+        },
+
         beatStyle() {
             return {
                 width: this.beatWidth + "px",
                 height: this.beatHeight + "px",
-                margin: this.beatMargin + "px",
-                "--hover-scale": this.hoverScale,
             };
         },
 
@@ -152,7 +163,7 @@ export default {
          */
         timeStyle() {
             return {
-                "margin-left": this.numPadding * (this.beatWidth + this.beatMargin * 2) + "px",
+                "margin-left": this.numPadding * (this.beatWidth + this.beatHoverAreaPadding * 2) + "px",
             };
         },
 
@@ -219,20 +230,20 @@ export default {
         if (this.size !== "big") {
             this.beatWidth = 5;
             this.beatHeight = 16;
-            this.beatMargin = 2;
+            this.beatHoverAreaPadding = 2;
         }
 
         // Suddenly, have an idea how to handle it universally.
         // If the pixel * ratio != Integer, then it causes render issue, round it to solve it!!
         const actualWidth = this.beatWidth * window.devicePixelRatio;
-        const actualMargin = this.beatMargin * window.devicePixelRatio;
+        const actualHoverAreaPadding = this.beatHoverAreaPadding * window.devicePixelRatio;
 
         if (!Number.isInteger(actualWidth)) {
             this.beatWidth = Math.round(actualWidth) / window.devicePixelRatio;
         }
 
-        if (!Number.isInteger(actualMargin)) {
-            this.beatMargin = Math.round(actualMargin) / window.devicePixelRatio;
+        if (!Number.isInteger(actualHoverAreaPadding)) {
+            this.beatHoverAreaPadding = Math.round(actualHoverAreaPadding) / window.devicePixelRatio;
         }
 
         window.addEventListener("resize", this.resize);
@@ -245,7 +256,7 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
-                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatMargin * 2));
+                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
             }
         },
 
@@ -273,31 +284,40 @@ export default {
 }
 
 .hp-bar-big {
-    .beat {
+    .beat-hover-area {
         display: inline-block;
-        background-color: $primary;
-        border-radius: $border-radius;
-
-        &.empty {
-            background-color: aliceblue;
-        }
-
-        &.down {
-            background-color: $danger;
-        }
-
-        &.pending {
-            background-color: $warning;
-        }
-
-        &.maintenance {
-            background-color: $maintenance;
-        }
 
         &:not(.empty):hover {
             transition: all ease-in-out 0.15s;
             opacity: 0.8;
             transform: scale(var(--hover-scale));
+        }
+
+        .beat {
+            background-color: $primary;
+            border-radius: $border-radius;
+
+            /*
+            pointer-events needs to be changed because
+            tooltip momentarily disappears when crossing between .beat-hover-area and .beat
+            */
+            pointer-events: none;
+
+            &.empty {
+                background-color: aliceblue;
+            }
+
+            &.down {
+                background-color: $danger;
+            }
+
+            &.pending {
+                background-color: $warning;
+            }
+
+            &.maintenance {
+                background-color: $maintenance;
+            }
         }
     }
 }
