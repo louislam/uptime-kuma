@@ -1056,5 +1056,6 @@
     "greater than": "більше, ніж",
     "less than or equal to": "менше або дорівнює",
     "greater than or equal to": "більше або дорівнює",
-    "record": "запис"
+    "record": "запис",
+    "shrinkDatabaseDescriptionSqlite": "Запускає команду {vacuum} для бази даних SQLite. Команда {auto_vacuum} вже увімкнена, але вона не дефрагментує базу даних і не перепаковує окремі сторінки бази даних так, як це робить команда {vacuum}."
 }
