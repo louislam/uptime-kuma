@@ -2,7 +2,7 @@
 
 const fs = require("fs");
 
-let path = "../src/lang";
+let path = "./src/lang";
 
 // list directories in the lang directory
 let jsonFileList = fs.readdirSync(path);
@@ -23,3 +23,5 @@ for (let jsonFile of jsonFileList) {
         process.exit(1);
     }
 }
+
+console.log("All lang json files are formatted correctly.");
