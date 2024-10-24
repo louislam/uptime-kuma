@@ -288,6 +288,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ok: true,
                 msg: "successAdded",
                 msgi18n: true,
+                slug: slug
             });
 
         } catch (error) {
