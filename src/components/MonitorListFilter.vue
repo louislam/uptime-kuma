@@ -118,8 +118,9 @@
         </MonitorListFilterDropdown>
         <MonitorListFilterDropdown :filterActive="filterState.tags?.length > 0">
             <template #status>
+                <!-- Prevent rendering Tag component if invalid tag is passed from query params -->
                 <Tag
-                    v-if="filterState.tags?.length === 1"
+                    v-if="filterState.tags?.length === 1 && tagsList.find(tag => tag.id === filterState.tags[0])"
                     :item="tagsList.find(tag => tag.id === filterState.tags[0])"
                     :size="'sm'"
                 />

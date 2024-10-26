@@ -89,17 +89,11 @@ export default {
     },
     data() {
         return {
-            searchText: "",
             selectMode: false,
             selectAll: false,
             disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
-            filterState: {
-                status: null,
-                active: null,
-                tags: null,
-            }
         };
     },
     computed: {
@@ -162,6 +156,55 @@ export default {
 
         selectedMonitorCount() {
             return Object.keys(this.selectedMonitors).length;
+        },
+
+        /**
+         * Returns applied filters based on query params.
+         * @returns {object} The current filter state.
+         */
+        filterState() {
+            // Since query params are always strings, convert them to the correct type
+            let status = this.$route.query["status"] || null;
+            if (status) {
+                if (!Array.isArray(status)) {
+                    status = [ status ];
+                }
+                status = status.map(Number);
+            }
+            // Casting to boolean does not work here as Boolean("false") === true
+            let active = this.$route.query["active"] || null;
+            if (active) {
+                if (!Array.isArray(active)) {
+                    active = [ active ];
+                }
+                active = active.map(val => val === "true");
+            }
+            let tags = this.$route.query["tags"] || null;
+            if (tags) {
+                if (!Array.isArray(tags)) {
+                    tags = [ tags ];
+                }
+                tags = tags.map(Number);
+            }
+            return {
+                status,
+                active,
+                tags,
+            };
+        },
+
+        searchText: {
+            get() {
+                return this.$route.query.searchText || "";
+            },
+            set(value) {
+                this.$router.replace({
+                    query: {
+                        ...this.$route.query,
+                        searchText: value,
+                    }
+                });
+            }
         },
 
         /**
@@ -243,7 +286,14 @@ export default {
          * @returns {void}
          */
         updateFilter(newFilter) {
-            this.filterState = newFilter;
+            this.$router.replace({
+                query: {
+                    ...this.$route.query,
+                    status: newFilter.status,
+                    active: newFilter.active,
+                    tags: newFilter.tags,
+                },
+            });
         },
         /**
          * Deselect a monitor
