@@ -1,5 +1,5 @@
 # If the image changed, the second stage image should be changed too
-FROM node:20-bookworm-slim AS base2-slim
+FROM node:22-bookworm-slim AS base2-slim
 ARG TARGETPLATFORM
 
 # Specify --no-install-recommends to skip unused dependencies, make the base much smaller!
