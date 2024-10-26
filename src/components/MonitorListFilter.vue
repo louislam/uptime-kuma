@@ -118,7 +118,7 @@
         </MonitorListFilterDropdown>
         <MonitorListFilterDropdown :filterActive="filterState.tags?.length > 0">
             <template #status>
-                <!-- Prevent rendering Tag component if invalid tag is passed from query params -->
+                <!-- Prevent rendering Tag component if tagsList has not been fetched or filterState contains invalid tag -->
                 <Tag
                     v-if="filterState.tags?.length === 1 && tagsList.find(tag => tag.id === filterState.tags[0])"
                     :item="tagsList.find(tag => tag.id === filterState.tags[0])"
