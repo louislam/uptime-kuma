@@ -842,7 +842,7 @@ class Database {
 
     /**
      * Remove all non-important heartbeats from heartbeat table, keep last 24-hour or {KEEP_LAST_ROWS} rows for each monitor
-     * @param {boolean} detailedLog
+     * @param {boolean} detailedLog Log detailed information
      * @returns {Promise<void>}
      */
     static async clearHeartbeatData(detailedLog = false) {
