@@ -980,5 +980,12 @@
     "Group Name": "Nome do Grupo",
     "OAuth2: Client Credentials": "OAuth2: Client Credentials",
     "Authentication Method": "Método de Autenticação",
-    "Authorization Header": "Header de Autorização"
+    "Authorization Header": "Header de Autorização",
+    "ignoredTLSError": "Erros TLS/SSL foram ignorados",
+    "Debug": "Depurar",
+    "Copy": "Copiar",
+    "CopyToClipboardError": "Não foi possível copiar para a área de transferência: {error}",
+    "CopyToClipboardSuccess": "Copiado!",
+    "firewalls": "firewalls",
+    "docker networks": "redes docker"
 }

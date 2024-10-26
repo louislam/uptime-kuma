@@ -971,5 +971,20 @@
     "Select message type": "Выберите тип сообщения",
     "Send to channel": "Отправить в канал",
     "Refresh Interval": "Интервал обновления",
-    "ignoreTLSErrorGeneral": "Игнорировать ошибки TLS/SSL для подключения"
+    "ignoreTLSErrorGeneral": "Игнорировать ошибки TLS/SSL для подключения",
+    "CurlDebugInfoOAuth2CCUnsupported": "Полная поддержка потока клиентских учетных данных OAuth отсутствует в {curl}.{newline}Пожалуйста, получите токен доступа и передайте его через параметр {oauth2_bearer}.",
+    "now": "сейчас",
+    "time ago": "{0} назад",
+    "Refresh Interval Description": "Страница статуса будет полностью обновляться каждые {0} секунд",
+    "and": "и",
+    "e.g. {discordThreadID}": "например {discordThreadID}",
+    "ignoredTLSError": "Ошибки TLS/SSL были проигнорированы",
+    "Debug": "Отладка",
+    "Copy": "Скопировать",
+    "CopyToClipboardError": "Не удалось скопировать: {error}",
+    "CopyToClipboardSuccess": "Скопировано!",
+    "firewalls": "файрволы",
+    "dns resolvers": "dns резолверы",
+    "docker networks": "докер-сети",
+    "CurlDebugInfoProxiesUnsupported": "Поддержка прокси в верхней {curl} команде в настоящее время не реализована."
 }

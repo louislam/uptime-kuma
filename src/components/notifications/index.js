@@ -66,6 +66,7 @@ import Whapi from "./Whapi.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
 import SIGNL4 from "./SIGNL4.vue";
+import SendGrid from "./SendGrid.vue";
 
 /**
  * Manage all notification form.
@@ -139,7 +140,8 @@ const NotificationFormList = {
     "whapi": Whapi,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
-    "WPush": WPush
+    "WPush": WPush,
+    "SendGrid": SendGrid,
 };
 
 export default NotificationFormList;

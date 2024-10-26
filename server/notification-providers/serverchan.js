@@ -12,8 +12,9 @@ class ServerChan extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         // serverchan3 requires sending via ft07.com
-        const url = String(notification.serverChanSendKey).startsWith("sctp")
-            ? `https://${notification.serverChanSendKey}.push.ft07.com/send`
+        const matchResult = String(notification.serverChanSendKey).match(/^sctp(\d+)t/i);
+        const url = matchResult && matchResult[1]
+            ? `https://${matchResult[1]}.push.ft07.com/send/${notification.serverChanSendKey}.send`
             : `https://sctapi.ftqq.com/${notification.serverChanSendKey}.send`;
 
         try {
