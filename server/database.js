@@ -829,8 +829,7 @@ class Database {
             i++;
         }
 
-        // TODO: Remove all non-important heartbeats from heartbeat table
-        log.info("db", "[DON'T STOP] Deleting all data from heartbeat table");
+        await Database.clearHeartbeatData(true);
 
         await Settings.set("migrateAggregateTableState", "migrated");
 
@@ -838,6 +837,40 @@ class Database {
             log.info("db", "Aggregate Table Migration Completed");
         } else {
             log.info("db", "No data to migrate");
+        }
+    }
+
+    /**
+     * Remove all non-important heartbeats from heartbeat table, keep last 24-hour or {KEEP_LAST_ROWS} rows for each monitor
+     * @param {boolean} detailedLog
+     * @returns {Promise<void>}
+     */
+    static async clearHeartbeatData(detailedLog = false) {
+        let monitors = await R.getAll("SELECT id FROM monitor");
+        const sqlHourOffset = Database.sqlHourOffset();
+
+        for (let monitor of monitors) {
+            if (detailedLog) {
+                log.info("db", "Deleting non-important heartbeats for monitor " + monitor.id);
+            }
+            await R.exec(`
+                DELETE FROM heartbeat
+                WHERE monitor_id = ?
+                AND important = 0
+                AND time < ${sqlHourOffset}
+                AND id NOT IN (
+                    SELECT id
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                    ORDER BY time DESC
+                    LIMIT ?
+                )
+            `, [
+                monitor.id,
+                -24,
+                monitor.id,
+                100,
+            ]);
         }
     }
 

@@ -209,7 +209,7 @@ class UptimeCalculator {
         let flatStatus = this.flatStatus(status);
 
         if (flatStatus === DOWN && ping > 0) {
-            log.warn("uptime-calc", "The ping is not effective when the status is DOWN");
+            log.debug("uptime-calc", "The ping is not effective when the status is DOWN");
         }
 
         let divisionKey = this.getMinutelyKey(date);
