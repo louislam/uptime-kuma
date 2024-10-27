@@ -282,7 +282,7 @@ export default {
         },
         /**
          * Update the MonitorList Filter
-         * @param {object} newFilter Object with new filter
+         * @param {{ status: number[], active: bool, tags: number[] }} newFilter Object with new filter
          * @returns {void}
          */
         updateFilter(newFilter) {
