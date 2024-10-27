@@ -160,7 +160,7 @@ export default {
 
         /**
          * Returns applied filters based on query params.
-         * @returns {object} The current filter state.
+         * @returns {{ status: number[], active: bool, tags: number[] }} The current filter state.
          */
         filterState() {
             // Since query params are always strings, convert them to the correct type
