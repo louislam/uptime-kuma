@@ -9,6 +9,7 @@ const mysql = require("mysql2/promise");
 const { Settings } = require("./settings");
 const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
+const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 
 /**
  * Database & App Data Folder
@@ -382,9 +383,11 @@ class Database {
 
     /**
      * Patch the database
+     * @param {number} port Start the migration server for aggregate tables on this port if provided
+     * @param {string} hostname Start the migration server for aggregate tables on this hostname if provided
      * @returns {Promise<void>}
      */
-    static async patch() {
+    static async patch(port = undefined, hostname = undefined) {
         // Still need to keep this for old versions of Uptime Kuma
         if (Database.dbConfig.type === "sqlite") {
             await this.patchSqlite();
@@ -409,7 +412,7 @@ class Database {
                 await R.exec("PRAGMA foreign_keys = ON");
             }
 
-            await this.migrateAggregateTable();
+            await this.migrateAggregateTable(port, hostname);
 
         } catch (e) {
             // Allow missing patch files for downgrade or testing pr.
@@ -735,9 +738,11 @@ class Database {
      * Normally, it should be in transaction, but UptimeCalculator wasn't designed to be in transaction before that.
      * I don't want to heavily modify the UptimeCalculator, so it is not in transaction.
      * Run `npm run reset-migrate-aggregate-table-state` to reset, in case the migration is interrupted.
+     * @param {number} port Start the migration server on this port if provided
+     * @param {string} hostname Start the migration server on this hostname if provided
      * @returns {Promise<void>}
      */
-    static async migrateAggregateTable() {
+    static async migrateAggregateTable(port, hostname = undefined) {
         log.debug("db", "Enter Migrate Aggregate Table function");
 
         // Add a setting for 2.0.0-dev users to skip this migration
@@ -756,6 +761,18 @@ class Database {
         } else if (migrateState === "migrating") {
             log.warn("db", "Aggregate table migration is already in progress, or it was interrupted");
             throw new Error("Aggregate table migration is already in progress");
+        }
+
+        /**
+         * Start migration server for displaying the migration status
+         * @type {SimpleMigrationServer}
+         */
+        let migrationServer;
+        let msg;
+
+        if (port) {
+            migrationServer = new SimpleMigrationServer();
+            await migrationServer.start(port, hostname);
         }
 
         await Settings.set("migrateAggregateTableState", "migrating");
@@ -777,6 +794,7 @@ class Database {
             let count = countResult.count;
             if (count > 0) {
                 log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
+                await migrationServer?.stop();
                 return;
             }
         }
@@ -811,7 +829,9 @@ class Database {
                 `, [ monitor.monitor_id, date.date ]);
 
                 if (heartbeats.length > 0) {
-                    log.info("db", `[DON'T STOP] Migrating monitor data ${monitor.monitor_id} - ${date.date} [${progressPercent.toFixed(2)}%][${i}/${monitors.length}]`);
+                    msg = `[DON'T STOP] Migrating monitor data ${monitor.monitor_id} - ${date.date} [${progressPercent.toFixed(2)}%][${i}/${monitors.length}]`;
+                    log.info("db", msg);
+                    migrationServer?.update(msg);
                 }
 
                 for (let heartbeat of heartbeats) {
@@ -829,9 +849,13 @@ class Database {
             i++;
         }
 
-        await Database.clearHeartbeatData(true);
+        msg = "Clearing non-important heartbeats";
+        log.info("db", msg);
+        migrationServer?.update(msg);
 
+        await Database.clearHeartbeatData(true);
         await Settings.set("migrateAggregateTableState", "migrated");
+        await migrationServer?.stop();
 
         if (monitors.length > 0) {
             log.info("db", "Aggregate Table Migration Completed");
