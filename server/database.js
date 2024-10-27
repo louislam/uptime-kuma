@@ -191,6 +191,14 @@ class Database {
     }
 
     /**
+     * Get the MySQL2 Knex client
+     * @returns {KumaMySQL2} MySQL2 Knex client
+     */
+    static getMySQL2KnexClient() {
+        return require("./utils/knex/lib/dialects/mysql2/index");
+    }
+
+    /**
      * Connect to the database
      * @param {boolean} testMode Should the connection be started in test mode?
      * @param {boolean} autoloadModels Should models be automatically loaded?
@@ -261,7 +269,7 @@ class Database {
             connection.end();
 
             config = {
-                client: "mysql2",
+                client: Database.getMySQL2KnexClient(),
                 connection: {
                     host: dbConfig.hostname,
                     port: dbConfig.port,
@@ -284,7 +292,7 @@ class Database {
             await embeddedMariaDB.start();
             log.info("mariadb", "Embedded MariaDB started");
             config = {
-                client: "mysql2",
+                client: Database.getMySQL2KnexClient(),
                 connection: {
                     socketPath: embeddedMariaDB.socketPath,
                     user: "node",
