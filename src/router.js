@@ -205,12 +205,11 @@ router.beforeEach((to, from) => {
     // Without this check, the router will be stuck in an infinite loop
     if (to.path !== from.path && !to.redirectedFrom) {
         return {
-            path: to.path,
+            ...to,
             query: {
                 ...to.query,
                 ...from.query,
             },
-            params: to.params,
         };
     }
 });
