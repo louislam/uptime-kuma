@@ -192,8 +192,24 @@ const routes = [
     },
 ];
 
-export const router = createRouter({
+const router = createRouter({
     linkActiveClass: "active",
     history: createWebHistory(),
     routes,
 });
+
+router.beforeEach((to, from) => {
+    // If the path is same, either the query or has has changed so avoid changing query params
+    // Without this check, modifying any query params will be blocked
+    // Check if redirectedFrom is defined to check if this function has already been run
+    // Without this check, the router will be stuck in an infinite loop
+    if (to.path !== from.path && !to.redirectedFrom) {
+        return {
+            path: to.path,
+            query: { ...to.query, ...from.query },
+            params: to.params,
+        }
+    }
+});
+
+export { router };
