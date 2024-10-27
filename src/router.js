@@ -206,9 +206,12 @@ router.beforeEach((to, from) => {
     if (to.path !== from.path && !to.redirectedFrom) {
         return {
             path: to.path,
-            query: { ...to.query, ...from.query },
+            query: {
+                ...to.query,
+                ...from.query,
+            },
             params: to.params,
-        }
+        };
     }
 });
 
