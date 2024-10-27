@@ -775,8 +775,6 @@ class Database {
             await migrationServer.start(port, hostname);
         }
 
-        await Settings.set("migrateAggregateTableState", "migrating");
-
         log.info("db", "Migrating Aggregate Table");
 
         log.info("db", "Getting list of unique monitors");
@@ -798,6 +796,8 @@ class Database {
                 return;
             }
         }
+
+        await Settings.set("migrateAggregateTableState", "migrating");
 
         let progressPercent = 0;
         let part = 100 / monitors.length;
