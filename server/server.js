@@ -1716,7 +1716,7 @@ async function initDatabase(testMode = false) {
     log.info("server", "Connected to the database");
 
     // Patch the database
-    await Database.patch();
+    await Database.patch(port, hostname);
 
     let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
         "jwtSecret",
