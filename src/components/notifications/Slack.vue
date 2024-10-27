@@ -21,6 +21,9 @@
                 <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
             </i18n-t>
             <p style="margin-top: 8px;">
+                {{ $t("aboutUsername", [$t("Username"), $t("Friendly Name")]) }}
+            </p>
+            <p style="margin-top: 8px;">
                 {{ $t("aboutChannelName", [$t("slack")]) }}
             </p>
             <p style="margin-top: 8px;">
