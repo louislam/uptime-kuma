@@ -165,27 +165,21 @@ export default {
         filterState() {
             // Since query params are always strings, convert them to the correct type
             let status = this.$route.query["status"] || [];
-            if (status) {
-                if (!Array.isArray(status)) {
-                    status = [ status ];
-                }
-                status = status.map(Number);
+            if (!Array.isArray(status)) {
+                status = [ status ];
             }
+            status = status.map(Number);
             // Casting to boolean does not work here as Boolean("false") === true
             let active = this.$route.query["active"] || [];
-            if (active) {
-                if (!Array.isArray(active)) {
-                    active = [ active ];
-                }
-                active = active.map(val => val === "true");
+            if (!Array.isArray(active)) {
+                active = [ active ];
             }
+            active = active.map(val => val === "true");
             let tags = this.$route.query["tags"] || [];
-            if (tags) {
-                if (!Array.isArray(tags)) {
-                    tags = [ tags ];
-                }
-                tags = tags.map(Number);
+            if (!Array.isArray(tags)) {
+                tags = [ tags ];
             }
+            tags = tags.map(Number);
             return {
                 status,
                 active,
