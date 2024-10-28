@@ -198,15 +198,11 @@ export default {
                 return this.$route.query.searchText || "";
             },
             set(value) {
-                const newQuery = {
-                    ...this.$route.query,
-                    searchText: value,
-                };
-                if (!value) {
-                    delete newQuery.searchText;
-                }
                 this.$router.replace({
-                    query: newQuery,
+                    query: {
+                        ...this.$route.query,
+                        searchText: value,
+                    }
                 });
             }
         },
@@ -290,22 +286,13 @@ export default {
          * @returns {void}
          */
         updateFilter(newFilter) {
-            let newQuery = {
-                ...this.$route.query,
-                ...newFilter,
-            };
-            if (!newFilter.status || newFilter.status.length === 0) {
-                delete newQuery.status;
-            }
-            if (!newFilter.active || newFilter.active.length === 0) {
-                delete newQuery.active;
-            }
-            if (!newFilter.tags || newFilter.tags.length === 0) {
-                delete newQuery.tags;
-            }
-
             this.$router.replace({
-                query: newQuery,
+                query: {
+                    ...this.$route.query,
+                    status: newFilter.status,
+                    active: newFilter.active,
+                    tags: newFilter.tags,
+                },
             });
         },
         /**
