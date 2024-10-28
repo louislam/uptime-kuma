@@ -10,6 +10,7 @@ const { Settings } = require("./settings");
 const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
+const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
 
 /**
  * Database & App Data Folder
@@ -191,14 +192,6 @@ class Database {
     }
 
     /**
-     * Get the MySQL2 Knex client
-     * @returns {KumaMySQL2} MySQL2 Knex client
-     */
-    static getMySQL2KnexClient() {
-        return require("./utils/knex/lib/dialects/mysql2/index");
-    }
-
-    /**
      * Connect to the database
      * @param {boolean} testMode Should the connection be started in test mode?
      * @param {boolean} autoloadModels Should models be automatically loaded?
@@ -206,6 +199,14 @@ class Database {
      * @returns {Promise<void>}
      */
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
+        // Patch "mysql2" knex client
+        // Workaround: Tried extending the ColumnCompiler class, but it didn't work for unknown reasons, so I override the function via prototype
+        const { getDialectByNameOrAlias } = require("knex/lib/dialects");
+        const mysql2 = getDialectByNameOrAlias("mysql2");
+        mysql2.prototype.columnCompiler = function () {
+            return new KumaColumnCompiler(this, ...arguments);
+        };
+
         const acquireConnectionTimeout = 120 * 1000;
         let dbConfig;
         try {
@@ -269,7 +270,7 @@ class Database {
             connection.end();
 
             config = {
-                client: Database.getMySQL2KnexClient(),
+                client: "mysql2",
                 connection: {
                     host: dbConfig.hostname,
                     port: dbConfig.port,
@@ -292,7 +293,7 @@ class Database {
             await embeddedMariaDB.start();
             log.info("mariadb", "Embedded MariaDB started");
             config = {
-                client: Database.getMySQL2KnexClient(),
+                client: "mysql2",
                 connection: {
                     socketPath: embeddedMariaDB.socketPath,
                     user: "node",
