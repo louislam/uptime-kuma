@@ -1,4 +1,4 @@
-name: json-yaml-validate
+name: validate
 on:
   push:
     branches:
@@ -40,4 +40,4 @@ jobs:
         run: node ./extra/check-lang-json.js
 
       - name: Validate knex migrations filename
-        run: node ./extra/check-knex-filenames.js
+        run: node ./extra/check-knex-filenames.mjs
