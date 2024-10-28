@@ -68,3 +68,5 @@ for (const file of files) {
         process.exit(1);
     }
 }
+
+console.log("All knex filenames are correct.");
