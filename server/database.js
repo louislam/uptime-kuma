@@ -6,6 +6,10 @@ const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
+const { Settings } = require("./settings");
+const { UptimeCalculator } = require("./uptime-calculator");
+const dayjs = require("dayjs");
+const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 
 /**
  * Database & App Data Folder
@@ -379,9 +383,11 @@ class Database {
 
     /**
      * Patch the database
+     * @param {number} port Start the migration server for aggregate tables on this port if provided
+     * @param {string} hostname Start the migration server for aggregate tables on this hostname if provided
      * @returns {Promise<void>}
      */
-    static async patch() {
+    static async patch(port = undefined, hostname = undefined) {
         // Still need to keep this for old versions of Uptime Kuma
         if (Database.dbConfig.type === "sqlite") {
             await this.patchSqlite();
@@ -391,9 +397,23 @@ class Database {
         // https://knexjs.org/guide/migrations.html
         // https://gist.github.com/NigelEarle/70db130cc040cc2868555b29a0278261
         try {
+            // Disable foreign key check for SQLite
+            // Known issue of knex: https://github.com/drizzle-team/drizzle-orm/issues/1813
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA foreign_keys = OFF");
+            }
+
             await R.knex.migrate.latest({
                 directory: Database.knexMigrationsPath,
             });
+
+            // Enable foreign key check for SQLite
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA foreign_keys = ON");
+            }
+
+            await this.migrateAggregateTable(port, hostname);
+
         } catch (e) {
             // Allow missing patch files for downgrade or testing pr.
             if (e.message.includes("the following files are missing:")) {
@@ -708,6 +728,173 @@ class Database {
             return "DATETIME('now', ? || ' hours')";
         } else {
             return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
+        }
+    }
+
+    /**
+     * Migrate the old data in the heartbeat table to the new format (stat_daily, stat_hourly, stat_minutely)
+     * It should be run once while upgrading V1 to V2
+     *
+     * Normally, it should be in transaction, but UptimeCalculator wasn't designed to be in transaction before that.
+     * I don't want to heavily modify the UptimeCalculator, so it is not in transaction.
+     * Run `npm run reset-migrate-aggregate-table-state` to reset, in case the migration is interrupted.
+     * @param {number} port Start the migration server on this port if provided
+     * @param {string} hostname Start the migration server on this hostname if provided
+     * @returns {Promise<void>}
+     */
+    static async migrateAggregateTable(port, hostname = undefined) {
+        log.debug("db", "Enter Migrate Aggregate Table function");
+
+        // Add a setting for 2.0.0-dev users to skip this migration
+        if (process.env.SET_MIGRATE_AGGREGATE_TABLE_TO_TRUE === "1") {
+            log.warn("db", "SET_MIGRATE_AGGREGATE_TABLE_TO_TRUE is set to 1, skipping aggregate table migration forever (for 2.0.0-dev users)");
+            await Settings.set("migrateAggregateTableState", "migrated");
+        }
+
+        let migrateState = await Settings.get("migrateAggregateTableState");
+
+        // Skip if already migrated
+        // If it is migrating, it possibly means the migration was interrupted, or the migration is in progress
+        if (migrateState === "migrated") {
+            log.debug("db", "Migrated aggregate table already, skip");
+            return;
+        } else if (migrateState === "migrating") {
+            log.warn("db", "Aggregate table migration is already in progress, or it was interrupted");
+            throw new Error("Aggregate table migration is already in progress");
+        }
+
+        /**
+         * Start migration server for displaying the migration status
+         * @type {SimpleMigrationServer}
+         */
+        let migrationServer;
+        let msg;
+
+        if (port) {
+            migrationServer = new SimpleMigrationServer();
+            await migrationServer.start(port, hostname);
+        }
+
+        log.info("db", "Migrating Aggregate Table");
+
+        log.info("db", "Getting list of unique monitors");
+
+        // Get a list of unique monitors from the heartbeat table, using raw sql
+        let monitors = await R.getAll(`
+            SELECT DISTINCT monitor_id
+            FROM heartbeat
+            ORDER BY monitor_id ASC
+        `);
+
+        // Stop if stat_* tables are not empty
+        for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
+            let countResult = await R.getRow(`SELECT COUNT(*) AS count FROM ${table}`);
+            let count = countResult.count;
+            if (count > 0) {
+                log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
+                await migrationServer?.stop();
+                return;
+            }
+        }
+
+        await Settings.set("migrateAggregateTableState", "migrating");
+
+        let progressPercent = 0;
+        let part = 100 / monitors.length;
+        let i = 1;
+        for (let monitor of monitors) {
+            // Get a list of unique dates from the heartbeat table, using raw sql
+            let dates = await R.getAll(`
+                SELECT DISTINCT DATE(time) AS date
+                FROM heartbeat
+                WHERE monitor_id = ?
+                ORDER BY date ASC
+            `, [
+                monitor.monitor_id
+            ]);
+
+            for (let date of dates) {
+                // New Uptime Calculator
+                let calculator = new UptimeCalculator();
+                calculator.monitorID = monitor.monitor_id;
+                calculator.setMigrationMode(true);
+
+                // Get all the heartbeats for this monitor and date
+                let heartbeats = await R.getAll(`
+                    SELECT status, ping, time
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                    AND DATE(time) = ?
+                    ORDER BY time ASC
+                `, [ monitor.monitor_id, date.date ]);
+
+                if (heartbeats.length > 0) {
+                    msg = `[DON'T STOP] Migrating monitor data ${monitor.monitor_id} - ${date.date} [${progressPercent.toFixed(2)}%][${i}/${monitors.length}]`;
+                    log.info("db", msg);
+                    migrationServer?.update(msg);
+                }
+
+                for (let heartbeat of heartbeats) {
+                    await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs(heartbeat.time));
+                }
+
+                progressPercent += (Math.round(part / dates.length * 100) / 100);
+
+                // Lazy to fix the floating point issue, it is acceptable since it is just a progress bar
+                if (progressPercent > 100) {
+                    progressPercent = 100;
+                }
+            }
+
+            i++;
+        }
+
+        msg = "Clearing non-important heartbeats";
+        log.info("db", msg);
+        migrationServer?.update(msg);
+
+        await Database.clearHeartbeatData(true);
+        await Settings.set("migrateAggregateTableState", "migrated");
+        await migrationServer?.stop();
+
+        if (monitors.length > 0) {
+            log.info("db", "Aggregate Table Migration Completed");
+        } else {
+            log.info("db", "No data to migrate");
+        }
+    }
+
+    /**
+     * Remove all non-important heartbeats from heartbeat table, keep last 24-hour or {KEEP_LAST_ROWS} rows for each monitor
+     * @param {boolean} detailedLog Log detailed information
+     * @returns {Promise<void>}
+     */
+    static async clearHeartbeatData(detailedLog = false) {
+        let monitors = await R.getAll("SELECT id FROM monitor");
+        const sqlHourOffset = Database.sqlHourOffset();
+
+        for (let monitor of monitors) {
+            if (detailedLog) {
+                log.info("db", "Deleting non-important heartbeats for monitor " + monitor.id);
+            }
+            await R.exec(`
+                DELETE FROM heartbeat
+                WHERE monitor_id = ?
+                AND important = 0
+                AND time < ${sqlHourOffset}
+                AND id NOT IN (
+                    SELECT id
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                    ORDER BY time DESC
+                    LIMIT ?
+                )
+            `, [
+                monitor.id,
+                -24,
+                monitor.id,
+                100,
+            ]);
         }
     }
 
