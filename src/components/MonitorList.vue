@@ -164,7 +164,7 @@ export default {
          */
         filterState() {
             // Since query params are always strings, convert them to the correct type
-            let status = this.$route.query["status"] || null;
+            let status = this.$route.query["status"] || [];
             if (status) {
                 if (!Array.isArray(status)) {
                     status = [ status ];
@@ -172,14 +172,14 @@ export default {
                 status = status.map(Number);
             }
             // Casting to boolean does not work here as Boolean("false") === true
-            let active = this.$route.query["active"] || null;
+            let active = this.$route.query["active"] || [];
             if (active) {
                 if (!Array.isArray(active)) {
                     active = [ active ];
                 }
                 active = active.map(val => val === "true");
             }
-            let tags = this.$route.query["tags"] || null;
+            let tags = this.$route.query["tags"] || [];
             if (tags) {
                 if (!Array.isArray(tags)) {
                     tags = [ tags ];
@@ -198,11 +198,14 @@ export default {
                 return this.$route.query.searchText || "";
             },
             set(value) {
+                let newQuery = { ...this.$route.query };
+                if (value === "") {
+                    delete newQuery.searchText;
+                } else {
+                    newQuery.searchText = value;
+                }
                 this.$router.replace({
-                    query: {
-                        ...this.$route.query,
-                        searchText: value,
-                    }
+                    query: newQuery,
                 });
             }
         },

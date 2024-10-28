@@ -242,7 +242,7 @@ export default {
         },
         clearFilters() {
             this.$emit("updateFilter", {
-                status: null,
+                status: [],
             });
         },
         getExistingTags() {
