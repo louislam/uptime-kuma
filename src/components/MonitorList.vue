@@ -160,7 +160,7 @@ export default {
 
         /**
          * Returns applied filters based on query params.
-         * @returns {{ status: number[], active: bool, tags: number[] }} The current filter state.
+         * @returns {{ status: number[], active: any[], tags: number[] }} The current filter state.
          */
         filterState() {
             // Since query params are always strings, convert them to the correct type
@@ -174,7 +174,15 @@ export default {
             if (!Array.isArray(active)) {
                 active = [ active ];
             }
-            active = active.map(val => val === "true");
+            active = active.map(val => {
+                if (val === "true") {
+                    return true;
+                }
+                if (val === "false") {
+                    return false;
+                }
+                return val;
+            });
             let tags = this.$route.query["tags"] || [];
             if (!Array.isArray(tags)) {
                 tags = [ tags ];
@@ -279,7 +287,7 @@ export default {
         },
         /**
          * Update the MonitorList Filter
-         * @param {{ status: number[], active: bool, tags: number[] }} newFilter Object with new filter
+         * @param {{ status: number[], active: any[], tags: number[] }} newFilter Object with new filter
          * @returns {void}
          */
         updateFilter(newFilter) {

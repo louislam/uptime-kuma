@@ -80,8 +80,9 @@
         <MonitorListFilterDropdown :filterActive="filterState.active?.length > 0">
             <template #status>
                 <span v-if="filterState.active?.length === 1">
-                    <span v-if="filterState.active[0]">{{ $t("Running") }}</span>
-                    <span v-else>{{ $t("filterActivePaused") }}</span>
+                    <span v-if="filterState.active[0] === true">{{ $t("Running") }}</span>
+                    <span v-else-if="filterState.active[0] === false">{{ $t("filterActivePaused") }}</span>
+                    <span v-else>{{ $t("Unknown") }}</span>
                 </span>
                 <span v-else>
                     {{ $t("filterActive") }}
@@ -186,10 +187,31 @@ export default {
             });
 
             return num;
+        },
+        /**
+         * Returns an array of invalid filters assuming tagsList has been fetched
+         * @returns {Array} Array of invalid filters
+         */
+        invalidFilters() {
+            const filters = [];
+            if (!this.filterState.status.every((val) => val >= 0 && val <= 3)) {
+                filters.push(this.$t("Status"));
+            }
+            if (!this.filterState.active.every((val) => val === true || val === false)) {
+                filters.push(this.$t("Active"));
+            }
+            if (!this.filterState.tags.every((val) => this.tagsList.find(tag => tag.id === val))) {
+                filters.push(this.$t("Tags"));
+            }
+            return filters;
         }
     },
     mounted() {
-        this.getExistingTags();
+        this.getExistingTags(() => {
+            if (this.invalidFilters.length > 0) {
+                this.$root.toastError(this.$t("InvalidFilters", [ this.invalidFilters.join(", ") ]));
+            }
+        });
     },
     methods: {
         toggleStatusFilter(status) {
@@ -245,11 +267,12 @@ export default {
                 status: [],
             });
         },
-        getExistingTags() {
+        getExistingTags(callback) {
             this.$root.getSocket().emit("getTags", (res) => {
                 if (res.ok) {
                     this.tagsList = res.tags;
                 }
+                callback();
             });
         },
         getTaggedMonitorCount(tag) {
