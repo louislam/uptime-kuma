@@ -80,7 +80,7 @@ export default {
                 name: monitor.element.name,
                 monitor_index: monitor.index,
                 group_index: group.index,
-                isClickable: monitor.element.sendUrl,
+                isClickable: this.showLink(monitor),
             };
 
             this.MonitorSettingDialog.show();
@@ -94,6 +94,17 @@ export default {
          */
         toggleLink(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl = !this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl;
+        },
+
+        /**
+         * Should a link to the monitor be shown?
+         * Attempts to guess if a link should be shown based upon if
+         * sendUrl is set and if the URL is default or not.
+         * @param {object} monitor Monitor to check
+         * @returns {boolean} Should the link be shown?
+         */
+        showLink(monitor) {
+            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
         },
     },
 };
