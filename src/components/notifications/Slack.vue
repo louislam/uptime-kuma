@@ -5,9 +5,7 @@
         <label for="slack-username" class="form-label">{{ $t("Username") }}</label>
         <input id="slack-username" v-model="$parent.notification.slackusername" type="text" class="form-control">
         <div class="form-text">
-            <p style="margin-top: 8px;">
-                {{ $t("aboutSlackUsername") }}
-            </p>
+            {{ $t("aboutSlackUsername") }}
         </div>
         <label for="slack-iconemo" class="form-label">{{ $t("Icon Emoji") }}</label>
         <input id="slack-iconemo" v-model="$parent.notification.slackiconemo" type="text" class="form-control">
