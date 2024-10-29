@@ -5,7 +5,7 @@ const util = require("../src/util");
 
 util.polyfill();
 
-const newVersion = process.env.VERSION;
+const newVersion = process.env.RELEASE_VERSION;
 
 console.log("New Version: " + newVersion);
 
