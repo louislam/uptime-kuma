@@ -62,4 +62,4 @@ buildImage(repoName, [ "beta", version ], "release");
 await pressAnyKey();
 
 // npm run upload-artifacts
-uploadArtifacts();
+uploadArtifacts(version, githubToken);
