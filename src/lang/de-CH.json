@@ -1085,5 +1085,15 @@
     "Can be found on:": "Ist zu finden auf: {0}",
     "From": "Von",
     "Arcade": "Spielhalle",
-    "Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.": "Zeitkritische Benachrichtigungen werden sofort zugestellt, auch wenn sich das Gerät im Nicht stören-Modus befindet."
+    "Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.": "Zeitkritische Benachrichtigungen werden sofort zugestellt, auch wenn sich das Gerät im Nicht stören-Modus befindet.",
+    "RabbitMQ Nodes": "RabbitMQ-Verwaltungsknoten",
+    "rabbitmqNodesDescription": "Gib die URL für die RabbitMQ-Verwaltungsknoten einschliesslich Protokoll und Port ein. Beispiel: {0}",
+    "rabbitmqNodesRequired": "Setze die Knoten für diesen Monitor.",
+    "RabbitMQ Username": "RabbitMQ Benutzername",
+    "RabbitMQ Password": "RabbitMQ Passwort",
+    "SendGrid API Key": "SendGrid-API-Schlüssel",
+    "Separate multiple email addresses with commas": "Mehrere E-Mail-Adressen mit Kommas trennen",
+    "rabbitmqNodesInvalid": "Benutze eine vollständig qualifizierte URL (beginnend mit 'http') für RabbitMQ-Knoten.",
+    "rabbitmqHelpText": "Um den Monitor zu benutzen, musst du das Management Plugin in deinem RabbitMQ-Setup aktivieren. Weitere Informationen siehe {rabitmq_documentation}.",
+    "aboutSlackUsername": "Ändert den Anzeigenamen des Absenders. Wenn du jemanden erwähnen möchtest, füge ihn stattdessen in den Namen ein."
 }
