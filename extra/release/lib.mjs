@@ -171,10 +171,43 @@ export function ver(version, identifier) {
 
 /**
  * Upload artifacts to GitHub
+ * docker buildx build -f docker/dockerfile --platform linux/amd64 -t louislam/uptime-kuma:upload-artifact --build-arg VERSION --build-arg GITHUB_TOKEN --target upload-artifact . --progress plain
+ * @param {string} version Version
+ * @param {string} githubToken GitHub token
  * @returns {void}
  */
-export function uploadArtifacts() {
-    execSync("npm run upload-artifacts");
+export function uploadArtifacts(version, githubToken) {
+    let args = [
+        "buildx",
+        "build",
+        "-f",
+        "docker/dockerfile",
+        "--platform",
+        "linux/amd64",
+        "-t",
+        "louislam/uptime-kuma:upload-artifact",
+        "--build-arg",
+        `VERSION=${version}`,
+        "--build-arg",
+        "GITHUB_TOKEN",
+        "--target",
+        "upload-artifact",
+        ".",
+        "--progress",
+        "plain",
+    ];
+
+    if (!dryRun) {
+        childProcess.spawnSync("docker", args, {
+            stdio: "inherit",
+            env: {
+                ...process.env,
+                GITHUB_TOKEN: githubToken,
+            },
+        });
+    } else {
+        console.log(`[DRY RUN] docker ${args.join(" ")}`);
+    }
 }
 
 /**
