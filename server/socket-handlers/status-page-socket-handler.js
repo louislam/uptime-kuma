@@ -222,6 +222,10 @@ module.exports.statusPageSocketHandler = (socket) => {
             log.debug("socket", "Delete groups that are not in the list");
             const slots = groupIDList.map(() => "?").join(",");
 
+            if (slots.length === 0) {
+                throw new Error("You need to add at least one monitor to a group");
+            }
+
             const data = [
                 ...groupIDList,
                 statusPage.id
