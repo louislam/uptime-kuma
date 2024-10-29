@@ -1,11 +1,3 @@
-/**
- * Original:
- *  "release-final": "node ./extra/test-docker.js && node extra/update-version.js && npm run build-docker && node ./extra/press-any-key.js && npm run upload-artifacts && node ./extra/update-wiki-version.js",
- *   "build-docker-slim": "node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:next-slim -t louislam/uptime-kuma:2-slim -t louislam/uptime-kuma:$VERSION-slim --target release --build-arg BASE_IMAGE=louislam/uptime-kuma:base2-slim . --push",
- *         "build-docker-full": "node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:next -t louislam/uptime-kuma:2 -t louislam/uptime-kuma:$VERSION --target release . --push",
- *         "build-docker-slim-rootless": "node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:2-slim-rootless -t louislam/uptime-kuma:$VERSION-slim-rootless --target rootless --build-arg BASE_IMAGE=louislam/uptime-kuma:base2-slim . --push",
- *         "build-docker-full-rootless": "node ./extra/env2arg.js docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:2-rootless -t louislam/uptime-kuma:$VERSION-rootless --target rootless . --push",
- */
 import "dotenv/config";
 import {
     ver,
