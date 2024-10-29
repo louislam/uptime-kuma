@@ -1051,5 +1051,9 @@
     "Client ID": "ID klienta",
     "Client Secret": "Tajemství klienta",
     "OAuth Scope": "OAuth rozsah",
-    "Optional: Space separated list of scopes": "Volitelné: seznam rozsahů oddělte mezerami"
+    "Optional: Space separated list of scopes": "Volitelné: seznam rozsahů oddělte mezerami",
+    "Debug": "Ladění",
+    "CopyToClipboardError": "Nelze zkopírovat do schránky: {error}",
+    "ignoredTLSError": "Chyby TLS/SSL byly ignorovány",
+    "Copy": "Kopírovat"
 }

@@ -1090,5 +1090,15 @@
     "Money": "Money（钱）",
     "CurlDebugInfoOAuth2CCUnsupported": "{curl} 不支持完整的 oauth 客户端凭证流。{newline}请获取承载令牌（bearer token）并通过 {oauth2_bearer} 选项传递。",
     "CurlDebugInfo": "要调试监控项，您可以将该命令粘贴到您自己的或 uptime kuma 正在运行的机器的命令行终端中，并查看结果。{newiline}请注意网络差异，例如 {firewalls}、{dns_resolvers} 或 {docker_networks}。",
-    "ignoredTLSError": "TLS/SSL 错误已被忽略"
+    "ignoredTLSError": "TLS/SSL 错误已被忽略",
+    "SendGrid API Key": "SendGrid API 密钥",
+    "RabbitMQ Password": "RabbitMQ 密码",
+    "RabbitMQ Username": "RabbitMQ 用户名",
+    "rabbitmqNodesInvalid": "请使用 RabbitMQ 节点的完整 URL（即完全限定 URL，以 http 开头）。",
+    "rabbitmqNodesRequired": "请设置此监视项的节点。",
+    "rabbitmqNodesDescription": "输入 RabbitMQ 管理节点的 URL，包括协议和端口。例如：{0}",
+    "RabbitMQ Nodes": "RabbitMQ 管理节点",
+    "Separate multiple email addresses with commas": "用逗号分隔多个电子邮件地址",
+    "rabbitmqHelpText": "要使用此监控项，您需要在 RabbitMQ 设置中启用管理插件。有关更多信息，请参阅 {rabitmq_documentation}。",
+    "aboutSlackUsername": "更改消息发件人的显示名称。如果您想提及某人，请另行将其包含在友好名称中。"
 }

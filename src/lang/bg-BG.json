@@ -1088,5 +1088,14 @@
     "From": "От",
     "Can be found on:": "Можте да се откриете на: {0}",
     "The phone number of the recipient in E.164 format.": "Телефонният номер на получателя във формат E.164.",
-    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Идентификационен номер на подателя на текста или телефонен номер във формат E.164, в случай, че желаете да получавате отговори."
+    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Идентификационен номер на подателя на текста или телефонен номер във формат E.164, в случай, че желаете да получавате отговори.",
+    "rabbitmqNodesRequired": "Моля, задайте възлите за този монитор.",
+    "rabbitmqNodesInvalid": "Моля, използвайте пълния URL адрес (започващ с 'http') за RabbitMQ възли.",
+    "RabbitMQ Password": "RabbitMQ парола",
+    "RabbitMQ Username": "RabbitMQ потребител",
+    "SendGrid API Key": "SendGrid API ключ",
+    "Separate multiple email addresses with commas": "Разделяйте отделните имейл адреси със запетаи",
+    "RabbitMQ Nodes": "Възли за управление на RabbitMQ",
+    "rabbitmqNodesDescription": "Въведете URL адреса на възлите за управление на RabbitMQ, включително протокол и порт. Пример: {0}",
+    "rabbitmqHelpText": "За да използвате монитора, ще трябва да активирате добавката за управление във вашата настройка на RabbitMQ. За повече информация моля, вижте {rabitmq_documentation}."
 }

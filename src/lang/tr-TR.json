@@ -1088,5 +1088,14 @@
     "ignoredTLSError": "TLS/SSL hataları göz ardı edildi",
     "CurlDebugInfo": "Monitörü hata ayıklamak için, bunu kendi makinenizin terminaline veya uptime kuma'nın çalıştığı makinenin terminaline yapıştırabilir ve ne istediğinizi görebilirsiniz.{newiline}Lütfen {firewalls}, {dns_resolvers} veya {docker_networks} gibi ağ farklılıklarına dikkat edin.",
     "Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.": "Cihaz rahatsız etmeyin modunda olsa bile, zaman açısından hassas bildirimler anında iletilecek.",
-    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Cevap alabilmek istiyorsanız E.164 formatında bir kısa mesaj gönderici kimliği veya bir telefon numarası."
+    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Cevap alabilmek istiyorsanız E.164 formatında bir kısa mesaj gönderici kimliği veya bir telefon numarası.",
+    "rabbitmqNodesRequired": "Lütfen bu monitör için sunucuları ayarlayın.",
+    "rabbitmqNodesInvalid": "Lütfen RabbitMQ düğümleri için tam nitelikli ('http' ile başlayan) bir URL kullanın.",
+    "RabbitMQ Username": "RabbitMQ Kullanıcı Adı",
+    "RabbitMQ Password": "RabbitMQ Şifresi",
+    "SendGrid API Key": "SendGrid API Anahtarı",
+    "Separate multiple email addresses with commas": "Birden fazla e-posta adresini virgülle ayırın",
+    "RabbitMQ Nodes": "RabbitMQ Yönetim Sunucuları",
+    "rabbitmqNodesDescription": "Protokol ve port dahil olmak üzere RabbitMQ yönetim düğümleri için URL'yi girin. Örnek: {0}",
+    "rabbitmqHelpText": "Monitörü kullanmak için, RabbitMQ kurulumunuzda Yönetim Eklentisini etkinleştirmeniz gerekecektir. Daha fazla bilgi için lütfen {rabitmq_documentation}'a bakın."
 }
