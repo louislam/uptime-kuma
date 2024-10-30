@@ -721,6 +721,7 @@
     "Icon Emoji": "Icon Emoji",
     "signalImportant": "IMPORTANT: You cannot mix groups and numbers in recipients!",
     "aboutWebhooks": "More info about Webhooks on: {0}",
+    "aboutSlackUsername": "Changes the display name of the message sender. If you want to mention someone, include it in the friendly name instead.",
     "aboutChannelName": "Enter the channel name on {0} Channel Name field if you want to bypass the Webhook channel. Ex: #other-channel",
     "aboutKumaURL": "If you leave the Uptime Kuma URL field blank, it will default to the Project GitHub page.",
     "smtpDkimSettings": "DKIM Settings",

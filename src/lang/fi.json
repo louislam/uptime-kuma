@@ -1086,5 +1086,14 @@
     "The phone number of the recipient in E.164 format.": "Vastaanottajan puhelinnumero E.164-muodossa.",
     "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Joko lähettäjätunnus (sender ID) tai puhelinnumero E-164-muodossa jos haluat pystyä vastaanottamaan vastausviestejä.",
     "Scifi": "Tieteisseikkailu",
-    "Pop": "Poksahdus"
+    "Pop": "Poksahdus",
+    "rabbitmqNodesRequired": "Aseta tämän seuraimen solmut.",
+    "rabbitmqNodesInvalid": "Käytä RabbitMQ-solmuille täysin hyväksyttyä ('http' alkavaa) URL-osoitetta.",
+    "RabbitMQ Username": "RabbitMQ Käyttäjänimi",
+    "RabbitMQ Password": "RabbitMQ Salasana",
+    "SendGrid API Key": "SendGrid API-avain",
+    "Separate multiple email addresses with commas": "Erottele useammat sähköpostiosoitteet pilkuilla",
+    "RabbitMQ Nodes": "RabbitMQ-hallintasolmut",
+    "rabbitmqNodesDescription": "Anna URL RabbitMQ-hallintasolmuille sisältäen protokollan ja portin. Esimerkki: {0}",
+    "rabbitmqHelpText": "Jotta voit käyttää seurainta, sinun on otettava hallintalaajennus käyttöön RabbitMQ-asetuksissa. Lisätietoja saat osoitteesta {rabitmq_documentation}."
 }
