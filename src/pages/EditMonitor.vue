@@ -116,7 +116,7 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' || monitor.type === 'pterodactyl-node'" class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
                             </div>
@@ -285,7 +285,7 @@
 
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp' || monitor.type === 'pterodactyl-node'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -576,6 +576,12 @@
                                 class="my-3"
                             />
 
+                            <!-- ApiKey: Pterodactyl node only -->
+                            <div v-if="monitor.type === 'pterodactyl-node'" class="my-3">
+                                <label for="apiKey" class="form-label">{{ $t("API Key") }}</label>
+                                <HiddenInput id="apiKey" v-model="monitor.apiKey" type="password" required></HiddenInput>
+                            </div>
+
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
@@ -602,12 +608,6 @@
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp' || monitor.type === 'rabbitmq'" class="my-3">
                                 <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
-                            </div>
-
-                            <!-- ApiKey: Pterodactyl node only -->
-                            <div v-if="monitor.type === 'pterodactyl-node'" class="my-3">
-                                <label for="apiKey" class="form-label">{{ $t("API Key") }}</label>
-                                <HiddenInput id="apiKey" v-model="monitor.apiKey" type="password" required></HiddenInput>
                             </div>
 
                             <div class="my-3">

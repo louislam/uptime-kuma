@@ -9,17 +9,20 @@ class PterodactylNode extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-
-        await axios.get(`${monitor.nodeHost}/api/system`, {
+        const pingStart = Date.now();
+        const url = new URL(monitor.url);
+        url.port = monitor.port;
+        url.pathname = "/api/system";
+        await axios.get(url.href, {
             headers: {
                 Authorization: `Bearer ${monitor.apiKey}`
             }
         })
             .then(async res => {
                 if (res.status === 200) {
-                    const data = await res.json();
-                    heartbeat.msg = `Node is up, Version ${data.version}`;
+                    heartbeat.msg = `Node is up, Version ${res.data.version}`;
                     heartbeat.status = UP;
+                    heartbeat.ping = Date.now() - pingStart;
                 } else {
                     throw Error(`Node is down, Status ${res.status}`);
                 }
