@@ -49,6 +49,25 @@ class EmbeddedMariaDB {
      * @returns {Promise<void>|void} A promise that resolves when the MariaDB is started or void if it is already started
      */
     start() {
+        this.startChildProcess();
+
+        return new Promise((resolve) => {
+            let interval = setInterval(() => {
+                if (this.started) {
+                    clearInterval(interval);
+                    resolve();
+                } else {
+                    log.info("mariadb", "Waiting for Embedded MariaDB to start...");
+                }
+            }, 1000);
+        });
+    }
+
+    /**
+     * Start the child process
+     * @returns {void}
+     */
+    startChildProcess() {
         if (this.childProcess) {
             log.info("mariadb", "Already started");
             return;
@@ -63,6 +82,7 @@ class EmbeddedMariaDB {
             "--datadir=" + this.mariadbDataDir,
             `--socket=${this.socketPath}`,
             `--pid-file=${this.runDir}/mysqld.pid`,
+            "--log-error=" + "/app/data/mariadb-error.log",
         ]);
 
         this.childProcess.on("close", (code) => {
@@ -72,8 +92,8 @@ class EmbeddedMariaDB {
             log.info("mariadb", "Stopped Embedded MariaDB: " + code);
 
             if (code !== 0) {
-                log.info("mariadb", "Try to restart Embedded MariaDB as it is not stopped by user");
-                this.start();
+                log.error("mariadb", "Try to restart Embedded MariaDB as it is not stopped by user");
+                this.startChildProcess();
             }
         });
 
@@ -86,7 +106,7 @@ class EmbeddedMariaDB {
         });
 
         let handler = (data) => {
-            log.debug("mariadb", data.toString("utf-8"));
+            log.info("mariadb", data.toString("utf-8"));
             if (data.toString("utf-8").includes("ready for connections")) {
                 this.initDBAfterStarted();
             }
@@ -94,17 +114,6 @@ class EmbeddedMariaDB {
 
         this.childProcess.stdout.on("data", handler);
         this.childProcess.stderr.on("data", handler);
-
-        return new Promise((resolve) => {
-            let interval = setInterval(() => {
-                if (this.started) {
-                    clearInterval(interval);
-                    resolve();
-                } else {
-                    log.info("mariadb", "Waiting for Embedded MariaDB to start...");
-                }
-            }, 1000);
-        });
     }
 
     /**
