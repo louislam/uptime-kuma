@@ -217,7 +217,7 @@ export default {
          * @returns {boolean} True if any filter is active, false otherwise.
          */
         filtersActive() {
-            return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
+            return this.filterState.status.length > 0 || this.filterState.active.length > 0 || this.filterState.tags.length > 0 || this.searchText !== "";
         }
     },
     watch: {
