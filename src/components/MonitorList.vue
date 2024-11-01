@@ -294,9 +294,7 @@ export default {
             this.$router.replace({
                 query: {
                     ...this.$route.query,
-                    status: newFilter.status,
-                    active: newFilter.active,
-                    tags: newFilter.tags,
+                    ...newFilter,
                 },
             });
         },
@@ -388,7 +386,7 @@ export default {
 
             // filter by status
             let statusMatch = true;
-            if (this.filterState.status != null && this.filterState.status.length > 0) {
+            if (this.filterState.status.length > 0) {
                 if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
                     monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
                 }
@@ -397,13 +395,13 @@ export default {
 
             // filter by active
             let activeMatch = true;
-            if (this.filterState.active != null && this.filterState.active.length > 0) {
+            if (this.filterState.active.length > 0) {
                 activeMatch = this.filterState.active.includes(monitor.active);
             }
 
             // filter by tags
             let tagsMatch = true;
-            if (this.filterState.tags != null && this.filterState.tags.length > 0) {
+            if (this.filterState.tags.length > 0) {
                 tagsMatch = monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
                     .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
                     .length > 0;
