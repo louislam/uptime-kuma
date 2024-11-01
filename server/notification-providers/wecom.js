@@ -36,6 +36,7 @@ class WeCom extends NotificationProvider {
      * @returns {object} Message
      */
     composeMessage(heartbeatJSON, monitorJSON, msg) {
+        const address = this.extractAddress(monitorJSON);
         if (heartbeatJSON != null) {
             const templateCard = {
                 card_type: "text_notice",
@@ -58,16 +59,16 @@ class WeCom extends NotificationProvider {
                 ],
                 card_action: {
                     type: 1,
-                    url: monitorJSON["url"]
-                        ? monitorJSON["url"]
+                    url: address
+                        ? address
                         : "https://github.com/louislam/uptime-kuma", // both card_action and card_action.url are mandatory
                 },
             };
-            if (monitorJSON["url"]) {
+            if (address) {
                 templateCard["jump_list"] = [
                     {
                         type: 1,
-                        url: monitorJSON["url"],
+                        url: address,
                         title: "Monitor URL",
                     },
                 ];
