@@ -203,7 +203,7 @@ router.beforeEach((to, from) => {
     // Without this check, modifying any query params will be blocked
     // Check if redirectedFrom is defined to check if this function has already been run
     // Without this check, the router will be stuck in an infinite loop
-    if (to.path !== from.path && !to.redirectedFrom) {
+    if (to.fullPath !== from.fullPath && !to.redirectedFrom) {
         return {
             ...to,
             query: {
