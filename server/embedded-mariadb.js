@@ -75,6 +75,38 @@ class EmbeddedMariaDB {
 
         this.initDB();
 
+        // Create the mariadb directory if not exists and chown it to the node user
+        if (!fs.existsSync(this.mariadbDataDir)) {
+            fs.mkdirSync(this.mariadbDataDir, {
+                recursive: true,
+            });
+        }
+
+        // Check the owner of the mariadb directory, and change it if necessary
+        let stat = fs.statSync(this.mariadbDataDir);
+        if (stat.uid !== 1000 || stat.gid !== 1000) {
+            fs.chownSync(this.mariadbDataDir, 1000, 1000);
+        }
+
+        // Check the permission of the mariadb directory, and change it if it is not 755
+        if (stat.mode !== 0o755) {
+            fs.chmodSync(this.mariadbDataDir, 0o755);
+        }
+
+        // Also create the run directory if not exists and chown it to the node user
+        if (!fs.existsSync(this.runDir)) {
+            fs.mkdirSync(this.runDir, {
+                recursive: true,
+            });
+        }
+        stat = fs.statSync(this.runDir);
+        if (stat.uid !== 1000 || stat.gid !== 1000) {
+            fs.chownSync(this.runDir, 1000, 1000);
+        }
+        if (stat.mode !== 0o755) {
+            fs.chmodSync(this.runDir, 0o755);
+        }
+
         this.running = true;
         log.info("mariadb", "Starting Embedded MariaDB");
         this.childProcess = childProcess.spawn(this.exec, [
@@ -82,7 +114,8 @@ class EmbeddedMariaDB {
             "--datadir=" + this.mariadbDataDir,
             `--socket=${this.socketPath}`,
             `--pid-file=${this.runDir}/mysqld.pid`,
-            "--log-error=" + "/app/data/mariadb-error.log",
+            // Don't add the following option, the mariadb will not report message to the console, which affects initDBAfterStarted()
+            // "--log-error=" + `${this.mariadbDataDir}/mariadb-error.log`,
         ]);
 
         this.childProcess.on("close", (code) => {
