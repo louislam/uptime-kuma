@@ -52,6 +52,7 @@ class EmbeddedMariaDB {
 
     /**
      * Start the embedded MariaDB
+     * @throws {Error} If the current user is not "node" or "root"
      * @returns {Promise<void>|void} A promise that resolves when the MariaDB is started or void if it is already started
      */
     start() {
