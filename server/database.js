@@ -296,7 +296,7 @@ class Database {
                 client: "mysql2",
                 connection: {
                     socketPath: embeddedMariaDB.socketPath,
-                    user: "node",
+                    user: embeddedMariaDB.username,
                     database: "kuma",
                     timezone: "Z",
                     typeCast: function (field, next) {

@@ -14,9 +14,15 @@ class EmbeddedMariaDB {
 
     mariadbDataDir = "/app/data/mariadb";
 
-    runDir = "/app/data/run/mariadb";
+    runDir = "/app/data/run";
 
-    socketPath = this.runDir + "/mysqld.sock";
+    socketPath = this.runDir + "/mariadb.sock";
+
+    /**
+     * The username to connect to the MariaDB
+     * @type {string}
+     */
+    username = null;
 
     /**
      * @type {ChildProcessWithoutNullStreams}
@@ -49,6 +55,12 @@ class EmbeddedMariaDB {
      * @returns {Promise<void>|void} A promise that resolves when the MariaDB is started or void if it is already started
      */
     start() {
+        // Check if the current user is "node" or "root"
+        this.username = require("os").userInfo().username;
+        if (this.username !== "node" && this.username !== "root") {
+            throw new Error("Embedded Mariadb supports only 'node' or 'root' user, but the current user is: " + this.username);
+        }
+
         this.startChildProcess();
 
         return new Promise((resolve) => {
@@ -72,8 +84,6 @@ class EmbeddedMariaDB {
             log.info("mariadb", "Already started");
             return;
         }
-
-        this.initDB();
 
         // Create the mariadb directory if not exists and chown it to the node user
         if (!fs.existsSync(this.mariadbDataDir)) {
@@ -106,6 +116,8 @@ class EmbeddedMariaDB {
         if (stat.mode !== 0o755) {
             fs.chmodSync(this.runDir, 0o755);
         }
+
+        this.initDB();
 
         this.running = true;
         log.info("mariadb", "Starting Embedded MariaDB");
@@ -171,9 +183,11 @@ class EmbeddedMariaDB {
                 recursive: true,
             });
 
-            let result = childProcess.spawnSync("mysql_install_db", [
+            let result = childProcess.spawnSync("mariadb-install-db", [
                 "--user=node",
-                "--ldata=" + this.mariadbDataDir,
+                "--auth-root-socket-user=node",
+                "--datadir=" + this.mariadbDataDir,
+                "--auth-root-authentication-method=socket",
             ]);
 
             if (result.status !== 0) {
@@ -201,7 +215,7 @@ class EmbeddedMariaDB {
     async initDBAfterStarted() {
         const connection = mysql.createConnection({
             socketPath: this.socketPath,
-            user: "node",
+            user: this.username,
         });
 
         let result = await connection.execute("CREATE DATABASE IF NOT EXISTS `kuma`");
