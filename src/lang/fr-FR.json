@@ -1088,5 +1088,14 @@
     "From": "De",
     "Can be found on:": "Disponible sur : {0}",
     "The phone number of the recipient in E.164 format.": "Le numéro de téléphone du destinataire au format E.164.",
-    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Soit un identifiant d'expéditeur de texte, soit un numéro de téléphone au format E.164 si vous souhaitez pouvoir recevoir des réponses."
+    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Soit un identifiant d'expéditeur de texte, soit un numéro de téléphone au format E.164 si vous souhaitez pouvoir recevoir des réponses.",
+    "RabbitMQ Nodes": "Nœuds de gestion RabbitMQ",
+    "rabbitmqNodesDescription": "Entrez l'URL des nœuds de gestion RabbitMQ, y compris le protocole et le port. Exemple : {0}",
+    "rabbitmqNodesRequired": "Veuillez définir les nœuds pour cette sonde.",
+    "rabbitmqNodesInvalid": "Veuillez utiliser une URL complète (commençant par « http ») pour les nœuds RabbitMQ.",
+    "RabbitMQ Username": "Nom d'utilisateur RabbitMQ",
+    "RabbitMQ Password": "Mot de passe RabbitMQ",
+    "rabbitmqHelpText": "Pour utiliser la sonde, vous devrez activer le plug-in de gestion dans votre configuration RabbitMQ. Pour plus d'informations, veuillez consulter la {rabitmq_documentation}.",
+    "SendGrid API Key": "Clé API SendGrid",
+    "Separate multiple email addresses with commas": "Séparez plusieurs adresses e-mail par des virgules"
 }

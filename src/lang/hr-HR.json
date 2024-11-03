@@ -1082,5 +1082,14 @@
     "Can be found on:": "Može se pronaći na: {0}",
     "The phone number of the recipient in E.164 format.": "Telefonski broj primatelja u formatu E.164.",
     "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Ili identifikator pošiljatelja tekstualne poruke ili telefonski broj u formatu E.164 ako želite primati odgovore.",
-    "jsonQueryDescription": "Izvršite JSON upit nad primljenim odgovorom i provjerite očekivanu povratnu vrijednost. Koristite \"$\" za zahtjeve u kojima ne očekujete JSON odgovor. Povratna vrijednost će se za usporedbu pretvoriti u niz znakova (string). Pogledajte stranicu {0} za dokumentaciju o jeziku upita. Testno okruženje možete pronaći na {1}."
+    "jsonQueryDescription": "Izvršite JSON upit nad primljenim odgovorom i provjerite očekivanu povratnu vrijednost. Koristite \"$\" za zahtjeve u kojima ne očekujete JSON odgovor. Povratna vrijednost će se za usporedbu pretvoriti u niz znakova (string). Pogledajte stranicu {0} za dokumentaciju o jeziku upita. Testno okruženje možete pronaći na {1}.",
+    "rabbitmqNodesRequired": "Postavite čvorove za ovaj Monitor.",
+    "rabbitmqNodesInvalid": "Koristite potpuni URL (onaj koji počinje s 'http') za RabbitMQ čvorove.",
+    "RabbitMQ Username": "RabbitMQ korisničko ime",
+    "RabbitMQ Password": "RabbitMQ lozinka",
+    "SendGrid API Key": "SendGrid API ključ",
+    "Separate multiple email addresses with commas": "Više adresa e-pošte potrebno je odvojiti zarezima",
+    "RabbitMQ Nodes": "RabbitMQ upravljački čvorovi",
+    "rabbitmqNodesDescription": "Unesite URL za upravljačke čvorove RabbitMQ uključujući protokol i port. Primjer: {0}",
+    "rabbitmqHelpText": "Za korištenje ovog Monitora morat ćete omogućiti dodatak \"Management Plugin\" u svom RabbitMQ-u. Za više informacija pogledajte {rabitmq_documentation}."
 }

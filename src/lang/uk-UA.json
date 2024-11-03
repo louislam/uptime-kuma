@@ -1094,5 +1094,14 @@
     "CurlDebugInfo": "Для налагодження монітора ви можете вставити цей файл у термінал вашої власної машини або у термінал машини, на якій запущено uptime kuma, і подивитися, що ви запитуєте.{newline}Зверніть увагу на мережеві відмінності, такі як {firewalls}, {dns_resolvers} або {docker_networks}.",
     "CurlDebugInfoOAuth2CCUnsupported": "Повний потік облікових даних клієнта oauth не підтримується в {curl}.{newline}Потрібно отримати bearer-токен і передати його за допомогою опції {oauth2_bearer}.",
     "Can be found on:": "Можна знайти на: {0}",
-    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Або ідентифікатор відправника тексту, або номер телефону у форматі E.164, якщо ви хочете отримувати відповіді."
+    "Either a text sender ID or a phone number in E.164 format if you want to be able to receive replies.": "Або ідентифікатор відправника тексту, або номер телефону у форматі E.164, якщо ви хочете отримувати відповіді.",
+    "rabbitmqNodesRequired": "Будь ласка, встановіть вузли для цього монітора.",
+    "RabbitMQ Username": "Ім'я користувача RabbitMQ",
+    "RabbitMQ Password": "Пароль RabbitMQ",
+    "SendGrid API Key": "API-ключ SendGrid",
+    "Separate multiple email addresses with commas": "Розділяйте кілька адрес комами",
+    "RabbitMQ Nodes": "Вузли керування RabbitMQ",
+    "rabbitmqNodesDescription": "Введіть URL-адресу для вузлів керування RabbitMQ, включаючи протокол і порт. Приклад: {0}",
+    "rabbitmqNodesInvalid": "Будь ласка, використовуйте повну URL-адресу (починаючи з 'http') для вузлів RabbitMQ.",
+    "rabbitmqHelpText": "Щоб використовувати монітор, вам потрібно увімкнути плагін керування у налаштуваннях RabbitMQ. Для отримання додаткової інформації, будь ласка, зверніться до {rabitmq_documentation}."
 }
