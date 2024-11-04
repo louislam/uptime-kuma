@@ -62,6 +62,8 @@ class EmbeddedMariaDB {
             throw new Error("Embedded Mariadb supports only 'node' or 'root' user, but the current user is: " + this.username);
         }
 
+        this.initDB();
+
         this.startChildProcess();
 
         return new Promise((resolve) => {
@@ -85,40 +87,6 @@ class EmbeddedMariaDB {
             log.info("mariadb", "Already started");
             return;
         }
-
-        // Create the mariadb directory if not exists and chown it to the node user
-        if (!fs.existsSync(this.mariadbDataDir)) {
-            fs.mkdirSync(this.mariadbDataDir, {
-                recursive: true,
-            });
-        }
-
-        // Check the owner of the mariadb directory, and change it if necessary
-        let stat = fs.statSync(this.mariadbDataDir);
-        if (stat.uid !== 1000 || stat.gid !== 1000) {
-            fs.chownSync(this.mariadbDataDir, 1000, 1000);
-        }
-
-        // Check the permission of the mariadb directory, and change it if it is not 755
-        if (stat.mode !== 0o755) {
-            fs.chmodSync(this.mariadbDataDir, 0o755);
-        }
-
-        // Also create the run directory if not exists and chown it to the node user
-        if (!fs.existsSync(this.runDir)) {
-            fs.mkdirSync(this.runDir, {
-                recursive: true,
-            });
-        }
-        stat = fs.statSync(this.runDir);
-        if (stat.uid !== 1000 || stat.gid !== 1000) {
-            fs.chownSync(this.runDir, 1000, 1000);
-        }
-        if (stat.mode !== 0o755) {
-            fs.chmodSync(this.runDir, 0o755);
-        }
-
-        this.initDB();
 
         this.running = true;
         log.info("mariadb", "Starting Embedded MariaDB");
@@ -200,6 +168,17 @@ class EmbeddedMariaDB {
             }
         }
 
+        // Check the owner of the mariadb directory, and change it if necessary
+        let stat = fs.statSync(this.mariadbDataDir);
+        if (stat.uid !== 1000 || stat.gid !== 1000) {
+            fs.chownSync(this.mariadbDataDir, 1000, 1000);
+        }
+
+        // Check the permission of the mariadb directory, and change it if it is not 755
+        if (stat.mode !== 0o755) {
+            fs.chmodSync(this.mariadbDataDir, 0o755);
+        }
+
         if (!fs.existsSync(this.runDir)) {
             log.info("mariadb", `Embedded MariaDB: ${this.runDir} is not found, create one now.`);
             fs.mkdirSync(this.runDir, {
@@ -207,6 +186,13 @@ class EmbeddedMariaDB {
             });
         }
 
+        stat = fs.statSync(this.runDir);
+        if (stat.uid !== 1000 || stat.gid !== 1000) {
+            fs.chownSync(this.runDir, 1000, 1000);
+        }
+        if (stat.mode !== 0o755) {
+            fs.chmodSync(this.runDir, 0o755);
+        }
     }
 
     /**
