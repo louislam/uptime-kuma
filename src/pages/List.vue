@@ -11,18 +11,6 @@ export default {
     components: {
         MonitorList,
     },
-    mounted() {
-        if (!this.$root.isMobile && this.$route.path === '/list') {
-            this.$router.push('/dashboard');
-        }
-    },
-    watch: {
-        '$root.isMobile'(newVal) {
-            if (!newVal && this.$route.path === '/list') {
-                this.$router.push('/dashboard');
-            }
-        }
-    }
 };
 </script>
 
