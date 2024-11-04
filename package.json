@@ -144,6 +144,7 @@
     },
     "devDependencies": {
         "@actions/github": "~5.1.1",
+        "@eslint/js": "^9.14.0",
         "@fortawesome/fontawesome-svg-core": "~1.2.36",
         "@fortawesome/free-regular-svg-icons": "~5.15.4",
         "@fortawesome/free-solid-svg-icons": "~5.15.4",
@@ -175,6 +176,7 @@
         "eslint-plugin-vue": "~8.7.1",
         "favico.js": "~0.3.10",
         "get-port-please": "^3.1.1",
+        "globals": "^15.11.0",
         "node-ssh": "~13.1.0",
         "postcss-html": "~1.5.0",
         "postcss-rtlcss": "~3.7.2",
@@ -189,6 +191,7 @@
         "test": "~3.3.0",
         "testcontainers": "^10.13.1",
         "typescript": "~4.4.4",
+        "typescript-eslint": "^8.12.2",
         "v-pagination-3": "~0.1.7",
         "vite": "~5.2.8",
         "vite-plugin-compression": "^0.5.1",
