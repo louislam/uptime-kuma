@@ -27,7 +27,7 @@ export function checkDocker() {
 export function getRepoNames() {
     if (process.env.RELEASE_REPO_NAMES) {
         // Split by comma
-        return process.env.RELEASE_REPO_NAME.split(",").map((name) => name.trim());
+        return process.env.RELEASE_REPO_NAMES.split(",").map((name) => name.trim());
     }
     return [
         "louislam/uptime-kuma",
