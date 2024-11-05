@@ -1,7 +1,7 @@
-import { buildDist, buildImage, checkDocker, getRepoName } from "./lib.mjs";
+import { buildDist, buildImage, checkDocker, getRepoNames } from "./lib.mjs";
 
 // Docker Hub repository name
-const repoName = getRepoName();
+const repoNames = getRepoNames();
 
 // Check if docker is running
 checkDocker();
@@ -10,7 +10,7 @@ checkDocker();
 buildDist();
 
 // Build full image (rootless)
-buildImage(repoName, [ "nightly2-rootless" ], "nightly-rootless");
+buildImage(repoNames, [ "nightly2-rootless" ], "nightly-rootless");
 
 // Build full image
-buildImage(repoName, [ "nightly2" ], "nightly");
+buildImage(repoNames, [ "nightly2" ], "nightly");
