@@ -1,67 +1,65 @@
 <template>
     <div class="mb-3">
         <label for="sendgrid-api-key" class="form-label">{{ $t("SendGrid API Key") }}</label>
-        <HiddenInput id="push-api-key" v-model="$parent.notification.sendgridApiKey" :required="true" autocomplete="new-password"></HiddenInput>
+        <HiddenInput id="push-api-key" v-model="$parent.notification.sendgridApiKey" required autocomplete="new-password"></HiddenInput>
     </div>
     <div class="mb-3">
         <label for="sendgrid-from-email" class="form-label">{{ $t("From Email") }}</label>
-        <input 
-            id="sendgrid-from-email" 
-            v-model="$parent.notification.sendgridFromEmail" 
-            type="text" 
-            class="form-control" 
+        <input
+            id="sendgrid-from-email"
+            v-model="$parent.notification.sendgridFromEmail"
+            type="text"
+            class="form-control"
             :class="{ 'is-invalid': errors.from }"
-            @input="validateEmail($event, 'from')"
             required
+            @input="validateEmail($event, 'from')"
         >
-        <div class="invalid-feedback" v-if="errors.from">
+        <div v-if="errors.from" class="invalid-feedback">
             {{ $t("Please use format: Friendly Name <email@domain.com> or just email@domain.com") }}
         </div>
     </div>
     <div class="mb-3">
         <label for="sendgrid-to-email" class="form-label">{{ $t("To Email") }}</label>
-        <input 
-            id="sendgrid-to-email" 
-            v-model="$parent.notification.sendgridToEmail" 
-            type="text" 
+        <input
+            id="sendgrid-to-email"
+            v-model="$parent.notification.sendgridToEmail"
+            type="text"
             class="form-control"
             :class="{ 'is-invalid': errors.to }"
-            @input="validateEmail($event, 'to')"
             required
+            @input="validateEmail($event, 'to')"
         >
-        <div class="invalid-feedback" v-if="errors.to">
+        <div v-if="errors.to" class="invalid-feedback">
             {{ $t("Please use format: Friendly Name <email@domain.com> or just email@domain.com") }}
         </div>
     </div>
     <div class="mb-3">
         <label for="sendgrid-cc-email" class="form-label">{{ $t("smtpCC") }}</label>
-        <input 
-            id="sendgrid-cc-email" 
-            v-model="$parent.notification.sendgridCcEmail" 
-            type="text" 
+        <input
+            id="sendgrid-cc-email"
+            v-model="$parent.notification.sendgridCcEmail"
+            type="text"
             class="form-control"
             :class="{ 'is-invalid': errors.cc }"
             @input="validateEmail($event, 'cc')"
-            
         >
         <div class="form-text">{{ $t("Separate multiple email addresses with commas") }}</div>
-        <div class="invalid-feedback" v-if="errors.cc">
+        <div v-if="errors.cc" class="invalid-feedback">
             {{ $t("Please use format: Friendly Name <email@domain.com> or just email@domain.com for each address") }}
         </div>
     </div>
     <div class="mb-3">
         <label for="sendgrid-bcc-email" class="form-label">{{ $t("smtpBCC") }}</label>
-        <input 
-            id="sendgrid-bcc-email" 
-            v-model="$parent.notification.sendgridBccEmail" 
-            type="text" 
+        <input
+            id="sendgrid-bcc-email"
+            v-model="$parent.notification.sendgridBccEmail"
+            type="text"
             class="form-control"
             :class="{ 'is-invalid': errors.bcc }"
             @input="validateEmail($event, 'bcc')"
-            
         >
         <div class="form-text">{{ $t("Separate multiple email addresses with commas") }}</div>
-        <div class="invalid-feedback" v-if="errors.bcc">
+        <div v-if="errors.bcc" class="invalid-feedback">
             {{ $t("Please use format: Friendly Name <email@domain.com> or just email@domain.com for each address") }}
         </div>
     </div>
@@ -82,7 +80,7 @@ export default {
     components: {
         HiddenInput,
     },
-    
+
     data() {
         return {
             errors: {
@@ -91,6 +89,12 @@ export default {
                 cc: false,
                 bcc: false
             }
+        };
+    },
+
+    mounted() {
+        if (typeof this.$parent.notification.sendgridSubject === "undefined") {
+            this.$parent.notification.sendgridSubject = "Notification from Your Uptime Kuma";
         }
     },
 
@@ -103,30 +107,24 @@ export default {
 
         validateEmail(event, field) {
             const value = event.target.value;
-            
+
             if (!value) {
                 this.errors[field] = false;
                 return;
             }
 
-            if (field === 'cc' || field === 'bcc') {
-                if (value.includes(',')) {
-                    this.errors[field] = !value.split(',')
+            if (field === "cc" || field === "bcc") {
+                if (value.includes(",")) {
+                    this.errors[field] = !value.split(",")
                         .map(email => email.trim())
                         .every(email => this.isValidEmailFormat(email));
                     return;
                 }
             }
-            
+
             this.errors[field] = !this.isValidEmailFormat(value);
         }
-    },
-
-    mounted() {
-        if (typeof this.$parent.notification.sendgridSubject === "undefined") {
-            this.$parent.notification.sendgridSubject = "Notification from Your Uptime Kuma";
-        }
-    },
+    }
 };
 </script>
 
