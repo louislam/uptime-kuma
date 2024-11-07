@@ -1,0 +1,131 @@
+nameOverride:
+namespaceOverride:
+
+isEnableIngress: false
+isEnableService: false
+isEnablePersistVolume: false
+
+deployment:
+  image: louislam/uptime-kuma:1
+  port: 3001
+  spec:
+    replicas: 1
+  # imgae is referenced by https://hub.docker.com/r/louislam/uptime-kuma
+
+  request:
+    cpu: ~
+    memory: ~
+
+  readinessProbe:
+    initialDelaySeconds: ~
+    periodSeconds: ~
+  livenessProbe:
+    path: /
+    initialDelaySeconds: ~
+    periodSeconds: ~
+  startupProbe:
+    path: /
+    initialDelaySeconds: ~
+    periodSeconds: ~
+
+service:
+  metadata:
+    labels: ~
+    annotations: ~
+
+  spec:
+    type: NodePort
+    sessionAffinity: ~
+    selectors: ~
+    externalTrafficPolicy: ~
+    externalIPs: ~
+
+# <vpc-id>, <lb-name>, <arn-id>
+ingress: 
+  host: example.com
+  ingressClassName: alb
+  
+  metadata:
+    labels: ~
+    annotations:
+      alb.ingress.kubernetes.io/vpc-id: <vpc-id>
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/target-type: ip
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+      alb.ingress.kubernetes.io/load-balancer-name: <lb-name>
+      alb.ingress.kubernetes.io/tags: Name=<lb-name>
+
+      alb.ingress.kubernetes.io/certificate-arn: <arn-id>
+      alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-2016-08
+
+      kubernetes.io/ingress.class: alb
+      alb.ingress.kubernetes.io/healthcheck-protocol: HTTP 
+      alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+
+      alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+      alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+      alb.ingress.kubernetes.io/success-codes: '200'
+      alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+      alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+
+
+      alb.ingress.kubernetes.io/backend-protocol: HTTP
+      alb.ingress.kubernetes.io/target-type: instance
+      alb.ingress.kubernetes.io/ip-address-type: ipv4
+      alb.ingress.kubernetes.io/ssl-redirect: '443'
+      alb.ingress.kubernetes.io/actions.ssl-redirect: |
+        {
+          "Type": "redirect",
+          "RedirectConfig": {
+            "Protocol": "HTTPS",
+            "Port": "443",
+            "StatusCode": "HTTP_301"
+          }}
+        }
+      alb.ingress.kubernetes.io/actions.default: |
+        {
+          "type": "forward",
+          "forwardConfig": {
+            "targetGroups": [
+              {
+                "serviceName": "<lb-name>",
+                "servicePort": 80,
+                "weight": 100
+              }
+            ],
+            "targetGroupStickinessConfig": {
+              "enabled": false
+            }
+          }
+        }
+
+      alb.ingress.kubernetes.io/actions.<lb-name>: |
+        {
+          "type": "forward",
+          "forwardConfig": {
+            "targetGroups": [
+              {
+                "serviceName": "<lb-name>",
+                "servicePort": 80,
+                "weight": 100
+              }
+            ],
+            "targetGroupStickinessConfig": {
+              "enabled": false
+            }
+          }
+        }
+        
+  spec:
+    selector: ~
+
+
+persistVolume:
+  size: 1Gi
+  volumemode: FileSystem
+  accessmode: ReadWriteMany
+  persistentvolumereclaimpolicy: Retain
+  storageClass: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    handle: ~

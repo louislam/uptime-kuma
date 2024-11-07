@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-{{ default .Chart.Name .Values.nameOverride }}
+  namespace: {{ default .Chart.Name .Values.namespaceOverride }}
+  
+spec:
+  replicas: {{ .Values.deployment.spec.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: {{ default .Chart.Name .Values.nameOverride }}
+      
+  template:
+    metadata:
+      labels:
+        app: {{ default .Chart.Name .Values.nameOverride }}
+    spec:
+      containers:
+        - name: {{ default .Chart.Name .Values.nameOverride }}
+          image: {{ .Values.deployment.image }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ default "3001" .Values.deployment.port }}
+          volumeMounts:
+            - name: app_data
+              mountPath: /app/data
+
+          readinessProbe: # Pod Container, 연결성 테스트 (트래픽 라우트 조건)
+            tcpSocket:
+              port: {{ default "3001" .Values.deployment.port }}
+            initialDelaySeconds: {{ default 60 .Values.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ default 60 .Values.deployment.readinessProbe.periodSeconds }}
+          livenessProbe: # Pod Container, 연결성 테스트 (재시작 조건)
+            httpGet:
+              path: {{ default "/" .Values.deployment.livenessProbe.path }}
+              port: {{ default "3001" .Values.deployment.port }}
+            initialDelaySeconds: {{ default 60 .Values.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ default 60 .Values.deployment.livenessProbe.periodSeconds }}
+          startupProbe: # Pod 실행 전, 연결성 테스트
+            httpGet:
+              path: {{ default "/" .Values.deployment.startupProbe.path }}
+              port: {{ default "3001" .Values.deployment.port }}
+            initialDelaySeconds: {{ default 60 .Values.deployment.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ default 60 .Values.deployment.startupProbe.periodSeconds }}
+
+          resources:
+            requests:
+              memory: "{{ default "256Mi" .Values.deployment.request.memory }}"
+              cpu: "{{ default "150m" .Values.deployment.request.cpu }}"
+
+      volumes:
+        - name: pvc-{{ default .Chart.Name .Values.nameOverride }}
+          persistentVolumeClaim:
+            claimName: pvc-{{ default .Chart.Name .Values.nameOverride }}

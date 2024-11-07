@@ -1,0 +1,15 @@
+{{- if .Values.isEnablePersistVolume }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-{{ default .Chart.Name .Values.nameOverride }}
+  namespace: {{ default .Chart.Name .Values.namespaceOverride }}
+  annotations:
+    volume.beta.kubernetes.io/storage-class: {{ .Values.persistVolume.storageClass }}
+spec:
+  accessModes: {{ .Values.persistVolume.accessmode }}
+  storageClassName: {{ .Values.persistVolume.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.persistVolume.size }}
+{{- end }}

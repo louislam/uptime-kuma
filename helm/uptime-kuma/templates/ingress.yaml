@@ -1,0 +1,45 @@
+{{- if .Values.isEnableIngress }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ing-{{ default .Chart.Name .Values.nameOverride }}
+  namespace: {{ default .Chart.Name .Values.namespaceOverride }}
+
+  {{- with .Values.ingress.metadata.labels}}
+  labels:
+    {{- range $key, $value := . }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end}}
+  {{- end }}
+
+  {{- with .Values.ingress.metadata.annotations }}
+  annotations:
+    {{- range $key, $value := .}}
+    {{ $key }}: {{ $value | quote }}
+    {{- end}}
+  {{- end }}
+
+spec:
+  selector:
+    app: svc-{{ default .Chart.Name .Values.nameOverride }}
+  {{- with .Values.ingress.spec.selector }}
+    {{- range $key, $value := .}}
+    {{ $key }}: {{ $value | quote }}
+    {{- end}}
+  {{- end }}
+    
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: carrieverse-abc-cms-api-dev
+              port:
+                number: 80
+            serviceName: svc-{{ default .Chart.Name .Values.nameOverride }}
+
+{{- end }}

@@ -40,7 +40,6 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 ### 🐳 Docker
 
 ```bash
-docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 ```
 
 Uptime Kuma is now running on <http://0.0.0.0:3001>.

@@ -1,0 +1,54 @@
+{{- if .Values.isEnableService }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc-{{ default .Chart.Name .Values.nameOverride }}
+  namespace: {{ default .Chart.Name .Values.namespaceOverride }}
+
+  {{- with .Values.service.metadata.labels}}
+  labels:
+    {{- range $key, $value := . }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end}}
+  {{- end }}
+
+  {{- with .Values.service.metadata.annotations }}
+  annotations:
+    {{- range $key, $value := .}}
+    {{ $key }}: {{ $value | quote }}
+    {{- end}}
+  {{- end }}
+
+spec:
+  annotations:
+    app: dep-{{ default .Chart.Name .Values.nameOverride }}
+  {{- with .Values.service.spec.selector }}
+    {{- range $key, $value := .}}
+    {{ $key }}: {{ $value | quote }}
+    {{- end}}
+  {{- end }}
+  
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: {{ .Values.deployment.port }}
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: {{ .Values.deployment.port }}
+
+  type: {{ .Values.service.spec.type }}
+
+  {{- with .Values.service.spec.sessionAffinity }}
+  sessionAffinity: {{ . }}
+  {{- end}}
+
+  {{- with .Values.service.spec.externalIPs }}
+  externalIPs: {{ . }}
+  {{- end}}
+
+  {{- if or (eq .Values.service.spec.type "LoadBalacner" ) (eq .Values.service.spec.type "NodPort")}}
+  externalTrafficPolicy: {{ .Values.service.spec.externalTrafficPolicy }}
+  {{- end }}
+{{- end }}
