@@ -38,7 +38,6 @@ ingress:
     annotations:
       alb.ingress.kubernetes.io/vpc-id: "VPC_ID"
       alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
       alb.ingress.kubernetes.io/load-balancer-name: lb_name
       alb.ingress.kubernetes.io/tags: Name=lb_name
