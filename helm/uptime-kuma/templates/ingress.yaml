@@ -37,7 +37,7 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: carrieverse-abc-cms-api-dev
+              name: svc-{{ default .Chart.Name .Values.nameOverride }}
               port:
                 number: 80
             serviceName: svc-{{ default .Chart.Name .Values.nameOverride }}

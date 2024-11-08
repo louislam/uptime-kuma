@@ -1,20 +1,9 @@
 nameOverride:
 namespaceOverride:
 
-# serviceAccountName: ~
-# serviceAccount:
-#   create: false
-#   annotations: {}
-
-isEnableConfigmap: false
-isEnableIngress: true
 isEnableService: true
+isEnableIngress: true
 isEnablePersistVolume: true
-
-configmap:
-  dataMap:
-    SAMPLE_KEY_1: SAMPLE_VALUE_1
-    SAMPLE_KEY_2: 1
 
 deployment:
   image: louislam/uptime-kuma:1
@@ -26,18 +15,6 @@ deployment:
   request:
     cpu: ~
     memory: ~
-
-  readinessProbe:
-    initialDelaySeconds: ~
-    periodSeconds: ~
-  livenessProbe:
-    path: /
-    initialDelaySeconds: ~
-    periodSeconds: ~
-  startupProbe:
-    path: /
-    initialDelaySeconds: ~
-    periodSeconds: ~
 
 service:
   metadata:
@@ -51,22 +28,22 @@ service:
     externalTrafficPolicy: ~
     externalIPs: ~
 
-# <vpc-id>, <lb-name>, <arn-id>
+# <vpc-id>, lb_name, <arn-id>
 ingress: 
-  host: example.com
+  host: host_name
   ingressClassName: alb
   
   metadata:
     labels: ~
     annotations:
-      alb.ingress.kubernetes.io/vpc-id: <vpc-id>
+      alb.ingress.kubernetes.io/vpc-id: "VPC_ID"
       alb.ingress.kubernetes.io/scheme: internet-facing
       alb.ingress.kubernetes.io/target-type: ip
       alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
-      alb.ingress.kubernetes.io/load-balancer-name: <lb-name>
-      alb.ingress.kubernetes.io/tags: Name=<lb-name>
+      alb.ingress.kubernetes.io/load-balancer-name: lb_name
+      alb.ingress.kubernetes.io/tags: Name=lb_name
 
-      alb.ingress.kubernetes.io/certificate-arn: <arn-id>
+      # alb.ingress.kubernetes.io/certificate-arn: <arn-id>
       alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-2016-08
 
       kubernetes.io/ingress.class: alb
@@ -99,7 +76,7 @@ ingress:
           "forwardConfig": {
             "targetGroups": [
               {
-                "serviceName": "<lb-name>",
+                "serviceName": "lb_name",
                 "servicePort": 80,
                 "weight": 100
               }
@@ -110,13 +87,13 @@ ingress:
           }
         }
 
-      alb.ingress.kubernetes.io/actions.<lb-name>: |
+      alb.ingress.kubernetes.io/actions.lb_name: |
         {
           "type": "forward",
           "forwardConfig": {
             "targetGroups": [
               {
-                "serviceName": "<lb-name>",
+                "serviceName": "lb_name",
                 "servicePort": 80,
                 "weight": 100
               }
@@ -132,11 +109,11 @@ ingress:
 
 
 persistVolume:
-  size: 1Gi
-  volumemode: FileSystem
+  size: 5Gi
+  volumemode: Filesystem
   accessmode: ReadWriteMany
-  persistentvolumereclaimpolicy: Retain
+  persistentVolumeReclaimPolicy: Retain
   storageClass: efs-sc
   csi:
     driver: efs.csi.aws.com
-    handle: ~
+    handle: fs_name

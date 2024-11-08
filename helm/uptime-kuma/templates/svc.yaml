@@ -5,8 +5,9 @@ metadata:
   name: svc-{{ default .Chart.Name .Values.nameOverride }}
   namespace: {{ default .Chart.Name .Values.namespaceOverride }}
 
-  {{- with .Values.service.metadata.labels}}
   labels:
+    app: {{ default .Chart.Name .Values.nameOverride }}
+  {{- with .Values.service.metadata.labels}}
     {{- range $key, $value := . }}
     {{ $key }}: {{ $value | quote }}
     {{- end}}
@@ -20,8 +21,8 @@ metadata:
   {{- end }}
 
 spec:
-  annotations:
-    app: dep-{{ default .Chart.Name .Values.nameOverride }}
+  selector:
+    app: {{ default .Chart.Name .Values.nameOverride }}
   {{- with .Values.service.spec.selector }}
     {{- range $key, $value := .}}
     {{ $key }}: {{ $value | quote }}

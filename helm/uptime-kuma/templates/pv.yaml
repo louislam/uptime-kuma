@@ -8,8 +8,9 @@ spec:
   capacity:
     storage: {{ .Values.persistVolume.size }}
   volumeMode: {{ .Values.persistVolume.volumemode }}
-  accessModes: {{ .Values.persistVolume.accessmode }}
-  persistentVolumeReclaimPolicy: {{ .Values.persistVolume.persistentvolumereclaimpolicy }}
+  accessModes:
+    - {{ .Values.persistVolume.accessmode }}
+  persistentVolumeReclaimPolicy: {{ .Values.persistVolume.persistentVolumeReclaimPolicy }}
   storageClassName: {{ .Values.persistVolume.storageClass }}
   csi:
     driver: {{ .Values.persistVolume.csi.driver }}
