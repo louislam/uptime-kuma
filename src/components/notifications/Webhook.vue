@@ -43,7 +43,7 @@
             <option value="json">{{ $t("webhookBodyPresetOption", ["application/json"]) }}</option>
             <option value="form-data">{{ $t("webhookBodyPresetOption", ["multipart/form-data"]) }}</option>
             <option value="custom">{{ $t("webhookBodyCustomOption") }}</option>
-            <option value="CompletlyCustom">{{ $t("webhookBodyCustomOption") }}</option>
+            <option value="CompletlyCustom">{{ $t("Completly Custom") }}</option>
         </select>
 
         <div v-if="$parent.notification.webhookContentType == 'json'" class="form-text">{{ $t("webhookJsonDesc", ['"application/json"']) }}</div>
