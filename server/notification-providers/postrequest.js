@@ -4,12 +4,15 @@ const axios = require("axios");
 class PostRequest extends NotificationProvider {
     name = "PostRequest";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = notification.postrequestURL;
 
         try {
-            let config =  {
+            let config = {
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + notification.postrequestToken,
