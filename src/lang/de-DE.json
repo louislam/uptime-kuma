@@ -1098,5 +1098,6 @@
     "rabbitmqNodesDescription": "Gib die URL für die RabbitMQ-Verwaltungsknoten einschließlich Protokoll und Port ein. Beispiel: {0}",
     "rabbitmqNodesInvalid": "Benutze eine vollständig qualifizierte URL (beginnend mit 'http') für RabbitMQ-Knoten.",
     "rabbitmqHelpText": "Um den Monitor zu benutzen, musst du das Management Plugin in deinem RabbitMQ-Setup aktivieren. Weitere Informationen siehe {rabitmq_documentation}.",
-    "aboutSlackUsername": "Ändert den Anzeigenamen des Absenders. Wenn du jemanden erwähnen möchtest, füge ihn stattdessen in den Namen ein."
+    "aboutSlackUsername": "Ändert den Anzeigenamen des Absenders. Wenn du jemanden erwähnen möchtest, füge ihn stattdessen in den Namen ein.",
+    "Bearer Token": "Bearer Token"
 }

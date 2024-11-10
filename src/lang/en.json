@@ -550,6 +550,7 @@
     "Number": "Number",
     "Recipients": "Recipients",
     "Access Token": "Access Token",
+    "Bearer Token": "Bearer Token",
     "Channel access token": "Channel access token",
     "Channel access token (Long-lived)": "Channel access token (Long-lived)",
     "Line Developers Console": "Line Developers Console",
