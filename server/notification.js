@@ -69,6 +69,7 @@ const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
+const PostRequest = require("./notification-providers/postrequest");
 
 class Notification {
 
@@ -154,7 +155,8 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid()
+            new SendGrid(),
+            new PostRequest()
         ];
         for (let item of list) {
             if (! item.name) {
@@ -181,6 +183,7 @@ class Notification {
         if (this.providerList[notification.type]) {
             return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
         } else {
+            console.log(notification.type);
             throw new Error("Notification type is not supported");
         }
     }
