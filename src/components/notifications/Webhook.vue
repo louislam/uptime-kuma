@@ -1,5 +1,5 @@
 <template>
-    <div v-if="$parent.notification.webhookContentType != 'CompletlyCustom'" class="mb-3" >
+    <div v-if="$parent.notification.webhookContentType != 'CompletlyCustom'" class="mb-3">
         <label for="webhook-url" class="form-label">{{ $t("Post URL") }}</label>
         <input
             id="webhook-url"
@@ -10,7 +10,7 @@
             required
         />
     </div>
-    <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom'" class="mb-3" >
+    <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom'" class="mb-3">
         <label for="webhook-url" class="form-label">{{ $t("Post URL UP") }}</label>
         <input
             id="webhook-url"
@@ -21,7 +21,7 @@
             required
         />
     </div>
-    <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom'" class="mb-3" >
+    <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom'" class="mb-3">
         <label for="webhook-url" class="form-label">{{ $t("Post URL DOWN") }}</label>
         <input
             id="webhook-url"
