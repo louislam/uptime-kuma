@@ -21,7 +21,7 @@ class PostRequest extends NotificationProvider {
 
             let data = notification.postrequestBody;
 
-            let resp = await axios.post(url, data, config);
+            await axios.post(url, data, config);
 
             return okMsg;
         } catch (error) {
