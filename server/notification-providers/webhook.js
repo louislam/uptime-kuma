@@ -42,9 +42,9 @@ class Webhook extends NotificationProvider {
                         heartbeatJSON,
                         monitorJSON
                     });
-            }else if(notification.webhookContentType === "CompletlyCustom"){
+            } else if (notification.webhookContentType === "CompletlyCustom") {
 
-                if(msg.includes("Down")){
+                if (msg.includes("Down")) {
                     const tpl = JSON.parse(notification.webhookCustomBodyDown);
                     // Insert templated values into Body
                     data = tpl;
@@ -60,7 +60,7 @@ class Webhook extends NotificationProvider {
                             throw "Additional Headers is not a valid JSON";
                         }
                     }
-                }else {
+                } else {
                     const tpl = JSON.parse(notification.webhookCustomBodyUp);
                     // Insert templated values into Body
                     data = tpl;
@@ -79,7 +79,7 @@ class Webhook extends NotificationProvider {
                 }
             }
 
-            if (notification.webhookAdditionalHeaders && notification.webhookContentType != "CompletlyCustom") {
+            if (notification.webhookAdditionalHeaders && notification.webhookContentType !== "CompletlyCustom") {
                 try {
                     config.headers = {
                         ...config.headers,

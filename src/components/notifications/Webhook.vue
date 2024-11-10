@@ -1,16 +1,16 @@
 <template>
-    <div class="mb-3" v-if="$parent.notification.webhookContentType != 'CompletlyCustom'">
-            <label for="webhook-url" class="form-label">{{ $t("Post URL") }}</label>
-            <input
-                id="webhook-url"
-                v-model="$parent.notification.webhookURL"
-                type="url"
-                pattern="https?://.+"
-                class="form-control"
-                required
-            />
+    <div v-if="$parent.notification.webhookContentType != 'CompletlyCustom'" class="mb-3" >
+        <label for="webhook-url" class="form-label">{{ $t("Post URL") }}</label>
+        <input
+            id="webhook-url"
+            v-model="$parent.notification.webhookURL"
+            type="url"
+            pattern="https?://.+"
+            class="form-control"
+            required
+        />
     </div>
-    <div class="mb-3" v-if="$parent.notification.webhookContentType == 'CompletlyCustom'">
+    <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom'" class="mb-3" >
         <label for="webhook-url" class="form-label">{{ $t("Post URL UP") }}</label>
         <input
             id="webhook-url"
@@ -21,7 +21,7 @@
             required
         />
     </div>
-    <div class="mb-3" v-if="$parent.notification.webhookContentType == 'CompletlyCustom'">
+    <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom'" class="mb-3" >
         <label for="webhook-url" class="form-label">{{ $t("Post URL DOWN") }}</label>
         <input
             id="webhook-url"
@@ -69,7 +69,6 @@
                 required
             ></textarea>
         </template>
-        
         <template v-if="$parent.notification.webhookContentType == 'CompletlyCustom'">
             <br>
             <label for="customBodyUp" class="form-label">{{ $t("Body UP") }}</label>
