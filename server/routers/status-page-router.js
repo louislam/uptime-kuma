@@ -150,7 +150,7 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
 // overall status-page status badge
 router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, response) => {
     allowDevAllOrigin(response);
-    const slug = request.params.slug;
+    let slug = request.params.slug;
     slug = slug.toLowerCase();
     const statusPageID = await StatusPage.slugToID(slug);
     const {
