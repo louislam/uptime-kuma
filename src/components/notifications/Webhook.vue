@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-3">
+    <div v-if="$parent.notification.webhookContentType != 'CompletlyCustom'" class="mb-3">
         <label for="webhook-url" class="form-label">{{ $t("Post URL") }}</label>
         <input
             id="webhook-url"
@@ -10,7 +10,28 @@
             required
         />
     </div>
-
+    <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom'" class="mb-3">
+        <label for="webhook-url" class="form-label">{{ $t("Post URL UP") }}</label>
+        <input
+            id="webhook-url"
+            v-model="$parent.notification.webhookURLUp"
+            type="url"
+            pattern="https?://.+"
+            class="form-control"
+            required
+        />
+    </div>
+    <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom'" class="mb-3">
+        <label for="webhook-url" class="form-label">{{ $t("Post URL DOWN") }}</label>
+        <input
+            id="webhook-url"
+            v-model="$parent.notification.webhookURLDown"
+            type="url"
+            pattern="https?://.+"
+            class="form-control"
+            required
+        />
+    </div>
     <div class="mb-3">
         <label for="webhook-request-body" class="form-label">{{ $t("Request Body") }}</label>
         <select
@@ -22,6 +43,7 @@
             <option value="json">{{ $t("webhookBodyPresetOption", ["application/json"]) }}</option>
             <option value="form-data">{{ $t("webhookBodyPresetOption", ["multipart/form-data"]) }}</option>
             <option value="custom">{{ $t("webhookBodyCustomOption") }}</option>
+            <option value="CompletlyCustom">{{ $t("Completly Custom") }}</option>
         </select>
 
         <div v-if="$parent.notification.webhookContentType == 'json'" class="form-text">{{ $t("webhookJsonDesc", ['"application/json"']) }}</div>
@@ -47,6 +69,27 @@
                 required
             ></textarea>
         </template>
+        <template v-if="$parent.notification.webhookContentType == 'CompletlyCustom'">
+            <br>
+            <label for="customBodyUp" class="form-label">{{ $t("Body UP") }}</label>
+            <textarea
+                id="customBodyUp"
+                v-model="$parent.notification.webhookCustomBodyUp"
+                class="form-control"
+                :placeholder="customBodyPlaceholder"
+                required
+            ></textarea>
+        </template>
+        <template v-if="$parent.notification.webhookContentType == 'CompletlyCustom'">
+            <label for="customBodyDown" class="form-label">{{ $t("Body DOWN") }}</label>
+            <textarea
+                id="customBodyDown"
+                v-model="$parent.notification.webhookCustomBodyDown"
+                class="form-control"
+                :placeholder="customBodyPlaceholder"
+                required
+            ></textarea>
+        </template>
     </div>
 
     <div class="mb-3">
@@ -56,13 +99,32 @@
         </div>
         <div class="form-text">{{ $t("webhookAdditionalHeadersDesc") }}</div>
         <textarea
-            v-if="showAdditionalHeadersField"
+            v-if="showAdditionalHeadersField && $parent.notification.webhookContentType != 'CompletlyCustom'"
             id="additionalHeaders"
             v-model="$parent.notification.webhookAdditionalHeaders"
             class="form-control"
             :placeholder="headersPlaceholder"
             :required="showAdditionalHeadersField"
         ></textarea>
+
+        <div v-if="$parent.notification.webhookContentType == 'CompletlyCustom' && showAdditionalHeadersField">
+            <label for="additionalHeadersUp" class="form-label">{{ $t("Header UP") }}</label>
+            <textarea
+                id="additionalHeadersUp"
+                v-model="$parent.notification.webhookAdditionalHeadersUp"
+                class="form-control"
+                :placeholder="headersPlaceholder"
+                :required="showAdditionalHeadersField"
+            ></textarea>
+            <label for="additionalHeadersDown" class="form-label">{{ $t("Header DOWN") }}</label>
+            <textarea
+                id="additionalHeadersDown"
+                v-model="$parent.notification.webhookAdditionalHeadersDown"
+                class="form-control"
+                :placeholder="headersPlaceholder"
+                :required="showAdditionalHeadersField"
+            ></textarea>
+        </div>
     </div>
 </template>
 

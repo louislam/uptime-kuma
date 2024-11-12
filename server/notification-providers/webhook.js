@@ -21,6 +21,7 @@ class Webhook extends NotificationProvider {
             let config = {
                 headers: {}
             };
+            let url = notification.webhookURL;
 
             if (notification.webhookContentType === "form-data") {
                 const formData = new FormData();
@@ -28,6 +29,8 @@ class Webhook extends NotificationProvider {
                 config.headers = formData.getHeaders();
                 data = formData;
             } else if (notification.webhookContentType === "custom") {
+
+                console.log(msg);
                 // Initialize LiquidJS and parse the custom Body Template
                 const engine = new Liquid();
                 const tpl = engine.parse(notification.webhookCustomBody);
@@ -39,9 +42,44 @@ class Webhook extends NotificationProvider {
                         heartbeatJSON,
                         monitorJSON
                     });
+            } else if (notification.webhookContentType === "CompletlyCustom") {
+
+                if (msg.includes("Down")) {
+                    const tpl = JSON.parse(notification.webhookCustomBodyDown);
+                    // Insert templated values into Body
+                    data = tpl;
+                    url = notification.webhookURLDown;
+
+                    if (notification.webhookAdditionalHeaders) {
+                        try {
+                            config.headers = {
+                                ...config.headers,
+                                ...JSON.parse(notification.webhookAdditionalHeadersDown)
+                            };
+                        } catch (err) {
+                            throw "Additional Headers is not a valid JSON";
+                        }
+                    }
+                } else {
+                    const tpl = JSON.parse(notification.webhookCustomBodyUp);
+                    // Insert templated values into Body
+                    data = tpl;
+                    url = notification.webhookURLUp;
+
+                    if (notification.webhookAdditionalHeaders) {
+                        try {
+                            config.headers = {
+                                ...config.headers,
+                                ...JSON.parse(notification.webhookAdditionalHeadersUp)
+                            };
+                        } catch (err) {
+                            throw "Additional Headers is not a valid JSON";
+                        }
+                    }
+                }
             }
 
-            if (notification.webhookAdditionalHeaders) {
+            if (notification.webhookAdditionalHeaders && notification.webhookContentType !== "CompletlyCustom") {
                 try {
                     config.headers = {
                         ...config.headers,
@@ -52,7 +90,7 @@ class Webhook extends NotificationProvider {
                 }
             }
 
-            await axios.post(notification.webhookURL, data, config);
+            await axios.post(url, data, config);
             return okMsg;
 
         } catch (error) {
