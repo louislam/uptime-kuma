@@ -165,7 +165,8 @@ export default {
                 "whapi": "WhatsApp (Whapi)",
                 "gtxmessaging": "GtxMessaging",
                 "Cellsynt": "Cellsynt",
-                "SendGrid": "SendGrid"
+                "SendGrid": "SendGrid",
+                "pumble": "Pumble",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
