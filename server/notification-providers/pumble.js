@@ -10,7 +10,6 @@ class Pumble extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-        let webhookUrl = notification.pumblewebhookURL;
 
         try {
             if (heartbeatJSON === null && monitorJSON === null) {
@@ -26,7 +25,7 @@ class Pumble extends NotificationProvider {
                     ]
                 };
 
-                await axios.post(webhookUrl, data);
+                await axios.post(notification.webhookURL, data);
                 return okMsg;
             }
 
@@ -41,7 +40,7 @@ class Pumble extends NotificationProvider {
                 ]
             };
 
-            await axios.post(webhookUrl, data);
+            await axios.post(notification.webhookURL, data);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
