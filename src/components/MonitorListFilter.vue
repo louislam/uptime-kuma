@@ -253,6 +253,8 @@ export default {
         clearFilters() {
             this.$emit("updateFilter", {
                 status: [],
+                active: [],
+                tags: [],
             });
         },
         getExistingTags(callback) {
