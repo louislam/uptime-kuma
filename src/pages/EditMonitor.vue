@@ -1065,7 +1065,7 @@ import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
-const toast = useToast;
+const toast = useToast();
 
 const pushTokenLength = 32;
 

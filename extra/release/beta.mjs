@@ -6,14 +6,13 @@ import {
     checkDocker,
     checkTagExists,
     checkVersionFormat,
-    dryRun,
-    getRepoName,
+    getRepoNames,
     pressAnyKey,
     execSync, uploadArtifacts,
 } from "./lib.mjs";
 import semver from "semver";
 
-const repoName = getRepoName();
+const repoNames = getRepoNames();
 const version = process.env.RELEASE_BETA_VERSION;
 const githubToken = process.env.RELEASE_GITHUB_TOKEN;
 
@@ -39,7 +38,7 @@ if (semverIdentifier[0] !== "beta") {
 checkDocker();
 
 // Check if the tag exists
-await checkTagExists(repoName, version);
+await checkTagExists(repoNames, version);
 
 // node extra/beta/update-version.js
 execSync("node ./extra/beta/update-version.js");
@@ -48,16 +47,16 @@ execSync("node ./extra/beta/update-version.js");
 buildDist();
 
 // Build slim image (rootless)
-buildImage(repoName, [ "beta-slim-rootless", ver(version, "slim-rootless") ], "rootless", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+buildImage(repoNames, [ "beta-slim-rootless", ver(version, "slim-rootless") ], "rootless", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
 
 // Build full image (rootless)
-buildImage(repoName, [ "beta-rootless", ver(version, "rootless") ], "rootless");
+buildImage(repoNames, [ "beta-rootless", ver(version, "rootless") ], "rootless");
 
 // Build slim image
-buildImage(repoName, [ "beta-slim", ver(version, "slim") ], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+buildImage(repoNames, [ "beta-slim", ver(version, "slim") ], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
 
 // Build full image
-buildImage(repoName, [ "beta", version ], "release");
+buildImage(repoNames, [ "beta", version ], "release");
 
 await pressAnyKey();
 
