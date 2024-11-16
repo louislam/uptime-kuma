@@ -201,7 +201,9 @@ const router = createRouter({
 router.beforeEach((to, from) => {
     // Check if redirectedFrom is defined to check if this function has already been run
     // Without this check, the router will be stuck in an infinite loop
-    if (to.redirectedFrom) return;
+    if (to.redirectedFrom) {
+        return;
+    }
 
     // If the user is navigating to same page but to.query is empty, they have clicked on the same link
     // For example: Clicked on Add monitor twice
