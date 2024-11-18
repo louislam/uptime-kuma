@@ -14,15 +14,16 @@ export default {
     watch: {
         "$root.isMobile"(newVal) {
             if (!newVal && this.$route.path === "/list") {
-                this.$router.replace({ path: "/dashboard" });
+                this.$router.push("/dashboard");
             }
-        },
+        }
     },
     mounted() {
         if (!this.$root.isMobile && this.$route.path === "/list") {
-            this.$router.replace({ path: "/dashboard" });
+            this.$router.push("/dashboard");
         }
     },
+
 };
 </script>
 
@@ -32,4 +33,5 @@ export default {
 .shadow-box {
     padding: 20px;
 }
+
 </style>
