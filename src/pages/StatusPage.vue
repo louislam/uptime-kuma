@@ -166,7 +166,7 @@
                 <Editable v-model="config.title" class="title" tag="span" :contenteditable="editMode" :noNL="true" />
 
                 <!-- Locale Selector -->
-                <span class="language-selector">
+                <span class="language-selector" v-if="config.showLocaleSelector">
                     <select v-model="$root.language" class="form-select">
                         <option v-for="locale in $i18n.availableLocales" :key="locale" :value="locale" :text="$i18n.messages[locale].languageName"></option>
                     </select>
