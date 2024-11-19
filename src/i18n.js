@@ -14,6 +14,7 @@ const languageList = {
     "es-ES": "Español",
     "eu": "Euskara",
     "fa": "Farsi",
+    "ga": "Gaeilge",
     "pt-PT": "Português (Portugal)",
     "pt-BR": "Português (Brasileiro)",
     "fi": "Suomi",
