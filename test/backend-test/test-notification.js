@@ -14,9 +14,9 @@ test("Notification - Format Message Test", async (t) => {
 
     const monitor = {
         name: "Test Monitor",
-        hostname: "https://example.com",
+        hostname: "test.mydomain.com",
         type: "http",
-        url: "https://example.com/status"
+        url: "https://test.mydomain.com/status"
     };
 
     const msg = {
@@ -27,15 +27,15 @@ test("Notification - Format Message Test", async (t) => {
 
     const formatted = notification.format(msg);
     assert.ok(formatted.includes("Test Monitor"), "Should include monitor name");
-    assert.ok(formatted.includes("https://example.com"), "Should include full URL");
+    assert.ok(formatted.includes("https://test.mydomain.com"), "Should include full URL");
     assert.ok(formatted.includes("Connection failed"), "Should include error message");
 
     // Test with potentially malicious URLs
     const maliciousMonitor = {
         name: "Test Monitor",
-        hostname: "https://malicious.com/example.com",
+        hostname: "https://malicious.mydomain.com/test.mydomain.com",
         type: "http",
-        url: "https://evil.com/redirect/https://example.com"
+        url: "https://evil.mydomain.com/redirect/https://test.mydomain.com"
     };
 
     const maliciousMsg = {
@@ -45,8 +45,8 @@ test("Notification - Format Message Test", async (t) => {
     };
 
     const maliciousFormatted = notification.format(maliciousMsg);
-    assert.ok(!maliciousFormatted.includes("example.com"), "Should not include example.com as substring");
-    assert.ok(maliciousFormatted.includes("https://malicious.com"), "Should include exact malicious URL");
+    assert.ok(!maliciousFormatted.includes("test.mydomain.com"), "Should not include test.mydomain.com as substring");
+    assert.ok(maliciousFormatted.includes("https://malicious.mydomain.com"), "Should include exact malicious URL");
 });
 
 test("Notification - Status Test", async (t) => {
@@ -57,7 +57,7 @@ test("Notification - Status Test", async (t) => {
         type: "up",
         monitor: {
             name: "Test1",
-            url: "https://test1.example.com",
+            url: "https://test1.mydomain.com",
             type: "http"
         },
         msg: "Service is up",
@@ -65,14 +65,14 @@ test("Notification - Status Test", async (t) => {
     };
     const upFormatted = notification.format(upMsg);
     assert.ok(upFormatted.includes("up"), "Should indicate UP status");
-    assert.ok(upFormatted.includes("https://test1.example.com"), "Should include complete URL");
+    assert.ok(upFormatted.includes("https://test1.mydomain.com"), "Should include complete URL");
 
     // Test DOWN status with secure URL
     const downMsg = {
         type: "down",
         monitor: {
             name: "Test2",
-            url: "https://test2.example.com",
+            url: "https://test2.mydomain.com",
             type: "http"
         },
         msg: "Service is down",
@@ -80,7 +80,7 @@ test("Notification - Status Test", async (t) => {
     };
     const downFormatted = notification.format(downMsg);
     assert.ok(downFormatted.includes("down"), "Should indicate DOWN status");
-    assert.ok(downFormatted.includes("https://test2.example.com"), "Should include complete URL");
+    assert.ok(downFormatted.includes("https://test2.mydomain.com"), "Should include complete URL");
 });
 
 test("Notification - Queue Management Test", async (t) => {
@@ -91,7 +91,7 @@ test("Notification - Queue Management Test", async (t) => {
         type: "down",
         monitor: {
             name: "Test1",
-            url: "https://test1.example.com",
+            url: "https://test1.mydomain.com",
             type: "http"
         },
         msg: "Error 1"
@@ -101,7 +101,7 @@ test("Notification - Queue Management Test", async (t) => {
         type: "up",
         monitor: {
             name: "Test2",
-            url: "https://test2.example.com",
+            url: "https://test2.mydomain.com",
             type: "http"
         },
         msg: "Recovered"
@@ -116,22 +116,22 @@ test("Notification - URL Validation Test", async (t) => {
     // Test with various URL formats
     const testCases = [
         {
-            url: "https://example.com",
+            url: "https://test.mydomain.com",
             valid: true,
             description: "Basic HTTPS URL"
         },
         {
-            url: "http://sub.example.com",
+            url: "http://sub.test.mydomain.com",
             valid: true,
             description: "Subdomain URL"
         },
         {
-            url: "https://example.com/path",
+            url: "https://test.mydomain.com/path",
             valid: true,
             description: "URL with path"
         },
         {
-            url: "https://malicious.com/example.com",
+            url: "https://malicious.test.mydomain.com/test.mydomain.com",
             valid: true,
             description: "URL with misleading path"
         },
@@ -175,7 +175,7 @@ test("Notification - Priority Test", async (t) => {
         type: "down",
         monitor: {
             name: "Test1",
-            url: "https://test1.example.com",
+            url: "https://test1.mydomain.com",
             type: "http"
         },
         msg: "Critical Error",
@@ -186,7 +186,7 @@ test("Notification - Priority Test", async (t) => {
         type: "down",
         monitor: {
             name: "Test2",
-            url: "https://test2.example.com",
+            url: "https://test2.mydomain.com",
             type: "http"
         },
         msg: "Warning",
@@ -204,7 +204,7 @@ test("Notification - Retry Logic Test", async (t) => {
         type: "down",
         monitor: {
             name: "Test1",
-            url: "https://test1.example.com",
+            url: "https://test1.mydomain.com",
             type: "http"
         },
         msg: "Error",
@@ -227,7 +227,7 @@ test("Notification - Rate Limiting Test", async (t) => {
     const notification = new Notification();
     const monitor = {
         name: "Test Monitor",
-        url: "https://example.com",
+        url: "https://test.mydomain.com",
         type: "http"
     };
 
