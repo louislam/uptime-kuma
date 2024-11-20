@@ -93,7 +93,7 @@
                                         </option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
-                                        </option>                                       
+                                        </option>
                                     </optgroup>
                                 </select>
                                 <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
