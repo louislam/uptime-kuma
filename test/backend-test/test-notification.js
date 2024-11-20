@@ -11,12 +11,12 @@ test("Notification - Basic Creation Test", async (t) => {
 
 test("Notification - Format Message Test", async (t) => {
     const notification = new Notification();
-    
+
     const monitor = {
         name: "Test Monitor",
         hostname: "example.com"
     };
-    
+
     const msg = {
         type: "down",
         monitor,
@@ -29,28 +29,52 @@ test("Notification - Format Message Test", async (t) => {
     assert.ok(formatted.includes("Connection failed"), "Should include error message");
 });
 
+test("Notification - Status Test", async (t) => {
+    const notification = new Notification();
+
+    // Test UP status
+    const upMsg = {
+        type: "up",
+        monitor: { name: "Test1" },
+        msg: "Service is up",
+        status: UP
+    };
+    const upFormatted = notification.format(upMsg);
+    assert.ok(upFormatted.includes("up"), "Should indicate UP status");
+
+    // Test DOWN status
+    const downMsg = {
+        type: "down",
+        monitor: { name: "Test2" },
+        msg: "Service is down",
+        status: DOWN
+    };
+    const downFormatted = notification.format(downMsg);
+    assert.ok(downFormatted.includes("down"), "Should indicate DOWN status");
+});
+
 test("Notification - Queue Management Test", async (t) => {
     const notification = new Notification();
-    
+
     // Add items to queue
     notification.add({
         type: "down",
         monitor: { name: "Test1" },
         msg: "Error 1"
     });
-    
+
     notification.add({
         type: "up",
         monitor: { name: "Test2" },
         msg: "Recovered"
     });
-    
+
     assert.strictEqual(notification.queue.length, 2, "Queue should have 2 items");
 });
 
 test("Notification - Priority Test", async (t) => {
     const notification = new Notification();
-    
+
     // Add items with different priorities
     notification.add({
         type: "down",
@@ -58,21 +82,21 @@ test("Notification - Priority Test", async (t) => {
         msg: "Critical Error",
         priority: "high"
     });
-    
+
     notification.add({
         type: "down",
         monitor: { name: "Test2" },
         msg: "Warning",
         priority: "low"
     });
-    
+
     const nextItem = notification.queue[0];
     assert.strictEqual(nextItem.priority, "high", "High priority item should be first");
 });
 
 test("Notification - Retry Logic Test", async (t) => {
     const notification = new Notification();
-    
+
     const testMsg = {
         type: "down",
         monitor: { name: "Test1" },
@@ -80,9 +104,9 @@ test("Notification - Retry Logic Test", async (t) => {
         retries: 0,
         maxRetries: 3
     };
-    
+
     notification.add(testMsg);
-    
+
     // Simulate failed send
     try {
         await notification.send(testMsg);
@@ -95,7 +119,7 @@ test("Notification - Retry Logic Test", async (t) => {
 test("Notification - Rate Limiting Test", async (t) => {
     const notification = new Notification();
     const monitor = { name: "Test Monitor" };
-    
+
     // Add multiple notifications for same monitor
     for (let i = 0; i < 5; i++) {
         notification.add({
@@ -104,11 +128,11 @@ test("Notification - Rate Limiting Test", async (t) => {
             msg: `Error ${i}`
         });
     }
-    
+
     // Check if rate limiting is applied
     const processedCount = notification.queue.filter(
         item => item.monitor.name === "Test Monitor"
     ).length;
-    
+
     assert.ok(processedCount < 5, "Should apply rate limiting");
 });
