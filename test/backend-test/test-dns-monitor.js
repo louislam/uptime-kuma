@@ -4,6 +4,30 @@ const { DnsMonitorType } = require("../../server/monitor-types/dns");
 const { UP, DOWN } = require("../../src/util");
 const dayjs = require("dayjs");
 
+test("DNSMonitor - Basic Creation Test", async (t) => {
+    const monitor = new DnsMonitorType();
+    assert.ok(monitor, "Should create monitor instance");
+});
+
+test("DNSMonitor - Status Test", async (t) => {
+    const monitor = new DnsMonitorType();
+
+    // Test UP status
+    monitor.status = UP;
+    assert.strictEqual(monitor.status, UP, "Should set UP status");
+
+    // Test DOWN status
+    monitor.status = DOWN;
+    assert.strictEqual(monitor.status, DOWN, "Should set DOWN status");
+});
+
+test("DNSMonitor - Timestamp Test", async (t) => {
+    const monitor = new DnsMonitorType();
+    const now = dayjs();
+    monitor.timestamp = now;
+    assert.strictEqual(monitor.timestamp.valueOf(), now.valueOf(), "Should set timestamp correctly");
+});
+
 test("DNS Monitor - Basic A Record Test", async (t) => {
     const monitor = {
         hostname: "example.com",
@@ -11,14 +35,14 @@ test("DNS Monitor - Basic A Record Test", async (t) => {
         port: 53,
         dns_resolve_type: "A"
     };
-    
+
     const heartbeat = {
         ping: 0
     };
 
     const dnsMonitor = new DnsMonitorType();
     await dnsMonitor.check(monitor, heartbeat);
-    
+
     assert.ok(heartbeat.ping > 0, "Ping should be recorded");
     assert.ok(Array.isArray(heartbeat.dnsRecords), "DNS records should be an array");
 });
@@ -30,7 +54,7 @@ test("DNS Monitor - Invalid Domain Test", async (t) => {
         port: 53,
         dns_resolve_type: "A"
     };
-    
+
     const heartbeat = {
         ping: 0
     };
@@ -51,14 +75,14 @@ test("DNS Monitor - Custom DNS Server Test", async (t) => {
         port: 53,
         dns_resolve_type: "A"
     };
-    
+
     const heartbeat = {
         ping: 0
     };
 
     const dnsMonitor = new DnsMonitorType();
     await dnsMonitor.check(monitor, heartbeat);
-    
+
     assert.ok(heartbeat.ping > 0, "Ping should be recorded");
 });
 
@@ -69,14 +93,14 @@ test("DNS Monitor - TXT Record Test", async (t) => {
         port: 53,
         dns_resolve_type: "TXT"
     };
-    
+
     const heartbeat = {
         ping: 0
     };
 
     const dnsMonitor = new DnsMonitorType();
     await dnsMonitor.check(monitor, heartbeat);
-    
+
     assert.ok(heartbeat.ping > 0, "Ping should be recorded");
     assert.ok(Array.isArray(heartbeat.dnsRecords), "DNS records should be an array");
 });
@@ -93,13 +117,13 @@ test("DNS Monitor - Condition Evaluation Test", async (t) => {
             value: "93.184.216.34" // example.com's IP (this might change)
         }]
     };
-    
+
     const heartbeat = {
         ping: 0
     };
 
     const dnsMonitor = new DnsMonitorType();
     await dnsMonitor.check(monitor, heartbeat);
-    
+
     assert.ok(heartbeat.ping > 0, "Ping should be recorded");
 });

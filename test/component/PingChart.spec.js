@@ -1,11 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import PingChart from "../../src/components/PingChart.vue";
+import { Line } from "vue-chartjs";
 
 // Mock Chart.js
 vi.mock("chart.js", () => ({
     Chart: vi.fn(),
     registerables: []
+}));
+
+// Mock vue-chartjs
+vi.mock("vue-chartjs", () => ({
+    Line: {
+        name: "Line",
+        template: "<canvas></canvas>"
+    }
 }));
 
 describe("PingChart.vue", () => {

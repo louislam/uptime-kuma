@@ -73,7 +73,7 @@ describe("MonitorList.vue", () => {
                     MonitorListItem: {
                         name: "MonitorListItem",
                         template: "<div class='monitor-list-item' :class='{ active: active }' @click='$emit(\"click\")'><slot></slot></div>",
-                        props: ["active"]
+                        props: [ "active" ]
                     },
                     Confirm: true,
                     MonitorListFilter: true,
@@ -93,7 +93,7 @@ describe("MonitorList.vue", () => {
         const items = wrapper.findAll("[data-testid='monitor-list'] .monitor-list-item");
         await items[0].trigger("click");
         expect(wrapper.emitted("select-monitor")).toBeTruthy();
-        expect(wrapper.emitted("select-monitor")[0]).toEqual([1]);
+        expect(wrapper.emitted("select-monitor")[0]).toEqual([ 1 ]);
     });
 
     it("applies active class to selected monitor", async () => {
