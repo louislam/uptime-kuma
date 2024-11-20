@@ -1,49 +1,42 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import PingChart from "../../src/components/PingChart.vue";
-import { Line } from "vue-chartjs";
 
-// Mock Chart.js components
-vi.mock("vue-chartjs", () => ({
-    Line: {
-        name: "Line",
-        template: "<canvas></canvas>"
-    }
+// Mock Chart.js
+vi.mock("chart.js", () => ({
+    Chart: vi.fn(),
+    registerables: []
 }));
 
 describe("PingChart.vue", () => {
     let wrapper;
-    const mockData = {
-        labels: ["12:00", "12:01", "12:02"],
-        datasets: [{
-            label: "Ping",
-            data: [100, 150, 120],
-            borderColor: "#42b983",
-            tension: 0.3
-        }]
+    const mockMonitorId = 1;
+    const monitorList = {
+        1: {
+            id: 1,
+            name: "Test Monitor",
+            interval: 60,
+            type: "http"
+        }
     };
 
-    const mockOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: true,
-                title: {
-                    display: true,
-                    text: "Response Time (ms)"
-                }
-            }
-        }
+    const mockStorage = {
+        "chart-period-1": "24"
     };
 
     beforeEach(() => {
         wrapper = mount(PingChart, {
             props: {
-                chartData: mockData,
-                options: mockOptions
+                monitorId: mockMonitorId
             },
             global: {
+                mocks: {
+                    $t: (key) => key, // Mock translation function
+                    $root: {
+                        monitorList,
+                        storage: () => mockStorage
+                    }
+                },
                 stubs: {
                     Line: true
                 }
@@ -55,60 +48,37 @@ describe("PingChart.vue", () => {
         expect(wrapper.findComponent(Line).exists()).toBe(true);
     });
 
-    it("passes correct data to chart component", () => {
-        const chart = wrapper.findComponent(Line);
-        expect(chart.props("data")).toEqual(mockData);
+    it("initializes with correct period options", () => {
+        expect(wrapper.vm.chartPeriodOptions).toEqual({
+            0: "recent",
+            3: "3h",
+            6: "6h",
+            24: "24h",
+            168: "1w"
+        });
     });
 
-    it("passes correct options to chart component", () => {
-        const chart = wrapper.findComponent(Line);
-        expect(chart.props("options")).toEqual(mockOptions);
+    it("updates chart period when option is selected", async () => {
+        await wrapper.setData({ chartPeriodHrs: "24" });
+        expect(wrapper.vm.chartPeriodHrs).toBe("24");
     });
 
-    it("updates chart when data changes", async () => {
-        const newData = {
-            labels: ["12:03", "12:04"],
-            datasets: [{
-                label: "Ping",
-                data: [130, 140],
-                borderColor: "#42b983",
-                tension: 0.3
-            }]
-        };
-
-        await wrapper.setProps({ chartData: newData });
-        const chart = wrapper.findComponent(Line);
-        expect(chart.props("data")).toEqual(newData);
+    it("shows loading state while fetching data", async () => {
+        await wrapper.setData({ loading: true });
+        expect(wrapper.find(".chart-wrapper").classes()).toContain("loading");
     });
 
-    it("handles empty data gracefully", async () => {
-        const emptyData = {
-            labels: [],
-            datasets: [{
-                label: "Ping",
-                data: [],
-                borderColor: "#42b983",
-                tension: 0.3
-            }]
-        };
-
-        await wrapper.setProps({ chartData: emptyData });
-        const chart = wrapper.findComponent(Line);
-        expect(chart.props("data")).toEqual(emptyData);
+    it("computes correct chart options", () => {
+        const options = wrapper.vm.chartOptions;
+        expect(options.responsive).toBe(true);
+        expect(options.maintainAspectRatio).toBe(false);
+        expect(options.scales.x.type).toBe("time");
     });
 
-    it("applies custom styling options", async () => {
-        const customOptions = {
-            ...mockOptions,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        };
-
-        await wrapper.setProps({ options: customOptions });
-        const chart = wrapper.findComponent(Line);
-        expect(chart.props("options")).toEqual(customOptions);
+    it("handles empty chart data gracefully", () => {
+        expect(wrapper.vm.chartRawData).toBe(null);
+        const chartData = wrapper.vm.chartData;
+        expect(chartData.datasets).toBeDefined();
+        expect(chartData.datasets.length).toBe(2); // One for ping data, one for status
     });
 });

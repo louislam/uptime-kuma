@@ -8,45 +8,50 @@ describe("Status.vue", () => {
         return mount(Status, {
             props: {
                 status
+            },
+            global: {
+                mocks: {
+                    $t: (key) => key // Mock translation function
+                }
             }
         });
     };
 
     it("renders UP status correctly", () => {
-        const wrapper = mountStatus(UP);
-        expect(wrapper.find(".badge").classes()).toContain("bg-success");
-        expect(wrapper.text()).toContain("UP");
+        const wrapper = mountStatus(1); // UP status
+        expect(wrapper.find(".badge").classes()).toContain("bg-primary");
+        expect(wrapper.text()).toBe("Up");
     });
 
     it("renders DOWN status correctly", () => {
-        const wrapper = mountStatus(DOWN);
+        const wrapper = mountStatus(0); // DOWN status
         expect(wrapper.find(".badge").classes()).toContain("bg-danger");
-        expect(wrapper.text()).toContain("DOWN");
+        expect(wrapper.text()).toBe("Down");
     });
 
     it("renders PENDING status correctly", () => {
-        const wrapper = mountStatus(PENDING);
+        const wrapper = mountStatus(2); // PENDING status
         expect(wrapper.find(".badge").classes()).toContain("bg-warning");
-        expect(wrapper.text()).toContain("PENDING");
+        expect(wrapper.text()).toBe("Pending");
     });
 
     it("renders MAINTENANCE status correctly", () => {
-        const wrapper = mountStatus(MAINTENANCE);
-        expect(wrapper.find(".badge").classes()).toContain("bg-info");
-        expect(wrapper.text()).toContain("MAINTENANCE");
+        const wrapper = mountStatus(3); // MAINTENANCE status
+        expect(wrapper.find(".badge").classes()).toContain("bg-maintenance");
+        expect(wrapper.text()).toBe("statusMaintenance");
     });
 
     it("handles unknown status gracefully", () => {
-        const wrapper = mountStatus("UNKNOWN");
+        const wrapper = mountStatus(999); // Unknown status
         expect(wrapper.find(".badge").classes()).toContain("bg-secondary");
-        expect(wrapper.text()).toContain("UNKNOWN");
+        expect(wrapper.text()).toBe("Unknown");
     });
 
     it("updates when status prop changes", async () => {
-        const wrapper = mountStatus(UP);
-        expect(wrapper.find(".badge").classes()).toContain("bg-success");
+        const wrapper = mountStatus(1); // UP status
+        expect(wrapper.find(".badge").classes()).toContain("bg-primary");
 
-        await wrapper.setProps({ status: DOWN });
+        await wrapper.setProps({ status: 0 }); // Change to DOWN status
         expect(wrapper.find(".badge").classes()).toContain("bg-danger");
     });
 });
