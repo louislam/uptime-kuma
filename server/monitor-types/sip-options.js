@@ -12,6 +12,7 @@ class SIPMonitorType extends MonitorType {
      * @param {Heartbeat} heartbeat Monitor heartbeat to update
      * @param {UptimeKumaServer} server Uptime Kuma server
      * @returns {Promise<void>}
+     * @throws Will throw an error if the command execution encounters any error.
      */
     async check(monitor, heartbeat, _server) {
         try {
@@ -25,6 +26,7 @@ class SIPMonitorType extends MonitorType {
     /**
      * Runs Sipsak options ping
      * @param {string} hostname SIP server address to send options.
+     * @param {number} port SIP server port
      * @param {number} timeout timeout of options reply
      * @returns {Promise<string>} A Promise that resolves to the output of the Sipsak options ping
      * @throws Will throw an error if the command execution encounters any error.
@@ -41,6 +43,12 @@ class SIPMonitorType extends MonitorType {
         }
     }
 
+    /**
+     * 
+     * @param {string} res 
+     * @param {object} heartbeat
+     * @returns {void} 
+     */
     parseSipsakResponse(res, heartbeat){
         let lines = res.split("\n");
         for (let line of lines){
