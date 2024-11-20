@@ -555,5 +555,6 @@ const { MqttMonitorType } = require("./monitor-types/mqtt");
 const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
-const Monitor = require("./model/monitor");const { SIPMonitorType } = require("./monitor-types/sip-options");
+const { SIPMonitorType } = require("./monitor-types/sip-options");
+const Monitor = require("./model/monitor");
 
