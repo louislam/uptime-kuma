@@ -838,5 +838,7 @@
     "noOrBadCertificate": "Brak/zły certyfikat",
     "Invert Keyword": "Odwróć słowo kluczowe",
     "Expected Value": "Oczekiwana wartość",
-    "Json Query": "Zapytanie Json"
+    "Json Query": "Zapytanie Json",
+    "ceredsmsSenderName": "Nadpis",
+    "ceredsmsPhoneNumber": "Numer telefonu"
 }

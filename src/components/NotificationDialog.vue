@@ -167,6 +167,7 @@ export default {
                 "WeCom": "WeCom (企业微信群机器人)",
                 "ServerChan": "ServerChan (Server酱)",
                 "smsc": "SMSC",
+                "ceredsms": "sms.cered.pl",
             };
 
             // Sort by notification name
