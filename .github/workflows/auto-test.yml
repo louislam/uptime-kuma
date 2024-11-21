@@ -104,12 +104,8 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Install Playwright Browsers
-      run: |
-        npx playwright install chromium firefox --with-deps
-      env:
-        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
-        PLAYWRIGHT_BROWSERS_PATH: 0
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps chromium firefox
 
     - name: Build project
       run: npm run build
