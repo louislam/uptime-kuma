@@ -1443,11 +1443,14 @@ message HealthCheckResponse {
                 }
             }
 
-            if (this.monitor.type === "snmp") {
+            // Set a default timeout if the monitor type has changed or if it's a new monitor
+            if (oldType || this.isAdd) {
+                if (this.monitor.type === "snmp") {
                 // snmp is not expected to be executed via the internet => we can choose a lower default timeout
-                this.monitor.timeout = 5;
-            } else {
-                this.monitor.timeout = 48;
+                    this.monitor.timeout = 5;
+                } else {
+                    this.monitor.timeout = 48;
+                }
             }
 
             // Set default SNMP version
