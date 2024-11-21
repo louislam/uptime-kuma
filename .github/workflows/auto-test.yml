@@ -1,3 +1,6 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
 name: Auto Test
 
 on:
@@ -11,19 +14,7 @@ on:
       - '*.md'
 
 jobs:
-  check-linters:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js 20
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: 'npm'
-    - run: npm install
-    - run: npm run lint:prod
-
-  test:
+  auto-test:
     needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -32,40 +23,22 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
         node: [ 18, 20 ]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node }}
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm install
-
-    - name: Build project
-      run: npm run build
-
-    - name: Run backend tests
-      run: npm run test-backend
+    - run: npm install
+    - run: npm run build
+    - run: npm run test-backend
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
-
-    - name: Run component tests
-      run: npm run test-component
-
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: test-results-${{ matrix.os }}-node-${{ matrix.node }}
-        path: |
-          ./test-results
-          ./coverage
-        retention-days: 30
 
   # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
   armv7-simple-test:
@@ -77,48 +50,44 @@ jobs:
       matrix:
         os: [ ARMv7 ]
         node: [ 18, 20 ]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+      - run: git config --global core.autocrlf false  # Mainly for Windows
       - uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: 'npm'
       - run: npm ci --production
 
-  e2e-test:
-    needs: [ check-linters ]
-    runs-on: ARM64
-    timeout-minutes: 30
+  check-linters:
+    runs-on: ubuntu-latest
+
     steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
     - name: Use Node.js 20
       uses: actions/setup-node@v4
       with:
         node-version: 20
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm install
+    - run: npm install
+    - run: npm run lint:prod
 
-    - name: Install Playwright browsers
-      run: npx playwright install --with-deps chromium firefox
+  e2e-test:
+    needs: [ ]
+    runs-on: ARM64
+    steps:
+    - run: git config --global core.autocrlf false  # Mainly for Windows
+    - uses: actions/checkout@v4
 
-    - name: Build project
-      run: npm run build
-
-    - name: Run E2E tests
-      run: npm run test-e2e
-      env:
-        HEADLESS_TEST: 1
-
-    - name: Upload Playwright report
-      if: always()
-      uses: actions/upload-artifact@v3
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
       with:
-        name: playwright-report
-        path: ./private/playwright-report
-        retention-days: 30
+        node-version: 20
+    - run: npm install
+    - run: npx playwright install
+    - run: npm run build
+    - run: npm run test-e2e
