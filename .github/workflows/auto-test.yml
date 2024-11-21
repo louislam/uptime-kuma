@@ -14,7 +14,7 @@ on:
       - '*.md'
 
 jobs:
-  auto-test:
+  unit-test:
     needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -91,3 +91,90 @@ jobs:
     - run: npx playwright install
     - run: npm run build
     - run: npm run test-e2e
+
+  post-test:
+    needs: [unit-test, e2e-test]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Process test results
+        id: test-results
+        run: |
+          echo "::set-output name=unit_test::$([ "${{ needs.unit-test.result }}" = "success" ] && echo "✅" || echo "❌")"
+          echo "::set-output name=e2e_test::$([ "${{ needs.e2e-test.result }}" = "success" ] && echo "✅" || echo "❌")"
+          
+          # Get coverage info if available
+          COVERAGE=""
+          if [ -f "artifacts/test-results-ubuntu-latest-node-20/coverage/coverage-summary.json" ]; then
+            COVERAGE=$(cat artifacts/test-results-ubuntu-latest-node-20/coverage/coverage-summary.json | jq -r '.total.lines.pct')
+          fi
+          echo "::set-output name=coverage::$COVERAGE"
+
+      - name: Create comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const unitTest = "${{ steps.test-results.outputs.unit_test }}";
+            const e2eTest = "${{ steps.test-results.outputs.e2e_test }}";
+            const coverage = "${{ steps.test-results.outputs.coverage }}";
+            
+            const comment = `## Test Results 
+
+            | Test Type | Status |
+            |-----------|--------|
+            | Unit Tests | ${unitTest} |
+            | E2E Tests | ${e2eTest} |
+            ${coverage ? `| Coverage | ${coverage}% |` : ''}
+
+            ${unitTest === '❌' || e2eTest === '❌' ? `
+            ### Failed Tests
+            Please check the [Actions tab](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}) for detailed logs.
+            ` : ''}
+
+            ### Artifacts
+            - [Test Results](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
+            - [Playwright Report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
+            `;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Test Results ')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Check test results
+        if: always()
+        run: |
+          if [ "${{ needs.unit-test.result }}" != "success" ] || [ "${{ needs.e2e-test.result }}" != "success" ]; then
+            echo "Tests failed!"
+            exit 1
+          fi
