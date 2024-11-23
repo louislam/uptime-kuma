@@ -37,8 +37,8 @@ const rootCertificates = rootCertificatesFingerprints();
 class Monitor extends BeanModel {
 
     /**
-<<<<<<< HEAD
      * Formats the status code to a human readable form
+     * @param {number} status the internal status code of the monitor
      * @returns {string} a human readable string that corresponds to the status code
      */
     statusToKey(status) {
@@ -57,7 +57,7 @@ class Monitor extends BeanModel {
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
      * JSON
-     * @param {boolean} [showStatus = false] Should the JSON show the status
+     * @param {boolean} showStatus Should the JSON show the status
      * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false, showStatus = false) {
