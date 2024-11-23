@@ -259,7 +259,7 @@ class StatusPage extends BeanModel {
      * Get all status page data in one call
      * @param {StatusPage} statusPage
      * @param {boolean} [includeStatus = false] whether each monitor should include the status of the monitor ("up" or "down")
-     * @param {boolean} [includeConfig = true] whether the config for the status paghe should be included in the returned JSON
+     * @param {boolean} [includeConfig = true] whether the config for the status page should be included in the returned JSON
      */
     static async getStatusPageData(statusPage, includeStatus = false, includeConfig = true) {
         // Incident
@@ -282,7 +282,7 @@ class StatusPage extends BeanModel {
         ]);
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags, includeStatus);
+            let monitorGroup = await groupBean.toPublicJSON(showTags, false, includeStatus);
             publicGroupList.push(monitorGroup);
         }
 
