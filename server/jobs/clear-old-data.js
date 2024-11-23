@@ -1,17 +1,22 @@
-const { log, exit, connectDb } = require("./util-worker");
 const { R } = require("redbean-node");
-const { setSetting, setting } = require("../util-server");
+const { log } = require("../../src/util");
+const Database = require("../database");
+const { Settings } = require("../settings");
+const dayjs = require("dayjs");
 
-const DEFAULT_KEEP_PERIOD = 180;
+const DEFAULT_KEEP_PERIOD = 365;
 
-(async () => {
-    await connectDb();
-
-    let period = await setting("keepDataPeriodDays");
+/**
+ * Clears old data from the heartbeat table and the stat_daily of the database.
+ * @returns {Promise<void>} A promise that resolves when the data has been cleared.
+ */
+const clearOldData = async () => {
+    await Database.clearHeartbeatData();
+    let period = await Settings.get("keepDataPeriodDays");
 
     // Set Default Period
     if (period == null) {
-        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
+        await Settings.set("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
         period = DEFAULT_KEEP_PERIOD;
     }
 
@@ -20,21 +25,41 @@ const DEFAULT_KEEP_PERIOD = 180;
     try {
         parsedPeriod = parseInt(period);
     } catch (_) {
-        log("Failed to parse setting, resetting to default..");
-        await setSetting("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
+        log.warn("clearOldData", "Failed to parse setting, resetting to default..");
+        await Settings.set("keepDataPeriodDays", DEFAULT_KEEP_PERIOD, "general");
         parsedPeriod = DEFAULT_KEEP_PERIOD;
     }
 
-    log(`Clearing Data older than ${parsedPeriod} days...`);
+    if (parsedPeriod < 1) {
+        log.info("clearOldData", `Data deletion has been disabled as period is less than 1. Period is ${parsedPeriod} days.`);
+    } else {
+        log.debug("clearOldData", `Clearing Data older than ${parsedPeriod} days...`);
+        const sqlHourOffset = Database.sqlHourOffset();
 
-    try {
-        await R.exec(
-            "DELETE FROM heartbeat WHERE time < DATETIME('now', '-' || ? || ' days') ",
-            [ parsedPeriod ]
-        );
-    } catch (e) {
-        log(`Failed to clear old data: ${e.message}`);
+        try {
+            // Heartbeat
+            await R.exec("DELETE FROM heartbeat WHERE time < " + sqlHourOffset, [
+                parsedPeriod * -24,
+            ]);
+
+            let timestamp = dayjs().subtract(parsedPeriod, "day").utc().startOf("day").unix();
+
+            // stat_daily
+            await R.exec("DELETE FROM stat_daily WHERE timestamp < ? ", [
+                timestamp,
+            ]);
+
+            if (Database.dbConfig.type === "sqlite") {
+                await R.exec("PRAGMA optimize;");
+            }
+        } catch (e) {
+            log.error("clearOldData", `Failed to clear old data: ${e.message}`);
+        }
     }
 
-    exit();
-})();
+    log.debug("clearOldData", "Data cleared.");
+};
+
+module.exports = {
+    clearOldData,
+};

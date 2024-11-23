@@ -5,11 +5,14 @@ const { setting } = require("../util-server");
 const { getMonitorRelativeURL, DOWN } = require("../../src/util");
 
 class RocketChat extends NotificationProvider {
-
     name = "rocket.chat";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             if (heartbeatJSON == null) {
                 let data = {
@@ -22,8 +25,6 @@ class RocketChat extends NotificationProvider {
                 return okMsg;
             }
 
-            const time = heartbeatJSON["time"];
-
             let data = {
                 "text": "Uptime Kuma Alert",
                 "channel": notification.rocketchannel,
@@ -31,7 +32,7 @@ class RocketChat extends NotificationProvider {
                 "icon_emoji": notification.rocketiconemo,
                 "attachments": [
                     {
-                        "title": "Uptime Kuma Alert *Time (UTC)*\n" + time,
+                        "title": `Uptime Kuma Alert *Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
                         "text": "*Message*\n" + msg,
                     }
                 ]

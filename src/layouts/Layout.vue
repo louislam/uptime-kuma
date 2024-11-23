@@ -63,6 +63,12 @@
                                 </router-link>
                             </li>
 
+                            <li>
+                                <a href="https://github.com/louislam/uptime-kuma/wiki" class="dropdown-item" target="_blank">
+                                    <font-awesome-icon icon="info-circle" /> {{ $t("Help") }}
+                                </a>
+                            </li>
+
                             <li v-if="$root.loggedIn && $root.socket.token !== 'autoLogin'">
                                 <button class="dropdown-item" @click="$root.logout">
                                     <font-awesome-icon icon="sign-out-alt" />
@@ -89,7 +95,7 @@
         </main>
 
         <!-- Mobile Only -->
-        <div v-if="$root.isMobile" style="width: 100%; height: 60px;" />
+        <div v-if="$root.isMobile" style="width: 100%; height: calc(60px + env(safe-area-inset-bottom));" />
         <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
@@ -111,12 +117,23 @@
                 {{ $t("Settings") }}
             </router-link>
         </nav>
+
+        <button
+            v-if="numActiveToasts != 0"
+            type="button"
+            class="btn btn-normal clear-all-toast-btn"
+            @click="clearToasts"
+        >
+            <font-awesome-icon icon="times" />
+        </button>
     </div>
 </template>
 
 <script>
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 export default {
 
@@ -125,7 +142,11 @@ export default {
     },
 
     data() {
-        return {};
+        return {
+            toastContainer: null,
+            numActiveToasts: 0,
+            toastContainerObserver: null,
+        };
     },
 
     computed: {
@@ -153,11 +174,34 @@ export default {
     },
 
     mounted() {
+        this.toastContainer = document.querySelector(".bottom-right.toast-container");
 
+        // Watch the number of active toasts
+        this.toastContainerObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === "childList") {
+                    this.numActiveToasts = mutation.target.children.length;
+                }
+            }
+        });
+
+        if (this.toastContainer != null) {
+            this.toastContainerObserver.observe(this.toastContainer, { childList: true });
+        }
+    },
+
+    beforeUnmount() {
+        this.toastContainerObserver.disconnect();
     },
 
     methods: {
-
+        /**
+         * Clear all toast notifications.
+         * @returns {void}
+         */
+        clearToasts() {
+            toast.clear();
+        }
     },
 
 };
@@ -167,6 +211,20 @@ export default {
 @import "../assets/vars.scss";
 
 .nav-link {
+    &:hover {
+        background-color: $primary;
+        color: #fff;
+
+        .dark & {
+            background-color: $primary;
+            color: #000;
+        }
+
+        &.active {
+            background-color: $highlight;
+        }
+    }
+
     &.status-page {
         background-color: rgba(255, 255, 255, 0.1);
     }
@@ -176,14 +234,14 @@ export default {
     z-index: 1000;
     position: fixed;
     bottom: 0;
-    height: 60px;
+    height: calc(60px + env(safe-area-inset-bottom));
     width: 100%;
     left: 0;
     background-color: #fff;
     box-shadow: 0 15px 47px 0 rgba(0, 0, 0, 0.05), 0 5px 14px 0 rgba(0, 0, 0, 0.05);
     text-align: center;
     white-space: nowrap;
-    padding: 0 10px;
+    padding: 0 10px env(safe-area-inset-bottom);
 
     a {
         text-align: center;
@@ -317,4 +375,26 @@ main {
         background-color: $dark-bg;
     }
 }
+
+.clear-all-toast-btn {
+    position: fixed;
+    right: 1em;
+    bottom: 1em;
+    font-size: 1.2em;
+    padding: 9px 15px;
+    width: 48px;
+    box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+
+    .dark & {
+        box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.5);
+    }
+}
+
+@media (max-width: 770px) {
+    .clear-all-toast-btn {
+        bottom: 72px;
+    }
+}
+
 </style>

@@ -2,24 +2,33 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Telegram extends NotificationProvider {
-
     name = "telegram";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+        const url = "https://api.telegram.org";
 
         try {
-            await axios.get(`https://api.telegram.org/bot${notification.telegramBotToken}/sendMessage`, {
-                params: {
-                    chat_id: notification.telegramChatID,
-                    text: msg,
-                },
+            let params = {
+                chat_id: notification.telegramChatID,
+                text: msg,
+                disable_notification: notification.telegramSendSilently ?? false,
+                protect_content: notification.telegramProtectContent ?? false,
+            };
+            if (notification.telegramMessageThreadID) {
+                params.message_thread_id = notification.telegramMessageThreadID;
+            }
+
+            await axios.get(`${url}/bot${notification.telegramBotToken}/sendMessage`, {
+                params: params,
             });
             return okMsg;
 
         } catch (error) {
-            let msg = (error.response.data.description) ? error.response.data.description : "Error without description";
-            throw new Error(msg);
+            this.throwGeneralAxiosError(error);
         }
     }
 }

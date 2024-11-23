@@ -6,18 +6,25 @@ const defaultNotificationService = "notify";
 class HomeAssistant extends NotificationProvider {
     name = "HomeAssistant";
 
-    async send(notification, message, monitor = null, heartbeat = null) {
+    /**
+     * @inheritdoc
+     */
+    async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
+
         const notificationService = notification?.notificationService || defaultNotificationService;
 
         try {
             await axios.post(
-                `${notification.homeAssistantUrl}/api/services/notify/${notificationService}`,
+                `${notification.homeAssistantUrl.trim().replace(/\/*$/, "")}/api/services/notify/${notificationService}`,
                 {
                     title: "Uptime Kuma",
-                    message,
+                    message: msg,
                     ...(notificationService !== "persistent_notification" && { data: {
-                        name: monitor?.name,
-                        status: heartbeat?.status,
+                        name: monitorJSON?.name,
+                        status: heartbeatJSON?.status,
+                        channel: "Uptime Kuma",
+                        icon_url: "https://github.com/louislam/uptime-kuma/blob/master/public/icon.png?raw=true",
                     } }),
                 },
                 {
@@ -28,7 +35,7 @@ class HomeAssistant extends NotificationProvider {
                 }
             );
 
-            return "Sent Successfully.";
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

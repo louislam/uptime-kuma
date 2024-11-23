@@ -1,0 +1,7 @@
+{
+    "setupDatabaseEmbeddedMariaDB": "Akukho mfuneko yokuba usethe nantoni na. Lo mfanekiso weDocker sele uqulathe kwaye ulungiselele iMariaDB ngokuzenzekelayo. I-Uptime Kuma iya kuqhagamshela kule database nge-unix socket.",
+    "setupDatabaseChooseDatabase": "Ngowuphi umthombo wedatha ofuna ukuwusebenzisa?",
+    "setupDatabaseMariaDB": "Qhagamshela kwi-database yeMariaDB yangaphandle. Kuya kufuneka usethe ulwazi loqhagamshelo lwedathabase.",
+    "setupDatabaseSQLite": "I database elula, ecetyiswayo kusetyenziso oluncinci. Ngaphambi kwe v2.0.0, i-Uptime Kuma yayisebenzisa i-SQLite njenge database yomdibaniso.",
+    "settingUpDatabaseMSG": "Ukumisela i-database. Kungathatha ixesha, nceda ube nomonde."
+}

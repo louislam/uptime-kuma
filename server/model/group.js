@@ -10,12 +10,12 @@ class Group extends BeanModel {
      * @param {boolean} [showStatus = false] Should the JSON include the status
      * @returns {Object}
      */
-    async toPublicJSON(showTags = false, showStatus = false) {
+    async toPublicJSON(showTags = false, certExpiry = false, showStatus = false) {
         let monitorBeanList = await this.getMonitorList();
         let monitorList = [];
 
         for (let bean of monitorBeanList) {
-            monitorList.push(await bean.toPublicJSON(showTags, showStatus));
+            monitorList.push(await bean.toPublicJSON(showTags, certExpiry, showStatus));
         }
 
         return {
@@ -28,7 +28,7 @@ class Group extends BeanModel {
 
     /**
      * Get all monitors
-     * @returns {Bean[]}
+     * @returns {Promise<Bean[]>} List of monitors
      */
     async getMonitorList() {
         return R.convertToBeans("monitor", await R.getAll(`

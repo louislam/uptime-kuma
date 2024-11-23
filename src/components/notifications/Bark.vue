@@ -1,5 +1,12 @@
 <template>
     <div class="mb-3">
+        <label for="Bark API Version" class="form-label">{{ $t("Bark API Version") }}</label>
+        <select id="Bark API Version" v-model="$parent.notification.apiVersion" class="form-select" required>
+            <option value="v1">v1</option>
+            <option value="v2">v2</option>
+        </select>
+    </div>
+    <div class="mb-3">
         <label for="Bark Endpoint" class="form-label">{{ $t("Bark Endpoint") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="Bark Endpoint" v-model="$parent.notification.barkEndpoint" type="text" class="form-control" required>
         <i18n-t tag="div" keypath="wayToGetTeamsURL" class="form-text">

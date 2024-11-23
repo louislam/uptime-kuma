@@ -53,7 +53,7 @@
                                 <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                             </router-link>
 
-                            <button class="btn btn-danger" @click="deleteDialog(item.id)">
+                            <button class="btn btn-normal text-danger" @click="deleteDialog(item.id)">
                                 <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                             </button>
                         </div>
@@ -62,7 +62,7 @@
             </div>
 
             <div class="text-center mt-3" style="font-size: 13px;">
-                <a href="https://github.com/louislam/uptime-kuma/wiki/Maintenance" target="_blank">Learn More</a>
+                <a href="https://github.com/louislam/uptime-kuma/wiki/Maintenance" target="_blank">{{ $t("Learn More") }}</a>
             </div>
 
             <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMaintenance">
@@ -81,8 +81,6 @@ import { getResBaseURL } from "../util-frontend";
 import { getMaintenanceRelativeURL } from "../util.ts";
 import Confirm from "../components/Confirm.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
-import { useToast } from "vue-toastification";
-const toast = useToast();
 
 export default {
     components: {
@@ -133,28 +131,44 @@ export default {
             }
         },
 
+        /**
+         * Get maintenance URL
+         * @param {number} id ID of maintenance to read
+         * @returns {string} Relative URL
+         */
         maintenanceURL(id) {
             return getMaintenanceRelativeURL(id);
         },
 
+        /**
+         * Show delete confirmation
+         * @param {number} maintenanceID ID of maintenance to show delete
+         * confirmation for.
+         * @returns {void}
+         */
         deleteDialog(maintenanceID) {
             this.selectedMaintenanceID = maintenanceID;
             this.$refs.confirmDelete.show();
         },
 
+        /**
+         * Delete maintenance after showing confirmation dialog
+         * @returns {void}
+         */
         deleteMaintenance() {
             this.$root.deleteMaintenance(this.selectedMaintenanceID, (res) => {
+                this.$root.toastRes(res);
                 if (res.ok) {
-                    toast.success(res.msg);
                     this.$router.push("/maintenance");
-                } else {
-                    toast.error(res.msg);
                 }
             });
         },
 
         /**
          * Show dialog to confirm pause
+         * @param {number} maintenanceID ID of maintenance to confirm
+         * pause.
+         * @returns {void}
          */
         pauseDialog(maintenanceID) {
             this.selectedMaintenanceID = maintenanceID;
@@ -163,6 +177,7 @@ export default {
 
         /**
          * Pause maintenance
+         * @returns {void}
          */
         pauseMaintenance() {
             this.$root.getSocket().emit("pauseMaintenance", this.selectedMaintenanceID, (res) => {
@@ -172,6 +187,8 @@ export default {
 
         /**
          * Resume maintenance
+         * @param {number} id ID of maintenance to resume
+         * @returns {void}
          */
         resumeMaintenance(id) {
             this.$root.getSocket().emit("resumeMaintenance", id, (res) => {
@@ -277,8 +294,15 @@ export default {
             gap: 8px;
             flex-direction: row-reverse;
 
-            .btn-group {
-                width: 310px;
+            @media (max-width: 550px) {
+                & {
+                    width: 100%;
+                }
+
+                .btn-group {
+                    margin: 1em 1em 0 1em;
+                    width: 100%;
+                }
             }
         }
     }

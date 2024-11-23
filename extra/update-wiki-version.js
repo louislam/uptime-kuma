@@ -1,7 +1,7 @@
 const childProcess = require("child_process");
 const fs = require("fs");
 
-const newVersion = process.env.VERSION;
+const newVersion = process.env.RELEASE_VERSION;
 
 if (!newVersion) {
     console.log("Missing version");
@@ -10,6 +10,11 @@ if (!newVersion) {
 
 updateWiki(newVersion);
 
+/**
+ * Update the wiki with new version number
+ * @param {string} newVersion Version to update to
+ * @returns {void}
+ */
 function updateWiki(newVersion) {
     const wikiDir = "./tmp/wiki";
     const howToUpdateFilename = "./tmp/wiki/🆙-How-to-Update.md";
@@ -39,6 +44,11 @@ function updateWiki(newVersion) {
     safeDelete(wikiDir);
 }
 
+/**
+ * Check if a directory exists and then delete it
+ * @param {string} dir Directory to delete
+ * @returns {void}
+ */
 function safeDelete(dir) {
     if (fs.existsSync(dir)) {
         fs.rm(dir, {

@@ -13,7 +13,10 @@
                         <div class="mb-3">
                             <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
-                                <option v-for="type in notificationTypes" :key="type" :value="type">{{ $t(type) }}</option>
+                                <option v-for="(name, type) in notificationNameList.regularList" :key="type" :value="type">{{ name }}</option>
+                                <optgroup :label="$t('notificationRegional')">
+                                    <option v-for="(name, type) in notificationNameList.regionalList" :key="type" :value="type">{{ name }}</option>
+                                </optgroup>
                             </select>
                         </div>
 
@@ -67,7 +70,7 @@
     </Confirm>
 </template>
 
-<script lang="ts">
+<script>
 import { Modal } from "bootstrap";
 
 import Confirm from "./Confirm.vue";
@@ -103,7 +106,113 @@ export default {
                 return null;
             }
             return NotificationFormList[this.notification.type];
-        }
+        },
+
+        notificationNameList() {
+            let regularList = {
+                "alerta": "Alerta",
+                "AlertNow": "AlertNow",
+                "apprise": this.$t("apprise"),
+                "Bark": "Bark",
+                "Bitrix24": "Bitrix24",
+                "clicksendsms": "ClickSend SMS",
+                "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
+                "discord": "Discord",
+                "Elks": "46elks",
+                "GoogleChat": "Google Chat (Google Workspace)",
+                "gorush": "Gorush",
+                "gotify": "Gotify",
+                "GrafanaOncall": "Grafana Oncall",
+                "HeiiOnCall": "Heii On-Call",
+                "HomeAssistant": "Home Assistant",
+                "Keep": "Keep",
+                "Kook": "Kook",
+                "line": "LINE Messenger",
+                "LineNotify": "LINE Notify",
+                "lunasea": "LunaSea",
+                "matrix": "Matrix",
+                "mattermost": "Mattermost",
+                "nostr": "Nostr",
+                "ntfy": "Ntfy",
+                "octopush": "Octopush",
+                "OneBot": "OneBot",
+                "Onesender": "Onesender",
+                "Opsgenie": "Opsgenie",
+                "PagerDuty": "PagerDuty",
+                "PagerTree": "PagerTree",
+                "pushbullet": "Pushbullet",
+                "PushByTechulus": "Push by Techulus",
+                "pushover": "Pushover",
+                "pushy": "Pushy",
+                "rocket.chat": "Rocket.Chat",
+                "signal": "Signal",
+                "SIGNL4": "SIGNL4",
+                "slack": "Slack",
+                "squadcast": "SquadCast",
+                "SMSEagle": "SMSEagle",
+                "SMSPartner": "SMS Partner",
+                "smtp": this.$t("smtp"),
+                "stackfield": "Stackfield",
+                "teams": "Microsoft Teams",
+                "telegram": "Telegram",
+                "threema": "Threema",
+                "twilio": "Twilio",
+                "Splunk": "Splunk",
+                "webhook": "Webhook",
+                "GoAlert": "GoAlert",
+                "ZohoCliq": "ZohoCliq",
+                "SevenIO": "SevenIO",
+                "whapi": "WhatsApp (Whapi)",
+                "gtxmessaging": "GtxMessaging",
+                "Cellsynt": "Cellsynt",
+                "SendGrid": "SendGrid"
+            };
+
+            // Put notifications here if it's not supported in most regions or its documentation is not in English
+            let regionalList = {
+                "AliyunSMS": "AliyunSMS (阿里云短信服务)",
+                "DingDing": "DingDing (钉钉自定义机器人)",
+                "Feishu": "Feishu (飞书)",
+                "FlashDuty": "FlashDuty (快猫星云)",
+                "FreeMobile": "FreeMobile (mobile.free.fr)",
+                "PushDeer": "PushDeer",
+                "promosms": "PromoSMS",
+                "serwersms": "SerwerSMS.pl",
+                "SMSManager": "SmsManager (smsmanager.cz)",
+                "WeCom": "WeCom (企业微信群机器人)",
+                "ServerChan": "ServerChan (Server酱)",
+                "smsc": "SMSC",
+                "WPush": "WPush(wpush.cn)",
+            };
+
+            // Sort by notification name
+            // No idea how, but it works
+            // https://stackoverflow.com/questions/1069666/sorting-object-property-by-values
+            let sort = (list2) => {
+                return Object.entries(list2)
+                    .sort(([ , a ], [ , b ]) => a.localeCompare(b))
+                    .reduce((r, [ k, v ]) => ({
+                        ...r,
+                        [k]: v
+                    }), {});
+            };
+
+            return {
+                regularList: sort(regularList),
+                regionalList: sort(regionalList),
+            };
+        },
+
+        notificationFullNameList() {
+            let list = {};
+            for (let [ key, value ] of Object.entries(this.notificationNameList.regularList)) {
+                list[key] = value;
+            }
+            for (let [ key, value ] of Object.entries(this.notificationNameList.regionalList)) {
+                list[key] = value;
+            }
+            return list;
+        },
     },
 
     watch: {
@@ -125,7 +234,10 @@ export default {
     },
     methods: {
 
-        /** Show dialog to confirm deletion */
+        /**
+         * Show dialog to confirm deletion
+         * @returns {void}
+         */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
@@ -134,6 +246,7 @@ export default {
         /**
          * Show settings for specified notification
          * @param {number} notificationID ID of notification to show
+         * @returns {void}
          */
         show(notificationID) {
             if (notificationID) {
@@ -157,7 +270,10 @@ export default {
             this.modal.show();
         },
 
-        /** Submit the form to the server */
+        /**
+         * Submit the form to the server
+         * @returns {void}
+         */
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addNotification", this.notification, this.id, (res) => {
@@ -176,7 +292,10 @@ export default {
             });
         },
 
-        /** Test the notification endpoint */
+        /**
+         * Test the notification endpoint
+         * @returns {void}
+         */
         test() {
             this.processing = true;
             this.$root.getSocket().emit("testNotification", this.notification, (res) => {
@@ -185,7 +304,10 @@ export default {
             });
         },
 
-        /** Delete the notification endpoint */
+        /**
+         * Delete the notification endpoint
+         * @returns {void}
+         */
         deleteNotification() {
             this.processing = true;
             this.$root.getSocket().emit("deleteNotification", this.id, (res) => {
@@ -200,14 +322,16 @@ export default {
         /**
          * Get a unique default name for the notification
          * @param {keyof NotificationFormList} notificationKey
-         * @return {string}
+         * Notification to retrieve
+         * @returns {string} Default name
          */
         getUniqueDefaultName(notificationKey) {
+
             let index = 1;
             let name = "";
             do {
                 name = this.$t("defaultNotificationName", {
-                    notification: this.$t(notificationKey).replace(/\(.+\)/, "").trim(),
+                    notification: this.notificationFullNameList[notificationKey].replace(/\(.+\)/, "").trim(),
                     number: index++
                 });
             } while (this.$root.notificationList.find(it => it.name === name));

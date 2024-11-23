@@ -1,7 +1,6 @@
 /.idea
 /node_modules
-/data
-/cypress
+/data*
 /out
 /test
 /kubernetes
@@ -29,10 +28,15 @@ SECURITY.md
 tsconfig.json
 .env
 /tmp
-/babel.config.js
 /ecosystem.config.js
 /extra/healthcheck.exe
 /extra/healthcheck
+/extra/exe-builder
+/extra/push-examples
+/extra/uptime-kuma-push
+
+# Comment the following line if you want to rebuild the healthcheck binary
+/extra/healthcheck-armv7
 
 
 ### .gitignore content (commented rules are duplicated)
@@ -47,7 +51,5 @@ dist-ssr
 #/data
 #!/data/.gitkeep
 #.vscode
-
-
 
 ### End of .gitignore content

@@ -3,7 +3,7 @@ const { log } = require("../src/util");
 
 class KumaRateLimiter {
     /**
-     * @param {Object} config Rate limiter configuration object
+     * @param {object} config Rate limiter configuration object
      */
     constructor(config) {
         this.errorMessage = config.errorMessage;
@@ -13,14 +13,14 @@ class KumaRateLimiter {
     /**
      * Callback for pass
      * @callback passCB
-     * @param {Object} err Too many requests
+     * @param {object} err Too many requests
      */
 
     /**
      * Should the request be passed through
-     * @param {passCB} callback
-     * @param {number} [num=1] Number of tokens to remove
-     * @returns {Promise<boolean>}
+     * @param {passCB} callback Callback function to call with decision
+     * @param {number} num Number of tokens to remove
+     * @returns {Promise<boolean>} Should the request be allowed?
      */
     async pass(callback, num = 1) {
         const remainingRequests = await this.removeTokens(num);
@@ -39,8 +39,8 @@ class KumaRateLimiter {
 
     /**
      * Remove a given number of tokens
-     * @param {number} [num=1] Number of tokens to remove
-     * @returns {Promise<number>}
+     * @param {number} num Number of tokens to remove
+     * @returns {Promise<number>} Number of remaining tokens
      */
     async removeTokens(num = 1) {
         return await this.rateLimiter.removeTokens(num);
@@ -49,6 +49,13 @@ class KumaRateLimiter {
 
 const loginRateLimiter = new KumaRateLimiter({
     tokensPerInterval: 20,
+    interval: "minute",
+    fireImmediately: true,
+    errorMessage: "Too frequently, try again later."
+});
+
+const apiRateLimiter = new KumaRateLimiter({
+    tokensPerInterval: 60,
     interval: "minute",
     fireImmediately: true,
     errorMessage: "Too frequently, try again later."
@@ -63,5 +70,6 @@ const twoFaRateLimiter = new KumaRateLimiter({
 
 module.exports = {
     loginRateLimiter,
+    apiRateLimiter,
     twoFaRateLimiter,
 };
