@@ -277,7 +277,7 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
         let checkNotification = await R.findOne(
             "monitor_notification",
             " monitor_id = ? AND notification_id = ? ",
-            [monitors[i].id, notificationID]
+            [ monitors[i].id, notificationID ]
         );
 
         if (!checkNotification) {
