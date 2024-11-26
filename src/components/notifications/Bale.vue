@@ -28,9 +28,7 @@
                 <a :href="baleGetUpdatesURL('withToken')" target="_blank" style="word-break: break-word;">{{ baleGetUpdatesURL("masked") }}</a>
             </p>
         </div>
-
     </div>
-
 </template>
 
 <script>
