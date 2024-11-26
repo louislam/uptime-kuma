@@ -1,4 +1,4 @@
-name: json-yaml-validate
+name: validate
 on:
   push:
     branches:
@@ -25,3 +25,19 @@ jobs:
         with:
           comment: "true" # enable comment mode
           exclude_file: ".github/config/exclude.txt" # gitignore style file for exclusions
+
+  # General validations
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate language JSON files
+        run: node ./extra/check-lang-json.js
+
+      - name: Validate knex migrations filename
+        run: node ./extra/check-knex-filenames.mjs
