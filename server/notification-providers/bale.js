@@ -14,7 +14,10 @@ class Bale extends NotificationProvider {
         try {
             await axios.post(
                 `${url}/bot${notification.baleBotToken}/sendMessage`,
-                { chat_id: notification.baleChatID, text: msg },
+                { 
+                    chat_id: notification.baleChatID, 
+                    text: msg 
+                },
                 {
                     headers: {
                         "content-type": "application/json",
