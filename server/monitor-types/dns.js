@@ -18,9 +18,44 @@ class DnsMonitorType extends MonitorType {
     ];
 
     /**
+     * Validate hostname to ensure it's a valid domain without protocol or path
+     * @param {string} hostname Hostname to validate
+     * @returns {boolean} True if hostname is valid
+     */
+    validateHostname(hostname) {
+        try {
+            // First check if hostname contains protocol or path
+            if (hostname.includes("/") || hostname.includes(":")) {
+                return false;
+            }
+
+            // Try to construct a URL with a dummy protocol
+            const url = new URL(`http://${hostname}`);
+
+            // Ensure there's no path or query parameters
+            if (url.pathname !== "/" || url.search !== "") {
+                return false;
+            }
+
+            // Ensure the hostname matches the original input
+            // This catches cases where the URL constructor might "fix" invalid hostnames
+            return url.hostname === hostname;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
+        // Validate hostname before proceeding
+        if (!this.validateHostname(monitor.hostname)) {
+            heartbeat.msg = "Invalid hostname format";
+            heartbeat.status = DOWN;
+            return;
+        }
+
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
