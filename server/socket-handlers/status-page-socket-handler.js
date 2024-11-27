@@ -220,13 +220,17 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             // Delete groups that are not in the list
             log.debug("socket", "Delete groups that are not in the list");
-            const slots = groupIDList.map(() => "?").join(",");
+            if (groupIDList.length === 0) {
+                await R.exec("DELETE FROM `group` WHERE status_page_id = ?", [ statusPage.id ]);
+            } else {
+                const slots = groupIDList.map(() => "?").join(",");
 
-            const data = [
-                ...groupIDList,
-                statusPage.id
-            ];
-            await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
+                const data = [
+                    ...groupIDList,
+                    statusPage.id
+                ];
+                await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
+            }
 
             const server = UptimeKumaServer.getInstance();
 
@@ -288,6 +292,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ok: true,
                 msg: "successAdded",
                 msgi18n: true,
+                slug: slug
             });
 
         } catch (error) {
