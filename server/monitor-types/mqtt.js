@@ -110,11 +110,9 @@ class MqttMonitorType extends MonitorType {
             });
 
             client.on("message", (messageTopic, message) => {
-                if (messageTopic === topic) {
-                    client.end();
-                    clearTimeout(timeoutID);
-                    resolve(message.toString("utf8"));
-                }
+                client.end();
+                clearTimeout(timeoutID);
+                resolve(message.toString("utf8"));
             });
 
         });
