@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 const express = require("express");
 const { log } = require("../src/util");
 const expressStaticGzip = require("express-static-gzip");
@@ -6,6 +7,7 @@ const path = require("path");
 const Database = require("./database");
 const { allowDevAllOrigin } = require("./util-server");
 const mysql = require("mysql2/promise");
+const { mariaDbUseSSL, mariaDbSslCert } = require("./config");
 
 /**
  *  A standalone express app that is used to setup a database
@@ -208,11 +210,22 @@ class SetupDatabase {
 
                     // Test connection
                     try {
+                        let sslConfig = null;
+                        let serverCa = undefined;
+                        if (mariaDbUseSSL) {
+                            serverCa = [ fs.readFileSync(mariaDbSslCert, "utf8") ];
+                            sslConfig = {
+                                rejectUnauthorized: true,
+                                ca: serverCa
+                            };
+                        }
+
                         const connection = await mysql.createConnection({
                             host: dbConfig.hostname,
                             port: dbConfig.port,
                             user: dbConfig.username,
                             password: dbConfig.password,
+                            ssl: sslConfig
                         });
                         await connection.execute("SELECT 1");
                         connection.end();

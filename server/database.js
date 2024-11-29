@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 const fs = require("fs");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
@@ -11,6 +12,7 @@ const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
+const { mariaDbSslCert, mariaDbUseSSL } = require("./config");
 
 /**
  * Database & App Data Folder
@@ -259,11 +261,22 @@ class Database {
                 throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
             }
 
+            let sslConfig = null;
+            let serverCa = undefined;
+            if (mariaDbUseSSL) {
+                serverCa = [ fs.readFileSync(mariaDbSslCert, "utf8") ];
+                sslConfig = {
+                    rejectUnauthorized: true,
+                    ca: serverCa
+                };
+            }
+
             const connection = await mysql.createConnection({
                 host: dbConfig.hostname,
                 port: dbConfig.port,
                 user: dbConfig.username,
                 password: dbConfig.password,
+                ssl: sslConfig
             });
 
             await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
@@ -278,6 +291,7 @@ class Database {
                     password: dbConfig.password,
                     database: dbConfig.dbName,
                     timezone: "Z",
+                    ssl: sslConfig,
                     typeCast: function (field, next) {
                         if (field.type === "DATETIME") {
                             // Do not perform timezone conversion

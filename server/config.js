@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 const isFreeBSD = /^freebsd/.test(process.platform);
 
 // Interop with browser
@@ -18,6 +19,9 @@ const sslCert = args["ssl-cert"] || process.env.UPTIME_KUMA_SSL_CERT || process.
 const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_SSL_KEY_PASSPHRASE || process.env.SSL_KEY_PASSPHRASE || undefined;
 
 const isSSL = sslKey && sslCert;
+
+const mariaDbSslCert = args["UPTIME_KUMA_DB_SSL_CERT"] || process.env.UPTIME_KUMA_DB_SSL_CERT || process.env.MARIADB_SSL_CERT || undefined;
+const mariaDbUseSSL = mariaDbSslCert ? "true" : "false";
 
 /**
  * Get the local WebSocket URL
@@ -43,4 +47,6 @@ module.exports = {
     isSSL,
     localWebSocketURL,
     demoMode,
+    mariaDbSslCert,
+    mariaDbUseSSL
 };
