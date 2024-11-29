@@ -263,7 +263,7 @@ class Database {
 
             let sslConfig = null;
             let serverCa = undefined;
-            if (mariaDbUseSSL) {
+            if (mariaDbUseSSL === true) {
                 serverCa = [ fs.readFileSync(mariaDbSslCert, "utf8") ];
                 sslConfig = {
                     rejectUnauthorized: true,

@@ -207,19 +207,17 @@ class SetupDatabase {
                         this.runningSetup = false;
                         return;
                     }
-
                     // Test connection
                     try {
                         let sslConfig = null;
                         let serverCa = undefined;
-                        if (mariaDbUseSSL) {
+                        if (mariaDbUseSSL === true) {
                             serverCa = [ fs.readFileSync(mariaDbSslCert, "utf8") ];
                             sslConfig = {
                                 rejectUnauthorized: true,
                                 ca: serverCa
                             };
                         }
-
                         const connection = await mysql.createConnection({
                             host: dbConfig.hostname,
                             port: dbConfig.port,
