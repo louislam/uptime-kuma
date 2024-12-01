@@ -10,16 +10,18 @@ const { UP, PENDING } = require("../../src/util");
  * @param  {string} mqttSuccessMessage the message that the monitor expects
  * @param {null|"keyword"|"json-query"} mqttCheckType the type of check we perform
  * @param {string} receivedMessage what message is received from the mqtt channel
+ * @param {string} monitorTopic which MQTT topic is monitored (wildcards are allowed)
+ * @param {string} publishTopic to which MQTT topic the message is sent
  * @returns {Promise<Heartbeat>} the heartbeat produced by the check
  */
-async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage) {
+async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage, monitorTopic = "test", publishTopic = "test") {
     const hiveMQContainer = await new HiveMQContainer().start();
     const connectionString = hiveMQContainer.getConnectionString();
     const mqttMonitorType = new MqttMonitorType();
     const monitor = {
         jsonPath: "firstProp", // always return firstProp for the json-query monitor
         hostname: connectionString.split(":", 2).join(":"),
-        mqttTopic: "test",
+        mqttTopic: monitorTopic,
         port: connectionString.split(":")[2],
         mqttUsername: null,
         mqttPassword: null,
@@ -36,9 +38,9 @@ async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage) {
 
     const testMqttClient = mqtt.connect(hiveMQContainer.getConnectionString());
     testMqttClient.on("connect", () => {
-        testMqttClient.subscribe("test", (error) => {
+        testMqttClient.subscribe(monitorTopic, (error) => {
             if (!error) {
-                testMqttClient.publish("test", receivedMessage);
+                testMqttClient.publish(publishTopic, receivedMessage);
             }
         });
     });
