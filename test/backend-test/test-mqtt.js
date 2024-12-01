@@ -81,11 +81,34 @@ describe("MqttMonitorType", {
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
     });
+
+    test("invalid topic", async () => {
+        await assert.rejects(
+            testMqtt("keyword will not be checked anyway", null, "message", "x/y/z", "a/b/c"),
+            new Error("Timeout, Message not received"),
+        );
+    });
+
+    test("invalid wildcard topic (with #)", async () => {
+        await assert.rejects(
+            testMqtt("", null, "# should be last character", "#/c", "a/b/c"),
+            new Error("Timeout, Message not received"),
+        );
+    });
+
+    test("invalid wildcard topic (with +)", async () => {
+        await assert.rejects(
+            testMqtt("", null, "message", "x/+/z", "a/b/c"),
+            new Error("Timeout, Message not received"),
+        );
+    });
+
     test("valid keywords (type=keyword)", async () => {
         const heartbeat = await testMqtt("KEYWORD", "keyword", "-> KEYWORD <-");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: test; Message: -> KEYWORD <-");
     });
+
     test("invalid keywords (type=default)", async () => {
         await assert.rejects(
             testMqtt("NOT_PRESENT", null, "-> KEYWORD <-"),
@@ -99,12 +122,14 @@ describe("MqttMonitorType", {
             new Error("Message Mismatch - Topic: test; Message: -> KEYWORD <-"),
         );
     });
+
     test("valid json-query", async () => {
         // works because the monitors' jsonPath is hard-coded to "firstProp"
         const heartbeat = await testMqtt("present", "json-query", "{\"firstProp\":\"present\"}");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Message received, expected value is found");
     });
+
     test("invalid (because query fails) json-query", async () => {
         // works because the monitors' jsonPath is hard-coded to "firstProp"
         await assert.rejects(
@@ -112,6 +137,7 @@ describe("MqttMonitorType", {
             new Error("Message received but value is not equal to expected value, value was: [undefined]"),
         );
     });
+
     test("invalid (because successMessage fails) json-query", async () => {
         // works because the monitors' jsonPath is hard-coded to "firstProp"
         await assert.rejects(
