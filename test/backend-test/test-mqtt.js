@@ -55,7 +55,7 @@ async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage, moni
 }
 
 describe("MqttMonitorType", {
-    concurrency: true,
+    concurrency: 4,
     skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")
 }, () => {
     test("valid keywords (type=default)", async () => {
@@ -64,6 +64,23 @@ describe("MqttMonitorType", {
         assert.strictEqual(heartbeat.msg, "Topic: test; Message: -> KEYWORD <-");
     });
 
+    test("valid nested topic", async () => {
+        const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/b/c", "a/b/c");
+        assert.strictEqual(heartbeat.status, UP);
+        assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
+    });
+
+    test("valid wildcard topic (with #)", async () => {
+        const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/#", "a/b/c");
+        assert.strictEqual(heartbeat.status, UP);
+        assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
+    });
+
+    test("valid wildcard topic (with +)", async () => {
+        const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/+/c", "a/b/c");
+        assert.strictEqual(heartbeat.status, UP);
+        assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
+    });
     test("valid keywords (type=keyword)", async () => {
         const heartbeat = await testMqtt("KEYWORD", "keyword", "-> KEYWORD <-");
         assert.strictEqual(heartbeat.status, UP);
