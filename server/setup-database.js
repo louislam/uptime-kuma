@@ -7,7 +7,6 @@ const path = require("path");
 const Database = require("./database");
 const { allowDevAllOrigin } = require("./util-server");
 const mysql = require("mysql2/promise");
-const { mariaDbUseSSL, mariaDbSslCert } = require("./config");
 
 /**
  *  A standalone express app that is used to setup a database
@@ -234,15 +233,7 @@ class SetupDatabase {
                     // Test connection
                     try {
                         let sslConfig = null;
-                        let serverCa = undefined;
-                        if (mariaDbUseSSL === true && !dbConfig.ssl) {
-                            dbConfig.caFilePath = mariaDbSslCert;
-                            serverCa = [ fs.readFileSync(mariaDbSslCert, "utf8") ];
-                            sslConfig = {
-                                rejectUnauthorized: true,
-                                ca: serverCa
-                            };
-                        } else if (dbConfig.ssl) {
+                        if (dbConfig.ssl) {
                             sslConfig = dbConfig.ssl;
                         }
 
