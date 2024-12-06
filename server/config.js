@@ -20,7 +20,7 @@ const sslKeyPassphrase = args["ssl-key-passphrase"] || process.env.UPTIME_KUMA_S
 
 const isSSL = sslKey && sslCert;
 
-const mariaDbSslCert = args["UPTIME_KUMA_DB_SSL_CERT"] || process.env.UPTIME_KUMA_DB_SSL_CERT || process.env.MARIADB_SSL_CERT || undefined;
+const mariaDbSslCert = args["UPTIME_KUMA_DB_SSL_CERT"] || process.env.UPTIME_KUMA_DB_CA_CERT || process.env.MARIADB_SSL_CERT || undefined;
 const mariaDbUseSSL = mariaDbSslCert ? "true" : "false";
 
 /**
