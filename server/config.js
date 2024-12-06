@@ -1,4 +1,3 @@
-/* eslint-disable linebreak-style */
 const isFreeBSD = /^freebsd/.test(process.platform);
 
 // Interop with browser

@@ -1,4 +1,3 @@
-/* eslint-disable linebreak-style */
 const fs = require("fs");
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");

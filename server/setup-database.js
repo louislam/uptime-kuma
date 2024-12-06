@@ -1,4 +1,3 @@
-/* eslint-disable linebreak-style */
 const express = require("express");
 const { log } = require("../src/util");
 const expressStaticGzip = require("express-static-gzip");
