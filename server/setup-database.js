@@ -214,9 +214,6 @@ class SetupDatabase {
 
                     if (dbConfig.caFile) {
                         const base64Data = dbConfig.caFile.replace(/^data:application\/octet-stream;base64,/, "");
-                        console.log(dbConfig);
-                        console.log(base64Data);
-                        console.log(dbConfig.caFile);
                         const binaryData = Buffer.from(base64Data, "base64").toString("binary");
                         const tempCaDirectory = fs.mkdtempSync("kuma-ca-");
                         dbConfig.caFilePath = path.join(tempCaDirectory, "ca.pem");
