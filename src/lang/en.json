@@ -6,6 +6,7 @@
     "setupDatabaseSQLite": "A simple database file, recommended for small-scale deployments. Prior to v2.0.0, Uptime Kuma used SQLite as the default database.",
     "settingUpDatabaseMSG": "Setting up the database. It may take a while, please be patient.",
     "dbName": "Database Name",
+    "caFile": "Database CA certificate",
     "Settings": "Settings",
     "Dashboard": "Dashboard",
     "Help": "Help",
