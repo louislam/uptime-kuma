@@ -93,7 +93,7 @@
 
                     <div class="mb2 mt-3 short">
                         <p class="mb-2">{{ $t("configureMariaCaFile") }}</p>
-                        <input id="caInput" type="file" accept="application/x-pem-file, .pem" class="form-control" @change="onCaFileChange">
+                        <input id="ca-input" type="file" accept="application/x-pem-file, .pem" class="form-control" @change="onCaFileChange">
                     </div>
                 </template>
                 <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
@@ -203,7 +203,7 @@ export default {
 @import "../assets/vars.scss";
 
 .dark {
-    #caInput {
+    #ca-input {
         &::file-selector-button {
             color: $primary;
             background-color: $dark-bg;
