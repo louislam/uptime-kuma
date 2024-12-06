@@ -79,6 +79,7 @@ class SetupDatabase {
             dbConfig.dbName = process.env.UPTIME_KUMA_DB_NAME;
             dbConfig.username = process.env.UPTIME_KUMA_DB_USERNAME;
             dbConfig.password = process.env.UPTIME_KUMA_DB_PASSWORD;
+            dbConfig.caFilePath = process.env.UPTIME_KUMA_DB_CA_CERT;
             Database.writeDBConfig(dbConfig);
         }
 
@@ -207,17 +208,44 @@ class SetupDatabase {
                         this.runningSetup = false;
                         return;
                     }
+
+                    if (dbConfig.caFile) {
+                        const base64Data = dbConfig.caFile.replace(/^data:application\/octet-stream;base64,/, "");
+                        console.log(dbConfig);
+                        console.log(base64Data);
+                        console.log(dbConfig.caFile);
+                        const binaryData = Buffer.from(base64Data, "base64").toString("binary");
+                        const tempCaDirectory = fs.mkdtempSync("kuma-ca-");
+                        dbConfig.caFilePath = path.join(tempCaDirectory, "ca.pem");
+                        try {
+                            fs.writeFileSync(dbConfig.caFilePath, binaryData, "binary");
+                        } catch (err) {
+
+                            response.status(400).json("Cannot write CA file: " + err.message);
+                            this.runningSetup = false;
+                            return;
+                        }
+                        dbConfig.ssl = {
+                            rejectUnauthorized: true,
+                            ca: [ fs.readFileSync(dbConfig.caFilePath) ]
+                        };
+                    }
+
                     // Test connection
                     try {
                         let sslConfig = null;
                         let serverCa = undefined;
-                        if (mariaDbUseSSL === true) {
+                        if (mariaDbUseSSL === true && !dbConfig.ssl) {
+                            dbConfig.caFilePath = mariaDbSslCert;
                             serverCa = [ fs.readFileSync(mariaDbSslCert, "utf8") ];
                             sslConfig = {
                                 rejectUnauthorized: true,
                                 ca: serverCa
                             };
+                        } else if (dbConfig.ssl) {
+                            sslConfig = dbConfig.ssl;
                         }
+
                         const connection = await mysql.createConnection({
                             host: dbConfig.hostname,
                             port: dbConfig.port,
