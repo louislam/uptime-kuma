@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
+        os: [macos-latest, ubuntu-24.04, windows-latest, ARM64]
         node: [ 16, 20.5 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
@@ -63,7 +63,7 @@ jobs:
       - run: npm ci --production
 
   check-linters:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
@@ -78,7 +78,7 @@ jobs:
 
   e2e-tests:
     needs: [ check-linters ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
@@ -93,7 +93,7 @@ jobs:
 
   frontend-unit-tests:
     needs: [ check-linters ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
