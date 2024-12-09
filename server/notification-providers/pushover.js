@@ -1,5 +1,6 @@
 const { getMonitorRelativeURL } = require("../../src/util");
 const { setting } = require("../util-server");
+const { UP, DOWN } = require("../../src/util");
 
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
@@ -43,15 +44,19 @@ class Pushover extends NotificationProvider {
             if (heartbeatJSON == null) {
                 await axios.post(url, data);
                 return okMsg;
-            } else {
-                data.message += `\n<b>Time (${heartbeatJSON["timezone"]})</b>:${heartbeatJSON["localDateTime"]}`;
-                await axios.post(url, data);
-                return okMsg;
             }
+
+            if (heartbeatJSON.status === UP) {
+                data.sound = notification.pushoversounds_up;
+            }
+
+            data.message += `\n<b>Time (${heartbeatJSON["timezone"]})</b>: ${heartbeatJSON["localDateTime"]}`;
+            await axios.post(url, data);
+            return okMsg;
+
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 
