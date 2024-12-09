@@ -16,34 +16,24 @@
             <option>1</option>
             <option>2</option>
         </select>
-        <label for="pushover-sound" class="form-label">{{ $t("Notification Sound") }}</label>
-        <select id="pushover-sound" v-model="$parent.notification.pushoversounds" class="form-select">
-            <option value="pushover">{{ $t("pushoversounds pushover") }}</option>
-            <option value="bike">{{ $t("pushoversounds bike") }}</option>
-            <option value="bugle">{{ $t("pushoversounds bugle") }}</option>
-            <option value="cashregister">{{ $t("pushoversounds cashregister") }}</option>
-            <option value="classical">{{ $t("pushoversounds classical") }}</option>
-            <option value="cosmic">{{ $t("pushoversounds cosmic") }}</option>
-            <option value="falling">{{ $t("pushoversounds falling") }}</option>
-            <option value="gamelan">{{ $t("pushoversounds gamelan") }}</option>
-            <option value="incoming">{{ $t("pushoversounds incoming") }}</option>
-            <option value="intermission">{{ $t("pushoversounds intermission") }}</option>
-            <option value="magic">{{ $t("pushoversounds magic") }}</option>
-            <option value="mechanical">{{ $t("pushoversounds mechanical") }}</option>
-            <option value="pianobar">{{ $t("pushoversounds pianobar") }}</option>
-            <option value="siren">{{ $t("pushoversounds siren") }}</option>
-            <option value="spacealarm">{{ $t("pushoversounds spacealarm") }}</option>
-            <option value="tugboat">{{ $t("pushoversounds tugboat") }}</option>
-            <option value="alien">{{ $t("pushoversounds alien") }}</option>
-            <option value="climb">{{ $t("pushoversounds climb") }}</option>
-            <option value="persistent">{{ $t("pushoversounds persistent") }}</option>
-            <option value="echo">{{ $t("pushoversounds echo") }}</option>
-            <option value="updown">{{ $t("pushoversounds updown") }}</option>
-            <option value="vibrate">{{ $t("pushoversounds vibrate") }}</option>
-            <option value="none">{{ $t("pushoversounds none") }}</option>
+
+        <label for="pushover-sound-down" class="form-label">{{ $t("Notification Sound") }} - Up</label>
+        <select id="pushover-sound-down" v-model="$parent.notification.pushoversounds" class="form-select">
+            <option v-for="sound in soundOptions" :key="sound" :value="sound">
+                {{ $t(`pushoversounds ${sound}`) }}
+            </option>
         </select>
+
+        <label for="pushover-sound-up" class="form-label">{{ $t("Notification Sound") }} - Down</label>
+        <select id="pushover-sound-up" v-model="$parent.notification.pushoversounds_up" class="form-select">
+            <option v-for="sound in soundOptions" :key="sound" :value="sound">
+                {{ $t(`pushoversounds ${sound}`) }}
+            </option>
+        </select>
+
         <label for="pushover-ttl" class="form-label">{{ $t("pushoverMessageTtl") }}</label>
         <input id="pushover-ttl" v-model="$parent.notification.pushoverttl" type="number" min="0" step="1" class="form-control">
+
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}
             <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
@@ -65,6 +55,35 @@ import HiddenInput from "../HiddenInput.vue";
 export default {
     components: {
         HiddenInput,
+    },
+    data() {
+        return {
+            soundOptions: [
+                "pushover",
+                "bike",
+                "bugle",
+                "cashregister",
+                "classical",
+                "cosmic",
+                "falling",
+                "gamelan",
+                "incoming",
+                "intermission",
+                "magic",
+                "mechanical",
+                "pianobar",
+                "siren",
+                "spacealarm",
+                "tugboat",
+                "alien",
+                "climb",
+                "persistent",
+                "echo",
+                "updown",
+                "vibrate",
+                "none",
+            ],
+        };
     },
 };
 </script>
