@@ -349,7 +349,7 @@ exports.mssqlQuery = async function (connectionString, handleEmptyResult, query)
 /**
  * Run a query on Postgres
  * @param {string} connectionString The database connection string
- * @param {string} handleEmptyResult Should empty results be handled as an error
+ * @param {boolean} handleEmptyResult Should empty results be handled as an error
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[] | object[] | object)>} Response from
  * server
