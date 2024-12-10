@@ -737,7 +737,5 @@
     "whatHappensAtForumPost": "Crea un nuovo post sul forum. Questo NON pubblica messaggi in post esistenti. Per pubblicare in un post esistente utilizzare \"{option}\"",
     "invertKeywordDescription": "Cerca la parola chiave essere assente anziché presente.",
     "octopushAPIKey": "\"API Key\" dalle credenziali API HTTP nel pannello di controllo",
-    "Enable TLS": "Abilita TLS",
-    "Handle empty result as error": "Gestisci il risultato vuoto come errore",
-    "handleEmptyResultDescription": "Se abilitato, il monitoraggio verrà considerato come fallimento se non viene restituito alcun risultato."
+    "Enable TLS": "Abilita TLS"
 }
