@@ -322,7 +322,7 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
  * @returns {Promise<(string[] | object[] | object)>} Response from
  * server
  */
-exports.mssqlQuery = async function (connectionString, query) {
+exports.mssqlQuery = async function (connectionString, handleEmptyResult, query) {
     let pool;
     try {
         pool = new mssql.ConnectionPool(connectionString);
@@ -330,7 +330,12 @@ exports.mssqlQuery = async function (connectionString, query) {
         if (!query) {
             query = "SELECT 1";
         }
-        await pool.request().query(query);
+        result = await pool.request().query(query);
+        if (Array.isArray(result.recordset)) {
+            if (handleEmptyResult && result.recordset.length === 0) {
+                throw new Error("No rows returned");
+            }
+        }
         pool.close();
     } catch (e) {
         if (pool) {
@@ -347,7 +352,7 @@ exports.mssqlQuery = async function (connectionString, query) {
  * @returns {Promise<(string[] | object[] | object)>} Response from
  * server
  */
-exports.postgresQuery = function (connectionString, query) {
+exports.postgresQuery = function (connectionString, handleEmptyResult, query) {
     return new Promise((resolve, reject) => {
         const config = postgresConParse(connectionString);
 
@@ -384,7 +389,13 @@ exports.postgresQuery = function (connectionString, query) {
                         if (err) {
                             reject(err);
                         } else {
-                            resolve(res);
+                            if (Array.isArray(res.rows)) {
+                                if (handleEmptyResult && res.rows.length === 0) {
+                                    reject(new Error("No rows returned"));
+                                } else {
+                                    resolve(res);
+                                }
+                            }
                         }
                         client.end();
                     });
@@ -405,7 +416,7 @@ exports.postgresQuery = function (connectionString, query) {
  * @param {?string} password The password to use
  * @returns {Promise<(string)>} Response from server
  */
-exports.mysqlQuery = function (connectionString, query, password = undefined) {
+exports.mysqlQuery = function (connectionString, handleEmptyResult, query, password = undefined) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection({
             uri: connectionString,
@@ -421,7 +432,7 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
                 reject(err);
             } else {
                 if (Array.isArray(res)) {
-                    if (res.length === 0) {
+                    if (handleEmptyResult && res.length === 0) {
                         reject(new Error("No rows returned"));
                     } else {
                         resolve("Rows: " + res.length);
