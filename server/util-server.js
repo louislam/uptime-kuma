@@ -421,7 +421,11 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
                 reject(err);
             } else {
                 if (Array.isArray(res)) {
-                    resolve("Rows: " + res.length);
+                    if (res.length === 0) {
+                        reject(new Error("No rows returned"));
+                    } else {
+                        resolve("Rows: " + res.length);
+                    }
                 } else {
                     resolve("No Error, but the result is not an array. Type: " + typeof res);
                 }
