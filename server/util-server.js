@@ -331,7 +331,7 @@ exports.mssqlQuery = async function (connectionString, handleEmptyResult, query)
         if (!query) {
             query = "SELECT 1";
         }
-        result = await pool.request().query(query);
+        const result = await pool.request().query(query);
         if (Array.isArray(result.recordset)) {
             if (handleEmptyResult && result.recordset.length === 0) {
                 throw new Error("No rows returned");
