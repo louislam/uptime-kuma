@@ -318,6 +318,7 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
 /**
  * Run a query on SQL Server
  * @param {string} connectionString The database connection string
+ * @param {boolean} handleEmptyResult Should empty results be handled as an error
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[] | object[] | object)>} Response from
  * server
@@ -348,6 +349,7 @@ exports.mssqlQuery = async function (connectionString, handleEmptyResult, query)
 /**
  * Run a query on Postgres
  * @param {string} connectionString The database connection string
+ * @param {string} handleEmptyResult Should empty results be handled as an error
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[] | object[] | object)>} Response from
  * server
@@ -412,6 +414,7 @@ exports.postgresQuery = function (connectionString, handleEmptyResult, query) {
 /**
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
+ * @param {boolean} handleEmptyResult Should empty results be handled as an error
  * @param {string} query The query to validate the database with
  * @param {?string} password The password to use
  * @returns {Promise<(string)>} Response from server
