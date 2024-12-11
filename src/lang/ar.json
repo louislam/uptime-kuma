@@ -733,5 +733,11 @@
     "Remove the expiry notification": "إزالة تنبيه يوم تاريخ الإنتهاء",
     "tailscalePingWarning": "من أجل استخدام مراقبة Tailscale Ping، تحتاج إلى تثبيت Uptime Kuma بدون Docker وكذلك تثبيت عميل Tailscale على الخادم الخاص بك.",
     "Clone Monitor": "نسخ المراقبة",
-    "telegramMessageThreadIDDescription": "معرف فريد اختياري لسلسلة الرسائل المستهدفة (الموضوع) في المنتدى؛ لمجموعات المنتدى الكبرى فقط"
+    "telegramMessageThreadIDDescription": "معرف فريد اختياري لسلسلة الرسائل المستهدفة (الموضوع) في المنتدى؛ لمجموعات المنتدى الكبرى فقط",
+    "emailCustomBody": "نص مخصص",
+    "emailTemplateStatus": "الحالة",
+    "leave blank for default subject": "اترك فارغاً ليتم تعيين الموضوع تلقائياً",
+    "leave blank for default body": "اترك فارغاً ليتم تعيين النص تلقائياً",
+    "emailTemplateServiceName": "اسم الخدمة",
+    "emailTemplateHostnameOrURL": "اسم المضيف أو عنوان URL"
 }
