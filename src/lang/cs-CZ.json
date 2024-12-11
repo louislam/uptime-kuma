@@ -1055,5 +1055,10 @@
     "Debug": "Ladění",
     "CopyToClipboardError": "Nelze zkopírovat do schránky: {error}",
     "ignoredTLSError": "Chyby TLS/SSL byly ignorovány",
-    "Copy": "Kopírovat"
+    "Copy": "Kopírovat",
+    "aboutSlackUsername": "Mění zobrazované jméno odesílatele zprávy. Pokud někoho chcete zmínit, použijte raději pole obecný název.",
+    "Message format": "Formát zprávy",
+    "Notification Channel": "Kanál notifikací",
+    "Alphanumerical string and hyphens only": "Pouze alfanumerické řetězce a pomlčky",
+    "Sound": "Zvuk"
 }
