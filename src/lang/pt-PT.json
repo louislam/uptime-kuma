@@ -472,5 +472,12 @@
     "templateMsg": "Mensagem da notificação",
     "styleElapsedTimeShowNoLine": "Mostrar (Sem Linha)",
     "styleElapsedTimeShowWithLine": "Mostrar (Com Linha)",
-    "statusPageRefreshIn": "Atualizar em: [0]"
+    "statusPageRefreshIn": "Atualizar em: [0]",
+    "templateHeartbeatJSON": "objeto que descreve o batimento cardíaco",
+    "templateMonitorJSON": "objeto que descreve o monitor",
+    "templateLimitedToUpDownCertNotifications": "apenas disponível para notificações UP/DOWN/certificado expirado",
+    "templateLimitedToUpDownNotifications": "apenas disponível para notificações UP/DOWN",
+    "-year": "-ano",
+    "Json Query Expression": "Expressão Json Query",
+    "ignoredTLSError": "Erros TLS/SSL foram ignorados"
 }
