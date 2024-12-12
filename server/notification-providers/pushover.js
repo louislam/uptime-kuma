@@ -46,7 +46,7 @@ class Pushover extends NotificationProvider {
                 return okMsg;
             }
 
-            if (heartbeatJSON.status === UP) {
+            if (heartbeatJSON.status === UP && notification.pushoversounds_up) {
                 data.sound = notification.pushoversounds_up;
             }
 
