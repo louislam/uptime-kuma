@@ -47,6 +47,7 @@ class Pushover extends NotificationProvider {
             }
 
             if (heartbeatJSON.status === UP && notification.pushoversounds_up) {
+                // default = DOWN => DOWN-sound is also played for non-UP/DOWN notiifcations
                 data.sound = notification.pushoversounds_up;
             }
 
