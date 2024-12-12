@@ -28,16 +28,16 @@ test.describe("Monitor Form", () => {
         await selectMonitorType(page);
 
         await page.getByTestId("add-condition-button").click();
-        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 added by default + 1 explicitly added
+        expect(await page.getByTestId("condition").count()).toEqual(1); // 1 explicitly added
 
         await page.getByTestId("add-group-button").click();
         expect(await page.getByTestId("condition-group").count()).toEqual(1);
-        expect(await page.getByTestId("condition").count()).toEqual(3); // 2 solo conditions + 1 condition in group
+        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 solo conditions + 1 condition in group
 
         await screenshot(testInfo, page);
 
         await page.getByTestId("remove-condition").first().click();
-        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 solo condition + 1 condition in group
+        expect(await page.getByTestId("condition").count()).toEqual(1); // 0 solo condition + 1 condition in group
 
         await page.getByTestId("remove-condition-group").first().click();
         expect(await page.getByTestId("condition-group").count()).toEqual(0);
@@ -60,7 +60,10 @@ test.describe("Monitor Form", () => {
         await resolveTypeSelect.getByRole("option", { name: "NS" }).click();
 
         await page.getByTestId("add-condition-button").click();
-        expect(await page.getByTestId("condition").count()).toEqual(2); // 1 added by default + 1 explicitly added
+        expect(await page.getByTestId("condition").count()).toEqual(1); // 1 explicitly added
+
+        await page.getByTestId("add-condition-button").click();
+        expect(await page.getByTestId("condition").count()).toEqual(2); // 2 explicitly added
 
         await page.getByTestId("condition-value").nth(0).fill("a.iana-servers.net");
         await page.getByTestId("condition-and-or").nth(0).selectOption("or");
@@ -89,7 +92,8 @@ test.describe("Monitor Form", () => {
         await resolveTypeSelect.click();
         await resolveTypeSelect.getByRole("option", { name: "NS" }).click();
 
-        expect(await page.getByTestId("condition").count()).toEqual(1); // 1 added by default
+        await page.getByTestId("add-condition-button").click();
+        expect(await page.getByTestId("condition").count()).toEqual(1); // 1 explicitly added
 
         await page.getByTestId("condition-value").nth(0).fill("definitely-not.net");
 

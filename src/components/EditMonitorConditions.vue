@@ -73,12 +73,6 @@ export default {
         }
     },
 
-    created() {
-        if (this.model.length === 0) {
-            this.addCondition();
-        }
-    },
-
     methods: {
         getNewGroup() {
             return {
