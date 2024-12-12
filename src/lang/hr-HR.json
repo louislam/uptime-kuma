@@ -1091,5 +1091,6 @@
     "Separate multiple email addresses with commas": "Više adresa e-pošte potrebno je odvojiti zarezima",
     "RabbitMQ Nodes": "RabbitMQ upravljački čvorovi",
     "rabbitmqNodesDescription": "Unesite URL za upravljačke čvorove RabbitMQ uključujući protokol i port. Primjer: {0}",
-    "rabbitmqHelpText": "Za korištenje ovog Monitora morat ćete omogućiti dodatak \"Management Plugin\" u svom RabbitMQ-u. Za više informacija pogledajte {rabitmq_documentation}."
+    "rabbitmqHelpText": "Za korištenje ovog Monitora morat ćete omogućiti dodatak \"Management Plugin\" u svom RabbitMQ-u. Za više informacija pogledajte {rabitmq_documentation}.",
+    "aboutSlackUsername": "Mijenja ime pošiljatelja vidljivo svima ostalima."
 }

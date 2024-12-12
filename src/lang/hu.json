@@ -849,5 +849,6 @@
     "max 15 digits": "max 15 karakter",
     "cellsyntDestination": "A címzett telefonszáma nemzetközi formátumban megadva. A kezdő 00-t követően az országkód, pl. 003612127654 egy magyarországi 0612127654 szám esetében (max 17 karakter összesen). HTTP lekérdezésenként max 25000, vesszővel elválaszott címzett.",
     "Telephone number": "Telefonszám",
-    "Allow Long SMS": "Hosszú SMS engedélyezve"
+    "Allow Long SMS": "Hosszú SMS engedélyezve",
+    "now": "most"
 }
