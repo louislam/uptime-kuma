@@ -2,12 +2,12 @@
 exports.up = function (knex) {
     return knex.schema
         .alterTable("monitor", function (table) {
-            table.text("publicUrl", "text");
+            table.text("public_url", "text");
         });
 };
 
 exports.down = function (knex) {
     return knex.schema.alterTable("monitor", function (table) {
-        table.dropColumn("publicUrl");
+        table.dropColumn("public_url");
     });
 };
