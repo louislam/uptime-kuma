@@ -58,8 +58,8 @@
                                                     v-if="editMode"
                                                     :class="{'link-active': true, 'btn-link': true}"
                                                     icon="cog" class="action me-3"
-                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                     data-testid="monitor-setting"
+                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>
                                         </div>

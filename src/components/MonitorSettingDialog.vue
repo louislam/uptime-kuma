@@ -10,7 +10,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="my-3 form-check">
-                        <input id="show-clickable-link" v-model="monitor.isClickAble" class="form-check-input" type="checkbox" @click="toggleLink(monitor.group_index, monitor.monitor_index)" data-testid="show-clickable-link" />
+                        <input id="show-clickable-link" v-model="monitor.isClickAble" class="form-check-input" type="checkbox" data-testid="show-clickable-link" @click="toggleLink(monitor.group_index, monitor.monitor_index)" />
                         <label class="form-check-label" for="show-clickable-link">
                             {{ $t("Show Clickable Link") }}
                         </label>
