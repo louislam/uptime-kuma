@@ -16,14 +16,11 @@
                         <label for="slug" class="form-label">{{ $t("Slug") }}</label>
                         <div class="input-group">
                             <span id="basic-addon3" class="input-group-text">/status/</span>
-                            <input id="slug" v-model="slug" type="text" class="form-control" required data-testid="slug-input">
+                            <input id="slug" v-model="slug" type="text" class="form-control" autocapitalize="none" required data-testid="slug-input">
                         </div>
                         <div class="form-text">
                             <ul>
                                 <li>{{ $t("Accept characters:") }} <mark>a-z</mark> <mark>0-9</mark> <mark>-</mark></li>
-                                <i18n-t tag="li" keypath="startOrEndWithOnly">
-                                    <mark>a-z</mark> <mark>0-9</mark>
-                                </i18n-t>
                                 <li>{{ $t("No consecutive dashes") }} <mark>--</mark></li>
                                 <i18n-t tag="li" keypath="statusPageSpecialSlugDesc">
                                     <mark class="me-1">default</mark>
@@ -65,7 +62,7 @@ export default {
                 this.processing = false;
 
                 if (res.ok) {
-                    location.href = "/status/" + this.slug + "?edit";
+                    location.href = "/status/" + res.slug + "?edit";
                 } else {
 
                     if (res.msg.includes("UNIQUE constraint")) {
@@ -84,5 +81,9 @@ export default {
 <style lang="scss" scoped>
 .shadow-box {
     padding: 20px;
+}
+
+#slug {
+    text-transform: lowercase;
 }
 </style>
