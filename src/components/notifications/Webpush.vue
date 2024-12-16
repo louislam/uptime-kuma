@@ -1,16 +1,14 @@
 <template>
-    <button 
+    <button
+        class="mb-3"
         type="button" :class="[
-            'btn', 
+            'btn',
             canRegister ? 'btn-primary' : 'btn-danger'
-        ]" :disabled="!canRegister || subscriptionReceived" 
-        @click="registerWebpush"
-        class="mb-3">
+        ]" :disabled="!btnEnabled" @click="registerWebpush">
         <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
-        <span v-else-if="subscriptionReceived" class="me-1">✓</span>
-        {{ registerText }}
+        <span v-else-if="$parent.notification.subscription" class="me-1">✓</span>
+        {{ btnText }}
     </button>
-   
 
     <div class="mb-3 form-text">
         <a href="TODO" target="_blank">{{ $t("documentationOf", ["Webpush"]) }}</a>
@@ -21,21 +19,33 @@
 export default {
     data() {
         return {
-            subscription: '',
-            registerText: '',
+            //store subscription info
+            btnEnabled: false,
+            btnText: "",
             processing: false,
+            //determines if browser supports service worker
             canRegister: false,
-            subscriptionReceived: false,
-            publicVapidKey: "",
-        }
+            //store public vapid key
+            publicVapidKey: null,
+        };
     },
     mounted() {
-        if (("serviceWorker" in navigator)) {
-            this.registerText = "Allow Notifications";
+        // if already subscribed
+        if (this.$parent.notification.subscription) {
+            this.btnEnabled = false;
             this.canRegister = true;
-        } else {
-            this.registerText = "Browser not supported";
-            this.canRegister = false;
+            this.btnText = "Notifications Enabled";
+        } else { //not subscribed
+            //check if browser supports service worker
+            if (("serviceWorker" in navigator)) {
+                this.btnText = "Allow Notifications";
+                this.canRegister = true;
+                this.btnEnabled = true;
+            } else { //browser does not support service worker
+                this.btnText = "Browser not supported";
+                this.canRegister = false;
+                this.btnEnabled = false;
+            }
         }
     },
     methods: {
@@ -52,9 +62,10 @@ export default {
                         resolve(resp.msg);
                     });
                 });
-                
+
+                //request permission to send notifications
                 const permission = await Notification.requestPermission();
-                if (permission !== 'granted') {
+                if (permission !== "granted") {
                     this.$root.toastRes({
                         ok: false,
                         msg: "Unable to get permission to notify.",
@@ -63,19 +74,25 @@ export default {
                     return;
                 }
 
+                //get service worker registration
                 const registration = await navigator.serviceWorker.ready;
+                //subscribe to push notifications
                 const subscription = await registration.pushManager.subscribe({
                     userVisibleOnly: true,
                     applicationServerKey: publicKey,
                 });
 
+                //store subscription info and update button
                 this.$parent.notification.subscription = subscription;
-
-                this.subscriptionReceived = true;
-                this.registerText = "Notifications Enabled";
+                this.btnEnabled = false;
+                this.canRegister = true;
+                this.btnText = "Notifications Enabled";
             } catch (error) {
-                console.error('Subscription failed:', error);
-                this.$root.toastRes({ ok: false, msg: error });
+                console.error("Subscription failed:", error);
+                this.$root.toastRes({
+                    ok: false,
+                    msg: error
+                });
             } finally {
                 this.processing = false;
             }

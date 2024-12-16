@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
 import VueDevTools from "vite-plugin-vue-devtools";
-import { VitePWA } from 'vite-plugin-pwa';
+import { VitePWA } from "vite-plugin-pwa";
 
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
@@ -35,13 +35,9 @@ export default defineConfig({
         VueDevTools(),
         VitePWA({
             registerType: null,
-            srcDir: 'src',
-            filename: 'serviceWorker.ts',
-            strategies: 'injectManifest',
-            devOptions: {
-                enabled: true,
-                type: 'module'
-            },
+            srcDir: "src",
+            filename: "serviceWorker.ts",
+            strategies: "injectManifest",
         }),
     ],
     css: {

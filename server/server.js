@@ -97,7 +97,7 @@ log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
 log.debug("server", "Importing Web-Push");
-const web_push = require('web-push');
+const webpush = require("web-push");
 
 log.debug("server", "Importing Database");
 const Database = require("./database");
@@ -1493,14 +1493,14 @@ let needSetup = false;
         socket.on("getWebpushVapidPublicKey", async (callback) => {
             try {
                 let publicVapidKey = await Settings.get("webpushPublicVapidKey");
-                
+
                 if (!publicVapidKey) {
                     console.debug("Generating new VAPID keys");
-                    const vapidKeys = web_push.generateVAPIDKeys();
+                    const vapidKeys = webpush.generateVAPIDKeys();
 
                     await Settings.set("webpushPublicVapidKey", vapidKeys.publicKey);
                     await Settings.set("webpushPrivateVapidKey", vapidKeys.privateKey);
-                    
+
                     publicVapidKey = vapidKeys.publicKey;
                 }
 
