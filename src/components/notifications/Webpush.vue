@@ -1,12 +1,12 @@
 <template>
     <button
         class="mb-3"
-        type="button" 
+        type="button"
         :class="[
             'btn',
             canRegister ? 'btn-primary' : 'btn-danger'
-        ]" 
-        :disabled="!btnEnabled" 
+        ]"
+        :disabled="!btnEnabled"
         @click="registerWebpush"
     >
         <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
