@@ -67,6 +67,7 @@ import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
+import Webpush from "./Webpush.vue";
 
 /**
  * Manage all notification form.
@@ -142,6 +143,7 @@ const NotificationFormList = {
     "Cellsynt": Cellsynt,
     "WPush": WPush,
     "SendGrid": SendGrid,
+    "Webpush": Webpush,
 };
 
 export default NotificationFormList;
