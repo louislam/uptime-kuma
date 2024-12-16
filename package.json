@@ -184,6 +184,7 @@
         "eslint-plugin-vue": "~8.7.1",
         "favico.js": "~0.3.10",
         "get-port-please": "^3.1.1",
+        "globals": "^15.13.0",
         "node-ssh": "~13.1.0",
         "postcss-html": "~1.5.0",
         "postcss-rtlcss": "~3.7.2",
