@@ -1,10 +1,14 @@
 <template>
     <button
         class="mb-3"
-        type="button" :class="[
+        type="button" 
+        :class="[
             'btn',
             canRegister ? 'btn-primary' : 'btn-danger'
-        ]" :disabled="!btnEnabled" @click="registerWebpush">
+        ]" 
+        :disabled="!btnEnabled" 
+        @click="registerWebpush"
+    >
         <div v-if="processing" class="spinner-border spinner-border-sm me-1"></div>
         <span v-else-if="$parent.notification.subscription" class="me-1">✓</span>
         {{ btnText }}
