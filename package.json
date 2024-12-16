@@ -145,7 +145,6 @@
     },
     "devDependencies": {
         "@actions/github": "~5.1.1",
-        "@eslint/js": "^9.17.0",
         "@fortawesome/fontawesome-svg-core": "~1.2.36",
         "@fortawesome/free-regular-svg-icons": "~5.15.4",
         "@fortawesome/free-solid-svg-icons": "~5.15.4",
@@ -178,7 +177,6 @@
         "eslint-plugin-vue": "~8.7.1",
         "favico.js": "~0.3.10",
         "get-port-please": "^3.1.1",
-        "globals": "^15.13.0",
         "node-ssh": "~13.1.0",
         "postcss-html": "~1.5.0",
         "postcss-rtlcss": "~3.7.2",
