@@ -1037,5 +1037,14 @@
     "time ago": "hace {0}",
     "-year": "-año",
     "Json Query Expression": "Expresión de consulta Json",
-    "ignoredTLSError": "Se han ignorado errores TLS/SSL"
+    "ignoredTLSError": "Se han ignorado errores TLS/SSL",
+    "conditionDelete": "Eliminar condición",
+    "conditionAddGroup": "Añadir grupo",
+    "conditionDeleteGroup": "Borrar grupo",
+    "conditionValuePlaceholder": "Valor",
+    "equals": "igual",
+    "not equals": "no es igual",
+    "contains": "contiene",
+    "not contains": "no contiene",
+    "starts with": "empieza por"
 }
