@@ -4,10 +4,19 @@
         <input id="slack-webhook-url" v-model="$parent.notification.slackwebhookURL" type="text" class="form-control" required>
         <label for="slack-username" class="form-label">{{ $t("Username") }}</label>
         <input id="slack-username" v-model="$parent.notification.slackusername" type="text" class="form-control">
+        <div class="form-text">
+            {{ $t("aboutSlackUsername") }}
+        </div>
         <label for="slack-iconemo" class="form-label">{{ $t("Icon Emoji") }}</label>
         <input id="slack-iconemo" v-model="$parent.notification.slackiconemo" type="text" class="form-control">
         <label for="slack-channel" class="form-label">{{ $t("Channel Name") }}</label>
         <input id="slack-channel-name" v-model="$parent.notification.slackchannel" type="text" class="form-control">
+
+        <label class="form-label">{{ $t("Message format") }}</label>
+        <div class="form-check form-switch">
+            <input id="slack-text-message" v-model="$parent.notification.slackrichmessage" type="checkbox" class="form-check-input">
+            <label for="slack-text-message" class="form-label">{{ $t("Send rich messages") }}</label>
+        </div>
 
         <div class="form-text">
             <span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}

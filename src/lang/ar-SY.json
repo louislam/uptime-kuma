@@ -1,5 +1,5 @@
 {
-    "languageName": "إنجليزي",
+    "languageName": "العربية",
     "checkEverySecond": "تحقق من كل {0} ثانية",
     "retryCheckEverySecond": "أعد محاولة كل {0} ثانية",
     "resendEveryXTimes": "إعادة تقديم كل {0} مرات",
@@ -120,8 +120,10 @@
     "Update Password": "تطوير كلمة السر",
     "Disable Auth": "تعطيل المصادقة",
     "Enable Auth": "تمكين المصادقة",
-    "disableauth.message1": "هل أنت متأكد من أن <strong> تعطيل المصادقة </strong>؟",
-    "disableauth.message2": "تم تصميمه للسيناريوهات <strong> حيث تنوي تنفيذ مصادقة الطرف الثالث </strong> أمام كوما في وقت التشغيل مثل CloudFlare Access Authelia أو آليات المصادقة الأخرى.",
+    "disableauth.message1": "هل أنت متأكد من أن {disableAuth}؟",
+    "disable authentication": "تعطيل المصادقة",
+    "disableauth.message2": "تم تصميمه للسيناريوهات {intendThirdPartyAuth} أمام كوما في وقت التشغيل مثل CloudFlare Access Authelia أو آليات المصادقة الأخرى.",
+    "where you intend to implement third-party authentication": "حيث تنوي تنفيذ مصادقة الطرف الثالث",
     "Please use this option carefully!": "الرجاء استخدام هذا الخيار بعناية!",
     "Logout": "تسجيل خروج",
     "Leave": "غادر",
@@ -386,7 +388,6 @@
     "Discard": "تجاهل",
     "Cancel": "يلغي",
     "Powered by": "مشغل بواسطة",
-    "shrinkDatabaseDescription": "تشغيل فراغ قاعدة البيانات لـ SQLite. إذا تم إنشاء قاعدة البيانات الخاصة بك بعد تمكين 1.10.0 AUTO_VACUUM بالفعل ولا يلزم هذا الإجراء.",
     "serwersms": "Serwersms.pl",
     "serwersmsAPIUser": "اسم مستخدم API (بما في ذلك بادئة WebAPI_)",
     "serwersmsAPIPassword": "كلمة مرور API",
@@ -710,5 +711,8 @@
     "More info on:": "مزيد من المعلومات حول: {0}",
     "What you can try:": "ماذا تستطيع أن تجرب:",
     "Packet Size": "حجم الحزمة",
-    "confirmUninstallPlugin": "هل أنت متأكد من أنك تريد إلغاء تثبيت هذا المكون الإضافي؟"
+    "confirmUninstallPlugin": "هل أنت متأكد من أنك تريد إلغاء تثبيت هذا المكون الإضافي؟",
+    "settingUpDatabaseMSG": "يرجى الإنتظار ، نقوم بإعداد قاعدة البيانات و قد يستغرق الأمر بعض الوقت.",
+    "setupDatabaseChooseDatabase": "ما هي قاعدة البيانات التي تريد استخدامها؟",
+    "dbName": "إسم قاعدة البيانات"
 }

@@ -2,7 +2,6 @@
 
 import fs from "fs";
 import util from "util";
-import rmSync from "../fs-rmSync.js";
 
 /**
  * Copy across the required language files
@@ -12,10 +11,14 @@ import rmSync from "../fs-rmSync.js";
  * created with this code if one does not already exist
  * @param {string} baseLang The second base language file to copy. This
  * will be ignored if set to "en" as en.js is copied by default
+ * @returns {void}
  */
 function copyFiles(langCode, baseLang) {
     if (fs.existsSync("./languages")) {
-        rmSync("./languages", { recursive: true });
+        fs.rmSync("./languages", {
+            recursive: true,
+            force: true,
+        });
     }
     fs.mkdirSync("./languages");
 
@@ -33,7 +36,8 @@ function copyFiles(langCode, baseLang) {
 /**
  * Update the specified language file
  * @param {string} langCode Language code to update
- * @param {string} baseLang Second language to copy keys from
+ * @param {string} baseLangCode Second language to copy keys from
+ * @returns {void}
  */
 async function updateLanguage(langCode, baseLangCode) {
     const en = (await import("./languages/en.js")).default;
@@ -91,6 +95,9 @@ console.log("Updating: " + langCode);
 
 copyFiles(langCode, baseLangCode);
 await updateLanguage(langCode, baseLangCode);
-rmSync("./languages", { recursive: true });
+fs.rmSync("./languages", {
+    recursive: true,
+    force: true,
+});
 
 console.log("Done. Fixing formatting by ESLint...");

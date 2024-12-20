@@ -18,6 +18,9 @@ const successMessage = "Successes!";
 class Bark extends NotificationProvider {
     name = "Bark";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let barkEndpoint = notification.barkEndpoint;
 
@@ -43,34 +46,35 @@ class Bark extends NotificationProvider {
     }
 
     /**
-     * Add additional parameter for better on device styles (iOS 15
-     * optimized)
-     * @param {string} postUrl URL to append parameters to
-     * @returns {string}
+     * Add additional parameter for Bark v1 endpoints.
+     * Leads to better on device styles (iOS 15 optimized)
+     * @param {BeanModel} notification Notification to send
+     * @returns {string} Additional URL parameters
      */
-    appendAdditionalParameters(notification, postUrl) {
+    additionalParameters(notification) {
         // set icon to uptime kuma icon, 11kb should be fine
-        postUrl += "?icon=" + barkNotificationAvatar;
+        let params = "?icon=" + barkNotificationAvatar;
         // grouping all our notifications
         if (notification.barkGroup != null) {
-            postUrl += "&group=" + notification.barkGroup;
+            params += "&group=" + notification.barkGroup;
         } else {
             // default name
-            postUrl += "&group=" + "UptimeKuma";
+            params += "&group=" + "UptimeKuma";
         }
         // picked a sound, this should follow system's mute status when arrival
         if (notification.barkSound != null) {
-            postUrl += "&sound=" + notification.barkSound;
+            params += "&sound=" + notification.barkSound;
         } else {
             // default sound
-            postUrl += "&sound=" + "telegraph";
+            params += "&sound=" + "telegraph";
         }
-        return postUrl;
+        return params;
     }
 
     /**
      * Check if result is successful
-     * @param {Object} result Axios response object
+     * @param {object} result Axios response object
+     * @returns {void}
      * @throws {Error} The status code is not in range 2xx
      */
     checkResult(result) {
@@ -84,18 +88,29 @@ class Bark extends NotificationProvider {
 
     /**
      * Send the message
+     * @param {BeanModel} notification Notification to send
      * @param {string} title Message title
      * @param {string} subtitle Message
      * @param {string} endpoint Endpoint to send request to
-     * @returns {string}
+     * @returns {Promise<string>} Success message
      */
     async postNotification(notification, title, subtitle, endpoint) {
-        // url encode title and subtitle
-        title = encodeURIComponent(title);
-        subtitle = encodeURIComponent(subtitle);
-        let postUrl = endpoint + "/" + title + "/" + subtitle;
-        postUrl = this.appendAdditionalParameters(notification, postUrl);
-        let result = await axios.get(postUrl);
+        let result;
+        if (notification.apiVersion === "v1" || notification.apiVersion == null) {
+            // url encode title and subtitle
+            title = encodeURIComponent(title);
+            subtitle = encodeURIComponent(subtitle);
+            const params = this.additionalParameters(notification);
+            result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`);
+        } else {
+            result = await axios.post(`${endpoint}/push`, {
+                title,
+                body: subtitle,
+                icon: barkNotificationAvatar,
+                sound: notification.barkSound || "telegraph", // default sound is telegraph
+                group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
+            });
+        }
         this.checkResult(result);
         if (result.statusText != null) {
             return "Bark notification succeed: " + result.statusText;

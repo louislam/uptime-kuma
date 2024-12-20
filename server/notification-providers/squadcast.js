@@ -3,11 +3,13 @@ const axios = require("axios");
 const { DOWN } = require("../../src/util");
 
 class Squadcast extends NotificationProvider {
-
     name = "squadcast";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
 
@@ -32,25 +34,7 @@ class Squadcast extends NotificationProvider {
                     data.status = "resolve";
                 }
 
-                let address;
-                switch (monitorJSON["type"]) {
-                    case "ping":
-                        address = monitorJSON["hostname"];
-                        break;
-                    case "port":
-                    case "dns":
-                    case "steam":
-                        address = monitorJSON["hostname"];
-                        if (monitorJSON["port"]) {
-                            address += ":" + monitorJSON["port"];
-                        }
-                        break;
-                    default:
-                        address = monitorJSON["url"];
-                        break;
-                }
-
-                data.tags["AlertAddress"] = address;
+                data.tags["AlertAddress"] = this.extractAddress(monitorJSON);
 
                 monitorJSON["tags"].forEach(tag => {
                     data.tags[tag["name"]] = {

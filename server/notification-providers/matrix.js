@@ -6,8 +6,11 @@ const { log } = require("../../src/util");
 class Matrix extends NotificationProvider {
     name = "matrix";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         const size = 20;
         const randomString = encodeURIComponent(

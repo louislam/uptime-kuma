@@ -1,7 +1,6 @@
 /.idea
 /node_modules
-/data
-/cypress
+/data*
 /out
 /test
 /kubernetes
@@ -18,7 +17,6 @@ README.md
 .vscode
 .eslint*
 .stylelint*
-/.devcontainer
 /.github
 yarn.lock
 app.json
@@ -30,7 +28,6 @@ SECURITY.md
 tsconfig.json
 .env
 /tmp
-/babel.config.js
 /ecosystem.config.js
 /extra/healthcheck.exe
 /extra/healthcheck

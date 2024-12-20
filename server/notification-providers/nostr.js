@@ -1,4 +1,3 @@
-const { log } = require("../../src/util");
 const NotificationProvider = require("./notification-provider");
 const {
     relayInit,
@@ -12,16 +11,7 @@ const {
 // polyfills for node versions
 const semver = require("semver");
 const nodeVersion = process.version;
-if (semver.lt(nodeVersion, "16.0.0")) {
-    log.warn("monitor", "Node <= 16 is unsupported for nostr, sorry :(");
-} else if (semver.lt(nodeVersion, "18.0.0")) {
-    // polyfills for node 16
-    global.crypto = require("crypto");
-    global.WebSocket = require("isomorphic-ws");
-    if (typeof crypto !== "undefined" && !crypto.subtle && crypto.webcrypto) {
-        crypto.subtle = crypto.webcrypto.subtle;
-    }
-} else if (semver.lt(nodeVersion, "20.0.0")) {
+if (semver.lt(nodeVersion, "20.0.0")) {
     // polyfills for node 18
     global.crypto = require("crypto");
     global.WebSocket = require("isomorphic-ws");
@@ -33,6 +23,9 @@ if (semver.lt(nodeVersion, "16.0.0")) {
 class Nostr extends NotificationProvider {
     name = "nostr";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         // All DMs should have same timestamp
         const createdAt = Math.floor(Date.now() / 1000);
@@ -86,6 +79,11 @@ class Nostr extends NotificationProvider {
         return `${successfulRelays}/${relays.length} relays connected.`;
     }
 
+    /**
+     * Get the private key for the sender
+     * @param {string} sender Sender to retrieve key for
+     * @returns {nip19.DecodeResult} Private key
+     */
     async getPrivateKey(sender) {
         try {
             const senderDecodeResult = await nip19.decode(sender);
@@ -96,6 +94,11 @@ class Nostr extends NotificationProvider {
         }
     }
 
+    /**
+     * Get public keys for recipients
+     * @param {string} recipients Newline delimited list of recipients
+     * @returns {Promise<nip19.DecodeResult[]>} Public keys
+     */
     async getPublicKeys(recipients) {
         const recipientsList = recipients.split("\n");
         const publicKeys = [];
