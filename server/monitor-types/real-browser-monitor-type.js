@@ -240,10 +240,19 @@ class RealBrowserMonitorType extends MonitorType {
         const context = await browser.newContext();
         const page = await context.newPage();
 
-        const res = await page.goto(monitor.url, {
-            waitUntil: "networkidle",
-            timeout: monitor.interval * 1000 * 0.8,
-        });
+        let res;
+        const matches = monitor.name.match(/\[(.*?)\]/);
+        if (matches) {
+            res = await page.goto(monitor.url, {
+                timeout: monitor.interval * 1000 * 0.8,
+            });
+            await page.waitForSelector(matches[1], { timeout: monitor.interval * 1000 * 0.8 });
+        } else {
+            res = await page.goto(monitor.url, {
+                waitUntil: "networkidle",
+                timeout: monitor.interval * 1000 * 0.8,
+            });
+        }
 
         let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
 
