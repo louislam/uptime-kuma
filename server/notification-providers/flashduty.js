@@ -8,6 +8,81 @@ class FlashDuty extends NotificationProvider {
     name = "FlashDuty";
 
     /**
+     * Sanitize and validate a URL string
+     * @param {string} urlStr URL to validate
+     * @returns {string|null} Sanitized URL or null if invalid
+     */
+    validateURL(urlStr) {
+        try {
+            const url = new URL(urlStr);
+            // Only allow http and https protocols
+            if (![ "http:", "https:" ].includes(url.protocol)) {
+                return null;
+            }
+            return url.toString();
+        } catch {
+            return null;
+        }
+    }
+
+    /**
+     * Generate a monitor url from the monitors information
+     * @param {object} monitorInfo Monitor details
+     * @returns {string|undefined} Monitor URL
+     */
+    genMonitorUrl(monitorInfo) {
+        if (!monitorInfo) {
+            return undefined;
+        }
+
+        // For port type monitors
+        if (monitorInfo.type === "port" && monitorInfo.port) {
+            // Validate port number
+            const port = parseInt(monitorInfo.port, 10);
+            if (isNaN(port) || port < 1 || port > 65535) {
+                return undefined;
+            }
+
+            // Try to construct a valid URL
+            try {
+                // If hostname already includes protocol, use it
+                const hasProtocol = /^[a-zA-Z]+:\/\//.test(monitorInfo.hostname);
+                const urlStr = hasProtocol ?
+                    monitorInfo.hostname + ":" + port :
+                    "http://" + monitorInfo.hostname + ":" + port;
+
+                const url = new URL(urlStr);
+                return url.toString();
+            } catch {
+                return undefined;
+            }
+        }
+
+        // For hostname-based monitors
+        if (monitorInfo.hostname != null) {
+            try {
+                // If hostname already includes protocol, use it
+                const hasProtocol = /^[a-zA-Z]+:\/\//.test(monitorInfo.hostname);
+                const urlStr = hasProtocol ?
+                    monitorInfo.hostname :
+                    "http://" + monitorInfo.hostname;
+
+                const url = new URL(urlStr);
+                return url.toString();
+            } catch {
+                return undefined;
+            }
+        }
+
+        // For URL-based monitors
+        if (monitorInfo.url) {
+            return this.validateURL(monitorInfo.url);
+        }
+
+        return undefined;
+    }
+
+    /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
@@ -35,21 +110,6 @@ class FlashDuty extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-    }
-
-    /**
-     * Generate a monitor url from the monitors infomation
-     * @param {object} monitorInfo Monitor details
-     * @returns {string|undefined} Monitor URL
-     */
-    genMonitorUrl(monitorInfo) {
-        if (monitorInfo.type === "port" && monitorInfo.port) {
-            return monitorInfo.hostname + ":" + monitorInfo.port;
-        }
-        if (monitorInfo.hostname != null) {
-            return monitorInfo.hostname;
-        }
-        return monitorInfo.url;
     }
 
     /**
