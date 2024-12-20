@@ -106,8 +106,6 @@ export function buildImage(repoNames, tags, target, buildArgs = "", dockerfile =
  * @returns {void}
  */
 export async function checkTagExists(repoNames, version) {
-    console.log(`Checking if version ${version} exists on Docker Hub`);
-
     // Skip if the tag is not on Docker Hub
     // louislam/uptime-kuma
     let dockerHubRepoNames = repoNames.filter((name) => {
@@ -126,6 +124,8 @@ export async function checkTagExists(repoNames, version) {
  * @returns {Promise<void>}
  */
 export async function checkTagExistsSingle(repoName, version) {
+    console.log(`Checking if version ${version} exists on Docker Hub:`, repoName);
+
     // Get a list of tags from the Docker Hub repository
     let tags = [];
 
