@@ -96,6 +96,8 @@ const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleChec
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
+log.debug("server", "Importing Web-Push");
+const webpush = require("web-push");
 
 log.debug("server", "Importing Database");
 const Database = require("./database");
@@ -1485,6 +1487,32 @@ let needSetup = false;
                 callback(Notification.checkApprise());
             } catch (e) {
                 callback(false);
+            }
+        });
+
+        socket.on("getWebpushVapidPublicKey", async (callback) => {
+            try {
+                let publicVapidKey = await Settings.get("webpushPublicVapidKey");
+
+                if (!publicVapidKey) {
+                    console.debug("Generating new VAPID keys");
+                    const vapidKeys = webpush.generateVAPIDKeys();
+
+                    await Settings.set("webpushPublicVapidKey", vapidKeys.publicKey);
+                    await Settings.set("webpushPrivateVapidKey", vapidKeys.privateKey);
+
+                    publicVapidKey = vapidKeys.publicKey;
+                }
+
+                callback({
+                    ok: true,
+                    msg: publicVapidKey,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
             }
         });
 
