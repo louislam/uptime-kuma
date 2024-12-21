@@ -1097,5 +1097,6 @@
     "Separate multiple email addresses with commas": "Birden fazla e-posta adresini virgülle ayırın",
     "RabbitMQ Nodes": "RabbitMQ Yönetim Sunucuları",
     "rabbitmqNodesDescription": "Protokol ve port dahil olmak üzere RabbitMQ yönetim düğümleri için URL'yi girin. Örnek: {0}",
-    "rabbitmqHelpText": "Monitörü kullanmak için, RabbitMQ kurulumunuzda Yönetim Eklentisini etkinleştirmeniz gerekecektir. Daha fazla bilgi için lütfen {rabitmq_documentation}'a bakın."
+    "rabbitmqHelpText": "Monitörü kullanmak için, RabbitMQ kurulumunuzda Yönetim Eklentisini etkinleştirmeniz gerekecektir. Daha fazla bilgi için lütfen {rabitmq_documentation}'a bakın.",
+    "aboutSlackUsername": "Mesaj göndericinin görünen adını değiştir. Eğer birilerini etiketlemek isterseniz, onu ismini dostça ekleyebilirsiniz."
 }

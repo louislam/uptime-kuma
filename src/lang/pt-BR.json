@@ -987,5 +987,12 @@
     "CopyToClipboardError": "Não foi possível copiar para a área de transferência: {error}",
     "CopyToClipboardSuccess": "Copiado!",
     "firewalls": "firewalls",
-    "docker networks": "redes docker"
+    "docker networks": "redes docker",
+    "Message format": "Formato da mensagem",
+    "snmpOIDHelptext": "Insira o OID do sensor ou do status que você deseja monitorar. Utilize ferramentas de gerenciamento de rede, como navegadores MIB ou softwares SNMP, se não tiver certeza sobre o OID.",
+    "privateOnesenderDesc": "Certifique-se de que o número de telefone seja válido. Para enviar uma mensagem para um número de telefone privado, ex: 628123456789",
+    "aboutSlackUsername": "Altera o nome de exibição do remetente da mensagem. Se quiser mencionar alguém, inclua a menção no nome amigável.",
+    "Send rich messages": "Enviar mensagens ricas",
+    "Host Onesender": "Servidor Onesender",
+    "Token Onesender": "Chave Onesender"
 }
