@@ -19,7 +19,17 @@
         <select id="mentioning" v-model="$parent.notification.mentioning" class="form-select" required>
             <option value="nobody">{{ $t("Don't mention people") }}</option>
             <option value="everyone">{{ $t("Mention group", { group: "@everyone" }) }}</option>
+            <option value="specify-mobiles">{{ $t("Mention Mobile List") }}</option>
+            <option value="specify-users">{{ $t("Mention User List") }}</option>
         </select>
+    </div>
+    <div class="mb-3" v-if="$parent.notification.mentioning === 'specify-mobiles'">
+        <label for="mobileList" class="form-label">{{ $t("Dingtalk Mobile List") }}<span style="color: red;"><sup>*</sup></span></label>
+        <input id="mobileList" v-model="$parent.notification.mobileList" type="list" class="form-control" required>
+    </div>
+    <div class="mb-3" v-if="$parent.notification.mentioning === 'specify-users'">
+        <label for="userList" class="form-label">{{ $t("Dingtalk User List") }}<span style="color: red;"><sup>*</sup></span></label>
+        <input id="userList" v-model="$parent.notification.userList" type="list" class="form-control" required>
     </div>
 </template>
 

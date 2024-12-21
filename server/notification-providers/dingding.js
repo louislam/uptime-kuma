@@ -11,17 +11,26 @@ class DingDing extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-
+        const  mentionAll = notification.mentioning === "everyone"
+        const mobileList = notification.mentioning === "specify-mobiles" ?  notification.mobileList.split(",") : []
+        const userList = notification.mentioning === "specify-users" ?  notification.userList.split(",") : []
+        const mentionStr = [...mobileList || [], ...userList || [] ].map(item => `@${item}`).join(" ")
+        console.log('mobileList: ',mobileList)
+        console.log('userList: ',userList)
+        console.log('mentionStr: ',mentionStr)
         try {
             if (heartbeatJSON != null) {
+                notification.mobileList
                 let params = {
                     msgtype: "markdown",
                     markdown: {
                         title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
-                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}${'\n\n'+mentionStr}`,
                     },
-                    "at": {
-                        "isAtAll": notification.mentioning === "everyone"
+                    at: {
+                        isAtAll: mentionAll,
+                        atUserIds: userList,
+                        atMobiles: mobileList
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
@@ -31,7 +40,12 @@ class DingDing extends NotificationProvider {
                 let params = {
                     msgtype: "text",
                     text: {
-                        content: msg
+                        content: `${msg}${'\n'+mentionStr}`
+                    },
+                    at: {
+                        isAtAll: mentionAll,
+                        atUserIds: userList,
+                        atMobiles: mobileList
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
