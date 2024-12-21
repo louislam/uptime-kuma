@@ -240,6 +240,14 @@ class RealBrowserMonitorType extends MonitorType {
         const context = await browser.newContext();
         const page = await context.newPage();
 
+        // Prevent Local File Inclusion
+        // Accept only http:// and https://
+        // https://github.com/louislam/uptime-kuma/security/advisories/GHSA-2qgm-m29m-cj2h
+        let url = new URL(monitor.url);
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+            throw new Error("Invalid url protocol, only http and https are allowed.");
+        }
+
         const res = await page.goto(monitor.url, {
             waitUntil: "networkidle",
             timeout: monitor.interval * 1000 * 0.8,
