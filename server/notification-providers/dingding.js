@@ -11,18 +11,17 @@ class DingDing extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-        const mentionAll = notification.mentioning === "everyone"
-        const mobileList = notification.mentioning === "specify-mobiles" ? notification.mobileList.split(",") : []
-        const userList = notification.mentioning === "specify-users" ? notification.userList.split(",") : []
-        const mentionStr = [...mobileList || [], ...userList || []].map(item => `@${item}`).join(" ")
+        const mentionAll = notification.mentioning === "everyone";
+        const mobileList = notification.mentioning === "specify-mobiles" ? notification.mobileList.split(",") : [];
+        const userList = notification.mentioning === "specify-users" ? notification.userList.split(",") : [];
+        const mentionStr = [ ...mobileList || [], ...userList || [] ].map(item => `@${item}`).join(" ");
         try {
             if (heartbeatJSON != null) {
-                notification.mobileList
                 let params = {
                     msgtype: "markdown",
                     markdown: {
                         title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
-                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}${'\n\n' + mentionStr}`,
+                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}${"\n\n" + mentionStr}`,
                     },
                     at: {
                         isAtAll: mentionAll,
@@ -37,7 +36,7 @@ class DingDing extends NotificationProvider {
                 let params = {
                     msgtype: "text",
                     text: {
-                        content: `${msg}${'\n' + mentionStr}`
+                        content: `${msg}${"\n" + mentionStr}`
                     },
                     at: {
                         isAtAll: mentionAll,

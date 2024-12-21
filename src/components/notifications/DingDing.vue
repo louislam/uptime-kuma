@@ -23,11 +23,11 @@
             <option value="specify-users">{{ $t("Mention User List") }}</option>
         </select>
     </div>
-    <div class="mb-3" v-if="$parent.notification.mentioning === 'specify-mobiles'">
+    <div v-if="$parent.notification.mentioning === 'specify-mobiles'" class="mb-3">
         <label for="mobileList" class="form-label">{{ $t("Dingtalk Mobile List") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="mobileList" v-model="$parent.notification.mobileList" type="list" class="form-control" required>
     </div>
-    <div class="mb-3" v-if="$parent.notification.mentioning === 'specify-users'">
+    <div v-if="$parent.notification.mentioning === 'specify-users'" class="mb-3">
         <label for="userList" class="form-label">{{ $t("Dingtalk User List") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="userList" v-model="$parent.notification.userList" type="list" class="form-control" required>
     </div>
