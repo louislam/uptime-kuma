@@ -760,11 +760,5 @@
     "locally configured mail transfer agent": "本機設定的郵件傳輸代理",
     "now": "現在",
     "time ago": "{0} 之前",
-    "ignoreTLSErrorGeneral": "忽略連接中的TLS/SSL錯誤",
-    "Don't mention people": "不提及任何人",
-    "Mention group": "提及 {group}",
-    "Mention Mobile List": "提及指定手機號",
-    "Mention User List": "提及指定用戶ID",
-    "Dingtalk Mobile List": "手機號列表(使用逗號分割多个手機號)",
-    "Dingtalk User List": "用戶ID列表(使用逗號分割多個用戶ID)"
+    "ignoreTLSErrorGeneral": "忽略連接中的TLS/SSL錯誤"
 }
