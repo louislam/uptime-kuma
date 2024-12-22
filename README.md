@@ -62,6 +62,7 @@ Requirements:
 - Platform
   - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc.
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
+  - ❌ FreeBSD / OpenBSD / NetBSD
   - ❌ Replit / Heroku
 - [Node.js](https://nodejs.org/en/download/) 18 / 20.4
 - [npm](https://docs.npmjs.com/cli/) 9
