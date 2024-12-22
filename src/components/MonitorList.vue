@@ -324,14 +324,14 @@ export default {
             // finds monitor name, tag name or tag value
             let searchTextMatch = true;
             if (this.searchText !== "") {
-                const loweredSearchText = this.searchText.toLowerCase();
+                const regex = new RegExp(this.searchText, "i");
+
                 searchTextMatch =
-                    monitor.name.toLowerCase().includes(loweredSearchText)
-                    || monitor.url?.toLowerCase().includes(loweredSearchText)
-                    || monitor.hostname?.toLowerCase().includes(loweredSearchText)
-                    || monitor.dns_resolve_server?.toLowerCase().includes(loweredSearchText)
-                    || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
-                        || tag.value?.toLowerCase().includes(loweredSearchText));
+                    regex.test(monitor.name) ||
+                    regex.test(monitor.url) ||
+                    regex.test(monitor.hostname) ||
+                    regex.test(monitor.dns_resolve_server) ||
+                    monitor.tags.find((tag) => regex.test(tag.name) || regex.test(tag.value));
             }
 
             // filter by status
