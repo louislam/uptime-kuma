@@ -129,7 +129,7 @@
                                 <label for="push-url" class="form-label">{{ $t("PushUrl") }}</label>
                                 <CopyableInput id="push-url" v-model="pushURL" type="url" disabled="disabled" />
                                 <div class="form-text">
-                                    {{ $t("needPushEvery", [monitor.interval]) }}<br />
+                                    {{ $t("needPushEvery", [formatTime(monitor.interval)]) }}<br />
                                     {{ $t("pushOptionalParams", ["status, msg, ping"]) }}
                                 </div>
                                 <button class="btn btn-primary" type="button" @click="resetToken">
@@ -575,7 +575,7 @@
 
                             <!-- Interval -->
                             <div class="my-3">
-                                <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
+                                <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ formatTime(monitor.interval) ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
                             </div>
 
@@ -590,7 +590,7 @@
                             <div class="my-3">
                                 <label for="retry-interval" class="form-label">
                                     {{ $t("Heartbeat Retry Interval") }}
-                                    <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
+                                    <span>({{ $t("retryCheckEverySecond", [ formatTime(monitor.retryInterval) ]) }})</span>
                                 </label>
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
@@ -1645,6 +1645,30 @@ message HealthCheckResponse {
 
         addRabbitmqNode(newNode) {
             this.monitor.rabbitmqNodes.push(newNode);
+        },
+
+        /**
+         * Format seconds to a human readable string
+         * @param {number} seconds The number of seconds
+         * @returns {string} in the form of "X hours, Y minutes, Z seconds"
+         */
+        formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+
+            let result = "";
+            if (hours > 0) {
+                result += hours + " hour, ";
+            }
+            if (minutes > 0) {
+                result += minutes + " minutes, ";
+            }
+            if (remainingSeconds > 0) {
+                result += remainingSeconds + " ";
+            }
+
+            return result;
         },
 
         /**
