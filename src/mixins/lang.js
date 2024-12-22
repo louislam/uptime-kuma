@@ -1,5 +1,5 @@
 import { currentLocale } from "../i18n";
-import { setPageLocale } from "../util-frontend";
+import { setPageLocale, relativeTimeFormatter } from "../util-frontend";
 const langModules = import.meta.glob("../lang/*.json");
 
 export default {
@@ -28,11 +28,13 @@ export default {
          * @returns {Promise<void>}
          */
         async changeLang(lang) {
-            let message = (await langModules["../lang/" + lang + ".json"]()).default;
+            let message = (await langModules["../lang/" + lang + ".json"]())
+                .default;
             this.$i18n.setLocaleMessage(lang, message);
             this.$i18n.locale = lang;
             localStorage.locale = lang;
             setPageLocale();
-        }
-    }
+            relativeTimeFormatter.updateLocale(lang);
+        },
+    },
 };
