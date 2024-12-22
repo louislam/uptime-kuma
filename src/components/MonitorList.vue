@@ -324,14 +324,21 @@ export default {
             // finds monitor name, tag name or tag value
             let searchTextMatch = true;
             if (this.searchText !== "") {
-                const regex = new RegExp(this.searchText, "i");
+                try {
+                    const regex = new RegExp(this.searchText, "i"); // "i" for case-insensitive matching
 
-                searchTextMatch =
-                    regex.test(monitor.name) ||
-                    regex.test(monitor.url) ||
-                    regex.test(monitor.hostname) ||
-                    regex.test(monitor.dns_resolve_server) ||
-                    monitor.tags.find((tag) => regex.test(tag.name) || regex.test(tag.value));
+                    const safeRegexTest = (str) => str && regex.test(str);
+
+                    searchTextMatch =
+                        regex.test(monitor.name) ||
+                        safeRegexTest(monitor.url) ||
+                        safeRegexTest(monitor.hostname) ||
+                        safeRegexTest(monitor.dns_resolve_server) ||
+                        monitor.tags.some(tag => regex.test(tag.name) || safeRegexTest(tag.value));
+                } catch (e) {
+                    console.error("Invalid regex pattern:", e);
+                    searchTextMatch = false;
+                }
             }
 
             // filter by status
