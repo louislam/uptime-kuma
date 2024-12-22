@@ -35,10 +35,16 @@ export default {
         /**
          * Return a given value in the format YYYY-MM-DD HH:mm:ss
          * @param {any} value Value to format as date time
+         * @param {boolean} use12HourTimeFormat Whether to use 12-hour format
          * @returns {string} Formatted string
          */
-        datetime(value) {
-            return this.datetimeFormat(value, "YYYY-MM-DD HH:mm:ss");
+        datetime(value, use12HourTimeFormat = false) {
+            const hourTimeFormat = use12HourTimeFormat ? "hh" : "HH";
+            const timeFormat =
+                `YYYY-MM-DD ${hourTimeFormat}:mm:ss${
+                    use12HourTimeFormat ? " A" : ""
+                }`;
+            return this.datetimeFormat(value, timeFormat);
         },
 
         /**
