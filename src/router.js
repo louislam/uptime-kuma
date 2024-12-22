@@ -192,8 +192,31 @@ const routes = [
     },
 ];
 
-export const router = createRouter({
+const router = createRouter({
     linkActiveClass: "active",
     history: createWebHistory(),
     routes,
 });
+
+router.beforeEach((to, from) => {
+    // Check if redirectedFrom is defined to check if this function has already been run
+    // Without this check, the router will be stuck in an infinite loop
+    if (to.redirectedFrom) {
+        return;
+    }
+
+    // If the user is navigating to same page but to.query is empty, they have clicked on the same link
+    // For example: Clicked on Add monitor twice
+    if (to.path === from.path && Object.keys(to.query).length !== 0) {
+        return;
+    }
+    return {
+        ...to,
+        query: {
+            ...to.query,
+            ...from.query,
+        },
+    };
+});
+
+export { router };
