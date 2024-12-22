@@ -881,6 +881,7 @@
     "nostrRecipients": "Recipients Public Keys (npub)",
     "nostrRecipientsHelp": "npub format, one per line",
     "showCertificateExpiry": "Show Certificate Expiry",
+    "showLastHeartbeat": "Show Last Heartbeat Only",
     "noOrBadCertificate": "No/Bad Certificate",
     "cacheBusterParam": "Add the {0} parameter",
     "cacheBusterParamDescription": "Randomly generated parameter to skip caches.",
