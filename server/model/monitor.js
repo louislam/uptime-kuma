@@ -120,6 +120,7 @@ class Monitor extends BeanModel {
             dns_resolve_server: this.dns_resolve_server,
             dns_last_result: this.dns_last_result,
             docker_container: this.docker_container,
+            docker_service: this.docker_service,
             docker_host: this.docker_host,
             proxyId: this.proxy_id,
             notificationIDList: preloadData.notifications.get(this.id) || {},
@@ -756,6 +757,54 @@ class Monitor extends BeanModel {
                         }
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
+                    }
+                } else if (this.type === "docker-service-availability") { // TODO: add a service-health to count running vs desired (needs services api)
+                    log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
+
+                    const options = {
+                        url: `/tasks?filters={"service":{"${this.docker_service}":true}}`,
+                        timeout: this.interval * 1000 * 0.8,
+                        headers: {
+                            "Accept": "*/*",
+                        },
+                        httpsAgent: new https.Agent({
+                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
+                            rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                        }),
+                        httpAgent: new http.Agent({
+                            maxCachedSessions: 0,
+                        }),
+                    };
+
+                    const dockerHost = await R.load("docker_host", this.docker_host);
+
+                    if (!dockerHost) {
+                        throw new Error("Failed to load docker host config");
+                    }
+
+                    if (dockerHost._dockerType === "socket") {
+                        options.socketPath = dockerHost._dockerDaemon;
+                    } else if (dockerHost._dockerType === "tcp") {
+                        options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
+                        options.httpsAgent = new https.Agent(
+                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                        );
+                    }
+
+                    log.debug("monitor", `[${this.name}] Axios Request (get service tasks)`);
+                    let res = await axios.request(options);
+
+                    if (res.data.message) {
+                        throw Error(res.data.message);
+                    }
+
+                    if (res.data.filter((task) => task.Status.State === "running").length) {
+                        bean.status = UP;
+                        bean.msg = `Service: ${this.docker_service} is available`;
+                    } else {
+                        bean.status = DOWN;
+                        bean.msg = `Service: ${this.docker_service} is Down. No replicas available`;
                     }
                 } else if (this.type === "sqlserver") {
                     let startTime = dayjs().valueOf();

@@ -828,6 +828,7 @@ let needSetup = false;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.pushToken = monitor.pushToken;
                 bean.docker_container = monitor.docker_container;
+                bean.docker_service = monitor.docker_service;
                 bean.docker_host = monitor.docker_host;
                 bean.proxyId = Number.isInteger(monitor.proxyId) ? monitor.proxyId : null;
                 bean.mqttUsername = monitor.mqttUsername;
