@@ -539,6 +539,19 @@
                                 </div>
                             </template>
 
+                            <!-- SQL Server / PostgreSQL / MySQL Error Handling -->
+                            <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
+                                <div class="my-3 form-check">
+                                    <input id="sqlErrorHandling" v-model="monitor.databaseQueryHandleEmptyAsFailure" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="sqlErrorHandling">
+                                        {{ $t("Handle empty result as error") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("handleEmptyResultDescription") }}
+                                    </div>
+                                </div>
+                            </template>
+
                             <!-- MongoDB -->
                             <template v-if="monitor.type === 'mongodb'">
                                 <div class="my-3">

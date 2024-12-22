@@ -129,6 +129,7 @@ class Monitor extends BeanModel {
             mqttSuccessMessage: this.mqttSuccessMessage,
             mqttCheckType: this.mqttCheckType,
             databaseQuery: this.databaseQuery,
+            databaseQueryHandleEmptyAsFailure: this.isDatabaseQueryHandleEmptyAsFailure(),
             authMethod: this.authMethod,
             grpcUrl: this.grpcUrl,
             grpcProtobuf: this.grpcProtobuf,
@@ -269,6 +270,14 @@ class Monitor extends BeanModel {
      */
     isInvertKeyword() {
         return Boolean(this.invertKeyword);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Is sql query empty result handled as failure?
+     */
+    isDatabaseQueryHandleEmptyAsFailure() {
+        return Boolean(this.databaseQueryHandleEmptyAsFailure);
     }
 
     /**
@@ -760,7 +769,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "sqlserver") {
                     let startTime = dayjs().valueOf();
 
-                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
+                    await mssqlQuery(this.databaseConnectionString, this.databaseQueryHandleEmptyAsFailure, this.databaseQuery || "SELECT 1");
 
                     bean.msg = "";
                     bean.status = UP;
@@ -799,7 +808,7 @@ class Monitor extends BeanModel {
                 } else if (this.type === "postgres") {
                     let startTime = dayjs().valueOf();
 
-                    await postgresQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
+                    await postgresQuery(this.databaseConnectionString, this.databaseQueryHandleEmptyAsFailure, this.databaseQuery || "SELECT 1");
 
                     bean.msg = "";
                     bean.status = UP;
@@ -811,7 +820,7 @@ class Monitor extends BeanModel {
                     // TODO: rename `radius_password` to `password` later for general use
                     let mysqlPassword = this.radiusPassword;
 
-                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1", mysqlPassword);
+                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQueryHandleEmptyAsFailure, this.databaseQuery || "SELECT 1", mysqlPassword);
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "radius") {

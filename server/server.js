@@ -837,6 +837,7 @@ let needSetup = false;
                 bean.mqttCheckType = monitor.mqttCheckType;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
                 bean.databaseQuery = monitor.databaseQuery;
+                bean.databaseQueryHandleEmptyAsFailure = monitor.databaseQueryHandleEmptyAsFailure;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
