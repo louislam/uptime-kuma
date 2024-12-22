@@ -383,7 +383,11 @@ class Monitor extends BeanModel {
                 } else if (this.type === "group") {
                     const children = await Monitor.getChildren(this.id);
 
-                    if (children.length > 0) {
+                    if (children.length > 0 && children.filter(child => child.active).length === 0) {
+                        // Set status pending if all children are paused
+                        bean.status = PENDING;
+                        bean.msg = "All Children are paused.";
+                    } else if (children.length > 0) {
                         bean.status = UP;
                         bean.msg = "All children up and running";
                         for (const child of children) {
@@ -1468,21 +1472,18 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>} Is the monitor under maintenance
      */
     static async isUnderMaintenance(monitorID) {
+        const ancestorIDs = await Monitor.getAllAncestorIDs(monitorID);
+        const allIDs = [ monitorID, ...ancestorIDs ];
         const maintenanceIDList = await R.getCol(`
             SELECT maintenance_id FROM monitor_maintenance
-            WHERE monitor_id = ?
-        `, [ monitorID ]);
+            WHERE monitor_id IN (${allIDs.map((_) => "?").join(",")})
+        `, allIDs);
 
         for (const maintenanceID of maintenanceIDList) {
             const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
             if (maintenance && await maintenance.isUnderMaintenance()) {
                 return true;
             }
-        }
-
-        const parent = await Monitor.getParent(monitorID);
-        if (parent != null) {
-            return await Monitor.isUnderMaintenance(parent.id);
         }
 
         return false;
@@ -1607,12 +1608,31 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Gets all active monitors
+     * @returns {Promise<Bean[]>} Active Monitors
+     */
+    static async getAllActiveMonitors() {
+        // Gets all monitors but only if they and all their ancestors are active
+        return R.convertToBeans("monitor", await R.getAll(`
+            WITH RECURSIVE MonitorHierarchy AS (
+				SELECT * FROM monitor
+				WHERE parent IS NULL AND active = 1
+				UNION ALL
+				SELECT m.* FROM monitor m
+				INNER JOIN MonitorHierarchy mh ON m.parent = mh.id
+				WHERE m.active = 1
+			)
+			SELECT * FROM MonitorHierarchy;
+        `));
+    }
+
+    /**
      * Gets Parent of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>} Parent
+     * @returns {Promise<Bean | null>} Parent
      */
     static async getParent(monitorID) {
-        return await R.getRow(`
+        const result = await R.getRow(`
             SELECT parent.* FROM monitor parent
     		LEFT JOIN monitor child
     			ON child.parent = parent.id
@@ -1620,20 +1640,25 @@ class Monitor extends BeanModel {
         `, [
             monitorID,
         ]);
+
+        if (!result) {
+            return null;
+        }
+        return R.convertToBean("monitor", result);
     }
 
     /**
      * Gets all Children of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>} Children
+     * @returns {Promise<Bean[]>} Children
      */
     static async getChildren(monitorID) {
-        return await R.getAll(`
+        return R.convertToBeans("monitor", await R.getAll(`
             SELECT * FROM monitor
             WHERE parent = ?
         `, [
             monitorID,
-        ]);
+        ]));
     }
 
     /**
@@ -1659,25 +1684,64 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Gets recursive all child ids
+     * Gets recursive all ancestor ids
      * @param {number} monitorID ID of the monitor to get
-     * @returns {Promise<Array>} IDs of all children
+     * @returns {Promise<number[]>} IDs of all ancestors
      */
-    static async getAllChildrenIDs(monitorID) {
-        const childs = await Monitor.getChildren(monitorID);
+    static async getAllAncestorIDs(monitorID) {
+        // Gets all ancestor monitor ids recursive
+        return await R.getCol(`
+			WITH RECURSIVE Ancestors AS (
+				SELECT parent FROM monitor
+				WHERE id = ?
+				UNION ALL
+				SELECT m.parent FROM monitor m
+				JOIN Ancestors a ON m.id = a.parent
+			)
+			SELECT parent AS ancestor_id FROM Ancestors
+			WHERE parent IS NOT NULL;
+		`, [
+            monitorID,
+        ]);
+    }
 
-        if (childs === null) {
-            return [];
+    /**
+     * Gets recursive all children ids
+     * @param {number} monitorID ID of the monitor to get
+     * @param {boolean} onlyActive Return only monitors which are active (including all ancestors)
+     * @returns {Promise<number[]>} IDs of all children
+     */
+    static async getAllChildrenIDs(monitorID, onlyActive = false) {
+        if (onlyActive) {
+            // Gets all children monitor ids recursive but only if they and all their ancestors are active
+            return await R.getCol(`
+				WITH RECURSIVE MonitorHierarchy(id, active_chain) AS (
+					SELECT id, active FROM monitor
+					WHERE id = ?
+					UNION ALL
+					SELECT m.id, m.active * mh.active_chain FROM monitor m
+					INNER JOIN MonitorHierarchy mh ON m.parent = mh.id
+					WHERE mh.active_chain = 1
+				)
+				SELECT id FROM MonitorHierarchy
+				WHERE id != ? AND active_chain = 1;
+			`, [
+                monitorID,
+                monitorID
+            ]);
         }
-
-        let childrenIDs = [];
-
-        for (const child of childs) {
-            childrenIDs.push(child.id);
-            childrenIDs = childrenIDs.concat(await Monitor.getAllChildrenIDs(child.id));
-        }
-
-        return childrenIDs;
+        // Gets all children monitor ids recursive
+        return await R.getCol(`
+			WITH RECURSIVE MonitorHierarchy(id) AS (
+				SELECT id FROM monitor WHERE id = ?
+				UNION ALL
+				SELECT m.id FROM monitor m INNER JOIN MonitorHierarchy mh ON m.parent = mh.id
+			)
+			SELECT id FROM MonitorHierarchy WHERE id != ?;
+		`, [
+            monitorID,
+            monitorID
+        ]);
     }
 
     /**
@@ -1697,14 +1761,32 @@ class Monitor extends BeanModel {
      * @returns {Promise<boolean>} Is the parent monitor active?
      */
     static async isParentActive(monitorID) {
-        const parent = await Monitor.getParent(monitorID);
+        // Checks recursive if the parent and all its ancestors are active
+        const result = await R.getRow(`
+			WITH RECURSIVE MonitorHierarchy AS (
+				SELECT parent FROM monitor
+				WHERE id = ?
+				UNION ALL
+				SELECT m.parent FROM monitor m
+				JOIN MonitorHierarchy mh ON m.id = mh.parent
+			)
+			SELECT 
+				CASE 
+					WHEN (SELECT parent FROM monitor WHERE id = ?) IS NULL THEN 1
+					ELSE 
+						CASE 
+							WHEN COUNT(m.id) = SUM(m.active) THEN 1 
+							ELSE 0 
+						END 
+				END AS all_active
+			FROM MonitorHierarchy mh
+			LEFT JOIN monitor m ON mh.parent = m.id;
+		`, [
+            monitorID,
+            monitorID
+        ]);
 
-        if (parent === null) {
-            return true;
-        }
-
-        const parentActive = await Monitor.isParentActive(parent.id);
-        return parent.active && parentActive;
+        return result.all_active === 1;
     }
 
     /**
