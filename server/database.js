@@ -236,6 +236,15 @@ class Database {
                 fs.copyFileSync(Database.templatePath, Database.sqlitePath);
             }
 
+            // Check if Database.sqlitePath is on NFS
+            if (fs.existsSync(Database.sqlitePath)) {
+                let stats = fs.statSync(Database.sqlitePath);
+                log.debug("server", "SQLite database inode: " + stats.ino);
+                if (stats.ino === 0) {
+                    log.error("server", "It seems that the database is on a network drive (NFS). Uptime Kuma will be UNSTABLE and the database will be CORRUPTED. Please use a local disk.");
+                }
+            }
+
             const Dialect = require("knex/lib/dialects/sqlite3/index.js");
             Dialect.prototype._driver = () => require("@louislam/sqlite3");
 
