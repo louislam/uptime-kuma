@@ -65,7 +65,7 @@
     "URL": "URL",
     "Hostname": "Nom del servidor",
     "Port": "Port",
-    "timeoutAfter": "¡Timeout' després de {0",
+    "timeoutAfter": "¡Timeout' després de {0} segons",
     "locally configured mail transfer agent": "Agent de transferència de correu configurat localment",
     "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Introduïu el nom del servidor al qual voleu connectar-vos o {localhost} si voleu utilitzar un {local_mta}",
     "Host URL": "URL del servidor",
@@ -213,5 +213,16 @@
     "Email": "Correu",
     "Last Result": "Darrer Resultat",
     "Add New Tag": "Afegir nova etiqueta",
-    "Tag with this value already exist.": "Ja existeix una etiqueta amb aquest valor."
+    "Tag with this value already exist.": "Ja existeix una etiqueta amb aquest valor.",
+    "defaultNotificationName": "La meva {notification} Alerta ({number})",
+    "Required": "Obligatori",
+    "Post URL": "Posar URL",
+    "Content Type": "Content Type",
+    "Json Query Expression": "Json Query Expression",
+    "now": "ara",
+    "-year": "-any",
+    "Status Pages": "Pàgines d'estat",
+    "here": "aquí",
+    "time ago": "fa {0}",
+    "ignoredTLSError": "Errors TLS/SSL ignorats"
 }
