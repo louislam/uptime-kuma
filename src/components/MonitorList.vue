@@ -325,7 +325,11 @@ export default {
             let searchTextMatch = true;
             if (this.searchText !== "") {
                 try {
-                    const regex = new RegExp(this.searchText, "i"); // "i" for case-insensitive matching
+                    // Escape special characters for use in the regular expression
+                    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+                    const escapedSearchText = escapeRegExp(this.searchText);
+                    const regex = new RegExp(escapedSearchText, "i");
 
                     const safeRegexTest = (str) => str && regex.test(str);
 
