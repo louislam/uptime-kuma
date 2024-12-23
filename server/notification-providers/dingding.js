@@ -12,8 +12,8 @@ class DingDing extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const mentionAll = notification.mentioning === "everyone";
-        const mobileList = notification.mentioning === "specify-mobiles" ? notification.mobileList.split(",") : [];
-        const userList = notification.mentioning === "specify-users" ? notification.userList.split(",") : [];
+        const mobileList = notification.mentioning === "specify-mobiles" ? notification.mobileList : [];
+        const userList = notification.mentioning === "specify-users" ? notification.userList : [];
         const mentionStr = [ ...mobileList || [], ...userList || [] ].map(item => `@${item}`).join(" ");
         try {
             if (heartbeatJSON != null) {
