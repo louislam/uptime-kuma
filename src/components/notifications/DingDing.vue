@@ -16,7 +16,7 @@
     </div>
     <div class="mb-3">
         <label for="mentioning" class="form-label">{{ $t("Mentioning") }}<span style="color: red;"><sup>*</sup></span></label>
-        <select id="mentioning" v-model="$parent.notification.mentioning" class="form-select" required>
+        <select id="mentioning" v-model="$parent.notification.mentioning" class="form-select" required @change="onMentioningChange">
             <option value="nobody">{{ $t("Don't mention people") }}</option>
             <option value="everyone">{{ $t("Mention group", { group: "@everyone" }) }}</option>
             <option value="specify-mobiles">{{ $t("Mention Mobile List") }}</option>
@@ -94,10 +94,20 @@ export default {
         if (typeof this.$parent.notification.userList === "undefined") {
             this.$parent.notification.userList = [];
         } else {
-            this.mobileOpts = this.$parent.notification.mobileList;
+            this.userIdOpts = this.$parent.notification.userList;
         }
     },
     methods: {
+        onMentioningChange(e) {
+            if (e.target.value === "specify-mobiles") {
+                this.$parent.notification.userList = [];
+            } else if (e.target.value === "specify-users") {
+                this.$parent.notification.mobileList = [];
+            } else {
+                this.$parent.notification.userList = [];
+                this.$parent.notification.mobileList = [];
+            }
+        },
         addMobile(mobile) {
             const trimmedMobile = mobile.trim();
             const chinaMobileRegex = /^1[3-9]\d{9}$/;

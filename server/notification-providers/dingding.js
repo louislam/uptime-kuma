@@ -14,14 +14,15 @@ class DingDing extends NotificationProvider {
         const mentionAll = notification.mentioning === "everyone";
         const mobileList = notification.mentioning === "specify-mobiles" ? notification.mobileList : [];
         const userList = notification.mentioning === "specify-users" ? notification.userList : [];
-        const mentionStr = [ ...mobileList || [], ...userList || [] ].map(item => `@${item}`).join(" ");
+        const finalList = [ ...mobileList || [], ...userList || [] ];
+        const mentionStr = finalList.length > 0 ? "\n" : "" + finalList.map(item => `@${item}`).join(" ");
         try {
             if (heartbeatJSON != null) {
                 let params = {
                     msgtype: "markdown",
                     markdown: {
                         title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
-                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}${"\n\n" + mentionStr}`,
+                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}${mentionStr}`,
                     },
                     at: {
                         isAtAll: mentionAll,
@@ -36,7 +37,7 @@ class DingDing extends NotificationProvider {
                 let params = {
                     msgtype: "text",
                     text: {
-                        content: `${msg}${"\n" + mentionStr}`
+                        content: `${msg}${mentionStr}`
                     },
                     at: {
                         isAtAll: mentionAll,
