@@ -72,6 +72,7 @@ class GoogleChat extends NotificationProvider {
 
             // construct json data
             let data = {
+                fallbackText: chatHeader["title"],
                 cardsV2: [
                     {
                         card: {
