@@ -160,6 +160,7 @@ async function sendInfo(socket, hideVersion = false) {
         isContainer,
         dbType,
         primaryBaseURL: await setting("primaryBaseURL"),
+        serverIdentifier: await setting("serverIdentifier"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
     });

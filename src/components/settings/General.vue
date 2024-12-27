@@ -132,6 +132,27 @@
                 <div class="form-text"></div>
             </div>
 
+            <!-- Server Identifier -->
+            <div class="mb-4">
+                <label class="form-label" for="serverIdentifier">
+                    {{ $t("Server Identifier") }}
+                </label>
+
+                <div class="input-group mb-3">
+                    <input
+                        id="serverIdentifier"
+                        v-model="settings.serverIdentifier"
+                        class="form-control"
+                        name="serverIdentifier"
+                        placeholder=""
+                        pattern=".+"
+                        autocomplete="new-password"
+                    />
+                </div>
+
+                <div class="form-text"></div>
+            </div>
+
             <!-- Steam API Key -->
             <div class="mb-4">
                 <label class="form-label" for="steamAPIKey">

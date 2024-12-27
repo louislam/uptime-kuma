@@ -142,8 +142,12 @@ class Slack extends NotificationProvider {
             }
 
             const baseURL = await setting("primaryBaseURL");
+            const serverIdentifier = await setting("serverIdentifier");
 
             const title = "Uptime Kuma Alert";
+            if (serverIdentifier) {
+                title = title + " (" + serverIdentifier + ")"
+            }
             let data = {
                 "channel": notification.slackchannel,
                 "username": notification.slackusername,
