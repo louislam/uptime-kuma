@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
-const { setSettings, setting } = require("../util-server");
+const { setting } = require("../util-server");
 const { DOWN } = require("../../src/util");
 const { Liquid } = require("liquidjs");
 
