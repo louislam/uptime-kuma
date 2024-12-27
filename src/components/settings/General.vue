@@ -150,7 +150,9 @@
                     />
                 </div>
 
-                <div class="form-text"></div>
+                <div class="form-text">
+                    {{ $t("serverIdentifierDescription") }}
+                </div>
             </div>
 
             <!-- Steam API Key -->
