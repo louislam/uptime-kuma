@@ -39,6 +39,7 @@
 
                 <button class="btn-outline-normal" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</button>
                 <button class="btn-outline-normal" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</button>
+                <button class="btn-outline-normal text-danger" @click="deleteSelectedDialog"><font-awesome-icon icon="trash" size="sm" /> {{ $t("Delete") }}</button>
 
                 <span v-if="selectedMonitorCount > 0">
                     {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
@@ -64,8 +65,12 @@
         </div>
     </div>
 
+    <!-- Confirm Dialogs -->
     <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
         {{ $t("pauseMonitorMsg") }}
+    </Confirm>
+    <Confirm ref="confirmDeleteSelected" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteSelected">
+        {{ $t("deleteSelectedMonitorMsg") }}
     </Confirm>
 </template>
 
@@ -306,6 +311,49 @@ export default {
 
             this.cancelSelectMode();
         },
+
+        /**
+         * Show the confirmation dialog for deleting the selected monitors.
+         * This method triggers the display of a confirmation modal where the user can
+         * confirm or cancel the deletion of the selected monitors.
+         * @returns {void}
+         */
+        deleteSelectedDialog() {
+            // Show the confirmation dialog for deletion
+            this.$refs.confirmDeleteSelected.show();
+        },
+
+        /**
+         * Delete each selected monitor and update the UI once the deletion is complete.
+         * This method initiates the deletion process for all selected monitors, updates
+         * the user interface, and reloads the page to reflect the changes.
+         * @returns {void}
+         */
+        deleteSelected() {
+            // Delete each selected monitor
+            Object.keys(this.selectedMonitors).forEach(id => {
+                this.$root.deleteMonitor(id, (res) => {
+                    // Display a response message for the operation
+                    this.$root.toastRes(res);
+
+                    // Remove the monitor from the selection if deletion is successful
+                    if (res.ok) {
+                        delete this.selectedMonitors[id];
+                    }
+                });
+            });
+
+            // Delay for UI updates before reloading the page
+            setTimeout(() => {
+                if (!Object.keys(this.selectedMonitors).length) {
+                    window.location.reload(); // Refresh the page to show updates
+                }
+            }, 5000);
+
+            // Exit selection mode as deletion is in progress
+            this.cancelSelectMode();
+        },
+
         /**
          * Whether a monitor should be displayed based on the filters
          * @param {object} monitor Monitor to check
