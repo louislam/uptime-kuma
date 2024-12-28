@@ -104,7 +104,6 @@
     "Certificate Info": "Zertifikatsinformation",
     "keywordDescription": "Ein Suchwort in der HTML- oder JSON-Ausgabe finden. Bitte beachte: es wird zwischen Groß-/Kleinschreibung unterschieden.",
     "deleteMonitorMsg": "Bist du sicher, dass du den Monitor löschen möchtest?",
-    "deleteSelectedMonitorMsg": "Bist du sicher, dass du den folgenden Monitoren löschen möchtest?",
     "deleteNotificationMsg": "Möchtest du diese Benachrichtigung wirklich für alle Monitore löschen?",
     "resolverserverDescription": "Cloudflare ist als der Standardserver festgelegt. Dieser kann jederzeit geändert werden.",
     "Resolver Server": "Auflösungsserver",
