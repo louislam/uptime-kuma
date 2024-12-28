@@ -11,6 +11,7 @@
     "keywordDescription": "Zoek trefwoord in gewone html of JSON-response en het is hoofdlettergevoelig.",
     "pauseDashboardHome": "Gepauzeerd",
     "deleteMonitorMsg": "Weet u zeker dat u deze monitor wilt verwijderen?",
+    "deleteSelectedMonitorMsg": "Weet u zeker dat u de volgende monitoren wilt verwijderen?",
     "deleteNotificationMsg": "Weet u zeker dat u deze melding voor alle monitoren wilt verwijderen?",
     "resolverserverDescription": "Cloudflare is de standaardserver, u kunt de resolver server op elk moment wijzigen.",
     "rrtypeDescription": "Selecteer het RR-type dat u wilt monitoren",
