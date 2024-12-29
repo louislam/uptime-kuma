@@ -1719,7 +1719,12 @@ message HealthCheckResponse {
                 this.monitor.headers = JSON.stringify(JSON.parse(this.monitor.headers), null, 4);
             }
 
-            if (this.monitor.hostname) {
+            // Check if the 'monitor' object exists and contains a 'hostname' property.
+            if (this.monitor?.hostname) {
+                // Initialize the 'url' property of 'monitor' to the base URL scheme.
+                this.monitor.url = "https://";
+
+                // Remove any leading or trailing spaces from the 'hostname' value.
                 this.monitor.hostname = this.monitor.hostname.trim();
             }
 
