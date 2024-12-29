@@ -211,6 +211,21 @@ export default {
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+
+        // Retrieve the toast message from localStorage
+        const toastMessage = localStorage.getItem("toastMessage");
+
+        if (toastMessage) {
+            /**
+             * If a toast message exists in localStorage:
+             * 1. Parse the message from string to object format.
+             * 2. Display the toast notification using the root component's toastRes method.
+             * 3. Remove the message from localStorage to prevent it from showing again.
+             */
+            this.$root.toastRes(JSON.parse(toastMessage)); // Show the toast message
+            localStorage.removeItem("toastMessage"); // Clean up the localStorage
+        }
+
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
@@ -333,22 +348,18 @@ export default {
             // Delete each selected monitor
             Object.keys(this.selectedMonitors).forEach(id => {
                 this.$root.deleteMonitor(id, (res) => {
-                    // Display a response message for the operation
-                    this.$root.toastRes(res);
-
-                    // Remove the monitor from the selection if deletion is successful
                     if (res.ok) {
+                        // Remove the monitor from the selectedMonitors list upon successful deletion
                         delete this.selectedMonitors[id];
+
+                        // Refresh the page immediately after deleting the selected monitors
+                        window.location.reload();
+
+                        // Store a flag in localStorage to trigger a toast notification once the page reloads
+                        localStorage.setItem("toastMessage", JSON.stringify(res));
                     }
                 });
             });
-
-            // Delay for UI updates before reloading the page
-            setTimeout(() => {
-                if (!Object.keys(this.selectedMonitors).length) {
-                    window.location.reload(); // Refresh the page to show updates
-                }
-            }, 5000);
 
             // Exit selection mode as deletion is in progress
             this.cancelSelectMode();
