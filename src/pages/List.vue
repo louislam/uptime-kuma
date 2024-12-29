@@ -12,7 +12,7 @@ export default {
     components: {
         MonitorList,
     },
-    mixins: [mobileMixin],
+    mixins: [ mobileMixin ],
     created() {
         if (!this.isMobile) {
             this.$router.push("/dashboard");
