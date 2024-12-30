@@ -342,26 +342,32 @@ export default {
          * Delete each selected monitor and update the UI once the deletion is complete.
          * This method initiates the deletion process for all selected monitors, updates
          * the user interface, and reloads the page to reflect the changes.
-         * @returns {void}
+         * @returns {void} - This function does not return any value.
          */
         deleteSelected() {
-            // Delete each selected monitor
+            // Iterate over each selected monitor's ID and delete it
             Object.keys(this.selectedMonitors).forEach(id => {
+                // Call the root method to delete the monitor by its ID
                 this.$root.deleteMonitor(id, (res) => {
+                    // If the monitor deletion is successful
                     if (res.ok) {
                         // Remove the monitor from the selectedMonitors list upon successful deletion
                         delete this.selectedMonitors[id];
 
-                        // Refresh the page immediately after deleting the selected monitors
-                        window.location.reload();
+                        // Use Vue Router to navigate to a temporary route before redirecting to /dashboard
+                        // This reloads the page to reflect changes after deletion
+                        this.$router.push("/temp").then(() => {
+                            this.$router.push("/dashboard");
+                        });
 
-                        // Store a flag in localStorage to trigger a toast notification once the page reloads
+                        // Store a flag in localStorage to trigger a toast notification on page reload
+                        // This ensures the notification displays after the page refreshes
                         localStorage.setItem("toastMessage", JSON.stringify(res));
                     }
                 });
             });
 
-            // Exit selection mode as deletion is in progress
+            // Exit the selection mode, indicating that the deletion process is in progress
             this.cancelSelectMode();
         },
 
