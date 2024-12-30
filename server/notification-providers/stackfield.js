@@ -17,8 +17,8 @@ class Stackfield extends NotificationProvider {
 
             let textMsg = "+Uptime Kuma Alert+";
 
-            if (monitorJSON && monitorJSON.name) {
-                textMsg += `\n*${monitorJSON.name}*`;
+            if (monitorJSON && monitorJSON.pathName) {
+                textMsg += `\n*${monitorJSON.pathName}*`;
             }
 
             textMsg += `\n${msg}`;

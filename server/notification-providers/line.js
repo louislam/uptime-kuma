@@ -37,7 +37,7 @@ class Line extends NotificationProvider {
                         {
                             "type": "text",
                             "text": "UptimeKuma Alert: [🔴 Down]\n" +
-                                "Name: " + monitorJSON["name"] + " \n" +
+                                "Name: " + monitorJSON["pathName"] + " \n" +
                                 heartbeatJSON["msg"] +
                                 `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                         }
@@ -51,7 +51,7 @@ class Line extends NotificationProvider {
                         {
                             "type": "text",
                             "text": "UptimeKuma Alert: [✅ Up]\n" +
-                                "Name: " + monitorJSON["name"] + " \n" +
+                                "Name: " + monitorJSON["pathName"] + " \n" +
                                 heartbeatJSON["msg"] +
                                 `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                         }

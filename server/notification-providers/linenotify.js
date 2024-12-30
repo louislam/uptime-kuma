@@ -28,7 +28,7 @@ class LineNotify extends NotificationProvider {
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
                     "message": "\n[🔴 Down]\n" +
-                        "Name: " + monitorJSON["name"] + " \n" +
+                        "Name: " + monitorJSON["pathName"] + " \n" +
                         heartbeatJSON["msg"] + "\n" +
                         `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
@@ -36,7 +36,7 @@ class LineNotify extends NotificationProvider {
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
                     "message": "\n[✅ Up]\n" +
-                        "Name: " + monitorJSON["name"] + " \n" +
+                        "Name: " + monitorJSON["pathName"] + " \n" +
                         heartbeatJSON["msg"] + "\n" +
                         `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };

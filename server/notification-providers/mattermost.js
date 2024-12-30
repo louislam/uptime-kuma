@@ -70,7 +70,7 @@ class Mattermost extends NotificationProvider {
             }
 
             let mattermostdata = {
-                username: monitorJSON.name + " " + mattermostUserName,
+                username: monitorJSON.pathName + " " + mattermostUserName,
                 channel: mattermostChannel,
                 icon_emoji: iconEmoji,
                 icon_url: mattermostIconUrl,

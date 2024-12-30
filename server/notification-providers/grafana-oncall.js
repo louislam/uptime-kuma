@@ -26,7 +26,7 @@ class GrafanaOncall extends NotificationProvider {
                 return okMsg;
             } else if (heartbeatJSON["status"] === DOWN) {
                 let grafanadowndata = {
-                    title: monitorJSON["name"] + " is down",
+                    title: monitorJSON["pathName"] + " is down",
                     message: heartbeatJSON["msg"],
                     state: "alerting",
                 };
@@ -34,7 +34,7 @@ class GrafanaOncall extends NotificationProvider {
                 return okMsg;
             } else if (heartbeatJSON["status"] === UP) {
                 let grafanaupdata = {
-                    title: monitorJSON["name"] + " is up",
+                    title: monitorJSON["pathName"] + " is up",
                     message: heartbeatJSON["msg"],
                     state: "ok",
                 };

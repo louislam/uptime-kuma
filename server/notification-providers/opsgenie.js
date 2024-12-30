@@ -43,8 +43,8 @@ class Opsgenie extends NotificationProvider {
 
             if (heartbeatJSON.status === DOWN) {
                 let data = {
-                    "message": monitorJSON ? textMsg + `: ${monitorJSON.name}` : textMsg,
-                    "alias": monitorJSON.name,
+                    "message": monitorJSON ? textMsg + `: ${monitorJSON.pathName}` : textMsg,
+                    "alias": monitorJSON.pathName,
                     "description": msg,
                     "source": "Uptime Kuma",
                     "priority": `P${priority}`
@@ -54,7 +54,7 @@ class Opsgenie extends NotificationProvider {
             }
 
             if (heartbeatJSON.status === UP) {
-                let opsgenieAlertsCloseUrl = `${opsgenieAlertsUrl}/${encodeURIComponent(monitorJSON.name)}/close?identifierType=alias`;
+                let opsgenieAlertsCloseUrl = `${opsgenieAlertsUrl}/${encodeURIComponent(monitorJSON.pathName)}/close?identifierType=alias`;
                 let data = {
                     "source": "Uptime Kuma",
                 };
