@@ -342,7 +342,7 @@ export default {
          * Delete each selected monitor and update the UI once the deletion is complete.
          * This method initiates the deletion process for all selected monitors, updates
          * the user interface, and reloads the page to reflect the changes.
-         * @returns {void} - This function does not return any value.
+         * @returns {void}
          */
         deleteSelected() {
             // Iterate over each selected monitor's ID and delete it
