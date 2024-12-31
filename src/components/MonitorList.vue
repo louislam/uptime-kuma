@@ -39,7 +39,7 @@
 
                 <button class="btn-outline-normal" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</button>
                 <button class="btn-outline-normal" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</button>
-                <button class="btn-outline-normal text-danger" @click="deleteSelectedDialog"><font-awesome-icon icon="trash" size="sm" /> {{ $t("Delete") }}</button>
+                <button class="btn-outline-normal text-danger" @click="deleteSelectedMonitorDialog"><font-awesome-icon icon="trash" size="sm" /> {{ $t("Delete") }}</button>
 
                 <span v-if="selectedMonitorCount > 0">
                     {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
@@ -69,7 +69,7 @@
     <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
         {{ $t("pauseMonitorMsg") }}
     </Confirm>
-    <Confirm ref="confirmDeleteSelected" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteSelected">
+    <Confirm ref="confirmDeleteSelectedMonitor" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteSelectedMonitor">
         {{ $t("deleteSelectedMonitorMsg") }}
     </Confirm>
 </template>
@@ -333,9 +333,9 @@ export default {
          * confirm or cancel the deletion of the selected monitors.
          * @returns {void}
          */
-        deleteSelectedDialog() {
+        deleteSelectedMonitorDialog() {
             // Show the confirmation dialog for deletion
-            this.$refs.confirmDeleteSelected.show();
+            this.$refs.confirmDeleteSelectedMonitor.show();
         },
 
         /**
@@ -344,7 +344,7 @@ export default {
          * the user interface, and reloads the page to reflect the changes.
          * @returns {void}
          */
-        deleteSelected() {
+        deleteSelectedMonitor() {
             // Iterate over each selected monitor's ID and delete it
             Object.keys(this.selectedMonitors).forEach(id => {
                 // Call the root method to delete the monitor by its ID
