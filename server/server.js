@@ -1495,7 +1495,7 @@ let needSetup = false;
                 let publicVapidKey = await Settings.get("webpushPublicVapidKey");
 
                 if (!publicVapidKey) {
-                    console.debug("Generating new VAPID keys");
+                    log.debug("webpush", "Generating new VAPID keys");
                     const vapidKeys = webpush.generateVAPIDKeys();
 
                     await Settings.set("webpushPublicVapidKey", vapidKeys.publicKey);

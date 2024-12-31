@@ -1051,5 +1051,10 @@
     "RabbitMQ Password": "RabbitMQ Password",
     "rabbitmqHelpText": "To use the monitor, you will need to enable the Management Plugin in your RabbitMQ setup. For more information, please consult the {rabitmq_documentation}.",
     "SendGrid API Key": "SendGrid API Key",
-    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas"
+    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
+    "Notifications Enabled": "Notifications Enabled",
+    "Allow Notifications": "Allow Notifications",
+    "Browser not supported": "Browser not supported",
+    "Unable to get permission to notify": "Unable to get permission to notify (request either denied or ignored).",
+    "Webpush Helptext": "Web push only works with SSL (HTTPS) connections. For iOS devices, webpage must be added to homescreen beforehand."
 }
