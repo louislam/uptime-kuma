@@ -354,11 +354,9 @@ export default {
                         // Remove the monitor from the selectedMonitors list upon successful deletion
                         delete this.selectedMonitors[id];
 
-                        // Use Vue Router to navigate to a temporary route before redirecting to /dashboard
-                        // This reloads the page to reflect changes after deletion
-                        this.$router.push("/temp").then(() => {
-                            this.$router.push("/dashboard");
-                        });
+                        // Navigate to the home page ("/") to trigger a page reload and reflect the updates
+                        // This step is necessary to refresh the UI after the monitors have been deleted
+                        this.$router.push("/");
 
                         // Store a flag in localStorage to trigger a toast notification on page reload
                         // This ensures the notification displays after the page refreshes
