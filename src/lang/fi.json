@@ -1095,5 +1095,6 @@
     "Separate multiple email addresses with commas": "Erottele useammat sähköpostiosoitteet pilkuilla",
     "RabbitMQ Nodes": "RabbitMQ-hallintasolmut",
     "rabbitmqNodesDescription": "Anna URL RabbitMQ-hallintasolmuille sisältäen protokollan ja portin. Esimerkki: {0}",
-    "rabbitmqHelpText": "Jotta voit käyttää seurainta, sinun on otettava hallintalaajennus käyttöön RabbitMQ-asetuksissa. Lisätietoja saat osoitteesta {rabitmq_documentation}."
+    "rabbitmqHelpText": "Jotta voit käyttää seurainta, sinun on otettava hallintalaajennus käyttöön RabbitMQ-asetuksissa. Lisätietoja saat osoitteesta {rabitmq_documentation}.",
+    "aboutSlackUsername": "Muuttaa viestin lähettäjän näyttönimeä. Jos haluat mainita jonkun, lisää se ystävälliseen nimeen."
 }
