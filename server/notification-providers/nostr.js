@@ -1,11 +1,9 @@
 const NotificationProvider = require("./notification-provider");
 const {
-    relayInit,
-    getPublicKey,
-    getEventHash,
-    getSignature,
+    finalizeEvent,
+    Relay,
     nip04,
-    nip19
+    nip19,
 } = require("nostr-tools");
 
 // polyfills for node versions
@@ -31,7 +29,6 @@ class Nostr extends NotificationProvider {
         const createdAt = Math.floor(Date.now() / 1000);
 
         const senderPrivateKey = await this.getPrivateKey(notification.sender);
-        const senderPublicKey = getPublicKey(senderPrivateKey);
         const recipientsPublicKeys = await this.getPublicKeys(notification.recipients);
 
         // Create NIP-04 encrypted direct message event for each recipient
@@ -40,35 +37,29 @@ class Nostr extends NotificationProvider {
             const ciphertext = await nip04.encrypt(senderPrivateKey, recipientPublicKey, msg);
             let event = {
                 kind: 4,
-                pubkey: senderPublicKey,
                 created_at: createdAt,
                 tags: [[ "p", recipientPublicKey ]],
                 content: ciphertext,
             };
-            event.id = getEventHash(event);
-            event.sig = getSignature(event, senderPrivateKey);
-            events.push(event);
+            const signedEvent = finalizeEvent(event, senderPrivateKey);
+            events.push(signedEvent);
         }
 
         // Publish events to each relay
         const relays = notification.relays.split("\n");
         let successfulRelays = 0;
-
-        // Connect to each relay
         for (const relayUrl of relays) {
-            const relay = relayInit(relayUrl);
             try {
-                await relay.connect();
-                successfulRelays++;
+                const relay = await Relay.connect(relayUrl);
 
                 // Publish events
                 for (const event of events) {
-                    relay.publish(event);
+                    await relay.publish(event);
                 }
+                relay.close();
+                successfulRelays++;
             } catch (error) {
                 continue;
-            } finally {
-                relay.close();
             }
         }
 
