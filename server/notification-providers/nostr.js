@@ -5,7 +5,6 @@ const {
     kinds,
     nip04,
     nip19,
-    nip42,
 } = require("nostr-tools");
 
 // polyfills for node versions
@@ -83,17 +82,6 @@ class Nostr extends NotificationProvider {
             throw Error("Failed to connect to any relays.");
         }
         return `${successfulRelays}/${relays.length} relays connected.`;
-    }
-
-    /**
-     * Sign the authentication event
-     * @param {Relay} relay Relay instance
-     * @param {string} privateKey Sender's private key
-     * @returns {Promise<VerifiedEvent>} Signed authentication event
-     */
-    async signAuthEvent(relay, privateKey) {
-        const authEvent = nip42.makeAuthEvent(relay.url, relay.challenge);
-        return finalizeEvent(authEvent, privateKey);
     }
 
     /**
