@@ -95,7 +95,7 @@ class Nostr extends NotificationProvider {
             const { data } = senderDecodeResult;
             return data;
         } catch (error) {
-            throw new Error(`Failed to get private key: ${error.message}`);
+            throw new Error(`Failed to decode private key for sender ${sender}: ${error.message}`);
         }
     }
 
@@ -114,10 +114,10 @@ class Nostr extends NotificationProvider {
                 if (type === "npub") {
                     publicKeys.push(data);
                 } else {
-                    throw new Error("not an npub");
+                    throw new Error(`Recipient ${recipient} is not an npub`);
                 }
             } catch (error) {
-                throw new Error(`Error decoding recipient: ${error}`);
+                throw new Error(`Error decoding recipient ${recipient}: ${error}`);
             }
         }
         return publicKeys;
