@@ -2,8 +2,10 @@ const NotificationProvider = require("./notification-provider");
 const {
     finalizeEvent,
     Relay,
+    kinds,
     nip04,
     nip19,
+    nip42,
 } = require("nostr-tools");
 
 // polyfills for node versions
@@ -36,7 +38,7 @@ class Nostr extends NotificationProvider {
         for (const recipientPublicKey of recipientsPublicKeys) {
             const ciphertext = await nip04.encrypt(senderPrivateKey, recipientPublicKey, msg);
             let event = {
-                kind: 4,
+                kind: kinds.EncryptedDirectMessage,
                 created_at: createdAt,
                 tags: [[ "p", recipientPublicKey ]],
                 content: ciphertext,
@@ -49,17 +51,29 @@ class Nostr extends NotificationProvider {
         const relays = notification.relays.split("\n");
         let successfulRelays = 0;
         for (const relayUrl of relays) {
-            try {
-                const relay = await Relay.connect(relayUrl);
+            const relay = await Relay.connect(relayUrl);
+            let eventIndex = 0;
 
-                // Publish events
-                for (const event of events) {
-                    await relay.publish(event);
+            // Authenticate to the relay, if required
+            try {
+                await relay.publish(events[0]);
+                eventIndex = 1;
+            } catch (error) {
+                if (relay.challenge) {
+                    await relay.auth(async (evt) => {
+                        return finalizeEvent(evt, senderPrivateKey);
+                    });
+                }
+            }
+
+            try {
+                for (let i = eventIndex; i < events.length; i++) {
+                    await relay.publish(events[i]);
                 }
                 relay.close();
                 successfulRelays++;
             } catch (error) {
-                continue;
+                console.error(`Failed to publish event to ${relayUrl}:`, error);
             }
         }
 
@@ -68,6 +82,17 @@ class Nostr extends NotificationProvider {
             throw Error("Failed to connect to any relays.");
         }
         return `${successfulRelays}/${relays.length} relays connected.`;
+    }
+
+    /**
+     * Sign the authentication event
+     * @param {Relay} relay Relay instance
+     * @param {string} privateKey Sender's private key
+     * @returns {Promise<VerifiedEvent>} Signed authentication event
+     */
+    async signAuthEvent(relay, privateKey) {
+        const authEvent = nip42.makeAuthEvent(relay.url, relay.challenge);
+        return finalizeEvent(authEvent, privateKey);
     }
 
     /**
