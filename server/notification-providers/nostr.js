@@ -70,10 +70,11 @@ class Nostr extends NotificationProvider {
                 for (let i = eventIndex; i < events.length; i++) {
                     await relay.publish(events[i]);
                 }
-                relay.close();
                 successfulRelays++;
             } catch (error) {
                 console.error(`Failed to publish event to ${relayUrl}:`, error);
+            } finally {
+                relay.close();
             }
         }
 
