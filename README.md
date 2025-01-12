@@ -109,6 +109,10 @@ Please read:
 
 https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
 
+## One-Click Deployment
+
+[![Deploy to RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/?app_id=214)
+
 ## 🆕 What's Next?
 
 I will assign requests/issues to the next milestone.
