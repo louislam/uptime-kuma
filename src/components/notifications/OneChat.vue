@@ -44,5 +44,12 @@
                 required
             />
         </div>
+
+        <!-- Document Link -->
+        <div class="form-text">
+            <i18n-t tag="p" keypath="Read more:">
+                <a href="https://chat-develop.one.th/docs" target="_blank">https://chat-develop.one.th/docs</a>
+            </i18n-t>
+        </div>
     </div>
 </template>
