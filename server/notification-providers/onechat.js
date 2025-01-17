@@ -34,10 +34,17 @@ class OneChat extends NotificationProvider {
                     bot_id: notification.botId,
                     type: "text",
                     message:
-                        `UptimeKuma Alert:\n[🔴 Down]\n` +
-                        `Name: ${monitorJSON["name"]}\n` +
-                        `${heartbeatJSON["msg"]}\n` +
-                        `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        "UptimeKuma Alert:\n" +
+                        "[🔴 Down]\n" +
+                        "Name: " +
+                        monitorJSON["name"] +
+                        "\n" +
+                        heartbeatJSON["msg"] +
+                        "\n" +
+                        "Time (" +
+                        heartbeatJSON["timezone"] +
+                        "): " +
+                        heartbeatJSON["localDateTime"],
                 };
                 await axios.post(url, downMessage, config);
             } else if (heartbeatJSON["status"] === UP) {
@@ -46,10 +53,17 @@ class OneChat extends NotificationProvider {
                     bot_id: notification.botId,
                     type: "text",
                     message:
-                        `UptimeKuma Alert:\n[✅ Up]\n` +
-                        `Name: ${monitorJSON["name"]}\n` +
-                        `${heartbeatJSON["msg"]}\n` +
-                        `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        "UptimeKuma Alert:\n" +
+                        "[🟢 Up]\n" +
+                        "Name: " +
+                        monitorJSON["name"] +
+                        "\n" +
+                        heartbeatJSON["msg"] +
+                        "\n" +
+                        "Time (" +
+                        heartbeatJSON["timezone"] +
+                        "): " +
+                        heartbeatJSON["localDateTime"],
                 };
                 await axios.post(url, upMessage, config);
             }
@@ -58,10 +72,14 @@ class OneChat extends NotificationProvider {
         } catch (error) {
             // Handle errors and throw a descriptive message
             if (error.response) {
-                const errorMessage = error.response.data?.message || "Unknown API error occurred.";
+                const errorMessage =
+                    error.response.data?.message ||
+                    "Unknown API error occurred.";
                 throw new Error(`OneChat API Error: ${errorMessage}`);
             } else {
-                throw new Error(`Network or unexpected error: ${error.message}`);
+                throw new Error(
+                    `Network or unexpected error: ${error.message}`
+                );
             }
         }
     }
