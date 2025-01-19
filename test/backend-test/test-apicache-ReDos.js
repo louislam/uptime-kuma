@@ -14,9 +14,13 @@ test("Test ReDos - attack string", async (t) => {
   const getDuration = apicacheModule.getDuration;
   const str = "" + "00".repeat(100000) + "\u0000";
   const startTime = performance.now();
-  getDuration(str);
+  try {
+    getDuration(str);
+  } catch (error) {
+    // pass
+  }
   const endTime = performance.now();
   const elapsedTime = endTime - startTime;
   const reDosThreshold = 9000;
-  assert(elapsedTime <= reDosThreshold, `🚨 可能存在 ReDoS 攻击！getDuration 方法耗时 ${elapsedTime.toFixed(2)} 毫秒，超过阈值 ${reDosThreshold} 毫秒。`);
+  assert(elapsedTime <= reDosThreshold, `🚨 Potential ReDoS Attack! getDuration method took ${elapsedTime.toFixed(2)} ms, exceeding threshold of ${reDosThreshold} ms.`);
 });
