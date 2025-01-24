@@ -11,17 +11,23 @@ class DingDing extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-
+        const mentionAll = notification.mentioning === "everyone";
+        const mobileList = notification.mentioning === "specify-mobiles" ? notification.mobileList : [];
+        const userList = notification.mentioning === "specify-users" ? notification.userList : [];
+        const finalList = [ ...mobileList || [], ...userList || [] ];
+        const mentionStr = finalList.length > 0 ? "\n" : "" + finalList.map(item => `@${item}`).join(" ");
         try {
             if (heartbeatJSON != null) {
                 let params = {
                     msgtype: "markdown",
                     markdown: {
                         title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
-                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}${mentionStr}`,
                     },
-                    "at": {
-                        "isAtAll": notification.mentioning === "everyone"
+                    at: {
+                        isAtAll: mentionAll,
+                        atUserIds: userList,
+                        atMobiles: mobileList
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
@@ -31,7 +37,12 @@ class DingDing extends NotificationProvider {
                 let params = {
                     msgtype: "text",
                     text: {
-                        content: msg
+                        content: `${msg}${mentionStr}`
+                    },
+                    at: {
+                        isAtAll: mentionAll,
+                        atUserIds: userList,
+                        atMobiles: mobileList
                     }
                 };
                 if (await this.sendToDingDing(notification, params)) {
