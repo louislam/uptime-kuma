@@ -21,7 +21,7 @@ class HomeAssistant extends NotificationProvider {
                     title: "Uptime Kuma",
                     message: msg,
                     ...(notificationService !== "persistent_notification" && { data: {
-                        name: monitorJSON?.name,
+                        name: monitorJSON?.pathName,
                         status: heartbeatJSON?.status,
                         channel: "Uptime Kuma",
                         icon_url: "https://github.com/louislam/uptime-kuma/blob/master/public/icon.png?raw=true",

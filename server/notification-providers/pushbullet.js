@@ -30,7 +30,7 @@ class Pushbullet extends NotificationProvider {
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downData = {
                     "type": "note",
-                    "title": "UptimeKuma Alert: " + monitorJSON["name"],
+                    "title": "UptimeKuma Alert: " + monitorJSON["pathName"],
                     "body": "[🔴 Down] " +
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
@@ -39,7 +39,7 @@ class Pushbullet extends NotificationProvider {
             } else if (heartbeatJSON["status"] === UP) {
                 let upData = {
                     "type": "note",
-                    "title": "UptimeKuma Alert: " + monitorJSON["name"],
+                    "title": "UptimeKuma Alert: " + monitorJSON["pathName"],
                     "body": "[✅ Up] " +
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
