@@ -6,39 +6,15 @@ class SMTPMonitorType extends MonitorType {
     name = "smtp";
 
     /**
-     * @param {*} smtpSecurity the user's SMTP security setting
-     * @returns {boolean} True if this should test SMTPS
-     */
-    isSMTPS(smtpSecurity) {
-        return smtpSecurity === "secure";
-    }
-
-    /**
-     * @param {*} smtpSecurity the user's SMTP security setting
-     * @returns {boolean} True if this should not attempt STARTTLS, even if it is available
-     */
-    isIgnoreTLS(smtpSecurity) {
-        return smtpSecurity === "nostarttls";
-    }
-
-    /**
-     * @param {*} smtpSecurity the user's SMTP security setting
-     * @returns {boolean} True if this should always test STARTTLS
-     */
-    isRequireTLS(smtpSecurity) {
-        return smtpSecurity === "starttls";
-    }
-
-    /**
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
         let options = {
             port: monitor.port || 25,
             host: monitor.hostname,
-            secure: this.isSMTPS(monitor.smtpSecurity), // use SMTPS (not STARTTLS)
-            ignoreTLS: this.isIgnoreTLS(monitor.smtpSecurity), // don't use STARTTLS even if it's available
-            requireTLS: this.isRequireTLS(monitor.smtpSecurity), // use STARTTLS or fail
+            secure: smtpSecurity === "secure", // use SMTPS (not STARTTLS)
+            ignoreTLS: smtpSecurity === "nostarttls", // don't use STARTTLS even if it's available
+            requireTLS: smtpSecurity === "starttls", // use STARTTLS or fail
         };
         let transporter = nodemailer.createTransport(options);
         try {

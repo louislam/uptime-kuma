@@ -332,14 +332,14 @@
                                 </select>
                             </div>
 
-                            <div v-if="monitor.type === 'smtp'" class="my-3">
+                            <i18n-t  v-if="monitor.type === 'smtp'" keypath="smtpHelpText" tag="div" class="my-3">
                                 <label for="smtp_security" class="form-label">{{ $t("SMTP Security") }}</label>
                                 <select id="smtp_security" v-model="monitor.smtpSecurity" class="form-select">
                                     <option value="secure">SMTPS</option>
                                     <option value="nostarttls">Ignore STARTTLS</option>
                                     <option value="starttls">Use STARTTLS</option>
                                 </select>
-                            </div>
+                            </i18n-t>
 
                             <!-- Json Query -->
                             <!-- For Json Query / SNMP -->
