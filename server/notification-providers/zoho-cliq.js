@@ -84,7 +84,7 @@ class ZohoCliq extends NotificationProvider {
 
             const payload = this._notificationPayloadFactory({
                 monitorMessage: heartbeatJSON.msg,
-                monitorName: monitorJSON.pathName,
+                monitorName: monitorJSON.name,
                 monitorUrl: this.extractAddress(monitorJSON),
                 status: heartbeatJSON.status
             });

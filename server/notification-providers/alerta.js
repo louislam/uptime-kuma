@@ -44,7 +44,7 @@ class Alerta extends NotificationProvider {
                     correlate: [ "service_up", "service_down" ],
                     event: monitorJSON["type"],
                     group: "uptimekuma-" + monitorJSON["type"],
-                    resource: monitorJSON["pathName"],
+                    resource: monitorJSON["name"],
                 }, data );
 
                 if (heartbeatJSON["status"] === DOWN) {

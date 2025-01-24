@@ -60,7 +60,7 @@ class Ntfy extends NotificationProvider {
                 data.actions = [
                     {
                         "action": "view",
-                        "label": "Open " + monitorJSON.pathName,
+                        "label": "Open " + monitorJSON.name,
                         "url": monitorJSON.url,
                     },
                 ];
