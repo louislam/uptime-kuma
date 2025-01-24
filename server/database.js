@@ -892,11 +892,13 @@ class Database {
                 AND important = 0
                 AND time < ${sqlHourOffset}
                 AND id NOT IN (
-                    SELECT id
-                    FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT ?
+                    SELECT id FROM ( -- written this way for Maria's support
+                        SELECT id
+                        FROM heartbeat
+                        WHERE monitor_id = ?
+                        ORDER BY time DESC
+                        LIMIT ?
+                    )  AS limited_ids
                 )
             `, [
                 monitor.id,

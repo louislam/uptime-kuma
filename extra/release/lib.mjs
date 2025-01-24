@@ -101,12 +101,30 @@ export function buildImage(repoNames, tags, target, buildArgs = "", dockerfile =
 /**
  * Check if the version already exists on Docker Hub
  * TODO: use semver to compare versions if it is greater than the previous?
- * @param {string} repoName Docker Hub repository name
+ * @param {string[]} repoNames repository name (Only check the name with single slash)
  * @param {string} version Version to check
  * @returns {void}
  */
-export async function checkTagExists(repoName, version) {
-    console.log(`Checking if version ${version} exists on Docker Hub`);
+export async function checkTagExists(repoNames, version) {
+    // Skip if the tag is not on Docker Hub
+    // louislam/uptime-kuma
+    let dockerHubRepoNames = repoNames.filter((name) => {
+        return name.split("/").length === 2;
+    });
+
+    for (let repoName of dockerHubRepoNames) {
+        await checkTagExistsSingle(repoName, version);
+    }
+}
+
+/**
+ * Check if the version already exists on Docker Hub
+ * @param {string} repoName repository name
+ * @param {string} version Version to check
+ * @returns {Promise<void>}
+ */
+export async function checkTagExistsSingle(repoName, version) {
+    console.log(`Checking if version ${version} exists on Docker Hub:`, repoName);
 
     // Get a list of tags from the Docker Hub repository
     let tags = [];
