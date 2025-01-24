@@ -12,9 +12,9 @@ class SMTPMonitorType extends MonitorType {
         let options = {
             port: monitor.port || 25,
             host: monitor.hostname,
-            secure: smtpSecurity === "secure", // use SMTPS (not STARTTLS)
-            ignoreTLS: smtpSecurity === "nostarttls", // don't use STARTTLS even if it's available
-            requireTLS: smtpSecurity === "starttls", // use STARTTLS or fail
+            secure: monitor.smtpSecurity === "secure", // use SMTPS (not STARTTLS)
+            ignoreTLS: monitor.smtpSecurity === "nostarttls", // don't use STARTTLS even if it's available
+            requireTLS: monitor.smtpSecurity === "starttls", // use STARTTLS or fail
         };
         let transporter = nodemailer.createTransport(options);
         try {
