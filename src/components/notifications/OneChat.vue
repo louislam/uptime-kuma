@@ -9,6 +9,7 @@
                 id="onechat-access-token"
                 v-model="$parent.notification.accessToken"
                 :required="true"
+            >
             </HiddenInput>
             <div class="form-text">
                 <p>{{ $t("OneChatAccessToken") }}</p>
