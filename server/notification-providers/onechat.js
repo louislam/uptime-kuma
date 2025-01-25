@@ -64,9 +64,7 @@ Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                     "Unknown API error occurred.";
                 throw new Error(`OneChat API Error: ${errorMessage}`);
             } else {
-                throw new Error(
-                    `Network or unexpected error: ${error.message}`
-                );
+                this.throwGeneralAxiosError(error);
             }
         }
     }
