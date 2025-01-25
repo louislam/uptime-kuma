@@ -1051,5 +1051,20 @@
     "RabbitMQ Password": "RabbitMQ Password",
     "rabbitmqHelpText": "To use the monitor, you will need to enable the Management Plugin in your RabbitMQ setup. For more information, please consult the {rabitmq_documentation}.",
     "SendGrid API Key": "SendGrid API Key",
-    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas"
+    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
+    "Generate Badge": "Generate Badge",
+    "Return to not found": "Return to not found",
+    "Return to operational": "Return to operational",
+    "Return to partial down": "Return to partial down",
+    "Return to maintenance": "Return to maintenance",
+    "Return to unknown": "Return to unknown",
+    "not found": "not found",
+    "operational": "operational",
+    "partial down": "partial down",
+    "maintenance": "maintenance",
+    "unknown": "unknown",
+    "Preview": "Preview",
+    "Copy Image URL": "Copy Image URL",
+    "Image url copied to clipboard.": "Image url copied to clipboard.",
+    "Unable to copy image URL.": "Unable to copy image URL."
 }

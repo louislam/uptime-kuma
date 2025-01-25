@@ -994,5 +994,20 @@
     "aboutSlackUsername": "Altera o nome de exibição do remetente da mensagem. Se quiser mencionar alguém, inclua a menção no nome amigável.",
     "Send rich messages": "Enviar mensagens ricas",
     "Host Onesender": "Servidor Onesender",
-    "Token Onesender": "Chave Onesender"
+    "Token Onesender": "Chave Onesender",
+    "Generate Badge": "Gerar Distintivo",
+    "Return to not found": "Retorno para não encontrado",
+    "Return to operational": "Retorno para operacional",
+    "Return to partial down": "Retorno para parcialmente degradado",
+    "Return to maintenance": "Retorno para em manutenção",
+    "Return to unknown": "Retorno para desconhecido",
+    "not found": "não encontrado",
+    "operational": "operacional",
+    "partial down": "parcialmente fora",
+    "maintenance": "manutenção",
+    "unknown": "desconhecido",
+    "Preview": "Pré-visualizar",
+    "Copy Image URL": "Copiar URL da imagem",
+    "Image url copied to clipboard.": "URL da imagem copiada para área de transferência.",
+    "Unable to copy image URL.": "Não é possível copiar o URL da imagem para área de transferência."
 }

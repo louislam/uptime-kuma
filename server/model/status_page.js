@@ -9,6 +9,7 @@ const { Feed } = require("feed");
 const config = require("../config");
 
 const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
+const { makeBadge } = require("badge-maker");
 
 class StatusPage extends BeanModel {
 
@@ -16,7 +17,7 @@ class StatusPage extends BeanModel {
      * Like this: { "test-uptime.kuma.pet": "default" }
      * @type {{}}
      */
-    static domainMappingList = { };
+    static domainMappingList = {};
 
     /**
      * Handle responses to RSS pages
@@ -58,6 +59,26 @@ class StatusPage extends BeanModel {
             response.send(await StatusPage.renderHTML(indexHTML, statusPage));
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
+        }
+    }
+
+    /**
+     * Handle responses to status page
+     * @param {Response} response Response object
+     * @param {string} slug Status page slug
+     * @param {object} config Config for badge
+     * @returns {Promise<void>}
+     */
+    static async handleStatusPageSVGResponse(response, slug, config) {
+        slug = slug.replace('.svg', '')
+        let statusPage = await R.findOne("status_page", " slug = ? ", [
+            slug.replace('.svg', '')
+        ]);
+        if (statusPage) {
+            response.set('Content-Type', 'image/svg+xml')
+            response.send(await StatusPage.renderSVG(slug, config, statusPage));
+        } else {
+            response.status(404).send(await StatusPage.renderSVG(slug, config, null));
         }
     }
 
@@ -152,6 +173,62 @@ class StatusPage extends BeanModel {
         return $.root().html();
     }
 
+    static async renderSVG(slug, userConfig = {}, statusPage) {
+        let allowedBadgeStyles = ['flat', 'flat-square', 'for-the-badge', 'plastic', 'social'];
+        if (!allowedBadgeStyles.includes(userConfig.badgeStyle)) {
+            userConfig.badgeStyle = 'flat'
+        }
+
+        // returns unknown svg
+        if (statusPage === null) {
+            return makeBadge({ message: userConfig.notFoundText || 'not found', color: 'red', style: userConfig.badgeStyle, label: slug, labelColor: 'gray' })
+        } else {
+
+            // get all heartbeats that correspond to this statusPage
+            const config = await statusPage.toPublicJSON();
+
+            // Public Group List
+            const showTags = !!statusPage.show_tags;
+
+            const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
+                statusPage.id
+            ]);
+
+            let heartbeats = [];
+
+            for (let groupBean of list) {
+                let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+                for (const monitor of monitorGroup.monitorList) {
+                    const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [monitor.id]);
+                    if (heartbeat) {
+                        heartbeats.push({
+                            ...monitor,
+                            status: heartbeat.status,
+                            time: heartbeat.time
+                        });
+                    }
+                }
+            }
+
+            // calculate RSS feed description
+            let status = StatusPage.overallStatus(heartbeats);
+
+            switch (status) {
+                case STATUS_PAGE_ALL_DOWN:
+                    return makeBadge({ message: userConfig.allDownText ?? 'all down', color: 'red', style: userConfig.badgeStyle, label: slug, labelColor: 'gray' });
+                case STATUS_PAGE_ALL_UP:
+                    return makeBadge({ message: userConfig.allOperationalText ?? 'all operational', color: 'green', style: userConfig.badgeStyle, label: slug, labelColor: 'gray' });
+                case STATUS_PAGE_PARTIAL_DOWN:
+                    return makeBadge({ message: userConfig.partialDownText ?? 'partial down', color: 'orange', style: userConfig.badgeStyle, label: slug, labelColor: 'gray' });
+                case STATUS_PAGE_MAINTENANCE:
+                    return makeBadge({ message: userConfig.maintenanceText || 'maintenance', color: 'yellow', style: userConfig.badgeStyle, label: slug, labelColor: 'gray' });
+                default:
+                    return makeBadge({ message: userConfig.unknownText || 'unknown', color: 'lightgray', style: userConfig.badgeStyle, label: slug, labelColor: 'gray' });
+            }
+        }
+
+    }
+
     /**
      * @param {heartbeats} heartbeats from getRSSPageData
      * @returns {number} status_page constant from util.ts
@@ -174,7 +251,7 @@ class StatusPage extends BeanModel {
             }
         }
 
-        if (! hasUp) {
+        if (!hasUp) {
             status = STATUS_PAGE_ALL_DOWN;
         }
 
@@ -231,7 +308,7 @@ class StatusPage extends BeanModel {
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
             for (const monitor of monitorGroup.monitorList) {
-                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [ monitor.id ]);
+                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [monitor.id]);
                 if (heartbeat) {
                     heartbeats.push({
                         ...monitor,
@@ -471,7 +548,7 @@ class StatusPage extends BeanModel {
                 SELECT DISTINCT maintenance_id
                 FROM maintenance_status_page
                 WHERE status_page_id = ?
-            `, [ statusPageId ]);
+            `, [statusPageId]);
 
             for (const maintenanceID of maintenanceIDList) {
                 let maintenance = UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
