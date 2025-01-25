@@ -9,7 +9,9 @@
                     <div>{{ monitor.id }}</div>
                 </div>
             </h1>
+            <!-- eslint-disable vue/no-v-html -->
             <p v-if="monitor.description" v-html="processedDescription"></p>
+            <!--eslint-enable-->
             <div class="d-flex">
                 <div class="tags">
                     <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
@@ -403,10 +405,10 @@ export default {
 
         processedDescription() {
             if (!this.monitor.description) {
-                return '';
+                return "";
             }
 
-            const urlPattern = /(\b(?:https?|ftp|file|smb|ssh|telnet|ldap|git):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+            const urlPattern = /(\b(?:https?|ftp|file|smb|ssh|telnet|ldap|git):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/gi;
             const processed = this.monitor.description.replace(
                 urlPattern,
                 url => `<a href="${this.escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${this.escapeHtml(url)}</a>`
