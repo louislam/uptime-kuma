@@ -33,17 +33,11 @@ class OneChat extends NotificationProvider {
                     bot_id: notification.botId,
                     type: "text",
                     message:
-                        "UptimeKuma Alert:\n" +
-                        "[🔴 Down]\n" +
-                        "Name: " +
-                        monitorJSON["name"] +
-                        "\n" +
-                        heartbeatJSON["msg"] +
-                        "\n" +
-                        "Time (" +
-                        heartbeatJSON["timezone"] +
-                        "): " +
-                        heartbeatJSON["localDateTime"],
+                        `UptimeKuma Alert:
+[🔴 Down]
+Name: ${monitorJSON["name"]}
+${heartbeatJSON["msg"]}
+Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
                 await axios.post(url, downMessage, config);
             } else if (heartbeatJSON["status"] === UP) {
