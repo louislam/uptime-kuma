@@ -3,15 +3,13 @@
         <!-- Access Token Input -->
         <div class="mb-3">
             <label for="onechat-access-token" class="form-label">
-                Access Token<span style="color: red;"><sup>*</sup></span>
+                OneChat Access Token<span style="color: red;"><sup>*</sup></span>
             </label>
-            <input
+            <HiddenInput
                 id="onechat-access-token"
                 v-model="$parent.notification.accessToken"
-                type="text"
-                class="form-control"
-                required
-            />
+                :required="true"
+            </HiddenInput>
             <div class="form-text">
                 <p>{{ $t("OneChatAccessToken") }}</p>
             </div>
@@ -53,3 +51,13 @@
         </div>
     </div>
 </template>
+
+<script>
+import HiddenInput from "../HiddenInput.vue";
+
+export default {
+    components: {
+        HiddenInput,
+    },
+};
+</script>
