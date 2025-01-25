@@ -19,8 +19,10 @@
                 <!-- Description -->
                 <div class="my-3">
                     <label for="description" class="form-label">{{ $t("Description") }}</label>
-                    <textarea id="description" v-model="config.description" class="form-control"
-                        data-testid="description-input"></textarea>
+                    <textarea
+                        id="description" v-model="config.description" class="form-control"
+                        data-testid="description-input"
+                    ></textarea>
                     <div class="form-text">
                         {{ $t("markdownSupported") }}
                     </div>
@@ -29,8 +31,10 @@
                 <!-- Footer Text -->
                 <div class="my-3">
                     <label for="footer-text" class="form-label">{{ $t("Footer Text") }}</label>
-                    <textarea id="footer-text" v-model="config.footerText" class="form-control"
-                        data-testid="footer-text-input"></textarea>
+                    <textarea
+                        id="footer-text" v-model="config.footerText" class="form-control"
+                        data-testid="footer-text-input"
+                    ></textarea>
                     <div class="form-text">
                         {{ $t("markdownSupported") }}
                     </div>
@@ -38,8 +42,10 @@
 
                 <div class="my-3">
                     <label for="auto-refresh-interval" class="form-label">{{ $t("Refresh Interval") }}</label>
-                    <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number"
-                        class="form-control" :min="5" data-testid="refresh-interval-input">
+                    <input
+                        id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number"
+                        class="form-control" :min="5" data-testid="refresh-interval-input"
+                    >
                     <div class="form-text">
                         {{ $t("Refresh Interval Description", [config.autoRefreshInterval]) }}
                     </div>
@@ -55,49 +61,63 @@
                 </div>
 
                 <div class="my-3 form-check form-switch">
-                    <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox"
-                        data-testid="show-tags-checkbox">
+                    <input
+                        id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox"
+                        data-testid="show-tags-checkbox"
+                    >
                     <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
                 </div>
 
                 <!-- Show Powered By -->
                 <div class="my-3 form-check form-switch">
-                    <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox"
-                        data-testid="show-powered-by-checkbox">
+                    <input
+                        id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox"
+                        data-testid="show-powered-by-checkbox"
+                    >
                     <label class="form-check-label" for="show-powered-by">{{ $t("Show Powered By") }}</label>
                 </div>
 
                 <!-- Show certificate expiry -->
                 <div class="my-3 form-check form-switch">
-                    <input id="show-certificate-expiry" v-model="config.showCertificateExpiry" class="form-check-input"
-                        type="checkbox" data-testid="show-certificate-expiry-checkbox">
+                    <input
+                        id="show-certificate-expiry" v-model="config.showCertificateExpiry" class="form-check-input"
+                        type="checkbox" data-testid="show-certificate-expiry-checkbox"
+                    >
                     <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry")
-                        }}</label>
+                    }}</label>
                 </div>
 
                 <div v-if="false" class="my-3">
                     <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon")
-                            }}</sup></label>
-                    <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password"
-                        class="form-control">
+                    }}</sup></label>
+                    <input
+                        id="password" v-model="config.password" disabled type="password" autocomplete="new-password"
+                        class="form-control"
+                    >
                 </div>
 
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
                         {{ $t("Domain Names") }}
-                        <button class="p-0 bg-transparent border-0" :aria-label="$t('Add a domain')"
-                            @click="addDomainField">
+                        <button
+                            class="p-0 bg-transparent border-0" :aria-label="$t('Add a domain')"
+                            @click="addDomainField"
+                        >
                             <font-awesome-icon icon="plus-circle" class="action text-primary" />
                         </button>
                     </label>
 
                     <ul class="list-group domain-name-list">
                         <li v-for="(domain, index) in config.domainNameList" :key="index" class="list-group-item">
-                            <input v-model="config.domainNameList[index]" type="text" class="no-bg domain-input"
-                                placeholder="example.com" />
-                            <button class="p-0 bg-transparent border-0" :aria-label="$t('Remove domain', [domain])"
-                                @click="removeDomain(index)">
+                            <input
+                                v-model="config.domainNameList[index]" type="text" class="no-bg domain-input"
+                                placeholder="example.com"
+                            />
+                            <button
+                                class="p-0 bg-transparent border-0" :aria-label="$t('Remove domain', [domain])"
+                                @click="removeDomain(index)"
+                            >
                                 <font-awesome-icon icon="times" class="action remove ms-2 me-3 text-danger" />
                             </button>
                         </li>
@@ -107,15 +127,19 @@
                 <!-- Google Analytics -->
                 <div class="my-3">
                     <label for="googleAnalyticsTag" class="form-label">{{ $t("Google Analytics ID") }}</label>
-                    <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control"
-                        data-testid="google-analytics-input">
+                    <input
+                        id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control"
+                        data-testid="google-analytics-input"
+                    >
                 </div>
 
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
-                    <prism-editor v-model="config.customCSS" class="css-editor" data-testid="custom-css-input"
-                        :highlight="highlighter" line-numbers></prism-editor>
+                    <prism-editor
+                        v-model="config.customCSS" class="css-editor" data-testid="custom-css-input"
+                        :highlight="highlighter" line-numbers
+                    ></prism-editor>
                 </div>
 
                 <div class="danger-zone">
@@ -152,9 +176,11 @@
 
                 <!-- Uploader -->
                 <!--    url="/api/status-page/upload-logo" -->
-                <ImageCropUpload v-model="showImageCropUpload" field="img" :width="128" :height="128"
+                <ImageCropUpload
+                    v-model="showImageCropUpload" field="img" :width="128" :height="128"
                     :langType="$i18n.locale" img-format="png" :noCircle="true" :noSquare="false"
-                    @crop-success="cropSuccess" />
+                    @crop-success="cropSuccess"
+                />
 
                 <!-- Title -->
                 <Editable v-model="config.title" tag="span" :contenteditable="editMode" :noNL="true" />
@@ -173,15 +199,17 @@
                         {{ $t("Go to Dashboard") }}
                     </a>
 
-                    <a href='#' @click="$refs.badgeBuilderDialog.show(slug)" class="btn btn-info">
+                    <a href="#" class="btn btn-info" @click="$refs.badgeBuilderDialog.show(slug)">
                         <font-awesome-icon icon="tag" />
                         {{ $t("Generate Badge") }}
                     </a>
                 </div>
 
                 <div v-else>
-                    <button class="btn btn-primary btn-add-group me-2" data-testid="create-incident-button"
-                        @click="createIncident">
+                    <button
+                        class="btn btn-primary btn-add-group me-2" data-testid="create-incident-button"
+                        @click="createIncident"
+                    >
                         <font-awesome-icon icon="bullhorn" />
                         {{ $t("Create Incident") }}
                     </button>
@@ -189,15 +217,21 @@
             </div>
 
             <!-- Incident -->
-            <div v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass"
-                data-testid="incident">
+            <div
+                v-if="incident !== null" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass"
+                data-testid="incident"
+            >
                 <strong v-if="editIncidentMode">{{ $t("Title") }}:</strong>
-                <Editable v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true"
-                    class="alert-heading" data-testid="incident-title" />
+                <Editable
+                    v-model="incident.title" tag="h4" :contenteditable="editIncidentMode" :noNL="true"
+                    class="alert-heading" data-testid="incident-title"
+                />
 
                 <strong v-if="editIncidentMode">{{ $t("Content") }}:</strong>
-                <Editable v-if="editIncidentMode" v-model="incident.content" tag="div"
-                    :contenteditable="editIncidentMode" class="content" data-testid="incident-content-editable" />
+                <Editable
+                    v-if="editIncidentMode" v-model="incident.content" tag="div"
+                    :contenteditable="editIncidentMode" class="content" data-testid="incident-content-editable"
+                />
                 <div v-if="editIncidentMode" class="form-text">
                     {{ $t("markdownSupported") }}
                 </div>
@@ -216,8 +250,10 @@
                 </div>
 
                 <div v-if="editMode" class="mt-3">
-                    <button v-if="editIncidentMode" class="btn btn-light me-2" data-testid="post-incident-button"
-                        @click="postIncident">
+                    <button
+                        v-if="editIncidentMode" class="btn btn-light me-2" data-testid="post-incident-button"
+                        @click="postIncident"
+                    >
                         <font-awesome-icon icon="bullhorn" />
                         {{ $t("Post") }}
                     </button>
@@ -233,22 +269,34 @@
                     </button>
 
                     <div v-if="editIncidentMode" class="dropdown d-inline-block me-2">
-                        <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <button
+                            id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false"
+                        >
                             {{ $t("Style") }}: {{ $t(incident.style) }}
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a>
                             </li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning")
-                                    }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger")
-                                    }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary")
-                                    }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light")
-                                    }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning")
+                                }}</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger")
+                                }}</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary")
+                                }}</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light")
+                                }}</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a>
                             </li>
                         </ul>
                     </div>
@@ -296,8 +344,10 @@
 
             <!-- Maintenance -->
             <template v-if="maintenanceList.length > 0">
-                <div v-for="maintenance in maintenanceList" :key="maintenance.id"
-                    class="shadow-box alert mb-4 p-3 bg-maintenance mt-4 position-relative" role="alert">
+                <div
+                    v-for="maintenance in maintenanceList" :key="maintenance.id"
+                    class="shadow-box alert mb-4 p-3 bg-maintenance mt-4 position-relative" role="alert"
+                >
                     <h4 class="alert-heading">{{ maintenance.title }}</h4>
                     <!-- eslint-disable-next-line vue/no-v-html-->
                     <div class="content" v-html="maintenanceHTML(maintenance.description)"></div>
@@ -307,8 +357,10 @@
 
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
-            <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div"
-                class="mb-4 description" data-testid="description-editable" />
+            <Editable
+                v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div"
+                class="mb-4 description" data-testid="description-editable"
+            />
             <!-- eslint-disable-next-line vue/no-v-html-->
             <div v-if="!enableEditMode" class="alert-heading p-2" data-testid="description" v-html="descriptionHTML">
             </div>
@@ -324,9 +376,11 @@
                 <div class="mt-3">
                     <div v-if="sortedMonitorList.length > 0 && loadedData">
                         <label>{{ $t("Add a monitor") }}:</label>
-                        <VueMultiselect v-model="selectedMonitor" :options="sortedMonitorList" :multiple="false"
+                        <VueMultiselect
+                            v-model="selectedMonitor" :options="sortedMonitorList" :multiple="false"
                             :searchable="true" :placeholder="$t('Add a monitor')" label="name" trackBy="name"
-                            class="mt-3" data-testid="monitor-select">
+                            class="mt-3" data-testid="monitor-select"
+                        >
                             <template #option="{ option }">
                                 <div class="d-inline-flex">
                                     <span>{{ option.pathName }}
@@ -348,35 +402,44 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags"
-                    :show-certificate-expiry="config.showCertificateExpiry" />
+                <PublicGroupList
+                    :edit-mode="enableEditMode" :show-tags="config.showTags"
+                    :show-certificate-expiry="config.showCertificateExpiry"
+                />
             </div>
 
             <footer class="mt-5 mb-4">
                 <div class="custom-footer-text text-start">
                     <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
                 </div>
-                <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode"
-                    :noNL="false" class="alert-heading p-2" data-testid="custom-footer-editable" />
+                <Editable
+                    v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode"
+                    :noNL="false" class="alert-heading p-2" data-testid="custom-footer-editable"
+                />
                 <!-- eslint-disable-next-line vue/no-v-html-->
                 <div v-if="!enableEditMode" class="alert-heading p-2" data-testid="footer-text" v-html="footerHTML">
                 </div>
 
                 <p v-if="config.showPoweredBy" data-testid="powered-by">
-                    {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer"
-                        href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma") }}</a>
+                    {{ $t("Powered by") }} <a
+                        target="_blank" rel="noopener noreferrer"
+                        href="https://github.com/louislam/uptime-kuma"
+                    >{{ $t("Uptime Kuma") }}</a>
                 </p>
 
                 <div class="refresh-info mb-2">
                     <div>{{ $t("Last Updated") }}: {{ lastUpdateTimeDisplay }}</div>
-                    <div data-testid="update-countdown-text">{{ $tc("statusPageRefreshIn", [updateCountdownText]) }}
+                    <div data-testid="update-countdown-text">
+                        {{ $tc("statusPageRefreshIn", [updateCountdownText]) }}
                     </div>
                 </div>
             </footer>
         </div>
 
-        <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')"
-            @yes="deleteStatusPage">
+        <Confirm
+            ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')"
+            @yes="deleteStatusPage"
+        >
             {{ $t("deleteStatusPageMsg") }}
         </Confirm>
 

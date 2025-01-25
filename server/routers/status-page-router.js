@@ -17,8 +17,8 @@ router.get("/status/:slug", cache("5 minutes"), async (request, response) => {
     let slug = request.params.slug;
     slug = slug.toLowerCase();
 
-    if (slug.endsWith('.svg')) {
-        await StatusPage.handleStatusPageSVGResponse(response, slug, JSON.parse(request.query.config || '{}'));
+    if (slug.endsWith(".svg")) {
+        await StatusPage.handleStatusPageSVGResponse(response, slug, JSON.parse(request.query.config || "{}"));
     } else {
         await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
     }
