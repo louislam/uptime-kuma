@@ -144,7 +144,6 @@ export default {
 @import "../assets/vars.scss";
 
 .dark {
-
     .modal-dialog .form-text,
     .modal-dialog p {
         color: $dark-font-color;
