@@ -46,17 +46,11 @@ Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                     bot_id: notification.botId,
                     type: "text",
                     message:
-                        "UptimeKuma Alert:\n" +
-                        "[🟢 Up]\n" +
-                        "Name: " +
-                        monitorJSON["name"] +
-                        "\n" +
-                        heartbeatJSON["msg"] +
-                        "\n" +
-                        "Time (" +
-                        heartbeatJSON["timezone"] +
-                        "): " +
-                        heartbeatJSON["localDateTime"],
+                        `UptimeKuma Alert:
+[🟢 Up]
+Name: ${monitorJSON["name"]}
+${heartbeatJSON["msg"]}
+Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
                 await axios.post(url, upMessage, config);
             }
