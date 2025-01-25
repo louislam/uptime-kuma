@@ -19,7 +19,6 @@ class OneChat extends NotificationProvider {
                     Authorization: "Bearer " + notification.accessToken,
                 },
             };
-            // Send a test message if the monitor is null
             if (heartbeatJSON == null) {
                 const testMessage = {
                     to: notification.recieverId,
