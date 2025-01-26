@@ -178,6 +178,9 @@ class Notification {
      * @throws Error with fail msg
      */
     static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        if (notification.usePathAsName && monitorJSON) {
+            monitorJSON["name"] = monitorJSON["pathName"];
+        }
         if (this.providerList[notification.type]) {
             return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
         } else {
@@ -213,6 +216,8 @@ class Notification {
         bean.user_id = userID;
         bean.config = JSON.stringify(notification);
         bean.is_default = notification.isDefault || false;
+        bean.use_path_as_name = notification.usePathAsName;
+
         await R.store(bean);
 
         if (notification.applyExisting) {
