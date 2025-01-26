@@ -980,7 +980,15 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            this.prometheus?.update(bean, tlsInfo);
+            let uptimeMetrics = {};
+            let data24h = await uptimeCalculator.get24Hour();
+            let data30d = await uptimeCalculator.get30Day();
+            let data1y = await uptimeCalculator.get1Year();
+            uptimeMetrics.avgPing = data24h.avgPing ? Number(data24h.avgPing.toFixed(2)) : null;
+            uptimeMetrics.data24h = data24h.uptime;
+            uptimeMetrics.data30d = data30d.uptime;
+            uptimeMetrics.data1y = data1y.uptime;
+            this.prometheus?.update(bean, tlsInfo, uptimeMetrics);
 
             previousBeat = bean;
 
@@ -1730,7 +1738,7 @@ class Monitor extends BeanModel {
      */
     async handleTlsInfo(tlsInfo) {
         await this.updateTlsInfo(tlsInfo);
-        this.prometheus?.update(null, tlsInfo);
+        this.prometheus?.update(null, tlsInfo, null);
 
         if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
