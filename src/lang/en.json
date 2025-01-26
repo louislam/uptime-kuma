@@ -569,6 +569,7 @@
     "grpcMethodDescription": "Method name is convert to camelCase format such as sayHello, check, etc.",
     "acceptedStatusCodesDescription": "Select status codes which are considered as a successful response.",
     "deleteMonitorMsg": "Are you sure want to delete this monitor?",
+    "deleteSelectedMonitorMsg": "Are you sure want to delete the following monitors?",
     "deleteMaintenanceMsg": "Are you sure want to delete this maintenance?",
     "deleteNotificationMsg": "Are you sure want to delete this notification for all monitors?",
     "dnsPortDescription": "DNS server port. Defaults to 53. You can change the port at any time.",

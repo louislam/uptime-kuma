@@ -39,6 +39,7 @@
 
                 <button class="btn-outline-normal" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</button>
                 <button class="btn-outline-normal" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</button>
+                <button class="btn-outline-normal text-danger" @click="deleteSelectedMonitorDialog"><font-awesome-icon icon="trash" size="sm" /> {{ $t("Delete") }}</button>
 
                 <span v-if="selectedMonitorCount > 0">
                     {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
@@ -64,8 +65,12 @@
         </div>
     </div>
 
+    <!-- Confirm Dialogs -->
     <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
         {{ $t("pauseMonitorMsg") }}
+    </Confirm>
+    <Confirm ref="confirmDeleteSelectedMonitor" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteSelectedMonitor">
+        {{ $t("deleteSelectedMonitorMsg") }}
     </Confirm>
 </template>
 
@@ -206,6 +211,21 @@ export default {
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+
+        // Retrieve the toast message from localStorage
+        const toastMessage = localStorage.getItem("toastMessage");
+
+        if (toastMessage) {
+            /**
+             * If a toast message exists in localStorage:
+             * 1. Parse the message from string to object format.
+             * 2. Display the toast notification using the root component's toastRes method.
+             * 3. Remove the message from localStorage to prevent it from showing again.
+             */
+            this.$root.toastRes(JSON.parse(toastMessage)); // Show the toast message
+            localStorage.removeItem("toastMessage"); // Clean up the localStorage
+        }
+
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
@@ -306,6 +326,49 @@ export default {
 
             this.cancelSelectMode();
         },
+
+        /**
+         * Show the confirmation dialog for deleting the selected monitors.
+         * This method triggers the display of a confirmation modal where the user can
+         * confirm or cancel the deletion of the selected monitors.
+         * @returns {void}
+         */
+        deleteSelectedMonitorDialog() {
+            // Show the confirmation dialog for deletion
+            this.$refs.confirmDeleteSelectedMonitor.show();
+        },
+
+        /**
+         * Delete each selected monitor and update the UI once the deletion is complete.
+         * This method initiates the deletion process for all selected monitors, updates
+         * the user interface, and reloads the page to reflect the changes.
+         * @returns {void}
+         */
+        deleteSelectedMonitor() {
+            // Iterate over each selected monitor's ID and delete it
+            Object.keys(this.selectedMonitors).forEach(id => {
+                // Call the root method to delete the monitor by its ID
+                this.$root.deleteMonitor(id, (res) => {
+                    // If the monitor deletion is successful
+                    if (res.ok) {
+                        // Remove the monitor from the selectedMonitors list upon successful deletion
+                        delete this.selectedMonitors[id];
+
+                        // Navigate to the home page ("/") to trigger a page reload and reflect the updates
+                        // This step is necessary to refresh the UI after the monitors have been deleted
+                        this.$router.push("/");
+
+                        // Store a flag in localStorage to trigger a toast notification on page reload
+                        // This ensures the notification displays after the page refreshes
+                        localStorage.setItem("toastMessage", JSON.stringify(res));
+                    }
+                });
+            });
+
+            // Exit the selection mode, indicating that the deletion process is in progress
+            this.cancelSelectMode();
+        },
+
         /**
          * Whether a monitor should be displayed based on the filters
          * @param {object} monitor Monitor to check
