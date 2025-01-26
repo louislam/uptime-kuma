@@ -320,15 +320,35 @@ export default {
                 }
             }
 
-            // filter by search text
-            // finds monitor name, tag name or tag value
+            // Filter monitors based on the search text
+            // Matches monitor name, URL, hostname, DNS resolve server, or tag names and values
             let searchTextMatch = true;
             if (this.searchText !== "") {
-                const loweredSearchText = this.searchText.toLowerCase();
-                searchTextMatch =
-                    monitor.name.toLowerCase().includes(loweredSearchText)
-                    || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
-                        || tag.value?.toLowerCase().includes(loweredSearchText));
+                try {
+                    // Escape special characters for use in the regular expression
+                    const escapeRegExp = (string) => {
+                        return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    };
+
+                    // Create a case-insensitive regex for the search text
+                    const escapedSearchText = escapeRegExp(this.searchText);
+                    const regex = new RegExp(escapedSearchText, "i");
+
+                    // Test the regex against strings safely
+                    const safeRegexTest = (str) => str && regex.test(str);
+
+                    // Check if any relevant fields match the search text
+                    searchTextMatch =
+                        regex.test(monitor.name) ||
+                        safeRegexTest(monitor.url) ||
+                        safeRegexTest(monitor.hostname) ||
+                        safeRegexTest(monitor.dns_resolve_server) ||
+                        monitor.tags.some(tag => regex.test(tag.name) || safeRegexTest(tag.value));
+                } catch (e) {
+                    // Log error if the regex pattern is invalid
+                    console.error("Invalid regex pattern:", e);
+                    searchTextMatch = false;
+                }
             }
 
             // filter by status
