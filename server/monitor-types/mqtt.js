@@ -10,7 +10,7 @@ class MqttMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        const receivedMessage = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
+        const [ messageTopic, receivedMessage ] = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
             port: monitor.port,
             username: monitor.mqttUsername,
             password: monitor.mqttPassword,
@@ -24,7 +24,7 @@ class MqttMonitorType extends MonitorType {
 
         if (monitor.mqttCheckType === "keyword") {
             if (receivedMessage != null && receivedMessage.includes(monitor.mqttSuccessMessage)) {
-                heartbeat.msg = `Topic: ${monitor.mqttTopic}; Message: ${receivedMessage}`;
+                heartbeat.msg = `Topic: ${messageTopic}; Message: ${receivedMessage}`;
                 heartbeat.status = UP;
             } else {
                 throw Error(`Message Mismatch - Topic: ${monitor.mqttTopic}; Message: ${receivedMessage}`);
@@ -101,11 +101,9 @@ class MqttMonitorType extends MonitorType {
             });
 
             client.on("message", (messageTopic, message) => {
-                if (messageTopic === topic) {
-                    client.end();
-                    clearTimeout(timeoutID);
-                    resolve(message.toString("utf8"));
-                }
+                client.end();
+                clearTimeout(timeoutID);
+                resolve([ messageTopic, message.toString("utf8") ]);
             });
 
         });
