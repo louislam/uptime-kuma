@@ -257,12 +257,12 @@ class StatusPage extends BeanModel {
 
     /**
      * Get all status page data in one call
-     * @param {StatusPage} statusPage Status page to get data for
-     * @returns {object} Status page data
+     * @param {StatusPage} statusPage the status page to return the data for
+     * @param {boolean} includeStatus whether each monitor should include the status of the monitor ("up" or "down")
+     * @param {boolean} includeConfig whether the config for the status page should be included in the returned JSON
+     * @returns {object} the status page data object
      */
-    static async getStatusPageData(statusPage) {
-        const config = await statusPage.toPublicJSON();
-
+    static async getStatusPageData(statusPage, includeStatus = false, includeConfig = true) {
         // Incident
         let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
             statusPage.id,
@@ -283,13 +283,20 @@ class StatusPage extends BeanModel {
         ]);
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+            let monitorGroup = await groupBean.toPublicJSON(showTags, false, includeStatus);
             publicGroupList.push(monitorGroup);
+        }
+
+        let config = {};
+        if (includeConfig) {
+            config = {
+                config: await statusPage.toPublicJSON()
+            };
         }
 
         // Response
         return {
-            config,
+            ...config,
             incident,
             publicGroupList,
             maintenanceList,
