@@ -51,5 +51,17 @@ export default {
                 return location.protocol + "//" + location.host;
             }
         },
+
+        serverIdentifierSuffix() {
+            if (this.$root.info.serverIdentifier) {
+                return " (" + this.$root.info.serverIdentifier + ")";
+            }
+
+            if (env === "development" || localStorage.dev === "dev") {
+                return " (dev)";
+            } else {
+                return "";
+            }
+        },
     }
 };

@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
+const { setting } = require("../util-server");
 const { DOWN } = require("../../src/util");
 const { Liquid } = require("liquidjs");
 
@@ -46,6 +47,11 @@ class SMTP extends NotificationProvider {
         let body = msg;
         if (heartbeatJSON) {
             body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
+
+            const serverIdentifier = await setting("serverIdentifier");
+            if (serverIdentifier) {
+                body = body + `\nServer Identifier: ${serverIdentifier}`;
+            }
         }
         // subject and body are templated
         if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
