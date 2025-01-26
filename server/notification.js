@@ -69,6 +69,7 @@ const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
+const CeredSMS = require("./notification-providers/ceredsms");
 
 class Notification {
 
@@ -154,7 +155,8 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid()
+            new SendGrid(),
+            new CeredSMS()
         ];
         for (let item of list) {
             if (! item.name) {

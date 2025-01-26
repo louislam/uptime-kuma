@@ -183,6 +183,7 @@ export default {
                 "ServerChan": "ServerChan (Server酱)",
                 "smsc": "SMSC",
                 "WPush": "WPush(wpush.cn)",
+                "ceredsms": "cered.pl",
             };
 
             // Sort by notification name
