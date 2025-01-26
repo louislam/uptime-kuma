@@ -76,7 +76,7 @@
                 <div class="row">
                     <div class="col-md-8">
                         <HeartbeatBar :monitor-id="monitor.id" />
-                        <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
+                        <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }} ({{ secondsToHumanReadableFormat(monitor.interval) }})</span>
                     </div>
                     <div class="col-md-4 text-center">
                         <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;" data-testid="monitor-status">{{ status.text }}</span>
@@ -285,7 +285,7 @@ import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
-import { getResBaseURL } from "../util-frontend";
+import { getResBaseURL, relativeTimeFormatter } from "../util-frontend";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
@@ -656,7 +656,12 @@ export default {
                     .replace("https://example.com/api/push/key?status=up&msg=OK&ping=", this.pushURL);
                 this.pushMonitor.code = code;
             });
+        },
+
+        secondsToHumanReadableFormat(seconds) {
+            return relativeTimeFormatter.secondsToHumanReadableFormat(seconds);
         }
+
     },
 };
 </script>
