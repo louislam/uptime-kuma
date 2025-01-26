@@ -405,6 +405,7 @@
     "socket": "Socket",
     "tcp": "TCP / HTTP",
     "tailscalePingWarning": "In order to use the Tailscale Ping monitor, you need to install Uptime Kuma without Docker and also install Tailscale client on your server.",
+    "sipsakPingWarning": "In order to use the SIP Options Ping monitor, you need to install Uptime Kuma without Docker and also install Sipsak client on your server.",
     "Docker Container": "Docker Container",
     "Container Name / ID": "Container Name / ID",
     "Docker Host": "Docker Host",

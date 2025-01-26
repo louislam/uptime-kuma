@@ -88,6 +88,9 @@
                                         <option value="redis">
                                             Redis
                                         </option>
+                                        <option v-if="!$root.info.isContainer" value="sip-options">
+                                            SIP Options Ping
+                                        </option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
@@ -104,6 +107,10 @@
 
                             <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
                                 {{ $t("tailscalePingWarning") }}
+                            </div>
+
+                            <div v-if="monitor.type === 'sip-options'" class="alert alert-warning" role="alert">
+                                {{ $t("sipsakPingWarning") }}
                             </div>
 
                             <!-- Friendly Name -->
@@ -281,8 +288,8 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only / SIP Options -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp' || monitor.type ==='sip-options'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -296,8 +303,8 @@
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'snmp'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'snmp' || monitor.type === 'sip-options'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
