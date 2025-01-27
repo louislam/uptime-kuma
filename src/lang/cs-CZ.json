@@ -1060,5 +1060,19 @@
     "Message format": "Formát zprávy",
     "Notification Channel": "Kanál notifikací",
     "Alphanumerical string and hyphens only": "Pouze alfanumerické řetězce a pomlčky",
-    "Sound": "Zvuk"
+    "Sound": "Zvuk",
+    "Custom sound to override default notification sound": "Vlastní zvuk pro nahrazení výchozího zvuku upozornění",
+    "Correct": "Správně",
+    "Fail": "Chyba",
+    "Reveal": "Odhalit",
+    "Doorbell": "Zvonek",
+    "Flute": "Flétna",
+    "Money": "Peníze",
+    "Elevator": "Výtah",
+    "Guitar": "Kytara",
+    "Time Sensitive (iOS Only)": "Časově kritické (pouze pro iOS)",
+    "Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.": "Časově kritická upozornění budou doručena okamžitě, i když je zařízení v režimu nerušit.",
+    "From": "Od",
+    "Can be found on:": "Lze nalézt na: {0}",
+    "The phone number of the recipient in E.164 format.": "Telefonní číslo příjemce ve formátu E.164 (+420...)."
 }
