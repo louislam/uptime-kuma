@@ -739,5 +739,6 @@
     "leave blank for default subject": "اترك فارغاً ليتم تعيين الموضوع تلقائياً",
     "leave blank for default body": "اترك فارغاً ليتم تعيين النص تلقائياً",
     "emailTemplateServiceName": "اسم الخدمة",
-    "emailTemplateHostnameOrURL": "اسم المضيف أو عنوان URL"
+    "emailTemplateHostnameOrURL": "اسم المضيف أو عنوان URL",
+    "smspartnerPhoneNumber": "رقم الهاتف"
 }
