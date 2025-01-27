@@ -9,9 +9,8 @@
                     <div>{{ monitor.id }}</div>
                 </div>
             </h1>
-            <p v-if="monitor.description">
-                <SafeLinks :text="monitor.description" />
-            </p>
+            <!-- eslint-disable-next-line vue/no-v-html-->
+            <p v-if="monitor.description" v-html="descriptionHTML"></p>
             <div class="d-flex">
                 <div class="tags">
                     <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
@@ -281,13 +280,14 @@ import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
-import SafeLinks from "../components/SafeLinks.vue";
 import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 import { getResBaseURL } from "../util-frontend";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-clike";
@@ -310,8 +310,7 @@ export default {
         Tag,
         CertificateInfo,
         PrismEditor,
-        ScreenshotDialog,
-        SafeLinks,
+        ScreenshotDialog
     },
     data() {
         return {
@@ -403,6 +402,14 @@ export default {
 
         screenshotURL() {
             return getResBaseURL() + this.monitor.screenshot + "?time=" + this.cacheTime;
+        },
+
+        descriptionHTML() {
+            if (this.monitor.description != null) {
+                return DOMPurify.sanitize(marked(this.monitor.description));
+            } else {
+                return "";
+            }
         }
     },
 
