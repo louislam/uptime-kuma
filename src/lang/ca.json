@@ -224,5 +224,7 @@
     "Status Pages": "Pàgines d'estat",
     "here": "aquí",
     "time ago": "fa {0}",
-    "ignoredTLSError": "Errors TLS/SSL ignorats"
+    "ignoredTLSError": "Errors TLS/SSL ignorats",
+    "webhookFormDataDesc": "{multipart} es bo per PHP. El JSON haurà d'analitzar-se amb {decodeFunction}",
+    "webhookJsonDesc": "{0} es bo per qualsevol servidor HTTP modern com Express.js"
 }
