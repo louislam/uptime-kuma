@@ -1052,5 +1052,5 @@
     "rabbitmqHelpText": "To use the monitor, you will need to enable the Management Plugin in your RabbitMQ setup. For more information, please consult the {rabitmq_documentation}.",
     "SendGrid API Key": "SendGrid API Key",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
-    "smtpHelpText": "Specify the TLS settings of the SMTP server you wish to monitor: SMTPS, STARTTLS, or ignore TLS"
+    "smtpHelpText": "“SMTPS” tests that SMTP/TLS is working; “Ignore TLS” connects over plaintext; “STARTTLS” connects, issues a STARTTLS command and verifies the server certificate. None of these send an email."
 }
