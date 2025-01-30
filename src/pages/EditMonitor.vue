@@ -1529,6 +1529,7 @@ message HealthCheckResponse {
         let dnsresolvetypeOptions = [
             "A",
             "AAAA",
+            "ANY",
             "CAA",
             "CNAME",
             "MX",
