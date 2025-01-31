@@ -660,11 +660,53 @@
                                 </div>
                             </div>
 
-                            <!-- Ping packet size -->
+                            <!-- Max Packets / Count -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping-count" class="form-label">{{ $t("Max Packets") }}</label>
+                                <input id="ping-count" v-model="monitor.ping_count" type="number" class="form-control" required :min="ping_count_min" :max="ping_count_max" step="1">
+                                <div class="form-text">
+                                    {{ $t("Number of packets to send before stopping") }}
+                                </div>
+                            </div>
+
+                            <!-- Numeric Output -->
+                            <div v-if="monitor.type === 'ping'" class="my-3 form-check">
+                                <input id="ping_numeric" v-model="monitor.ping_numeric" type="checkbox" class="form-check-input"
+                                    :checked="monitor.ping_numeric">
+                                <label class="form-check-label" for="ping_numeric">
+                                    {{ $t("Numeric Output") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("If checked, IP addresses will be output instead of symbolic hostnames") }}
+                                </div>
+                            </div>
+
+                            <!-- Packet size -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
                                 <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
-                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" max="65500" step="1">
+                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control"
+                                    required :min="packetSize_min" :max="packetSize_max" step="1">
                             </div>
+
+                            <!-- Max Duration / Deadline -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping_deadline" class="form-label">{{ $t("Max Duration") }}</label>
+                                <input id="ping_deadline" v-model="monitor.ping_deadline" type="number" class="form-control"
+                                    required :min="ping_deadline_min" :max="ping_deadline_max" step="1">
+                                <div class="form-text">
+                                    {{ $t("Total time in seconds before ping stops, regardless of packets sent") }}
+                                </div>
+                            </div>
+
+                            <!-- Response Timeout -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping_timeout" class="form-label">{{ $t("Response Timeout") }}</label>
+                                <input id="ping_timeout" v-model="monitor.ping_timeout" type="number" class="form-control" required :min="ping_timeout_min" :max="ping_timeout_max" step="1">
+                                <div class="form-text">
+                                    {{ $t("Maximum time in seconds to wait for each response") }}
+                                </div>
+                            </div>
+
 
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
@@ -1060,7 +1102,25 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
+import { 
+    genSecret, 
+    isDev, 
+    MAX_INTERVAL_SECOND, 
+    MIN_INTERVAL_SECOND, 
+    sleep,
+    PING_PACKET_SIZE_MIN,
+    PING_PACKET_SIZE_MAX,
+    PING_PACKET_SIZE_DEFAULT,
+    PING_DEADLINE_MIN,
+    PING_DEADLINE_MAX,
+    PING_DEADLINE_DEFAULT,
+    PING_COUNT_MIN,
+    PING_COUNT_MAX,
+    PING_COUNT_DEFAULT,
+    PING_TIMEOUT_MIN,
+    PING_TIMEOUT_MAX,
+    PING_TIMEOUT_DEFAULT
+} from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
@@ -1082,7 +1142,6 @@ const monitorDefaults = {
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
-    packetSize: 56,
     expiryNotification: false,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
@@ -1133,6 +1192,14 @@ export default {
         return {
             minInterval: MIN_INTERVAL_SECOND,
             maxInterval: MAX_INTERVAL_SECOND,
+            ping_count_min: PING_COUNT_MIN,
+            ping_count_max: PING_COUNT_MAX,
+            packetSize_min: PING_PACKET_SIZE_MIN,
+            packetSize_max: PING_PACKET_SIZE_MAX,
+            ping_deadline_min: PING_DEADLINE_MIN,
+            ping_deadline_max: PING_DEADLINE_MAX,
+            ping_timeout_min: PING_TIMEOUT_MIN,
+            ping_timeout_max: PING_TIMEOUT_MAX,
             processing: false,
             monitor: {
                 notificationIDList: {},
@@ -1564,7 +1631,12 @@ message HealthCheckResponse {
             if (this.isAdd) {
 
                 this.monitor = {
-                    ...monitorDefaults
+                    ...monitorDefaults,
+                    ping_count: PING_COUNT_DEFAULT,
+                    ping_numeric: true,
+                    packetSize: PING_PACKET_SIZE_DEFAULT,
+                    ping_deadline: PING_DEADLINE_DEFAULT,
+                    ping_timeout: PING_TIMEOUT_DEFAULT,
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
