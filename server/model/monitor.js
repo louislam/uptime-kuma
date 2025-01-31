@@ -1519,15 +1519,15 @@ class Monitor extends BeanModel {
         if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {
             throw new Error(`Packet size must be between ${PING_PACKET_SIZE_MIN} and ${PING_PACKET_SIZE_MAX}`);
         }
-        
+
         if (this.ping_deadline && (this.ping_deadline < PING_DEADLINE_MIN || this.ping_deadline > PING_DEADLINE_MAX)) {
             throw new Error(`Deadline must be between ${PING_DEADLINE_MIN} and ${PING_DEADLINE_MAX} seconds`);
         }
-        
+
         if (this.ping_count && (this.ping_count < PING_COUNT_MIN || this.ping_count > PING_COUNT_MAX)) {
             throw new Error(`Echo requests count must be between ${PING_COUNT_MIN} and ${PING_COUNT_MAX}`);
         }
-        
+
         if (this.ping_timeout && (this.ping_timeout < PING_TIMEOUT_MIN || this.ping_timeout > PING_TIMEOUT_MAX)) {
             throw new Error(`Timeout must be between ${PING_TIMEOUT_MIN} and ${PING_TIMEOUT_MAX} seconds`);
         }
