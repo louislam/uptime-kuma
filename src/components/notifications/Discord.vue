@@ -4,6 +4,12 @@
         <input id="discord-webhook-url" v-model="$parent.notification.discordWebhookUrl" type="text" class="form-control" required autocomplete="false">
         <div class="form-text">
             {{ $t("wayToGetDiscordURL") }}
+            <i18n-t keypath="wayToGetDiscordURLEnhanced">
+                <a
+                    href="https://discord.com/developers/docs/resources/webhook#create-webhook"
+                    target="_blank"
+                >{{ $t("withADiscordBot") }}</a>
+            </i18n-t>
         </div>
     </div>
 

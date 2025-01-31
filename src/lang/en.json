@@ -531,6 +531,8 @@
     "smtpBCC": "BCC",
     "Discord Webhook URL": "Discord Webhook URL",
     "wayToGetDiscordURL": "You can get this by going to Server Settings -> Integrations -> View Webhooks -> New Webhook",
+    "wayToGetDiscordURLEnhanced": "Using the Discord API, you may also create the webhook {0} for button support.",
+    "withADiscordBot": "with a bot",
     "Bot Display Name": "Bot Display Name",
     "Prefix Custom Message": "Prefix Custom Message",
     "Hello @everyone is...": "Hello {'@'}everyone is…",
