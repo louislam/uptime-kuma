@@ -671,8 +671,7 @@
 
                             <!-- Numeric Output -->
                             <div v-if="monitor.type === 'ping'" class="my-3 form-check">
-                                <input id="ping_numeric" v-model="monitor.ping_numeric" type="checkbox" class="form-check-input"
-                                    :checked="monitor.ping_numeric">
+                                <input id="ping_numeric" v-model="monitor.ping_numeric" type="checkbox" class="form-check-input" :checked="monitor.ping_numeric">
                                 <label class="form-check-label" for="ping_numeric">
                                     {{ $t("Numeric Output") }}
                                 </label>
@@ -684,15 +683,13 @@
                             <!-- Packet size -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
                                 <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
-                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control"
-                                    required :min="packetSize_min" :max="packetSize_max" step="1">
+                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required :min="packetSize_min" :max="packetSize_max" step="1">
                             </div>
 
                             <!-- Max Duration / Deadline -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
                                 <label for="ping_deadline" class="form-label">{{ $t("Max Duration") }}</label>
-                                <input id="ping_deadline" v-model="monitor.ping_deadline" type="number" class="form-control"
-                                    required :min="ping_deadline_min" :max="ping_deadline_max" step="1">
+                                <input id="ping_deadline" v-model="monitor.ping_deadline" type="number" class="form-control" required :min="ping_deadline_min" :max="ping_deadline_max" step="1">
                                 <div class="form-text">
                                     {{ $t("Total time in seconds before ping stops, regardless of packets sent") }}
                                 </div>
@@ -706,7 +703,6 @@
                                     {{ $t("Maximum time in seconds to wait for each response") }}
                                 </div>
                             </div>
-
 
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
@@ -1102,11 +1098,11 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { 
-    genSecret, 
-    isDev, 
-    MAX_INTERVAL_SECOND, 
-    MIN_INTERVAL_SECOND, 
+import {
+    genSecret,
+    isDev,
+    MAX_INTERVAL_SECOND,
+    MIN_INTERVAL_SECOND,
     sleep,
     PING_PACKET_SIZE_MIN,
     PING_PACKET_SIZE_MAX,
