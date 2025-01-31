@@ -42,6 +42,16 @@
                             <br>
 
                             <div class="form-check form-switch">
+                                <input v-model="notification.usePathAsName" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">Use Monitor Path as Name</label>
+                            </div>
+                            <div class="form-text">
+                                If your monitor is inside a group, the name will show the full path of the monitor. For example "Group A / Monitor 1".
+                            </div>
+
+                            <br>
+
+                            <div class="form-check form-switch">
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
                                 <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
                             </div>
@@ -95,6 +105,7 @@ export default {
                 /** @type { null | keyof NotificationFormList } */
                 type: null,
                 isDefault: false,
+                usePathAsName: false,
                 // Do not set default value here, please scroll to show()
             }
         };
@@ -264,6 +275,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
+                    usePathAsName: true,
                 };
             }
 
