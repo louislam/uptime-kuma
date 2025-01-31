@@ -1,7 +1,11 @@
 const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
-const { log, genSecret, badgeConstants } = require("../src/util");
+const { 
+    log, genSecret, badgeConstants,
+    PING_PACKET_SIZE_DEFAULT, PING_DEADLINE_DEFAULT,
+    PING_COUNT_DEFAULT, PING_TIMEOUT_DEFAULT
+} = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
 const iconv = require("iconv-lite");
@@ -118,20 +122,33 @@ exports.tcping = function (hostname, port) {
 
 /**
  * Ping the specified machine
- * @param {string} hostname Hostname / address of machine
- * @param {number} size Size of packet to send
+ * @param {string} dest_address Hostname / IP address of machine to ping
+ * @param {number} count Number of packets to send before stopping
+ * @param {string} source_address Source address for sending/receiving echo requests
+ * @param {boolean} numeric If true, IP addresses will be output instead of symbolic hostnames
+ * @param {number} size Size (in bytes) of echo request to send
+ * @param {number} deadline Maximum time in seconds before ping stops, regardless of packets sent
+ * @param {number} timeout Maximum time in seconds to wait for each response
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.ping = async (hostname, size = 56) => {
+exports.ping = async (
+    dest_address,
+    count = PING_COUNT_DEFAULT,
+    source_address = '',
+    numeric = true,
+    size = PING_PACKET_SIZE_DEFAULT,
+    deadline = PING_DEADLINE_DEFAULT,
+    timeout = PING_TIMEOUT_DEFAULT,
+) => {
     try {
-        return await exports.pingAsync(hostname, false, size);
+        return await exports.pingAsync(dest_address, false, count, source_address, numeric, size, deadline, timeout);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
         log.debug("ping", "IPv6 error message: " + e.message);
 
         // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
         if (!e.message) {
-            return await exports.pingAsync(hostname, true, size);
+            return await exports.pingAsync(dest_address, true, count, source_address, numeric, size, deadline, timeout);
         } else {
             throw e;
         }
@@ -140,18 +157,34 @@ exports.ping = async (hostname, size = 56) => {
 
 /**
  * Ping the specified machine
- * @param {string} hostname Hostname / address of machine to ping
+ * @param {string} dest_address Hostname / IP address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
- * @param {number} size Size of ping packet to send
+ * @param {number} count Number of packets to send before stopping
+ * @param {string} source_address Source address for sending/receiving echo requests
+ * @param {boolean} numeric If true, IP addresses will be output instead of symbolic hostnames
+ * @param {number} size Size (in bytes) of echo request to send
+ * @param {number} deadline Maximum time in seconds before ping stops, regardless of packets sent
+ * @param {number} timeout Maximum time in seconds to wait for each response
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
+exports.pingAsync = function (
+    dest_address,
+    ipv6 = false,
+    count = PING_COUNT_DEFAULT,
+    source_address = '',
+    numeric = true,
+    size = PING_PACKET_SIZE_DEFAULT,
+    deadline = PING_DEADLINE_DEFAULT,
+    timeout = PING_TIMEOUT_DEFAULT,
+) {
     return new Promise((resolve, reject) => {
-        ping.promise.probe(hostname, {
+        ping.promise.probe(dest_address, {
             v6: ipv6,
-            min_reply: 1,
-            deadline: 10,
+            min_reply: count,
+            sourceAddr: source_address,
             packetSize: size,
+            deadline: deadline,
+            timeout: timeout
         }).then((res) => {
             // If ping failed, it will set field to unknown
             if (res.alive) {
