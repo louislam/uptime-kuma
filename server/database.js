@@ -111,7 +111,8 @@ class Database {
         "patch-notification-config.sql": true,
         "patch-fix-kafka-producer-booleans.sql": true,
         "patch-timeout.sql": true,
-        "patch-monitor-tls-info-add-fk.sql": true, // The last file so far converted to a knex migration file
+        "patch-monitor-tls-info-add-fk.sql": true, 
+        "patch-add-ping-advanced-options.sql": true, // The last file so far converted to a knex migration file
     };
 
     /**
