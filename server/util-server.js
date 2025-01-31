@@ -318,11 +318,12 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
 /**
  * Run a query on SQL Server
  * @param {string} connectionString The database connection string
+ * @param {boolean} handleEmptyResult Should empty results be handled as an error
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[] | object[] | object)>} Response from
  * server
  */
-exports.mssqlQuery = async function (connectionString, query) {
+exports.mssqlQuery = async function (connectionString, handleEmptyResult, query) {
     let pool;
     try {
         pool = new mssql.ConnectionPool(connectionString);
@@ -330,7 +331,12 @@ exports.mssqlQuery = async function (connectionString, query) {
         if (!query) {
             query = "SELECT 1";
         }
-        await pool.request().query(query);
+        const result = await pool.request().query(query);
+        if (Array.isArray(result.recordset)) {
+            if (handleEmptyResult && result.recordset.length === 0) {
+                throw new Error("No rows returned");
+            }
+        }
         pool.close();
     } catch (e) {
         if (pool) {
@@ -343,11 +349,12 @@ exports.mssqlQuery = async function (connectionString, query) {
 /**
  * Run a query on Postgres
  * @param {string} connectionString The database connection string
+ * @param {boolean} handleEmptyResult Should empty results be handled as an error
  * @param {string} query The query to validate the database with
  * @returns {Promise<(string[] | object[] | object)>} Response from
  * server
  */
-exports.postgresQuery = function (connectionString, query) {
+exports.postgresQuery = function (connectionString, handleEmptyResult, query) {
     return new Promise((resolve, reject) => {
         const config = postgresConParse(connectionString);
 
@@ -384,7 +391,13 @@ exports.postgresQuery = function (connectionString, query) {
                         if (err) {
                             reject(err);
                         } else {
-                            resolve(res);
+                            if (Array.isArray(res.rows)) {
+                                if (handleEmptyResult && res.rows.length === 0) {
+                                    reject(new Error("No rows returned"));
+                                } else {
+                                    resolve(res);
+                                }
+                            }
                         }
                         client.end();
                     });
@@ -401,11 +414,12 @@ exports.postgresQuery = function (connectionString, query) {
 /**
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
+ * @param {boolean} handleEmptyResult Should empty results be handled as an error
  * @param {string} query The query to validate the database with
  * @param {?string} password The password to use
  * @returns {Promise<(string)>} Response from server
  */
-exports.mysqlQuery = function (connectionString, query, password = undefined) {
+exports.mysqlQuery = function (connectionString, handleEmptyResult, query, password = undefined) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection({
             uri: connectionString,
@@ -421,7 +435,11 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
                 reject(err);
             } else {
                 if (Array.isArray(res)) {
-                    resolve("Rows: " + res.length);
+                    if (handleEmptyResult && res.length === 0) {
+                        reject(new Error("No rows returned"));
+                    } else {
+                        resolve("Rows: " + res.length);
+                    }
                 } else {
                     resolve("No Error, but the result is not an array. Type: " + typeof res);
                 }
