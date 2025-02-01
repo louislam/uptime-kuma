@@ -549,6 +549,20 @@ ALTER TABLE monitor
     });
 
     /*
+    patch-add-ping-advanced-options.sql
+    ALTER TABLE monitor ADD ping_count INTEGER default 1 not null;
+    ALTER TABLE monitor ADD ping_numeric BOOLEAN default true not null;
+    ALTER TABLE monitor ADD ping_deadline INTEGER default 10 not null;
+    ALTER TABLE monitor ADD ping_timeout INTEGER default 2 not null;
+    */
+    await knex.schema.table("monitor", function (table) {
+        table.integer("ping_count").defaultTo(1).notNullable();
+        table.boolean("ping_numeric").defaultTo(true).notNullable();
+        table.integer("ping_deadline").defaultTo(10).notNullable();
+        table.integer("ping_timeout").defaultTo(2).notNullable();
+    });
+
+    /*
     patch-add-gamedig-given-port.sql
     ALTER TABLE monitor
     ADD gamedig_given_port_only BOOLEAN default 1 not null;
