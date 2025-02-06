@@ -5,7 +5,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     SQL_DATETIME_FORMAT, evaluateJsonQuery
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, sipRegisterRequest,sipOptionRequest
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -34,6 +34,163 @@ const rootCertificates = rootCertificatesFingerprints();
  *      2 = PENDING
  *      3 = MAINTENANCE
  */
+
+const sipStatusCodes = [
+    { status: 100,
+        msg: "Trying" },
+    { status: 180,
+        msg: "Ringing" },
+    { status: 181,
+        msg: "Call Being Forwarded" },
+    { status: 182,
+        msg: "Queued" },
+    { status: 183,
+        msg: "Session Progress" },
+    { status: 199,
+        msg: "Early Dialog Terminated" },
+    { status: 200,
+        msg: "OK" },
+    { status: 202,
+        msg: "Accepted" },
+    { status: 204,
+        msg: "No Notification" },
+    { status: 300,
+        msg: "Multiple Choices" },
+    { status: 301,
+        msg: "Moved Permanently" },
+    { status: 302,
+        msg: "Moved Temporarily" },
+    { status: 305,
+        msg: "Use Proxy" },
+    { status: 380,
+        msg: "Alternate Service" },
+    { status: 400,
+        msg: "Bad Request" },
+    { status: 401,
+        msg: "Unauthorized" },
+    { status: 402,
+        msg: "Payment Required" },
+    { status: 403,
+        msg: "Forbidden" },
+    { status: 404,
+        msg: "Not Found" },
+    { status: 405,
+        msg: "Method Not Allowed" },
+    { status: 406,
+        msg: "Not Acceptable" },
+    { status: 407,
+        msg: "Proxy Authentication Required" },
+    { status: 408,
+        msg: "Request Timeout" },
+    { status: 409,
+        msg: "Conflict" },
+    { status: 410,
+        msg: "Gone" },
+    { status: 411,
+        msg: "Length Required" },
+    { status: 412,
+        msg: "Conditional Request Failed" },
+    { status: 413,
+        msg: "Request Entity Too Large" },
+    { status: 414,
+        msg: "Request-URI Too Long" },
+    { status: 415,
+        msg: "Unsupported Media Type" },
+    { status: 416,
+        msg: "Unsupported URI Scheme" },
+    { status: 417,
+        msg: "Unknown Resource-Priority" },
+    { status: 420,
+        msg: "Bad Extension" },
+    { status: 421,
+        msg: "Extension Required" },
+    { status: 422,
+        msg: "Session Interval Too Small" },
+    { status: 423,
+        msg: "Interval Too Brief" },
+    { status: 424,
+        msg: "Bad Location Information" },
+    { status: 425,
+        msg: "Bad Alert Message" },
+    { status: 428,
+        msg: "Use Identity Header" },
+    { status: 429,
+        msg: "Provide Referrer Identity" },
+    { status: 430,
+        msg: "Flow Failed" },
+    { status: 433,
+        msg: "Anonymity Disallowed" },
+    { status: 436,
+        msg: "Bad Identity-Info" },
+    { status: 437,
+        msg: "Unsupported Certificate" },
+    { status: 438,
+        msg: "Invalid Identity Header" },
+    { status: 439,
+        msg: "First Hop Lacks Outbound Support" },
+    { status: 440,
+        msg: "Max-Breadth Exceeded" },
+    { status: 469,
+        msg: "Bad Info Package" },
+    { status: 470,
+        msg: "Consent Needed" },
+    { status: 480,
+        msg: "Temporarily Unavailable" },
+    { status: 481,
+        msg: "Call/Transaction Does Not Exist" },
+    { status: 482,
+        msg: "Loop Detected" },
+    { status: 483,
+        msg: "Too Many Hops" },
+    { status: 484,
+        msg: "Address Incomplete" },
+    { status: 485,
+        msg: "Ambiguous" },
+    { status: 486,
+        msg: "Busy Here" },
+    { status: 487,
+        msg: "Request Terminated" },
+    { status: 488,
+        msg: "Not Acceptable Here" },
+    { status: 489,
+        msg: "Bad Event" },
+    { status: 491,
+        msg: "Request Pending" },
+    { status: 493,
+        msg: "Undecipherable" },
+    { status: 494,
+        msg: "Security Agreement Required" },
+    { status: 500,
+        msg: "Internal Server Error" },
+    { status: 501,
+        msg: "Not Implemented" },
+    { status: 502,
+        msg: "Bad Gateway" },
+    { status: 503,
+        msg: "Service Unavailable" },
+    { status: 504,
+        msg: "Server Time-out" },
+    { status: 505,
+        msg: "Version Not Supported" },
+    { status: 513,
+        msg: "Message Too Large" },
+    { status: 555,
+        msg: "Push Notification Service Not Supported" },
+    { status: 580,
+        msg: "Precondition Failure" },
+    { status: 600,
+        msg: "Busy Everywhere" },
+    { status: 603,
+        msg: "Decline" },
+    { status: 604,
+        msg: "Does Not Exist Anywhere" },
+    { status: 606,
+        msg: "Not Acceptable" },
+    { status: 607,
+        msg: "Unwanted" },
+    { status: 608,
+        msg: "Rejected" },
+];
 class Monitor extends BeanModel {
 
     /**
@@ -155,6 +312,12 @@ class Monitor extends BeanModel {
             snmpVersion: this.snmpVersion,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
+            sipUrl: this.sipUrl,
+            sipPort: this.sipPort,
+            sipProtocol: this.sipProtocol,
+			sipMethod: this.sipMethod,
+			sipMaintainence: this.isSipMaintainence(),
+			sipAuthMethod: this.sipAuthMethod,
         };
 
         if (includeSensitiveData) {
@@ -186,6 +349,8 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                sip_basic_auth_user: this.sip_basic_auth_user,
+                sip_basic_auth_pass: this.sip_basic_auth_pass,
             };
         }
 
@@ -318,7 +483,13 @@ class Monitor extends BeanModel {
     getKafkaProducerAllowAutoTopicCreation() {
         return Boolean(this.kafkaProducerAllowAutoTopicCreation);
     }
-
+    /**
+     * Parse to boolean
+     * @returns {boolean} Sip Allow Maintainenece Option
+     */
+    isSipMaintainence() {
+        return Boolean(this.sipMaintainence);
+    }
     /**
      * Start monitor
      * @param {Server} io Socket server instance
@@ -874,7 +1045,68 @@ class Monitor extends BeanModel {
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
 
-                } else {
+                } else if (this.type === "sip") {
+                    try {
+                        console.log("Ping Result:", this.sipMethod);
+                        let sipResponse;
+                        let sipMessage;
+                        let startTime = dayjs().valueOf();
+                        let totalResponseTime;
+                        let requestCount;
+                        if (this.sipMethod !== "OPTIONS") {
+                            sipResponse = await sipRegisterRequest(this.sipUrl, this.sipPort, this.sipProtocol, this.sip_basic_auth_user, this.sip_basic_auth_pass, version);
+                            let sipResponseTime = dayjs().valueOf() - startTime;
+                            totalResponseTime += sipResponseTime;
+                            console.log("sipResponse", sipResponse);
+                            console.log("this.sipMaintainence", this.sipMaintainence);
+                            const matchingStatus = sipStatusCodes.find(code => code.status === sipResponse?.status);
+                            if (matchingStatus) {
+                                sipMessage = `${sipResponse?.status}-${matchingStatus.msg}`;
+                                // Assuming UP and DOWN are previously defined constants or variables
+                                bean.status = sipResponse?.status === 200 ? UP : DOWN;
+                                console.log("sipResponse?.status", sipResponse?.status);
+                                // Additional check for 503 status within matchingStatus
+                                if (sipResponse?.status === 503 && this.sipMaintainence == 1) {
+                                    sipMessage = "Monitor under maintenance";
+                                    bean.status = MAINTENANCE;
+                                }
+                            } else {
+                                sipMessage = ` ${sipResponse?.status}-Not Ok`;
+                                bean.status = DOWN;
+                            }
+                   
+                        } else if (this.sipMethod === "OPTIONS") {
+                            sipResponse = await sipOptionRequest(this.sipUrl, this.sipPort, this.sipProtocol, this.sip_basic_auth_user, this.sip_basic_auth_pass, version);
+                            let sipOptionsResponseTime = dayjs().valueOf() - startTime;
+                            totalResponseTime = sipOptionsResponseTime;
+                            requestCount++;
+                            console.log("=====resposne status", sipResponse?.status);
+                            console.log("this.sipMaintainence", this.sipMaintainence);
+                            const matchingStatus = sipStatusCodes.find(code => code.status === sipResponse?.status);
+                            if (matchingStatus) {
+                                sipMessage = `${sipResponse?.status}-${matchingStatus.msg}`;
+                                // Assuming UP and DOWN are previously defined constants or variables
+                                bean.status = sipResponse?.status === 200 ? UP : DOWN;
+
+                                // Additional check for 503 status within matchingStatus
+                                if (sipResponse?.status === 503 && this.sipMaintainence == 1) {
+                                    sipMessage = "Monitor under maintenance";
+                                    bean.status = MAINTENANCE;
+                                }
+                            } else {
+                                sipMessage = ` ${sipResponse?.status}-Not Ok`;
+                                bean.status = DOWN;
+                            }
+                        }
+                        bean.ping = dayjs().valueOf() - startTime;
+                        bean.msg = sipMessage;
+                        // bean.msg = `${sipResponse?.status} - ${sipResponse?.reason}`
+                    } catch (error) {
+                        bean.msg = `Error: ${error.message}`;
+                        bean.status = DOWN;
+                    }
+                }
+                else {
                     throw new Error("Unknown Monitor Type");
                 }
 

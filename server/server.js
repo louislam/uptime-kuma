@@ -874,6 +874,13 @@ let needSetup = false;
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
+                bean.sipUrl = monitor.sipUrl;
+                bean.sipPort = monitor.sipPort;
+                bean.sip_basic_auth_user = monitor.sip_basic_auth_user;
+                bean.sip_basic_auth_pass = monitor.sip_basic_auth_pass;
+                bean.sipMaintainence = monitor.sipMaintainence;
+                bean.sipMethod = monitor.sipMethod;
+                bean.sipAuthMethod = monitor.sipAuthMethod;
 
                 bean.validate();
 
