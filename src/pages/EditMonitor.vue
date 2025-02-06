@@ -91,6 +91,7 @@
                                             Tailscale Ping
                                         </option>
                                         <option value="websocket-upgrade">Websocket Upgrade</option>
+                                        <option value="sip">SIP</option>
                                     </optgroup>
 
                                     <!-- Should sort from A to Z in this category -->
@@ -223,7 +224,15 @@
                                     </template>
                                 </i18n-t>
                             </div>
-
+                            <!--SIP-->
+                            <div v-if="monitor.type === 'sip'" class="my-3">
+                                <label for="sipprotocol" class="form-label">{{ $t("SipProtocol") }}</label>
+                                <select id="sipprotocol" class="form-select" required v-model="monitor.sipProtocol">
+                                <option value="UDP">UDP</option>
+                                <option value="TCP">TCP</option>
+                                <option value="TLS">TLS</option>
+                                </select>
+                            </div>
                             <!-- gRPC URL -->
                             <div v-if="monitor.type === 'grpc-keyword'" class="my-3">
                                 <label for="grpc-url" class="form-label">{{ $t("URL") }}</label>
@@ -283,7 +292,19 @@
                                     {{ $t("invertKeywordDescription") }}
                                 </div>
                             </div>
-
+                            <!--SIP URL-->
+                            <div v-if="monitor.type === 'sip'" class="my-3">
+                                <label for="sip-url" class="form-label">{{ $t("sipURL") }}</label>
+                                <!-- <input id="sip-url" v-model="monitor.sipURL" type="url" class="form-control" pattern="((https?|ftp):\/\/)?([a-zA-Z0-9.-]
+                                +\.[a-zA-Z]{2,})(:\d{1,5})?\/?|
+                                (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" required> -->
+                                <input id="sip-url" v-model="monitor.sipUrl" type="text" class="form-control" pattern="((https?|ftp):\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(:\d{1,5})?\/?|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})" required>
+                            </div>
+                            <div v-if="monitor.type === 'sip'" class="my-3">
+                                <label for="sipport" class="form-label mt-3">{{ $t("SipPort") }}</label>
+                                <input v-if="monitor.sipProtocol !== 'SRV'" id="sipport" type="number" class="form-control"
+                                v-model="monitor.sipPort" placeholder="Enter SIP Port">
+                            </div>
                             <!-- Remote Browser -->
                             <div v-if="monitor.type === 'real-browser'" class="my-3">
                                 <!-- Toggle -->
@@ -1506,7 +1527,7 @@
                                 />
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
-                                </label>
+                                </label> 
                                 <div class="form-text">
                                     {{ $t("certificateExpiryNotificationHelp") }}
                                 </div>
@@ -1588,6 +1609,7 @@
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'redis' ||
+                                    monitor.type === 'sip' ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -1600,7 +1622,7 @@
                                     value=""
                                 />
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
+                                    {{ monitor.type === "redis" || monitor.type === 'sip' ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
                                 </label>
                             </div>
 
@@ -1649,7 +1671,19 @@
                                     {{ $t("upsideDownModeDescription") }}
                                 </div>
                             </div>
-
+                            <div v-if="monitor.type === 'sip'" class="my-3 form-check">
+                                <input
+                                    id="process-503-as-maintenance"
+                                    v-model="monitor.sipMaintainence"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    value=""
+                                />
+                                <label class="form-check-label" for="process-503-as-maintenance">
+                                    {{ $t("process503AsMaintenanceLabel") }}
+                                </label>
+                                </div>
+  
                             <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
                                 <input
                                     id="gamedig-guess-port"
@@ -1787,7 +1821,8 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    monitor.type === 'grpc-keyword'
+                                    monitor.type === 'grpc-keyword' ||
+                                    monitor.type === 'sip'
                                 "
                             >
                                 <div class="my-3">
@@ -2172,7 +2207,83 @@
                                     </div>
                                 </div>
                             </template>
+     <!-- SIP Options -->
+             
+  <template v-if="monitor.type === 'sip'
+                ">
+                <h2 class="mt-5 mb-2">{{ $t("SIP Options") }}</h2>
 
+                <!-- Method -->
+                <div class="my-3">
+                  <label for="method" class="form-label">{{
+                    $t("Method")
+                  }}</label>
+                  <select id="method" v-model="monitor.sipMethod" class="form-select">
+                 
+                    <option value="REGISTER">REGISTER</option>
+                    <option value="OPTIONS">OPTIONS</option>
+                  </select>
+                </div>
+
+                <!-- Encoding -->
+                <div class="my-3">
+                  <label for="httpBodyEncoding" class="form-label">{{
+                    $t("Body Encoding")
+                  }}</label>
+                  <select id="httpBodyEncoding" v-model="monitor.httpBodyEncoding" class="form-select">
+                    <option value="json">JSON</option>
+                    <option value="xml">XML</option>
+                  </select>
+                </div>
+
+                <!-- Body -->
+                <div class="my-3">
+                  <label for="body" class="form-label">{{ $t("Body") }}</label>
+                  <textarea id="body" v-model="monitor.body" class="form-control"
+                    :placeholder="bodyPlaceholder"></textarea>
+                </div>
+
+                <!-- Headers -->
+                <div class="my-3">
+                  <label for="headers" class="form-label">{{
+                    $t("Headers")
+                  }}</label>
+                  <textarea id="headers" v-model="monitor.headers" class="form-control"
+                    :placeholder="headersPlaceholder"></textarea>
+                </div>
+
+                <!-- HTTP Auth -->
+                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
+
+                <!-- Method -->
+                <div class="my-3">
+                  <label for="authmethod" class="form-label">{{
+                    $t("Method")
+                  }}</label>
+                  <select id="authsipmethod" v-model="monitor.sipAuthMethod" class="form-select">
+                    <option :value="null">
+                      {{ $t("None") }}
+                    </option>
+                    <option value="basic">
+                      {{ $t("SIP Basic Auth") }}
+                    </option>
+                   
+                  </select>
+                </div>
+                <template v-if="monitor.sipAuthMethod === 'basic'">
+  <div class="my-3">
+    <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
+    <input id="basicauth-user" v-model="monitor.sip_basic_auth_user" type="text" class="form-control"
+      :placeholder="$t('Username')" />
+  </div>
+
+  <div class="my-3">
+    <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
+    <input id="basicauth-pass" v-model="monitor.sip_basic_auth_pass" type="password" autocomplete="new-password"
+      class="form-control" :placeholder="$t('Password')" />
+  </div>
+</template>
+              </template>
                             <!-- HTTP Options -->
                             <template
                                 v-if="
@@ -2904,6 +3015,12 @@ const monitorDefaults = {
     rabbitmqPassword: "",
     conditions: [],
     system_service_name: "",
+    sipProtocol: "UDP",
+    sipPort: 5060,
+    sipUrl: null,
+    sipMethod: "OPTIONS",
+    sipMaintainence: false,
+    sipAuthMethod: null,
 };
 
 export default {
