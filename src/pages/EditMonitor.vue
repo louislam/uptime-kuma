@@ -24,6 +24,9 @@
                                         <option value="ping">
                                             Ping
                                         </option>
+                                        <option value="smtp">
+                                            SMTP
+                                        </option>
                                         <option value="snmp">
                                             SNMP
                                         </option>
@@ -281,8 +284,8 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -297,7 +300,7 @@
 
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -327,6 +330,18 @@
                                         SNMPv2c
                                     </option>
                                 </select>
+                            </div>
+
+                            <div v-if="monitor.type === 'smtp'" class="my-3">
+                                <label for="smtp_security" class="form-label">{{ $t("SMTP Security") }}</label>
+                                <select id="smtp_security" v-model="monitor.smtpSecurity" class="form-select">
+                                    <option value="secure">SMTPS</option>
+                                    <option value="nostarttls">Ignore STARTTLS</option>
+                                    <option value="starttls">Use STARTTLS</option>
+                                </select>
+                                <div class="form-text">
+                                    {{ $t("smtpHelpText") }}
+                                </div>
                             </div>
 
                             <!-- Json Query -->
