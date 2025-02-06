@@ -341,7 +341,7 @@
     "One record": "一条记录",
     "steamApiKeyDescription": "要监控 Steam 游戏服务器，您需要 Steam Web-API 密钥。您可以在这里注册您的 API 密钥: ",
     "Current User": "当前用户",
-    "topic": "Topic",
+    "topic": "主题",
     "topicExplanation": "要监控的 MQTT Topic",
     "successMessage": "成功消息",
     "successMessageExplanation": "视为成功的 MQTT 消息",

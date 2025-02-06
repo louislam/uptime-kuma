@@ -24,7 +24,7 @@ class Whapi extends NotificationProvider {
                 "body": msg,
             };
 
-            let url = (notification.whapiApiUrl || "https://gate.whapi.cloud/").replace(/\/+$/, "") + "/messages/text";
+            let url = (notification.whapiApiUrl || "https://gate.whapi.cloud/").replace(/([^/])\/+$/, "$1") + "/messages/text";
 
             await axios.post(url, data, config);
 
