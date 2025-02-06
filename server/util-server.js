@@ -267,11 +267,11 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
  * @param {number} sipPort The port of the SIP server
  * @param {string} transport The transport protocol to use (e.g., 'udp' or 'tcp')
  * @param {string} username The username for registration
- * @param {string} password The password for registration
+ * @param {string} hashedPassword The password for registration
  * @param {string} version The version of the SIP health monitor
  * @returns {Promise<object>} The response from the SIP REGISTER request
  */
-exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, password, version) {
+exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, hashedPassword, version) {
 
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
@@ -299,7 +299,7 @@ exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, 
                 const authorizedRegisterRequest = exports.constructAuthorizedRequest(
                     registerRequest,
                     username,
-                    password,
+                    hashedPassword,
                     proxyAuthenticateHeader
                 );
 
