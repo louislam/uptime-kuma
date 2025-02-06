@@ -645,6 +645,10 @@ class Monitor extends BeanModel {
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
                             this.heartbeatInterval = setTimeout(safeBeat, timeout);
+
+                            bean.status = UP;
+                            this.prometheus?.update(bean, tlsInfo);
+
                             return;
                         }
                     } else {
