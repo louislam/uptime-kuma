@@ -549,6 +549,7 @@ class Monitor extends BeanModel {
     getKafkaProducerAllowAutoTopicCreation() {
         return Boolean(this.kafkaProducerAllowAutoTopicCreation);
     }
+
     /**
      * Parse to boolean
      * @returns {boolean} Sip Allow Maintainenece Option
@@ -556,6 +557,7 @@ class Monitor extends BeanModel {
     isSipMaintainence() {
         return Boolean(this.sipMaintainence);
     }
+
     /**
      * Parse to boolean
      * @returns {boolean} Should save response data on success?
