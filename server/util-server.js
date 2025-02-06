@@ -33,8 +33,6 @@ const { Kafka, SASLOptions } = require("kafkajs");
 const crypto = require("crypto");
 let sip = require("sip");
 const uuid = require("uuid");
-let sharedSipServer;
-const SERVER_PORT = 25060;
 
 const isWindows = process.platform === /^win/.test(process.platform);
 /**
@@ -266,23 +264,28 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
 /**
  * Sends a SIP REGISTER request
  * @param {string} sipServer The SIP server to register with
+ * @param {number} sipPort The port of the SIP server
  * @param {string} transport The transport protocol to use (e.g., 'udp' or 'tcp')
- * @returns {Promise<void>}
+ * @param {string} username The username for registration
+ * @param {string} password The password for registration
+ * @param {string} version The version of the SIP health monitor
+ * @returns {Promise<object>} The response from the SIP REGISTER request
  */
 exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, password, version) {
-  
+
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
         try {
             const registerRequest = {
-                method: 'REGISTER',
+                method: "REGISTER",
                 uri: `sip:${sipServer}:${sipPort}`,
                 headers: {
                     to: { uri: `sip:${sipServer}:${sipPort}` },
                     from: { uri: `sip:${username}` },
-                    'call-id': uuid.v4(),
-                    cseq: { method: 'REGISTER', seq: 1 },
-                    'content-length': 0,
+                    "call-id": uuid.v4(),
+                    cseq: { method: "REGISTER",
+                        seq: 1 },
+                    "content-length": 0,
                     contact: { uri: `sip:${username}` },
                     "User-Agent": "SIP Health Monitor " + version,
                     "Expires": 60,
@@ -321,9 +324,16 @@ exports.sipRegister = function (registerRequest) {
     return new Promise((resolve, reject) => {
         const timeout = 5000; // Timeout duration in milliseconds
         let timeoutID;
-        // Cleanup function to clear the timeout and destroy the server
+        // Cleanup function to ensure proper resource management
+        /**
+         * Clears the timeout and destroys the SIP server instance.
+         * This function is called to prevent memory leaks and ensure that no lingering processes are left running.
+         * @returns {void} This function does not return any value.
+         */
         function cleanup() {
-            if (timeoutID) clearTimeout(timeoutID);
+            if (timeoutID) {
+                clearTimeout(timeoutID);
+            }
             if (server && server.destroy) {
                 server.destroy();
                 console.log("SIP server destroyed.");
@@ -378,8 +388,12 @@ exports.constructAuthorizedRequest = function (request, username, password, prox
 /**
  * Sends a SIP OPTIONS request
  * @param {string} sipServer The SIP server to send OPTIONS to
+ * @param {number} sipPort The port of the SIP server
  * @param {string} transport The transport protocol to use (e.g., 'udp' or 'tcp')
- * @returns {Promise<void>}
+ * @param {string} username The username for authentication (optional)
+ * @param {string} password The password for authentication (optional)
+ * @param {string} version The version of the SIP Health Monitor
+ * @returns {Promise<object>} The response from the SIP OPTIONS request
  */
 exports.sipOptionRequest = function (sipServer, sipPort, transport, username, password, version) {
     const publicIP = process.env.PUBLIC_IP;
@@ -387,28 +401,28 @@ exports.sipOptionRequest = function (sipServer, sipPort, transport, username, pa
     return new Promise(async (resolve, reject) => {
         try {
             const optionsRequest = {
-                method: 'OPTIONS',
-                uri: `sip:${sipServer}:${sipPort}`,//hostname
+                method: "OPTIONS",
+                uri: `sip:${sipServer}:${sipPort}`, //hostname
                 headers: {
-                    to: { uri: `sip:${sipServer}:${sipPort}` },//hostname
-                    from: { uri:    `sip:${publicIP}` },//live ip || primary url
-                    'call-id': 1234,
-                    cseq: { method: 'OPTIONS', seq: 1 },
-                    'content-length': 0,
-                    contact: [ { uri:    `sip:${publicIP}` }],
+                    to: { uri: `sip:${sipServer}:${sipPort}` }, //hostname
+                    from: { uri: `sip:${publicIP}` }, //live ip || primary url
+                    "call-id": 1234,
+                    cseq: { method: "OPTIONS",
+                        seq: 1 },
+                    "content-length": 0,
+                    contact: [{ uri: `sip:${publicIP}` }],
                     "User-Agent": "SIP Health Monitor" + version,
 
                 },
                 transport: transport,
             };
-            let optionResponse
-            if(!username) {
-                console.log("will only send ok")
+            let optionResponse;
+            if (!username) {
+                console.log("will only send ok");
                 const optionResponse = await exports.sipOption(optionsRequest);
                 console.log("optionResponse", optionResponse);
-                resolve(optionResponse)
-            }
-            else {
+                resolve(optionResponse);
+            } else {
                 optionResponse = await exports.sipRegister(optionsRequest);
                 console.log("optionResponse", optionResponse);
                 if (optionResponse.status === 407 && optionResponse.headers["proxy-authenticate"]) {
@@ -419,12 +433,12 @@ exports.sipOptionRequest = function (sipServer, sipPort, transport, username, pa
                         password,
                         proxyAuthenticateHeader
                     );
-    
+
                     const secondResponse = await exports.sipOption(authorizedOptionRequest);
                     resolve(secondResponse);
-                } 
+                }
             }
-       
+
         } catch (error) {
             console.error("Error:", error.message);
             reject(error);
@@ -439,17 +453,23 @@ exports.sipOption = function (optionsRequest) {
 
     console.log("SIP server created:", server);
     return new Promise((resolve, reject) => {
-        const timeout = 5000; // Timeout duration in milliseconds
+
         let timeoutID;
-        // Cleanup function to clear the timeout and destroy the server
+        // Cleanup function to ensure proper resource management
+        /**
+         * Clears the timeout and destroys the SIP server instance.
+         * This function is called to prevent memory leaks and ensure that no lingering processes are left running.
+         * @returns {void} This function does not return any value.
+         */
         function cleanup() {
-            if (timeoutID) clearTimeout(timeoutID);
+            if (timeoutID) {
+                clearTimeout(timeoutID);
+            }
             if (server) {
                 server.destroy();
                 console.log("SIP server destroyed.");
             }
         }
-
 
         try {
             // Send the SIP options request

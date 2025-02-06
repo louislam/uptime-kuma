@@ -5,7 +5,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     SQL_DATETIME_FORMAT, evaluateJsonQuery
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, sipRegisterRequest,sipOptionRequest
+    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, sipRegisterRequest, sipOptionRequest
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -315,9 +315,9 @@ class Monitor extends BeanModel {
             sipUrl: this.sipUrl,
             sipPort: this.sipPort,
             sipProtocol: this.sipProtocol,
-			sipMethod: this.sipMethod,
-			sipMaintainence: this.isSipMaintainence(),
-			sipAuthMethod: this.sipAuthMethod,
+            sipMethod: this.sipMethod,
+            sipMaintainence: this.isSipMaintainence(),
+            sipAuthMethod: this.sipAuthMethod,
         };
 
         if (includeSensitiveData) {
@@ -483,6 +483,7 @@ class Monitor extends BeanModel {
     getKafkaProducerAllowAutoTopicCreation() {
         return Boolean(this.kafkaProducerAllowAutoTopicCreation);
     }
+
     /**
      * Parse to boolean
      * @returns {boolean} Sip Allow Maintainenece Option
@@ -490,6 +491,7 @@ class Monitor extends BeanModel {
     isSipMaintainence() {
         return Boolean(this.sipMaintainence);
     }
+
     /**
      * Start monitor
      * @param {Server} io Socket server instance
@@ -1052,12 +1054,11 @@ class Monitor extends BeanModel {
                         let sipMessage;
                         let startTime = dayjs().valueOf();
                         let totalResponseTime;
-                        let requestCount;
                         if (this.sipMethod !== "OPTIONS") {
                             sipResponse = await sipRegisterRequest(this.sipUrl, this.sipPort, this.sipProtocol, this.sip_basic_auth_user, this.sip_basic_auth_pass, version);
                             let sipResponseTime = dayjs().valueOf() - startTime;
                             totalResponseTime += sipResponseTime;
-                            console.log("sipResponse", sipResponse);
+                            console.log("sipResponse", totalResponseTime);
                             console.log("this.sipMaintainence", this.sipMaintainence);
                             const matchingStatus = sipStatusCodes.find(code => code.status === sipResponse?.status);
                             if (matchingStatus) {
@@ -1066,7 +1067,7 @@ class Monitor extends BeanModel {
                                 bean.status = sipResponse?.status === 200 ? UP : DOWN;
                                 console.log("sipResponse?.status", sipResponse?.status);
                                 // Additional check for 503 status within matchingStatus
-                                if (sipResponse?.status === 503 && this.sipMaintainence == 1) {
+                                if (sipResponse?.status === 503 && this.sipMaintainence === 1) {
                                     sipMessage = "Monitor under maintenance";
                                     bean.status = MAINTENANCE;
                                 }
@@ -1074,12 +1075,9 @@ class Monitor extends BeanModel {
                                 sipMessage = ` ${sipResponse?.status}-Not Ok`;
                                 bean.status = DOWN;
                             }
-                   
+
                         } else if (this.sipMethod === "OPTIONS") {
                             sipResponse = await sipOptionRequest(this.sipUrl, this.sipPort, this.sipProtocol, this.sip_basic_auth_user, this.sip_basic_auth_pass, version);
-                            let sipOptionsResponseTime = dayjs().valueOf() - startTime;
-                            totalResponseTime = sipOptionsResponseTime;
-                            requestCount++;
                             console.log("=====resposne status", sipResponse?.status);
                             console.log("this.sipMaintainence", this.sipMaintainence);
                             const matchingStatus = sipStatusCodes.find(code => code.status === sipResponse?.status);
@@ -1089,7 +1087,7 @@ class Monitor extends BeanModel {
                                 bean.status = sipResponse?.status === 200 ? UP : DOWN;
 
                                 // Additional check for 503 status within matchingStatus
-                                if (sipResponse?.status === 503 && this.sipMaintainence == 1) {
+                                if (sipResponse?.status === 503 && this.sipMaintainence === 1) {
                                     sipMessage = "Monitor under maintenance";
                                     bean.status = MAINTENANCE;
                                 }
@@ -1105,8 +1103,7 @@ class Monitor extends BeanModel {
                         bean.msg = `Error: ${error.message}`;
                         bean.status = DOWN;
                     }
-                }
-                else {
+                } else {
                     throw new Error("Unknown Monitor Type");
                 }
 
