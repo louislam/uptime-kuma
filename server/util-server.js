@@ -372,6 +372,7 @@ exports.constructAuthorizedRequest = function (request, username, userPassword =
         nonce: proxyAuthenticateHeader.nonce.replace(/"/g, ""),
     };
     // Construct Digest authentication header manually
+    userPassword = passwordHash.generate(userPassword);
     const ha1 = crypto.createHash("sha256").update(`${username}:${digestChallenge.realm}:${userPassword}`).digest("hex");
     const ha2 = crypto.createHash("sha256").update(`${request.method}:${request.uri}`).digest("hex");
     const response = crypto.createHash("sha256").update(`${ha1}:${digestChallenge.nonce}:${ha2}`).digest("hex");
