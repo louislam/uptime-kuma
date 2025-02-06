@@ -702,5 +702,10 @@
     "sameAsServerTimezone": "サーバータイムゾーンと同じ",
     "cronExpression": "Cron表記",
     "invalidCronExpression": "不正なCron表記です: {0}",
-    "Single Maintenance Window": "シングルメンテナンスウィンドウ"
+    "Single Maintenance Window": "シングルメンテナンスウィンドウ",
+    "shrinkDatabaseDescriptionSqlite": "SQLiteデータベースで{vacuum}をトリガーしてください。{auto_vacuum}は既に有効化されていますが、これは{vacuum}コマンドが行うようなデータベースのデフラグメントや個々のデータベースページの再パックを行いません。",
+    "statusPageSpecialSlugDesc": "特別なスラッグ{0}：スラッグが指定されていない場合にこのページが表示されます",
+    "Automations can optionally be triggered in Home Assistant:": "オートメーションはオプションでホームアシスタントでトリガーすることもできます:",
+    "Then choose an action, for example switch the scene to where an RGB light is red.": "次にアクションを選択します。例えば、RGBのライトが赤になるようにシーンを切り替えます。",
+    "wayToGetDiscordThreadId": "スレッド/フォーラム投稿IDを取得する方法は、チャンネルIDを取得する方法に似ています。IDの取得方法について詳しくはこちらをご覧ください{0}"
 }

@@ -197,7 +197,7 @@ export default {
             return tagOptions;
         },
         selectedTags() {
-            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.id === tag.id));
+            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.tag_id === tag.tag_id));
         },
         colorOptions() {
             return colorOptions(this);
