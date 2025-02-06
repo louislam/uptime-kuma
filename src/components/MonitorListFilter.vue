@@ -14,10 +14,10 @@
             <font-awesome-icon v-if="numFiltersActive > 0" icon="times" />
         </button>
         <MonitorListFilterDropdown
-            :filterActive="filterState.status?.length > 0"
+            :filterActive="filterState.status.length > 0"
         >
             <template #status>
-                <Status v-if="filterState.status?.length === 1" :status="filterState.status[0]" />
+                <Status v-if="filterState.status.length === 1" :status="filterState.status[0]" />
                 <span v-else>
                     {{ $t('Status') }}
                 </span>
@@ -29,7 +29,7 @@
                             <Status :status="1" />
                             <span class="ps-3">
                                 {{ $root.stats.up }}
-                                <span v-if="filterState.status?.includes(1)" class="px-1 filter-active">
+                                <span v-if="filterState.status.includes(1)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -42,7 +42,7 @@
                             <Status :status="0" />
                             <span class="ps-3">
                                 {{ $root.stats.down }}
-                                <span v-if="filterState.status?.includes(0)" class="px-1 filter-active">
+                                <span v-if="filterState.status.includes(0)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -55,7 +55,7 @@
                             <Status :status="2" />
                             <span class="ps-3">
                                 {{ $root.stats.pending }}
-                                <span v-if="filterState.status?.includes(2)" class="px-1 filter-active">
+                                <span v-if="filterState.status.includes(2)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -68,7 +68,7 @@
                             <Status :status="3" />
                             <span class="ps-3">
                                 {{ $root.stats.maintenance }}
-                                <span v-if="filterState.status?.includes(3)" class="px-1 filter-active">
+                                <span v-if="filterState.status.includes(3)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -77,11 +77,12 @@
                 </li>
             </template>
         </MonitorListFilterDropdown>
-        <MonitorListFilterDropdown :filterActive="filterState.active?.length > 0">
+        <MonitorListFilterDropdown :filterActive="filterState.active.length > 0">
             <template #status>
-                <span v-if="filterState.active?.length === 1">
-                    <span v-if="filterState.active[0]">{{ $t("Running") }}</span>
-                    <span v-else>{{ $t("filterActivePaused") }}</span>
+                <span v-if="filterState.active.length === 1">
+                    <span v-if="filterState.active[0] === true">{{ $t("Running") }}</span>
+                    <span v-else-if="filterState.active[0] === false">{{ $t("filterActivePaused") }}</span>
+                    <span v-else>{{ $t("Unknown") }}</span>
                 </span>
                 <span v-else>
                     {{ $t("filterActive") }}
@@ -94,7 +95,7 @@
                             <span>{{ $t("Running") }}</span>
                             <span class="ps-3">
                                 {{ $root.stats.active }}
-                                <span v-if="filterState.active?.includes(true)" class="px-1 filter-active">
+                                <span v-if="filterState.active.includes(true)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -107,7 +108,7 @@
                             <span>{{ $t("filterActivePaused") }}</span>
                             <span class="ps-3">
                                 {{ $root.stats.pause }}
-                                <span v-if="filterState.active?.includes(false)" class="px-1 filter-active">
+                                <span v-if="filterState.active.includes(false)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -116,10 +117,11 @@
                 </li>
             </template>
         </MonitorListFilterDropdown>
-        <MonitorListFilterDropdown :filterActive="filterState.tags?.length > 0">
+        <MonitorListFilterDropdown :filterActive="filterState.tags.length > 0">
             <template #status>
+                <!-- Prevent rendering Tag component if tagsList has not been fetched or filterState contains invalid tag -->
                 <Tag
-                    v-if="filterState.tags?.length === 1"
+                    v-if="filterState.tags.length === 1 && tagsList.find(tag => tag.id === filterState.tags[0])"
                     :item="tagsList.find(tag => tag.id === filterState.tags[0])"
                     :size="'sm'"
                 />
@@ -134,7 +136,7 @@
                             <span><Tag :item="tag" :size="'sm'" /></span>
                             <span class="ps-3">
                                 {{ getTaggedMonitorCount(tag) }}
-                                <span v-if="filterState.tags?.includes(tag.id)" class="px-1 filter-active">
+                                <span v-if="filterState.tags.includes(tag.id)" class="px-1 filter-active">
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -179,16 +181,37 @@ export default {
             let num = 0;
 
             Object.values(this.filterState).forEach(item => {
-                if (item != null && item.length > 0) {
+                if (item.length > 0) {
                     num += 1;
                 }
             });
 
             return num;
+        },
+        /**
+         * Returns an array of invalid filters assuming tagsList has been fetched
+         * @returns {Array} Array of invalid filters
+         */
+        invalidFilters() {
+            const filters = [];
+            if (!this.filterState.status.every((val) => val >= 0 && val <= 3)) {
+                filters.push(this.$t("Status"));
+            }
+            if (!this.filterState.active.every((val) => val === true || val === false)) {
+                filters.push(this.$t("Active"));
+            }
+            if (!this.filterState.tags.every((val) => this.tagsList.find(tag => tag.id === val))) {
+                filters.push(this.$t("Tags"));
+            }
+            return filters;
         }
     },
     mounted() {
-        this.getExistingTags();
+        this.getExistingTags(() => {
+            if (this.invalidFilters.length > 0) {
+                this.$root.toastError(this.$t("InvalidFilters", [ this.invalidFilters.join(", ") ]));
+            }
+        });
     },
     methods: {
         toggleStatusFilter(status) {
@@ -196,14 +219,10 @@ export default {
                 ...this.filterState
             };
 
-            if (newFilter.status == null) {
-                newFilter.status = [ status ];
+            if (newFilter.status.includes(status)) {
+                newFilter.status = newFilter.status.filter(item => item !== status);
             } else {
-                if (newFilter.status.includes(status)) {
-                    newFilter.status = newFilter.status.filter(item => item !== status);
-                } else {
-                    newFilter.status.push(status);
-                }
+                newFilter.status.push(status);
             }
             this.$emit("updateFilter", newFilter);
         },
@@ -212,14 +231,10 @@ export default {
                 ...this.filterState
             };
 
-            if (newFilter.active == null) {
-                newFilter.active = [ active ];
+            if (newFilter.active.includes(active)) {
+                newFilter.active = newFilter.active.filter(item => item !== active);
             } else {
-                if (newFilter.active.includes(active)) {
-                    newFilter.active = newFilter.active.filter(item => item !== active);
-                } else {
-                    newFilter.active.push(active);
-                }
+                newFilter.active.push(active);
             }
             this.$emit("updateFilter", newFilter);
         },
@@ -228,27 +243,26 @@ export default {
                 ...this.filterState
             };
 
-            if (newFilter.tags == null) {
-                newFilter.tags = [ tag.id ];
+            if (newFilter.tags.includes(tag.id)) {
+                newFilter.tags = newFilter.tags.filter(item => item !== tag.id);
             } else {
-                if (newFilter.tags.includes(tag.id)) {
-                    newFilter.tags = newFilter.tags.filter(item => item !== tag.id);
-                } else {
-                    newFilter.tags.push(tag.id);
-                }
+                newFilter.tags.push(tag.id);
             }
             this.$emit("updateFilter", newFilter);
         },
         clearFilters() {
             this.$emit("updateFilter", {
-                status: null,
+                status: [],
+                active: [],
+                tags: [],
             });
         },
-        getExistingTags() {
+        getExistingTags(callback) {
             this.$root.getSocket().emit("getTags", (res) => {
                 if (res.ok) {
                     this.tagsList = res.tags;
                 }
+                callback();
             });
         },
         getTaggedMonitorCount(tag) {
