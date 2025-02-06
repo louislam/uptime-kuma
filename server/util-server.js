@@ -271,7 +271,7 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
  * @param {string} version The version of the SIP health monitor
  * @returns {Promise<object>} The response from the SIP REGISTER request
  */
-exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, userPassword, version) {
+exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, userPassword = undefined, version) {
 
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
@@ -366,7 +366,7 @@ exports.sipRegister = function (registerRequest) {
         }
     });
 };
-exports.constructAuthorizedRequest = function (request, username, userPassword, proxyAuthenticateHeader) {
+exports.constructAuthorizedRequest = function (request, username, userPassword = undefined, proxyAuthenticateHeader) {
     const digestChallenge = {
         realm: proxyAuthenticateHeader.realm.replace(/"/g, ""),
         nonce: proxyAuthenticateHeader.nonce.replace(/"/g, ""),
