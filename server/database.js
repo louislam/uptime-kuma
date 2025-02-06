@@ -184,10 +184,18 @@ class Database {
 
     /**
      * @typedef {string|undefined} envString
-     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
+     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, caFilePath:envString}} dbConfig the database configuration that should be written
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {
+        // Move CA file to the data directory
+        if (dbConfig.caFilePath) {
+            const dataCaFilePath = path.join(Database.dataDir, "mariadb-ca.pem");
+            fs.renameSync(dbConfig.caFilePath, dataCaFilePath);
+            dbConfig.caFilePath = dataCaFilePath;
+            dbConfig.ssl = undefined;
+            dbConfig.caFile = undefined;
+        }
         fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
     }
 
@@ -259,11 +267,22 @@ class Database {
                 throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
             }
 
+            let sslConfig = null;
+            let serverCa = undefined;
+            if (dbConfig.caFilePath) {
+                serverCa = [ fs.readFileSync(dbConfig.caFilePath, "utf8") ];
+                sslConfig = {
+                    rejectUnauthorized: true,
+                    ca: serverCa
+                };
+            }
+
             const connection = await mysql.createConnection({
                 host: dbConfig.hostname,
                 port: dbConfig.port,
                 user: dbConfig.username,
                 password: dbConfig.password,
+                ssl: sslConfig
             });
 
             await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
@@ -277,7 +296,9 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
+                    ssl: sslConfig,
                     timezone: "Z",
+                    //ssl: sslConfig,
                     typeCast: function (field, next) {
                         if (field.type === "DATETIME") {
                             // Do not perform timezone conversion
