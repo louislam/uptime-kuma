@@ -267,11 +267,11 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
  * @param {number} sipPort The port of the SIP server
  * @param {string} transport The transport protocol to use (e.g., 'udp' or 'tcp')
  * @param {string} username The username for registration
- * @param {string} password The password for registration
+ * @param {string} userPassword The userPassword for registration
  * @param {string} version The version of the SIP health monitor
  * @returns {Promise<object>} The response from the SIP REGISTER request
  */
-exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, password, version) {
+exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, userPassword, version) {
 
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
@@ -299,7 +299,7 @@ exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, 
                 const authorizedRegisterRequest = exports.constructAuthorizedRequest(
                     registerRequest,
                     username,
-                    password,
+                    userPassword,
                     proxyAuthenticateHeader
                 );
 
@@ -366,13 +366,13 @@ exports.sipRegister = function (registerRequest) {
         }
     });
 };
-exports.constructAuthorizedRequest = function (request, username, password, proxyAuthenticateHeader) {
+exports.constructAuthorizedRequest = function (request, username, userPassword, proxyAuthenticateHeader) {
     const digestChallenge = {
         realm: proxyAuthenticateHeader.realm.replace(/"/g, ""),
         nonce: proxyAuthenticateHeader.nonce.replace(/"/g, ""),
     };
     // Construct Digest authentication header manually
-    const ha1 = crypto.createHash("sha256").update(`${username}:${digestChallenge.realm}:${password}`).digest("hex");
+    const ha1 = crypto.createHash("sha256").update(`${username}:${digestChallenge.realm}:${userPassword}`).digest("hex");
     const ha2 = crypto.createHash("sha256").update(`${request.method}:${request.uri}`).digest("hex");
     const response = crypto.createHash("sha256").update(`${ha1}:${digestChallenge.nonce}:${ha2}`).digest("hex");
     const authorizationHeader = `Digest username="${username}", realm="${digestChallenge.realm}", nonce="${digestChallenge.nonce}", uri="${request.uri}", response="${response}"`;
