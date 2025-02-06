@@ -32,14 +32,14 @@ body:
 
         ## **Step 2: Share the Advisory URL**
 
-        Once you've created your advisory, please share the URL below. This will notify @louislam and enable them to take the appropriate action.
+        Once you've created your advisory, please share the URL below. This will notify Louis Lam and enable them to take the appropriate action.
 
   - type: "textarea"
     id: github-advisory-url
     validations:
       required: true
     attributes:
-      label: "GitHub Advisory URL"
+      label: "GitHub Advisory URL for @louislam"
       placeholder: |
-        Paste the GitHub Advisory URL here.
+        Please paste the GitHub Advisory URL here. Only the URL is required.
         Example: https://github.com/louislam/uptime-kuma/security/advisories/GHSA-8h5r-7t6l-q3kz
