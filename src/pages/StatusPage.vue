@@ -98,6 +98,16 @@
                     <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control" data-testid="google-analytics-input">
                 </div>
 
+                <!-- Umami Analytics -->
+                <div class="my-3">
+                    <label for="umamiAnalyticsDomainUrl" class="form-label">{{ $t("Umami Analytics Domain Url") }}</label>
+                    <input id="umamiAnalyticsDomainUrl" v-model="config.umamiAnalyticsDomainUrl" type="text" class="form-control" data-testid="umami-analytics-domain-url-input">
+                </div>
+                <div class="my-3">
+                    <label for="umamiAnalyticsWebsite" class="form-label">{{ $t("Umami Analytics Website ID") }}</label>
+                    <input id="umamiAnalyticsWebsite" v-model="config.umamiAnalyticsWebsiteId" type="text" class="form-control" data-testid="umami-analytics-website-id-input">
+                </div>
+
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
