@@ -167,6 +167,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
             statusPage.modified_date = R.isoDateTime();
             statusPage.google_analytics_tag_id = config.googleAnalyticsId;
+            statusPage.umami_analytics_domain_url = config.umamiAnalyticsDomainUrl;
+            statusPage.umami_analytics_website_id = config.umamiAnalyticsWebsiteId;
 
             await R.store(statusPage);
 

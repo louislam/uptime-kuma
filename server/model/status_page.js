@@ -4,6 +4,7 @@ const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const googleAnalytics = require("../google-analytics");
+const umamiAnalytics = require("../umami-analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
@@ -123,6 +124,11 @@ class StatusPage extends BeanModel {
         if (statusPage.googleAnalyticsTagId) {
             let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId);
             head.append($(escapedGoogleAnalyticsScript));
+        }
+
+        if (statusPage.umamiAnalyticsDomainUrl && statusPage.umamiAnalyticsWebsiteId) {
+            let escapedUmamiAnalyticsScript = umamiAnalytics.getUmamiAnalyticsScript(statusPage.umamiAnalyticsDomainUrl, statusPage.umamiAnalyticsWebsiteId);
+            head.append($(escapedUmamiAnalyticsScript));
         }
 
         // OG Meta Tags
@@ -408,6 +414,8 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
+            umamiAnalyticsDomainUrl: this.umami_analytics_domain_url,
+            umamiAnalyticsWebsiteId: this.umami_analytics_website_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }
@@ -431,6 +439,8 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
+            umamiAnalyticsDomainUrl: this.umami_analytics_domain_url,
+            umamiAnalyticsWebsiteId: this.umami_analytics_website_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }

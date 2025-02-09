@@ -18,6 +18,8 @@ test.describe("Status Page", () => {
         const refreshInterval = 30;
         const theme = "dark";
         const googleAnalyticsId = "G-123";
+        const umamiAnalyticsDomainUrl = "example.com";
+        const umamiAnalyticsWebsiteId = "606487e2-bc25-45f9-9132-fa8b065aad46";
         const customCss = "body { background: rgb(0, 128, 128) !important; }";
         const descriptionText = "This is an example status page.";
         const incidentTitle = "Example Outage Incident";
@@ -58,6 +60,8 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-powered-by-checkbox").uncheck();
         await page.getByTestId("show-certificate-expiry-checkbox").uncheck();
         await page.getByTestId("google-analytics-input").fill(googleAnalyticsId);
+        await page.getByTestId("umami-analytics-domain-url-input").fill(umamiAnalyticsDomainUrl);
+        await page.getByTestId("umami-analytics-website-id-input").fill(umamiAnalyticsWebsiteId);
         await page.getByTestId("custom-css-input").getByTestId("textarea").fill(customCss); // Prism
         await expect(page.getByTestId("description-editable")).toHaveText(descriptionText);
         await expect(page.getByTestId("custom-footer-editable")).toHaveText(footerText);
@@ -101,6 +105,8 @@ test.describe("Status Page", () => {
 
         await expect(page.locator("body")).toHaveClass(theme);
         expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsDomainUrl);
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
 
         const backgroundColor = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
         expect(backgroundColor).toEqual("rgb(0, 128, 128)");
