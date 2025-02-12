@@ -31,6 +31,8 @@ const dayjs = require("dayjs");
 // eslint-disable-next-line no-unused-vars
 const { Kafka, SASLOptions } = require("kafkajs");
 const crypto = require("crypto");
+let sip = require("sip");
+const uuid = require("uuid");
 
 const isWindows = process.platform === /^win/.test(process.platform);
 /**
@@ -259,7 +261,235 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
         });
     });
 };
+/**
+ * Sends a SIP REGISTER request
+ * @param {string} sipServer The SIP server to register with
+ * @param {number} sipPort The port of the SIP server
+ * @param {string} transport The transport protocol to use (e.g., 'udp' or 'tcp')
+ * @param {string} username The username for registration
+ * @param {string} userPassword The userPassword for registration
+ * @param {string} version The version of the SIP health monitor
+ * @returns {Promise<object>} The response from the SIP REGISTER request
+ */
+exports.sipRegisterRequest = function (sipServer, sipPort, transport, username, userPassword = undefined, version) {
 
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+        try {
+            const registerRequest = {
+                method: "REGISTER",
+                uri: `sip:${sipServer}:${sipPort}`,
+                headers: {
+                    to: { uri: `sip:${sipServer}:${sipPort}` },
+                    from: { uri: `sip:${username}` },
+                    "call-id": uuid.v4(),
+                    cseq: { method: "REGISTER",
+                        seq: 1 },
+                    "content-length": 0,
+                    contact: { uri: `sip:${username}` },
+                    "User-Agent": "SIP Health Monitor " + version,
+                    "Expires": 60,
+                },
+                transport: transport,
+            };
+            const registrationResponse = await exports.sipRegister(registerRequest);
+            console.log("registrationResponse", registrationResponse);
+            if (registrationResponse.status === 407 && registrationResponse.headers["proxy-authenticate"]) {
+                const proxyAuthenticateHeader = registrationResponse.headers["proxy-authenticate"][0];
+                const authorizedRegisterRequest = exports.constructAuthorizedRequest(
+                    registerRequest,
+                    username,
+                    userPassword,
+                    proxyAuthenticateHeader
+                );
+
+                const secondResponse = await exports.sipRegister(authorizedRegisterRequest);
+                resolve(secondResponse);
+            } else {
+                resolve(registrationResponse);
+            }
+        } catch (error) {
+            console.error("Error:", error.message);
+            reject(error);
+        }
+    });
+};
+
+exports.sipRegister = function (registerRequest) {
+    const server = sip.create({
+        logger: "console",
+        port: 25060,
+    });
+    console.log("SIP server created:", server);
+    return new Promise((resolve, reject) => {
+        const timeout = 5000; // Timeout duration in milliseconds
+        let timeoutID;
+        // Cleanup function to ensure proper resource management
+        /**
+         * Clears the timeout and destroys the SIP server instance.
+         * This function is called to prevent memory leaks and ensure that no lingering processes are left running.
+         * @returns {void} This function does not return any value.
+         */
+        function cleanup() {
+            if (timeoutID) {
+                clearTimeout(timeoutID);
+            }
+            if (server && server.destroy) {
+                server.destroy();
+                console.log("SIP server destroyed.");
+            }
+        }
+        // Set a timeout to handle request expiry
+        timeoutID = setTimeout(() => {
+            console.error("SIP Register request timed out.");
+            reject(new Error("SIP Register request timed out."));
+            cleanup();
+        }, timeout);
+
+        try {
+            // Send the SIP register request
+            server.send(registerRequest, (response) => {
+                console.log("Received SIP register response:", response);
+                if (response) {
+                    resolve(response); // Resolve the promise with the response
+                    cleanup(); // Cleanup after resolving or rejecting
+                } else {
+                    reject(new Error("Empty SIP response received."));
+                    cleanup(); // Cleanup after resolving or rejecting
+
+                }
+            });
+        } catch (error) {
+            console.error("Error sending SIP register request:", error.message);
+            reject(new Error("Error sending SIP register request: " + error.message));
+            cleanup();
+        }
+    });
+};
+exports.constructAuthorizedRequest = function (request, username, userPassword = undefined, proxyAuthenticateHeader) {
+    const digestChallenge = {
+        realm: proxyAuthenticateHeader.realm.replace(/"/g, ""),
+        nonce: proxyAuthenticateHeader.nonce.replace(/"/g, ""),
+    };
+    // Construct Digest authentication header manually
+    const ha1 = crypto.createHash("sha256").update(`${username}:${digestChallenge.realm}:${passwordHash.generate(userPassword)}`).digest("hex");
+    const ha2 = crypto.createHash("sha256").update(`${request.method}:${request.uri}`).digest("hex");
+    const response = crypto.createHash("sha256").update(`${ha1}:${digestChallenge.nonce}:${ha2}`).digest("hex");
+    const authorizationHeader = `Digest username="${username}", realm="${digestChallenge.realm}", nonce="${digestChallenge.nonce}", uri="${request.uri}", response="${response}"`;
+    const authorizedRequest = {
+        ...request,
+        headers: {
+            ...request.headers,
+            "Proxy-Authorization": authorizationHeader,
+        },
+    };
+    return authorizedRequest;
+};
+/**
+ * Sends a SIP OPTIONS request
+ * @param {string} sipServer The SIP server to send OPTIONS to
+ * @param {number} sipPort The port of the SIP server
+ * @param {string} transport The transport protocol to use (e.g., 'udp' or 'tcp')
+ * @param {string} username The username for authentication (optional)
+ * @param {string} password The password for authentication (optional)
+ * @param {string} version The version of the SIP Health Monitor
+ * @returns {Promise<object>} The response from the SIP OPTIONS request
+ */
+exports.sipOptionRequest = function (sipServer, sipPort, transport, username, password, version) {
+    const publicIP = process.env.PUBLIC_IP;
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
+        try {
+            const optionsRequest = {
+                method: "OPTIONS",
+                uri: `sip:${sipServer}:${sipPort}`, //hostname
+                headers: {
+                    to: { uri: `sip:${sipServer}:${sipPort}` }, //hostname
+                    from: { uri: `sip:${publicIP}` }, //live ip || primary url
+                    "call-id": 1234,
+                    cseq: { method: "OPTIONS",
+                        seq: 1 },
+                    "content-length": 0,
+                    contact: [{ uri: `sip:${publicIP}` }],
+                    "User-Agent": "SIP Health Monitor" + version,
+
+                },
+                transport: transport,
+            };
+            let optionResponse;
+            if (!username) {
+                console.log("will only send ok");
+                const optionResponse = await exports.sipOption(optionsRequest);
+                console.log("optionResponse", optionResponse);
+                resolve(optionResponse);
+            } else {
+                optionResponse = await exports.sipRegister(optionsRequest);
+                console.log("optionResponse", optionResponse);
+                if (optionResponse.status === 407 && optionResponse.headers["proxy-authenticate"]) {
+                    const proxyAuthenticateHeader = optionResponse.headers["proxy-authenticate"][0];
+                    const authorizedOptionRequest = exports.constructAuthorizedRequest(
+                        optionsRequest,
+                        username,
+                        password,
+                        proxyAuthenticateHeader
+                    );
+
+                    const secondResponse = await exports.sipOption(authorizedOptionRequest);
+                    resolve(secondResponse);
+                }
+            }
+
+        } catch (error) {
+            console.error("Error:", error.message);
+            reject(error);
+        }
+    });
+};
+exports.sipOption = function (optionsRequest) {
+    const server = sip.create({
+        logger: "console",
+        port: 5060,
+    });
+
+    console.log("SIP server created:", server);
+    return new Promise((resolve, reject) => {
+
+        let timeoutID;
+        // Cleanup function to ensure proper resource management
+        /**
+         * Clears the timeout and destroys the SIP server instance.
+         * This function is called to prevent memory leaks and ensure that no lingering processes are left running.
+         * @returns {void} This function does not return any value.
+         */
+        function cleanup() {
+            if (timeoutID) {
+                clearTimeout(timeoutID);
+            }
+            if (server) {
+                server.destroy();
+                console.log("SIP server destroyed.");
+            }
+        }
+
+        try {
+            // Send the SIP options request
+            server.send(optionsRequest, (response) => {
+                console.log("Received SIP options response:", response);
+                if (response) {
+                    resolve(response); // Resolve the promise with the response
+                    cleanup(); // Perform cleanup
+                } else {
+                    reject(new Error("Empty SIP response received."));
+                    cleanup();
+                }
+            });
+        } catch (error) {
+            console.error("Error sending SIP options request:", error.message);
+            reject(new Error("Error sending SIP options request: " + error.message));
+            cleanup();
+        }
+    });
+};
 /**
  * Use NTLM Auth for a http request.
  * @param {object} options The http request options
