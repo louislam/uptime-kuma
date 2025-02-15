@@ -1020,5 +1020,6 @@
     "OAuth Token URL": "URL توکن OAuth",
     "OAuth Scope": "اسکوپ OAuth",
     "Optional: Space separated list of scopes": "اختیاری: لیست جدا شده با فاصله از اسکوپ‌ها",
-    "signl4Docs": "شما می‌توانید اطلاعات بیشتر در رابطه با نحوه تنظیم SIGNL4 و به دست آوردن URL وب‌هوک SIGNL4 را در {0} پیدا کنید."
+    "signl4Docs": "شما می‌توانید اطلاعات بیشتر در رابطه با نحوه تنظیم SIGNL4 و به دست آوردن URL وب‌هوک SIGNL4 را در {0} پیدا کنید.",
+    "ignoredTLSError": "خطاهای TLS/SSL نادیده گرفته میشود"
 }
