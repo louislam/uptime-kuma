@@ -63,7 +63,11 @@
                                             </span>
                                         </div>
                                         <div class="extra-info">
-                                            <div v-if="showCertificateExpiry && $root.certificateExpiryList[monitor.element.id].certExpiryDaysRemaining">
+                                            <div
+                                                v-if="showCertificateExpiry &&
+                                                    $root.certificateExpiryList[monitor.element.id] &&
+                                                    $root.certificateExpiryList[monitor.element.id].certExpiryDaysRemaining"
+                                            >
                                                 <Tag
                                                     :item="{
                                                         name: $t('Cert Exp.'),
