@@ -180,7 +180,6 @@ export default {
          * @returns {string} Certificate expiry message
          */
         formattedCertExpiryMessage(info) {
-            console.log("TEST 123 FORMAT CERT");
             if (info.validCert && info.certExpiryDaysRemaining) {
                 return info.certExpiryDaysRemaining + " " + this.$tc("day", info.certExpiryDaysRemaining);
             } else if (info.validCert === false) {

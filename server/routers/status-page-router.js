@@ -115,10 +115,6 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                             certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
                             validCert: true
                         };
-                        certificateExpiryList[monitorID] = {
-                            certExpiryDaysRemaining: "10",
-                            validCert: true
-                        };
                     } else {
                         certificateExpiryList[monitorID] = {
                             certExpiryDaysRemaining: "",
