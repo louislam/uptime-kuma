@@ -89,17 +89,11 @@ export default {
     },
     data() {
         return {
-            searchText: "",
             selectMode: false,
             selectAll: false,
             disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
-            filterState: {
-                status: null,
-                active: null,
-                tags: null,
-            }
         };
     },
     computed: {
@@ -165,11 +159,65 @@ export default {
         },
 
         /**
+         * Returns applied filters based on query params.
+         * @returns {{ status: number[], active: any[], tags: number[] }} The current filter state.
+         */
+        filterState() {
+            // Since query params are always strings, convert them to the correct type
+            let status = this.$route.query["status"] || [];
+            if (!Array.isArray(status)) {
+                status = [ status ];
+            }
+            status = status.map(Number);
+            // Casting to boolean does not work here as Boolean("false") === true
+            let active = this.$route.query["active"] || [];
+            if (!Array.isArray(active)) {
+                active = [ active ];
+            }
+            active = active.map(val => {
+                if (val === "true") {
+                    return true;
+                }
+                if (val === "false") {
+                    return false;
+                }
+                return val;
+            });
+            let tags = this.$route.query["tags"] || [];
+            if (!Array.isArray(tags)) {
+                tags = [ tags ];
+            }
+            tags = tags.map(Number);
+            return {
+                status,
+                active,
+                tags,
+            };
+        },
+
+        searchText: {
+            get() {
+                return this.$route.query.searchText || "";
+            },
+            set(value) {
+                let newQuery = { ...this.$route.query };
+                if (value === "") {
+                    delete newQuery.searchText;
+                } else {
+                    newQuery.searchText = value;
+                }
+                this.$router.replace({
+                    query: newQuery,
+                });
+            }
+        },
+
+        /**
          * Determines if any filters are active.
          * @returns {boolean} True if any filter is active, false otherwise.
          */
         filtersActive() {
-            return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
+            return this.filterState.status.length > 0 || this.filterState.active.length > 0 || this.filterState.tags.length > 0 || this.searchText !== "";
         }
     },
     watch: {
@@ -239,11 +287,16 @@ export default {
         },
         /**
          * Update the MonitorList Filter
-         * @param {object} newFilter Object with new filter
+         * @param {{ status: number[], active: any[], tags: number[] }} newFilter Object with new filter
          * @returns {void}
          */
         updateFilter(newFilter) {
-            this.filterState = newFilter;
+            this.$router.replace({
+                query: {
+                    ...this.$route.query,
+                    ...newFilter,
+                },
+            });
         },
         /**
          * Deselect a monitor
@@ -333,7 +386,7 @@ export default {
 
             // filter by status
             let statusMatch = true;
-            if (this.filterState.status != null && this.filterState.status.length > 0) {
+            if (this.filterState.status.length > 0) {
                 if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
                     monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
                 }
@@ -342,13 +395,13 @@ export default {
 
             // filter by active
             let activeMatch = true;
-            if (this.filterState.active != null && this.filterState.active.length > 0) {
+            if (this.filterState.active.length > 0) {
                 activeMatch = this.filterState.active.includes(monitor.active);
             }
 
             // filter by tags
             let tagsMatch = true;
-            if (this.filterState.tags != null && this.filterState.tags.length > 0) {
+            if (this.filterState.tags.length > 0) {
                 tagsMatch = monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
                     .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
                     .length > 0;
