@@ -112,6 +112,8 @@ class Database {
         "patch-fix-kafka-producer-booleans.sql": true,
         "patch-timeout.sql": true,
         "patch-monitor-tls-info-add-fk.sql": true, // The last file so far converted to a knex migration file
+        "patch-add-sip-fields.sql": true,
+        "patch-sip-auth.sql": true,
     };
 
     /**
