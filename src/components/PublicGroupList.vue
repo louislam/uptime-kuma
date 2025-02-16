@@ -65,7 +65,7 @@
                                         <div class="extra-info">
                                             <div
                                                 v-if="showCertificateExpiry &&
-                                                    $root.certificateExpiryList[monitor.element.id] &&
+                                                    $root.certificateExpiryList &&
                                                     $root.certificateExpiryList[monitor.element.id].certExpiryDaysRemaining"
                                             >
                                                 <Tag
