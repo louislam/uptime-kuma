@@ -70,10 +70,12 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
     try {
         let heartbeatList = {};
         let uptimeList = {};
+        let certificateExpiryList = {};
 
         let slug = request.params.slug;
         slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
+        let showCertificateExpiry = !!(await R.getCell("SELECT show_certificate_expiry FROM status_page WHERE id = ? ", [ statusPageID ]));
 
         let monitorIDList = await R.getCol(`
             SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
@@ -99,11 +101,38 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
             uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+
+            // Get Certificate Status (Copied from monitor.js getCertExpiry())
+            if (showCertificateExpiry) {
+                let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+                    monitorID,
+                ]);
+                let tlsInfo;
+                if (tlsInfoBean) {
+                    tlsInfo = JSON.parse(tlsInfoBean?.info_json);
+                    if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
+                        certificateExpiryList[monitorID] = {
+                            certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
+                            validCert: true
+                        };
+                        certificateExpiryList[monitorID] = {
+                            certExpiryDaysRemaining: "10",
+                            validCert: true
+                        };
+                    } else {
+                        certificateExpiryList[monitorID] = {
+                            certExpiryDaysRemaining: "",
+                            validCert: false
+                        };
+                    }
+                }
+            }
         }
 
         response.json({
             heartbeatList,
-            uptimeList
+            uptimeList,
+            certificateExpiryList
         });
 
     } catch (error) {

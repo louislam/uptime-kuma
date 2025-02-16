@@ -63,8 +63,15 @@
                                             </span>
                                         </div>
                                         <div class="extra-info">
-                                            <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
-                                                <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
+                                            <div v-if="showCertificateExpiry && $root.certificateExpiryList[monitor.element.id].certExpiryDaysRemaining">
+                                                <Tag
+                                                    :item="{
+                                                        name: $t('Cert Exp.'),
+                                                        value: formattedCertExpiryMessage($root.certificateExpiryList[monitor.element.id]),
+                                                        color: certExpiryColor($root.certificateExpiryList[monitor.element.id])
+                                                    }"
+                                                    :size="'sm'"
+                                                />
                                             </div>
                                             <div v-if="showTags">
                                                 <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" data-testid="monitor-tag" />
@@ -169,13 +176,14 @@ export default {
 
         /**
          * Returns formatted certificate expiry or Bad cert message
-         * @param {object} monitor Monitor to show expiry for
+         * @param {object} info Certificate information to show
          * @returns {string} Certificate expiry message
          */
-        formattedCertExpiryMessage(monitor) {
-            if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
-                return monitor.element.certExpiryDaysRemaining + " " + this.$tc("day", monitor.element.certExpiryDaysRemaining);
-            } else if (monitor?.element?.validCert === false) {
+        formattedCertExpiryMessage(info) {
+            console.log("TEST 123 FORMAT CERT");
+            if (info.validCert && info.certExpiryDaysRemaining) {
+                return info.certExpiryDaysRemaining + " " + this.$tc("day", info.certExpiryDaysRemaining);
+            } else if (info.validCert === false) {
                 return this.$t("noOrBadCertificate");
             } else {
                 return this.$t("Unknown") + " " + this.$tc("day", 2);
@@ -184,11 +192,11 @@ export default {
 
         /**
          * Returns certificate expiry color based on days remaining
-         * @param {object} monitor Monitor to show expiry for
+         * @param {object} info Certificate information to show
          * @returns {string} Color for certificate expiry
          */
-        certExpiryColor(monitor) {
-            if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
+        certExpiryColor(info) {
+            if (info.validCert && info.certExpiryDaysRemaining > 7) {
                 return "#059669";
             }
             return "#DC2626";
