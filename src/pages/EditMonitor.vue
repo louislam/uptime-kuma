@@ -719,6 +719,16 @@
                                 <input id="description" v-model="monitor.description" type="text" class="form-control">
                             </div>
 
+                            <!-- Public URL -->
+                            <div class="my-3">
+                                <label for="publicUrl" class="form-label">{{ $t("Public URL") }}</label>
+                                <input id="publicUrl" v-model="monitor.publicUrl" type="url" class="form-control" data-testid="public-url-input">
+
+                                <div class="form-text">
+                                    {{ $t("publicUrlDescription") }}
+                                </div>
+                            </div>
+
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                             </div>
@@ -1725,6 +1735,10 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (this.monitor.publicUrl) {
+                this.monitor.publicUrl = this.monitor.publicUrl.trim();
             }
 
             let createdNewParent = false;
