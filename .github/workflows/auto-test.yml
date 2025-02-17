@@ -78,7 +78,7 @@ jobs:
 
   e2e-test:
     needs: [ ]
-    runs-on: ARM64
+    runs-on: ubuntu-24.04-arm
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
