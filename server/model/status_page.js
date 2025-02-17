@@ -121,13 +121,13 @@ class StatusPage extends BeanModel {
 
         const head = $("head");
 
-        if (statusPage.googleAnalyticsTagId) {
-            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId);
+        if (statusPage.analyticsType === "google" && statusPage.analyticsId) {
+            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.analyticsId);
             head.append($(escapedGoogleAnalyticsScript));
         }
 
-        if (statusPage.umamiAnalyticsDomainUrl && statusPage.umamiAnalyticsWebsiteId) {
-            let escapedUmamiAnalyticsScript = umamiAnalytics.getUmamiAnalyticsScript(statusPage.umamiAnalyticsDomainUrl, statusPage.umamiAnalyticsWebsiteId);
+        if (statusPage.analyticsType === "umami" && statusPage.analyticsDomainUrl && statusPage.analyticsId) {
+            let escapedUmamiAnalyticsScript = umamiAnalytics.getUmamiAnalyticsScript(statusPage.analyticsDomainUrl, statusPage.analyticsId);
             head.append($(escapedUmamiAnalyticsScript));
         }
 
@@ -413,9 +413,9 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
-            googleAnalyticsId: this.google_analytics_tag_id,
-            umamiAnalyticsDomainUrl: this.umami_analytics_domain_url,
-            umamiAnalyticsWebsiteId: this.umami_analytics_website_id,
+            analyticsId: this.analytics_id,
+            analyticsDomainUrl: this.analytics_domain_url,
+            analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }
@@ -438,9 +438,9 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
-            googleAnalyticsId: this.google_analytics_tag_id,
-            umamiAnalyticsDomainUrl: this.umami_analytics_domain_url,
-            umamiAnalyticsWebsiteId: this.umami_analytics_website_id,
+            analyticsId: this.analytics_id,
+            analyticsDomainUrl: this.analytics_domain_url,
+            analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
         };
     }

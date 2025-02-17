@@ -202,9 +202,10 @@ async function createTables() {
         table.text("footer_text");
         table.text("custom_css");
         table.boolean("show_powered_by").notNullable().defaultTo(true);
-        table.string("google_analytics_tag_id");
-        table.string("umami_analytics_domain_url");
-        table.string("umami_analytics_website_id");
+        table.string("analytics_id");
+        table.string("analytics_domain_url");
+        table.enu("analytics_type", [ "google", "umami", "plausible" ]).defaultTo(null);
+
     });
 
     // maintenance_status_page

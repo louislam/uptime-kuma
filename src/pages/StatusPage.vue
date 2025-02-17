@@ -1,3 +1,25 @@
+<script setup>
+// Analytics options
+const analyticsOptions = [
+    {
+        name: "None",
+        value: null
+    },
+    {
+        name: "Google",
+        value: "google"
+    },
+    {
+        name: "Umami",
+        value: "umami"
+    },
+    {
+        name: "Plausible",
+        value: "plausible"
+    }
+];
+</script>
+
 <template>
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
@@ -92,20 +114,25 @@
                     </ul>
                 </div>
 
-                <!-- Google Analytics -->
+                <!-- Analytics -->
+
                 <div class="my-3">
-                    <label for="googleAnalyticsTag" class="form-label">{{ $t("Google Analytics ID") }}</label>
-                    <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control" data-testid="google-analytics-input">
+                    <label for="analyticsType" class="form-label">{{ $t("Analytics Type") }}</label>
+                    <select id="analyticsType" v-model="config.analyticsType" class="form-select" data-testid="analytics-type-select">
+                        <option v-for="(analyticOption, index) in analyticsOptions" :key="index" :value="analyticOption.value">
+                            {{ analyticOption.name }}
+                        </option>
+                    </select>
                 </div>
 
-                <!-- Umami Analytics -->
-                <div class="my-3">
-                    <label for="umamiAnalyticsDomainUrl" class="form-label">{{ $t("Umami Analytics Domain Url") }}</label>
-                    <input id="umamiAnalyticsDomainUrl" v-model="config.umamiAnalyticsDomainUrl" type="text" class="form-control" data-testid="umami-analytics-domain-url-input">
+                <div v-if="config.analyticsType !== null && config.analyticsType !== undefined" class="my-3">
+                    <label for="analyticsId" class="form-label">{{ $t("Analytics ID") }}</label>
+                    <input id="analyticsId" v-model="config.analyticsId" type="text" class="form-control" data-testid="analytics-id-input">
                 </div>
-                <div class="my-3">
-                    <label for="umamiAnalyticsWebsite" class="form-label">{{ $t("Umami Analytics Website ID") }}</label>
-                    <input id="umamiAnalyticsWebsite" v-model="config.umamiAnalyticsWebsiteId" type="text" class="form-control" data-testid="umami-analytics-website-id-input">
+
+                <div v-if="config.analyticsType !== null && config.analyticsType !== undefined && config.analyticsType !== 'google'" class="my-3">
+                    <label for="analyticsDomainUrl" class="form-label">{{ $t("Analytics Domain URL") }}</label>
+                    <input id="analyticsDomainUrl" v-model="config.analyticsDomainUrl" type="text" class="form-control" data-testid="analytics-domain-url-input">
                 </div>
 
                 <!-- Custom CSS -->

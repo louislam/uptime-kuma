@@ -59,9 +59,8 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-tags-checkbox").uncheck();
         await page.getByTestId("show-powered-by-checkbox").uncheck();
         await page.getByTestId("show-certificate-expiry-checkbox").uncheck();
-        await page.getByTestId("google-analytics-input").fill(googleAnalyticsId);
-        await page.getByTestId("umami-analytics-domain-url-input").fill(umamiAnalyticsDomainUrl);
-        await page.getByTestId("umami-analytics-website-id-input").fill(umamiAnalyticsWebsiteId);
+        await page.getByTestId("analytics-type-select").selectOption("google");
+        await page.getByTestId("analytics-id-input").fill(googleAnalyticsId);
         await page.getByTestId("custom-css-input").getByTestId("textarea").fill(customCss); // Prism
         await expect(page.getByTestId("description-editable")).toHaveText(descriptionText);
         await expect(page.getByTestId("custom-footer-editable")).toHaveText(footerText);
@@ -104,14 +103,12 @@ test.describe("Status Page", () => {
         expect(updateCountdown).toBeLessThanOrEqual(refreshInterval + 10);
 
         await expect(page.locator("body")).toHaveClass(theme);
-        expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
-        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsDomainUrl);
-        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
 
         const backgroundColor = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
         expect(backgroundColor).toEqual("rgb(0, 128, 128)");
 
         await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
 
         // Flip the "Show Tags" and "Show Powered By" switches:
         await page.getByTestId("edit-button").click();
@@ -120,6 +117,11 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-powered-by-checkbox").setChecked(true);
 
         await screenshot(testInfo, page);
+
+        // Fill in umami analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("umami");
+        await page.getByTestId("analytics-domain-url-input").fill(umamiAnalyticsDomainUrl);
+        await page.getByTestId("analytics-id-input").fill(umamiAnalyticsWebsiteId);
         await page.getByTestId("save-button").click();
 
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
@@ -127,6 +129,9 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("monitor-tag")).toContainText(tagValue);
 
         await screenshot(testInfo, page);
+
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsDomainUrl);
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
     });
 
     // @todo Test certificate expiry
