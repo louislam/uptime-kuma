@@ -42,7 +42,7 @@ describe("Websocket Test", {
     });
 
     test("Insecure Websocket", {
-        skip: !!process.env.CI && process.arch !== "x64" && process.platform !== "linux",
+        skip: !!process.env.CI,
     }, async () => {
         const websocketMonitor = new websocket();
 
