@@ -5,7 +5,7 @@ const { UP, DOWN, PENDING } = require("../../src/util");
 
 describe("Websocket Test", {
 }, () => {
-    test("Non Websocket Server", async () => {
+    test("Non Websocket Server", {}, async () => {
         const websocketMonitor = new websocket();
 
         const monitor = {
@@ -41,7 +41,9 @@ describe("Websocket Test", {
         assert.strictEqual(heartbeat.msg, "101 - OK");
     });
 
-    test("Insecure Websocket", async () => {
+    test("Insecure Websocket", {
+        skip: !!process.env.CI && process.platform === "darwin",
+    }, async () => {
         const websocketMonitor = new websocket();
 
         const monitor = {
