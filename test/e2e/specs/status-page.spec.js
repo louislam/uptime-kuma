@@ -20,6 +20,8 @@ test.describe("Status Page", () => {
         const googleAnalyticsId = "G-123";
         const umamiAnalyticsDomainUrl = "example.com";
         const umamiAnalyticsWebsiteId = "606487e2-bc25-45f9-9132-fa8b065aad46";
+        const plausibleAnalyticsDomainUrl = "example.com";
+        const plausibleAnalyticsDomainsUrls = "one.com,two.com";
         const customCss = "body { background: rgb(0, 128, 128) !important; }";
         const descriptionText = "This is an example status page.";
         const incidentTitle = "Example Outage Incident";
@@ -132,6 +134,16 @@ test.describe("Status Page", () => {
 
         expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsDomainUrl);
         expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
+
+        await page.getByTestId("edit-button").click();
+        // Fill in plausible analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("plausible");
+        await page.getByTestId("analytics-domain-url-input").fill(plausibleAnalyticsDomainUrl);
+        await page.getByTestId("analytics-id-input").fill(plausibleAnalyticsDomainsUrls);
+        await page.getByTestId("save-button").click();
+        await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainUrl);
+        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainsUrls);
     });
 
     // @todo Test certificate expiry

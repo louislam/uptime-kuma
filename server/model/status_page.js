@@ -3,8 +3,7 @@ const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
-const googleAnalytics = require("../google-analytics");
-const umamiAnalytics = require("../umami-analytics");
+const analytics = require("../analytics/analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
@@ -121,14 +120,9 @@ class StatusPage extends BeanModel {
 
         const head = $("head");
 
-        if (statusPage.analyticsType === "google" && statusPage.analyticsId) {
-            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.analyticsId);
-            head.append($(escapedGoogleAnalyticsScript));
-        }
-
-        if (statusPage.analyticsType === "umami" && statusPage.analyticsDomainUrl && statusPage.analyticsId) {
-            let escapedUmamiAnalyticsScript = umamiAnalytics.getUmamiAnalyticsScript(statusPage.analyticsDomainUrl, statusPage.analyticsId);
-            head.append($(escapedUmamiAnalyticsScript));
+        if (analytics.isValidAnalyticsConfig(statusPage)) {
+            let escapedAnalyticsScript = analytics.getAnalyticsScript(statusPage);
+            head.append($(escapedAnalyticsScript));
         }
 
         // OG Meta Tags
