@@ -1,5 +1,6 @@
 const { MonitorType } = require("./monitor-type");
-const { UP } = require("../../src/util");
+const WebSocket = require("ws");
+const { UP, DOWN } = require("../../src/util");
 const childProcessAsync = require("promisify-child-process");
 
 class websocket extends MonitorType {
@@ -9,8 +10,8 @@ class websocket extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        //let status_code = await this.attemptUpgrade(monitor.url);
-        let statusCode = await this.curlTest(monitor.url);
+        let statusCode = await this.attemptUpgrade(monitor);
+        //let statusCode = await this.curlTest(monitor.url);
         this.updateStatus(heartbeat, statusCode);
     }
 
@@ -28,40 +29,45 @@ class websocket extends MonitorType {
     }
 
     /**
-     * Checks if status code is 101 and sets status
+     * Checks if status code is 1000(Normal Closure) and sets status and message
      * @param {object} heartbeat The heartbeat object to update.
-     * @param {string} statusCode Status code from curl
+     * @param {[ string, int ]} status Array containing a status message and response code
      * @returns {void}
      */
-    updateStatus(heartbeat, statusCode) {
-        if (statusCode === "101") {
-            heartbeat.status = UP;
-        }
-        heartbeat.msg = statusCode;
+    updateStatus(heartbeat, [ message, code ]) {
+        heartbeat.status = code === 1000 ? UP : DOWN;
+        heartbeat.msg = message;
     }
 
-    // Attempt at using websocket library. Abandoned this idea because of the lack of control of headers. Certain websocket servers don't return the Sec-WebSocket-Accept, which causes websocket to error out.
-    // async attemptUpgrade(hostname) {
-    //     return new Promise((resolve) => {
-    //         const ws = new WebSocket('wss://' + hostname);
+    /**
+     * Uses the builtin Websocket API to establish a connection to target server
+     * @param {object} monitor The monitor object for input parameters.
+     * @returns {[ string, int ]} Array containing a status message and response code
+     */
+    async attemptUpgrade(monitor) {
+        return new Promise((resolve) => {
+            const ws = new WebSocket(monitor.wsurl);
 
-    //         ws.addEventListener("open", (event) => {
-    //             ws.close();
-    //         });
+            ws.addEventListener("open", (event) => {
+                ws.close(1000);
+            });
 
-    //         ws.onerror = (error) => {
-    //             console.log(error.message);
-    //         };
+            ws.onerror = (error) => {
+                // console.log(error.message);
+                // Give user the choice to ignore Sec-WebSocket-Accept header
+                if (monitor.wsIgnoreHeaders && error.message === "Invalid Sec-WebSocket-Accept header") {
+                    resolve([ "101 - OK", 1000 ]);
+                }
+                resolve([ error.message, error.code ]);
+            };
 
-    //         ws.onclose = (event) => {
-    //             if (event.code === 1005) {
-    //                 resolve(true);
-    //             } else {
-    //                 resolve(false);
-    //             }
-    //         };
-    //     })
-    // }
+            ws.onclose = (event) => {
+                // console.log(event.message);
+                // console.log(event.code);
+                resolve([ "101 - OK", event.code ]);
+            };
+        });
+    }
 }
 
 module.exports = {

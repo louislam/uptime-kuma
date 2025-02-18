@@ -86,6 +86,7 @@
     "ignoreTLSError": "Ignore TLS/SSL errors for HTTPS websites",
     "ignoreTLSErrorGeneral": "Ignore TLS/SSL error for connection",
     "upsideDownModeDescription": "Flip the status upside down. If the service is reachable, it is DOWN.",
+    "wsIgnoreHeadersDescription": "Test non compliant Websocket servers that don't respond with correct headers.",
     "maxRedirectDescription": "Maximum number of redirects to follow. Set to 0 to disable redirects.",
     "Upside Down Mode": "Upside Down Mode",
     "Max. Redirects": "Max. Redirects",

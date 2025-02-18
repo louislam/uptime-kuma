@@ -117,9 +117,15 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'websocket' || monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
+                            </div>
+
+                            <!-- Websocket -->
+                            <div v-if="monitor.type === 'websocket'" class="my-3">
+                                <label for="wsurl" class="form-label">{{ $t("URL") }}</label>
+                                <input id="wsurl" v-model="monitor.wsurl" type="wsurl" class="form-control" pattern="wss?://.+" required data-testid="url-input">
                             </div>
 
                             <!-- gRPC URL -->
@@ -625,6 +631,16 @@
                                 </div>
                             </div>
 
+                            <div v-if="monitor.type === 'websocket' " class="my-3 form-check">
+                                <input id="ws-ignore-headers" v-model="monitor.wsIgnoreHeaders" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="ws-ignore-headers">
+                                    {{ $t("Ignore Server Headers") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("wsIgnoreHeadersDescription") }}
+                                </div>
+                            </div>
+
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' " class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
@@ -1078,6 +1094,8 @@ const monitorDefaults = {
     name: "",
     parent: null,
     url: "https://",
+    wsurl: "wss://",
+    wsIgnoreHeaders: false,
     method: "GET",
     interval: 60,
     retryInterval: 60,
@@ -1729,6 +1747,10 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (this.monitor.wsurl) {
+                this.monitor.wsurl = this.monitor.wsurl.trim();
             }
 
             let createdNewParent = false;
