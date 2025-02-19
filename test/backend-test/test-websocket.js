@@ -1,3 +1,4 @@
+const { WebSocketServer } = require("ws");
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { WebSocketMonitorType } = require("../../server/monitor-types/websocket-upgrade");
@@ -49,11 +50,13 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Insecure Websocket", async () => {
+    test("Insecure Websocket", async (t) => {
+        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
+        const wss = new WebSocketServer({ port: 8080 });
 
         const monitor = {
-            wsurl: "ws://ws.ifelse.io",
+            wsurl: "ws://localhost:8080",
             wsIgnoreHeaders: false,
         };
 

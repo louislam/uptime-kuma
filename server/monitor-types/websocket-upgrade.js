@@ -12,7 +12,6 @@ class WebSocketMonitorType extends MonitorType {
         const [ message, code ] = await this.attemptUpgrade(monitor);
         heartbeat.status = code === 1000 ? UP : DOWN;
         heartbeat.msg = message;
-        console.log(code, message); //temp unit testing
     }
 
     /**
@@ -34,10 +33,12 @@ class WebSocketMonitorType extends MonitorType {
                 if (monitor.wsIgnoreHeaders && error.message === "Invalid Sec-WebSocket-Accept header") {
                     resolve([ "101 - OK", 1000 ]);
                 }
+                // Upgrade failed, return message to user
                 resolve([ error.message, error.code ]);
             };
 
             ws.onclose = (event) => {
+                // Upgrade success, connection closed successfully
                 resolve([ "101 - OK", event.code ]);
             };
         });
