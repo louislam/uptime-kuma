@@ -93,7 +93,7 @@
             <div class="form-check">
                 <input id="use-html-body" v-model="$parent.notification.htmlBody" class="form-check-input" type="checkbox" value="">
                 <label class="form-check-label" for="use-html-body">
-                    {{ $t("Use HTML E-mail body") }}
+                    {{ $t("Use HTML for custom E-mail body") }}
                 </label>
             </div>
         </div>

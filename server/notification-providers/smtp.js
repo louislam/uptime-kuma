@@ -53,7 +53,6 @@ class SMTP extends NotificationProvider {
             // cannot end with whitespace as this often raises spam scores
             const customSubject = notification.customSubject?.trim() || "";
             const customBody = notification.customBody?.trim() || "";
-            use_html_body = notification.htmlBody || false
             const context = this.generateContext(msg, monitorJSON, heartbeatJSON);
             const engine = new Liquid();
             if (customSubject !== "") {
@@ -61,6 +60,7 @@ class SMTP extends NotificationProvider {
                 subject = await engine.render(tpl, context);
             }
             if (customBody !== "") {
+                use_html_body = notification.htmlBody || false
                 const tpl = engine.parse(customBody);
                 body = await engine.render(tpl, context);
             }
