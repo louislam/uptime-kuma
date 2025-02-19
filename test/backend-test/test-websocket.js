@@ -18,9 +18,13 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
+        const expected = {
+            msg: "Unexpected server response: 200",
+            status: DOWN,
+        };
+
         await websocketMonitor.check(monitor, heartbeat, {});
-        assert.strictEqual(heartbeat.status, DOWN);
-        assert.strictEqual(heartbeat.msg, undefined);
+        assert.deepStrictEqual(heartbeat, expected);
     });
 
     test("Secure Websocket", async () => {
@@ -36,14 +40,16 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
+        const expected = {
+            msg: "101 - OK",
+            status: UP,
+        };
+
         await websocketMonitor.check(monitor, heartbeat, {});
-        assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, 1000);
+        assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Insecure Websocket", {
-        skip: !!process.env.CI,
-    }, async () => {
+    test("Insecure Websocket", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -56,10 +62,13 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
+        const expected = {
+            msg: "101 - OK",
+            status: UP,
+        };
+
         await websocketMonitor.check(monitor, heartbeat, {});
-        console.log("Insecure WS Test:", heartbeat.msg, heartbeat.status);
-        assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, 1000);
+        assert.deepStrictEqual(heartbeat, expected);
     });
 
     test("Test a non compliant WS server without ignore", async () => {
@@ -75,9 +84,13 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
+        const expected = {
+            msg: "Invalid Sec-WebSocket-Accept header",
+            status: DOWN,
+        };
+
         await websocketMonitor.check(monitor, heartbeat, {});
-        assert.strictEqual(heartbeat.status, DOWN);
-        assert.strictEqual(heartbeat.msg, undefined);
+        assert.deepStrictEqual(heartbeat, expected);
     });
 
     test("Test a non compliant WS server with ignore", async () => {
@@ -93,8 +106,12 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
+        const expected = {
+            msg: "101 - OK",
+            status: UP,
+        };
+
         await websocketMonitor.check(monitor, heartbeat, {});
-        assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, 1000);
+        assert.deepStrictEqual(heartbeat, expected);
     });
 });

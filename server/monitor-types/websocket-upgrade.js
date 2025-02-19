@@ -11,9 +11,8 @@ class WebSocketMonitorType extends MonitorType {
     async check(monitor, heartbeat, _server) {
         const [ message, code ] = await this.attemptUpgrade(monitor);
         heartbeat.status = code === 1000 ? UP : DOWN;
-        //heartbeat.msg = message;
-        heartbeat.msg = code; //unit testing
-        console.log(message); //temporary test to pass eslint check
+        heartbeat.msg = message;
+        console.log(code, message); //temp unit testing
     }
 
     /**
