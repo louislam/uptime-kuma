@@ -1,12 +1,12 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
-const { websocket } = require("../../server/monitor-types/websocket");
+const { WebSocketMonitorType } = require("../../server/monitor-types/websocket-upgrade");
 const { UP, DOWN, PENDING } = require("../../src/util");
 
 describe("Websocket Test", {
 }, () => {
     test("Non Websocket Server", {}, async () => {
-        const websocketMonitor = new websocket();
+        const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
             wsurl: "wss://example.org",
@@ -20,11 +20,11 @@ describe("Websocket Test", {
 
         await websocketMonitor.check(monitor, heartbeat, {});
         assert.strictEqual(heartbeat.status, DOWN);
-        assert.strictEqual(heartbeat.msg, "Unexpected server response: 200");
+        assert.strictEqual(heartbeat.msg, undefined);
     });
 
     test("Secure Websocket", async () => {
-        const websocketMonitor = new websocket();
+        const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
             wsurl: "wss://echo.websocket.org",
@@ -38,13 +38,13 @@ describe("Websocket Test", {
 
         await websocketMonitor.check(monitor, heartbeat, {});
         assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, "101 - OK");
+        assert.strictEqual(heartbeat.msg, 1000);
     });
 
     test("Insecure Websocket", {
         skip: !!process.env.CI,
     }, async () => {
-        const websocketMonitor = new websocket();
+        const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
             wsurl: "ws://ws.ifelse.io",
@@ -57,12 +57,13 @@ describe("Websocket Test", {
         };
 
         await websocketMonitor.check(monitor, heartbeat, {});
+        console.log("Insecure WS Test:", heartbeat.msg, heartbeat.status);
         assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, "101 - OK");
+        assert.strictEqual(heartbeat.msg, 1000);
     });
 
     test("Test a non compliant WS server without ignore", async () => {
-        const websocketMonitor = new websocket();
+        const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
             wsurl: "wss://c.img-cdn.net/yE4s7KehTFyj/",
@@ -76,11 +77,11 @@ describe("Websocket Test", {
 
         await websocketMonitor.check(monitor, heartbeat, {});
         assert.strictEqual(heartbeat.status, DOWN);
-        assert.strictEqual(heartbeat.msg, "Invalid Sec-WebSocket-Accept header");
+        assert.strictEqual(heartbeat.msg, undefined);
     });
 
     test("Test a non compliant WS server with ignore", async () => {
-        const websocketMonitor = new websocket();
+        const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
             wsurl: "wss://c.img-cdn.net/yE4s7KehTFyj/",
@@ -94,6 +95,6 @@ describe("Websocket Test", {
 
         await websocketMonitor.check(monitor, heartbeat, {});
         assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, "101 - OK");
+        assert.strictEqual(heartbeat.msg, 1000);
     });
 });

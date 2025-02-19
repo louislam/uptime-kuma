@@ -47,7 +47,7 @@
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
 
-                                        <option value="websocket">
+                                        <option value="websocket-upgrade">
                                             Websocket Upgrade
                                         </option>
                                     </optgroup>
@@ -123,7 +123,7 @@
                             </div>
 
                             <!-- Websocket -->
-                            <div v-if="monitor.type === 'websocket'" class="my-3">
+                            <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
                                 <label for="wsurl" class="form-label">{{ $t("URL") }}</label>
                                 <input id="wsurl" v-model="monitor.wsurl" type="wsurl" class="form-control" pattern="wss?://.+" required data-testid="url-input">
                             </div>
@@ -631,10 +631,10 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'websocket' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
                                 <input id="ws-ignore-headers" v-model="monitor.wsIgnoreHeaders" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="ws-ignore-headers">
-                                    {{ $t("Ignore Server Headers") }}
+                                    {{ $t("Ignore Sec-WebSocket-Accept header") }}
                                 </label>
                                 <div class="form-text">
                                     {{ $t("wsIgnoreHeadersDescription") }}
