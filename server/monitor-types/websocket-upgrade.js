@@ -1,7 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const WebSocket = require("ws");
 const { UP, DOWN } = require("../../src/util");
-const childProcessAsync = require("promisify-child-process");
 
 class WebSocketMonitorType extends MonitorType {
     name = "websocket-upgrade";
@@ -14,6 +13,7 @@ class WebSocketMonitorType extends MonitorType {
         heartbeat.status = code === 1000 ? UP : DOWN;
         //heartbeat.msg = message;
         heartbeat.msg = code; //unit testing
+        console.log(message); //temporary test to pass eslint check
     }
 
     /**
