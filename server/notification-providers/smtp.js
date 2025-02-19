@@ -74,7 +74,7 @@ class SMTP extends NotificationProvider {
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: subject,
-            [htmlBody ? 'html' : 'text']: body
+            [use_html_body ? 'html' : 'text']: body
         });
 
         return okMsg;
