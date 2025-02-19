@@ -44,7 +44,7 @@ class SMTP extends NotificationProvider {
         // default values in case the user does not want to template
         let subject = msg;
         let body = msg;
-        let use_html_body = false
+        let useHTMLBody = false;
         if (heartbeatJSON) {
             body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
         }
@@ -60,7 +60,7 @@ class SMTP extends NotificationProvider {
                 subject = await engine.render(tpl, context);
             }
             if (customBody !== "") {
-                use_html_body = notification.htmlBody || false
+                useHTMLBody = notification.htmlBody || false;
                 const tpl = engine.parse(customBody);
                 body = await engine.render(tpl, context);
             }
@@ -74,7 +74,7 @@ class SMTP extends NotificationProvider {
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: subject,
-            [use_html_body ? 'html' : 'text']: body
+            [useHTMLBody ? "html" : "text"]: body
         });
 
         return okMsg;
