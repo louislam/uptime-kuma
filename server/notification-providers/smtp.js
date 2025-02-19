@@ -74,6 +74,7 @@ class SMTP extends NotificationProvider {
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: subject,
+            // If the email body is custom, and the user wants it, set the email body as HTML
             [useHTMLBody ? "html" : "text"]: body
         });
 
