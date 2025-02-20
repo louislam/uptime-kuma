@@ -421,6 +421,9 @@
     "telegramSendSilentlyDescription": "Sends the message silently. Users will receive a notification with no sound.",
     "telegramProtectContent": "Protect Forwarding/Saving",
     "telegramProtectContentDescription": "If enabled, the bot messages in Telegram will be protected from forwarding and saving.",
+    "telegramUseTemplate": "Use custom message template",
+    "telegramUseTemplateDescription": "If enabled, the message will be sent using a custom template.",
+    "telegramTemplateFormatDescription": "See Telegram {0} for more details on formatting.",
     "supportTelegramChatID": "Support Direct Chat / Group / Channel's Chat ID",
     "wayToGetTelegramChatID": "You can get your chat ID by sending a message to the bot and going to this URL to view the chat_id:",
     "YOUR BOT TOKEN HERE": "YOUR BOT TOKEN HERE",
@@ -1053,5 +1056,9 @@
     "SendGrid API Key": "SendGrid API Key",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
     "YZJ Webhook URL": "YZJ Webhook URL",
-    "YZJ Robot Token": "YZJ Robot token"
+    "YZJ Robot Token": "YZJ Robot token",
+    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
+    "Plain Text": "Plain Text",
+    "Template": "Template",
+    "Template Format": "Template Format"
 }
