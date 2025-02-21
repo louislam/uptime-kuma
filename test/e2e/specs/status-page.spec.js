@@ -22,6 +22,8 @@ test.describe("Status Page", () => {
         const umamiAnalyticsWebsiteId = "606487e2-bc25-45f9-9132-fa8b065aad46";
         const plausibleAnalyticsDomainUrl = "example.com";
         const plausibleAnalyticsDomainsUrls = "one.com,two.com";
+        const matomoUrl = "matomo.com";
+        const matomoSiteId = "123456789";
         const customCss = "body { background: rgb(0, 128, 128) !important; }";
         const descriptionText = "This is an example status page.";
         const incidentTitle = "Example Outage Incident";
@@ -144,6 +146,16 @@ test.describe("Status Page", () => {
         await screenshot(testInfo, page);
         expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainUrl);
         expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainsUrls);
+
+        await page.getByTestId("edit-button").click();
+        // Fill in matomo analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("matomo");
+        await page.getByTestId("analytics-domain-url-input").fill(matomoUrl);
+        await page.getByTestId("analytics-id-input").fill(matomoSiteId);
+        await page.getByTestId("save-button").click();
+        await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(matomoUrl);
+        expect(await page.locator("head").innerHTML()).toContain(matomoSiteId);
     });
 
     // @todo Test certificate expiry

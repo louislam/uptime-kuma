@@ -16,6 +16,10 @@ const analyticsOptions = [
     {
         name: "Plausible",
         value: "plausible"
+    },
+    {
+        name: "Matomo",
+        value: "matomo"
     }
 ];
 </script>
