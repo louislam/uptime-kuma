@@ -517,7 +517,7 @@
     "Domain Names": "Noms de domaine",
     "signedInDisp": "Connecté en tant que {0}",
     "signedInDispDisabled": "Authentification désactivée.",
-    "RadiusSecret": "Radius Secret",
+    "RadiusSecret": "Secret Radius",
     "RadiusSecretDescription": "Secret partagé entre le client et le serveur",
     "RadiusCalledStationId": "Identifiant de la station appelée",
     "RadiusCalledStationIdDescription": "Identifiant de l'appareil appelé",
