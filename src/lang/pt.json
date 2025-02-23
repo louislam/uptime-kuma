@@ -87,5 +87,18 @@
     "Max. Redirects": "Máx. Redirecionamentos",
     "General Monitor Type": "Tipo Geral de Monitoramento",
     "needPushEvery": "Você deve chamar essa URL a cada {0} segundos.",
-    "pushOptionalParams": "Parâmetros opcionais: {0}"
+    "pushOptionalParams": "Parâmetros opcionais: {0}",
+    "Notifications": "Notificações",
+    "Setup Notification": "Configurar notificação",
+    "Light": "Luz",
+    "Theme - Heartbeat Bar": "Tema - Heartbeat Bar",
+    "now": "agora",
+    "-year": "-ano",
+    "Push URL": "Enviar URL",
+    "ignoredTLSError": "Erros TLS/SSL foram ignorados",
+    "Json Query Expression": "Expressão de consulta Json",
+    "programmingLanguages": "Linguagens de programação",
+    "Save": "Salvar",
+    "Not available, please setup.": "Não disponível, por favor configure.",
+    "pushViewCode": "Como usar o Push monitor? (Ver código)"
 }
