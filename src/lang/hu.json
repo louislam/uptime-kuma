@@ -971,5 +971,6 @@
     "RabbitMQ Username": "RabbitMQ felhaszálónév",
     "RabbitMQ Password": "RabbitMQ jelszó",
     "SendGrid API Key": "SendGrid API kulcs",
-    "pagertreeHigh": "Magas"
+    "pagertreeHigh": "Magas",
+    "noOrBadCertificate": "Hiányzó/Hibás tanúsítvány"
 }
