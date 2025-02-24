@@ -3,7 +3,9 @@ const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const { log, genSecret, badgeConstants } = require("../src/util");
 const passwordHash = require("./password-hash");
-const { Resolver } = require("dns");
+const { UDPClient, TCPClient, DOHClient } = require("dns2");
+const { isIP, isIPv4, isIPv6 } = require("node:net");
+const { Address6 } = require("ip-address");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const chroma = require("chroma-js");
@@ -286,33 +288,63 @@ exports.httpNtlm = function (options, ntlmOptions) {
  * @param {string} resolverServer The DNS server to use
  * @param {string} resolverPort Port the DNS server is listening on
  * @param {string} rrtype The type of record to request
+ * @param {string} transport The transport method to use
+ * @param {string} dohQuery The query path used only for DoH
  * @returns {Promise<(string[] | object[] | object)>} DNS response
  */
-exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
-    const resolver = new Resolver();
-    // Remove brackets from IPv6 addresses so we can re-add them to
-    // prevent issues with ::1:5300 (::1 port 5300)
+exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype, transport, dohQuery) {
+    // Parse IPv4 and IPv6 addresses to determine address family and
+    // add square brackets to IPv6 addresses, following RFC 3986 syntax
     resolverServer = resolverServer.replace("[", "").replace("]", "");
-    resolver.setServers([ `[${resolverServer}]:${resolverPort}` ]);
-    return new Promise((resolve, reject) => {
-        if (rrtype === "PTR") {
-            resolver.reverse(hostname, (err, records) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(records);
-                }
-            });
-        } else {
-            resolver.resolve(hostname, rrtype, (err, records) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(records);
-                }
-            });
+    const addressFamily = isIP(resolverServer);
+    if (addressFamily === 6) {
+        resolverServer = `[${resolverServer}]`;
+    }
+
+    // If performing reverse (PTR) record lookup, ensure hostname
+    // syntax follows RFC 1034 / RFC 3596
+    if (rrtype === "PTR") {
+        if (isIPv4(hostname)) {
+            let octets = hostname.split(".");
+            octets.reverse();
+            hostname = octets.join(".") + ".in-addr.arpa";
+        } else if (isIPv6(hostname)) {
+            let address = new Address6(hostname);
+            hostname = address.reverseForm();
         }
-    });
+    }
+
+    // Transport method determines which client type to use
+    let resolver;
+    switch (transport.toUpperCase()) {
+        case "TCP":
+            resolver = TCPClient({
+                dns: resolverServer,
+                protocol: "tcp:",
+                port: resolverPort,
+            });
+            break;
+        case "DOT":
+            resolver = TCPClient({
+                dns: resolverServer,
+                protocol: "tls:",
+                port: resolverPort,
+            });
+            break;
+        case "DOH":
+            resolver = DOHClient({
+                dns: `https://${resolverServer}:${resolverPort}/${dohQuery}`,
+            });
+            break;
+        default:
+            resolver = UDPClient({
+                dns: resolverServer,
+                port: resolverPort,
+                socketType: "udp" + String(addressFamily),
+            });
+    }
+
+    return resolver(hostname, rrtype);
 };
 
 /**

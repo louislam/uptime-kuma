@@ -24,50 +24,90 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        let dnsRes = await dnsResolve(monitor.hostname, monitor.dns_resolve_server, monitor.port, monitor.dns_resolve_type);
+        let dnsRes = await dnsResolve(monitor.hostname, monitor.dns_resolve_server, monitor.port, monitor.dns_resolve_type, monitor.dns_transport, monitor.doh_query_path);
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
         let conditionsResult = true;
         const handleConditions = (data) => conditions ? evaluateExpressionGroup(conditions, data) : true;
 
+        let records = [];
         switch (monitor.dns_resolve_type) {
             case "A":
             case "AAAA":
-            case "TXT":
+                records = dnsRes.answers.map(record => record.address);
+                dnsMessage = `Records: ${records.join(" | ")}`;
+                conditionsResult = records.some(record => handleConditions({ record }));
+                break;
+
             case "PTR":
-                dnsMessage = `Records: ${dnsRes.join(" | ")}`;
-                conditionsResult = dnsRes.some(record => handleConditions({ record }));
+                records = dnsRes.answers.map(record => record.domain);
+                dnsMessage = `Records: ${records.join(" | ")}`;
+                conditionsResult = records.some(record => handleConditions({ record }));
+                break;
+
+            case "TXT":
+                records = dnsRes.answers.map(record => record.data);
+                dnsMessage = `Records: ${records.join(" | ")}`;
+                conditionsResult = records.some(record => handleConditions({ record }));
                 break;
 
             case "CNAME":
-                dnsMessage = dnsRes[0];
-                conditionsResult = handleConditions({ record: dnsRes[0] });
+                records.push(dnsRes.answers[0].domain);
+                dnsMessage = records[0];
+                conditionsResult = handleConditions({ record: records[0] });
                 break;
 
             case "CAA":
-                dnsMessage = dnsRes[0].issue;
-                conditionsResult = handleConditions({ record: dnsRes[0].issue });
+                // dns2 library currently has not implemented decoding CAA response
+                //records.push(dnsRes.answers[0].issue);
+                records.push("CAA issue placeholder");
+                dnsMessage = records[0];
+                conditionsResult = handleConditions({ record: records[0] });
                 break;
 
             case "MX":
-                dnsMessage = dnsRes.map(record => `Hostname: ${record.exchange} - Priority: ${record.priority}`).join(" | ");
-                conditionsResult = dnsRes.some(record => handleConditions({ record: record.exchange }));
+                records = dnsRes.answers.map(record => record.exchange);
+                dnsMessage = dnsRes.answers.map(record => `Hostname: ${record.exchange} ; Priority: ${record.priority}`).join(" | ");
+                conditionsResult = records.some(record => handleConditions({ record }));
                 break;
 
             case "NS":
-                dnsMessage = `Servers: ${dnsRes.join(" | ")}`;
-                conditionsResult = dnsRes.some(record => handleConditions({ record }));
+                records = dnsRes.answers.map(record => record.ns);
+                dnsMessage = `Servers: ${records.join(" | ")}`;
+                conditionsResult = records.some(record => handleConditions({ record }));
                 break;
 
-            case "SOA":
-                dnsMessage = `NS-Name: ${dnsRes.nsname} | Hostmaster: ${dnsRes.hostmaster} | Serial: ${dnsRes.serial} | Refresh: ${dnsRes.refresh} | Retry: ${dnsRes.retry} | Expire: ${dnsRes.expire} | MinTTL: ${dnsRes.minttl}`;
-                conditionsResult = handleConditions({ record: dnsRes.nsname });
+            case "SOA": {
+                records.push(dnsRes.answers[0].primary);
+                dnsMessage = Object.entries({
+                    "Primary-NS": dnsRes.answers[0].primary,
+                    "Hostmaster": dnsRes.answers[0].admin,
+                    "Serial": dnsRes.answers[0].serial,
+                    "Refresh": dnsRes.answers[0].refresh,
+                    "Retry": dnsRes.answers[0].retry,
+                    "Expire": dnsRes.answers[0].expiration,
+                    "MinTTL": dnsRes.answers[0].minimum,
+                }).map(([name, value]) => {
+                    return `${name}: ${value}`;
+                }).join("; ");
+                conditionsResult = handleConditions({ record: records[0] });
                 break;
+            }
 
             case "SRV":
-                dnsMessage = dnsRes.map(record => `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight}`).join(" | ");
-                conditionsResult = dnsRes.some(record => handleConditions({ record: record.name }));
+                records = dnsRes.answers.map(record => record.target);
+                dnsMessage = dnsRes.answers.map((record) => {
+                    return Object.entries({
+                        "Target": record.target,
+                        "Port": record.port,
+                        "Priority": record.priority,
+                        "Weight": record.weight,
+                    }).map(([name, value]) => {
+                        return `${name}: ${value}`;
+                    }).join("; ");
+                }).join(" | ");
+                conditionsResult = records.some(record => handleConditions({ record }));
                 break;
         }
 

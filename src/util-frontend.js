@@ -109,7 +109,7 @@ export function getDevContainerServerHostname() {
 }
 
 /**
- * Regex pattern fr identifying hostnames and IP addresses
+ * Regex pattern for identifying hostnames and IP addresses
  * @param {boolean} mqtt whether or not the regex should take into
  * account the fact that it is an mqtt uri
  * @returns {RegExp} The requested regex
@@ -123,6 +123,19 @@ export function hostNameRegexPattern(mqtt = false) {
     const hostNameRegexPattern = `^${mqtt ? mqttSchemeRegexPattern : ""}([a-zA-Z0-9])?(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\\-_]*[a-zA-Z0-9_])\\.)*([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\\-_]*[A-Za-z0-9_])(\\.)?$`;
 
     return `${ipRegexPattern}|${hostNameRegexPattern}`;
+}
+
+/**
+ * Regex patterns for validating URL paths
+ * @returns {RegExp} The requested regex
+ */
+export function urlPathRegexPattern() {
+    // Ensures a URL path follows query string format
+    const queryStringRegexPattern = "^/?(([a-zA-Z0-9\\-_%])+/)*[a-zA-Z0-9\\-_%]*\\?([a-zA-Z0-9\\-_%]+=[a-zA-Z0-9\\-_%]*&?)+$";
+    // Only checks for valid URL path containing "{query}"
+    const queryRegexPattern = "^[a-zA-Z0-9\\-._~:/?#\\[\\]@!$&'()*+,;=]*{query}[a-zA-Z0-9\\-._~:/?#\\[\\]@!$&'()*+,;=]*$";
+
+    return `${queryStringRegexPattern}|${queryRegexPattern}`;
 }
 
 /**

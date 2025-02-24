@@ -367,9 +367,39 @@
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
                                     <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipOrHostnameRegex" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="doh_query_path" class="form-label">{{ $t("Query Path") }}</label>
+                                    <input id="doh_query_path" v-model="monitor.doh_query_path" type="text" class="form-control" :pattern="urlQueryRegex">
+                                    <div class="form-text">
+                                        {{ $t("dohQueryPathDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="dns_transport" class="form-label">{{ $t("Transport Method") }}</label>
+                                    <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
+                                    <VueMultiselect
+                                        id="dns_transport"
+                                        v-model="monitor.dns_transport"
+                                        :options="dnsTransportOptions"
+                                        :multiple="false"
+                                        :close-on-select="true"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :placeholder="$t('Select the transport method')"
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :taggable="false"
+                                        data-testid="resolve-type-select"
+                                    ></VueMultiselect>
+                                    <div class="form-text">
+                                        {{ $t("dnsTransportDescription") }}
                                     </div>
                                 </div>
 
@@ -1061,7 +1091,7 @@ import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
-import { hostNameRegexPattern } from "../util-frontend";
+import { hostNameRegexPattern, urlPathRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -1088,6 +1118,8 @@ const monitorDefaults = {
     accepted_statuscodes: [ "200-299" ],
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
+    dns_transport: "UDP",
+    doh_query_path: "dns-query?dns={query}",
     docker_container: "",
     docker_host: null,
     proxyId: null,
@@ -1140,6 +1172,7 @@ export default {
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
+            dnsTransportOptions: [],
             kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
@@ -1162,6 +1195,24 @@ export default {
             // Allow to test with simple dns server with port (127.0.0.1:5300)
             if (! isDev) {
                 return this.ipRegexPattern;
+            }
+            return null;
+        },
+
+        ipOrHostnameRegex() {
+
+            // Permit either IP address or hostname (127.0.0.1, dns.example.com)
+            if (! isDev) {
+                return this.ipOrHostnameRegexPattern;
+            }
+            return null;
+        },
+
+        urlQueryRegex() {
+
+            // Permit only URL paths with a query parameter ( {query} )
+            if (! isDev) {
+                return this.queryRegexPattern;
             }
             return null;
         },
@@ -1539,6 +1590,13 @@ message HealthCheckResponse {
             "TXT",
         ];
 
+        let dnsTransportOptions = [
+            "UDP",
+            "TCP",
+            "DoH",
+            "DoT",
+        ]
+
         let kafkaSaslMechanismOptions = [
             "None",
             "plain",
@@ -1553,6 +1611,7 @@ message HealthCheckResponse {
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.dnsTransportOptions = dnsTransportOptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
