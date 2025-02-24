@@ -1046,5 +1046,15 @@
     "not equals": "no es igual",
     "contains": "contiene",
     "not contains": "no contiene",
-    "starts with": "empieza por"
+    "starts with": "empieza por",
+    "not starts with": "No empieza con",
+    "ends with": "Termina en",
+    "not ends with": "No termina en",
+    "less than": "Menos que",
+    "greater than": "Mas que",
+    "less than or equal to": "Menor o igual a",
+    "greater than or equal to": "Mayor o igual a",
+    "Notification Channel": "Canal de notificación",
+    "Sound": "Sonido",
+    "record": "Registro"
 }
