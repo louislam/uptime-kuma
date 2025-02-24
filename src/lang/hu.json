@@ -878,5 +878,6 @@
     "Json Query Expression": "Json lekérdezés",
     "ignoredTLSError": "TLS/SSL hibák figyelmen kívül hagyva",
     "time ago": "előtt",
-    "-year": "- év"
+    "-year": "- év",
+    "deleteAPIKeyMsg": "Biztosan törölni szeretné ezt az API kulcsot?"
 }
