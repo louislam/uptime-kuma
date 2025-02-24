@@ -787,5 +787,15 @@
     "Host URL": "호스트 URL",
     "locally configured mail transfer agent": "로컬로 구성된 메일 전송 에이전트",
     "ignoreTLSErrorGeneral": "연결에 TLS/SSL 오류 무시하기",
-    "ignoredTLSError": "TLS/SSL 오류가 무시되었습니다"
+    "ignoredTLSError": "TLS/SSL 오류가 무시되었습니다",
+    "liquidIntroduction": "템플릿 생성은 Liquid 템플릿 언어를 통해 이루어집니다. 사용 지침은 {0}을 참조하세요. 사용 가능한 변수는 다음과 같습니다:",
+    "templateMsg": "알림 메시지",
+    "templateLimitedToUpDownCertNotifications": "업/다운/인증서 만료 알림에만 사용 가능",
+    "templateLimitedToUpDownNotifications": "UP/DOWN 알림에만 사용 가능",
+    "webhookBodyPresetOption": "프리셋 - {0}",
+    "successKeyword": "성공 키워드",
+    "successKeywordExplanation": "성공으로 간주되는 MQTT 키워드",
+    "Reset Token": "토큰 초기화",
+    "Check/Uncheck": "체크/체크 해제",
+    "pushViewCode": "푸시 모니터링는 어떻게 사용하나요? (코드 보기)"
 }
