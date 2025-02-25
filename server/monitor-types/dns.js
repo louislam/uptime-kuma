@@ -35,7 +35,15 @@ class DnsMonitorType extends MonitorType {
         switch (monitor.dns_resolve_type) {
             case "A":
             case "AAAA":
-                records = dnsRes.answers.map(record => record.address);
+                records = dnsRes.answers.map(record => {
+                    switch (record.type) {
+                        case 1: // A
+                        case 28: // AAAA
+                            return record.address;
+                        case 5: // CNAME
+                            return record.domain;
+                    }
+                });
                 dnsMessage = `Records: ${records.join(" | ")}`;
                 conditionsResult = records.some(record => handleConditions({ record }));
                 break;
@@ -88,7 +96,7 @@ class DnsMonitorType extends MonitorType {
                     "Retry": dnsRes.answers[0].retry,
                     "Expire": dnsRes.answers[0].expiration,
                     "MinTTL": dnsRes.answers[0].minimum,
-                }).map(([name, value]) => {
+                }).map(([ name, value ]) => {
                     return `${name}: ${value}`;
                 }).join("; ");
                 conditionsResult = handleConditions({ record: records[0] });
@@ -103,7 +111,7 @@ class DnsMonitorType extends MonitorType {
                         "Port": record.port,
                         "Priority": record.priority,
                         "Weight": record.weight,
-                    }).map(([name, value]) => {
+                    }).map(([ name, value ]) => {
                         return `${name}: ${value}`;
                     }).join("; ");
                 }).join(" | ");
