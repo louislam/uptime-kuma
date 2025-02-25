@@ -332,6 +332,7 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype, t
             });
             break;
         case "DOH":
+            dohQuery = dohQuery || "dns-query?dns={query}";
             resolver = DOHClient({
                 dns: `https://${resolverServer}:${resolverPort}/${dohQuery}`,
             });

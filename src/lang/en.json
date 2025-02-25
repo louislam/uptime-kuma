@@ -575,7 +575,7 @@
     "resolverserverDescription": "Cloudflare is the default server. You can change the resolver server anytime.",
     "rrtypeDescription": "Select the RR type you want to monitor",
     "dnsTransportDescription": "Select the transport method for querying the DNS server.",
-    "dohQueryPathDescription": "Set the query path to use for DNS wireformat. Must contain \"{query}\".",
+    "dohQueryPathDescription": "Set the query path to use for DNS wireformat. Must contain",
     "pauseMonitorMsg": "Are you sure want to pause?",
     "enableDefaultNotificationDescription": "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",
     "clearEventsMsg": "Are you sure want to delete all events for this monitor?",

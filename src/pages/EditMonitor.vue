@@ -289,7 +289,11 @@
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
-                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
+                                    :pattern="`${
+                                        monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern :
+                                        monitor.type === 'dns' ? ipOrDnsNameRegexPattern :
+                                        ipOrHostnameRegexPattern
+                                    }`"
                                     required
                                     data-testid="hostname-input"
                                 >
@@ -373,17 +377,19 @@
                                     </div>
                                 </div>
 
-                                <div class="my-3">
+                                <div v-if="dohSelected" class="my-3">
                                     <label for="doh_query_path" class="form-label">{{ $t("Query Path") }}</label>
-                                    <input id="doh_query_path" v-model="monitor.doh_query_path" type="text" class="form-control" :pattern="urlQueryRegex">
+                                    <div class="d-flex">
+                                        <label for="doh_query_path" class="px-2 fs-5">/</label>
+                                        <input id="doh_query_path" v-model="monitor.doh_query_path" type="text" class="form-control" :pattern="urlQueryRegex" placeholder="dns-query?dns={query}">
+                                    </div>
                                     <div class="form-text">
-                                        {{ $t("dohQueryPathDescription") }}
+                                        {{ $t("dohQueryPathDescription") }}{{ ' "{query}".' }}
                                     </div>
                                 </div>
 
                                 <div class="my-3">
                                     <label for="dns_transport" class="form-label">{{ $t("Transport Method") }}</label>
-                                    <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
                                     <VueMultiselect
                                         id="dns_transport"
                                         v-model="monitor.dns_transport"
@@ -1091,7 +1097,7 @@ import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
-import { hostNameRegexPattern, urlPathRegexPattern } from "../util-frontend";
+import { hostNameRegexPattern, dnsNameRegexPattern, urlPathRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -1119,7 +1125,6 @@ const monitorDefaults = {
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
     dns_transport: "UDP",
-    doh_query_path: "dns-query?dns={query}",
     docker_container: "",
     docker_host: null,
     proxyId: null,
@@ -1174,8 +1179,11 @@ export default {
             dnsresolvetypeOptions: [],
             dnsTransportOptions: [],
             kafkaSaslMechanismOptions: [],
+            ipRegexPattern: hostNameRegexPattern().split("|")[0],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
+            ipOrDnsNameRegexPattern: dnsNameRegexPattern(),
+            queryRegexPattern: urlPathRegexPattern(),
             gameList: null,
             connectionStringTemplates: {
                 "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
@@ -1204,6 +1212,15 @@ export default {
             // Permit either IP address or hostname (127.0.0.1, dns.example.com)
             if (! isDev) {
                 return this.ipOrHostnameRegexPattern;
+            }
+            return null;
+        },
+
+        dnsNameRegex() {
+
+            // Permit IP address, hostname, TLD, or root
+            if (! isDev) {
+                return this.ipOrDnsNameRegexPattern;
             }
             return null;
         },
@@ -1440,6 +1457,10 @@ message HealthCheckResponse {
         conditionVariables() {
             return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
         },
+
+        dohSelected() {
+            return this.monitor.dns_transport === "DoH";
+        }
     },
     watch: {
         "$root.proxyList"() {
@@ -1595,7 +1616,7 @@ message HealthCheckResponse {
             "TCP",
             "DoH",
             "DoT",
-        ]
+        ];
 
         let kafkaSaslMechanismOptions = [
             "None",

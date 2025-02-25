@@ -126,16 +126,34 @@ export function hostNameRegexPattern(mqtt = false) {
 }
 
 /**
- * Regex patterns for validating URL paths
+ * Regex pattern for DNS queries
  * @returns {RegExp} The requested regex
  */
-export function urlPathRegexPattern() {
+export function dnsNameRegexPattern() {
+    // This borrows ipRegexPattern from hostNameRegexPattern above
+    const ipRegexPattern = hostNameRegexPattern().split("|")[0];
+    // Similar to hostNameRegexPattern, except the hostname pattern
+    // can also match root (.) and top-level domains (.com, .org)
+    const dnsNamePattern = "^(\\.|(\\.?[a-zA-Z0-9_]+)+)$";
+
+    return `${ipRegexPattern}|${dnsNamePattern}`;
+}
+
+/**
+ * Regex patterns for validating URL paths
+ * @param {boolean} qstr whether or not the url follows query string format
+ * @returns {RegExp} The requested regex
+ */
+export function urlPathRegexPattern(qstr = false) {
     // Ensures a URL path follows query string format
     const queryStringRegexPattern = "^/?(([a-zA-Z0-9\\-_%])+/)*[a-zA-Z0-9\\-_%]*\\?([a-zA-Z0-9\\-_%]+=[a-zA-Z0-9\\-_%]*&?)+$";
     // Only checks for valid URL path containing "{query}"
-    const queryRegexPattern = "^[a-zA-Z0-9\\-._~:/?#\\[\\]@!$&'()*+,;=]*{query}[a-zA-Z0-9\\-._~:/?#\\[\\]@!$&'()*+,;=]*$";
+    const queryRegexPattern = "^[a-zA-Z0-9\\-._~:\\/?#\\[\\]@!$&'\\(\\)*+,;=]*\\{query\\}[a-zA-Z0-9\\-._~:\\/?#\\[\\]@!$&'\\(\\)*+,;=]*$";
 
-    return `${queryStringRegexPattern}|${queryRegexPattern}`;
+    if (qstr) {
+        return queryStringRegexPattern;
+    }
+    return queryRegexPattern;
 }
 
 /**
