@@ -10,7 +10,7 @@ describe("Websocket Test", {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
-            wsurl: "wss://example.org",
+            url: "wss://example.org",
             wsIgnoreHeaders: false,
         };
 
@@ -32,7 +32,7 @@ describe("Websocket Test", {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
-            wsurl: "wss://echo.websocket.org",
+            url: "wss://echo.websocket.org",
             wsIgnoreHeaders: false,
         };
 
@@ -56,7 +56,7 @@ describe("Websocket Test", {
         const wss = new WebSocketServer({ port: 8080 });
 
         const monitor = {
-            wsurl: "ws://localhost:8080",
+            url: "ws://localhost:8080",
             wsIgnoreHeaders: false,
         };
 
@@ -78,7 +78,7 @@ describe("Websocket Test", {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
-            wsurl: "wss://c.img-cdn.net/yE4s7KehTFyj/",
+            url: "wss://c.img-cdn.net/yE4s7KehTFyj/",
             wsIgnoreHeaders: false,
         };
 
@@ -100,7 +100,7 @@ describe("Websocket Test", {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
-            wsurl: "wss://c.img-cdn.net/yE4s7KehTFyj/",
+            url: "wss://c.img-cdn.net/yE4s7KehTFyj/",
             wsIgnoreHeaders: true,
         };
 

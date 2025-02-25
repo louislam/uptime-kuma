@@ -117,15 +117,9 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
+                            <div v-if="monitor.type === 'websocket-upgrade' || monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
-                            </div>
-
-                            <!-- Websocket -->
-                            <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
-                                <label for="wsurl" class="form-label">{{ $t("URL") }}</label>
-                                <input id="wsurl" v-model="monitor.wsurl" type="wsurl" class="form-control" pattern="wss?://.+" required data-testid="url-input">
+                                <input id="url" v-model="monitor.url" type="url" class="form-control" :pattern="monitor.type !== 'websocket-upgrade' ? 'https?://.+' : 'wss?://.+'" required data-testid="url-input">
                             </div>
 
                             <!-- gRPC URL -->
@@ -1094,7 +1088,6 @@ const monitorDefaults = {
     name: "",
     parent: null,
     url: "https://",
-    wsurl: "wss://",
     wsIgnoreHeaders: false,
     method: "GET",
     interval: 60,
@@ -1444,6 +1437,9 @@ message HealthCheckResponse {
         },
 
         "monitor.type"(newType, oldType) {
+            if (oldType && this.monitor.type === "websocket-upgrade") {
+                this.monitor.url = "wss://";
+            }
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
@@ -1747,10 +1743,6 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
-            }
-
-            if (this.monitor.wsurl) {
-                this.monitor.wsurl = this.monitor.wsurl.trim();
             }
 
             let createdNewParent = false;

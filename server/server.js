@@ -790,7 +790,6 @@ let needSetup = false;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
-                bean.wsurl = monitor.wsurl;
                 bean.wsIgnoreHeaders = monitor.wsIgnoreHeaders;
                 bean.method = monitor.method;
                 bean.body = monitor.body;

@@ -21,7 +21,7 @@ class WebSocketMonitorType extends MonitorType {
      */
     async attemptUpgrade(monitor) {
         return new Promise((resolve) => {
-            const ws = new WebSocket(monitor.wsurl);
+            const ws = new WebSocket(monitor.url);
 
             ws.addEventListener("open", (event) => {
                 // Immediately close the connection
