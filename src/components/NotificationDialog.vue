@@ -121,6 +121,7 @@ export default {
                 "Elks": "46elks",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
+                "GovNotify": "GOV Notify",
                 "gotify": "Gotify",
                 "GrafanaOncall": "Grafana Oncall",
                 "HeiiOnCall": "Heii On-Call",
@@ -262,7 +263,7 @@ export default {
                 this.id = null;
                 this.notification = {
                     name: "",
-                    type: "telegram",
+                    type: "GovNotify",
                     isDefault: false,
                 };
             }
