@@ -1,11 +1,25 @@
 <template>
     <div class="mb-3">
         <label class="form-label">GOV Notify API Key</label>
-        <input
-            v-model="$parent.notification.apiKey"
-            type="text"
-            class="form-control"
-        />
+        <div class="input-group">
+            <input
+                v-if="!showApiKey"
+                type="text"
+                class="form-control"
+                value="************"
+                disabled
+            />
+            <input
+                v-else
+                v-model="newApiKey"
+                type="text"
+                class="form-control"
+                placeholder="Enter new API key"
+            />
+            <button class="btn btn-outline-secondary" type="button" @click="toggleApiKey">
+                {{ showApiKey ? "Cancel" : "Change" }}
+            </button>
+        </div>
     </div>
     <div class="mb-3">
         <label class="form-label">Email Recipients (comma-separated)</label>
@@ -43,5 +57,19 @@
 </template>
 <script>
 export default {
+    data() {
+        return {
+            showApiKey: false,
+            newApiKey: "",
+        };
+    },
+    methods: {
+        toggleApiKey() {
+            if (this.showApiKey) {
+                this.newApiKey = "";
+            }
+            this.showApiKey = !this.showApiKey;
+        },
+    },
 };
 </script>

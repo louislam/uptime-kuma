@@ -1,4 +1,5 @@
 const NotificationProvider = require("./notification-provider");
+const { DOWN } = require("../../src/util");
 const NotifyClient = require("notifications-node-client").NotifyClient;
 
 class GovNotify extends NotificationProvider {
@@ -13,11 +14,27 @@ class GovNotify extends NotificationProvider {
             const smsRecipients = (typeof notification.smsRecipients === "string" && notification.smsRecipients.trim())
                 ? notification.smsRecipients.split(",").map(n => n.trim()).filter(n => n)
                 : [];
-            const message = notification.messageTemplate || msg;
+            let message = notification.messageTemplate || msg;
             const emailTemplateID = notification.emailTemplateId;
             const smsTemplateID = notification.smsTemplateId;
 
             const notifyClient = new NotifyClient(apiKey);
+
+            let subject = "⚠️ Test";
+
+            if (heartbeatJSON !== null) {
+                subject = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
+            }
+
+            const date = new Date();
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+
+            const readableDate = `GMT ${day}/${month}/${year} ${hours}:${minutes}`;
+            message += `\n${readableDate}`;
 
             // Send Emails
             for (const email of emailRecipients) {
@@ -25,7 +42,10 @@ class GovNotify extends NotificationProvider {
                     emailTemplateID,
                     email,
                     {
-                        personalisation: { message },
+                        personalisation: {
+                            message,
+                            subject,
+                        },
                         reference: "Uptime-Kuma"
                     });
             }
