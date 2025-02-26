@@ -290,9 +290,9 @@
                                     type="text"
                                     class="form-control"
                                     :pattern="`${
-                                        monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern :
-                                        monitor.type === 'dns' ? ipOrDnsNameRegexPattern :
-                                        ipOrHostnameRegexPattern
+                                        monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern.source :
+                                        monitor.type === 'dns' ? ipOrDnsNameRegexPattern.source :
+                                        ipOrHostnameRegexPattern.source
                                     }`"
                                     required
                                     data-testid="hostname-input"
@@ -371,7 +371,7 @@
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
                                     <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipOrHostnameRegex" required>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="dnsResolverRegex" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
                                     </div>
@@ -384,7 +384,7 @@
                                         <input id="doh_query_path" v-model="monitor.doh_query_path" type="text" class="form-control" :pattern="urlQueryRegex" placeholder="dns-query?dns={query}">
                                     </div>
                                     <div class="form-text">
-                                        {{ $t("dohQueryPathDescription") }}{{ ' "{query}".' }}
+                                        {{ $t("dohQueryPathDescription") + " " }}{{ '"{query}".' }}
                                     </div>
                                 </div>
 
@@ -1179,7 +1179,8 @@ export default {
             dnsresolvetypeOptions: [],
             dnsTransportOptions: [],
             kafkaSaslMechanismOptions: [],
-            ipRegexPattern: hostNameRegexPattern().split("|")[0],
+            ipRegexPattern: hostNameRegexPattern(false, true, false),
+            hostnameRegexPattern: hostNameRegexPattern(false, false, true),
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             ipOrDnsNameRegexPattern: dnsNameRegexPattern(),
@@ -1202,7 +1203,7 @@ export default {
 
             // Allow to test with simple dns server with port (127.0.0.1:5300)
             if (! isDev) {
-                return this.ipRegexPattern;
+                return this.ipRegexPattern.source;
             }
             return null;
         },
@@ -1211,16 +1212,24 @@ export default {
 
             // Permit either IP address or hostname (127.0.0.1, dns.example.com)
             if (! isDev) {
-                return this.ipOrHostnameRegexPattern;
+                return this.ipOrHostnameRegexPattern.source;
             }
             return null;
         },
 
-        dnsNameRegex() {
+        dnsResolverRegex() {
 
-            // Permit IP address, hostname, TLD, or root
+            // Permit IP address for TCP/UDP resolvers, hostname for DoH/DoT
             if (! isDev) {
-                return this.ipOrDnsNameRegexPattern;
+                switch (this.monitor.dns_transport) {
+                    case "UDP":
+                    case "TCP":
+                        return this.ipRegexPattern.source;
+
+                    case "DoH":
+                    case "DoT":
+                        return this.hostnameRegexPattern.source;
+                }
             }
             return null;
         },
@@ -1229,7 +1238,7 @@ export default {
 
             // Permit only URL paths with a query parameter ( {query} )
             if (! isDev) {
-                return this.queryRegexPattern;
+                return this.queryRegexPattern.source;
             }
             return null;
         },
