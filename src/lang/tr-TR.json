@@ -221,7 +221,7 @@
     "Discord Webhook URL": "Discord Webhook Bağlantısı",
     "wayToGetDiscordURL": "Bunu Sunucu Ayarları -> Entegrasyonlar -> Webhookları Görüntüle -> Yeni Webhook Oluştur adımını izleyerek alabilirsiniz",
     "Bot Display Name": "Botun Görünecek Adı",
-    "Prefix Custom Message": "Önek Özel Mesaj",
+    "Prefix Custom Message": "Özel Önek Mesajı",
     "Hello @everyone is...": "Merhaba {'@'}everyone…",
     "teams": "Microsoft Teams",
     "Webhook URL": "Webhook URL",
