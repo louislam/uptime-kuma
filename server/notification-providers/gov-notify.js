@@ -5,6 +5,15 @@ const NotifyClient = require("notifications-node-client").NotifyClient;
 class GovNotify extends NotificationProvider {
     name = "GovNotify";
 
+    /**
+     * Sends notifications via email and SMS using the GOV.UK Notify service.
+     * @param {object} notification The notification object containing configuration such as API key, email recipients, SMS recipients, message template, and template IDs for email and SMS.
+     * @param {string} msg The message content to send if no message template is provided in the notification object.
+     * @param {object | null} monitorJSON Optional parameter containing monitoring-related data.
+     * @param {object | null} heartbeatJSON Optional parameter containing heartbeat-related data, used to determine notification subject (e.g., status up or down).
+     * @returns {Promise<string>} A promise that resolves to a success message after sending notifications or rejects with an error if the sending fails.
+     * @throws {Error} Throws an error if notification sending fails.
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         try {
             const apiKey = notification.apiKey;

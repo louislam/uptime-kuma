@@ -1,6 +1,9 @@
 const { MonitorType } = require("./monitor-type");
 const { chromium } = require("playwright-core");
-const { UP, log } = require("../../src/util");
+const {
+    UP,
+    log,
+} = require("../../src/util");
 const { Settings } = require("../settings");
 const commandExistsSync = require("command-exists").sync;
 const childProcess = require("child_process");
@@ -122,7 +125,7 @@ async function prepareChromeExecutable(executablePath) {
             executablePath = "/usr/bin/chromium";
 
             // Install chromium in container via apt install
-            if ( !commandExistsSync(executablePath)) {
+            if (!commandExistsSync(executablePath)) {
                 await new Promise((resolve, reject) => {
                     log.info("Chromium", "Installing Chromium...");
                     let child = childProcess.exec("apt update && apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk");
@@ -213,6 +216,7 @@ async function testChrome(executablePath) {
         throw new Error(e.message);
     }
 }
+
 // test remote browser
 /**
  * @param {string} remoteBrowserURL Remote Browser URL
@@ -228,6 +232,7 @@ async function testRemoteBrowser(remoteBrowserURL) {
         throw new Error(e.message);
     }
 }
+
 class RealBrowserMonitorType extends MonitorType {
 
     name = "real-browser";

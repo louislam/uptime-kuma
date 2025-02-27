@@ -37,13 +37,19 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
+const {
+    sleep,
+    log,
+    getRandomInt,
+    genSecret,
+    isDev,
+} = require("../src/util");
 const config = require("./config");
 
 log.debug("server", "Arguments");
 log.debug("server", args);
 
-if (! process.env.NODE_ENV) {
+if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
@@ -90,7 +96,16 @@ const Monitor = require("./model/monitor");
 const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
-const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
+const {
+    getSettings,
+    setSettings,
+    setting,
+    initJWTSecret,
+    checkLogin,
+    doubleCheckPassword,
+    shake256,
+    SHAKE256_LENGTH,
+    allowDevAllOrigin,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -101,8 +116,14 @@ log.debug("server", "Importing Database");
 const Database = require("./database");
 
 log.debug("server", "Importing Background Jobs");
-const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
-const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
+const {
+    initBackgroundJobs,
+    stopBackgroundJobs,
+} = require("./jobs");
+const {
+    loginRateLimiter,
+    twoFaRateLimiter,
+} = require("./rate-limiter");
 
 const { apiAuth } = require("./auth");
 const { login } = require("./auth");
@@ -122,7 +143,7 @@ const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CL
 // 2FA / notp verification defaults
 const twoFAVerifyOptions = {
     "window": 1,
-    "time": 30
+    "time": 30,
 };
 
 /**
@@ -132,13 +153,26 @@ const twoFAVerifyOptions = {
 const testMode = !!args["test"] || false;
 
 // Must be after io instantiation
-const { sendNotificationList, sendHeartbeatList, sendInfo, sendProxyList, sendDockerHostList, sendAPIKeyList, sendRemoteBrowserList, sendMonitorTypeList } = require("./client");
+const {
+    sendNotificationList,
+    sendHeartbeatList,
+    sendInfo,
+    sendProxyList,
+    sendDockerHostList,
+    sendAPIKeyList,
+    sendRemoteBrowserList,
+    sendMonitorTypeList,
+} = require("./client");
 const { statusPageSocketHandler } = require("./socket-handlers/status-page-socket-handler");
 const { databaseSocketHandler } = require("./socket-handlers/database-socket-handler");
 const { remoteBrowserSocketHandler } = require("./socket-handlers/remote-browser-socket-handler");
 const TwoFA = require("./2fa");
 const StatusPage = require("./model/status_page");
-const { cloudflaredSocketHandler, autoStart: cloudflaredAutoStart, stop: cloudflaredStop } = require("./socket-handlers/cloudflared-socket-handler");
+const {
+    cloudflaredSocketHandler,
+    autoStart: cloudflaredAutoStart,
+    stop: cloudflaredStop,
+} = require("./socket-handlers/cloudflared-socket-handler");
 const { proxySocketHandler } = require("./socket-handlers/proxy-socket-handler");
 const { dockerSocketHandler } = require("./socket-handlers/docker-socket-handler");
 const { maintenanceSocketHandler } = require("./socket-handlers/maintenance-socket-handler");
@@ -933,8 +967,9 @@ let needSetup = false;
                     monitorID,
                     socket.userID,
                 ]);
-                const monitorData = [{ id: monitor.id,
-                    active: monitor.active
+                const monitorData = [ {
+                    id: monitor.id,
+                    active: monitor.active,
                 }];
                 const preloadData = await Monitor.preparePreloadData(monitorData);
                 callback({
@@ -966,7 +1001,8 @@ let needSetup = false;
                     SELECT *
                     FROM heartbeat
                     WHERE monitor_id = ?
-                      AND time > ${sqlHourOffset}
+                      AND time
+                        > ${sqlHourOffset}
                     ORDER BY time ASC
                 `, [
                     monitorID,
@@ -1519,7 +1555,7 @@ let needSetup = false;
                 log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
                 await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
-                    monitorID
+                    monitorID,
                 ]);
 
                 await sendHeartbeatList(socket, monitorID, true, true);
@@ -1658,7 +1694,7 @@ async function checkOwner(userID, monitorID) {
         userID,
     ]);
 
-    if (! row) {
+    if (!row) {
         throw new Error("You do not own this monitor.");
     }
 }
@@ -1698,7 +1734,7 @@ async function afterLogin(socket, user) {
 
     // Set server timezone from client browser if not set
     // It should be run once only
-    if (! await Settings.get("initServerTimezone")) {
+    if (!await Settings.get("initServerTimezone")) {
         log.debug("server", "emit initServerTimezone");
         socket.emit("initServerTimezone");
     }
@@ -1722,7 +1758,7 @@ async function initDatabase(testMode = false) {
         "jwtSecret",
     ]);
 
-    if (! jwtSecretBean) {
+    if (!jwtSecretBean) {
         log.info("server", "JWT secret is not found, generate one.");
         jwtSecretBean = await initJWTSecret();
         log.info("server", "Stored JWT secret into database");

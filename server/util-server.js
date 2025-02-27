@@ -1,7 +1,11 @@
 const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
-const { log, genSecret, badgeConstants } = require("../src/util");
+const {
+    log,
+    genSecret,
+    badgeConstants,
+} = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
 const iconv = require("iconv-lite");
@@ -22,14 +26,20 @@ const tls = require("tls");
 
 const {
     dictionaries: {
-        rfc2865: { file, attributes },
+        rfc2865: {
+            file,
+            attributes,
+        },
     },
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
 
 // SASLOptions used in JSDoc
 // eslint-disable-next-line no-unused-vars
-const { Kafka, SASLOptions } = require("kafkajs");
+const {
+    Kafka,
+    SASLOptions,
+} = require("kafkajs");
 const crypto = require("crypto");
 
 const isWindows = process.platform === /^win/.test(process.platform);
@@ -75,7 +85,7 @@ exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSe
     let client = new oauthProvider.Client({
         client_id: clientId,
         client_secret: clientSecret,
-        token_endpoint_auth_method: authMethod
+        token_endpoint_auth_method: authMethod,
     });
 
     // Increase default timeout and clock tolerance
@@ -185,7 +195,12 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
  */
 exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, saslOptions = {}) {
     return new Promise((resolve, reject) => {
-        const { interval = 20, allowAutoTopicCreation = false, ssl = false, clientId = "Uptime-Kuma" } = options;
+        const {
+            interval = 20,
+            allowAutoTopicCreation = false,
+            ssl = false,
+            clientId = "Uptime-Kuma",
+        } = options;
 
         let connectedToKafka = false;
 
@@ -213,7 +228,7 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
             allowAutoTopicCreation: allowAutoTopicCreation,
             retry: {
                 retries: 0,
-            }
+            },
         });
 
         producer.connect().then(
@@ -234,14 +249,14 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
                     connectedToKafka = true;
                     clearTimeout(timeoutID);
                 });
-            }
+            },
         ).catch(
             (e) => {
                 connectedToKafka = true;
                 producer.disconnect();
                 clearTimeout(timeoutID);
                 reject(new Error("Error in producer connection: " + e.message));
-            }
+            },
         );
 
         producer.on("producer.network.request_timeout", (_) => {
@@ -409,7 +424,7 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
     return new Promise((resolve, reject) => {
         const connection = mysql.createConnection({
             uri: connectionString,
-            password
+            password,
         });
 
         connection.on("error", (err) => {
@@ -494,8 +509,8 @@ exports.redisPingAsync = function (dsn, rejectUnauthorized) {
         const client = redis.createClient({
             url: dsn,
             socket: {
-                rejectUnauthorized
-            }
+                rejectUnauthorized,
+            },
         });
         client.on("error", (err) => {
             if (client.isOpen) {
@@ -661,7 +676,7 @@ exports.checkCertificate = function (socket) {
 
     return {
         valid: valid,
-        certInfo: parsedInfo
+        certInfo: parsedInfo,
     };
 };
 
@@ -693,7 +708,7 @@ exports.checkStatusCode = function (status, acceptedCodes) {
             }
         } else {
             log.error("monitor", `${codeRange} is not a valid status code range`);
-            continue;
+
         }
     }
 
@@ -925,14 +940,21 @@ module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
  * @returns {Promise<object>} Result of gRPC query
  */
 module.exports.grpcQuery = async (options) => {
-    const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
+    const {
+        grpcUrl,
+        grpcProtobufData,
+        grpcServiceName,
+        grpcEnableTls,
+        grpcMethod,
+        grpcBody,
+    } = options;
     const protocObject = protojs.parse(grpcProtobufData);
     const protoServiceObject = protocObject.root.lookupService(grpcServiceName);
     const Client = grpc.makeGenericClientConstructor({});
     const credentials = grpcEnableTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
     const client = new Client(
         grpcUrl,
-        credentials
+        credentials,
     );
     const grpcService = protoServiceObject.create(function (method, requestData, cb) {
         const fullServiceName = method.fullName;
@@ -955,14 +977,14 @@ module.exports.grpcQuery = async (options) => {
                     return resolve({
                         code: err.code,
                         errorMessage: err.details,
-                        data: ""
+                        data: "",
                     });
                 } else {
                     log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
                     return resolve({
                         code: 1,
                         errorMessage: "",
-                        data: responseData
+                        data: responseData,
                     });
                 }
             });
@@ -970,7 +992,7 @@ module.exports.grpcQuery = async (options) => {
             return resolve({
                 code: -1,
                 errorMessage: `Error ${err}. Please review your gRPC configuration option. The service name must not include package name value, and the method name must follow camelCase format`,
-                data: ""
+                data: "",
             });
         }
 

@@ -47,10 +47,11 @@ async function sendNotificationList(socket) {
  */
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     let list = await R.getAll(`
-        SELECT * FROM heartbeat
+        SELECT *
+        FROM heartbeat
         WHERE monitor_id = ?
         ORDER BY time DESC
-        LIMIT 100
+            LIMIT 100
     `, [
         monitorID,
     ]);

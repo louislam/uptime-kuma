@@ -159,7 +159,7 @@ class Notification {
             new GovNotify(),
         ];
         for (let item of list) {
-            if (! item.name) {
+            if (!item.name) {
                 throw new Error("Notification provider without name");
             }
 
@@ -203,7 +203,7 @@ class Notification {
                 userID,
             ]);
 
-            if (! bean) {
+            if (!bean) {
                 throw new Error("notification not found");
             }
 
@@ -236,7 +236,7 @@ class Notification {
             userID,
         ]);
 
-        if (! bean) {
+        if (!bean) {
             throw new Error("notification not found");
         }
 
@@ -263,7 +263,7 @@ class Notification {
  */
 async function applyNotificationEveryMonitor(notificationID, userID) {
     let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
-        userID
+        userID,
     ]);
 
     for (let i = 0; i < monitors.length; i++) {
@@ -272,7 +272,7 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
             notificationID,
         ]);
 
-        if (! checkNotification) {
+        if (!checkNotification) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;

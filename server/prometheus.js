@@ -12,24 +12,24 @@ const commonLabels = [
 const monitorCertDaysRemaining = new PrometheusClient.Gauge({
     name: "monitor_cert_days_remaining",
     help: "The number of days remaining until the certificate expires",
-    labelNames: commonLabels
+    labelNames: commonLabels,
 });
 
 const monitorCertIsValid = new PrometheusClient.Gauge({
     name: "monitor_cert_is_valid",
     help: "Is the certificate still valid? (1 = Yes, 0= No)",
-    labelNames: commonLabels
+    labelNames: commonLabels,
 });
 const monitorResponseTime = new PrometheusClient.Gauge({
     name: "monitor_response_time",
     help: "Monitor Response Time (ms)",
-    labelNames: commonLabels
+    labelNames: commonLabels,
 });
 
 const monitorStatus = new PrometheusClient.Gauge({
     name: "monitor_status",
     help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
-    labelNames: commonLabels
+    labelNames: commonLabels,
 });
 
 class Prometheus {
@@ -44,7 +44,7 @@ class Prometheus {
             monitor_type: monitor.type,
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
-            monitor_port: monitor.port
+            monitor_port: monitor.port,
         };
     }
 
@@ -119,5 +119,5 @@ class Prometheus {
 }
 
 module.exports = {
-    Prometheus
+    Prometheus,
 };

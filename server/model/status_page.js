@@ -8,7 +8,15 @@ const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
 
-const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
+const {
+    STATUS_PAGE_ALL_DOWN,
+    STATUS_PAGE_ALL_UP,
+    STATUS_PAGE_MAINTENANCE,
+    STATUS_PAGE_PARTIAL_DOWN,
+    UP,
+    MAINTENANCE,
+    DOWN,
+} = require("../../src/util");
 
 class StatusPage extends BeanModel {
 
@@ -16,7 +24,7 @@ class StatusPage extends BeanModel {
      * Like this: { "test-uptime.kuma.pet": "default" }
      * @type {{}}
      */
-    static domainMappingList = { };
+    static domainMappingList = {};
 
     /**
      * Handle responses to RSS pages
@@ -26,7 +34,7 @@ class StatusPage extends BeanModel {
      */
     static async handleStatusPageRSSResponse(response, slug) {
         let statusPage = await R.findOne("status_page", " slug = ? ", [
-            slug
+            slug,
         ]);
 
         if (statusPage) {
@@ -51,7 +59,7 @@ class StatusPage extends BeanModel {
         }
 
         let statusPage = await R.findOne("status_page", " slug = ? ", [
-            slug
+            slug,
         ]);
 
         if (statusPage) {
@@ -68,7 +76,10 @@ class StatusPage extends BeanModel {
      * @returns {Promise<string>} the rendered html
      */
     static async renderRSS(statusPage, slug) {
-        const { heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
+        const {
+            heartbeats,
+            statusDescription,
+        } = await StatusPage.getRSSPageData(statusPage);
 
         let proto = config.isSSL ? "https" : "http";
         let host = `${proto}://${config.hostname || "localhost"}:${config.port}/status/${slug}`;
@@ -135,7 +146,7 @@ class StatusPage extends BeanModel {
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
         const escapedJSONObject = jsesc(await StatusPage.getStatusPageData(statusPage), {
-            "isScriptContext": true
+            "isScriptContext": true,
         });
 
         const script = $(`
@@ -174,7 +185,7 @@ class StatusPage extends BeanModel {
             }
         }
 
-        if (! hasUp) {
+        if (!hasUp) {
             status = STATUS_PAGE_ALL_DOWN;
         }
 
@@ -223,7 +234,7 @@ class StatusPage extends BeanModel {
         const showTags = !!statusPage.show_tags;
 
         const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
-            statusPage.id
+            statusPage.id,
         ]);
 
         let heartbeats = [];
@@ -236,7 +247,7 @@ class StatusPage extends BeanModel {
                     heartbeats.push({
                         ...monitor,
                         status: heartbeat.status,
-                        time: heartbeat.time
+                        time: heartbeat.time,
                     });
                 }
             }
@@ -251,7 +262,7 @@ class StatusPage extends BeanModel {
 
         return {
             heartbeats,
-            statusDescription
+            statusDescription,
         };
     }
 
@@ -279,7 +290,7 @@ class StatusPage extends BeanModel {
         const showTags = !!statusPage.show_tags;
 
         const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
-            statusPage.id
+            statusPage.id,
         ]);
 
         for (let groupBean of list) {
@@ -442,7 +453,7 @@ class StatusPage extends BeanModel {
      */
     static async slugToID(slug) {
         return await R.getCell("SELECT id FROM status_page WHERE slug = ? ", [
-            slug
+            slug,
         ]);
     }
 

@@ -17,9 +17,7 @@ class Settings {
      *     }
      * @type {{}}
      */
-    static cacheList = {
-
-    };
+    static cacheList = {};
 
     static cacheCleaner = null;
 
@@ -61,7 +59,7 @@ class Settings {
 
             Settings.cacheList[key] = {
                 value: v,
-                timestamp: Date.now()
+                timestamp: Date.now(),
             };
 
             return v;
@@ -129,7 +127,7 @@ class Settings {
 
         for (let key of keyList) {
             let bean = await R.findOne("setting", " `key` = ? ", [
-                key
+                key,
             ]);
 
             if (bean == null) {

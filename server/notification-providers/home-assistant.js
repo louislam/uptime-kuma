@@ -20,19 +20,21 @@ class HomeAssistant extends NotificationProvider {
                 {
                     title: "Uptime Kuma",
                     message: msg,
-                    ...(notificationService !== "persistent_notification" && { data: {
-                        name: monitorJSON?.name,
-                        status: heartbeatJSON?.status,
-                        channel: "Uptime Kuma",
-                        icon_url: "https://github.com/louislam/uptime-kuma/blob/master/public/icon.png?raw=true",
-                    } }),
+                    ...(notificationService !== "persistent_notification" && {
+                        data: {
+                            name: monitorJSON?.name,
+                            status: heartbeatJSON?.status,
+                            channel: "Uptime Kuma",
+                            icon_url: "https://github.com/louislam/uptime-kuma/blob/master/public/icon.png?raw=true",
+                        },
+                    }),
                 },
                 {
                     headers: {
                         Authorization: `Bearer ${notification.longLivedAccessToken}`,
                         "Content-Type": "application/json",
                     },
-                }
+                },
             );
 
             return okMsg;

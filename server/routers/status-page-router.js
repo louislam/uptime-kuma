@@ -2,7 +2,10 @@ let express = require("express");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
-const { allowDevAllOrigin, sendHttpError } = require("../util-server");
+const {
+    allowDevAllOrigin,
+    sendHttpError,
+} = require("../util-server");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
@@ -44,7 +47,7 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
     try {
         // Get Status Page
         let statusPage = await R.findOne("status_page", " slug = ? ", [
-            slug
+            slug,
         ]);
 
         if (!statusPage) {
@@ -81,7 +84,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             AND public = 1
             AND \`group\`.status_page_id = ?
         `, [
-            statusPageID
+            statusPageID,
         ]);
 
         for (let monitorID of monitorIDList) {
@@ -103,7 +106,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
         response.json({
             heartbeatList,
-            uptimeList
+            uptimeList,
         });
 
     } catch (error) {
@@ -120,7 +123,7 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
     try {
         // Get Status Page
         let statusPage = await R.findOne("status_page", " slug = ? ", [
-            slug
+            slug,
         ]);
 
         if (!statusPage) {
@@ -137,9 +140,9 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
                 {
                     "src": statusPage.icon,
                     "sizes": "128x128",
-                    "type": "image/png"
-                }
-            ]
+                    "type": "image/png",
+                },
+            ],
         });
 
     } catch (error) {
@@ -159,7 +162,7 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
         downColor = badgeConstants.defaultDownColor,
         partialColor = "#F6BE00",
         maintenanceColor = "#808080",
-        style = badgeConstants.defaultStyle
+        style = badgeConstants.defaultStyle,
     } = request.query;
 
     try {
@@ -169,7 +172,7 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
             AND public = 1
             AND \`group\`.status_page_id = ?
         `, [
-            statusPageID
+            statusPageID,
         ]);
 
         let hasUp = false;

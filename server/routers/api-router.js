@@ -11,7 +11,15 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
+const {
+    UP,
+    MAINTENANCE,
+    DOWN,
+    PENDING,
+    flipStatus,
+    log,
+    badgeConstants,
+} = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -28,7 +36,7 @@ let io = server.io;
 router.get("/api/entry-page", async (request, response) => {
     allowDevAllOrigin(response);
 
-    let result = { };
+    let result = {};
     let hostname = request.hostname;
     if ((await setting("trustProxy")) && request.headers["x-forwarded-host"]) {
         hostname = request.headers["x-forwarded-host"];
@@ -53,10 +61,10 @@ router.all("/api/push/:pushToken", async (request, response) => {
         let status = (statusString === "up") ? UP : DOWN;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
-            pushToken
+            pushToken,
         ]);
 
-        if (! monitor) {
+        if (!monitor) {
             throw new Error("Monitor not found or not active.");
         }
 
@@ -127,7 +135,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
     } catch (e) {
         response.status(404).json({
             ok: false,
-            msg: e.message
+            msg: e.message,
         });
     }
 });
@@ -159,7 +167,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
                 AND monitor_group.monitor_id = ?
                 AND public = 1
             `,
-        [ requestedMonitorId ]
+            [ requestedMonitorId ],
         );
 
         const badgeValues = { style };
@@ -242,7 +250,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
                 AND monitor_group.monitor_id = ?
                 AND public = 1
             `,
-        [ requestedMonitorId ]
+            [ requestedMonitorId ],
         );
 
         const badgeValues = { style };
@@ -362,7 +370,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
             request.params.duration
                 ? parseInt(request.params.duration, 10)
                 : 24,
-            720
+            720,
         );
         const overrideValue = value && parseFloat(value);
 
@@ -376,7 +384,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
             AND public = 1
             AND heartbeat.monitor_id = ?
             `,
-        [ -requestedDuration, requestedMonitorId ]
+            [ -requestedDuration, requestedMonitorId ],
         ));
 
         const badgeValues = { style };
@@ -443,7 +451,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
             AND monitor_group.monitor_id = ?
             AND public = 1
             `,
-        [ requestedMonitorId ]
+            [ requestedMonitorId ],
         );
 
         const badgeValues = { style };
@@ -528,7 +536,7 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
             AND monitor_group.monitor_id = ?
             AND public = 1
             `,
-        [ requestedMonitorId ]
+            [ requestedMonitorId ],
         );
 
         const badgeValues = { style };
@@ -540,7 +548,7 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
             badgeValues.color = badgeConstants.naColor;
         } else {
             const heartbeat = await Monitor.getPreviousHeartbeat(
-                requestedMonitorId
+                requestedMonitorId,
             );
 
             if (!heartbeat.ping) {

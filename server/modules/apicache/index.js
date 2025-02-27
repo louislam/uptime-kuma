@@ -2,7 +2,7 @@ const apicache = require("./apicache");
 
 apicache.options({
     headerBlacklist: [
-        "cache-control"
+        "cache-control",
     ],
     headers: {
         // Disable client side cache, only server side cache.

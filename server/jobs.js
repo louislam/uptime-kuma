@@ -15,7 +15,7 @@ const jobs = [
         interval: "*/5 * * * *",
         jobFunc: incrementalVacuum,
         croner: null,
-    }
+    },
 ];
 
 /**
@@ -54,5 +54,5 @@ const stopBackgroundJobs = function () {
 
 module.exports = {
     initBackgroundJobs,
-    stopBackgroundJobs
+    stopBackgroundJobs,
 };
