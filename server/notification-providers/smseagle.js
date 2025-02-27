@@ -18,35 +18,42 @@ class SMSEagle extends NotificationProvider {
                 }
             };
 
-            let postData;
-            let recipientType;
-
             let encoding = (notification.smseagleEncoding) ? "unicode" : "standard";
             let priority = (notification.smseaglePriority) ? notification.smseaglePriority : 0;
-            let recipientList = notification.smseagleRecipient.split(",");
 
-            if (notification.smseagleRecipientType === "smseagle-contact") {
-                recipientType = "contacts";
-                recipientList = recipientList.map(e => {
-                    return Number(e)
-                });
-            }
-            if (notification.smseagleRecipientType === "smseagle-group") {
-                recipientType = "groups";
-                recipientList = recipientList.map(e => {
-                    return Number(e)
-                });
-            }
-            if (notification.smseagleRecipientType === "smseagle-to") {
-                recipientType = "to";
-            }
-
-            postData = {
-                [recipientType]: recipientList,
+            let postData = {
                 text: msg,
                 encoding: encoding,
                 priority: priority
             };
+
+            let to = notification.smseagleRecipientTo;
+            let contacts = notification.smseagleRecipientContact;
+            let groups = notification.smseagleRecipientGroup;
+            console.log("b", to, contacts, groups);
+
+            if (contacts) {
+                contacts = contacts.split(",");
+                contacts = contacts.map(e => {
+                    return Number(e)
+                });
+                postData["contacts"] = contacts;
+            }
+
+            if (groups) {
+                groups = groups.split(",");
+                groups = groups.map(e => {
+                    return Number(e)
+                });
+                postData["groups"] = groups;
+            }
+
+            if (to) {
+                to = to.split(",");
+                postData["to"] = to;
+            }
+
+            console.log(postData);
 
             let resp = await axios.post(notification.smseagleUrl + "/api/v2/messages/sms", postData, config);
 

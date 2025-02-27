@@ -8,16 +8,19 @@
         <HiddenInput id="smseagle-token" v-model="$parent.notification.smseagleToken" :required="true"></HiddenInput>
     </div>
     <div class="mb-3">
-        <label for="smseagle-recipient-type" class="form-label">{{ $t("smseagleRecipientType") }}</label>
-        <select id="smseagle-recipient-type" v-model="$parent.notification.smseagleRecipientType" class="form-select">
-            <option value="smseagle-to" selected>{{ $t("smseagleTo") }}</option>
-            <option value="smseagle-group">{{ $t("smseagleGroup") }}</option>
-            <option value="smseagle-contact">{{ $t("smseagleContact") }}</option>
-        </select>
+        <label for="smseagle-recipient-type" class="form-label">{{ $t("smseagleRecipient") }}</label>
+   </div>
+    <div class="mb-3">
+        <label for="smseagle-recipient" class="form-label">{{ $t("smseagleTo") }}</label>
+        <input id="smseagle-recipient" v-model="$parent.notification.smseagleRecipientTo" type="text" class="form-control">
     </div>
     <div class="mb-3">
-        <label for="smseagle-recipient" class="form-label">{{ $t("smseagleRecipient") }}</label>
-        <input id="smseagle-recipient" v-model="$parent.notification.smseagleRecipient" type="text" class="form-control" required>
+        <label for="smseagle-recipient" class="form-label">{{ $t("smseagleGroup") }}</label>
+        <input id="smseagle-recipient" v-model="$parent.notification.smseagleRecipientGroup" type="text" class="form-control">
+    </div>
+    <div class="mb-3">
+        <label for="smseagle-recipient" class="form-label">{{ $t("smseagleContact") }}</label>
+        <input id="smseagle-recipient" v-model="$parent.notification.smseagleRecipientContact" type="text" class="form-control">
     </div>
     <div class="mb-3">
         <label for="smseagle-priority" class="form-label">{{ $t("smseaglePriority") }}</label>
