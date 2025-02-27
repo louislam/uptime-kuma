@@ -35,9 +35,9 @@ const {
 const dayjs = require("dayjs");
 
 // SASLOptions used in JSDoc
-// eslint-disable-next-line no-unused-vars
 const {
     Kafka,
+    // eslint-disable-next-line no-unused-vars
     SASLOptions,
 } = require("kafkajs");
 const crypto = require("crypto");
