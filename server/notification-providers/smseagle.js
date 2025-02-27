@@ -13,54 +13,59 @@ class SMSEagle extends NotificationProvider {
         try {
             let config = {
                 headers: {
+                    "access-token": notification.smseagleToken,
                     "Content-Type": "application/json",
                 }
             };
 
             let postData;
-            let sendMethod;
             let recipientType;
 
-            let encoding = (notification.smseagleEncoding) ? "1" : "0";
-            let priority = (notification.smseaglePriority) ? notification.smseaglePriority : "0";
+            let encoding = (notification.smseagleEncoding) ? "unicode" : "standard";
+            let priority = (notification.smseaglePriority) ? notification.smseaglePriority : 0;
+            let recipientList = notification.smseagleRecipient.split(",");
 
             if (notification.smseagleRecipientType === "smseagle-contact") {
-                recipientType = "contactname";
-                sendMethod = "sms.send_tocontact";
+                recipientType = "contacts";
+                recipientList = recipientList.map(e => {
+                    return Number(e)
+                });
             }
             if (notification.smseagleRecipientType === "smseagle-group") {
-                recipientType = "groupname";
-                sendMethod = "sms.send_togroup";
+                recipientType = "groups";
+                recipientList = recipientList.map(e => {
+                    return Number(e)
+                });
             }
             if (notification.smseagleRecipientType === "smseagle-to") {
                 recipientType = "to";
-                sendMethod = "sms.send_sms";
             }
 
-            let params = {
-                access_token: notification.smseagleToken,
-                [recipientType]: notification.smseagleRecipient,
-                message: msg,
-                responsetype: "extended",
-                unicode: encoding,
-                highpriority: priority
-            };
-
             postData = {
-                method: sendMethod,
-                params: params
+                [recipientType]: recipientList,
+                text: msg,
+                encoding: encoding,
+                priority: priority
             };
 
-            let resp = await axios.post(notification.smseagleUrl + "/jsonrpc/sms", postData, config);
+            let resp = await axios.post(notification.smseagleUrl + "/api/v2/messages/sms", postData, config);
 
-            if ((JSON.stringify(resp.data)).indexOf("message_id") === -1) {
+            let countAll = resp.data.length;
+            let countQueued = resp.data.filter(x => x.status == "queued").length;
+
+            if (resp.status !== 200 || countQueued == 0) {
                 let error = "";
-                if (resp.data.result && resp.data.result.error_text) {
-                    error = `SMSEagle API returned error: ${JSON.stringify(resp.data.result.error_text)}`;
+                if (resp.data.length > 0) {
+                    error = `SMSEagle API returned error: ${JSON.stringify(resp.data)}`;
                 } else {
                     error = "SMSEagle API returned an unexpected response";
                 }
                 throw new Error(error);
+            }
+
+            if (countAll !== countQueued) {
+                let okWithErrorsMsg = "Sent " + countQueued + "/" + countAll + " Messages Successfully.";
+                return okWithErrorsMsg;
             }
 
             return okMsg;
