@@ -1364,7 +1364,7 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     const heartbeatJSON = bean.toJSON();
-                    const monitorData = [ {
+                    const monitorData = [{
                         id: monitor.id,
                         active: monitor.active,
                     }];

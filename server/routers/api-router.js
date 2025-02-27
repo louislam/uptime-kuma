@@ -167,7 +167,7 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
                 AND monitor_group.monitor_id = ?
                 AND public = 1
             `,
-            [ requestedMonitorId ],
+        [ requestedMonitorId ],
         );
 
         const badgeValues = { style };
@@ -250,7 +250,7 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
                 AND monitor_group.monitor_id = ?
                 AND public = 1
             `,
-            [ requestedMonitorId ],
+        [ requestedMonitorId ],
         );
 
         const badgeValues = { style };
@@ -384,7 +384,7 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
             AND public = 1
             AND heartbeat.monitor_id = ?
             `,
-            [ -requestedDuration, requestedMonitorId ],
+        [ -requestedDuration, requestedMonitorId ],
         ));
 
         const badgeValues = { style };
@@ -451,7 +451,7 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
             AND monitor_group.monitor_id = ?
             AND public = 1
             `,
-            [ requestedMonitorId ],
+        [ requestedMonitorId ],
         );
 
         const badgeValues = { style };
@@ -536,7 +536,7 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
             AND monitor_group.monitor_id = ?
             AND public = 1
             `,
-            [ requestedMonitorId ],
+        [ requestedMonitorId ],
         );
 
         const badgeValues = { style };

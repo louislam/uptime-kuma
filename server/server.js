@@ -967,7 +967,7 @@ let needSetup = false;
                     monitorID,
                     socket.userID,
                 ]);
-                const monitorData = [ {
+                const monitorData = [{
                     id: monitor.id,
                     active: monitor.active,
                 }];
