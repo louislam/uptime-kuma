@@ -3,8 +3,9 @@ const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const { log, genSecret, badgeConstants } = require("../src/util");
 const passwordHash = require("./password-hash");
-const { UDPClient, TCPClient, DOHClient } = require("dns2");
-const { isIP, isIPv4, isIPv6 } = require("node:net");
+const dnsPacket = require("dns-packet");
+const dgram = require("dgram");
+const { Socket, isIP, isIPv4, isIPv6 } = require("net");
 const { Address6 } = require("ip-address");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
@@ -21,6 +22,8 @@ const radiusClient = require("node-radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
+const https = require("https");
+const url = require("url");
 
 const {
     dictionaries: {
@@ -314,38 +317,149 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype, t
         }
     }
 
+    // This is the DNS request data that will get encoded later
+    const requestData = {
+        type: "query",
+        id: Math.floor(Math.random() * 65534) + 1,
+        flags: dnsPacket.RECURSION_DESIRED,
+        questions: [{
+            type: rrtype,
+            name: hostname,
+        }],
+    };
+
+    let client;
+    let resolver = null;
     // Transport method determines which client type to use
-    let resolver;
+    const isSecure = [ "DOH", "DOT" ].includes(transport.toUpperCase());
     switch (transport.toUpperCase()) {
+
         case "TCP":
-            resolver = TCPClient({
-                dns: resolverServer,
-                protocol: "tcp:",
-                port: resolverPort,
+        case "DOT": {
+            const buf = dnsPacket.streamEncode(requestData);
+            if (isSecure) {
+                const options = {
+                    port: resolverPort,
+                    host: resolverServer,
+                    // TODO: Option for relaxing certificate validation
+                    secureContext: tls.createSecureContext({
+                        secureProtocol: "TLSv1_2_method",
+                    }),
+                };
+                // TODO: Error handling for untrusted or expired cert
+                client = tls.connect(options, () => {
+                    log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                    client.write(buf);
+                });
+            } else {
+                client = new Socket();
+                client.connect(resolverPort, resolverServer, () => {
+                    log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                    client.write(buf);
+                });
+            }
+            client.on("close", () => {
+                log.debug("dns", "Connection closed");
+            });
+            resolver = new Promise((resolve, reject) => {
+                let data = Buffer.alloc(0);
+                let expectedLength = 0;
+                client.on("data", (chunk) => {
+                    if (data.length === 0) {
+                        if (chunk.byteLength > 1) {
+                            const plen = chunk.readUInt16BE(0);
+                            expectedLength = plen;
+                            if (plen < 12) {
+                                reject("Response received is below DNS minimum packet length");
+                            }
+                        }
+                    }
+                    data = Buffer.concat([ data, chunk ]);
+                    if (data.byteLength >= expectedLength) {
+                        client.destroy();
+                        const response = dnsPacket.streamDecode(data);
+                        log.debug("dns", "Response decoded");
+                        resolve(response);
+                    }
+                });
             });
             break;
-        case "DOT":
-            resolver = TCPClient({
-                dns: resolverServer,
-                protocol: "tls:",
-                port: resolverPort,
-            });
-            break;
-        case "DOH":
+        }
+
+        case "DOH": {
+            // Set query ID to "0" for HTTP cache friendlyness. See
+            // https://github.com/mafintosh/dns-packet/issues/77
+            requestData.id = 0;
+            const buf = dnsPacket.encode(requestData);
+            // TODO: implement POST requests for wireformat and JSON
             dohQuery = dohQuery || "dns-query?dns={query}";
-            resolver = DOHClient({
-                dns: `https://${resolverServer}:${resolverPort}/${dohQuery}`,
+            dohQuery = dohQuery.replace("{query}", buf.toString("base64url"));
+            const requestURL = url.parse(`https://${resolverServer}:${resolverPort}/${dohQuery}`, true);
+            const options = {
+                hostname: requestURL.hostname,
+                port: requestURL.port,
+                path: requestURL.path,
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/dns-message",
+                },
+                // TODO: Option for relaxing certificate validation
+            };
+            resolver = new Promise((resolve, reject) => {
+                client = https.request(options, (response) => {
+                    let data = Buffer.alloc(0);
+                    response.on("data", (chunk) => {
+                        data = Buffer.concat([ data, chunk ]);
+                    });
+                    response.on("end", () => {
+                        const response = dnsPacket.decode(data);
+                        log.debug("dns", "Response decoded");
+                        resolve(response);
+                    });
+                });
+                client.on("socket", (socket) => {
+                    socket.on("secureConnect", () => {
+                        log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                    });
+                });
+                client.on("error", (err) => {
+                    reject(err);
+                });
+                client.on("close", () => {
+                    log.debug("dns", "Connection closed");
+                });
+                client.write(buf);
+                client.end();
             });
             break;
-        default:
-            resolver = UDPClient({
-                dns: resolverServer,
-                port: resolverPort,
-                socketType: "udp" + String(addressFamily),
+        }
+
+        //case "UDP":
+        default: {
+            const buf = dnsPacket.encode(requestData);
+            client = dgram.createSocket("udp" + String(addressFamily));
+            client.on("connect", () => {
+                log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
             });
+            client.on("close", () => {
+                log.debug("dns", "Connection closed");
+            });
+            resolver = new Promise((resolve, reject) => {
+                client.on("message", (rdata, rinfo) => {
+                    client.close();
+                    const response = dnsPacket.decode(rdata);
+                    log.debug("dns", "Response decoded");
+                    resolve(response);
+                });
+                client.on("error", (err) => {
+                    reject(err);
+                });
+            });
+            client.send(buf, 0, buf.length, resolverPort, resolverServer);
+        }
     }
 
-    return resolver(hostname, rrtype);
+    return resolver;
 };
 
 /**

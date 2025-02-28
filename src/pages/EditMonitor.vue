@@ -1225,10 +1225,10 @@ export default {
                     case "UDP":
                     case "TCP":
                         return this.ipRegexPattern.source;
-
                     case "DoH":
-                    case "DoT":
                         return this.hostnameRegexPattern.source;
+                    case "DoT":
+                        return this.ipOrHostnameRegexPattern.source;
                 }
             }
             return null;
