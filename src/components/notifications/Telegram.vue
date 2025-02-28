@@ -33,6 +33,10 @@
         <input id="message_thread_id" v-model="$parent.notification.telegramMessageThreadID" type="text" class="form-control">
         <p class="form-text">{{ $t("telegramMessageThreadIDDescription") }}</p>
 
+        <label for="server_url" class="form-label">{{ $t("telegramServerUrl") }}</label>
+        <input id="server_url" v-model="$parent.notification.telegramServerUrl" type="text" class="form-control">
+        <p class="form-text">{{ $t("telegramServerUrlDescription") }}</p>
+
         <div class="form-check form-switch">
             <input v-model="$parent.notification.telegramSendSilently" class="form-check-input" type="checkbox">
             <label class="form-check-label">{{ $t("telegramSendSilently") }}</label>
@@ -63,6 +67,9 @@ export default {
     components: {
         HiddenInput,
     },
+    mounted() {
+        this.$parent.notification.telegramServerUrl ||= "https://api.telegram.org";
+    },
     methods: {
         /**
          * Get the URL for telegram updates
@@ -70,6 +77,7 @@ export default {
          * @returns {string} formatted URL
          */
         telegramGetUpdatesURL(mode = "masked") {
+            let serverUrl = this.$parent.notification.telegramServerUrl;
             let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`;
 
             if (this.$parent.notification.telegramBotToken) {
@@ -80,7 +88,7 @@ export default {
                 }
             }
 
-            return `https://api.telegram.org/bot${token}/getUpdates`;
+            return `${serverUrl}/bot${token}/getUpdates`;
         },
 
         /**
