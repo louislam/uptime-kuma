@@ -30,7 +30,6 @@ class SMSEagle extends NotificationProvider {
             let to = notification.smseagleRecipientTo;
             let contacts = notification.smseagleRecipientContact;
             let groups = notification.smseagleRecipientGroup;
-            console.log("b", to, contacts, groups);
 
             if (contacts) {
                 contacts = contacts.split(",");
@@ -53,9 +52,29 @@ class SMSEagle extends NotificationProvider {
                 postData["to"] = to;
             }
 
-            console.log(postData);
+            let endpoint = "/messages/sms";
 
-            let resp = await axios.post(notification.smseagleUrl + "/api/v2/messages/sms", postData, config);
+            if (notification.smseagleMsgType != "smseagle-sms") {
+
+                let duration;
+                if (notification.smseagleDuration)
+                    duration = notification.smseagleDuration
+                else
+                    duration = 10;
+
+                postData["duration"] = duration;
+
+                if (notification.smseagleMsgType == "smseagle-ring") {
+                    endpoint = "/calls/ring";
+                } else if (notification.smseagleMsgType == "smseagle-tts") {
+                    endpoint = "/calls/tts";
+                } else if (notification.smseagleMsgType == "smseagle-tts-advanced") {
+                    endpoint = "/calls/tts_advanced";
+                    postData["voice_id"] = notification.smseagleTtsModel;
+                }
+            }
+
+            let resp = await axios.post(notification.smseagleUrl + "/api/v2" + endpoint, postData, config);
 
             let countAll = resp.data.length;
             let countQueued = resp.data.filter(x => x.status == "queued").length;
