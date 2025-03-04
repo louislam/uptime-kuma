@@ -182,6 +182,7 @@ exports.pingAsync = function (
             v6: ipv6,
             min_reply: count,
             sourceAddr: sourceAddr,
+            numeric: numeric,
             packetSize: size,
             deadline: deadline,
             timeout: timeout
