@@ -735,7 +735,7 @@
     "RadiusSecretDescription": "Megosztott titok az ügyfél és a szerver között",
     "RadiusCalledStationId": "Hívott állomás azonosítója",
     "Date and Time": "Dátum és idő",
-    "enableNSCD": "Az NSCD (Name Service Cache Daemon) engedélyezése az összes DNS-kérés gyorsítótárba helyezéséhez",
+    "enableNSCD": "Az NSCD (Name Service Cache Daemon) engedélyezése az összes DNS-kérés gyorsítótárazásához.",
     "Edit Maintenance": "Karbantartás szerkesztése",
     "smseagleGroup": "Telefonkönyv csoport neve(i)",
     "styleElapsedTime": "Az eltelt idő a heartbeat sáv alatt",
