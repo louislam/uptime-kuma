@@ -15,7 +15,7 @@
         day: 2,
         hour: 3,
         minute: 4,
-        second: 5
+        second: 5,
     };
     let e = {};
     return function (n, i, o) {
@@ -37,7 +37,7 @@
                     hour: "2-digit",
                     minute: "2-digit",
                     second: "2-digit",
-                    timeZoneName: i
+                    timeZoneName: i,
                 }), e[o] = r), r;
             }(n, i);
             return r.formatToParts(o);

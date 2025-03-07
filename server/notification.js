@@ -69,6 +69,7 @@ const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
+const GovNotify = require("./notification-providers/gov-notify");
 
 class Notification {
 
@@ -154,10 +155,11 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid()
+            new SendGrid(),
+            new GovNotify(),
         ];
         for (let item of list) {
-            if (! item.name) {
+            if (!item.name) {
                 throw new Error("Notification provider without name");
             }
 
@@ -181,7 +183,7 @@ class Notification {
         if (this.providerList[notification.type]) {
             return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
         } else {
-            throw new Error("Notification type is not supported");
+            throw new Error(`Notification type <${notification.type}> is not supported`);
         }
     }
 
@@ -201,7 +203,7 @@ class Notification {
                 userID,
             ]);
 
-            if (! bean) {
+            if (!bean) {
                 throw new Error("notification not found");
             }
 
@@ -234,7 +236,7 @@ class Notification {
             userID,
         ]);
 
-        if (! bean) {
+        if (!bean) {
             throw new Error("notification not found");
         }
 
@@ -261,7 +263,7 @@ class Notification {
  */
 async function applyNotificationEveryMonitor(notificationID, userID) {
     let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
-        userID
+        userID,
     ]);
 
     for (let i = 0; i < monitors.length; i++) {
@@ -270,7 +272,7 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
             notificationID,
         ]);
 
-        if (! checkNotification) {
+        if (!checkNotification) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;

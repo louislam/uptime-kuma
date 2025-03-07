@@ -146,7 +146,7 @@ class DockerHost {
     static getHttpsAgentOptions(dockerType, url) {
         let baseOptions = {
             maxCachedSessions: 0,
-            rejectUnauthorized: true
+            rejectUnauthorized: true,
         };
         let certOptions = {};
 
@@ -163,13 +163,13 @@ class DockerHost {
             certOptions = {
                 ca,
                 key,
-                cert
+                cert,
             };
         }
 
         return {
             ...baseOptions,
-            ...certOptions
+            ...certOptions,
         };
     }
 }

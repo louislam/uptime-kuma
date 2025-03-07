@@ -1,5 +1,9 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject, log } = require("../../src/util");
+const {
+    parseTimeObject,
+    parseTimeFromTimeObject,
+    log,
+} = require("../../src/util");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const Cron = require("croner");
@@ -192,7 +196,8 @@ class Maintenance extends BeanModel {
      * @returns {void}
      */
     static validateCron(cron) {
-        let job = new Cron(cron, () => {});
+        let job = new Cron(cron, () => {
+        });
         job.stop();
     }
 

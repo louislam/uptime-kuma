@@ -1,5 +1,9 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, log, evaluateJsonQuery } = require("../../src/util");
+const {
+    UP,
+    log,
+    evaluateJsonQuery,
+} = require("../../src/util");
 const snmp = require("net-snmp");
 
 class SNMPMonitorType extends MonitorType {
@@ -42,7 +46,10 @@ class SNMPMonitorType extends MonitorType {
             // We restrict querying to one OID per monitor, therefore `varbinds[0]` will always contain the value we're interested in.
             const value = varbinds[0].value;
 
-            const { status, response } = await evaluateJsonQuery(value, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
+            const {
+                status,
+                response,
+            } = await evaluateJsonQuery(value, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
 
             if (status) {
                 heartbeat.status = UP;

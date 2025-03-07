@@ -36,7 +36,7 @@ class Proxy {
         if (!this.SUPPORTED_PROXY_PROTOCOLS.includes(proxy.protocol)) {
             throw new Error(`
                 Unsupported proxy protocol "${proxy.protocol}.
-                Supported protocols are ${this.SUPPORTED_PROXY_PROTOCOLS.join(", ")}."`
+                Supported protocols are ${this.SUPPORTED_PROXY_PROTOCOLS.join(", ")}."`,
             );
         }
 
@@ -92,7 +92,10 @@ class Proxy {
      * @throws Proxy protocol is unsupported
      */
     static createAgents(proxy, options) {
-        const { httpAgentOptions, httpsAgentOptions } = options || {};
+        const {
+            httpAgentOptions,
+            httpsAgentOptions,
+        } = options || {};
         let agent;
         let httpAgent;
         let httpsAgent;
@@ -150,12 +153,13 @@ class Proxy {
                 httpsAgent = agent;
                 break;
 
-            default: throw new Error(`Unsupported proxy protocol provided. ${proxy.protocol}`);
+            default:
+                throw new Error(`Unsupported proxy protocol provided. ${proxy.protocol}`);
         }
 
         return {
             httpAgent,
-            httpsAgent
+            httpsAgent,
         };
     }
 

@@ -1,5 +1,8 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN } = require("../../src/util");
+const {
+    UP,
+    DOWN,
+} = require("../../src/util");
 const dayjs = require("dayjs");
 const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
@@ -14,7 +17,7 @@ class DnsMonitorType extends MonitorType {
     supportsConditions = true;
 
     conditionVariables = [
-        new ConditionVariable("record", defaultStringOperators ),
+        new ConditionVariable("record", defaultStringOperators),
     ];
 
     /**

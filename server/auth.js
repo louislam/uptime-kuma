@@ -3,7 +3,10 @@ const passwordHash = require("./password-hash");
 const { R } = require("redbean-node");
 const { setting } = require("./util-server");
 const { log } = require("../src/util");
-const { loginRateLimiter, apiRateLimiter } = require("./rate-limiter");
+const {
+    loginRateLimiter,
+    apiRateLimiter,
+} = require("./rate-limiter");
 const { Settings } = require("./settings");
 const dayjs = require("dayjs");
 

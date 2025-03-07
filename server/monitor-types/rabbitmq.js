@@ -1,5 +1,9 @@
 const { MonitorType } = require("./monitor-type");
-const { log, UP, DOWN } = require("../../src/util");
+const {
+    log,
+    UP,
+    DOWN,
+} = require("../../src/util");
 const { axiosAbortSignal } = require("../util-server");
 const axios = require("axios");
 
@@ -21,7 +25,7 @@ class RabbitMqMonitorType extends MonitorType {
         for (let baseUrl of baseUrls) {
             try {
                 // Without a trailing slash, path in baseUrl will be removed. https://example.com/api -> https://example.com
-                if ( !baseUrl.endsWith("/") ) {
+                if (!baseUrl.endsWith("/")) {
                     baseUrl += "/";
                 }
                 const options = {

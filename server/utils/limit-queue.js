@@ -44,5 +44,5 @@ class LimitQueue extends ArrayWithKey {
 }
 
 module.exports = {
-    LimitQueue
+    LimitQueue,
 };

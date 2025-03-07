@@ -1,5 +1,8 @@
 const { MonitorType } = require("./monitor-type");
-const { log, UP } = require("../../src/util");
+const {
+    log,
+    UP,
+} = require("../../src/util");
 const mqtt = require("mqtt");
 const jsonata = require("jsonata");
 
@@ -57,7 +60,12 @@ class MqttMonitorType extends MonitorType {
      */
     mqttAsync(hostname, topic, options = {}) {
         return new Promise((resolve, reject) => {
-            const { port, username, password, interval = 20 } = options;
+            const {
+                port,
+                username,
+                password,
+                interval = 20,
+            } = options;
 
             // Adds MQTT protocol to the hostname if not already present
             if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
@@ -77,7 +85,7 @@ class MqttMonitorType extends MonitorType {
             let client = mqtt.connect(mqttUrl, {
                 username,
                 password,
-                clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8)
+                clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8),
             });
 
             client.on("connect", () => {

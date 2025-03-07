@@ -1,7 +1,13 @@
 const fs = require("fs");
 const { R } = require("redbean-node");
-const { setSetting, setting } = require("./util-server");
-const { log, sleep } = require("../src/util");
+const {
+    setSetting,
+    setting,
+} = require("./util-server");
+const {
+    log,
+    sleep,
+} = require("../src/util");
 const knex = require("knex");
 const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
@@ -136,24 +142,24 @@ class Database {
         Database.dataDir = process.env.DATA_DIR || args["data-dir"] || "./data/";
 
         Database.sqlitePath = path.join(Database.dataDir, "kuma.db");
-        if (! fs.existsSync(Database.dataDir)) {
+        if (!fs.existsSync(Database.dataDir)) {
             fs.mkdirSync(Database.dataDir, { recursive: true });
         }
 
         Database.uploadDir = path.join(Database.dataDir, "upload/");
 
-        if (! fs.existsSync(Database.uploadDir)) {
+        if (!fs.existsSync(Database.uploadDir)) {
             fs.mkdirSync(Database.uploadDir, { recursive: true });
         }
 
         // Create screenshot dir
         Database.screenshotDir = path.join(Database.dataDir, "screenshots/");
-        if (! fs.existsSync(Database.screenshotDir)) {
+        if (!fs.existsSync(Database.screenshotDir)) {
             fs.mkdirSync(Database.screenshotDir, { recursive: true });
         }
 
         Database.dockerTLSDir = path.join(Database.dataDir, "docker-tls/");
-        if (! fs.existsSync(Database.dockerTLSDir)) {
+        if (!fs.existsSync(Database.dockerTLSDir)) {
             fs.mkdirSync(Database.dockerTLSDir, { recursive: true });
         }
 
@@ -231,7 +237,7 @@ class Database {
 
         if (dbConfig.type === "sqlite") {
 
-            if (! fs.existsSync(Database.sqlitePath)) {
+            if (!fs.existsSync(Database.sqlitePath)) {
                 log.info("server", "Copying Database");
                 fs.copyFileSync(Database.templatePath, Database.sqlitePath);
             }
@@ -252,7 +258,7 @@ class Database {
                     idleTimeoutMillis: 120 * 1000,
                     propagateCreateError: false,
                     acquireTimeoutMillis: acquireConnectionTimeout,
-                }
+                },
             };
         } else if (dbConfig.type === "mariadb") {
             if (!/^\w+$/.test(dbConfig.dbName)) {
@@ -451,7 +457,7 @@ class Database {
     static async patchSqlite() {
         let version = parseInt(await setting("database_version"));
 
-        if (! version) {
+        if (!version) {
             version = 0;
         }
 
@@ -502,7 +508,7 @@ class Database {
         log.debug("db", "Database Patch 2.0 Process");
         let databasePatchedFiles = await setting("databasePatchedFiles");
 
-        if (! databasePatchedFiles) {
+        if (!databasePatchedFiles) {
             databasePatchedFiles = {};
         }
 
@@ -579,11 +585,11 @@ class Database {
             let id = await R.store(statusPage);
 
             await R.exec("UPDATE incident SET status_page_id = ? WHERE status_page_id IS NULL", [
-                id
+                id,
             ]);
 
             await R.exec("UPDATE [group] SET status_page_id = ? WHERE status_page_id IS NULL", [
-                id
+                id,
             ]);
 
             await R.exec("DELETE FROM setting WHERE type = 'statusPage'");
@@ -611,13 +617,13 @@ class Database {
     static async patch2Recursion(sqlFilename, databasePatchedFiles) {
         let value = this.patchList[sqlFilename];
 
-        if (! value) {
+        if (!value) {
             log.info("db", sqlFilename + " skip");
             return;
         }
 
         // Check if patched
-        if (! databasePatchedFiles[sqlFilename]) {
+        if (!databasePatchedFiles[sqlFilename]) {
             log.info("db", sqlFilename + " is not patched");
 
             if (value.parents) {
@@ -652,7 +658,7 @@ class Database {
         // Remove all comments (--)
         let lines = text.split("\n");
         lines = lines.filter((line) => {
-            return ! line.startsWith("--");
+            return !line.startsWith("--");
         });
 
         // Split statements by semicolon
@@ -797,7 +803,8 @@ class Database {
 
         // Stop if stat_* tables are not empty
         for (let table of [ "stat_minutely", "stat_hourly", "stat_daily" ]) {
-            let countResult = await R.getRow(`SELECT COUNT(*) AS count FROM ${table}`);
+            let countResult = await R.getRow(`SELECT COUNT(*) AS count
+                                              FROM ${table}`);
             let count = countResult.count;
             if (count > 0) {
                 log.warn("db", `Aggregate table ${table} is not empty, migration will not be started (Maybe you were using 2.0.0-dev?)`);
@@ -814,12 +821,12 @@ class Database {
         for (let monitor of monitors) {
             // Get a list of unique dates from the heartbeat table, using raw sql
             let dates = await R.getAll(`
-                SELECT DISTINCT DATE(time) AS date
+                SELECT DISTINCT DATE (time) AS date
                 FROM heartbeat
                 WHERE monitor_id = ?
                 ORDER BY date ASC
             `, [
-                monitor.monitor_id
+                monitor.monitor_id,
             ]);
 
             for (let date of dates) {
@@ -833,7 +840,7 @@ class Database {
                     SELECT status, ping, time
                     FROM heartbeat
                     WHERE monitor_id = ?
-                    AND DATE(time) = ?
+                      AND DATE (time) = ?
                     ORDER BY time ASC
                 `, [ monitor.monitor_id, date.date ]);
 
@@ -887,19 +894,21 @@ class Database {
                 log.info("db", "Deleting non-important heartbeats for monitor " + monitor.id);
             }
             await R.exec(`
-                DELETE FROM heartbeat
+                DELETE
+                FROM heartbeat
                 WHERE monitor_id = ?
-                AND important = 0
-                AND time < ${sqlHourOffset}
-                AND id NOT IN (
+                  AND important = 0
+                  AND time
+                    < ${sqlHourOffset}
+                  AND id NOT IN (
                     SELECT id FROM ( -- written this way for Maria's support
-                        SELECT id
-                        FROM heartbeat
-                        WHERE monitor_id = ?
-                        ORDER BY time DESC
-                        LIMIT ?
-                    )  AS limited_ids
-                )
+                    SELECT id
+                    FROM heartbeat
+                    WHERE monitor_id = ?
+                    ORDER BY time DESC
+                    LIMIT ?
+                    ) AS limited_ids
+                    )
             `, [
                 monitor.id,
                 -24,
