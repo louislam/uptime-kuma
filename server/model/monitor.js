@@ -53,7 +53,7 @@ class Monitor extends BeanModel {
         };
 
         if (this.sendUrl) {
-            obj.url = this.url;
+            obj.url = this.publicUrl ?? this.url;
         }
 
         if (showTags) {
@@ -91,6 +91,7 @@ class Monitor extends BeanModel {
             id: this.id,
             name: this.name,
             description: this.description,
+            publicUrl: this.publicUrl,
             path,
             pathName,
             parent: this.parent,
