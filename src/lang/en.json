@@ -1051,5 +1051,13 @@
     "RabbitMQ Password": "RabbitMQ Password",
     "rabbitmqHelpText": "To use the monitor, you will need to enable the Management Plugin in your RabbitMQ setup. For more information, please consult the {rabitmq_documentation}.",
     "SendGrid API Key": "SendGrid API Key",
-    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas"
+    "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
+    "pingCountLabel": "Max Packets",
+    "pingCountDescription": "Number of packets to send before stopping",
+    "pingNumericLabel": "Numeric Output",
+    "pingNumericDescription": "If checked, IP addresses will be output instead of symbolic hostnames",
+    "pingDeadlineLabel": "Max Duration",
+    "pingDeadlineDescription": "Total time in seconds before ping stops, regardless of packets sent",
+    "pingTimeoutLabel": "Response Timeout",
+    "pingTimeoutDescription": "Maximum time in seconds to wait for each response"
 }

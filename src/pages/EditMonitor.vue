@@ -660,10 +660,48 @@
                                 </div>
                             </div>
 
-                            <!-- Ping packet size -->
+                            <!-- Max Packets / Count -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping-count" class="form-label">{{ $t("pingCountLabel") }}</label>
+                                <input id="ping-count" v-model="monitor.ping_count" type="number" class="form-control" required min="1" max="100" step="1">
+                                <div class="form-text">
+                                    {{ $t("pingCountDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Numeric Output -->
+                            <div v-if="monitor.type === 'ping'" class="my-3 form-check">
+                                <input id="ping_numeric" v-model="monitor.ping_numeric" type="checkbox" class="form-check-input" :checked="monitor.ping_numeric">
+                                <label class="form-check-label" for="ping_numeric">
+                                    {{ $t("pingNumericLabel") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("pingNumericDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Packet size -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
                                 <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
-                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" max="65500" step="1">
+                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" :max="65500" step="1">
+                            </div>
+
+                            <!-- Max Duration / Deadline -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping_deadline" class="form-label">{{ $t("pingDeadlineLabel") }}</label>
+                                <input id="ping_deadline" v-model="monitor.ping_deadline" type="number" class="form-control" required min="0" max="300" step="1">
+                                <div class="form-text">
+                                    {{ $t("pingDeadlineDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Response Timeout -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping_timeout" class="form-label">{{ $t("pingTimeoutLabel") }}</label>
+                                <input id="ping_timeout" v-model="monitor.ping_timeout" type="number" class="form-control" required min="1" max="60" step="1">
+                                <div class="form-text">
+                                    {{ $t("pingTimeoutDescription") }}
+                                </div>
                             </div>
 
                             <!-- HTTP / Keyword only -->
@@ -1060,7 +1098,13 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
+import {
+    genSecret,
+    isDev,
+    MAX_INTERVAL_SECOND,
+    MIN_INTERVAL_SECOND,
+    sleep,
+} from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
@@ -1082,7 +1126,6 @@ const monitorDefaults = {
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
-    packetSize: 56,
     expiryNotification: false,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
@@ -1564,7 +1607,12 @@ message HealthCheckResponse {
             if (this.isAdd) {
 
                 this.monitor = {
-                    ...monitorDefaults
+                    ...monitorDefaults,
+                    ping_count: 3,
+                    ping_numeric: true,
+                    packetSize: 56,
+                    ping_deadline: 10,
+                    ping_timeout: 2,
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
