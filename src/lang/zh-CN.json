@@ -1100,9 +1100,5 @@
     "RabbitMQ Nodes": "RabbitMQ 管理节点",
     "Separate multiple email addresses with commas": "用逗号分隔多个电子邮件地址",
     "rabbitmqHelpText": "要使用此监控项，您需要在 RabbitMQ 设置中启用管理插件。有关更多信息，请参阅 {rabitmq_documentation}。",
-    "aboutSlackUsername": "更改消息发件人的显示名称。如果您想提及某人，请另行将其包含在友好名称中。",
-    "YZJ": "云之家",
-    "YZJ Webhook URL": "云之家 Webhook 网址",
-    "YZJ Robot Type": "云之家 机器人类型",
-    "YZJ Robot Token": "云之家 机器人访问秘钥"
+    "aboutSlackUsername": "更改消息发件人的显示名称。如果您想提及某人，请另行将其包含在友好名称中。"
 }
