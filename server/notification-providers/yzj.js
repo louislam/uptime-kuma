@@ -1,10 +1,13 @@
 const NotificationProvider = require("./notification-provider");
-const {DOWN, UP} = require("../../src/util");
-const {default: axios} = require("axios");
+const { DOWN, UP } = require("../../src/util");
+const { default: axios } = require("axios");
 
 class YZJ extends NotificationProvider {
     name = "YZJ";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
 
@@ -31,8 +34,8 @@ class YZJ extends NotificationProvider {
 
     /**
      * Send message to YZJ
-     * @param {BeanModel} notification
-     * @param {Object} params Parameters of message
+     * @param {object} notification Notification
+     * @param {object} params Parameters of message
      * @returns {boolean} True if successful else false
      */
     async sendToYZJ(notification, params) {
@@ -56,7 +59,7 @@ class YZJ extends NotificationProvider {
     /**
      * Convert status constant to string
      * @param {string} status The status constant
-     * @returns {string}
+     * @returns {string} status
      */
     statusToString(status) {
         switch (status) {
