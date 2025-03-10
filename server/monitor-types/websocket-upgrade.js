@@ -21,7 +21,9 @@ class WebSocketMonitorType extends MonitorType {
      */
     async attemptUpgrade(monitor) {
         return new Promise((resolve) => {
-            const ws = new WebSocket(monitor.url);
+            let ws;
+            //If user selected a subprotocol, sets Sec-WebSocket-Protocol header. Subprotocol Identifier column: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name
+            ws = monitor.subprotocol === "" ? new WebSocket(monitor.url) : new WebSocket(monitor.url, monitor.subprotocol);
 
             ws.addEventListener("open", (event) => {
                 // Immediately close the connection

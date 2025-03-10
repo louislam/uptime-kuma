@@ -122,6 +122,77 @@
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" :pattern="monitor.type !== 'websocket-upgrade' ? 'https?://.+' : 'wss?://.+'" required data-testid="url-input">
                             </div>
 
+                            <!-- Websocket Subprotocol -->
+                            <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
+                                <label for="type" class="form-label">{{ $t("Subprotocol") }}</label>
+                                <select id="type" v-model="monitor.subprotocol" class="form-select">
+                                    <option value="" selected>{{ $t("None") }}</option>
+                                    <option value="MBWS.huawei.com">MBWS</option>
+                                    <option value="MBLWS.huawei.com">MBLWS</option>
+                                    <option value="soap">soap</option>
+                                    <option value="wamp">{{ $t("wamp") }}</option>
+                                    <option value="v10.stomp">STOMP 1.0</option>
+                                    <option value="v11.stomp">STOMP 1.1</option>
+                                    <option value="v12.stomp">STOMP 1.2</option>
+                                    <option value="ocpp1.2">OCPP 1.2</option>
+                                    <option value="ocpp1.5">OCPP 1.5</option>
+                                    <option value="ocpp1.6">OCPP 1.6</option>
+                                    <option value="ocpp2.0">OCPP 2.0</option>
+                                    <option value="ocpp2.0.1">OCPP 2.0.1</option>
+                                    <option value="ocpp2.1">OCPP 2.1</option>
+                                    <option value="rfb">RFB</option>
+                                    <option value="sip">{{ $t("sip") }}</option>
+                                    <option value="notificationchannel-netapi-rest.openmobilealliance.org">{{ $t("notificationchannel-netapi-rest.openmobilealliance.org") }}</option>
+                                    <option value="wpcp">{{ $t("wpcp") }}</option>
+                                    <option value="amqp">{{ $t("amqp") }}</option>
+                                    <option value="mqtt">MQTT</option>
+                                    <option value="jsflow">{{ $t("jsflow") }}</option>
+                                    <option value="rwpcp">{{ $t("rwpcp") }}</option>
+                                    <option value="xmpp">{{ $t("xmpp") }}</option>
+                                    <option value="ship">{{ $t("ship") }}</option>
+                                    <option value="mielecloudconnect">{{ $t("mielecloudconnect") }}</option>
+                                    <option value="v10.pcp.sap.com">{{ $t("v10.pcp.sap.com") }}</option>
+                                    <option value="msrp">{{ $t("msrp") }}</option>
+                                    <option value="v1.saltyrtc.org">SaltyRTC 1.0</option>
+                                    <option value="TLCP-2.0.0.lightstreamer.com">TLCP 2.0.0</option>
+                                    <option value="bfcp">{{ $t("bfcp") }}</option>
+                                    <option value="sldp.softvelum.com">{{ $t("sldp.softvelum.com") }}</option>
+                                    <option value="opcua+uacp">{{ $t("opcua+uacp") }}</option>
+                                    <option value="opcua+uajson">{{ $t("opcua+uajson") }}</option>
+                                    <option value="v1.swindon-lattice+json">{{ $t("v1.swindon-lattice+json") }}</option>
+                                    <option value="v1.usp">{{ $t("v1.usp") }}</option>
+                                    <option value="mles-websocket">mles-websocket</option>
+                                    <option value="coap">{{ $t("coap") }}</option>
+                                    <option value="TLCP-2.1.0.lightstreamer.com">TLCP 2.1.0</option>
+                                    <option value="sqlnet.oracle.com">sqlnet</option>
+                                    <option value="oneM2M.R2.0.json">oneM2M R2.0 JSON</option>
+                                    <option value="oneM2M.R2.0.xml">oneM2M R2.0 XML</option>
+                                    <option value="oneM2M.R2.0.cbor">oneM2M R2.0 CBOR</option>
+                                    <option value="transit">Transit</option>
+                                    <option value="2016.serverpush.dash.mpeg.org">MPEG-DASH-ServerPush-23009-6-2017</option>
+                                    <option value="2018.mmt.mpeg.org">MPEG-MMT-23008-1-2018</option>
+                                    <option value="clue">clue</option>
+                                    <option value="webrtc.softvelum.com">{{ $t("webrtc.softvelum.com") }}</option>
+                                    <option value="cobra.v2.json">{{ $t("cobra.v2.json") }}</option>
+                                    <option value="drp">{{ $t("drp") }}</option>
+                                    <option value="hub.bsc.bacnet.org">{{ $t("hub.bsc.bacnet.org") }}</option>
+                                    <option value="dc.bsc.bacnet.org">{{ $t("dc.bsc.bacnet.org") }}</option>
+                                    <option value="jmap">{{ $t("jmap") }}</option>
+                                    <option value="t140">{{ $t("t140") }}</option>
+                                    <option value="done">{{ $t("done") }}</option>
+                                    <option value="TLCP-2.2.0.lightstreamer.com">TLCP 2.2.0</option>
+                                    <option value="collection-update">{{ $t("collection-update") }}</option>
+                                    <option value="TLCP-2.3.0.lightstreamer.com">TLCP 2.3.0</option>
+                                    <option value="text.ircv3.net">{{ $t("text.ircv3.net") }}</option>
+                                    <option value="binary.ircv3.net">{{ $t("binary.ircv3.net") }}</option>
+                                    <option value="v3.penguin-stats.live+proto">{{ $t("v3.penguin-stats.live+proto") }}</option>
+                                    <option value="TLCP-2.4.0.lightstreamer.com">TLCP 2.4.0</option>
+                                    <option value="TLCP-2.5.0.lightstreamer.com">TLCP 2.5.0</option>
+                                    <option value="Redfish">Redfish DSP0266</option>
+                                    <option value="bidib">webBiDiB</option>
+                                </select>
+                            </div>
+
                             <!-- gRPC URL -->
                             <div v-if="monitor.type === 'grpc-keyword' " class="my-3">
                                 <label for="grpc-url" class="form-label">{{ $t("URL") }}</label>

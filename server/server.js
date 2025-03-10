@@ -791,6 +791,7 @@ let needSetup = false;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
                 bean.wsIgnoreHeaders = monitor.wsIgnoreHeaders;
+                bean.subprotocol = monitor.subprotocol;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
                 bean.headers = monitor.headers;

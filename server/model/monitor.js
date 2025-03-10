@@ -97,6 +97,7 @@ class Monitor extends BeanModel {
             childrenIDs: preloadData.childrenIDs.get(this.id) || [],
             url: this.url,
             wsIgnoreHeaders: this.getWsIgnoreHeaders(),
+            subprotocol: this.subprotocol,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
