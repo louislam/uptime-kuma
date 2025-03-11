@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="yzjWebHookUrl" class="form-label">{{ $t("YZJ Webhook URL") }}<span style="color: red;"><sup>*</sup></span></label>
-        <input id="yzjWebHookUrl" v-model="$parent.notification.yzjWebHookUrl" type="text" class="form-control" required />
+        <input id="yzjWebHookUrl" v-model="$parent.notification.yzjWebHookUrl" type="url" class="form-control" required />
         <label for="yzjType" class="form-label">{{ $t("YZJ Robot Type") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="yzjType" v-model="$parent.notification.yzjType" type="text" class="form-control" required />
         <label for="yzjToken" class="form-label">{{ $t("YZJ Robot Token") }}<span style="color: red;"><sup>*</sup></span></label>
