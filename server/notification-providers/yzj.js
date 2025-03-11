@@ -12,20 +12,17 @@ class YZJ extends NotificationProvider {
         let okMsg = "Sent Successfully.";
 
         try {
+
             if (heartbeatJSON != null) {
-                let params = {
-                    content: `${this.statusToString(heartbeatJSON["status"])} ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
-                };
-                if (await this.sendToYZJ(notification, params)) {
-                    return okMsg;
-                }
-            } else {
-                let params = {
-                    content: msg
-                };
-                if (await this.sendToYZJ(notification, params)) {
-                    return okMsg;
-                }
+                msg = `${this.statusToString(heartbeatJSON["status"])} ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
+            }
+
+            let params = {
+                content: msg
+            };
+
+            if (await this.sendToYZJ(notification, params)) {
+                return okMsg;
             }
         } catch (error) {
             this.throwGeneralAxiosError(error);
@@ -50,10 +47,9 @@ class YZJ extends NotificationProvider {
         };
 
         let result = await axios(config);
-        if (result.data.success === true) {
-            return true;
+        if (!result.data?.success) {
+            throw new Error(result.data?.errmsg);
         }
-        throw new Error(result.data.errmsg);
     }
 
     /**
