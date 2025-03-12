@@ -20,18 +20,32 @@ class SMSEagle extends NotificationProvider {
 
                 let sendMethod;
                 let recipientType;
+                let duration, voice_id;
 
                 if (notification.smseagleRecipientType === "smseagle-contact") {
                     recipientType = "contactname";
                     sendMethod = "/send_tocontact";
-                }
-                if (notification.smseagleRecipientType === "smseagle-group") {
+                } else if (notification.smseagleRecipientType === "smseagle-group") {
                     recipientType = "groupname";
                     sendMethod = "/send_togroup";
-                }
-                if (notification.smseagleRecipientType === "smseagle-to") {
+                } else if (notification.smseagleRecipientType === "smseagle-to") {
                     recipientType = "to";
                     sendMethod = "/send_sms";
+                } else {
+                    recipientType = "to";
+                    if (notification.smseagleDuration)
+                        duration = notification.smseagleDuration;
+                    else
+                        duration = 10;
+
+                    if (notification.smseagleRecipientType == "smseagle-ring") {
+                        sendMethod = "/ring_call";
+                    } else if (notification.smseagleRecipientType == "smseagle-tts") {
+                        sendMethod = "/tts_call";
+                    } else if (notification.smseagleRecipientType == "smseagle-tts-advanced") {
+                        sendMethod = "/tts_adv_call";
+                        voice_id = notification.smseagleTtsModel;
+                    }
                 }
 
                 const url = new URL(notification.smseagleUrl + "/http_api" + sendMethod);
@@ -41,6 +55,12 @@ class SMSEagle extends NotificationProvider {
                 url.searchParams.append('message', msg);
                 url.searchParams.append('unicode', (notification.smseagleEncoding) ? "1" : "0");
                 url.searchParams.append('highpriority', (notification.smseaglePriority) ? notification.smseaglePriority : "0");
+                if (duration) {
+                    url.searchParams.append('duration', duration);
+                }
+                if (voice_id) {
+                    url.searchParams.append('voice_id', voice_id);
+                }
 
                 let resp = await axios.get(url.toString(), config);
 
