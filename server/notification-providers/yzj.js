@@ -12,43 +12,27 @@ class YZJ extends NotificationProvider {
         let okMsg = "Sent Successfully.";
 
         try {
-
-            if (heartbeatJSON != null) {
+            if (heartbeatJSON !== null) {
                 msg = `${this.statusToString(heartbeatJSON["status"])} ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
             }
 
-            let params = {
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            };
+            const params = {
                 content: msg
             };
+            const url = `${notification.yzjWebHookUrl}?yzjtype=${notification.yzjType}&yzjtoken=${notification.yzjToken}`;
 
-            if (await this.sendToYZJ(notification, params)) {
-                return okMsg;
+            const result = await axios.post(url, params, config);
+            if (!result.data?.success) {
+                throw new Error(result.data?.errmsg ?? "yzj's server did not respond with the expected result");
             }
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
-        }
-    }
-
-    /**
-     * Send message to YZJ
-     * @param {object} notification Notification
-     * @param {object} params Parameters of message
-     * @returns {boolean} True if successful else false
-     */
-    async sendToYZJ(notification, params) {
-
-        let config = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            url: `${notification.yzjWebHookUrl}?yzjtype=${notification.yzjType}&yzjtoken=${notification.yzjToken}`,
-            data: JSON.stringify(params),
-        };
-
-        let result = await axios(config);
-        if (!result.data?.success) {
-            throw new Error(result.data?.errmsg);
         }
     }
 
