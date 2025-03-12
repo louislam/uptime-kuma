@@ -1,6 +1,5 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { Liquid } = require("liquidjs");
 
 class Telegram extends NotificationProvider {
     name = "telegram";
@@ -24,17 +23,7 @@ class Telegram extends NotificationProvider {
             }
 
             if (notification.telegramUseTemplate) {
-                const engine = new Liquid();
-                const tpl = engine.parse(notification.telegramTemplate);
-
-                params.text = await engine.render(
-                    tpl,
-                    {
-                        msg,
-                        heartbeatJSON,
-                        monitorJSON
-                    }
-                );
+                params.text = await this.renderTemplate(notification.telegramTemplate, msg, monitorJSON, heartbeatJSON);
 
                 if (notification.telegramTemplateParseMode !== "plain") {
                     params.parse_mode = notification.telegramTemplateParseMode;

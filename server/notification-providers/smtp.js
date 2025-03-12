@@ -1,7 +1,5 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
-const { DOWN } = require("../../src/util");
-const { Liquid } = require("liquidjs");
 
 class SMTP extends NotificationProvider {
     name = "smtp";
@@ -53,15 +51,11 @@ class SMTP extends NotificationProvider {
             const customSubject = notification.customSubject?.trim() || "";
             const customBody = notification.customBody?.trim() || "";
 
-            const context = this.generateContext(msg, monitorJSON, heartbeatJSON);
-            const engine = new Liquid();
             if (customSubject !== "") {
-                const tpl = engine.parse(customSubject);
-                subject = await engine.render(tpl, context);
+                subject = await this.renderTemplate(customSubject, msg, monitorJSON, heartbeatJSON);
             }
             if (customBody !== "") {
-                const tpl = engine.parse(customBody);
-                body = await engine.render(tpl, context);
+                body = await this.renderTemplate(customBody, msg, monitorJSON, heartbeatJSON);
             }
         }
 
@@ -77,43 +71,6 @@ class SMTP extends NotificationProvider {
         });
 
         return okMsg;
-    }
-
-    /**
-     * Generate context for LiquidJS
-     * @param {string} msg  the message that will be included in the context
-     * @param {?object} monitorJSON Monitor details (For Up/Down/Cert-Expiry only)
-     * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
-     * @returns {{STATUS: string, status: string, HOSTNAME_OR_URL: string, hostnameOrUrl: string, NAME: string, name: string, monitorJSON: ?object, heartbeatJSON: ?object, msg: string}} the context
-     */
-    generateContext(msg, monitorJSON, heartbeatJSON) {
-        // Let's start with dummy values to simplify code
-        let monitorName = "Monitor Name not available";
-        let monitorHostnameOrURL = "testing.hostname";
-
-        if (monitorJSON !== null) {
-            monitorName = monitorJSON["name"];
-            monitorHostnameOrURL = this.extractAddress(monitorJSON);
-        }
-
-        let serviceStatus = "⚠️ Test";
-        if (heartbeatJSON !== null) {
-            serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
-        }
-        return {
-            // for v1 compatibility, to be removed in v3
-            "STATUS": serviceStatus,
-            "NAME": monitorName,
-            "HOSTNAME_OR_URL": monitorHostnameOrURL,
-
-            // variables which are officially supported
-            "status": serviceStatus,
-            "name": monitorName,
-            "hostnameOrURL": monitorHostnameOrURL,
-            monitorJSON,
-            heartbeatJSON,
-            msg,
-        };
     }
 }
 

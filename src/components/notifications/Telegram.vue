@@ -47,12 +47,7 @@
 
     <template v-if="$parent.notification.telegramUseTemplate">
         <div class="mb-3">
-            <label class="form-label" for="message_parse_mode">{{ $t("Template Format") }}</label>
-
-            <i18n-t tag="div" keypath="telegramTemplateFormatDescription" class="form-text mb-3">
-                <a href="https://core.telegram.org/bots/api#formatting-options" target="_blank">{{ $t("documentation") }}</a>
-            </i18n-t>
-
+            <label class="form-label" for="message_parse_mode">{{ $t("Message Format") }}</label>
             <select
                 id="message_parse_mode"
                 v-model="$parent.notification.telegramTemplateParseMode"
@@ -63,28 +58,12 @@
                 <option value="HTML">HTML</option>
                 <option value="MarkdownV2">MarkdownV2</option>
             </select>
-        </div>
+            <i18n-t tag="p" keypath="telegramTemplateFormatDescription" class="form-text">
+                <a href="https://core.telegram.org/bots/api#formatting-options" target="_blank">{{ $t("documentation") }}</a>
+            </i18n-t>
 
-        <div class="mb-3">
-            <label class="form-label" for="message_parse_mode">{{ $t("Template") }}</label>
-
-            <div class="form-text mb-3">
-                <i18n-t tag="div" keypath="liquidIntroduction">
-                    <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
-                </i18n-t>
-
-                <code v-pre>{{ msg }}</code>: {{ $t("templateMsg") }}<br />
-                <code v-pre>{{ heartbeatJSON }}</code>: {{ $t("templateHeartbeatJSON") }} <b>({{ $t("templateLimitedToUpDownNotifications") }})</b><br />
-                <code v-pre>{{ monitorJSON }}</code>: {{ $t("templateMonitorJSON") }} <b>({{ $t("templateLimitedToUpDownCertNotifications") }})</b><br />
-            </div>
-
-            <textarea
-                id="message_template"
-                v-model="$parent.notification.telegramTemplate"
-                class="form-control mb-3"
-                :placeholder="telegramMessageTemplatePlaceholder"
-                required
-            ></textarea>
+            <label class="form-label" for="message_template">{{ $t('Message Template') }}</label>
+            <TemplatedTextarea id="message_template" v-model="$parent.notification.telegramTemplate" :required="true" :placeholder="telegramTemplatedTextareaPlaceholder"></TemplatedTextarea>
         </div>
     </template>
 
@@ -113,14 +92,16 @@
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 import axios from "axios";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedTextarea,
     },
     computed: {
-        telegramMessageTemplatePlaceholder() {
+        telegramTemplatedTextareaPlaceholder() {
             return this.$t("Example:", [
                 `
 Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
