@@ -14,7 +14,7 @@
     </div>
     <div class="mb-3">
         <label for="yzjToken" class="form-label">{{ $t("YZJ Robot Token") }}<span style="color: red;"><sup>*</sup></span></label>
-        <hidden-input id="yzjToken" v-model="$parent.notification.yzjToken" type="text" class="form-control" required />
+        <HiddenInput id="yzjToken" v-model="$parent.notification.yzjToken" :required="true" autocomplete="new-password"></HiddenInput>
         <i18n-t class="form-text" keypath="wayToGetLineNotifyToken">
             <a href="https://www.yunzhijia.com/opendocs/docs.html#/server-api/im/index?id=%e6%8e%a5%e5%8f%a3%e5%9c%b0%e5%9d%80%e5%92%8c%e6%8e%88%e6%9d%83%e7%a0%81" target="_blank">{{ $t("here") }}</a>
         </i18n-t>
