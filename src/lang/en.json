@@ -1059,5 +1059,6 @@
     "pingDeadlineLabel": "Max Duration",
     "pingDeadlineDescription": "Total time in seconds before ping stops, regardless of packets sent",
     "pingTimeoutLabel": "Response Timeout",
-    "pingTimeoutDescription": "Maximum time in seconds to wait for each response"
+    "pingTimeoutDescription": "Maximum time in seconds to wait for each response",
+    "pingIntervalAdjusted": "Interval has been adjusted according to deadline, timeout and packet count"
 }

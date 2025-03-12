@@ -164,7 +164,6 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_deadline: this.ping_deadline,
-            ping_timeout: this.ping_timeout,
         };
 
         if (includeSensitiveData) {
@@ -635,7 +634,7 @@ class Monitor extends BeanModel {
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname, this.ping_count, "", this.ping_numeric, this.packetSize, this.ping_deadline, this.ping_timeout);
+                    bean.ping = await ping(this.hostname, this.ping_count, "", this.ping_numeric, this.packetSize, this.ping_deadline, this.timeout);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
@@ -1523,16 +1522,25 @@ class Monitor extends BeanModel {
             throw new Error(`Packet size must be between ${PING_PACKET_SIZE_MIN} and ${PING_PACKET_SIZE_MAX} (default: ${PING_PACKET_SIZE_DEFAULT})`);
         }
 
-        if (this.ping_deadline && (this.ping_deadline < PING_DEADLINE_MIN || this.ping_deadline > PING_DEADLINE_MAX)) {
-            throw new Error(`Deadline must be between ${PING_DEADLINE_MIN} and ${PING_DEADLINE_MAX} seconds (default: ${PING_DEADLINE_DEFAULT})`);
-        }
+        if (this.type === "ping") {
+            // ping parameters validation
+            if (this.ping_deadline && (this.ping_deadline < PING_DEADLINE_MIN || this.ping_deadline > PING_DEADLINE_MAX)) {
+                throw new Error(`Deadline must be between ${PING_DEADLINE_MIN} and ${PING_DEADLINE_MAX} seconds (default: ${PING_DEADLINE_DEFAULT})`);
+            }
 
-        if (this.ping_count && (this.ping_count < PING_COUNT_MIN || this.ping_count > PING_COUNT_MAX)) {
-            throw new Error(`Echo requests count must be between ${PING_COUNT_MIN} and ${PING_COUNT_MAX} (default: ${PING_COUNT_DEFAULT})`);
-        }
+            if (this.ping_count && (this.ping_count < PING_COUNT_MIN || this.ping_count > PING_COUNT_MAX)) {
+                throw new Error(`Echo requests count must be between ${PING_COUNT_MIN} and ${PING_COUNT_MAX} (default: ${PING_COUNT_DEFAULT})`);
+            }
 
-        if (this.ping_timeout && (this.ping_timeout < PING_TIMEOUT_MIN || this.ping_timeout > PING_TIMEOUT_MAX)) {
-            throw new Error(`Timeout must be between ${PING_TIMEOUT_MIN} and ${PING_TIMEOUT_MAX} seconds (default: ${PING_TIMEOUT_DEFAULT})`);
+            if (this.timeout) {
+                const pingTimeout = Math.round(Number(this.timeout));
+
+                if (pingTimeout < PING_TIMEOUT_MIN || pingTimeout > PING_TIMEOUT_MAX) {
+                    throw new Error(`Timeout must be between ${PING_TIMEOUT_MIN} and ${PING_TIMEOUT_MAX} seconds (default: ${PING_TIMEOUT_DEFAULT})`);
+                }
+
+                this.timeout = pingTimeout;
+            }
         }
     }
 

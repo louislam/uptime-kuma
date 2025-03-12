@@ -879,7 +879,6 @@ let needSetup = false;
                 bean.ping_numeric = monitor.ping_numeric;
                 bean.ping_count = monitor.ping_count;
                 bean.ping_deadline = monitor.ping_deadline;
-                bean.ping_timeout = monitor.ping_timeout;
 
                 bean.validate();
 
