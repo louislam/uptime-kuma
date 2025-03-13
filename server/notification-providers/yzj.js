@@ -24,7 +24,7 @@ class YZJ extends NotificationProvider {
             const params = {
                 content: msg
             };
-            const url = `${notification.yzjWebHookUrl}?yzjtype=${notification.yzjType}&yzjtoken=${notification.yzjToken}`;
+            const url = `${notification.yzjWebHookUrl}?yzjtype=0&yzjtoken=${notification.yzjToken}`;
 
             const result = await axios.post(url, params, config);
             if (!result.data?.success) {

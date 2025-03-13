@@ -7,12 +7,6 @@
         </i18n-t>
     </div>
     <div class="mb-3">
-        <label for="yzjType" class="form-label">{{ $t("YZJ Robot Type") }}<span style="color: red;"><sup>*</sup></span></label>
-        <select id="yzjType" v-model="$parent.notification.yzjType" class="form-control" required>
-            <option :value="0">{{ $t("YZJ General Robot") }}</option>
-        </select>
-    </div>
-    <div class="mb-3">
         <label for="yzjToken" class="form-label">{{ $t("YZJ Robot Token") }}<span style="color: red;"><sup>*</sup></span></label>
         <HiddenInput id="yzjToken" v-model="$parent.notification.yzjToken" :required="true" autocomplete="new-password"></HiddenInput>
         <i18n-t class="form-text" keypath="wayToGetLineNotifyToken">

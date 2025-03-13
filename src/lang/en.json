@@ -1053,7 +1053,5 @@
     "SendGrid API Key": "SendGrid API Key",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
     "YZJ Webhook URL": "YZJ Webhook URL",
-    "YZJ Robot Type": "YZJ Robot type",
-    "YZJ Robot Token": "YZJ Robot token",
-    "YZJ General Robot": "YZJ General Robot"
+    "YZJ Robot Token": "YZJ Robot token"
 }
