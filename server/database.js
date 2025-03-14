@@ -264,6 +264,7 @@ class Database {
                 port: dbConfig.port,
                 user: dbConfig.username,
                 password: dbConfig.password,
+                ssl: dbConfig.useSSL ? { rejectUnauthorized: false } : false,
             });
 
             await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
@@ -277,6 +278,9 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
+                    ssl: dbConfig.useSSL
+                        ? { rejectUnauthorized: false }
+                        : false,
                     timezone: "Z",
                     typeCast: function (field, next) {
                         if (field.type === "DATETIME") {
