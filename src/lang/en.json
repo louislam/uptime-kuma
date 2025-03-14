@@ -16,6 +16,8 @@
     "General": "General",
     "Game": "Game",
     "Primary Base URL": "Primary Base URL",
+    "serverIdentifier": "Server Identifier",
+    "serverIdentifierDescription": "If provided, this will be appended in parentheses after Uptime Kuma in UI and notifications",
     "Version": "Version",
     "Check Update On GitHub": "Check Update On GitHub",
     "List": "List",
