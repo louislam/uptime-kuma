@@ -598,10 +598,11 @@
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
                                 <label for="timeout" class="form-label">
-                                    {{ timeoutLabel }} ({{ monitor.type === 'ping' ? $t("timeoutAfter", [monitor.timeout]) : $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})
+                                    {{ monitor.type === 'ping' ? $t("pingTimeoutLabel") : $t("Request Timeout") }}
+                                    ({{ monitor.type === 'ping' ? $t("pingTimeoutDescription") : $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})
                                 </label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" :min="timeoutMin" :max="timeoutMax" :step="timeoutStep" required>
-                                <div class="form-text">{{ timeoutDescription }}</div>
+                                <div v-if="monitor.type === 'ping'" class="form-text">{{ $t("pingTimeoutHelp") }}</div>
                             </div>
 
                             <div class="my-3">

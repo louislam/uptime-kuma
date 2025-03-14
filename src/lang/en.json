@@ -1058,7 +1058,8 @@
     "pingNumericDescription": "If checked, IP addresses will be output instead of symbolic hostnames",
     "pingDeadlineLabel": "Max Duration",
     "pingDeadlineDescription": "Total time in seconds before ping stops, regardless of packets sent",
-    "pingTimeoutLabel": "Response Timeout",
-    "pingTimeoutDescription": "Maximum time in seconds to wait for each response",
+    "pingTimeoutLabel": "Per-Ping Timeout",
+    "pingTimeoutDescription": "applies to each individual ping packet sent",
+    "pingTimeoutHelp": "This is the maximum waiting time (in seconds) before considering a single ping packet lost",
     "pingIntervalAdjusted": "Interval has been adjusted according to deadline, timeout and packet count"
 }
