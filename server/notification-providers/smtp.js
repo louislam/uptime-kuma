@@ -44,6 +44,7 @@ class SMTP extends NotificationProvider {
         // default values in case the user does not want to template
         let subject = msg;
         let body = msg;
+        let useHTMLBody = false;
         if (heartbeatJSON) {
             body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
         }
@@ -52,7 +53,6 @@ class SMTP extends NotificationProvider {
             // cannot end with whitespace as this often raises spam scores
             const customSubject = notification.customSubject?.trim() || "";
             const customBody = notification.customBody?.trim() || "";
-
             const context = this.generateContext(msg, monitorJSON, heartbeatJSON);
             const engine = new Liquid();
             if (customSubject !== "") {
@@ -60,6 +60,7 @@ class SMTP extends NotificationProvider {
                 subject = await engine.render(tpl, context);
             }
             if (customBody !== "") {
+                useHTMLBody = notification.htmlBody || false;
                 const tpl = engine.parse(customBody);
                 body = await engine.render(tpl, context);
             }
@@ -73,7 +74,8 @@ class SMTP extends NotificationProvider {
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: subject,
-            text: body,
+            // If the email body is custom, and the user wants it, set the email body as HTML
+            [useHTMLBody ? "html" : "text"]: body
         });
 
         return okMsg;
