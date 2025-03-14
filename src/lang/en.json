@@ -423,6 +423,8 @@
     "telegramProtectContentDescription": "If enabled, the bot messages in Telegram will be protected from forwarding and saving.",
     "supportTelegramChatID": "Support Direct Chat / Group / Channel's Chat ID",
     "wayToGetTelegramChatID": "You can get your chat ID by sending a message to the bot and going to this URL to view the chat_id:",
+    "telegramServerUrl": "(Optional) Server Url",
+    "telegramServerUrlDescription": "Telegram custom bot api server url. Defaults to https://api.telegram.org if empty.",
     "YOUR BOT TOKEN HERE": "YOUR BOT TOKEN HERE",
     "chatIDNotFound": "Chat ID is not found; please send a message to this bot first",
     "disableCloudflaredNoAuthMsg": "You are in No Auth mode, a password is not required.",
