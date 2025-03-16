@@ -163,7 +163,7 @@ class Maintenance extends BeanModel {
             } else {
                 bean.start_date = null;
             }
-    
+
             if (obj.dateRange[1]) {
                 bean.end_date = obj.dateRange[1];
             } else {
