@@ -157,7 +157,7 @@ class Maintenance extends BeanModel {
         bean.timezone = obj.timezoneOption;
         bean.active = obj.active;
 
-        if (obj.dateRange){
+        if (obj.dateRange) {
             if (obj.dateRange[0]) {
                 bean.start_date = obj.dateRange[0];
             } else {
