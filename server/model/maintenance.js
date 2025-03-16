@@ -157,16 +157,18 @@ class Maintenance extends BeanModel {
         bean.timezone = obj.timezoneOption;
         bean.active = obj.active;
 
-        if (obj.dateRange[0]) {
-            bean.start_date = obj.dateRange[0];
-        } else {
-            bean.start_date = null;
-        }
-
-        if (obj.dateRange[1]) {
-            bean.end_date = obj.dateRange[1];
-        } else {
-            bean.end_date = null;
+        if (obj.dateRange){
+            if (obj.dateRange[0]) {
+                bean.start_date = obj.dateRange[0];
+            } else {
+                bean.start_date = null;
+            }
+    
+            if (obj.dateRange[1]) {
+                bean.end_date = obj.dateRange[1];
+            } else {
+                bean.end_date = null;
+            }
         }
 
         if (bean.strategy === "cron") {
