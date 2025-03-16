@@ -619,7 +619,7 @@ $shadow-box-padding: 20px;
     bottom: 0;
     margin-left: -$shadow-box-padding;
     margin-right: -$shadow-box-padding;
-    z-index: 100;
+    z-index: 10;
     background-color: rgba(white, 0.2);
     backdrop-filter: blur(2px);
     border-radius: 0 0 10px 10px;
