@@ -3,8 +3,8 @@ const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const {
     log, genSecret, badgeConstants,
-    PING_PACKET_SIZE_DEFAULT, PING_DEADLINE_DEFAULT,
-    PING_COUNT_DEFAULT, PING_TIMEOUT_DEFAULT
+    PING_PACKET_SIZE_DEFAULT, PING_GLOBAL_TIMEOUT_DEFAULT,
+    PING_COUNT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
@@ -137,8 +137,8 @@ exports.ping = async (
     sourceAddr = "",
     numeric = true,
     size = PING_PACKET_SIZE_DEFAULT,
-    deadline = PING_DEADLINE_DEFAULT,
-    timeout = PING_TIMEOUT_DEFAULT,
+    deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
+    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT,
 ) => {
     try {
         return await exports.pingAsync(destAddr, false, count, sourceAddr, numeric, size, deadline, timeout);
@@ -174,8 +174,8 @@ exports.pingAsync = function (
     sourceAddr = "",
     numeric = true,
     size = PING_PACKET_SIZE_DEFAULT,
-    deadline = PING_DEADLINE_DEFAULT,
-    timeout = PING_TIMEOUT_DEFAULT,
+    deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
+    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT,
 ) {
     return new Promise((resolve, reject) => {
         ping.promise.probe(destAddr, {

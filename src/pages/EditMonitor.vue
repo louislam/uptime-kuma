@@ -598,11 +598,11 @@
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
                                 <label for="timeout" class="form-label">
-                                    {{ monitor.type === 'ping' ? $t("pingTimeoutLabel") : $t("Request Timeout") }}
-                                    ({{ monitor.type === 'ping' ? $t("pingTimeoutDescription") : $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})
+                                    {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
+                                    <span v-if="monitor.type !== 'ping'">({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</span>
                                 </label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" :min="timeoutMin" :max="timeoutMax" :step="timeoutStep" required>
-                                <div v-if="monitor.type === 'ping'" class="form-text">{{ $t("pingTimeoutHelp") }}</div>
+                                <div v-if="monitor.type === 'ping'" class="form-text">{{ $t("pingGlobalTimeoutDescription") }}</div>
                             </div>
 
                             <div class="my-3">
@@ -690,12 +690,12 @@
                                 <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" :max="65500" step="1">
                             </div>
 
-                            <!-- Max Duration / Deadline -->
+                            <!-- per-request timeout -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
-                                <label for="ping_deadline" class="form-label">{{ $t("pingDeadlineLabel") }}</label>
-                                <input id="ping_deadline" v-model="monitor.ping_deadline" type="number" class="form-control" required min="0" max="300" step="1">
+                                <label for="ping_per_request_timeout" class="form-label">{{ $t("pingPerRequestTimeoutLabel") }}</label>
+                                <input id="ping_per_request_timeout" v-model="monitor.ping_per_request_timeout" type="number" class="form-control" required min="0" max="300" step="1">
                                 <div class="form-text">
-                                    {{ $t("pingDeadlineDescription") }}
+                                    {{ $t("pingPerRequestTimeoutDescription") }}
                                 </div>
                             </div>
 
@@ -1492,7 +1492,7 @@ message HealthCheckResponse {
             }
         },
 
-        "monitor.ping_deadline"() {
+        "monitor.ping_per_request_timeout"() {
             if (this.monitor.type === "ping") {
                 this.finishUpdateInterval();
             }
@@ -1526,7 +1526,7 @@ message HealthCheckResponse {
                     // snmp is not expected to be executed via the internet => we can choose a lower default timeout
                     this.monitor.timeout = 5;
                 } else if (this.monitor.type === "ping") {
-                    this.monitor.timeout = 2;
+                    this.monitor.timeout = 10;
                 } else {
                     this.monitor.timeout = 48;
                 }
@@ -1647,7 +1647,7 @@ message HealthCheckResponse {
                     ping_count: 3,
                     ping_numeric: true,
                     packetSize: 56,
-                    ping_deadline: 10,
+                    ping_per_request_timeout: 2,
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -1712,7 +1712,7 @@ message HealthCheckResponse {
                         if (!this.monitor.timeout) {
                             if (this.monitor.type === "ping") {
                                 // set to default
-                                this.monitor.timeout = 2;
+                                this.monitor.timeout = 10;
                             } else {
                                 this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                             }
@@ -1934,18 +1934,17 @@ message HealthCheckResponse {
                 return this.monitor.interval;
             }
 
-            // Calculate the maximum theoretical time needed if all ping requests time out
-            const theoreticalTotal = this.monitor.ping_count * this.monitor.timeout;
+            // Calculate the maximum theoretical time needed if every ping request times out
+            const theoreticalTotal = this.monitor.ping_count * this.monitor.ping_per_request_timeout;
 
-            // The deadline forces ping to terminate, so the effective limit
+            // The global timeout (aka deadline) forces ping to terminate, so the effective limit
             // is the smaller value between deadline and theoreticalTotal
-            const effectiveLimit = Math.min(this.monitor.ping_deadline, theoreticalTotal);
+            const effectiveLimit = Math.min(this.monitor.timeout, theoreticalTotal);
 
             // Add a 10% margin to the effective limit to ensure proper handling
             const adjustedLimit = Math.ceil(effectiveLimit * 1.1);
 
-            // If the calculated limit is less than the minimum allowed interval,
-            // use the minimum interval to ensure stability
+            // If the calculated limit is lower than the minimum allowed interval, use the minimum interval
             if (adjustedLimit < this.minInterval) {
                 return this.minInterval;
             }
@@ -1963,7 +1962,7 @@ message HealthCheckResponse {
                     this.monitor.interval = calculatedPingInterval;
 
                     // Notify the user that the interval has been automatically adjusted
-                    toast.info(this.$t("pingIntervalAdjusted"));
+                    toast.info(this.$t("pingIntervalAdjustedInfo"));
                 }
             } else {
                 // Update timeout if it is greater than the clamp timeout

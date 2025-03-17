@@ -4,9 +4,9 @@ const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT, evaluateJsonQuery,
     PING_PACKET_SIZE_MIN, PING_PACKET_SIZE_MAX, PING_PACKET_SIZE_DEFAULT,
-    PING_DEADLINE_MIN, PING_DEADLINE_MAX, PING_DEADLINE_DEFAULT,
+    PING_GLOBAL_TIMEOUT_MIN, PING_GLOBAL_TIMEOUT_MAX, PING_GLOBAL_TIMEOUT_DEFAULT,
     PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
-    PING_TIMEOUT_MIN, PING_TIMEOUT_MAX, PING_TIMEOUT_DEFAULT
+    PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
@@ -163,7 +163,7 @@ class Monitor extends BeanModel {
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
-            ping_deadline: this.ping_deadline,
+            ping_per_request_timeout: this.ping_per_request_timeout,
         };
 
         if (includeSensitiveData) {
@@ -634,7 +634,7 @@ class Monitor extends BeanModel {
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname, this.ping_count, "", this.ping_numeric, this.packetSize, this.ping_deadline, this.timeout);
+                    bean.ping = await ping(this.hostname, this.ping_count, "", this.ping_numeric, this.packetSize, this.timeout, this.ping_per_request_timeout);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
@@ -706,7 +706,7 @@ class Monitor extends BeanModel {
                         bean.msg = res.data.response.servers[0].name;
 
                         try {
-                            bean.ping = await ping(this.hostname, PING_COUNT_DEFAULT, "", true, this.packetSize, PING_DEADLINE_DEFAULT, PING_TIMEOUT_DEFAULT);
+                            bean.ping = await ping(this.hostname, PING_COUNT_DEFAULT, "", true, this.packetSize, PING_GLOBAL_TIMEOUT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT);
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");
@@ -1518,14 +1518,14 @@ class Monitor extends BeanModel {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
-        if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {
-            throw new Error(`Packet size must be between ${PING_PACKET_SIZE_MIN} and ${PING_PACKET_SIZE_MAX} (default: ${PING_PACKET_SIZE_DEFAULT})`);
-        }
-
         if (this.type === "ping") {
             // ping parameters validation
-            if (this.ping_deadline && (this.ping_deadline < PING_DEADLINE_MIN || this.ping_deadline > PING_DEADLINE_MAX)) {
-                throw new Error(`Deadline must be between ${PING_DEADLINE_MIN} and ${PING_DEADLINE_MAX} seconds (default: ${PING_DEADLINE_DEFAULT})`);
+            if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {
+                throw new Error(`Packet size must be between ${PING_PACKET_SIZE_MIN} and ${PING_PACKET_SIZE_MAX} (default: ${PING_PACKET_SIZE_DEFAULT})`);
+            }
+
+            if (this.ping_per_request_timeout && (this.ping_per_request_timeout < PING_PER_REQUEST_TIMEOUT_MIN || this.ping_per_request_timeout > PING_PER_REQUEST_TIMEOUT_MAX)) {
+                throw new Error(`Per-ping timeout must be between ${PING_PER_REQUEST_TIMEOUT_MIN} and ${PING_PER_REQUEST_TIMEOUT_MAX} seconds (default: ${PING_PER_REQUEST_TIMEOUT_DEFAULT})`);
             }
 
             if (this.ping_count && (this.ping_count < PING_COUNT_MIN || this.ping_count > PING_COUNT_MAX)) {
@@ -1533,13 +1533,13 @@ class Monitor extends BeanModel {
             }
 
             if (this.timeout) {
-                const pingTimeout = Math.round(Number(this.timeout));
+                const pingGlobalTimeout = Math.round(Number(this.timeout));
 
-                if (pingTimeout < PING_TIMEOUT_MIN || pingTimeout > PING_TIMEOUT_MAX) {
-                    throw new Error(`Timeout must be between ${PING_TIMEOUT_MIN} and ${PING_TIMEOUT_MAX} seconds (default: ${PING_TIMEOUT_DEFAULT})`);
+                if (pingGlobalTimeout < this.ping_per_request_timeout || pingGlobalTimeout < PING_GLOBAL_TIMEOUT_MIN || pingGlobalTimeout > PING_GLOBAL_TIMEOUT_MAX) {
+                    throw new Error(`Timeout must be between ${PING_GLOBAL_TIMEOUT_MIN} and ${PING_GLOBAL_TIMEOUT_MAX} seconds (default: ${PING_GLOBAL_TIMEOUT_DEFAULT})`);
                 }
 
-                this.timeout = pingTimeout;
+                this.timeout = pingGlobalTimeout;
             }
         }
     }

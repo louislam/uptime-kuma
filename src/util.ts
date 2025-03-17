@@ -44,20 +44,20 @@ export const PING_PACKET_SIZE_MIN = 1;
 export const PING_PACKET_SIZE_MAX = 65500;
 export const PING_PACKET_SIZE_DEFAULT = 56;
 
-// Deadline limits (in seconds)
-export const PING_DEADLINE_MIN = 1;
-export const PING_DEADLINE_MAX = 300;
-export const PING_DEADLINE_DEFAULT = 10;
+// Global timeout (aka deadline) limits in seconds
+export const PING_GLOBAL_TIMEOUT_MIN = 1;
+export const PING_GLOBAL_TIMEOUT_MAX = 300;
+export const PING_GLOBAL_TIMEOUT_DEFAULT = 10;
 
 // Ping count limits
 export const PING_COUNT_MIN = 1;
 export const PING_COUNT_MAX = 100;
 export const PING_COUNT_DEFAULT = 1;
 
-// Timeout limits (in seconds)
-export const PING_TIMEOUT_MIN = 1;
-export const PING_TIMEOUT_MAX = 60;
-export const PING_TIMEOUT_DEFAULT = 2;
+// per-request timeout (aka timeout) limits in seconds
+export const PING_PER_REQUEST_TIMEOUT_MIN = 1;
+export const PING_PER_REQUEST_TIMEOUT_MAX = 60;
+export const PING_PER_REQUEST_TIMEOUT_DEFAULT = 2;
 
 // Console colors
 // https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
