@@ -24,6 +24,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const tls = require("tls");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -580,6 +581,45 @@ class Monitor extends BeanModel {
 
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
+                    if (this.isEnabledExpiryNotification()) {
+                        const host = this.hostname;
+                        const port = this.port || 443;
+                        try {
+                            const options = {
+                                host,
+                                port,
+                                servername: host,
+                            };
+
+                            // Convert TLS connect to a Promise and await it
+                            const tlsInfoObject = await new Promise((resolve, reject) => {
+                                const socket = tls.connect(options);
+
+                                socket.on("secureConnect", () => {
+                                    try {
+                                        const info = checkCertificate(socket);
+                                        socket.end();
+                                        resolve(info);
+                                    } catch (error) {
+                                        socket.end();
+                                        reject(error);
+                                    }
+                                });
+
+                                socket.on("error", (error) => {
+                                    reject(error);
+                                });
+
+                                socket.setTimeout(10000, () => {
+                                    socket.end();
+                                    reject(new Error("Connection timed out"));
+                                });
+                            });
+                            await this.handleTlsInfo(tlsInfoObject);
+                        } catch (error) {
+                            console.log("Retrieve certificate failed");
+                        }
+                    }
                     bean.msg = "";
                     bean.status = UP;
 
