@@ -184,6 +184,7 @@ export default {
                 "ServerChan": "ServerChan (Server酱)",
                 "smsc": "SMSC",
                 "WPush": "WPush(wpush.cn)",
+                "YZJ": "YZJ (云之家自定义机器人)"
             };
 
             // Sort by notification name
