@@ -36,7 +36,42 @@
         <label for="server_url" class="form-label">{{ $t("telegramServerUrl") }}</label>
         <input id="server_url" v-model="$parent.notification.telegramServerUrl" type="text" class="form-control">
         <p class="form-text">{{ $t("telegramServerUrlDescription") }}</p>
+    </div>
 
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.telegramUseTemplate" class="form-check-input" type="checkbox">
+            <label class="form-check-label">{{ $t("telegramUseTemplate") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("telegramUseTemplateDescription") }}
+        </div>
+    </div>
+
+    <template v-if="$parent.notification.telegramUseTemplate">
+        <div class="mb-3">
+            <label class="form-label" for="message_parse_mode">{{ $t("Message Format") }}</label>
+            <select
+                id="message_parse_mode"
+                v-model="$parent.notification.telegramTemplateParseMode"
+                class="form-select"
+                required
+            >
+                <option value="plain">{{ $t("Plain Text") }}</option>
+                <option value="HTML">HTML</option>
+                <option value="MarkdownV2">MarkdownV2</option>
+            </select>
+            <i18n-t tag="p" keypath="telegramTemplateFormatDescription" class="form-text">
+                <a href="https://core.telegram.org/bots/api#formatting-options" target="_blank">{{ $t("documentation") }}</a>
+            </i18n-t>
+
+            <label class="form-label" for="message_template">{{ $t('Message Template') }}</label>
+            <TemplatedTextarea id="message_template" v-model="$parent.notification.telegramTemplate" :required="true" :placeholder="telegramTemplatedTextareaPlaceholder"></TemplatedTextarea>
+        </div>
+    </template>
+
+    <div class="mb-3">
         <div class="form-check form-switch">
             <input v-model="$parent.notification.telegramSendSilently" class="form-check-input" type="checkbox">
             <label class="form-check-label">{{ $t("telegramSendSilently") }}</label>
@@ -61,14 +96,27 @@
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 import axios from "axios";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedTextarea,
     },
     mounted() {
         this.$parent.notification.telegramServerUrl ||= "https://api.telegram.org";
+    },
+    computed: {
+        telegramTemplatedTextareaPlaceholder() {
+            return this.$t("Example:", [
+                `
+Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
+
+{{ msg }}
+                `,
+            ]);
+        }
     },
     methods: {
         /**
@@ -123,3 +171,9 @@ export default {
     }
 };
 </script>
+
+<style lang="scss" scoped>
+textarea {
+    min-height: 150px;
+}
+</style>

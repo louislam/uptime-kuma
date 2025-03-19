@@ -22,6 +22,14 @@ class Telegram extends NotificationProvider {
                 params.message_thread_id = notification.telegramMessageThreadID;
             }
 
+            if (notification.telegramUseTemplate) {
+                params.text = await this.renderTemplate(notification.telegramTemplate, msg, monitorJSON, heartbeatJSON);
+
+                if (notification.telegramTemplateParseMode !== "plain") {
+                    params.parse_mode = notification.telegramTemplateParseMode;
+                }
+            }
+
             await axios.get(`${url}/bot${notification.telegramBotToken}/sendMessage`, {
                 params: params,
             });
