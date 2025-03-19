@@ -104,9 +104,6 @@ export default {
         HiddenInput,
         TemplatedTextarea,
     },
-    mounted() {
-        this.$parent.notification.telegramServerUrl ||= "https://api.telegram.org";
-    },
     computed: {
         telegramTemplatedTextareaPlaceholder() {
             return this.$t("Example:", [
@@ -117,6 +114,9 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 `,
             ]);
         }
+    },
+    mounted() {
+        this.$parent.notification.telegramServerUrl ||= "https://api.telegram.org";
     },
     methods: {
         /**
