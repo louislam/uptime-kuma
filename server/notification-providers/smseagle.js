@@ -38,11 +38,11 @@ class SMSEagle extends NotificationProvider {
                     else
                         duration = 10;
 
-                    if (notification.smseagleRecipientType == "smseagle-ring") {
+                    if (notification.smseagleMsgType == "smseagle-ring") {
                         sendMethod = "/ring_call";
-                    } else if (notification.smseagleRecipientType == "smseagle-tts") {
+                    } else if (notification.smseagleMsgType == "smseagle-tts") {
                         sendMethod = "/tts_call";
-                    } else if (notification.smseagleRecipientType == "smseagle-tts-advanced") {
+                    } else if (notification.smseagleMsgType == "smseagle-tts-advanced") {
                         sendMethod = "/tts_adv_call";
                         voice_id = notification.smseagleTtsModel;
                     }
