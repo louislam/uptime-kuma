@@ -19,6 +19,7 @@ class DnsMonitorType extends MonitorType {
         new ConditionVariable("record", defaultStringOperators),
     ];
 
+    // When true, this enforces all records to fullfil every condition
     enforceAllConditions = process.env.UPTIME_KUMA_CONDITIONS_ALL
         ? process.env.UPTIME_KUMA_CONDITIONS_ALL !== "0"
         : false;
