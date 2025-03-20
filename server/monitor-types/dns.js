@@ -5,7 +5,9 @@ const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
 const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators } = require("../monitor-conditions/operators");
-const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
+const {
+    ConditionExpressionGroup,
+} = require("../monitor-conditions/expression");
 const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
 
 class DnsMonitorType extends MonitorType {
@@ -14,8 +16,12 @@ class DnsMonitorType extends MonitorType {
     supportsConditions = true;
 
     conditionVariables = [
-        new ConditionVariable("record", defaultStringOperators ),
+        new ConditionVariable("record", defaultStringOperators),
     ];
+
+    enforceAllConditions = process.env.UPTIME_KUMA_CONDITIONS_ALL
+        ? process.env.UPTIME_KUMA_CONDITIONS_ALL !== "0"
+        : false;
 
     /**
      * @inheritdoc
@@ -24,12 +30,18 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        let dnsRes = await dnsResolve(monitor.hostname, monitor.dns_resolve_server, monitor.port, monitor.dns_resolve_type);
+        let dnsRes = await dnsResolve(
+            monitor.hostname,
+            monitor.dns_resolve_server,
+            monitor.port,
+            monitor.dns_resolve_type
+        );
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
         let conditionsResult = true;
-        const handleConditions = (data) => conditions ? evaluateExpressionGroup(conditions, data) : true;
+        const handleConditions = (data) =>
+            conditions ? evaluateExpressionGroup(conditions, data) : true;
 
         switch (monitor.dns_resolve_type) {
             case "A":
@@ -37,7 +49,9 @@ class DnsMonitorType extends MonitorType {
             case "TXT":
             case "PTR":
                 dnsMessage = `Records: ${dnsRes.join(" | ")}`;
-                conditionsResult = dnsRes.some(record => handleConditions({ record }));
+                conditionsResult = this.enforceAllConditions
+                    ? dnsRes.every((record) => handleConditions({ record }))
+                    : dnsRes.some((record) => handleConditions({ record }));
                 break;
 
             case "CNAME":
@@ -47,17 +61,36 @@ class DnsMonitorType extends MonitorType {
 
             case "CAA":
                 dnsMessage = dnsRes[0].issue;
-                conditionsResult = handleConditions({ record: dnsRes[0].issue });
+                conditionsResult = handleConditions({
+                    record: dnsRes[0].issue,
+                });
                 break;
 
             case "MX":
-                dnsMessage = dnsRes.map(record => `Hostname: ${record.exchange} - Priority: ${record.priority}`).join(" | ");
-                conditionsResult = dnsRes.some(record => handleConditions({ record: record.exchange }));
+                dnsMessage = dnsRes
+                    .map(
+                        (record) =>
+                            `Hostname: ${record.exchange} - Priority: ${record.priority}`
+                    )
+                    .join(" | ");
+                conditionsResult = this.enforceAllConditions
+                    ? dnsRes.every((record) =>
+                        handleConditions({ record: record.exchange })
+                    )
+                    : dnsRes.some((record) =>
+                        handleConditions({ record: record.exchange })
+                    );
                 break;
 
             case "NS":
                 dnsMessage = `Servers: ${dnsRes.join(" | ")}`;
-                conditionsResult = dnsRes.some(record => handleConditions({ record }));
+                conditionsResult = this.enforceAllConditions
+                    ? dnsRes.every((record) =>
+                        handleConditions({ record })
+                    ) :
+                    dnsRes.some((record) =>
+                        handleConditions({ record })
+                    );
                 break;
 
             case "SOA":
@@ -66,13 +99,30 @@ class DnsMonitorType extends MonitorType {
                 break;
 
             case "SRV":
-                dnsMessage = dnsRes.map(record => `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight}`).join(" | ");
-                conditionsResult = dnsRes.some(record => handleConditions({ record: record.name }));
+                dnsMessage = dnsRes
+                    .map(
+                        (record) =>
+                            `Name: ${record.name} | Port: ${record.port} | Priority: ${record.priority} | Weight: ${record.weight}`
+                    )
+                    .join(" | ");
+                conditionsResult = this.enforceAllConditions
+                    ? dnsRes.every((record) =>
+                        handleConditions({ record: record.name })
+                    )
+                    : dnsRes.some((record) =>
+                        handleConditions({ record: record.name })
+                    );
                 break;
         }
 
-        if (monitor.dns_last_result !== dnsMessage && dnsMessage !== undefined) {
-            await R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [ dnsMessage, monitor.id ]);
+        if (
+            monitor.dns_last_result !== dnsMessage &&
+            dnsMessage !== undefined
+        ) {
+            await R.exec(
+                "UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ",
+                [ dnsMessage, monitor.id ]
+            );
         }
 
         heartbeat.msg = dnsMessage;
