@@ -67,8 +67,9 @@ export default {
     methods: {
         /**
          * Setting monitor
-         * @param {Object} group Data of monitor
-         * @param {Object} monitor Data of monitor
+         * @param {object} group Data of monitor
+         * @param {object} monitor Data of monitor
+         * @returns {void}
          */
         show(group, monitor) {
             this.monitor = {
@@ -86,6 +87,7 @@ export default {
          * Toggle the value of sendUrl
          * @param {number} groupIndex Index of group monitor is member of
          * @param {number} index Index of monitor within group
+         * @returns {void}
          */
         toggleLink(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl = !this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl;
@@ -95,10 +97,10 @@ export default {
          * Should a link to the monitor be shown?
          * Attempts to guess if a link should be shown based upon if
          * sendUrl is set and if the URL is default or not.
-         * @param {Object} monitor Monitor to check
-         * @param {boolean} [ignoreSendUrl=false] Should the presence of the sendUrl
+         * @param {object} monitor Monitor to check
+         * @param {boolean} ignoreSendUrl Should the presence of the sendUrl
          * property be ignored. This will only work in edit mode.
-         * @returns {boolean}
+         * @returns {boolean} Should the link be shown?
          */
         showLink(monitor, ignoreSendUrl = false) {
             // We must check if there are any elements in monitorList to

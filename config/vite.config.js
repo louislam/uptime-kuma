@@ -1,8 +1,8 @@
-import legacy from "@vitejs/plugin-legacy";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
+import VueDevTools from "vite-plugin-vue-devtools";
 
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
@@ -16,15 +16,10 @@ export default defineConfig({
     },
     define: {
         "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
-        "DEVCONTAINER": JSON.stringify(process.env.DEVCONTAINER),
-        "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN": JSON.stringify(process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN),
-        "CODESPACE_NAME": JSON.stringify(process.env.CODESPACE_NAME),
+        "process.env": {},
     },
     plugins: [
         vue(),
-        legacy({
-            targets: [ "since 2015" ],
-        }),
         visualizer({
             filename: "tmp/dist-stats.html"
         }),
@@ -36,6 +31,7 @@ export default defineConfig({
             algorithm: "brotliCompress",
             filter: viteCompressionFilter,
         }),
+        VueDevTools(),
     ],
     css: {
         postcss: {

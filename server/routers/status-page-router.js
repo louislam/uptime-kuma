@@ -4,9 +4,9 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
-const Monitor = require("../model/monitor");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
+const { UptimeCalculator } = require("../uptime-calculator");
 
 let router = express.Router();
 
@@ -15,7 +15,14 @@ const server = UptimeKumaServer.getInstance();
 
 router.get("/status/:slug", cache("5 minutes"), async (request, response) => {
     let slug = request.params.slug;
+    slug = slug.toLowerCase();
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
+});
+
+router.get("/status/:slug/rss", cache("5 minutes"), async (request, response) => {
+    let slug = request.params.slug;
+    slug = slug.toLowerCase();
+    await StatusPage.handleStatusPageRSSResponse(response, slug);
 });
 
 router.get("/status", cache("5 minutes"), async (request, response) => {
@@ -32,6 +39,7 @@ router.get("/status-page", cache("5 minutes"), async (request, response) => {
 router.get("/api/status-page/:slug", cache("5 minutes"), async (request, response) => {
     allowDevAllOrigin(response);
     let slug = request.params.slug;
+    slug = slug.toLowerCase();
 
     try {
         // Get Status Page
@@ -40,15 +48,11 @@ router.get("/api/status-page/:slug", cache("5 minutes"), async (request, respons
         ]);
 
         if (!statusPage) {
+            sendHttpError(response, "Status Page Not Found");
             return null;
         }
 
         let statusPageData = await StatusPage.getStatusPageData(statusPage);
-
-        if (!statusPageData) {
-            sendHttpError(response, "Not Found");
-            return;
-        }
 
         // Response
         response.json(statusPageData);
@@ -68,6 +72,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let uptimeList = {};
 
         let slug = request.params.slug;
+        slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
 
         let monitorIDList = await R.getCol(`
@@ -92,8 +97,8 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             list = R.convertToBeans("heartbeat", list);
             heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
 
-            const type = 24;
-            uptimeList[`${monitorID}_${type}`] = await Monitor.calcUptime(type, monitorID);
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+            uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
         }
 
         response.json({
@@ -110,6 +115,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async (request, response) => {
     allowDevAllOrigin(response);
     let slug = request.params.slug;
+    slug = slug.toLowerCase();
 
     try {
         // Get Status Page
@@ -144,7 +150,8 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
 // overall status-page status badge
 router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, response) => {
     allowDevAllOrigin(response);
-    const slug = request.params.slug;
+    let slug = request.params.slug;
+    slug = slug.toLowerCase();
     const statusPageID = await StatusPage.slugToID(slug);
     const {
         label,

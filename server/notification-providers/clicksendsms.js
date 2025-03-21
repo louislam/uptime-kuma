@@ -2,11 +2,15 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class ClickSendSMS extends NotificationProvider {
-
     name = "clicksendsms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+        const url = "https://rest.clicksend.com/v3/sms/send";
+
         try {
             let config = {
                 headers: {
@@ -25,7 +29,7 @@ class ClickSendSMS extends NotificationProvider {
                     }
                 ]
             };
-            let resp = await axios.post("https://rest.clicksend.com/v3/sms/send", data, config);
+            let resp = await axios.post(url, data, config);
             if (resp.data.data.messages[0].status !== "SUCCESS") {
                 let error = "Something gone wrong. Api returned " + resp.data.data.messages[0].status + ".";
                 this.throwGeneralAxiosError(error);

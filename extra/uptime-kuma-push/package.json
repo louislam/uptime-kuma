@@ -1,0 +1,13 @@
+{
+    "scripts": {
+        "build-docker": "npm run build-all && docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:push . --push --target release",
+        "build-all": "npm run build-win && npm run build-linux-amd64 && npm run build-linux-arm64 && npm run build-linux-armv7 && npm run build-linux-armv6 && npm run build-linux-armv5 && npm run build-linux-riscv64",
+        "build-win": "cross-env GOOS=windows GOARCH=amd64 go build -x -o ./build/uptime-kuma-push.exe uptime-kuma-push.go",
+        "build-linux-amd64": "cross-env GOOS=linux GOARCH=amd64 go build -x -o ./build/uptime-kuma-push-amd64 uptime-kuma-push.go",
+        "build-linux-arm64": "cross-env GOOS=linux GOARCH=arm64 go build -x -o ./build/uptime-kuma-push-arm64 uptime-kuma-push.go",
+        "build-linux-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./build/uptime-kuma-push-armv7 uptime-kuma-push.go",
+        "build-linux-armv6": "cross-env GOOS=linux GOARCH=arm GOARM=6 go build -x -o ./build/uptime-kuma-push-armv6 uptime-kuma-push.go",
+        "build-linux-armv5": "cross-env GOOS=linux GOARCH=arm GOARM=5 go build -x -o ./build/uptime-kuma-push-armv5 uptime-kuma-push.go",
+        "build-linux-riscv64": "cross-env GOOS=linux GOARCH=riscv64 go build -x -o ./build/uptime-kuma-push-riscv64 uptime-kuma-push.go"
+    }
+}

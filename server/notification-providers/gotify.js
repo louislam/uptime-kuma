@@ -2,11 +2,14 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Gotify extends NotificationProvider {
-
     name = "gotify";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             if (notification.gotifyserverurl && notification.gotifyserverurl.endsWith("/")) {
                 notification.gotifyserverurl = notification.gotifyserverurl.slice(0, -1);

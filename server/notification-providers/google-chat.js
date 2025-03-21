@@ -1,38 +1,86 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { setting } = require("../util-server");
-const { getMonitorRelativeURL } = require("../../src/util");
-const { DOWN, UP } = require("../../src/util");
+const { getMonitorRelativeURL, UP } = require("../../src/util");
 
 class GoogleChat extends NotificationProvider {
-
     name = "GoogleChat";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             // Google Chat message formatting: https://developers.google.com/chat/api/guides/message-formats/basic
 
-            let textMsg = "";
-            if (heartbeatJSON && heartbeatJSON.status === UP) {
-                textMsg = "✅ Application is back online\n";
-            } else if (heartbeatJSON && heartbeatJSON.status === DOWN) {
-                textMsg = "🔴 Application went down\n";
+            let chatHeader = {
+                title: "Uptime Kuma Alert",
+            };
+
+            if (monitorJSON && heartbeatJSON) {
+                chatHeader["title"] =
+                    heartbeatJSON["status"] === UP
+                        ? `✅ ${monitorJSON["name"]} is back online`
+                        : `🔴 ${monitorJSON["name"]} went down`;
             }
 
-            if (monitorJSON && monitorJSON.name) {
-                textMsg += `*${monitorJSON.name}*\n`;
+            // always show msg
+            let sectionWidgets = [
+                {
+                    textParagraph: {
+                        text: `<b>Message:</b>\n${msg}`,
+                    },
+                },
+            ];
+
+            // add time if available
+            if (heartbeatJSON) {
+                sectionWidgets.push({
+                    textParagraph: {
+                        text: `<b>Time (${heartbeatJSON["timezone"]}):</b>\n${heartbeatJSON["localDateTime"]}`,
+                    },
+                });
             }
 
-            textMsg += `${msg}`;
-
+            // add button for monitor link if available
             const baseURL = await setting("primaryBaseURL");
-            if (baseURL && monitorJSON) {
-                textMsg += `\n${baseURL + getMonitorRelativeURL(monitorJSON.id)}`;
+            if (baseURL) {
+                const urlPath = monitorJSON ? getMonitorRelativeURL(monitorJSON.id) : "/";
+                sectionWidgets.push({
+                    buttonList: {
+                        buttons: [
+                            {
+                                text: "Visit Uptime Kuma",
+                                onClick: {
+                                    openLink: {
+                                        url: baseURL + urlPath,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                });
             }
 
-            const data = {
-                "text": textMsg,
+            let chatSections = [
+                {
+                    widgets: sectionWidgets,
+                },
+            ];
+
+            // construct json data
+            let data = {
+                fallbackText: chatHeader["title"],
+                cardsV2: [
+                    {
+                        card: {
+                            header: chatHeader,
+                            sections: chatSections,
+                        },
+                    },
+                ],
             };
 
             await axios.post(notification.googleChatWebhookURL, data);

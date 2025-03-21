@@ -67,6 +67,18 @@
             <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
         </div>
 
+        <div class="mb-3">
+            <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
+            <TemplatedInput id="subject-email" v-model="$parent.notification.customSubject" :required="false" placeholder=""></TemplatedInput>
+            <div class="form-text">{{ $t("leave blank for default subject") }}</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="body-email" class="form-label">{{ $t("emailCustomBody") }}</label>
+            <TemplatedTextarea id="body-email" v-model="$parent.notification.customBody" :required="false" placeholder=""></TemplatedTextarea>
+            <div class="form-text">{{ $t("leave blank for default body") }}</div>
+        </div>
+
         <ToggleSection :heading="$t('smtpDkimSettings')">
             <i18n-t tag="div" keypath="smtpDkimDesc" class="form-text mb-3">
                 <a href="https://nodemailer.com/dkim/" target="_blank">{{ $t("documentation") }}</a>
@@ -97,27 +109,20 @@
                 <input id="dkim-skip-fields" v-model="$parent.notification.smtpDkimskipFields" type="text" class="form-control" autocomplete="false" placeholder="message-id:date">
             </div>
         </ToggleSection>
-
-        <div class="mb-3">
-            <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
-            <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
-            <div v-pre class="form-text">
-                (leave blank for default one)<br />
-                {{NAME}}: Service Name<br />
-                {{HOSTNAME_OR_URL}}: Hostname or URL<br />
-                {{STATUS}}: Status<br />
-            </div>
-        </div>
     </div>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedInput from "../TemplatedInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 import ToggleSection from "../ToggleSection.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedInput,
+        TemplatedTextarea,
         ToggleSection,
     },
     computed: {
