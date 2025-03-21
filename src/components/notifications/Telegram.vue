@@ -35,7 +35,18 @@
 
         <label for="server_url" class="form-label">{{ $t("telegramServerUrl") }}</label>
         <input id="server_url" v-model="$parent.notification.telegramServerUrl" type="text" class="form-control">
-        <p class="form-text">{{ $t("telegramServerUrlDescription") }}</p>
+        <div class="form-text">
+            <i18n-t keypath="telegramServerUrlDescription">
+                <a
+                    href="https://core.telegram.org/bots/api#using-a-local-bot-api-server"
+                    target="_blank"
+                >{{ $t("here") }}</a>
+                <a
+                    href="https://api.telegram.org"
+                    target="_blank"
+                >https://api.telegram.org</a>
+            </i18n-t>
+        </div>
     </div>
 
     <div class="mb-3">
@@ -125,7 +136,6 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
          * @returns {string} formatted URL
          */
         telegramGetUpdatesURL(mode = "masked") {
-            let serverUrl = this.$parent.notification.telegramServerUrl;
             let token = `<${this.$t("YOUR BOT TOKEN HERE")}>`;
 
             if (this.$parent.notification.telegramBotToken) {
@@ -136,7 +146,7 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 }
             }
 
-            return `${serverUrl}/bot${token}/getUpdates`;
+            return `${this.$parent.notification.telegramServerUrl}/bot${token}/getUpdates`;
         },
 
         /**
