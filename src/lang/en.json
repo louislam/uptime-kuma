@@ -429,6 +429,8 @@
     "telegramTemplateFormatDescription": "Telegram allows using different markup languages for messages, see Telegram {0} for specifc details.",
     "supportTelegramChatID": "Support Direct Chat / Group / Channel's Chat ID",
     "wayToGetTelegramChatID": "You can get your chat ID by sending a message to the bot and going to this URL to view the chat_id:",
+    "telegramServerUrl": "(Optional) Server Url",
+    "telegramServerUrlDescription": "To lift Telegram's bot api limitations or gain access in blocked areas (China, Iran, etc). For more information click {0}. Default: {1}",
     "YOUR BOT TOKEN HERE": "YOUR BOT TOKEN HERE",
     "chatIDNotFound": "Chat ID is not found; please send a message to this bot first",
     "disableCloudflaredNoAuthMsg": "You are in No Auth mode, a password is not required.",

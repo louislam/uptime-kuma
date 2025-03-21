@@ -32,6 +32,21 @@
         <label for="message_thread_id" class="form-label">{{ $t("telegramMessageThreadID") }}</label>
         <input id="message_thread_id" v-model="$parent.notification.telegramMessageThreadID" type="text" class="form-control">
         <p class="form-text">{{ $t("telegramMessageThreadIDDescription") }}</p>
+
+        <label for="server_url" class="form-label">{{ $t("telegramServerUrl") }}</label>
+        <input id="server_url" v-model="$parent.notification.telegramServerUrl" type="text" class="form-control">
+        <div class="form-text">
+            <i18n-t keypath="telegramServerUrlDescription">
+                <a
+                    href="https://core.telegram.org/bots/api#using-a-local-bot-api-server"
+                    target="_blank"
+                >{{ $t("here") }}</a>
+                <a
+                    href="https://api.telegram.org"
+                    target="_blank"
+                >https://api.telegram.org</a>
+            </i18n-t>
+        </div>
     </div>
 
     <div class="mb-3">
@@ -111,6 +126,9 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
             ]);
         }
     },
+    mounted() {
+        this.$parent.notification.telegramServerUrl ||= "https://api.telegram.org";
+    },
     methods: {
         /**
          * Get the URL for telegram updates
@@ -128,7 +146,7 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
                 }
             }
 
-            return `https://api.telegram.org/bot${token}/getUpdates`;
+            return `${this.$parent.notification.telegramServerUrl}/bot${token}/getUpdates`;
         },
 
         /**
