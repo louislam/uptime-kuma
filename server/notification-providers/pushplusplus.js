@@ -9,7 +9,7 @@ class PushPlusPlus extends NotificationProvider {
         const okMsg = "Sent Successfully.";
         const url = `https://pushplus.plus/send`;
         try {
-            await axios.post(notification.pushPlusPlusToken, {
+            await axios.post(notification.PushPlusPlusToken, {
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),
                 "content": msg,
             });
