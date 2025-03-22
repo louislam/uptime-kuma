@@ -14,7 +14,7 @@ class PushPlus extends NotificationProvider {
         const url = `https://www.pushplus.plus/send`;
         try {
             await axios.post(url, {
-                "token": notification.pushPlusSendToken,
+                "token": notification.pushPlusSendKey,
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),
                 "content": msg,
                 "template": "html"
