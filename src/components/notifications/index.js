@@ -117,7 +117,7 @@ const NotificationFormList = {
     "PushByTechulus": TechulusPush,
     "PushDeer": PushDeer,
     "pushover": Pushover,
-    "PushPlusPlus": PushPlus,
+    "PushPlus": PushPlus,
     "pushy": Pushy,
     "rocket.chat": RocketChat,
     "serwersms": SerwerSMS,
