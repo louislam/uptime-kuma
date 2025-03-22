@@ -2,22 +2,30 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
-class PushPlusPlus extends NotificationProvider {
-    name = "PushPlusPlus";
+class PushPlus extends NotificationProvider {
+    name = "PushPlus";
+
+    /**
+     * @inheritdoc
+     */
 
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-        const url = `https://pushplus.plus/send`;
+        const url = `https://www.pushplus.plus/send`;
         try {
-            await axios.post(notification.PushPlusPlusToken, {
+            await axios.post(url, {
+                "token": notification.pushPlusSendToken,
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),
                 "content": msg,
-            });
-
+                "template": "html"
+            }, { headers: { "Content-Type": "application/json" } }
+        );
             return okMsg;
 
         } catch (error) {
             this.throwGeneralAxiosError(error);
+            console.error("PushPlus Error:", error.response?.data || error.message);
+            throw new Error("Notification failed: " + error.message);
         }
     }
 
@@ -39,4 +47,4 @@ class PushPlusPlus extends NotificationProvider {
     }
 }
 
-module.exports = PushPlusPlus;
+module.exports = PushPlus;

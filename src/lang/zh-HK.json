@@ -1086,5 +1086,5 @@
     "cellsyntDestination": "收件人的手機號碼需要使用以 00+國家代碼開頭的國際通用格式，例如若要發給英國的號碼 07920 110 000 需使用 00447920110000 作為收件人手機號碼（至多17位數）。需發送給多個收件人手機號碼時可使用英文逗號分隔，每次請求最 多250 00個收件人手機號碼。",
     "threemaRecipient": "收件人",
     "threemaRecipientTypeIdentityFormat": "8 位字符",
-    "PushPlusPlus Token": "PushPlusPlus Token"
+    "PushPlus Token": "PushPlus Token"
 }
