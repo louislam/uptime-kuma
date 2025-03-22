@@ -39,6 +39,7 @@ const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const PushDeer = require("./notification-providers/pushdeer");
 const Pushover = require("./notification-providers/pushover");
+const PushPlusPlus = require("./notification-providers/pushplusplus");
 const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
@@ -158,7 +159,8 @@ class Notification {
             new Cellsynt(),
             new Wpush(),
             new SendGrid(),
-            new YZJ()
+            new YZJ(),
+            new PushPlusPlus()
         ];
         for (let item of list) {
             if (! item.name) {
