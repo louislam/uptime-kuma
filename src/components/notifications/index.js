@@ -39,6 +39,7 @@ import PromoSMS from "./PromoSMS.vue";
 import Pushbullet from "./Pushbullet.vue";
 import PushDeer from "./PushDeer.vue";
 import Pushover from "./Pushover.vue";
+import PushPlus from "./PushPlus.vue";
 import Pushy from "./Pushy.vue";
 import RocketChat from "./RocketChat.vue";
 import ServerChan from "./ServerChan.vue";
@@ -116,6 +117,7 @@ const NotificationFormList = {
     "PushByTechulus": TechulusPush,
     "PushDeer": PushDeer,
     "pushover": Pushover,
+    "PushPlus": PushPlus,
     "pushy": Pushy,
     "rocket.chat": RocketChat,
     "serwersms": SerwerSMS,
