@@ -7,11 +7,15 @@ class PushPlus extends NotificationProvider {
 
     /**
      * @inheritdoc
+     * @param {BeanModel} notification Notification object
+     * @param {string} msg Message content
+     * @param {?object} monitorJSON Monitor details
+     * @param {?object} heartbeatJSON Heartbeat details
+     * @returns {Promise<string>} Success message
      */
-
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-        const url = `https://www.pushplus.plus/send`;
+        const url = "https://www.pushplus.plus/send";
         try {
             await axios.post(url, {
                 "token": notification.pushPlusSendKey,
@@ -19,7 +23,7 @@ class PushPlus extends NotificationProvider {
                 "content": msg,
                 "template": "html"
             }, { headers: { "Content-Type": "application/json" } }
-        );
+            );
             return okMsg;
 
         } catch (error) {
