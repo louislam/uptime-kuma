@@ -129,6 +129,7 @@ class Notification {
             new Pushbullet(),
             new PushDeer(),
             new Pushover(),
+            new PushPlusPlus(),
             new Pushy(),
             new RocketChat(),
             new ServerChan(),
@@ -159,8 +160,7 @@ class Notification {
             new Cellsynt(),
             new Wpush(),
             new SendGrid(),
-            new YZJ(),
-            new PushPlusPlus()
+            new YZJ()
         ];
         for (let item of list) {
             if (! item.name) {
