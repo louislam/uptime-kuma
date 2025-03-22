@@ -1092,5 +1092,16 @@
     "RabbitMQ Nodes": "RabbitMQ upravljački čvorovi",
     "rabbitmqNodesDescription": "Unesite URL za upravljačke čvorove RabbitMQ uključujući protokol i port. Primjer: {0}",
     "rabbitmqHelpText": "Za korištenje ovog Monitora morat ćete omogućiti dodatak \"Management Plugin\" u svom RabbitMQ-u. Za više informacija pogledajte {rabitmq_documentation}.",
-    "aboutSlackUsername": "Mijenja ime pošiljatelja vidljivo svima ostalima."
+    "aboutSlackUsername": "Mijenja ime pošiljatelja vidljivo svima ostalima.",
+    "templateServiceName": "naziv servisa",
+    "telegramUseTemplate": "Koristi prilagođeni predložak poruke",
+    "telegramTemplateFormatDescription": "Telegram dozvoljava korištenje različitih markup jezika za formatiranje poruka, pogledajte {0} za više detalja.",
+    "YZJ Robot Token": "YZJ token robota",
+    "YZJ Webhook URL": "YZJ URL webhooka",
+    "templateHostnameOrURL": "domaćin ili URL",
+    "templateStatus": "status",
+    "telegramUseTemplateDescription": "Ako je omogućeno, poruka će biti poslana koristeći prilagođeni predložak.",
+    "Plain Text": "Obični tekst",
+    "Message Template": "Predložak poruke",
+    "Template Format": "Format predloška"
 }
