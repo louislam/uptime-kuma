@@ -104,12 +104,14 @@ log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
 const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 
-const { apiAuth } = require("./auth");
+const { authMiddleware } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
-const hostname = config.hostname;
+const remoteAuthEnabled = process.env.REMOTE_AUTH_ENABLED || false;
+const remoteAuthHeader = process.env.REMOTE_AUTH_HEADER || "Remote-User";
 
+const hostname = config.hostname;
 if (hostname) {
     log.info("server", "Custom hostname: " + hostname);
 }
@@ -292,7 +294,7 @@ let needSetup = false;
 
     // Prometheus API metrics  /metrics
     // With Basic Auth using the first user's username/password
-    app.get("/metrics", apiAuth, prometheusAPIMetrics());
+    app.get("/metrics", authMiddleware, prometheusAPIMetrics());
 
     app.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
@@ -1583,10 +1585,26 @@ let needSetup = false;
         // ***************************
 
         log.debug("auth", "check auto login");
-        if (await setting("disableAuth")) {
+        if (await Settings.get("disableAuth")) {
             log.info("auth", "Disabled Auth: auto login to admin");
             await afterLogin(socket, await R.findOne("user"));
             socket.emit("autoLogin");
+        } else if (remoteAuthEnabled) {
+            log.debug("auth", socket.handshake.headers);
+            const remoteUser = socket.handshake.headers[remoteAuthHeader.toLowerCase()];
+            if (remoteUser !== undefined) {
+                const user = await R.findOne("user", " username = ? AND active = 1 ", [ remoteUser ]);
+                if (user) {
+                    log.info("auth", `Login by remote-user header. IP=${await server.getClientIP(socket)}`);
+                    log.debug("auth", `Remote user ${remoteUser} exists, found user ${user.username}`);
+                    afterLogin(socket, user);
+                    socket.emit("autoLoginRemoteHeader", user.username);
+                } else {
+                    log.debug("auth", `Remote user ${remoteUser} doesn't exist`);
+                }
+            } else {
+                log.debug("auth", "Remote user header set but not found in headers");
+            }
         } else {
             socket.emit("loginRequired");
             log.debug("auth", "need auth");
