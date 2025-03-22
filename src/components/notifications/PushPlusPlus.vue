@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="pushplusplus-sendkey" class="form-label">{{ $t("SendKey") }}</label>
-        <HiddenInput id="pushplusplus-sendkey" v-model="$parent.notification.pushPlusPlusSendKey" :required="true" autocomplete="new-password"></HiddenInput>
+        <HiddenInput id="pushplusplus-sendkey" v-model="$parent.notification.PushPlusPlusSendKey" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
 </template>
 
