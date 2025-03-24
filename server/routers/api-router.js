@@ -44,7 +44,7 @@ router.get("/api/entry-page", async (request, response) => {
     response.json(result);
 });
 
-router.all("/api/push/:pushToken", async (request, response) => {
+const handlePushRequest = async (request, response) => {
     try {
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
@@ -130,7 +130,12 @@ router.all("/api/push/:pushToken", async (request, response) => {
             msg: e.message
         });
     }
-});
+};
+
+router.route("/api/push/:pushToken")
+    .get(handlePushRequest)
+    .post(handlePushRequest)
+    .put(handlePushRequest);
 
 router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response) => {
     allowAllOrigin(response);
