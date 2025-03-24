@@ -17,15 +17,18 @@ class PushPlus extends NotificationProvider {
         const okMsg = "Sent Successfully.";
         const url = "https://www.pushplus.plus/send";
         try {
-            await axios.post(url, {
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            };
+            const params = {
                 "token": notification.pushPlusSendKey,
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),
                 "content": msg,
                 "template": "html"
-            }, { headers: { "Content-Type": "application/json" } }
-            );
-            return okMsg;
-
+            };
+            await axios.post(url, params, config);
         } catch (error) {
             this.throwGeneralAxiosError(error);
             console.error("PushPlus Error:", error.response?.data || error.message);
