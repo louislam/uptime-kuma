@@ -1,8 +1,8 @@
+---
 name: "🐛 Bug Report"
 description: "Submit a bug report to help us improve"
 #title: "[Bug] "
-labels: ["bug", "P2: moderate"]
-assignees: ["louislam", "CommanderStorm"]
+labels: ["bug", "P2-moderate"]
 body:
   - type: "markdown"
     attributes:
@@ -13,17 +13,6 @@ body:
 
         - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
         - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
-  - type: checkboxes
-    id: unnecessary-pinging-of-maintainers
-    attributes:
-      label:
-        "I have read and understand that unnecessary pings to maintainers will
-        not be tolerated."
-      options:
-        - label:
-            "I understand that my ping will be ignored if deemed unnecessary or
-            repetitive."
-          required: true
   - type: textarea
     id: related-issues
     validations:

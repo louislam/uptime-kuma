@@ -1,7 +1,8 @@
+---
 name: 🚀 Feature Request
 description: "Submit a proposal for a new feature"
 # title: "[Feature] "
-labels: ["feature-request", "P4: negligible", "backlog"]
+labels: ["feature-request", "P4-negligible", "backlog"]
 body:
   - type: "markdown"
     attributes:
@@ -28,17 +29,6 @@ body:
       options:
         - label:
             "I understand that my feature request will be placed in the backlog."
-          required: true
-  - type: checkboxes
-    id: unnecessary-pinging-of-maintainers
-    attributes:
-      label:
-        "I have read and understand that unnecessary pings to maintainers will
-        not be tolerated."
-      options:
-        - label:
-            "I understand that my ping will be ignored if deemed unnecessary or
-            repetitive."
           required: true
   - type: textarea
     id: related-issues
