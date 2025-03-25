@@ -163,6 +163,7 @@ export default {
                 "ZohoCliq": "ZohoCliq",
                 "SevenIO": "SevenIO",
                 "whapi": "WhatsApp (Whapi)",
+                "waha": "WhatsApp (WAHA)",
                 "gtxmessaging": "GtxMessaging",
                 "Cellsynt": "Cellsynt",
                 "SendGrid": "SendGrid"
@@ -183,6 +184,7 @@ export default {
                 "ServerChan": "ServerChan (Server酱)",
                 "smsc": "SMSC",
                 "WPush": "WPush(wpush.cn)",
+                "YZJ": "YZJ (云之家自定义机器人)"
             };
 
             // Sort by notification name

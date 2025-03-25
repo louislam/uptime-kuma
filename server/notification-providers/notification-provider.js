@@ -1,3 +1,6 @@
+const { Liquid } = require("liquidjs");
+const { DOWN } = require("../../src/util");
+
 class NotificationProvider {
 
     /**
@@ -47,6 +50,50 @@ class NotificationProvider {
                 }
                 return "";
         }
+    }
+
+    /**
+     * Renders a message template with notification context
+     * @param {string} template the template
+     * @param {string} msg the message that will be included in the context
+     * @param {?object} monitorJSON Monitor details (For Up/Down/Cert-Expiry only)
+     * @param {?object} heartbeatJSON Heartbeat details (For Up/Down only)
+     * @returns {Promise<string>} rendered template
+     */
+    async renderTemplate(template, msg, monitorJSON, heartbeatJSON) {
+        const engine = new Liquid();
+        const parsedTpl = engine.parse(template);
+
+        // Let's start with dummy values to simplify code
+        let monitorName = "Monitor Name not available";
+        let monitorHostnameOrURL = "testing.hostname";
+
+        if (monitorJSON !== null) {
+            monitorName = monitorJSON["name"];
+            monitorHostnameOrURL = this.extractAddress(monitorJSON);
+        }
+
+        let serviceStatus = "⚠️ Test";
+        if (heartbeatJSON !== null) {
+            serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
+        }
+
+        const context = {
+            // for v1 compatibility, to be removed in v3
+            "STATUS": serviceStatus,
+            "NAME": monitorName,
+            "HOSTNAME_OR_URL": monitorHostnameOrURL,
+
+            // variables which are officially supported
+            "status": serviceStatus,
+            "name": monitorName,
+            "hostnameOrURL": monitorHostnameOrURL,
+            monitorJSON,
+            heartbeatJSON,
+            msg,
+        };
+
+        return engine.render(parsedTpl, context);
     }
 
     /**
