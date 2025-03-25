@@ -90,6 +90,7 @@
         </header>
 
         <main>
+            <health-check-alert v-if="$root.loggedIn" />
             <router-view v-if="$root.loggedIn" />
             <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
         </main>
@@ -133,11 +134,13 @@
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
 import { useToast } from "vue-toastification";
+import HealthCheckAlert from "../components/HealthCheckAlert.vue";
 const toast = useToast();
 
 export default {
 
     components: {
+        HealthCheckAlert,
         Login,
     },
 
