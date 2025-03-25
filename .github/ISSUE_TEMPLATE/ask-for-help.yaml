@@ -1,22 +1,48 @@
 name: "❓ Ask for help"
 description: "Submit any question related to Uptime Kuma"
 #title: "[Help] "
-labels: [help]
+labels: ["help", "P3: low"]
 body:
+  - type: "markdown"
+    attributes:
+      value: |
+        ## **❗ Important: Please Avoid Unnecessary Pinging of Maintainers**
+
+        **We kindly ask users to refrain from pinging maintainers unless absolutely necessary. Pings should be reserved for critical issues or urgent matters that require immediate attention.**
+
+        - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
+        - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
+  - type: checkboxes
+    id: unnecessary-pinging-of-maintainers
+    attributes:
+      label:
+        "I have read and understand that unnecessary pings to maintainers will
+        not be tolerated."
+      options:
+        - label:
+            "I understand that my ping will be ignored if deemed unnecessary or
+            repetitive."
+          required: true
   - type: checkboxes
     id: no-duplicate-issues
     attributes:
       label: "⚠️ Please verify that this question has NOT been raised before."
-      description: "Search in the issues sections by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
+      description:
+        "Search in the issues sections by clicking
+        [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
       options:
         - label: "I checked and didn't find similar issue"
           required: true
   - type: checkboxes
     attributes:
       label: "🛡️ Security Policy"
-      description: Please review the security policy before reporting security related issues/bugs.
+      description:
+        Please review the security policy before reporting security related
+        issues/bugs.
       options:
-        - label: I agree to have read this project [Security Policy](https://github.com/louislam/uptime-kuma/security/policy)
+        - label:
+            I agree to have read this project [Security
+            Policy](https://github.com/louislam/uptime-kuma/security/policy)
           required: true
   - type: textarea
     id: steps-to-reproduce
@@ -24,7 +50,9 @@ body:
       required: true
     attributes:
       label: "📝 Describe your problem"
-      description: "Please walk us through it step by step. Include all important details and add screenshots where appropriate"
+      description:
+        "Please walk us through it step by step. Include all important details
+        and add screenshots where appropriate"
       placeholder: "Describe what are you asking for..."
   - type: textarea
     id: error-msg
@@ -36,7 +64,9 @@ body:
     id: uptime-kuma-version
     attributes:
       label: "🐻 Uptime-Kuma Version"
-      description: "Which version of Uptime-Kuma are you running? Please do NOT provide the docker tag such as latest or 1"
+      description:
+        "Which version of Uptime-Kuma are you running? Please do NOT provide the
+        docker tag such as latest or 1"
       placeholder: "Ex. 1.10.0"
     validations:
       required: true
@@ -44,7 +74,9 @@ body:
     id: operating-system
     attributes:
       label: "💻 Operating System and Arch"
-      description: "Which OS is your server/device running on? (For Replit, please do not report this bug)"
+      description:
+        "Which OS is your server/device running on? (For Replit, please do not
+        report this bug)"
       placeholder: "Ex. Ubuntu 20.04 x86"
     validations:
       required: true
@@ -52,7 +84,9 @@ body:
     id: browser-vendor
     attributes:
       label: "🌐 Browser"
-      description: "Which browser are you running on? (For Replit, please do not report this bug)"
+      description:
+        "Which browser are you running on? (For Replit, please do not report
+        this bug)"
       placeholder: "Ex. Google Chrome 95.0.4638.69"
     validations:
       required: true
@@ -67,9 +101,9 @@ body:
           - **Filesystem used to store the database on**: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
           - **number of monitors**: 42
       value: |
-        - Runtime: 
-        - Database: 
-        - Filesystem used to store the database on: 
-        - number of monitors: 
+        - Runtime:
+        - Database:
+        - Filesystem used to store the database on:
+        - number of monitors:
     validations:
       required: true
