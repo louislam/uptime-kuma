@@ -1,16 +1,59 @@
 name: 🚀 Feature Request
 description: "Submit a proposal for a new feature"
-#title: "[Feature] "
-labels: [feature-request]
+# title: "[Feature] "
+labels: ["feature-request", "P4: negligible", "backlog"]
 body:
+  - type: "markdown"
+    attributes:
+      value: |
+        ## **❗ Important: Temporary Suspension of New Feature Requests**
+
+        **At this time, we are not accepting any new feature requests. Existing feature requests will be moved to the backlog and tagged accordingly.**
+
+        - **Reason**: Our current priority is focused on fixing bugs, improving system performance, and implementing essential updates. This temporary suspension will allow us to stabilize the project and ensure smoother management.
+        - **What This Means**: During this period, no new feature requests will be reviewed or accepted. However, we continue to welcome feedback, and all suggestions will be reviewed once the suspension is lifted.
+
+        ## **❗ Important: Please Avoid Unnecessary Pinging of Maintainers**
+
+        **We kindly ask users to refrain from pinging maintainers unless absolutely necessary. Pings should be reserved for critical issues or urgent matters that require immediate attention.**
+
+        - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
+        - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
+  - type: checkboxes
+    id: temporary-suspension-of-new-feature-requests
+    attributes:
+      label:
+        "I have read and understand that no new feature requests will be
+        accepted until further notice."
+      options:
+        - label:
+            "I understand that my feature request will be placed in the backlog."
+          required: true
+  - type: checkboxes
+    id: unnecessary-pinging-of-maintainers
+    attributes:
+      label:
+        "I have read and understand that unnecessary pings to maintainers will
+        not be tolerated."
+      options:
+        - label:
+            "I understand that my ping will be ignored if deemed unnecessary or
+            repetitive."
+          required: true
   - type: textarea
     id: related-issues
     validations:
       required: true
     attributes:
       label: "📑 I have found these related issues/pull requests"
-      description: "Search related issues by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=) and explain what the difference between them or explain that you are unable to find any related issues"
-      placeholder: "Related to #1 by also touching the ... system. They should not be merged because ..."
+      description:
+        "Search related issues by clicking
+        [HERE](https://github.com/louislam/uptime-kuma/issues?q=) and explain
+        what the difference between them or explain that you are unable to find
+        any related issues"
+      placeholder:
+        "Related to #1 by also touching the ... system. They should not be
+        merged because ..."
   - type: dropdown
     id: feature-area
     attributes:
@@ -38,7 +81,8 @@ body:
       required: true
     attributes:
       label: "🔖 Feature description"
-      description: "A clear and concise description of what the feature request is."
+      description:
+        "A clear and concise description of what the feature request is."
       placeholder: "You should add ..."
   - type: textarea
     id: solution
@@ -54,7 +98,9 @@ body:
       required: false
     attributes:
       label: "❓ Alternatives"
-      description: "A clear and concise description of any alternative solutions or features you've considered."
+      description:
+        "A clear and concise description of any alternative solutions or
+        features you've considered."
       placeholder: "I have considered ..."
   - type: textarea
     id: additional-context
@@ -62,5 +108,6 @@ body:
       required: false
     attributes:
       label: "📝 Additional Context"
-      description: "Add any other context or screenshots about the feature request here."
+      description:
+        "Add any other context or screenshots about the feature request here."
       placeholder: "..."
