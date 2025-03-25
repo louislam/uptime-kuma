@@ -1,22 +1,53 @@
 name: "🐛 Bug Report"
 description: "Submit a bug report to help us improve"
 #title: "[Bug] "
-labels: [bug]
+labels: ["bug", "P2: moderate"]
+assignees: ["louislam", "CommanderStorm"]
 body:
+  - type: "markdown"
+    attributes:
+      value: |
+        ## **❗ Important: Please Avoid Unnecessary Pinging of Maintainers**
+
+        **We kindly ask users to refrain from pinging maintainers unless absolutely necessary. Pings should be reserved for critical issues or urgent matters that require immediate attention.**
+
+        - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
+        - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
+  - type: checkboxes
+    id: unnecessary-pinging-of-maintainers
+    attributes:
+      label:
+        "I have read and understand that unnecessary pings to maintainers will
+        not be tolerated."
+      options:
+        - label:
+            "I understand that my ping will be ignored if deemed unnecessary or
+            repetitive."
+          required: true
   - type: textarea
     id: related-issues
     validations:
       required: true
     attributes:
       label: "📑 I have found these related issues/pull requests"
-      description: "Search related issues by clicking [HERE](https://github.com/louislam/uptime-kuma/issues?q=) and explain what the difference between them or explain that you are unable to find any related issues"
-      placeholder: "Related to #1 by also touching the ... system. They should not be merged because ..."
+      description:
+        "Search related issues by clicking
+        [HERE](https://github.com/louislam/uptime-kuma/issues?q=) and explain
+        what the difference between them or explain that you are unable to find
+        any related issues"
+      placeholder:
+        "Related to #1 by also touching the ... system. They should not be
+        merged because ..."
   - type: checkboxes
     attributes:
       label: "🛡️ Security Policy"
-      description: Please review the security policy before reporting security related issues/bugs.
+      description:
+        Please review the security policy before reporting security related
+        issues/bugs.
       options:
-        - label: I agree to have read this project [Security Policy](https://github.com/louislam/uptime-kuma/security/policy)
+        - label:
+            I agree to have read this project [Security
+            Policy](https://github.com/louislam/uptime-kuma/security/policy)
           required: true
   - type: textarea
     id: description
@@ -31,7 +62,9 @@ body:
       required: true
     attributes:
       label: "👟 Reproduction steps"
-      description: "How do you trigger this bug? Please walk us through it step by step. Include all important details and add screenshots where appropriate"
+      description:
+        "How do you trigger this bug? Please walk us through it step by step.
+        Include all important details and add screenshots where appropriate"
       placeholder: "..."
   - type: textarea
     id: expected-behavior
@@ -53,7 +86,9 @@ body:
     id: uptime-kuma-version
     attributes:
       label: "🐻 Uptime-Kuma Version"
-      description: "Which version of Uptime-Kuma are you running? Please do NOT provide the docker tag such as latest or 1"
+      description:
+        "Which version of Uptime-Kuma are you running? Please do NOT provide the
+        docker tag such as latest or 1"
       placeholder: "Ex. 1.10.0"
     validations:
       required: true
@@ -61,7 +96,9 @@ body:
     id: operating-system
     attributes:
       label: "💻 Operating System and Arch"
-      description: "Which OS is your server/device running on? (For Replit, please do not report this bug)"
+      description:
+        "Which OS is your server/device running on? (For Replit, please do not
+        report this bug)"
       placeholder: "Ex. Ubuntu 20.04 x64 "
     validations:
       required: true
@@ -84,17 +121,19 @@ body:
           - **Filesystem used to store the database on**: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
           - **number of monitors**: 42
       value: |
-        - Runtime: 
-        - Database: 
-        - Filesystem used to store the database on: 
-        - number of monitors: 
+        - Runtime:
+        - Database:
+        - Filesystem used to store the database on:
+        - number of monitors:
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
       label: "📝 Relevant log output"
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      description:
+        Please copy and paste any relevant log output. This will be
+        automatically formatted into code, so no need for backticks.
       render: shell
     validations:
       required: false
