@@ -1777,11 +1777,11 @@ class Monitor extends BeanModel {
         ]);
 
         if (healthCheckMonitor) {
-            return healthCheckMonitor.id === UP;
+            return healthCheckMonitor.status === UP;
         }
 
         // Default to indicative of being healthy, this shouldn't happen
-        // Better to be safe if we can't find the selector monitor, it may have been deleted
+        // Better to be safe if we can't find the selected monitor, it may have been deleted
         return true;
     }
 }
