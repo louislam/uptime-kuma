@@ -1,6 +1,7 @@
-**⚠️ Since we do not accept all types of pull requests and do not want to waste your time. Please be sure that you have read pull request rules: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma**
+**⚠️ Please Note: We do not accept all types of pull requests, and we want to ensure we don’t waste your time. Before submitting, make sure you have read our pull request guidelines: [Pull Request Rules](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)**
 
-Tick the checkbox if you understand [x]:
+Check the box below if you understand [x]:
+
 - [ ] I have read and understand the pull request rules.
 
 ## **❗ Important: Temporary Delay in Feature Requests and Pull Request Reviews**
