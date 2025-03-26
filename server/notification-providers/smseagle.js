@@ -44,7 +44,7 @@ class SMSEagle extends NotificationProvider {
                         sendMethod = "/tts_call";
                     } else if (notification.smseagleMsgType == "smseagle-tts-advanced") {
                         sendMethod = "/tts_adv_call";
-                        voice_id = notification.smseagleTtsModel;
+                        voice_id = notification.smseagleTtsModel ? notification.smseagleTtsModel : 1 ;
                     }
                 }
 
@@ -130,7 +130,7 @@ class SMSEagle extends NotificationProvider {
                         endpoint = "/calls/tts";
                     } else if (notification.smseagleMsgType == "smseagle-tts-advanced") {
                         endpoint = "/calls/tts_advanced";
-                        postData["voice_id"] = notification.smseagleTtsModel;
+                        postData["voice_id"] = notification.smseagleTtsModel ? notification.smseagleTtsModel : "1" ;
                     }
                 }
 
