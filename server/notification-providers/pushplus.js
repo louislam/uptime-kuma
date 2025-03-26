@@ -29,6 +29,7 @@ class PushPlus extends NotificationProvider {
                 "template": "html"
             };
             await axios.post(url, params, config);
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
