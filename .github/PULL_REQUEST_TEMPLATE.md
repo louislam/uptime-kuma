@@ -1,10 +1,19 @@
-⚠️⚠️⚠️ Since we do not accept all types of pull requests and do not want to waste your time. Please be sure that you have read pull request rules:
-https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma
+**⚠️ Since we do not accept all types of pull requests and do not want to waste your time. Please be sure that you have read pull request rules: https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma**
 
 Tick the checkbox if you understand [x]:
 - [ ] I have read and understand the pull request rules.
 
-# Description
+## **❗ Important: Temporary Delay in Feature Requests and Pull Request Reviews**
+
+**At this time, we may be slower to respond to new feature requests and review pull requests. Existing requests and PRs will remain in the backlog but may not be prioritized immediately.**
+
+- **Reason**: Our current focus is on addressing bugs, improving system performance, and implementing essential updates. This will help stabilize the project and ensure smoother management.
+- **Impact**: While no new feature requests or pull requests are being outright rejected, there may be significant delays in reviews. We encourage the community to help by reviewing PRs or assisting other users in the meantime.
+- **What You Can Do**: If you're interested in contributing, reviewing open PRs or offering support to other users is greatly appreciated. All feature requests and PRs will be revisited once the suspension period is lifted.
+
+We appreciate your patience and understanding as we continue to improve Uptime Kuma.
+
+## Description
 
 Fixes #(issue)
 
