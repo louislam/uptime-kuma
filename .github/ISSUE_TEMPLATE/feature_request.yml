@@ -2,17 +2,20 @@
 name: 🚀 Feature Request
 description: "Submit a proposal for a new feature"
 # title: "[Feature] "
-labels: ["feature-request", "P4-negligible", "backlog"]
+labels: ["feature-request", "P3-low"]
 body:
   - type: "markdown"
     attributes:
       value: |
-        ## **❗ Important: Temporary Suspension of New Feature Requests**
+        ## **❗ Important: Temporary Delay in Feature Requests and Pull Request Reviews**
 
-        **At this time, we are not accepting any new feature requests. Existing feature requests will be moved to the backlog and tagged accordingly.**
+        **At this time, we may be slower to respond to new feature requests and review pull requests. Existing requests and PRs will remain in the backlog but may not be prioritized immediately.**
 
-        - **Reason**: Our current priority is focused on fixing bugs, improving system performance, and implementing essential updates. This temporary suspension will allow us to stabilize the project and ensure smoother management.
-        - **What This Means**: During this period, no new feature requests will be reviewed or accepted. However, we continue to welcome feedback, and all suggestions will be reviewed once the suspension is lifted.
+        - **Reason**: Our current focus is on addressing bugs, improving system performance, and implementing essential updates. This will help stabilize the project and ensure smoother management.
+        - **Impact**: While no new feature requests or pull requests are being outright rejected, there may be significant delays in reviews. We encourage the community to help by reviewing PRs or assisting other users in the meantime.
+        - **What You Can Do**: If you're interested in contributing, reviewing open PRs or offering support to other users is greatly appreciated. All feature requests and PRs will be revisited once the suspension period is lifted.
+
+        We appreciate your patience and understanding as we continue to improve Uptime Kuma.
 
         ## **❗ Important: Please Avoid Unnecessary Pinging of Maintainers**
 
@@ -20,16 +23,6 @@ body:
 
         - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
         - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
-  - type: checkboxes
-    id: temporary-suspension-of-new-feature-requests
-    attributes:
-      label:
-        "I have read and understand that no new feature requests will be
-        accepted until further notice."
-      options:
-        - label:
-            "I understand that my feature request will be placed in the backlog."
-          required: true
   - type: textarea
     id: related-issues
     validations:
