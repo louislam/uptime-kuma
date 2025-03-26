@@ -39,6 +39,7 @@ const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const PushDeer = require("./notification-providers/pushdeer");
 const Pushover = require("./notification-providers/pushover");
+const PushPlus = require("./notification-providers/pushplus");
 const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
@@ -128,6 +129,7 @@ class Notification {
             new Pushbullet(),
             new PushDeer(),
             new Pushover(),
+            new PushPlus(),
             new Pushy(),
             new RocketChat(),
             new ServerChan(),
