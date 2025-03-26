@@ -31,8 +31,6 @@ class PushPlus extends NotificationProvider {
             await axios.post(url, params, config);
         } catch (error) {
             this.throwGeneralAxiosError(error);
-            console.error("PushPlus Error:", error.response?.data || error.message);
-            throw new Error("Notification failed: " + error.message);
         }
     }
 
