@@ -432,7 +432,7 @@
     "HTTP Basic Auth": "Autenticazione di base HTTP",
     "Reverse Proxy": "Proxy inverso",
     "Backup": "Backup",
-    "About": "Di",
+    "About": "Info",
     "wayToGetCloudflaredURL": "(Scarica cloudflared da {0})",
     "cloudflareWebsite": "Sito web di Cloudflare",
     "Message:": "Messaggio:",
@@ -737,5 +737,6 @@
     "whatHappensAtForumPost": "Crea un nuovo post sul forum. Questo NON pubblica messaggi in post esistenti. Per pubblicare in un post esistente utilizzare \"{option}\"",
     "invertKeywordDescription": "Cerca la parola chiave essere assente anziché presente.",
     "octopushAPIKey": "\"API Key\" dalle credenziali API HTTP nel pannello di controllo",
-    "Enable TLS": "Abilita TLS"
+    "Enable TLS": "Abilita TLS",
+    "ignoredTLSError": "Ignora errori TLS/SSL"
 }

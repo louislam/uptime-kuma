@@ -64,11 +64,13 @@ const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
 const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
+const WAHA = require("./notification-providers/waha");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
+const YZJ = require("./notification-providers/yzj");
 
 class Notification {
 
@@ -151,10 +153,12 @@ class Notification {
             new ZohoCliq(),
             new SevenIO(),
             new Whapi(),
+            new WAHA(),
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid()
+            new SendGrid(),
+            new YZJ()
         ];
         for (let item of list) {
             if (! item.name) {
