@@ -111,7 +111,7 @@ export default {
     },
     mounted() {
         if (!this.$parent.notification.smseagleApiType) {
-            this.$parent.notification.smseagleApiType = 'smseagle-apiv2';
+            this.$parent.notification.smseagleApiType = 'smseagle-apiv1';
         }
         if (!this.$parent.notification.smseagleMsgType) {
             this.$parent.notification.smseagleMsgType = 'smseagle-sms';
