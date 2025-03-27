@@ -349,6 +349,12 @@ are stuck on.
 
 ### Recommended Pull Request Guideline
 
+Before jumping into coding, it's recommended to initiate a discussion by
+creating an empty pull request. This approach allows us to align on the direction
+and scope of the feature, ensuring it doesn't conflict with existing or planned
+work. It also provides an opportunity to identify potential pitfalls early on,
+helping to avoid issues down the line.
+
 1. **Fork** the [Uptime-Kuma repository].
 2. **Clone** your forked repository to your local machine.
 3. **Create a new branch** for your changes (e.g.,
