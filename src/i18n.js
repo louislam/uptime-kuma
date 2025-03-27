@@ -31,6 +31,7 @@ const languageList = {
     "sv-SE": "Svenska",
     "tr-TR": "Türkçe",
     "ko-KR": "한국어",
+    "lt": "Lietuvių",
     "ru-RU": "Русский",
     "zh-CN": "简体中文",
     "pl": "Polski",
