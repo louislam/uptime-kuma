@@ -542,7 +542,7 @@
     "chromeExecutableAutoDetect": "Automatikus felismerés",
     "emailTemplateStatus": "Státusz",
     "deleteMaintenanceMsg": "Biztosan törölni szeretné ezt a karbantartást?",
-    "apiKeyAddedMsg": "Az ön API kulcsa létrejött. Kérjük jegyezze fel, mert nem lesz a felületen elérhető.",
+    "apiKeyAddedMsg": "Az ön API kulcsa létrejött. Kérjük jegyezze fel, mert nem lesz a felületen elérhető!",
     "Expires": "Lejár",
     "disableAPIKeyMsg": "Biztosan le fel szeretné függeszteni ezt az API kulcsot?",
     "Key Added": "Kulcs létrehozva",
