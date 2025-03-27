@@ -552,5 +552,13 @@
     "Pick Accepted Status Codes...": "Trieu els codis d'estat acceptats…",
     "error": "error",
     "critical": "crítica",
-    "Please input title and content": "Introduïu el títol i el contingut"
+    "Please input title and content": "Introduïu el títol i el contingut",
+    "telegramServerUrl": "(Opcional) Url del servidor",
+    "telegramServerUrlDescription": "Per saltar-se les limitacions del bot de Telegram o tenir accés a regions bloquejades (China, Iran, etc). Per a més informació fes click {0}. Per defecte {1}",
+    "templateServiceName": "Nom del servei",
+    "templateHostnameOrURL": "Adreça URL o nom del host",
+    "templateStatus": "Estat",
+    "telegramUseTemplate": "Fes servir una plantilla de missatge personalitzada",
+    "telegramUseTemplateDescription": "Si s'activa, el missatge s'enviarà fent servir una plantilla personalitzada.",
+    "telegramTemplateFormatDescription": "Telegram permet l'ús de diferents tipus de llenguatges de marcat, llegeix Telegram {0} per més detalls."
 }
