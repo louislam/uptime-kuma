@@ -1,10 +1,9 @@
-# Review Process for Uptime Kuma
+# Uptime Kuma Review Guidelines
 
-**Note:** This Review Process document is a work in progress. Updates and
-improvements are being made, so please check back regularly for the latest
-version.
+**Note:** These review guidelines are a work in progress, and are frequently
+updated and improved, so please check back frequently for the latest version.
 
-## Preparation for Reviewing a PR
+## Preparing for a PR Review
 
 ### Read the PR description carefully
 
@@ -29,8 +28,8 @@ Check if the code adheres to the agreed style guidelines of the project (e.g.,
 PEP8 for Python, Airbnb style for JavaScript, etc.). Make sure there are no
 unused imports, variables, or code fragments in the PR.
 
--   [Project Style](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#project-styles)
--   [Coding Style](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#coding-styles)
+- [Project Style](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#project-styles)
+- [Coding Style](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#coding-styles)
 
 ### Readability and maintainability
 
@@ -39,8 +38,8 @@ well-documented with comments. Are variables and functions clearly named, and
 does the code follow a consistent naming convention? Additionally, check if the
 code is maintainable:
 
--   Is it unnecessarily complex? Could it be simplified?
--   Does it follow the **[Single Responsibility Principle (SRP)]**?
+- Is it unnecessarily complex? Could it be simplified?
+- Does it follow the **[Single Responsibility Principle (SRP)]**?
 
 [Single Responsibility Principle (SRP)]: https://www.geeksforgeeks.org/single-responsibility-in-solid-design-principle/
 
@@ -68,12 +67,12 @@ If the changes depend on certain environments or configurations, verify that the
 code has been tested in various environments (e.g., local development, staging,
 production).
 
--   [How to test Pull Requests](https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests)
+- [How to test Pull Requests](https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests)
 
 ### Edge cases and regressions
 
--   Are there test cases for possible edge cases?
--   Could this change introduce regressions in other parts of the system?
+- Are there test cases for possible edge cases?
+- Could this change introduce regressions in other parts of the system?
 
 ## Security
 
@@ -90,9 +89,9 @@ correct authorization and authentication mechanisms are in place.
 
 ### Security Best Practices
 
--   Ensure that the code is free from common vulnerabilities like **SQL
+- Ensure that the code is free from common vulnerabilities like **SQL
     injection**, **XSS attacks**, and **insecure API calls**.
--   Check for proper encryption of sensitive data, and ensure that **passwords**
+- Check for proper encryption of sensitive data, and ensure that **passwords**
     or **API tokens** are not hardcoded in the code.
 
 ## Performance
@@ -104,16 +103,16 @@ like load times, memory usage, or other performance aspects.
 
 ### Use of external libraries
 
--   Have the right libraries been chosen?
--   Are there unnecessary dependencies that might reduce performance or increase
+- Have the right libraries been chosen?
+- Are there unnecessary dependencies that might reduce performance or increase
     code complexity?
--   Are these dependencies actively maintained and free of known vulnerabilities?
+- Are these dependencies actively maintained and free of known vulnerabilities?
 
 ### Performance Best Practices
 
--   **Measure performance** using tools like Lighthouse or profiling libraries.
--   **Avoid unnecessary dependencies** that may bloat the codebase.
--   Ensure that the **code does not degrade the user experience** (e.g., by
+- **Measure performance** using tools like Lighthouse or profiling libraries.
+- **Avoid unnecessary dependencies** that may bloat the codebase.
+- Ensure that the **code does not degrade the user experience** (e.g., by
     increasing load times or memory consumption).
 
 ## Compliance and Integration
@@ -138,24 +137,24 @@ dependencies? If so, is there a migration plan in place?
 
 ### Proper error handling
 
--   Are errors properly caught and handled instead of being silently ignored?
--   Are exceptions used appropriately?
+- Are errors properly caught and handled instead of being silently ignored?
+- Are exceptions used appropriately?
 
 ### Logging
 
--   Is sufficient logging included for debugging and monitoring?
--   Is there excessive logging that could affect performance?
+- Is sufficient logging included for debugging and monitoring?
+- Is there excessive logging that could affect performance?
 
 ## Accessibility (for UI-related changes)
 
 If the PR affects the user interface, ensure that it meets accessibility
 standards:
 
--   Can users navigate using only the keyboard?
--   Are screen readers supported?
--   Is there proper color contrast for readability?
--   Are there **WCAG** (Web Content Accessibility Guidelines) compliance issues?
--   Use tools like **Axe** or **Lighthouse** to evaluate accessibility.
+- Can users navigate using only the keyboard?
+- Are screen readers supported?
+- Is there proper color contrast for readability?
+- Are there **WCAG** (Web Content Accessibility Guidelines) compliance issues?
+- Use tools like **Axe** or **Lighthouse** to evaluate accessibility.
 
 ## Providing Feedback
 
@@ -182,11 +181,11 @@ If there are significant issues, such as missing tests, security
 vulnerabilities, or performance problems, request the necessary changes before
 the PR can be approved. Some examples of **significant issues** include:
 
--   Missing tests for new functionality.
--   Identified **security vulnerabilities**.
--   Code changes that break **backward compatibility** without a proper migration
+- Missing tests for new functionality.
+- Identified **security vulnerabilities**.
+- Code changes that break **backward compatibility** without a proper migration
     plan.
--   Code that causes **major performance regressions** (e.g., high CPU/memory
+- Code that causes **major performance regressions** (e.g., high CPU/memory
     usage).
 
 ## After the Review ━ For Maintainers only
