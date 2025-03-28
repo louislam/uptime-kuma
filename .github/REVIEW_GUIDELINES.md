@@ -28,8 +28,8 @@ Check if the code adheres to the agreed style guidelines of the project (e.g.,
 PEP8 for Python, Airbnb style for JavaScript, etc.). Make sure there are no
 unused imports, variables, or code fragments in the PR.
 
-- [Project Style](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#project-styles)
-- [Coding Style](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#coding-styles)
+- [Project Style](../CONTRIBUTING.md#project-styles)
+- [Coding Style](../CONTRIBUTING.md#coding-styles)
 
 ### Readability and maintainability
 
