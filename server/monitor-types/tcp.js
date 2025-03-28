@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, log, evaluateJsonQuery } = require("../../src/util");
+const { UP, DOWN } = require("../../src/util");
 const { tcping, checkCertificate } = require("../util-server");
 const tls = require("tls");
 
