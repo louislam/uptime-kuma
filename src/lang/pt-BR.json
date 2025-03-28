@@ -1062,5 +1062,11 @@
     "RabbitMQ Username": "Nome de usuário do RabbitMQ",
     "RabbitMQ Password": "Senha do RabbitMQ",
     "SendGrid API Key": "Chave API do SendGrid",
-    "Separate multiple email addresses with commas": "Separe vários endereços de e-mail com vírgulas"
+    "Separate multiple email addresses with commas": "Separe vários endereços de e-mail com vírgulas",
+    "templateServiceName": "nome do serviço",
+    "telegramUseTemplate": "Use um template personalizado de mensagem",
+    "telegramTemplateFormatDescription": "O Telegram permite o uso de diferentes linguagens de marcação para mensagens. Veja o Telegram {0} para detalhes específicos.",
+    "templateHostnameOrURL": "hostname ou URL",
+    "templateStatus": "status",
+    "telegramUseTemplateDescription": "Se habilitado, a mensagem será enviada usando um template personalizado."
 }

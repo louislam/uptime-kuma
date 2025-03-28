@@ -1106,5 +1106,8 @@
     "SendGrid API Key": "API-ключ SendGrid",
     "Separate multiple email addresses with commas": "Разделяйте несколько адресов электронной почты запятыми",
     "-year": "-год",
-    "Json Query Expression": "Выражение запроса Json"
+    "Json Query Expression": "Выражение запроса Json",
+    "templateServiceName": "имя сервиса",
+    "templateHostnameOrURL": "hostname или URL",
+    "templateStatus": "статус"
 }
