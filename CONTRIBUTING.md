@@ -161,12 +161,12 @@ to review the appropriate one for your contribution.
   Using the following way to format this is encouraged:
 
   ```md
-  | Event              | Before           | After            |
-  | ------------------ | ---------------- | ---------------- |
-  | `UP`               | paste-image-here | paste-image-here |
-  | `DOWN`             | paste-image-here | paste-image-here |
-  | Certificate-expiry | paste-image-here | paste-image-here |
-  | Testing            | paste-image-here | paste-image-here |
+  | Event              | Before                | After                |
+  | ------------------ | --------------------- | -------------------- |
+  | `UP`               | ![Before](image-link) | ![After](image-link) |
+  | `DOWN`             | ![Before](image-link) | ![After](image-link) |
+  | Certificate-expiry | ![Before](image-link) | ![After](image-link) |
+  | Testing            | ![Before](image-link) | ![After](image-link) |
   ```
 
   <sub>Because maintainer time is precious, junior maintainers may merge
@@ -250,24 +250,27 @@ to review the appropriate one for your contribution.
 
   - **Type of changes**
 
-    - Bug fix (non-breaking change which fixes an issue)
-    - User interface (UI)
-    - New feature (non-breaking change which adds functionality)
-    - Breaking change (a fix or feature that would cause existing functionality
-      to not work as expected)
-    - Other
-    - This change requires a documentation update
+    - Bugfix (a non-breaking change that resolves an issue)
+    - New feature (a non-breaking change that adds new functionality)
+    - Breaking change (a fix or feature that alters existing functionality in a way that could cause issues)
+    - User Interface (UI) updates
+    - New Documentation (addition of new documentation)
+    - Documentation Update (modification of existing documentation)
+    - Documentation Update Required (the change requires updates to related documentation)
+    - Other (please specify):
+      - Provide additional details here.
 
   - **Checklist**
 
-    - My code follows the style guidelines of this project
-    - I ran ESLint and other linters for modified files
-    - I have performed a self-review of my own code and tested it
-    - I have commented my code, particularly in hard-to-understand areas
-      (including JSDoc for methods)
-    - My changes generate no new warnings
-    - My code needed automated testing. I have added them (this is an optional
-      task)
+    - My code adheres to the style guidelines of this project.
+    - I ran code linters for modified files.
+    - I have reviewed and tested my code.
+    - I have commented my code, especially in hard-to-understand areas (e.g., using JSDoc for methods).
+    - My changes generate no new warnings.
+    - My code needed automated testing. I have added them (this is an optional task).
+    - Documentation updates are included (if applicable).
+    - I have considered potential security impacts and mitigated risks.
+    - Dependency updates are listed and explained.
 
   10. **When publishing your PR, set it as a** `Draft pull request` **to allow
       for review and prevent automatic merging.**
@@ -375,24 +378,27 @@ early on, helping to avoid issues down the line.
 
    - **Type of changes**
 
-     - Bug fix (non-breaking change which fixes an issue)
-     - User interface (UI)
-     - New feature (non-breaking change which adds functionality)
-     - Breaking change (a fix or feature that would cause existing functionality
-       to not work as expected)
-     - Other
-     - This change requires a documentation update
+     - Bugfix (a non-breaking change that resolves an issue)
+     - New feature (a non-breaking change that adds new functionality)
+     - Breaking change (a fix or feature that alters existing functionality in a way that could cause issues)
+     - User Interface (UI) updates
+     - New Documentation (addition of new documentation)
+     - Documentation Update (modification of existing documentation)
+     - Documentation Update Required (the change requires updates to related documentation)
+     - Other (please specify):
+       - Provide additional details here.
 
    - **Checklist**
 
-     - My code follows the style guidelines of this project
-     - I ran ESLint and other linters for modified files
-     - I have performed a self-review of my own code and tested it
-     - I have commented my code, particularly in hard-to-understand areas
-       (including JSDoc for methods)
-     - My changes generate no new warnings
-     - My code needed automated testing. I have added them (this is an optional
-       task)
+     - My code adheres to the style guidelines of this project.
+     - I ran code linters for modified files.
+     - I have reviewed and tested my code.
+     - I have commented my code, especially in hard-to-understand areas (e.g., using JSDoc for methods).
+     - My changes generate no new warnings.
+     - My code needed automated testing. I have added them (this is an optional task).
+     - Documentation updates are included (if applicable).
+     - I have considered potential security impacts and mitigated risks.
+     - Dependency updates are listed and explained.
 
 10. **When publishing your PR, set it as a** `Draft pull request` **to allow for
     review and prevent automatic merging.**
