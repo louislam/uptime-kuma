@@ -10,15 +10,30 @@
 
 We appreciate your patience and understanding as we continue to improve Uptime Kuma.
 
+## **❗ Important: Please Avoid Unnecessary Pinging of Maintainers**
+
+**We kindly ask users to refrain from pinging maintainers unless absolutely necessary. Pings should be reserved for critical issues or urgent matters that require immediate attention.**
+
+- **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
+- **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
+
 ## 📋 Overview
 
 **Required**: Please fill out this section before submitting.
 
 Provide a clear summary of the purpose and scope of this pull request:
 
-- What problem does this pull request address?
-- Why is it necessary?
-- What features or functionality does this pull request introduce or enhance?
+- **What problem does this pull request address?**
+
+  - Please provide a detailed explanation here.
+
+- **Why is it necessary?**
+
+  - Please provide a detailed explanation here.
+
+- **What features or functionality does this pull request introduce or enhance?**
+
+  - Please provide a detailed explanation here.
 
 ## 🔄 Changes
 
@@ -76,14 +91,12 @@ If this pull request introduces visual changes, provide the following:
 - **UI Modifications**: Highlight any changes made to the user interface.
 - **Before & After**: Include screenshots or comparisons (if applicable).
 
-  ```md
-  | Event              | Before                | After                |
-  | ------------------ | --------------------- | -------------------- |
-  | `UP`               | ![Before](image-link) | ![After](image-link) |
-  | `DOWN`             | ![Before](image-link) | ![After](image-link) |
-  | Certificate-expiry | ![Before](image-link) | ![After](image-link) |
-  | Testing            | ![Before](image-link) | ![After](image-link) |
-  ```
+| Event              | Before                | After                |
+| ------------------ | --------------------- | -------------------- |
+| `UP`               | ![Before](image-link) | ![After](image-link) |
+| `DOWN`             | ![Before](image-link) | ![After](image-link) |
+| Certificate-expiry | ![Before](image-link) | ![After](image-link) |
+| Testing            | ![Before](image-link) | ![After](image-link) |
 
 ## ℹ️ Additional Context
 
