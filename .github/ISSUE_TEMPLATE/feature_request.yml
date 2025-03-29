@@ -1,0 +1,98 @@
+---
+name: 🚀 Feature Request
+description: "Submit a proposal for a new feature"
+# title: "[Feature] "
+labels: ["feature-request", "P3-low"]
+body:
+  - type: "markdown"
+    attributes:
+      value: |
+        ## **❗ Important: Temporary Delay in Feature Requests and Pull Request Reviews**
+
+        **At this time, we may be slower to respond to new feature requests and review pull requests. Existing requests and PRs will remain in the backlog but may not be prioritized immediately.**
+
+        - **Reason**: Our current focus is on addressing bugs, improving system performance, and implementing essential updates. This will help stabilize the project and ensure smoother management.
+        - **Impact**: While no new feature requests or pull requests are being outright rejected, there may be significant delays in reviews. We encourage the community to help by reviewing PRs or assisting other users in the meantime.
+        - **What You Can Do**: If you're interested in contributing, reviewing open PRs by following our [Review Guidelines] or offering support to other users is greatly appreciated. All feature requests and PRs will be revisited once the suspension period is lifted.
+
+        We appreciate your patience and understanding as we continue to improve Uptime Kuma.
+
+        [Review Guidelines]: ../REVIEW_GUIDELINES.md
+
+        ## **❗ Important: Please Avoid Unnecessary Pinging of Maintainers**
+
+        **We kindly ask users to refrain from pinging maintainers unless absolutely necessary. Pings should be reserved for critical issues or urgent matters that require immediate attention.**
+
+        - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
+        - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
+  - type: textarea
+    id: related-issues
+    validations:
+      required: true
+    attributes:
+      label: "📑 I have found these related issues/pull requests"
+      description:
+        "Search related issues by clicking
+        [HERE](https://github.com/louislam/uptime-kuma/issues?q=) and explain
+        what the difference between them or explain that you are unable to find
+        any related issues"
+      placeholder:
+        "Related to #1 by also touching the ... system. They should not be
+        merged because ..."
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: "🏷️ Feature Request Type"
+      description: "What kind of feature request is this?"
+      multiple: true
+      options:
+        - API / automation options
+        - New notification-provider
+        - Change to existing notification-provider
+        - New monitor
+        - Change to existing monitor
+        - Dashboard
+        - Status-page
+        - Maintenance
+        - Deployment
+        - Certificate expiry
+        - Settings
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: feature-description
+    validations:
+      required: true
+    attributes:
+      label: "🔖 Feature description"
+      description:
+        "A clear and concise description of what the feature request is."
+      placeholder: "You should add ..."
+  - type: textarea
+    id: solution
+    validations:
+      required: true
+    attributes:
+      label: "✔️ Solution"
+      description: "A clear and concise description of what you want to happen."
+      placeholder: "In my use-case, ..."
+  - type: textarea
+    id: alternatives
+    validations:
+      required: false
+    attributes:
+      label: "❓ Alternatives"
+      description:
+        "A clear and concise description of any alternative solutions or
+        features you've considered."
+      placeholder: "I have considered ..."
+  - type: textarea
+    id: additional-context
+    validations:
+      required: false
+    attributes:
+      label: "📝 Additional Context"
+      description:
+        "Add any other context or screenshots about the feature request here."
+      placeholder: "..."
