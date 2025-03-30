@@ -23,7 +23,7 @@ class WebSocketMonitorType extends MonitorType {
         return new Promise((resolve) => {
             let ws;
             //If user selected a subprotocol, sets Sec-WebSocket-Protocol header. Subprotocol Identifier column: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name
-            ws = monitor.subprotocol === "" ? new WebSocket(monitor.url) : new WebSocket(monitor.url, monitor.subprotocol);
+            ws = monitor.wsSubprotocol === "" ? new WebSocket(monitor.url) : new WebSocket(monitor.url, monitor.wsSubprotocol);
 
             ws.addEventListener("open", (event) => {
                 // Immediately close the connection
@@ -32,7 +32,7 @@ class WebSocketMonitorType extends MonitorType {
 
             ws.onerror = (error) => {
                 // Give user the choice to ignore Sec-WebSocket-Accept header
-                if (monitor.wsIgnoreHeaders && error.message === "Invalid Sec-WebSocket-Accept header") {
+                if (monitor.wsIgnoreSecWebsocketAcceptHeader && error.message === "Invalid Sec-WebSocket-Accept header") {
                     resolve([ "101 - OK", 1000 ]);
                 }
                 // Upgrade failed, return message to user

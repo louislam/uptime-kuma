@@ -11,7 +11,7 @@ describe("Websocket Test", {
 
         const monitor = {
             url: "wss://example.org",
-            wsIgnoreHeaders: false,
+            wsIgnoreSecWebsocketAcceptHeader: false,
         };
 
         const heartbeat = {
@@ -33,7 +33,7 @@ describe("Websocket Test", {
 
         const monitor = {
             url: "wss://echo.websocket.org",
-            wsIgnoreHeaders: false,
+            wsIgnoreSecWebsocketAcceptHeader: false,
         };
 
         const heartbeat = {
@@ -57,7 +57,7 @@ describe("Websocket Test", {
 
         const monitor = {
             url: "ws://localhost:8080",
-            wsIgnoreHeaders: false,
+            wsIgnoreSecWebsocketAcceptHeader: false,
         };
 
         const heartbeat = {
@@ -74,12 +74,12 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Test a non compliant WS server without ignore", async () => {
+    test("Non compliant WS server without IgnoreSecWebsocket", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
             url: "wss://c.img-cdn.net/yE4s7KehTFyj/",
-            wsIgnoreHeaders: false,
+            wsIgnoreSecWebsocketAcceptHeader: false,
         };
 
         const heartbeat = {
@@ -96,12 +96,12 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Test a non compliant WS server with ignore", async () => {
+    test("Non compliant WS server with IgnoreSecWebsocket", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
             url: "wss://c.img-cdn.net/yE4s7KehTFyj/",
-            wsIgnoreHeaders: true,
+            wsIgnoreSecWebsocketAcceptHeader: true,
         };
 
         const heartbeat = {
@@ -112,6 +112,73 @@ describe("Websocket Test", {
         const expected = {
             msg: "101 - OK",
             status: UP,
+        };
+
+        await websocketMonitor.check(monitor, heartbeat, {});
+        assert.deepStrictEqual(heartbeat, expected);
+    });
+
+    test("Compliant WS server with IgnoreSecWebsocket", async () => {
+        const websocketMonitor = new WebSocketMonitorType();
+
+        const monitor = {
+            url: "wss://echo.websocket.org",
+            wsIgnoreSecWebsocketAcceptHeader: true,
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        const expected = {
+            msg: "101 - OK",
+            status: UP,
+        };
+
+        await websocketMonitor.check(monitor, heartbeat, {});
+        assert.deepStrictEqual(heartbeat, expected);
+    });
+
+    test("Non WS server with IgnoreSecWebsocket", async () => {
+        const websocketMonitor = new WebSocketMonitorType();
+
+        const monitor = {
+            url: "wss://example.org",
+            wsIgnoreSecWebsocketAcceptHeader: true,
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        const expected = {
+            msg: "Unexpected server response: 200",
+            status: DOWN,
+        };
+
+        await websocketMonitor.check(monitor, heartbeat, {});
+        assert.deepStrictEqual(heartbeat, expected);
+    });
+
+    test("Secure Websocket with Subprotocol", async () => {
+        const websocketMonitor = new WebSocketMonitorType();
+
+        const monitor = {
+            url: "wss://echo.websocket.org",
+            wsIgnoreSecWebsocketAcceptHeader: false,
+            wsSubprotocol: "ocpp1.6",
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        const expected = {
+            msg: "Server sent no subprotocol",
+            status: DOWN,
         };
 
         await websocketMonitor.check(monitor, heartbeat, {});

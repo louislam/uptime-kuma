@@ -2,14 +2,14 @@
 exports.up = function (knex) {
     return knex.schema
         .alterTable("monitor", function (table) {
-            table.boolean("ws_ignore_headers").notNullable().defaultTo(false);
-            table.string("subprotocol", 255).notNullable().defaultTo("");
+            table.boolean("ws_ignore_sec_websocket_accept_header").notNullable().defaultTo(false);
+            table.string("ws_subprotocol", 255).notNullable().defaultTo("");
         });
 };
 
 exports.down = function (knex) {
     return knex.schema.alterTable("monitor", function (table) {
-        table.dropColumn("ws_ignore_headers");
-        table.dropColumn("subprotocol");
+        table.dropColumn("ws_ignore_sec_websocket_accept_header");
+        table.dropColumn("ws_subprotocol");
     });
 };
