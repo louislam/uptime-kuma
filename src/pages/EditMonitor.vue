@@ -698,9 +698,9 @@
 
                             <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
                                 <input id="wsIgnoreSecWebsocketAcceptHeader" v-model="monitor.wsIgnoreSecWebsocketAcceptHeader" class="form-check-input" type="checkbox">
-                                    <i18n-t tag="label" keypath="Ignore Sec-WebSocket-Accept header" class="form-check-label" for="wsIgnoreSecWebsocketAcceptHeader">
-                                        <code>Sec-Websocket-Accept</code>
-                                    </i18n-t>
+                                <i18n-t tag="label" keypath="Ignore Sec-WebSocket-Accept header" class="form-check-label" for="wsIgnoreSecWebsocketAcceptHeader">
+                                    <code>Sec-Websocket-Accept</code>
+                                </i18n-t>
                                 <div class="form-text">
                                     {{ $t("ignoreSecWebsocketAcceptHeaderDescription") }}
                                 </div>
