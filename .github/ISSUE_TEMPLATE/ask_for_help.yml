@@ -17,8 +17,7 @@ body:
     id: no-duplicate-issues
     attributes:
       label: "⚠️ Please verify that this question has NOT been raised before."
-      description:
-        "Search in the issues sections by clicking
+      description: "Search in the issues sections by clicking
         [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
       options:
         - label: "I checked and didn't find similar issue"
@@ -30,8 +29,7 @@ body:
         Please review the security policy before reporting security related
         issues/bugs.
       options:
-        - label:
-            I agree to have read this project [Security
+        - label: I agree to have read this project [Security
             Policy](https://github.com/louislam/uptime-kuma/security/policy)
           required: true
   - type: textarea
@@ -54,10 +52,8 @@ body:
     id: uptime-kuma-version
     attributes:
       label: "🐻 Uptime-Kuma Version"
-      description:
-        "Which version of Uptime-Kuma are you running? Please do NOT provide the
-        docker tag such as latest or 1"
-      placeholder: "Ex. 1.10.0"
+      description: "What version of Uptime-Kuma are you running? Please do not provide Docker tags like `latest` or `1`."
+      placeholder: "e.g., 1.23.16 or 2.0.0-beta.2"
     validations:
       required: true
   - type: input
@@ -67,7 +63,7 @@ body:
       description:
         "Which OS is your server/device running on? (For Replit, please do not
         report this bug)"
-      placeholder: "Ex. Ubuntu 20.04 x86"
+      placeholder: "e.g., Ubuntu Server 24.04.2 LTS (GNU/Linux 6.8.0-55-generic x86_64)"
     validations:
       required: true
   - type: input
@@ -77,7 +73,7 @@ body:
       description:
         "Which browser are you running on? (For Replit, please do not report
         this bug)"
-      placeholder: "Ex. Google Chrome 95.0.4638.69"
+      placeholder: "e.g., Google Chrome 134.0.6998.183 (Official Build) (64-bit)"
     validations:
       required: true
   - type: textarea
@@ -85,15 +81,28 @@ body:
     attributes:
       label: "🖥️ Deployment Environment"
       description: |
-        examples:
-          - **Runtime**: Docker 20.10.9 / nodejs 14.18.0 / K8S via ... v1.3.3 / ..
-          - **Database**: sqlite/embedded mariadb/external mariadb
-          - **Filesystem used to store the database on**: Windows/ZFS/btrfs/NFSv3 on a SSD/HDD/eMMC
-          - **number of monitors**: 42
+        Provide details about the deployment environment, including runtime components, databases, and storage configurations.
+        This will help assess the infrastructure and identify any potential compatibility requirements.
+
+        **Remove any fields that do not apply to your setup.**
       value: |
-        - Runtime:
-        - Database:
-        - Filesystem used to store the database on:
-        - number of monitors:
+        - **Runtime Environment**:
+          - Docker: Version `X.X.X` (Build `Y.Y.Y`)
+          - Docker Compose: Version `X.X.X`
+          - Portainer (BE/CE): Version `X.X.X` (LTS: Yes/No)
+          - MariaDB: Version `X.X.X` (LTS: Yes/No)
+          - Node.js: Version `X.X.X` (LTS: Yes/No)
+          - Kubernetes (K3S/K8S): Version `X.X.X` (LTS: Yes/No, via `[method/tool]`)
+        - **Database**:
+          - SQLite: Embedded
+          - MariaDB: Embedded/External
+        - **Database Storage**:
+          - **Filesystem**:
+            - Linux: ext4/XFS/Btrfs/ZFS/F2FS
+            - macOS: APFS/ HFS+
+            - Windows: NTFS/ReFS
+          - **Storage Medium**: HDD/eMMC/SSD/NVMe
+        - **Uptime Kuma Setup**:
+          - Number of monitors: `X`
     validations:
       required: true
