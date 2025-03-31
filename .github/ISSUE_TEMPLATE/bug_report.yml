@@ -44,7 +44,7 @@ body:
     validations:
       required: false
     attributes:
-      label: Description
+      label: 📝 Description
       description: |
         You could also upload screenshots
 
