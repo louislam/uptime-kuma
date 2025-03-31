@@ -485,7 +485,7 @@ function ApiCache() {
         }
 
         if (typeof duration === "string") {
-            let split = duration.match(/^([\d\.,]+)\s?(\w+)$/);
+            let split = duration.match(/^([\d\.,]+)\s?([a-zA-Z]+)$/);
 
             if (split.length === 3) {
                 let len = parseFloat(split[1]);

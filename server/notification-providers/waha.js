@@ -1,8 +1,8 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
-class Whapi extends NotificationProvider {
-    name = "whapi";
+class WAHA extends NotificationProvider {
+    name = "waha";
 
     /**
      * @inheritdoc
@@ -15,16 +15,17 @@ class Whapi extends NotificationProvider {
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + notification.whapiAuthToken,
+                    "X-Api-Key": notification.wahaApiKey,
                 }
             };
 
             let data = {
-                "to": notification.whapiRecipient,
-                "body": msg,
+                "session": notification.wahaSession,
+                "chatId": notification.wahaChatId,
+                "text": msg,
             };
 
-            let url = (notification.whapiApiUrl || "https://gate.whapi.cloud/").replace(/([^/])\/+$/, "$1") + "/messages/text";
+            let url = notification.wahaApiUrl.replace(/([^/])\/+$/, "$1") + "/api/sendText";
 
             await axios.post(url, data, config);
 
@@ -36,4 +37,4 @@ class Whapi extends NotificationProvider {
 
 }
 
-module.exports = Whapi;
+module.exports = WAHA;
