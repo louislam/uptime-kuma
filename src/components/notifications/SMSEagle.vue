@@ -33,7 +33,8 @@
             <label for="smseagle-priority" class="form-label">{{ $t("smseaglePriority") }}</label>
             <input id="smseagle-priority" v-model="$parent.notification.smseaglePriority" type="number" class="form-control" min="0" max="9" step="1" placeholder="0">
         </div>
-        <div class="mb-3 form-check form-switch">
+        <div v-if="$parent.notification.smseagleMsgType === 'smseagle-sms'
+        || $parent.notification.smseagleRecipientType !== 'smseagle-to'" class="mb-3 form-check form-switch">
             <label for="smseagle-encoding" class="form-label">{{ $t("smseagleEncoding") }}</label>
             <input id="smseagle-encoding" v-model="$parent.notification.smseagleEncoding" type="checkbox" class="form-check-input">
         </div>
