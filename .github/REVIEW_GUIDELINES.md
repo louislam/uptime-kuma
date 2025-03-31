@@ -1,7 +1,8 @@
 # Uptime Kuma Review Guidelines
 
-**Note:** These review guidelines are a work in progress, and are frequently
-updated and improved, so please check back frequently for the latest version.
+> [!NOTE]
+> These review guidelines are a work in progress, and are frequently
+> updated and improved, so please check back frequently for the latest version.
 
 ## Preparing for a PR Review
 
@@ -24,19 +25,18 @@ functionality, there should be tests covering the change.
 
 ### Code formatting and style
 
-Check if the code adheres to the agreed style guidelines of the project (e.g.,
-PEP8 for Python, Airbnb style for JavaScript, etc.). Make sure there are no
-unused imports, variables, or code fragments in the PR.
+Check if the code adheres to the style guidelines of the project. Make sure
+there are no unused imports, variables, `console.log` for debugging in the PR.
 
 - [Project Style](../CONTRIBUTING.md#project-styles)
 - [Coding Style](../CONTRIBUTING.md#coding-styles)
 
 ### Readability and maintainability
 
-Is the code understandable to other developers? Ensure that complex parts are
-well-documented with comments. Are variables and functions clearly named, and
-does the code follow a consistent naming convention? Additionally, check if the
-code is maintainable:
+Is the code easy to understand for other developers? Make sure complex parts are
+explained with comments about **_why_** something is done, and use clear names
+to show **_how_**. Are variables and functions well-named, and is there a
+consistent naming style? Also, check if the code is maintainable:
 
 - Is it unnecessarily complex? Could it be simplified?
 - Does it follow the **[Single Responsibility Principle (SRP)]**?
@@ -168,7 +168,10 @@ If improvements are needed, be specific about what should change.
 Ensure your feedback is friendly and open, so the team member who submitted the
 PR feels supported and motivated to make improvements.
 
-## Go/No-Go Decision ━ For Maintainers only
+<details><summary><b>For Maintainers only</b> (click to expand)</summary>
+<p>
+
+## Go/No-Go Decision
 
 ### Go
 
@@ -211,6 +214,9 @@ changes to the team.
 
 Continue monitoring the production environment for any unexpected issues that
 may arise after the code has been merged.
+
+</p>
+</details>
 
 ---
 
