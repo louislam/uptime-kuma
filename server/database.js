@@ -183,6 +183,7 @@ class Database {
     }
 
     /**
+     * @throws The CA file must be a pem file
      * @typedef {string|undefined} envString
      * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, caFilePath:envString}} dbConfig the database configuration that should be written
      * @returns {void}
@@ -191,10 +192,10 @@ class Database {
         // Move CA file to the data directory
         if (dbConfig.caFilePath) {
             const dataCaFilePath = path.resolve(Database.dataDir, "mariadb-ca.pem");
-            if (!dbConfig.caFilePath.endsWith(".pem")) {
+            if (!path.resolve(dbConfig.caFilePath).endsWith(".pem")) {
                 throw new Error("Invalid CA file, it must be a .pem file");
             }
-            fs.renameSync(fs.realpathSync(dbConfig.caFilePath), dataCaFilePath);
+            fs.renameSync(fs.realpathSync(path.resolve(dbConfig.caFilePath)), path.resolve(dataCaFilePath));
             dbConfig.caFilePath = dataCaFilePath;
             dbConfig.ssl = undefined;
             dbConfig.caFile = undefined;
