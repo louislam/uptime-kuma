@@ -31,20 +31,20 @@ class SMSEagle extends NotificationProvider {
                 } else if (notification.smseagleRecipientType === "smseagle-to") {
                     recipientType = "to";
                     sendMethod = "/send_sms";
-                } else {
-                    recipientType = "to";
-                    if (notification.smseagleDuration)
-                        duration = notification.smseagleDuration;
-                    else
-                        duration = 10;
+                    if (notification.smseagleMsgType != "smseagle-sms") {
+                        if (notification.smseagleDuration)
+                            duration = notification.smseagleDuration;
+                        else
+                            duration = 10;
 
-                    if (notification.smseagleMsgType == "smseagle-ring") {
-                        sendMethod = "/ring_call";
-                    } else if (notification.smseagleMsgType == "smseagle-tts") {
-                        sendMethod = "/tts_call";
-                    } else if (notification.smseagleMsgType == "smseagle-tts-advanced") {
-                        sendMethod = "/tts_adv_call";
-                        voice_id = notification.smseagleTtsModel ? notification.smseagleTtsModel : 1 ;
+                        if (notification.smseagleMsgType == "smseagle-ring") {
+                            sendMethod = "/ring_call";
+                        } else if (notification.smseagleMsgType == "smseagle-tts") {
+                            sendMethod = "/tts_call";
+                        } else if (notification.smseagleMsgType == "smseagle-tts-advanced") {
+                            sendMethod = "/tts_adv_call";
+                            voice_id = notification.smseagleTtsModel ? notification.smseagleTtsModel : 1;
+                        }
                     }
                 }
 
@@ -52,11 +52,14 @@ class SMSEagle extends NotificationProvider {
 
                 url.searchParams.append('access_token', notification.smseagleToken);
                 url.searchParams.append(recipientType, notification.smseagleRecipient);
-                url.searchParams.append('message', msg);
-                url.searchParams.append('unicode', (notification.smseagleEncoding) ? "1" : "0");
-                url.searchParams.append('highpriority', (notification.smseaglePriority) ? notification.smseaglePriority : "0");
-                if (duration) {
+                if (!["smseagle-ring", "smseagle-tts", "smseagle-tts-advanced"].includes(notification.smseagleRecipientType)) {
+                    url.searchParams.append('unicode', (notification.smseagleEncoding) ? "1" : "0");
+                    url.searchParams.append('highpriority', (notification.smseaglePriority) ? notification.smseaglePriority : "0");
+                } else {
                     url.searchParams.append('duration', duration);
+                }
+                if (notification.smseagleRecipientType != "smseagle-ring") {
+                    url.searchParams.append('message', msg);
                 }
                 if (voice_id) {
                     url.searchParams.append('voice_id', voice_id);
@@ -130,7 +133,7 @@ class SMSEagle extends NotificationProvider {
                         endpoint = "/calls/tts";
                     } else if (notification.smseagleMsgType == "smseagle-tts-advanced") {
                         endpoint = "/calls/tts_advanced";
-                        postData["voice_id"] = notification.smseagleTtsModel ? notification.smseagleTtsModel : "1" ;
+                        postData["voice_id"] = notification.smseagleTtsModel ? notification.smseagleTtsModel : "1";
                     }
                 }
 
