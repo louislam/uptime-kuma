@@ -67,11 +67,11 @@
             <input id="smseagle-recipient" v-model="$parent.notification.smseagleRecipientTo" type="text" class="form-control">
         </div>
         <div class="mb-3">
-            <label for="smseagle-recipient" class="form-label">{{ $t("smseagleGroup") }}</label>
+            <label for="smseagle-recipient" class="form-label">{{ $t("smseagleGroupV2") }}</label>
             <input id="smseagle-recipient" v-model="$parent.notification.smseagleRecipientGroup" type="text" class="form-control">
         </div>
         <div class="mb-3">
-            <label for="smseagle-recipient" class="form-label">{{ $t("smseagleContact") }}</label>
+            <label for="smseagle-recipient" class="form-label">{{ $t("smseagleContactV2") }}</label>
             <input id="smseagle-recipient" v-model="$parent.notification.smseagleRecipientContact" type="text" class="form-control">
         </div>
         <div class="mb-3">
