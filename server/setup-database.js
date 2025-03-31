@@ -216,7 +216,7 @@ class SetupDatabase {
                         const base64Data = dbConfig.caFile.replace(/^data:application\/octet-stream;base64,/, "");
                         const binaryData = Buffer.from(base64Data, "base64").toString("binary");
                         const tempCaDirectory = fs.mkdtempSync("kuma-ca-");
-                        dbConfig.caFilePath = path.join(tempCaDirectory, "ca.pem");
+                        dbConfig.caFilePath = path.resolve(tempCaDirectory, "ca.pem");
                         try {
                             fs.writeFileSync(dbConfig.caFilePath, binaryData, "binary");
                         } catch (err) {
@@ -255,7 +255,13 @@ class SetupDatabase {
                 }
 
                 // Write db-config.json
-                Database.writeDBConfig(dbConfig);
+                try {
+                    Database.writeDBConfig(dbConfig);
+                } catch (e) {
+                    response.status(400).json("Cannot write db-config.json: " + e.message);
+                    this.runningSetup = false;
+                    return;
+                }
 
                 response.json({
                     ok: true,
