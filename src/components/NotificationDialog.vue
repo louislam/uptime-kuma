@@ -182,6 +182,7 @@ export default {
                 "SMSManager": "SmsManager (smsmanager.cz)",
                 "WeCom": "WeCom (企业微信群机器人)",
                 "ServerChan": "ServerChan (Server酱)",
+                "PushPlus": "PushPlus (推送加)",
                 "smsc": "SMSC",
                 "WPush": "WPush(wpush.cn)",
                 "YZJ": "YZJ (云之家自定义机器人)"
