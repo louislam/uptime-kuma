@@ -19,8 +19,6 @@ We appreciate your patience and understanding as we continue to improve Uptime K
 
 ## 📋 Overview
 
-**Required**: Please fill out this section before submitting.
-
 Provide a clear summary of the purpose and scope of this pull request:
 
 - **What problem does this pull request address?**
@@ -39,8 +37,6 @@ Provide a clear summary of the purpose and scope of this pull request:
 
 ### 🛠️ Type of change
 
-**Required**: Please fill out this section before submitting.
-
 Please select all options that apply:
 
 - [ ] 🐛 Bugfix (a non-breaking change that resolves an issue)
@@ -55,17 +51,13 @@ Please select all options that apply:
 
 ## 🔗 Related Issues
 
-**Optional**: Remove this section if not applicable.
-
-Reference any related GitHub issues or tasks that this pull request addresses. Use proper issue links or numbers, for example:
+Reference any related GitHub issues or tasks that this pull request addresses. Use issue links, for example:
 
 - Relates to #issue-number
 - Resolves #issue-number
 - Fixes #issue-number
 
 ## 📄 Checklist
-
-**Required**: Please fill out this section before submitting.
 
 Please select all options that apply:
 
@@ -82,11 +74,12 @@ Please select all options that apply:
 
 ## 📷 Screenshots or Visual Changes
 
-**Optional**: Remove this section if not applicable.
-
 Please upload the image directly here by pasting it or dragging and dropping. Avoid using external image services as the image will be uploaded automatically.
 
-If this pull request introduces visual changes, provide the following:
+<details><summary><b>For more details:</b> (click to expand)</summary>
+</p>
+
+If this pull request introduces visual changes, please provide the following details:
 
 - **UI Modifications**: Highlight any changes made to the user interface.
 - **Before & After**: Include screenshots or comparisons (if applicable).
@@ -98,13 +91,20 @@ If this pull request introduces visual changes, provide the following:
 | Certificate-expiry | ![Before](image-link) | ![After](image-link) |
 | Testing            | ![Before](image-link) | ![After](image-link) |
 
+</p>
+</details>
+
 ## ℹ️ Additional Context
 
-**Optional**: Remove this section if not applicable.
-
 Provide any additional information to help reviewers:
+
+<details><summary><b>For more details:</b> (click to expand)</summary>
+</p>
 
 - Design decisions or trade-offs made during development.
 - Alternative solutions considered but not implemented.
 - Relevant links, such as specifications, discussions, or resources.
 - Dependencies or related pull requests that must be addressed before merging.
+
+</p>
+</details>
