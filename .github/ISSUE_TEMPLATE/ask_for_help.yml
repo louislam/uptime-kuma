@@ -1,10 +1,11 @@
 ---
-name: "❓ Ask for help"
-description: "Submit any question related to Uptime Kuma"
-#title: "[Help] "
+name: ❓ Ask for help
+description: |
+  Submit any question related to Uptime Kuma
+#title: "[Help]"
 labels: ["help", "P3-low"]
 body:
-  - type: "markdown"
+  - type: markdown
     attributes:
       value: |
         ## **❗ Important: Please Avoid Unnecessary Pinging of Maintainers**
@@ -13,76 +14,90 @@ body:
 
         - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
         - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
+
   - type: checkboxes
-    id: no-duplicate-issues
+    id: no-duplicate-question
     attributes:
-      label: "⚠️ Please verify that this question has NOT been raised before."
-      description: "Search in the issues sections by clicking
-        [HERE](https://github.com/louislam/uptime-kuma/issues?q=)"
+      label: ⚠️ Please verify that your question has not already been reported
+      description: |
+        To avoid duplicate reports, please search for any existing issues before submitting a new one. You can find the list of existing issues **[HERE](https://github.com/louislam/uptime-kuma/issues?=is%3Aissue%20sort%3Acreated-desc%20)**.
       options:
-        - label: "I checked and didn't find similar issue"
+        - label: |
+            I have searched the [existing issues](https://github.com/louislam/uptime-kuma/issues?q=is%3Aissue%20sort%3Acreated-desc%20) and found no similar reports.
           required: true
+
   - type: checkboxes
+    id: security-policy
     attributes:
-      label: "🛡️ Security Policy"
-      description:
-        Please review the security policy before reporting security related
-        issues/bugs.
+      label: 🛡️ Security Policy
+      description: |
+        Please review and acknowledge the Security Policy before reporting any security-related issues or bugs. You can find the full Security Policy **[HERE](https://github.com/louislam/uptime-kuma/security/policy)**.
       options:
-        - label: I agree to have read this project [Security
-            Policy](https://github.com/louislam/uptime-kuma/security/policy)
+        - label: |
+            I have read and agree to Uptime Kuma's [Security Policy](https://github.com/louislam/uptime-kuma/security/policy).
           required: true
+
   - type: textarea
     id: steps-to-reproduce
     validations:
       required: true
     attributes:
-      label: "📝 Describe your problem"
-      description:
-        "Please walk us through it step by step. Include all important details
-        and add screenshots where appropriate"
-      placeholder: "Describe what are you asking for..."
+      label: 📝 Describe your problem
+      description: |
+        Please walk us through it step by step. Include all important details and add screenshots where appropriate
+      placeholder: |
+        Describe what are you asking for ...
+
   - type: textarea
     id: error-msg
+    attributes:
+      label: 📝 Error Message(s) or Log
+      description: |
+        Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: bash session
     validations:
       required: false
-    attributes:
-      label: "📝 Error Message(s) or Log"
+
   - type: input
     id: uptime-kuma-version
     attributes:
-      label: "🐻 Uptime-Kuma Version"
-      description: "What version of Uptime-Kuma are you running? Please do not provide Docker tags like `latest` or `1`."
-      placeholder: "e.g., 1.23.16 or 2.0.0-beta.2"
+      label: 🐻 Uptime-Kuma Version
+      description: |
+        What version of Uptime-Kuma are you running? Please do not provide Docker tags like `latest` or `1`.
+      placeholder: |
+        e.g., 1.23.16 or 2.0.0-beta.2
     validations:
       required: true
+
   - type: input
     id: operating-system
     attributes:
-      label: "💻 Operating System and Arch"
-      description:
-        "Which OS is your server/device running on? (For Replit, please do not
-        report this bug)"
-      placeholder: "e.g., Ubuntu Server 24.04.2 LTS (GNU/Linux 6.8.0-55-generic x86_64)"
+      label: 💻 Operating System and Arch
+      description: |
+        Which OS is your server/device running on? (For Replit, please do not report this bug)
+      placeholder: |
+        e.g., Ubuntu Server 24.04.2 LTS (GNU/Linux 6.8.0-55-generic x86_64)
     validations:
       required: true
+
   - type: input
     id: browser-vendor
     attributes:
-      label: "🌐 Browser"
-      description:
-        "Which browser are you running on? (For Replit, please do not report
-        this bug)"
-      placeholder: "e.g., Google Chrome 134.0.6998.183 (Official Build) (64-bit)"
+      label: 🌐 Browser
+      description: |
+        Which browser are you running on? (For Replit, please do not report this bug)
+      placeholder: |
+        e.g., Google Chrome 134.0.6998.183 (Official Build) (64-bit)
     validations:
       required: true
+
   - type: textarea
     id: deployment-info
     attributes:
-      label: "🖥️ Deployment Environment"
+      label: 🖥️ Deployment Environment
       description: |
-        Provide details about the deployment environment, including runtime components, databases, and storage configurations.
-        This will help assess the infrastructure and identify any potential compatibility requirements.
+        Provide details about the deployment environment, including runtime components, databases, and storage configurations. This will
+        help assess the infrastructure and identify any potential compatibility requirements.
 
         **Remove any fields that do not apply to your setup.**
       value: |
