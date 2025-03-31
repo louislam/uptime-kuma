@@ -190,8 +190,11 @@ class Database {
     static writeDBConfig(dbConfig) {
         // Move CA file to the data directory
         if (dbConfig.caFilePath) {
-            const dataCaFilePath = path.join(Database.dataDir, "mariadb-ca.pem");
-            fs.renameSync(dbConfig.caFilePath, dataCaFilePath);
+            const dataCaFilePath = path.resolve(Database.dataDir, "mariadb-ca.pem");
+            if (!dbConfig.caFilePath.endsWith(".pem")) {
+                throw new Error("Invalid CA file, it must be a .pem file");
+            }
+            fs.renameSync(fs.realpathSync(dbConfig.caFilePath), dataCaFilePath);
             dbConfig.caFilePath = dataCaFilePath;
             dbConfig.ssl = undefined;
             dbConfig.caFile = undefined;
