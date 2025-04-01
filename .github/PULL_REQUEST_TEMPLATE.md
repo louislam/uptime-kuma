@@ -17,7 +17,7 @@ We appreciate your patience and understanding as we continue to improve Uptime K
 - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
 - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
 
-## 📋 Overview
+## 📋 Overview *
 
 Provide a clear summary of the purpose and scope of this pull request:
 
@@ -35,7 +35,7 @@ Provide a clear summary of the purpose and scope of this pull request:
 
 ## 🔄 Changes
 
-### 🛠️ Type of change
+### 🛠️ Type of change *
 
 Please select all options that apply:
 
@@ -51,13 +51,19 @@ Please select all options that apply:
 
 ## 🔗 Related Issues
 
-Reference any related GitHub issues or tasks that this pull request addresses. Use issue links, for example:
+Reference any related GitHub issues or tasks that this pull request addresses. Use proper issue links or numbers.
+
+<details><summary>Click here for related examples:</summary>
+</p>
 
 - Relates to #issue-number
 - Resolves #issue-number
 - Fixes #issue-number
 
-## 📄 Checklist
+</p>
+</details>
+
+## 📄 Checklist *
 
 Please select all options that apply:
 
@@ -76,7 +82,7 @@ Please select all options that apply:
 
 Please upload the image directly here by pasting it or dragging and dropping. Avoid using external image services as the image will be uploaded automatically.
 
-<details><summary><b>For more details:</b> (click to expand)</summary>
+<details><summary>Click here for more details:</summary>
 </p>
 
 If this pull request introduces visual changes, please provide the following details:
@@ -98,7 +104,7 @@ If this pull request introduces visual changes, please provide the following det
 
 Provide any additional information to help reviewers:
 
-<details><summary><b>For more details:</b> (click to expand)</summary>
+<details><summary>Click here for more details:</summary>
 </p>
 
 - Design decisions or trade-offs made during development.
