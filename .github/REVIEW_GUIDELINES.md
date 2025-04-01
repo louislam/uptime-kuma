@@ -191,7 +191,7 @@ the PR can be approved. Some examples of **significant issues** include:
 - Code that causes **major performance regressions** (e.g., high CPU/memory
     usage).
 
-## After the Review ━ For Maintainers only
+## After the Review
 
 ### Reordering and merging
 
@@ -203,7 +203,7 @@ be merged into the main branch (e.g., `main` or `master`).
 Ensure that the build passes after merging the PR, and re-test the functionality
 in the production environment if necessary.
 
-## Follow-up ━ For Maintainers only
+## Follow-up
 
 ### Communication with team members
 
