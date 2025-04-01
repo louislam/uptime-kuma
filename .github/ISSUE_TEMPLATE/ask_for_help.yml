@@ -20,7 +20,7 @@ body:
     attributes:
       label: ⚠️ Please verify that your question has not already been reported
       description: |
-        To avoid duplicate reports, please search for any existing issues before submitting a new one. You can find the list of existing issues **[HERE](https://github.com/louislam/uptime-kuma/issues?=is%3Aissue%20sort%3Acreated-desc%20)**.
+        To avoid duplicate reports, please search for any existing issues before submitting a new one. You can find the list of existing issues **[HERE](https://github.com/louislam/uptime-kuma/issues?q=is%3Aissue%20sort%3Acreated-desc%20)**.
       options:
         - label: |
             I have searched the [existing issues](https://github.com/louislam/uptime-kuma/issues?q=is%3Aissue%20sort%3Acreated-desc%20) and found no similar reports.
