@@ -9,11 +9,11 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## **⚠️ Report a Security Vulnerability**
+        ## ❗ IMPORTANT: DO NOT SHARE VULNERABILITY DETAILS HERE
 
-        ### **IMPORTANT: DO NOT SHARE VULNERABILITY DETAILS HERE**
+        ### ⚠️ Report a Security Vulnerability
 
-        If you have discovered a security vulnerability, please report it securely using the GitHub Security Advisory.
+        **If you have discovered a security vulnerability, please report it securely using the GitHub Security Advisory.**
 
         **Note**: This issue is only for notifying the maintainers of the repository, as the GitHub Security Advisory does not automatically send notifications.
 
