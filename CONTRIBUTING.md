@@ -252,25 +252,31 @@ to review the appropriate one for your contribution.
 
     - Bugfix (a non-breaking change that resolves an issue)
     - New feature (a non-breaking change that adds new functionality)
-    - Breaking change (a fix or feature that alters existing functionality in a way that could cause issues)
+    - Breaking change (a fix or feature that alters existing functionality in a
+      way that could cause issues)
     - User Interface (UI) updates
     - New Documentation (addition of new documentation)
     - Documentation Update (modification of existing documentation)
-    - Documentation Update Required (the change requires updates to related documentation)
+    - Documentation Update Required (the change requires updates to related
+      documentation)
     - Other (please specify):
       - Provide additional details here.
 
   - **Checklist**
 
     - My code adheres to the style guidelines of this project.
-    - I ran code linters for modified files.
+    - I ran ESLint and other code linters for modified files.
     - I have reviewed and tested my code.
-    - I have commented my code, especially in hard-to-understand areas (e.g., using JSDoc for methods).
+    - I have commented my code, especially in hard-to-understand areas (e.g.,
+      using JSDoc for methods).
     - My changes generate no new warnings.
-    - My code needed automated testing. I have added them (this is an optional task).
+    - My code needed automated testing. I have added them (this is an optional
+      task).
     - Documentation updates are included (if applicable).
     - I have considered potential security impacts and mitigated risks.
     - Dependency updates are listed and explained.
+    - I have read and understood the
+      [Pull Request guidelines](../CONTRIBUTING.md#recommended-pull-request-guideline).
 
   10. **When publishing your PR, set it as a** `Draft pull request` **to allow
       for review and prevent automatic merging.**
@@ -380,25 +386,31 @@ early on, helping to avoid issues down the line.
 
      - Bugfix (a non-breaking change that resolves an issue)
      - New feature (a non-breaking change that adds new functionality)
-     - Breaking change (a fix or feature that alters existing functionality in a way that could cause issues)
+     - Breaking change (a fix or feature that alters existing functionality in a
+       way that could cause issues)
      - User Interface (UI) updates
      - New Documentation (addition of new documentation)
      - Documentation Update (modification of existing documentation)
-     - Documentation Update Required (the change requires updates to related documentation)
+     - Documentation Update Required (the change requires updates to related
+       documentation)
      - Other (please specify):
        - Provide additional details here.
 
    - **Checklist**
 
      - My code adheres to the style guidelines of this project.
-     - I ran code linters for modified files.
+     - I ran ESLint and other code linters for modified files.
      - I have reviewed and tested my code.
-     - I have commented my code, especially in hard-to-understand areas (e.g., using JSDoc for methods).
+     - I have commented my code, especially in hard-to-understand areas (e.g.,
+       using JSDoc for methods).
      - My changes generate no new warnings.
-     - My code needed automated testing. I have added them (this is an optional task).
+     - My code needed automated testing. I have added them (this is an optional
+       task).
      - Documentation updates are included (if applicable).
      - I have considered potential security impacts and mitigated risks.
      - Dependency updates are listed and explained.
+     - I have read and understood the
+       [Pull Request guidelines](../CONTRIBUTING.md#recommended-pull-request-guideline).
 
 10. **When publishing your PR, set it as a** `Draft pull request` **to allow for
     review and prevent automatic merging.**
