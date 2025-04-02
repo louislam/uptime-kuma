@@ -1,6 +1,11 @@
 **⚠️ Please Note: We do not accept all types of pull requests, and we want to ensure we don’t waste your time. Before submitting, make sure you have read our pull request guidelines: [Pull Request Rules](../CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)**
 
-## **❗ Important: Temporary Delay in Feature Requests and Pull Request Reviews**
+## ❗ Important Announcement
+
+<details><summary>Click here for more details:</summary>
+</p>
+
+### 🚧 Temporary Delay in Feature Requests and Pull Request Reviews
 
 **At this time, we may be slower to respond to new feature requests and review pull requests. Existing requests and PRs will remain in the backlog but may not be prioritized immediately.**
 
@@ -10,12 +15,20 @@
 
 We appreciate your patience and understanding as we continue to improve Uptime Kuma.
 
-## **❗ Important: Please Avoid Unnecessary Pinging of Maintainers**
+### 🚫 Please Avoid Unnecessary Pinging of Maintainers
 
 **We kindly ask users to refrain from pinging maintainers unless absolutely necessary. Pings should be reserved for critical issues or urgent matters that require immediate attention.**
 
 - **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
 - **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
+
+#### Guidelines for Pinging
+
+- ✅ **Appropriate**: Critical issues or urgent matters requiring immediate attention.
+- ❌ **Not Appropriate**: Repeated or non-urgent pings, which may be ignored or addressed later.
+
+</p>
+</details>
 
 ## 📋 Overview *
 
@@ -51,10 +64,12 @@ Please select all options that apply:
 
 ## 🔗 Related Issues
 
-Reference any related GitHub issues or tasks that this pull request addresses. Use proper issue links or numbers.
+Please link any GitHub issues or tasks that this pull request addresses. Use the appropriate issue numbers or links.
 
-<details><summary>Click here for related examples:</summary>
+<details><summary>Click to view more details:</summary>
 </p>
+
+**Note**: Include only issues directly related to this PR. Remove any irrelevant reference.
 
 - Relates to #issue-number
 - Resolves #issue-number
@@ -102,15 +117,48 @@ If this pull request introduces visual changes, please provide the following det
 
 ## ℹ️ Additional Context
 
-Provide any additional information to help reviewers:
+Provide any relevant details to assist reviewers in understanding the changes.
 
 <details><summary>Click here for more details:</summary>
 </p>
 
-- Design decisions or trade-offs made during development.
-- Alternative solutions considered but not implemented.
-- Relevant links, such as specifications, discussions, or resources.
-- Dependencies or related pull requests that must be addressed before merging.
+**Key Considerations**:
+
+- **Design decisions** – Key choices or trade-offs made during development.
+- **Alternative solutions** – Approaches considered but not implemented, along with reasons.
+- **Relevant links** – Specifications, discussions, or resources that provide context.
+- **Dependencies** – Related pull requests or issues that must be resolved before merging.
+- **Additional context** – Any other details that may help reviewers understand the changes.
+
+Provide details here
+
+## 📄 Document Status
+
+To streamline the review process, please list the filenames of documents currently being worked on. This helps reviewers focus on the files that need their attention.
+
+### ✅ Ready for Review
+
+The following documents are complete and ready for review:
+
+- `Specify filenames here`
+
+### 🔨 Work in Progress
+
+The following documents are currently being worked on:
+
+- `List ongoing documents here`
+
+### 💬 Requested Feedback
+
+Your feedback is requested on the following documents:
+
+- `Mention documents needing feedback here`
+
+## 📝 Additional Changes
+
+Please provide any relevant details or context. (e.g., resolved Linter issues, code optimizations, or other adjustments):
+
+- Describe additional changes here
 
 </p>
 </details>
