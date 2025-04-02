@@ -276,7 +276,7 @@ to review the appropriate one for your contribution.
     - I have considered potential security impacts and mitigated risks.
     - Dependency updates are listed and explained.
     - I have read and understood the
-      [Pull Request guidelines](../CONTRIBUTING.md#recommended-pull-request-guideline).
+      [Pull Request guidelines](#recommended-pull-request-guideline).
 
   10. **When publishing your PR, set it as a** `Draft pull request` **to allow
       for review and prevent automatic merging.**
@@ -410,7 +410,7 @@ early on, helping to avoid issues down the line.
      - I have considered potential security impacts and mitigated risks.
      - Dependency updates are listed and explained.
      - I have read and understood the
-       [Pull Request guidelines](../CONTRIBUTING.md#recommended-pull-request-guideline).
+       [Pull Request guidelines](#recommended-pull-request-guideline).
 
 10. **When publishing your PR, set it as a** `Draft pull request` **to allow for
     review and prevent automatic merging.**
