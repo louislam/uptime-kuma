@@ -88,6 +88,7 @@
     "upsideDownModeDescription": "Flip the status upside down. If the service is reachable, it is DOWN.",
     "ignoreSecWebsocketAcceptHeaderDescription": "Allows the server to not reply with Sec-WebSocket-Accept header, if the websocket upgrade succeeds.",
     "Ignore Sec-WebSocket-Accept header": "Ignore {0} header",
+    "wsSubprotocolDescription": "For more information on subprotocols, please consult the {documentation}",
     "WebSocket Application Messaging Protocol": "WAMP (The WebSocket Application Messaging Protocol)",
     "Session Initiation Protocol": "WebSocket Transport for SIP (Session Initiation Protocol)",
     "Network API for Notification Channel": "OMA RESTful Network API for Notification Channel",

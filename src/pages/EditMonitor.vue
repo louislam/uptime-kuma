@@ -191,6 +191,11 @@
                                     <option value="Redfish">Redfish DSP0266</option>
                                     <option value="bidib">webBiDiB</option>
                                 </select>
+                                <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
+                                    <template #documentation>
+                                        <a href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name" target="_blank" rel="noopener noreferrer">{{ $t('documentationOf', ['IANA']) }}</a>
+                                    </template>
+                                </i18n-t>
                             </div>
 
                             <!-- gRPC URL -->
@@ -410,8 +415,8 @@
                                 <div class="my-2">
                                     <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
                                     <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('playground') }}</a>
                                     </i18n-t>
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
                                 </div>
@@ -550,8 +555,8 @@
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
 
                                     <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('here') }}</a>
                                     </i18n-t>
                                     <br>
 
@@ -621,7 +626,7 @@
                                     <textarea id="mongodbCommand" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ '{ &quot;ping&quot;: 1 }' ])"></textarea>
                                     <i18n-t tag="div" class="form-text" keypath="mongodbCommandDescription">
                                         <template #documentation>
-                                            <a href="https://www.mongodb.com/docs/manual/reference/command/">{{ $t('documentationOf', ['MongoDB']) }}</a>
+                                            <a href="https://www.mongodb.com/docs/manual/reference/command/" target="_blank" rel="noopener noreferrer">{{ $t('documentationOf', ['MongoDB']) }}</a>
                                         </template>
                                     </i18n-t>
                                 </div>
@@ -630,8 +635,8 @@
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control">
 
                                     <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('here') }}</a>
                                     </i18n-t>
                                 </div>
                                 <div class="my-3">
