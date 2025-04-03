@@ -48,9 +48,9 @@ Provide a clear summary of the purpose and scope of this pull request:
 
 ## 🔄 Changes
 
-### 🛠️ Type of change *
+### 🛠️ Type of change
 
-Please select all options that apply:
+<!-- Please select all options that apply -->
 
 - [ ] 🐛 Bugfix (a non-breaking change that resolves an issue)
 - [ ] ✨ New feature (a non-breaking change that adds new functionality)
