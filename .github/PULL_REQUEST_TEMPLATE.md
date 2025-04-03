@@ -30,7 +30,7 @@ We appreciate your patience and understanding as we continue to improve Uptime K
 </p>
 </details>
 
-## 📋 Overview *
+## 📋 Overview
 
 Provide a clear summary of the purpose and scope of this pull request:
 
