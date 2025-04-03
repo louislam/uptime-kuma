@@ -17,15 +17,9 @@ We appreciate your patience and understanding as we continue to improve Uptime K
 
 ### 🚫 Please Avoid Unnecessary Pinging of Maintainers
 
-**We kindly ask users to refrain from pinging maintainers unless absolutely necessary. Pings should be reserved for critical issues or urgent matters that require immediate attention.**
+**We kindly ask you to refrain from pinging maintainers unless absolutely necessary. Pings are reserved for critical/urgent pull requests that require immediate attention.**
 
-- **Why**: To help maintainers focus on high-priority tasks, we kindly request that unnecessary or repeated pings be minimized. This will help ensure quicker responses for matters that truly need attention.
-- **What This Means**: Non-urgent pings may be ignored or addressed later. Please assess the urgency of your request before pinging a maintainer.
-
-#### Guidelines for Pinging
-
-- ✅ **Appropriate**: Critical issues or urgent matters requiring immediate attention.
-- ❌ **Not Appropriate**: Repeated or non-urgent pings, which may be ignored or addressed later.
+**Why**: Reserving pings for urgent matters ensures maintainers can prioritize critical tasks effectively.
 
 </p>
 </details>
@@ -60,7 +54,7 @@ Provide a clear summary of the purpose and scope of this pull request:
 
 ## 🔗 Related Issues
 
-<!-- 
+<!--
 Please link any GitHub issues or tasks that this pull request addresses. Use the appropriate issue numbers or links.
 
 **Note**: Include only issues directly related to this PR. Remove any irrelevant reference.
