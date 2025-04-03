@@ -1,4 +1,4 @@
-**⚠️ Please Note: We do not accept all types of pull requests, and we want to ensure we don’t waste your time. Before submitting, make sure you have read our pull request guidelines: [Pull Request Rules](../CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)**
+**⚠️ Please Note: We do not accept all types of pull requests, and we want to ensure we don’t waste your time. Before submitting, make sure you have read our pull request guidelines: [Pull Request Rules](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)**
 
 ## ❗ Important Announcement
 
@@ -11,7 +11,7 @@
 
 - **Reason**: Our current focus is on addressing bugs, improving system performance, and implementing essential updates. This will help stabilize the project and ensure smoother management.
 - **Impact**: While no new feature requests or pull requests are being outright rejected, there may be significant delays in reviews. We encourage the community to help by reviewing PRs or assisting other users in the meantime.
-- **What You Can Do**: If you're interested in contributing, reviewing open PRs by following our [Review Guidelines](REVIEW_GUIDELINES.md) or offering support to other users is greatly appreciated. All feature requests and PRs will be revisited once the suspension period is lifted.
+- **What You Can Do**: If you're interested in contributing, reviewing open PRs by following our [Review Guidelines](https://github.com/louislam/uptime-kuma/blob/master/.github/REVIEW_GUIDELINES.md) or offering support to other users is greatly appreciated. All feature requests and PRs will be revisited once the suspension period is lifted.
 
 We appreciate your patience and understanding as we continue to improve Uptime Kuma.
 
@@ -77,7 +77,7 @@ Please link any GitHub issues or tasks that this pull request addresses. Use the
 - [ ] 📄 Documentation updates are included (if applicable).
 - [ ] 🔒 I have considered potential security impacts and mitigated risks.
 - [ ] 🧰 Dependency updates are listed and explained.
-- [ ] 📚 I have read and understood the [Pull Request guidelines](../CONTRIBUTING.md#recommended-pull-request-guideline).
+- [ ] 📚 I have read and understood the [Pull Request guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#recommended-pull-request-guideline).
 
 ## 📷 Screenshots or Visual Changes
 
