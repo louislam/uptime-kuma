@@ -126,11 +126,3 @@ Provide details here
 <!-- If a part of our docs is unclear, you are unsure how to do something/.. this is where we would appreciate your feedback -->
 
 - `Mention documents needing feedback here`
-## 📝 Additional Changes
-
-Please provide any relevant details or context. (e.g., resolved Linter issues, code optimizations, or other adjustments):
-
-- Describe additional changes here
-
-</p>
-</details>
