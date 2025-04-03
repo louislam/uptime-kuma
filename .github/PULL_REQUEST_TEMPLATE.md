@@ -80,7 +80,7 @@ Please link any GitHub issues or tasks that this pull request addresses. Use the
 
 ## 📄 Checklist *
 
-Please select all options that apply:
+<!-- Please select all options that apply -->
 
 - [ ] 🔍 My code adheres to the style guidelines of this project.
 - [ ] ✅ I ran ESLint and other code linters for modified files.
