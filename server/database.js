@@ -202,7 +202,7 @@ class Database {
             }
             dbConfig.caFilePath = dataCaFilePath;
         }
-        if (dbConfig.caFilePath.startsWith(temporaryDirectoryPath)) {
+        if (dbConfig.caFilePath && dbConfig.caFilePath.startsWith(temporaryDirectoryPath)) {
             dbConfig.caFilePath = undefined;
         }
         dbConfig.ssl = undefined;
