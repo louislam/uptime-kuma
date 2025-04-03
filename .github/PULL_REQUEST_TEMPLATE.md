@@ -38,10 +38,6 @@ Provide a clear summary of the purpose and scope of this pull request:
 
   - Please provide a detailed explanation here.
 
-- **Why is it necessary?**
-
-  - Please provide a detailed explanation here.
-
 - **What features or functionality does this pull request introduce or enhance?**
 
   - Please provide a detailed explanation here.
