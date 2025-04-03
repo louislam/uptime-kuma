@@ -1,19 +1,19 @@
 ---
-name: "🛡️ Security Issue"
+name: 🛡️ Security Issue
 description: |
   Notify Louis Lam about a security concern. Please do NOT include any sensitive details in this issue.
 # title: "Security Issue"
-labels: [security]
+labels: ["security", "P1-high"]
 assignees: [louislam]
 body:
-  - type: "markdown"
+  - type: markdown
     attributes:
       value: |
-        ## **⚠️ Report a Security Vulnerability**
+        ## ❗ IMPORTANT: DO NOT SHARE VULNERABILITY DETAILS HERE
 
-        ### **IMPORTANT: DO NOT SHARE VULNERABILITY DETAILS HERE**
+        ### ⚠️ Report a Security Vulnerability
 
-        If you have discovered a security vulnerability, please report it securely using the GitHub Security Advisory.
+        **If you have discovered a security vulnerability, please report it securely using the GitHub Security Advisory.**
 
         **Note**: This issue is only for notifying the maintainers of the repository, as the GitHub Security Advisory does not automatically send notifications.
 
@@ -34,12 +34,12 @@ body:
 
         Once you've created your advisory, please share the URL below. This will notify Louis Lam and enable them to take the appropriate action.
 
-  - type: "textarea"
+  - type: textarea
     id: github-advisory-url
     validations:
       required: true
     attributes:
-      label: "GitHub Advisory URL for @louislam"
+      label: GitHub Advisory URL for @louislam
       placeholder: |
         Please paste the GitHub Advisory URL here. Only the URL is required.
         Example: https://github.com/louislam/uptime-kuma/security/advisories/GHSA-8h5r-7t6l-q3kz
