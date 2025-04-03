@@ -87,12 +87,12 @@ Please link any GitHub issues or tasks that this pull request addresses. Use the
 
 ## 📷 Screenshots or Visual Changes
 
+<!--
 Please upload the image directly here by pasting it or dragging and dropping. Avoid using external image services as the image will be uploaded automatically.
 
-<details><summary>Click here for more details:</summary>
-</p>
-
-If this pull request introduces visual changes, please provide the following details:
+If this pull request introduces visual changes, please provide the following details.
+If not, remove this section.
+-->
 
 - **UI Modifications**: Highlight any changes made to the user interface.
 - **Before & After**: Include screenshots or comparisons (if applicable).
@@ -103,9 +103,6 @@ If this pull request introduces visual changes, please provide the following det
 | `DOWN`             | ![Before](image-link) | ![After](image-link) |
 | Certificate-expiry | ![Before](image-link) | ![After](image-link) |
 | Testing            | ![Before](image-link) | ![After](image-link) |
-
-</p>
-</details>
 
 ## ℹ️ Additional Context
 
