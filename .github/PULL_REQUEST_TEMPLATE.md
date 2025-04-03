@@ -64,19 +64,15 @@ Provide a clear summary of the purpose and scope of this pull request:
 
 ## 🔗 Related Issues
 
+<!-- 
 Please link any GitHub issues or tasks that this pull request addresses. Use the appropriate issue numbers or links.
 
-<details><summary>Click to view more details:</summary>
-</p>
-
 **Note**: Include only issues directly related to this PR. Remove any irrelevant reference.
+-->
 
 - Relates to #issue-number
 - Resolves #issue-number
 - Fixes #issue-number
-
-</p>
-</details>
 
 ## 📄 Checklist *
 
