@@ -11,7 +11,7 @@ const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
-const {tmpdir} = require("node:os");
+const { tmpdir } = require("node:os");
 
 /**
  * Database & App Data Folder
