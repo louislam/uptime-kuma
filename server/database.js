@@ -11,6 +11,7 @@ const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
+const {tmpdir} = require("node:os");
 
 /**
  * Database & App Data Folder
@@ -183,23 +184,29 @@ class Database {
     }
 
     /**
-     * @throws The CA file must be a pem file
+     * @throws The CA file must be a pem file and not contain any illegal characters inside the filename which would allow it to escape the data directory
      * @typedef {string|undefined} envString
      * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, caFilePath:envString}} dbConfig the database configuration that should be written
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {
         // Move CA file to the data directory
-        if (dbConfig.caFilePath) {
+        const temporaryDirectoryPath = tmpdir();
+        if (dbConfig.caFilePath && dbConfig.caFile && dbConfig.caFilePath.startsWith(temporaryDirectoryPath)) {
             const dataCaFilePath = path.resolve(Database.dataDir, "mariadb-ca.pem");
-            if (!path.resolve(dbConfig.caFilePath).endsWith(".pem")) {
-                throw new Error("Invalid CA file, it must be a .pem file");
+            const sourcePath = fs.realpathSync(path.resolve(temporaryDirectoryPath, dbConfig.caFilePath));
+            if (dataCaFilePath.startsWith(path.resolve(Database.dataDir)) && path.resolve(sourcePath).startsWith(temporaryDirectoryPath)) {
+                fs.renameSync(sourcePath, dataCaFilePath);
+            } else {
+                throw new Error("The file cannot contains any characters that would allow it to escape the data directory");
             }
-            fs.renameSync(fs.realpathSync(path.resolve(dbConfig.caFilePath)), path.resolve(dataCaFilePath));
             dbConfig.caFilePath = dataCaFilePath;
-            dbConfig.ssl = undefined;
-            dbConfig.caFile = undefined;
         }
+        if (dbConfig.caFilePath.startsWith(temporaryDirectoryPath)) {
+            dbConfig.caFilePath = undefined;
+        }
+        dbConfig.ssl = undefined;
+        dbConfig.caFile = undefined;
         fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
     }
 
