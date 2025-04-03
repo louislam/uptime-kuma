@@ -76,7 +76,10 @@
                 <div class="row">
                     <div class="col-md-8">
                         <HeartbeatBar :monitor-id="monitor.id" />
-                        <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
+                        <div>
+                            <span class="word">{{ $t("checkEverySecond", [ monitor.interval ]) }}</span>
+                            <span class="word"><NextPingTimer :timeRemaining="timeRemaining" /></span>
+                        </div>
                     </div>
                     <div class="col-md-4 text-center">
                         <span class="badge rounded-pill" :class=" 'bg-' + status.color " style="font-size: 30px;" data-testid="monitor-status">{{ status.text }}</span>
@@ -275,6 +278,7 @@ import { useToast } from "vue-toastification";
 const toast = useToast();
 import Confirm from "../components/Confirm.vue";
 import HeartbeatBar from "../components/HeartbeatBar.vue";
+import NextPingTimer from "../components/NextPingTimer.vue";
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
@@ -293,6 +297,7 @@ import "prismjs/components/prism-css";
 import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css";
 import ScreenshotDialog from "../components/ScreenshotDialog.vue";
+import dayjs from "dayjs";
 
 export default {
     components: {
@@ -300,6 +305,7 @@ export default {
         CountUp,
         Datetime,
         HeartbeatBar,
+        NextPingTimer,
         Confirm,
         Status,
         Pagination,
@@ -313,6 +319,7 @@ export default {
         return {
             page: 1,
             perPage: 25,
+            timeRemaining: 0,
             heartBeatList: [],
             toggleCertInfoBox: false,
             showPingChartBox: true,
@@ -340,6 +347,8 @@ export default {
             // Also trigger screenshot refresh here
             // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.cacheTime = Date.now();
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+            this.timeRemaining = this.monitor.interval;
 
             if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
                 return this.$root.lastHeartbeatList[this.monitor.id];
@@ -399,7 +408,7 @@ export default {
 
         screenshotURL() {
             return getResBaseURL() + this.monitor.screenshot + "?time=" + this.cacheTime;
-        }
+        },
     },
 
     watch: {
@@ -419,7 +428,14 @@ export default {
             this.loadPushExample();
         },
     },
-
+    created() {
+        if (this.lastHeartBeat.end_time) {
+            const lastpingtime = dayjs().utc().diff(dayjs.utc(this.lastHeartBeat.end_time), "seconds");
+            this.timeRemaining = this.monitor.interval - lastpingtime;
+        } else {
+            this.timeRemaining = this.monitor.interval;
+        }
+    },
     mounted() {
         this.getImportantHeartbeatListLength();
 
@@ -431,10 +447,17 @@ export default {
             }
             this.loadPushExample();
         }
+
+        this.interval = setInterval(() => {
+            if (this.timeRemaining > 1) {
+                this.timeRemaining--;
+            }
+        }, 1000);
     },
 
     beforeUnmount() {
         this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+        clearInterval(this.interval);
     },
 
     methods: {
@@ -464,6 +487,7 @@ export default {
             this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
                 this.$root.toastRes(res);
             });
+            this.timeRemaining = this.monitor.interval;
         },
 
         /**
