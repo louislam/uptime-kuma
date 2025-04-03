@@ -6,6 +6,7 @@ const path = require("path");
 const Database = require("./database");
 const { allowDevAllOrigin } = require("./util-server");
 const mysql = require("mysql2/promise");
+const { tmpdir } = require("node:os");
 
 /**
  *  A standalone express app that is used to setup a database
@@ -215,7 +216,7 @@ class SetupDatabase {
                     if (dbConfig.caFile) {
                         const base64Data = dbConfig.caFile.replace(/^data:application\/octet-stream;base64,/, "");
                         const binaryData = Buffer.from(base64Data, "base64").toString("binary");
-                        const tempCaDirectory = fs.mkdtempSync("kuma-ca-");
+                        const tempCaDirectory = fs.mkdtempSync(path.join(tmpdir(), "kuma-ca-"));
                         dbConfig.caFilePath = path.resolve(tempCaDirectory, "ca.pem");
                         try {
                             fs.writeFileSync(dbConfig.caFilePath, binaryData, "binary");
