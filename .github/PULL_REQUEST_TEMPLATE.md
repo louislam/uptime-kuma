@@ -121,28 +121,11 @@ Provide any relevant details to assist reviewers in understanding the changes.
 
 Provide details here
 
-## 📄 Document Status
+## 💬 Requested Feedback
 
-To streamline the review process, please list the filenames of documents currently being worked on. This helps reviewers focus on the files that need their attention.
-
-### ✅ Ready for Review
-
-The following documents are complete and ready for review:
-
-- `Specify filenames here`
-
-### 🔨 Work in Progress
-
-The following documents are currently being worked on:
-
-- `List ongoing documents here`
-
-### 💬 Requested Feedback
-
-Your feedback is requested on the following documents:
+<!-- If a part of our docs is unclear, you are unsure how to do something/.. this is where we would appreciate your feedback -->
 
 - `Mention documents needing feedback here`
-
 ## 📝 Additional Changes
 
 Please provide any relevant details or context. (e.g., resolved Linter issues, code optimizations, or other adjustments):
