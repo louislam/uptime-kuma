@@ -55,8 +55,8 @@ class SMSEagle extends NotificationProvider {
                 url.searchParams.append("access_token", notification.smseagleToken);
                 url.searchParams.append(recipientType, notification.smseagleRecipient);
                 if (![ "smseagle-ring", "smseagle-tts", "smseagle-tts-advanced" ].includes(notification.smseagleRecipientType)) {
-                    url.searchParams.append("access_token", (notification.smseagleEncoding) ? "1" : "0");
-                    url.searchParams.append("access_token", (notification.smseaglePriority) ? notification.smseaglePriority : "0");
+                    url.searchParams.append("unicode", (notification.smseagleEncoding) ? "1" : "0");
+                    url.searchParams.append("highpriority", (notification.smseaglePriority) ? notification.smseaglePriority : "0");
                 } else {
                     url.searchParams.append("duration", duration);
                 }
