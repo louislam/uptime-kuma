@@ -1117,5 +1117,7 @@
     "wayToGetWahaApiKey": "API 密钥是你用于运行 WAHA 的 WHATSAPP_API_KEY 环境变量值。",
     "telegramTemplateFormatDescription": "Telegram 允许在消息中使用不同的标记语言，具体细节请参见 Telegram {0}。",
     "YZJ Webhook URL": "YZJ Webhook 地址",
-    "YZJ Robot Token": "YZJ 机器人令牌"
+    "YZJ Robot Token": "YZJ 机器人令牌",
+    "telegramServerUrl": "(可选) 服务器 Url",
+    "telegramServerUrlDescription": "要解除 Telegram 的机器人 API 限制或在封锁区域（中国、伊朗等）获得访问权限。获取更多信息，请点击 {0}。默认值：{1}"
 }
