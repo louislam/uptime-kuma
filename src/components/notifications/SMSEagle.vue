@@ -1,8 +1,10 @@
 <template>
     <div class="mb-3">
         <label for="smseagle-url" class="form-label">{{ $t("smseagleUrl") }}</label>
-        <input id="smseagle-url" v-model="$parent.notification.smseagleUrl" type="text" minlength="7"
-            class="form-control" placeholder="http://127.0.0.1" required>
+        <input
+            id="smseagle-url" v-model="$parent.notification.smseagleUrl" type="text" minlength="7"
+            class="form-control" placeholder="http://127.0.0.1"
+        >
     </div>
     <div class="mb-3">
         <label for="smseagle-token" class="form-label">{{ $t("smseagleToken") }}</label>
@@ -18,8 +20,10 @@
     <div v-if="$parent.notification.smseagleApiType === 'smseagle-apiv1'" class="mb-3">
         <div class="mb-3">
             <label for="smseagle-recipient-type" class="form-label">{{ $t("smseagleRecipientType") }}</label>
-            <select id="smseagle-recipient-type" v-model="$parent.notification.smseagleRecipientType"
-                class="form-select">
+            <select
+                id="smseagle-recipient-type" v-model="$parent.notification.smseagleRecipientType"
+                class="form-select"
+            >
                 <option value="smseagle-to" selected>{{ $t("smseagleTo") }}</option>
                 <option value="smseagle-group">{{ $t("smseagleGroup") }}</option>
                 <option value="smseagle-contact">{{ $t("smseagleContact") }}</option>
@@ -33,28 +37,34 @@
             <label for="smseagle-priority" class="form-label">{{ $t("smseaglePriority") }}</label>
             <input id="smseagle-priority" v-model="$parent.notification.smseaglePriority" type="number" class="form-control" min="0" max="9" step="1" placeholder="0">
         </div>
-        <div v-if="$parent.notification.smseagleMsgType === 'smseagle-sms'
-        || $parent.notification.smseagleRecipientType !== 'smseagle-to'" class="mb-3 form-check form-switch">
+        <div
+            v-if="$parent.notification.smseagleMsgType === 'smseagle-sms'
+                || $parent.notification.smseagleRecipientType !== 'smseagle-to'" class="mb-3 form-check form-switch"
+        >
             <label for="smseagle-encoding" class="form-label">{{ $t("smseagleEncoding") }}</label>
             <input id="smseagle-encoding" v-model="$parent.notification.smseagleEncoding" type="checkbox" class="form-check-input">
         </div>
         <div v-if="$parent.notification.smseagleRecipientType === 'smseagle-to'" class="mb-3">
-            <label for="smseagle-msg-type" class="form-label">{{ $t("smseagleMsgType") }} </label>
-            <select id="smseagle-msg-type" v-model="$parent.notification.smseagleMsgType" class="form-select">
-                <option value="smseagle-sms" selected>{{ $t("smseagleMsgSms") }} </option>
-                <option value="smseagle-ring">{{ $t("smseagleMsgRing") }} </option>
-                <option value="smseagle-tts">{{ $t("smseagleMsgTts") }} </option>
-                <option value="smseagle-tts-advanced">{{ $t("smseagleMsgTtsAdvanced") }} </option>
-            </select>
-            <div v-if="$parent.notification.smseagleMsgType === 'smseagle-ring'
-                || $parent.notification.smseagleMsgType === 'smseagle-tts'
-                || $parent.notification.smseagleMsgType === 'smseagle-tts-advanced'" class="mb-3">
+            <div class="mb-3">
+                <label for="smseagle-msg-type" class="form-label">{{ $t("smseagleMsgType") }} </label>
+                <select id="smseagle-msg-type" v-model="$parent.notification.smseagleMsgType" class="form-select">
+                    <option value="smseagle-sms" selected>{{ $t("smseagleMsgSms") }} </option>
+                    <option value="smseagle-ring">{{ $t("smseagleMsgRing") }} </option>
+                    <option value="smseagle-tts">{{ $t("smseagleMsgTts") }} </option>
+                    <option value="smseagle-tts-advanced">{{ $t("smseagleMsgTtsAdvanced") }} </option>
+                </select>
+            </div>
+            <div
+                v-if="$parent.notification.smseagleMsgType === 'smseagle-ring'
+                    || $parent.notification.smseagleMsgType === 'smseagle-tts'
+                    || $parent.notification.smseagleMsgType === 'smseagle-tts-advanced'" class="mb-3"
+            >
                 <label for="smseagle-duration" class="form-label">{{ $t("smseagleDuration") }}</label>
                 <input id="smseagle-duration" v-model="$parent.notification.smseagleDuration" type="number" class="form-control" min="0" max="30" step="1" placeholder="10">
             </div>
             <div v-if="$parent.notification.smseagleMsgType === 'smseagle-tts-advanced'" class="mb-3">
                 <label for="smseagle-tts-model" class="form-label">{{ $t("smseagleTtsModel") }} </label>
-                <input  id="smseagle-tts-model" v-model="$parent.notification.smseagleTtsModel" type="number" class="form-control" placeholder="1" required>
+                <input id="smseagle-tts-model" v-model="$parent.notification.smseagleTtsModel" type="number" class="form-control" placeholder="1" required>
             </div>
         </div>
     </div>
@@ -92,13 +102,13 @@
                 <option value="smseagle-tts-advanced">{{ $t("smseagleMsgTtsAdvanced") }} </option>
             </select>
         </div>
-        <div v-if="$parent.notification.smseagleMsgType && $parent.notification.smseagleMsgType  !== 'smseagle-sms'" class="mb-3">
+        <div v-if="$parent.notification.smseagleMsgType && $parent.notification.smseagleMsgType !== 'smseagle-sms'" class="mb-3">
             <label for="smseagle-duration" class="form-label">{{ $t("smseagleDuration") }}</label>
             <input id="smseagle-duration" v-model="$parent.notification.smseagleDuration" type="number" class="form-control" min="0" max="30" step="1" placeholder="10">
         </div>
         <div v-if="$parent.notification.smseagleMsgType === 'smseagle-tts-advanced'" class="mb-3">
             <label for="smseagle-tts-model" class="form-label">{{ $t("smseagleTtsModel") }} </label>
-            <input  id="smseagle-tts-model" v-model="$parent.notification.smseagleTtsModel" type="number" class="form-control" placeholder="1" required>
+            <input id="smseagle-tts-model" v-model="$parent.notification.smseagleTtsModel" type="number" class="form-control" placeholder="1" required>
         </div>
     </div>
 </template>
@@ -112,13 +122,13 @@ export default {
     },
     mounted() {
         if (!this.$parent.notification.smseagleApiType) {
-            this.$parent.notification.smseagleApiType = 'smseagle-apiv1';
+            this.$parent.notification.smseagleApiType = "smseagle-apiv1";
         }
         if (!this.$parent.notification.smseagleMsgType) {
-            this.$parent.notification.smseagleMsgType = 'smseagle-sms';
+            this.$parent.notification.smseagleMsgType = "smseagle-sms";
         }
         if (!this.$parent.notification.smseagleRecipientType) {
-            this.$parent.notification.smseagleRecipientType = 'smseagle-to';
+            this.$parent.notification.smseagleRecipientType = "smseagle-to";
         }
     }
 };
