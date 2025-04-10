@@ -41,6 +41,23 @@
 
                             <br>
 
+                            <select id="notificationType" v-model="notification.defaultType" class="form-select">
+                                <option value="both">
+                                    {{ $t("notificationTypeBoth") }}
+                                </option>
+                                <option value="up">
+                                    {{ $t("notificationTypeUp") }}
+                                </option>
+                                <option value="down">
+                                    {{ $t("notificationTypeDown") }}
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                {{ $t("enableDefaultTypeNotificationDescription") }}
+                            </div>
+
+                            <br>
+
                             <div class="form-check form-switch">
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
                                 <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
@@ -95,6 +112,7 @@ export default {
                 /** @type { null | keyof NotificationFormList } */
                 type: null,
                 isDefault: false,
+                defaultType: "both",
                 // Do not set default value here, please scroll to show()
             }
         };
@@ -270,6 +288,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
+                    defaultType: "both",
                 };
             }
 
@@ -291,7 +310,7 @@ export default {
 
                     // Emit added event, doesn't emit edit.
                     if (! this.id) {
-                        this.$emit("added", res.id);
+                        this.$emit("added", res.id, res.defaultType);
                     }
 
                 }
