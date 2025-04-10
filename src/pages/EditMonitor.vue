@@ -745,8 +745,11 @@
                                     <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
                                     <div v-if="monitor.notificationIDList[notification.id].active">
                                         <select id="notificationType" v-model="monitor.notificationIDList[notification.id].type" class="form-select">
-                                            <option value="both">
-                                                {{ $t("notificationTypeBoth") }}
+                                            <option value="always">
+                                                {{ $t("notificationTypeAlways") }}
+                                            </option>
+                                            <option value="up_down">
+                                                {{ $t("notificationTypeUpDown") }}
                                             </option>
                                             <option value="up">
                                                 {{ $t("notificationTypeUp") }}
@@ -754,7 +757,16 @@
                                             <option value="down">
                                                 {{ $t("notificationTypeDown") }}
                                             </option>
+                                            <option value="certificate">
+                                                {{ $t("notificationTypeCertificate") }}
+                                            </option>
                                         </select>
+                                    </div>
+                                    <div
+                                        v-if="monitor.notificationIDList[notification.id].type === 'certificate' && (!(monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query') || !monitor.expiryNotification)"
+                                        class="alert alert-warning my-2" role="alert"
+                                    >
+                                        {{ $t("notificationTypeCertificateWarning") }}
                                     </div>
                                 </div>
                             </div>

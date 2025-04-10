@@ -1341,7 +1341,8 @@ class Monitor extends BeanModel {
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
                     if (
-                        notification.type === "both" ||
+                        notification.type === "always" ||
+                        notification.type === "up_down" ||
                         (notification.type === "up" && bean.status === UP) ||
                         (notification.type === "down" && bean.status === DOWN)
                     ) {
@@ -1438,6 +1439,9 @@ class Monitor extends BeanModel {
         log.debug("monitor", "Send certificate notification");
 
         for (let notification of notificationList) {
+            if (notification.type !== "always" && notification.type !== "certificate") {
+                continue;
+            }
             try {
                 log.debug("monitor", "Sending to " + notification.name);
                 await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`);

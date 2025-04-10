@@ -42,14 +42,20 @@
                             <br>
 
                             <select id="notificationType" v-model="notification.defaultType" class="form-select">
-                                <option value="both">
-                                    {{ $t("notificationTypeBoth") }}
+                                <option value="always">
+                                    {{ $t("notificationTypeAlways") }}
+                                </option>
+                                <option value="up_down">
+                                    {{ $t("notificationTypeUpDown") }}
                                 </option>
                                 <option value="up">
                                     {{ $t("notificationTypeUp") }}
                                 </option>
                                 <option value="down">
                                     {{ $t("notificationTypeDown") }}
+                                </option>
+                                <option value="certificate">
+                                    {{ $t("notificationTypeCertificate") }}
                                 </option>
                             </select>
                             <div class="form-text">
@@ -112,7 +118,7 @@ export default {
                 /** @type { null | keyof NotificationFormList } */
                 type: null,
                 isDefault: false,
-                defaultType: "both",
+                defaultType: "always",
                 // Do not set default value here, please scroll to show()
             }
         };
@@ -288,7 +294,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
-                    defaultType: "both",
+                    defaultType: "always",
                 };
             }
 
