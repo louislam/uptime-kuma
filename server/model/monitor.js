@@ -1434,7 +1434,7 @@ class Monitor extends BeanModel {
         for (let notification of notificationList) {
             try {
                 log.debug("monitor", "Sending to " + notification.name);
-                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will be expired in ${daysRemaining} days`);
+                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`);
                 sent = true;
             } catch (e) {
                 log.error("monitor", "Cannot send cert notification to " + notification.name);
