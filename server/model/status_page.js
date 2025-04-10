@@ -408,7 +408,7 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             analyticsId: this.analytics_id,
-            analyticsDomainUrl: this.analytics_domain_url,
+            analyticsScriptUrl: this.analytics_script_url,
             analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
         };
@@ -433,7 +433,7 @@ class StatusPage extends BeanModel {
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
             analyticsId: this.analytics_id,
-            analyticsDomainUrl: this.analytics_domain_url,
+            analyticsScriptUrl: this.analytics_script_url,
             analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
         };

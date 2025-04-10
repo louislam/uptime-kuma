@@ -124,19 +124,19 @@ const analyticsOptions = [
                     <label for="analyticsType" class="form-label">{{ $t("Analytics Type") }}</label>
                     <select id="analyticsType" v-model="config.analyticsType" class="form-select" data-testid="analytics-type-select">
                         <option v-for="(analyticOption, index) in analyticsOptions" :key="index" :value="analyticOption.value">
-                            {{ analyticOption.name }}
+                            {{ $t(analyticOption.name) }}
                         </option>
                     </select>
                 </div>
 
-                <div v-if="config.analyticsType !== null && config.analyticsType !== undefined" class="my-3">
+                <div v-if="!!config.analyticsType" class="my-3">
                     <label for="analyticsId" class="form-label">{{ $t("Analytics ID") }}</label>
                     <input id="analyticsId" v-model="config.analyticsId" type="text" class="form-control" data-testid="analytics-id-input">
                 </div>
 
-                <div v-if="config.analyticsType !== null && config.analyticsType !== undefined && config.analyticsType !== 'google'" class="my-3">
-                    <label for="analyticsDomainUrl" class="form-label">{{ $t("Analytics Domain URL") }}</label>
-                    <input id="analyticsDomainUrl" v-model="config.analyticsDomainUrl" type="text" class="form-control" data-testid="analytics-domain-url-input">
+                <div v-if="!!config.analyticsType && config.analyticsType !== 'google'" class="my-3">
+                    <label for="analyticsScriptUrl" class="form-label">{{ $t("Analytics Script URL") }}</label>
+                    <input id="analyticsScriptUrl" v-model="config.analyticsScriptUrl" type="url" class="form-control" data-testid="analytics-script-url-input">
                 </div>
 
                 <!-- Custom CSS -->

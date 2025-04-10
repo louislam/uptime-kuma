@@ -14,11 +14,11 @@ function getAnalyticsScript(statusPage) {
         case "google":
             return googleAnalytics.getGoogleAnalyticsScript(statusPage.analyticsId);
         case "umami":
-            return umamiAnalytics.getUmamiAnalyticsScript(statusPage.analyticsDomainUrl, statusPage.analyticsId);
+            return umamiAnalytics.getUmamiAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
         case "plausible":
-            return plausibleAnalytics.getPlausibleAnalyticsScript(statusPage.analyticsDomainUrl, statusPage.analyticsId);
+            return plausibleAnalytics.getPlausibleAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
         case "matomo":
-            return matomoAnalytics.getMatomoAnalyticsScript(statusPage.analyticsDomainUrl, statusPage.analyticsId);
+            return matomoAnalytics.getMatomoAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
         default:
             return null;
     }
@@ -36,7 +36,7 @@ function isValidAnalyticsConfig(statusPage) {
         case "umami":
         case "plausible":
         case "matomo":
-            return statusPage.analyticsId != null && statusPage.analyticsDomainUrl != null;
+            return statusPage.analyticsId != null && statusPage.analyticsScriptUrl != null;
         default:
             return false;
     }

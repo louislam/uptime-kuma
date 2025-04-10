@@ -18,11 +18,11 @@ test.describe("Status Page", () => {
         const refreshInterval = 30;
         const theme = "dark";
         const googleAnalyticsId = "G-123";
-        const umamiAnalyticsDomainUrl = "example.com";
+        const umamiAnalyticsScriptUrl = "https://umami.example.com/script.js";
         const umamiAnalyticsWebsiteId = "606487e2-bc25-45f9-9132-fa8b065aad46";
-        const plausibleAnalyticsDomainUrl = "example.com";
+        const plausibleAnalyticsScriptUrl = "https://plausible.example.com/js/script.js";
         const plausibleAnalyticsDomainsUrls = "one.com,two.com";
-        const matomoUrl = "matomo.com";
+        const matomoUrl = "https://matomoto.example.com";
         const matomoSiteId = "123456789";
         const customCss = "body { background: rgb(0, 128, 128) !important; }";
         const descriptionText = "This is an example status page.";
@@ -124,7 +124,7 @@ test.describe("Status Page", () => {
 
         // Fill in umami analytics after editing
         await page.getByTestId("analytics-type-select").selectOption("umami");
-        await page.getByTestId("analytics-domain-url-input").fill(umamiAnalyticsDomainUrl);
+        await page.getByTestId("analytics-script-url-input").fill(umamiAnalyticsScriptUrl);
         await page.getByTestId("analytics-id-input").fill(umamiAnalyticsWebsiteId);
         await page.getByTestId("save-button").click();
 
@@ -134,23 +134,23 @@ test.describe("Status Page", () => {
 
         await screenshot(testInfo, page);
 
-        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsDomainUrl);
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsScriptUrl);
         expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
 
         await page.getByTestId("edit-button").click();
         // Fill in plausible analytics after editing
         await page.getByTestId("analytics-type-select").selectOption("plausible");
-        await page.getByTestId("analytics-domain-url-input").fill(plausibleAnalyticsDomainUrl);
+        await page.getByTestId("analytics-script-url-input").fill(plausibleAnalyticsScriptUrl);
         await page.getByTestId("analytics-id-input").fill(plausibleAnalyticsDomainsUrls);
         await page.getByTestId("save-button").click();
         await screenshot(testInfo, page);
-        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainUrl);
+        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsScriptUrl);
         expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainsUrls);
 
         await page.getByTestId("edit-button").click();
         // Fill in matomo analytics after editing
         await page.getByTestId("analytics-type-select").selectOption("matomo");
-        await page.getByTestId("analytics-domain-url-input").fill(matomoUrl);
+        await page.getByTestId("analytics-script-url-input").fill(matomoUrl);
         await page.getByTestId("analytics-id-input").fill(matomoSiteId);
         await page.getByTestId("save-button").click();
         await screenshot(testInfo, page);

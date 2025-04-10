@@ -789,9 +789,7 @@
     "Google Analytics ID": "Google Analytics ID",
     "Analytics Type": "Analytics Type",
     "Analytics ID": "Analytics ID",
-    "Analytics Domain URL": "Analytics Domain URL",
-    "Umami Analytics Domain Url": "Umami Analytics Domain Url",
-    "Umami Analytics Website ID": "Umami Analytics Website ID",
+    "Analytics Script URL": "Analytics Script URL",
     "Edit Tag": "Edit Tag",
     "Server Address": "Server Address",
     "Learn More": "Learn More",
@@ -1072,5 +1070,9 @@
     "YZJ Robot Token": "YZJ Robot token",
     "Plain Text": "Plain Text",
     "Message Template": "Message Template",
-    "Template Format": "Template Format"
+    "Template Format": "Template Format",
+    "Google": "Google",
+    "Plausible": "Plausible",
+    "Matomo": "Matomo",
+    "Umami": "Umami"
 }

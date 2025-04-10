@@ -167,7 +167,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
             statusPage.modified_date = R.isoDateTime();
             statusPage.analytics_id = config.analyticsId;
-            statusPage.analytics_domain_url = config.analyticsDomainUrl;
+            statusPage.analytics_script_url = config.analyticsScriptUrl;
             statusPage.analytics_type = config.analyticsType;
 
             await R.store(statusPage);
