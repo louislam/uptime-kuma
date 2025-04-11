@@ -11,59 +11,157 @@ class SMSEagle extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            let config = {
-                headers: {
-                    "Content-Type": "application/json",
+            if (notification.smseagleApiType === "smseagle-apiv1") { // according to https://www.smseagle.eu/apiv1/
+                let config = {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    }
+                };
+
+                let sendMethod;
+                let recipientType;
+                let duration;
+                let voiceId;
+
+                if (notification.smseagleRecipientType === "smseagle-contact") {
+                    recipientType = "contactname";
+                    sendMethod = "/send_tocontact";
+                } else if (notification.smseagleRecipientType === "smseagle-group") {
+                    recipientType = "groupname";
+                    sendMethod = "/send_togroup";
+                } else if (notification.smseagleRecipientType === "smseagle-to") {
+                    recipientType = "to";
+                    sendMethod = "/send_sms";
+                    if (notification.smseagleMsgType !== "smseagle-sms") {
+                        if (notification.smseagleDuration) {
+                            duration = notification.smseagleDuration;
+                        } else {
+                            duration = 10;
+                        }
+
+                        if (notification.smseagleMsgType === "smseagle-ring") {
+                            sendMethod = "/ring_call";
+                        } else if (notification.smseagleMsgType === "smseagle-tts") {
+                            sendMethod = "/tts_call";
+                        } else if (notification.smseagleMsgType === "smseagle-tts-advanced") {
+                            sendMethod = "/tts_adv_call";
+                            voiceId = notification.smseagleTtsModel ? notification.smseagleTtsModel : 1;
+                        }
+                    }
                 }
-            };
 
-            let postData;
-            let sendMethod;
-            let recipientType;
+                const url = new URL(notification.smseagleUrl + "/http_api" + sendMethod);
 
-            let encoding = (notification.smseagleEncoding) ? "1" : "0";
-            let priority = (notification.smseaglePriority) ? notification.smseaglePriority : "0";
-
-            if (notification.smseagleRecipientType === "smseagle-contact") {
-                recipientType = "contactname";
-                sendMethod = "sms.send_tocontact";
-            }
-            if (notification.smseagleRecipientType === "smseagle-group") {
-                recipientType = "groupname";
-                sendMethod = "sms.send_togroup";
-            }
-            if (notification.smseagleRecipientType === "smseagle-to") {
-                recipientType = "to";
-                sendMethod = "sms.send_sms";
-            }
-
-            let params = {
-                access_token: notification.smseagleToken,
-                [recipientType]: notification.smseagleRecipient,
-                message: msg,
-                responsetype: "extended",
-                unicode: encoding,
-                highpriority: priority
-            };
-
-            postData = {
-                method: sendMethod,
-                params: params
-            };
-
-            let resp = await axios.post(notification.smseagleUrl + "/jsonrpc/sms", postData, config);
-
-            if ((JSON.stringify(resp.data)).indexOf("message_id") === -1) {
-                let error = "";
-                if (resp.data.result && resp.data.result.error_text) {
-                    error = `SMSEagle API returned error: ${JSON.stringify(resp.data.result.error_text)}`;
+                url.searchParams.append("access_token", notification.smseagleToken);
+                url.searchParams.append(recipientType, notification.smseagleRecipient);
+                if (![ "smseagle-ring", "smseagle-tts", "smseagle-tts-advanced" ].includes(notification.smseagleRecipientType)) {
+                    url.searchParams.append("unicode", (notification.smseagleEncoding) ? "1" : "0");
+                    url.searchParams.append("highpriority", (notification.smseaglePriority) ? notification.smseaglePriority : "0");
                 } else {
-                    error = "SMSEagle API returned an unexpected response";
+                    url.searchParams.append("duration", duration);
                 }
-                throw new Error(error);
-            }
+                if (notification.smseagleRecipientType !== "smseagle-ring") {
+                    url.searchParams.append("message", msg);
+                }
+                if (voiceId) {
+                    url.searchParams.append("voice_id", voiceId);
+                }
 
-            return okMsg;
+                let resp = await axios.get(url.toString(), config);
+
+                if (resp.data.indexOf("OK") === -1) {
+                    let error = `SMSEagle API returned error: ${resp.data}`;
+                    throw new Error(error);
+                }
+
+                return okMsg;
+            } else if (notification.smseagleApiType === "smseagle-apiv2") { // according to https://www.smseagle.eu/docs/apiv2/
+                let config = {
+                    headers: {
+                        "access-token": notification.smseagleToken,
+                        "Content-Type": "application/json",
+                    }
+                };
+
+                let encoding = (notification.smseagleEncoding) ? "unicode" : "standard";
+                let priority = (notification.smseaglePriority) ? notification.smseaglePriority : 0;
+
+                let postData = {
+                    text: msg,
+                    encoding: encoding,
+                    priority: priority
+                };
+
+                let to = notification.smseagleRecipientTo;
+                let contacts = notification.smseagleRecipientContact;
+                let groups = notification.smseagleRecipientGroup;
+
+                if (contacts) {
+                    contacts = contacts.split(",");
+                    contacts = contacts.map(e => {
+                        return Number(e);
+                    });
+                    postData["contacts"] = contacts;
+                }
+
+                if (groups) {
+                    groups = groups.split(",");
+                    groups = groups.map(e => {
+                        return Number(e);
+                    });
+                    postData["groups"] = groups;
+                }
+
+                if (to) {
+                    to = to.split(",");
+                    postData["to"] = to;
+                }
+
+                let endpoint = "/messages/sms";
+
+                if (notification.smseagleMsgType !== "smseagle-sms") {
+
+                    let duration;
+                    if (notification.smseagleDuration) {
+                        duration = notification.smseagleDuration;
+                    } else {
+                        duration = 10;
+                    }
+
+                    postData["duration"] = duration;
+
+                    if (notification.smseagleMsgType === "smseagle-ring") {
+                        endpoint = "/calls/ring";
+                    } else if (notification.smseagleMsgType === "smseagle-tts") {
+                        endpoint = "/calls/tts";
+                    } else if (notification.smseagleMsgType === "smseagle-tts-advanced") {
+                        endpoint = "/calls/tts_advanced";
+                        postData["voice_id"] = notification.smseagleTtsModel ? notification.smseagleTtsModel : "1";
+                    }
+                }
+
+                let resp = await axios.post(notification.smseagleUrl + "/api/v2" + endpoint, postData, config);
+
+                let countAll = resp.data.length;
+                let countQueued = resp.data.filter(x => x.status === "queued").length;
+
+                if (resp.status !== 200 || countQueued === 0) {
+                    let error = "";
+                    if (resp.data.length > 0) {
+                        error = `SMSEagle API returned error: ${JSON.stringify(resp.data)}`;
+                    } else {
+                        error = "SMSEagle API returned an unexpected response";
+                    }
+                    throw new Error(error);
+                }
+
+                if (countAll !== countQueued) {
+                    let okWithErrorsMsg = "Sent " + countQueued + "/" + countAll + " Messages Successfully.";
+                    return okWithErrorsMsg;
+                }
+
+                return okMsg;
+            }
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
