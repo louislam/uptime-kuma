@@ -38,12 +38,10 @@ class DnsMonitorType extends MonitorType {
                 dnsMessage = `Records: ${dnsRes.join(" | ")}`;
                 conditionsResult = dnsRes.some(record => handleConditions({ record }));
                 break;
-            
+
             case "TXT":
                 dnsMessage = `Records: ${dnsRes.join(" | ")}`;
-                // Node.js resolveTxt brings an array of array
-                let txtRecords = dnsRes.flat();
-                conditionsResult = txtRecords.some(record => handleConditions({ record }));
+                conditionsResult = dnsRes.flat().some(record => handleConditions({ record }));
                 break;
 
             case "CNAME":
