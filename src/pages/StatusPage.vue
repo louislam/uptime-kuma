@@ -328,7 +328,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :slug="slug" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -773,10 +773,26 @@ export default {
             if (! this.editMode) {
                 axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
                     const { heartbeatList, uptimeList } = res.data;
-
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
-
+                    if (!this.enableEditMode) {
+                        this.$root.publicGroupList.forEach((group) => {
+                            const downs = [];
+                            const others = [];
+                            // Traverse all monitors in the current group
+                            for (const monitor of group.monitorList) {
+                                const hbArr = heartbeatList[monitor.id];
+                                // Check if the last heartbeat status is Down (status === 0)
+                                if (hbArr && hbArr.length > 0 && hbArr.at(-1).status === 0) {
+                                    downs.push(monitor);
+                                } else {
+                                    others.push(monitor);
+                                }
+                            }
+                            // Place Down monitors at the front, keep the original order for others
+                            group.monitorList = downs.concat(others);
+                        });
+                    }
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
                         const monitorHeartbeats = heartbeatList[currentId];
