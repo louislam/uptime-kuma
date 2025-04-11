@@ -385,7 +385,8 @@ class Monitor extends BeanModel {
 
                     if (children.length > 0) {
                         bean.status = UP;
-                        bean.msg = "All children up and running";
+                        bean.msg = "";
+                        let errorChildNames = [];
                         for (const child of children) {
                             if (!child.active) {
                                 // Ignore inactive childs
@@ -402,10 +403,22 @@ class Monitor extends BeanModel {
                             } else if (bean.status === PENDING && lastBeat.status === DOWN) {
                                 bean.status = lastBeat.status;
                             }
+
+                            if (lastBeat && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
+                                const childMonitor = await Monitor.getMonitor(lastBeat.monitor_id);
+                                if (errorChildNames.length > 0) {
+                                    bean.msg += "\r\n";
+                                }
+
+                                bean.msg += "- " + childMonitor.name + ":\r\n" + lastBeat.msg.trim().replace(/^/gm, "  ");
+                                errorChildNames.push(childMonitor.name);
+                            }
                         }
 
-                        if (bean.status !== UP) {
-                            bean.msg = "Child inaccessible";
+                        if (bean.status === UP) {
+                            bean.msg = "All children up and running";
+                        } else if (bean.status === PENDING || bean.status === DOWN) {
+                            bean.msg = "Some Children are having problems (" + errorChildNames.join(", ") + ")\r\n" + bean.msg;
                         }
                     } else {
                         // Set status pending if group is empty
@@ -1326,8 +1339,10 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     const heartbeatJSON = bean.toJSON();
-                    const monitorData = [{ id: monitor.id,
-                        active: monitor.active
+                    const monitorData = [{
+                        id: monitor.id,
+                        name: monitor.name,
+                        active: monitor.active,
                     }];
                     const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
@@ -1604,6 +1619,20 @@ class Monitor extends BeanModel {
             forceInactive: forceInactiveMap,
             paths: pathsMap,
         };
+    }
+
+    /**
+     * Gets Monitor with specific ID
+     * @param {number} monitorID ID of monitor to get
+     * @returns {Promise<LooseObject<any>>} Children
+     */
+    static async getMonitor(monitorID) {
+        return await R.getRow(`
+            SELECT * FROM monitor
+            WHERE id = ?
+        `, [
+            monitorID,
+        ]);
     }
 
     /**
