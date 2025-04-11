@@ -18,6 +18,12 @@ test.describe("Status Page", () => {
         const refreshInterval = 30;
         const theme = "dark";
         const googleAnalyticsId = "G-123";
+        const umamiAnalyticsScriptUrl = "https://umami.example.com/script.js";
+        const umamiAnalyticsWebsiteId = "606487e2-bc25-45f9-9132-fa8b065aad46";
+        const plausibleAnalyticsScriptUrl = "https://plausible.example.com/js/script.js";
+        const plausibleAnalyticsDomainsUrls = "one.com,two.com";
+        const matomoUrl = "https://matomoto.example.com";
+        const matomoSiteId = "123456789";
         const customCss = "body { background: rgb(0, 128, 128) !important; }";
         const descriptionText = "This is an example status page.";
         const incidentTitle = "Example Outage Incident";
@@ -57,7 +63,8 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-tags-checkbox").uncheck();
         await page.getByTestId("show-powered-by-checkbox").uncheck();
         await page.getByTestId("show-certificate-expiry-checkbox").uncheck();
-        await page.getByTestId("google-analytics-input").fill(googleAnalyticsId);
+        await page.getByTestId("analytics-type-select").selectOption("google");
+        await page.getByTestId("analytics-id-input").fill(googleAnalyticsId);
         await page.getByTestId("custom-css-input").getByTestId("textarea").fill(customCss); // Prism
         await expect(page.getByTestId("description-editable")).toHaveText(descriptionText);
         await expect(page.getByTestId("custom-footer-editable")).toHaveText(footerText);
@@ -100,12 +107,12 @@ test.describe("Status Page", () => {
         expect(updateCountdown).toBeLessThanOrEqual(refreshInterval + 10);
 
         await expect(page.locator("body")).toHaveClass(theme);
-        expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
 
         const backgroundColor = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
         expect(backgroundColor).toEqual("rgb(0, 128, 128)");
 
         await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
 
         // Flip the "Show Tags" and "Show Powered By" switches:
         await page.getByTestId("edit-button").click();
@@ -114,6 +121,11 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-powered-by-checkbox").setChecked(true);
 
         await screenshot(testInfo, page);
+
+        // Fill in umami analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("umami");
+        await page.getByTestId("analytics-script-url-input").fill(umamiAnalyticsScriptUrl);
+        await page.getByTestId("analytics-id-input").fill(umamiAnalyticsWebsiteId);
         await page.getByTestId("save-button").click();
 
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
@@ -121,6 +133,29 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("monitor-tag")).toContainText(tagValue);
 
         await screenshot(testInfo, page);
+
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsScriptUrl);
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
+
+        await page.getByTestId("edit-button").click();
+        // Fill in plausible analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("plausible");
+        await page.getByTestId("analytics-script-url-input").fill(plausibleAnalyticsScriptUrl);
+        await page.getByTestId("analytics-id-input").fill(plausibleAnalyticsDomainsUrls);
+        await page.getByTestId("save-button").click();
+        await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsScriptUrl);
+        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainsUrls);
+
+        await page.getByTestId("edit-button").click();
+        // Fill in matomo analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("matomo");
+        await page.getByTestId("analytics-script-url-input").fill(matomoUrl);
+        await page.getByTestId("analytics-id-input").fill(matomoSiteId);
+        await page.getByTestId("save-button").click();
+        await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(matomoUrl);
+        expect(await page.locator("head").innerHTML()).toContain(matomoSiteId);
     });
 
     // @todo Test certificate expiry

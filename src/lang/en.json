@@ -787,6 +787,9 @@
     "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} .",
     "Custom Monitor Type": "Custom Monitor Type",
     "Google Analytics ID": "Google Analytics ID",
+    "Analytics Type": "Analytics Type",
+    "Analytics ID": "Analytics ID",
+    "Analytics Script URL": "Analytics Script URL",
     "Edit Tag": "Edit Tag",
     "Server Address": "Server Address",
     "Learn More": "Learn More",
@@ -1067,5 +1070,9 @@
     "YZJ Robot Token": "YZJ Robot token",
     "Plain Text": "Plain Text",
     "Message Template": "Message Template",
-    "Template Format": "Template Format"
+    "Template Format": "Template Format",
+    "Google": "Google",
+    "Plausible": "Plausible",
+    "Matomo": "Matomo",
+    "Umami": "Umami"
 }
