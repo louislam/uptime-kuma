@@ -767,12 +767,12 @@
                                                 {{ $t("notificationTriggerDownCertificate") }}
                                             </option>
                                         </select>
-                                    </div>
-                                    <div
-                                        v-if="(monitor.notificationIDList[notification.id].trigger === 'certificate' || monitor.notificationIDList[notification.id].trigger === 'up_certificate' || monitor.notificationIDList[notification.id].trigger === 'down_certificate') && (!(monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query') || !monitor.expiryNotification)"
-                                        class="alert alert-warning my-2" role="alert"
-                                    >
-                                        {{ $t("notificationTriggerCertificateWarning") }}
+                                        <div
+                                            v-if="(monitor.notificationIDList[notification.id].trigger === 'certificate' || monitor.notificationIDList[notification.id].trigger === 'up_certificate' || monitor.notificationIDList[notification.id].trigger === 'down_certificate') && (!(monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query') || !monitor.expiryNotification)"
+                                            class="alert alert-warning my-2" role="alert"
+                                        >
+                                            {{ $t("notificationTriggerCertificateWarning") }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
