@@ -1,17 +1,17 @@
 exports.up = function (knex) {
     return knex.schema
         .alterTable("monitor_notification", function (table) {
-            table.text("type").notNullable().defaultTo("always");
+            table.text("trigger").notNullable().defaultTo("always");
         })
         .alterTable("notification", function (table) {
-            table.text("default_type").notNullable().defaultTo("always");
+            table.text("default_trigger").notNullable().defaultTo("always");
         })
         .then(() => {
-            knex("monitor_notification").whereNull("type").update({
-                type: "always",
+            knex("monitor_notification").whereNull("trigger").update({
+                trigger: "always",
             });
-            knex("notification").whereNull("default_type").update({
-                default_type: "always",
+            knex("notification").whereNull("default_trigger").update({
+                default_trigger: "always",
             });
         });
 };
@@ -19,9 +19,9 @@ exports.up = function (knex) {
 exports.down = function (knex) {
     return knex.schema
         .alterTable("monitor_notification", function (table) {
-            table.dropColumn("type");
+            table.dropColumn("trigger");
         })
         .alterTable("notification", function (table) {
-            table.dropColumn("default_type");
+            table.dropColumn("default_trigger");
         });
 };

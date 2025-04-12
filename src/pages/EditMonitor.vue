@@ -744,35 +744,35 @@
 
                                     <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
                                     <div v-if="monitor.notificationIDList[notification.id].active">
-                                        <select id="notificationType" v-model="monitor.notificationIDList[notification.id].type" class="form-select">
+                                        <select id="notificationTrigger" v-model="monitor.notificationIDList[notification.id].trigger" class="form-select">
                                             <option value="always">
-                                                {{ $t("notificationTypeAlways") }}
+                                                {{ $t("notificationTriggerAlways") }}
                                             </option>
                                             <option value="up_down">
-                                                {{ $t("notificationTypeUpDown") }}
+                                                {{ $t("notificationTriggerUpDown") }}
                                             </option>
                                             <option value="up">
-                                                {{ $t("notificationTypeUp") }}
+                                                {{ $t("notificationTriggerUp") }}
                                             </option>
                                             <option value="down">
-                                                {{ $t("notificationTypeDown") }}
+                                                {{ $t("notificationTriggerDown") }}
                                             </option>
                                             <option value="certificate">
-                                                {{ $t("notificationTypeCertificate") }}
+                                                {{ $t("notificationTriggerCertificate") }}
                                             </option>
                                             <option value="up_certificate">
-                                                {{ $t("notificationTypeUpCertificate") }}
+                                                {{ $t("notificationTriggerUpCertificate") }}
                                             </option>
                                             <option value="down_certificate">
-                                                {{ $t("notificationTypeDownCertificate") }}
+                                                {{ $t("notificationTriggerDownCertificate") }}
                                             </option>
                                         </select>
                                     </div>
                                     <div
-                                        v-if="(monitor.notificationIDList[notification.id].type === 'certificate' || monitor.notificationIDList[notification.id].type === 'up_certificate' || monitor.notificationIDList[notification.id].type === 'down_certificate') && (!(monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query') || !monitor.expiryNotification)"
+                                        v-if="(monitor.notificationIDList[notification.id].trigger === 'certificate' || monitor.notificationIDList[notification.id].trigger === 'up_certificate' || monitor.notificationIDList[notification.id].trigger === 'down_certificate') && (!(monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query') || !monitor.expiryNotification)"
                                         class="alert alert-warning my-2" role="alert"
                                     >
-                                        {{ $t("notificationTypeCertificateWarning") }}
+                                        {{ $t("notificationTriggerCertificateWarning") }}
                                     </div>
                                 </div>
                             </div>
@@ -1611,7 +1611,7 @@ message HealthCheckResponse {
                     let notification = this.$root.notificationList[i];
                     this.monitor.notificationIDList[notification.id] = {
                         active: notification.isDefault === true,
-                        type: notification.defaultType,
+                        trigger: notification.defaultTrigger,
                     };
                 }
             } else if (this.isEdit || this.isClone) {
@@ -1632,7 +1632,7 @@ message HealthCheckResponse {
                             if (!this.monitor.notificationIDList[notification.id]) {
                                 this.monitor.notificationIDList[notification.id] = {
                                     active: notification.isDefault === true,
-                                    type: notification.defaultType,
+                                    trigger: notification.defaultTrigger,
                                 };
                             }
                         }
@@ -1838,13 +1838,13 @@ message HealthCheckResponse {
          * Added a Notification Event
          * Enable it if the notification is added in EditMonitor.vue
          * @param {number} id ID of notification to add
-         * @param {string} defaultType default notification type (both, up, down)
+         * @param {string} defaultTrigger default notification trigger (both, up, down, certificate, up_certificate, down_certificate)
          * @returns {void}
          */
-        addedNotification(id, defaultType) {
+        addedNotification(id, defaultTrigger) {
             this.monitor.notificationIDList[id] = {
                 active: true,
-                type: defaultType,
+                trigger: defaultTrigger,
             };
         },
 

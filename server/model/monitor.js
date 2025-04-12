@@ -1341,10 +1341,10 @@ class Monitor extends BeanModel {
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
                     if (
-                        notification.type === "always" ||
-                        notification.type === "up_down" ||
-                        ((notification.type === "up" || notification.type === "up_certificate") && bean.status === UP) ||
-                        ((notification.type === "down" || notification.type === "down_certificate") && bean.status === DOWN)
+                        notification.trigger === "always" ||
+                        notification.trigger === "up_down" ||
+                        ((notification.trigger === "up" || notification.trigger === "up_certificate") && bean.status === UP) ||
+                        ((notification.trigger === "down" || notification.trigger === "down_certificate") && bean.status === DOWN)
                     ) {
                         await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
                     }
@@ -1362,7 +1362,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>[]>} List of notifications
      */
     static async getNotificationList(monitor) {
-        let notificationList = await R.getAll("SELECT notification.*, monitor_notification.type FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+        let notificationList = await R.getAll("SELECT notification.*, monitor_notification.trigger FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
             monitor.id,
         ]);
         return notificationList;
@@ -1439,7 +1439,7 @@ class Monitor extends BeanModel {
         log.debug("monitor", "Send certificate notification");
 
         for (let notification of notificationList) {
-            if (notification.type !== "always" && notification.type !== "certificate" && notification.type !== "up_certificate" && notification.type !== "down_certificate") {
+            if (notification.trigger !== "always" && notification.trigger !== "certificate" && notification.trigger !== "up_certificate" && notification.trigger !== "down_certificate") {
                 continue;
             }
             try {
@@ -1519,7 +1519,7 @@ class Monitor extends BeanModel {
      */
     static async getMonitorNotification(monitorIDs) {
         return await R.getAll(`
-            SELECT monitor_notification.monitor_id, monitor_notification.notification_id, monitor_notification.type
+            SELECT monitor_notification.monitor_id, monitor_notification.notification_id, monitor_notification.trigger
             FROM monitor_notification
             WHERE monitor_notification.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
         `, monitorIDs);
@@ -1570,7 +1570,7 @@ class Monitor extends BeanModel {
                 }
                 notificationsMap.get(row.monitor_id)[row.notification_id] = {
                     active: true,
-                    type: row.type,
+                    trigger: row.trigger,
                 };
             });
 

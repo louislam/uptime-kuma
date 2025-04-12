@@ -1426,7 +1426,7 @@ let needSetup = false;
                     ok: true,
                     msg: "Saved.",
                     msgi18n: true,
-                    defaultType: notificationBean.default_type,
+                    defaultTrigger: notificationBean.default_trigger,
                     id: notificationBean.id,
                 });
 
@@ -1641,7 +1641,7 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitorID;
             relation.notification_id = notificationID;
-            relation.type = notificationIDList[notificationID].type;
+            relation.trigger = notificationIDList[notificationID].trigger;
             await R.store(relation);
         }
     }

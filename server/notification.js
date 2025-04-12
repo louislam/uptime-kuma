@@ -219,7 +219,7 @@ class Notification {
         bean.user_id = userID;
         bean.config = JSON.stringify(notification);
         bean.is_default = notification.isDefault || false;
-        bean.default_type = notification.defaultType;
+        bean.default_trigger = notification.defaultTrigger;
         await R.store(bean);
 
         if (notification.applyExisting) {
@@ -273,7 +273,7 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
 
     for (let i = 0; i < monitors.length; i++) {
         let checkNotification = await R.getRow(`
-            SELECT n.default_type FROM notification AS n
+            SELECT n.default_trigger FROM notification AS n
             LEFT JOIN monitor_notification mn on n.id = mn.notification_id AND mn.monitor_id = ? AND mn.notification_id = ?
             WHERE mn.monitor_id IS NULL
         `, [
@@ -285,7 +285,7 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;
-            relation.type = checkNotification.default_type;
+            relation.trigger = checkNotification.default_trigger;
             await R.store(relation);
         }
     }

@@ -41,31 +41,31 @@
 
                             <br>
 
-                            <select id="notificationType" v-model="notification.defaultType" class="form-select">
+                            <select id="notificationTrigger" v-model="notification.defaultTrigger" class="form-select">
                                 <option value="always">
-                                    {{ $t("notificationTypeAlways") }}
+                                    {{ $t("notificationTriggerAlways") }}
                                 </option>
                                 <option value="up_down">
-                                    {{ $t("notificationTypeUpDown") }}
+                                    {{ $t("notificationTriggerUpDown") }}
                                 </option>
                                 <option value="up">
-                                    {{ $t("notificationTypeUp") }}
+                                    {{ $t("notificationTriggerUp") }}
                                 </option>
                                 <option value="down">
-                                    {{ $t("notificationTypeDown") }}
+                                    {{ $t("notificationTriggerDown") }}
                                 </option>
                                 <option value="certificate">
-                                    {{ $t("notificationTypeCertificate") }}
+                                    {{ $t("notificationTriggerCertificate") }}
                                 </option>
                                 <option value="up_certificate">
-                                    {{ $t("notificationTypeUpCertificate") }}
+                                    {{ $t("notificationTriggerUpCertificate") }}
                                 </option>
                                 <option value="down_certificate">
-                                    {{ $t("notificationTypeDownCertificate") }}
+                                    {{ $t("notificationTriggerDownCertificate") }}
                                 </option>
                             </select>
                             <div class="form-text">
-                                {{ $t("enableDefaultTypeNotificationDescription") }}
+                                {{ $t("enableDefaultTriggerNotificationDescription") }}
                             </div>
 
                             <br>
@@ -124,7 +124,7 @@ export default {
                 /** @type { null | keyof NotificationFormList } */
                 type: null,
                 isDefault: false,
-                defaultType: "always",
+                defaultTrigger: "always",
                 // Do not set default value here, please scroll to show()
             }
         };
@@ -300,7 +300,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
-                    defaultType: "always",
+                    defaultTrigger: "always",
                 };
             }
 
@@ -322,7 +322,7 @@ export default {
 
                     // Emit added event, doesn't emit edit.
                     if (! this.id) {
-                        this.$emit("added", res.id, res.defaultType);
+                        this.$emit("added", res.id, res.defaultTrigger);
                     }
 
                 }
