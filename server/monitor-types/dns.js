@@ -34,10 +34,14 @@ class DnsMonitorType extends MonitorType {
         switch (monitor.dns_resolve_type) {
             case "A":
             case "AAAA":
-            case "TXT":
             case "PTR":
                 dnsMessage = `Records: ${dnsRes.join(" | ")}`;
                 conditionsResult = dnsRes.some(record => handleConditions({ record }));
+                break;
+
+            case "TXT":
+                dnsMessage = `Records: ${dnsRes.join(" | ")}`;
+                conditionsResult = dnsRes.flat().some(record => handleConditions({ record }));
                 break;
 
             case "CNAME":
