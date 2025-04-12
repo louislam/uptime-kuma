@@ -1072,7 +1072,9 @@
     "notificationTypeUpDown": "Notify on up or down state",
     "notificationTypeUp": "Notify on up state",
     "notificationTypeDown": "Notify on down state",
+    "notificationTypeUpCertificate": "Notify on up state and certificate expiry",
+    "notificationTypeDownCertificate": "Notify on down state and certificate expiry",
     "notificationTypeCertificate": "Notify on certificate expiry only",
-    "notificationTypeCertificateWarning": "Certificate expiry notification is disabled on this monitor. You will not receive any notifications",
+    "notificationTypeCertificateWarning": "Certificate expiry notifications are disabled for this monitor. You will not receive alerts when the certificate is about to expire.",
     "enableDefaultTypeNotificationDescription": "This notification type will be the default for new monitors. You can still edit the notification type separately for each monitor."
 }

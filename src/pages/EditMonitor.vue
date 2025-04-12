@@ -760,10 +760,16 @@
                                             <option value="certificate">
                                                 {{ $t("notificationTypeCertificate") }}
                                             </option>
+                                            <option value="up_certificate">
+                                                {{ $t("notificationTypeUpCertificate") }}
+                                            </option>
+                                            <option value="down_certificate">
+                                                {{ $t("notificationTypeDownCertificate") }}
+                                            </option>
                                         </select>
                                     </div>
                                     <div
-                                        v-if="monitor.notificationIDList[notification.id].type === 'certificate' && (!(monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query') || !monitor.expiryNotification)"
+                                        v-if="(monitor.notificationIDList[notification.id].type === 'certificate' || monitor.notificationIDList[notification.id].type === 'up_certificate' || monitor.notificationIDList[notification.id].type === 'down_certificate') && (!(monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query') || !monitor.expiryNotification)"
                                         class="alert alert-warning my-2" role="alert"
                                     >
                                         {{ $t("notificationTypeCertificateWarning") }}

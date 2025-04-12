@@ -57,6 +57,12 @@
                                 <option value="certificate">
                                     {{ $t("notificationTypeCertificate") }}
                                 </option>
+                                <option value="up_certificate">
+                                    {{ $t("notificationTypeUpCertificate") }}
+                                </option>
+                                <option value="down_certificate">
+                                    {{ $t("notificationTypeDownCertificate") }}
+                                </option>
                             </select>
                             <div class="form-text">
                                 {{ $t("enableDefaultTypeNotificationDescription") }}

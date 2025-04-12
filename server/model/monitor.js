@@ -1343,8 +1343,8 @@ class Monitor extends BeanModel {
                     if (
                         notification.type === "always" ||
                         notification.type === "up_down" ||
-                        (notification.type === "up" && bean.status === UP) ||
-                        (notification.type === "down" && bean.status === DOWN)
+                        ((notification.type === "up" || notification.type === "up_certificate") && bean.status === UP) ||
+                        ((notification.type === "down" || notification.type === "down_certificate") && bean.status === DOWN)
                     ) {
                         await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
                     }
@@ -1439,7 +1439,7 @@ class Monitor extends BeanModel {
         log.debug("monitor", "Send certificate notification");
 
         for (let notification of notificationList) {
-            if (notification.type !== "always" && notification.type !== "certificate") {
+            if (notification.type !== "always" && notification.type !== "certificate" && notification.type !== "up_certificate" && notification.type !== "down_certificate") {
                 continue;
             }
             try {
