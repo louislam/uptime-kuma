@@ -72,11 +72,17 @@ export default {
          * @returns {void}
          */
         show(group, monitor) {
+            // Check if monitor exists and has required properties
+            if (!monitor || !monitor.id) {
+                console.error("Invalid monitor object", monitor);
+                return;
+            }
+
             this.monitor = {
-                id: monitor.element.id,
-                name: monitor.element.name,
-                monitor_index: monitor.index,
-                group_index: group.index,
+                id: monitor.id,
+                name: monitor.name,
+                monitor_index: monitor.index || 0,
+                group_index: group.index || 0,
                 isClickAble: this.showLink(monitor),
             };
 
@@ -103,12 +109,18 @@ export default {
          * @returns {boolean} Should the link be shown?
          */
         showLink(monitor, ignoreSendUrl = false) {
+            if (!monitor || !monitor.id) {
+                return false;
+            }
+
             // We must check if there are any elements in monitorList to
             // prevent undefined errors if it hasn't been loaded yet
             if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
-                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
+                return this.$root.monitorList[monitor.id].type === "http" ||
+                    this.$root.monitorList[monitor.id].type === "keyword" ||
+                    this.$root.monitorList[monitor.id].type === "json-query";
             }
-            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
+            return monitor.sendUrl && monitor.url && monitor.url !== "https://" && !this.editMode;
         },
     },
 };

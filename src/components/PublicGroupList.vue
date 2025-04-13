@@ -3,7 +3,7 @@
     <div v-if="hasPublicGroups && !editMode" class="global-controls-container">
         <!-- Global Controls Title -->
         <h5 class="global-controls-title">{{ $t("Global Sorting Options") }}</h5>
-        
+
         <!-- Global Sorting Bar and Search Box -->
         <div class="global-controls-content">
             <!-- Global Sort Buttons Group -->
@@ -45,21 +45,21 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Global Search Box -->
             <div class="global-search-container">
                 <div class="input-group">
-                    <input 
-                        type="text" 
-                        class="form-control form-control-sm" 
-                        v-model="globalSearchKeyword" 
-                        :placeholder="$t('Search monitors across all groups')" 
+                    <input
+                        type="text"
+                        class="form-control form-control-sm"
+                        v-model="globalSearchKeyword"
+                        :placeholder="$t('Search monitors across all groups')"
                         aria-label="Global search"
                     >
-                    <button 
-                        v-if="globalSearchKeyword" 
-                        class="btn btn-outline-secondary btn-sm" 
-                        type="button" 
+                    <button
+                        v-if="globalSearchKeyword"
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button"
                         @click="clearGlobalSearch"
                         title="Clear search"
                     >
@@ -86,24 +86,24 @@
                 <div class="shadow-box">
                     <!-- Group Title and Search Bar -->
                     <div class="group-header">
-                <h2 class="group-title">
-                    <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
-                    <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
-                    <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
-                </h2>
+                        <h2 class="group-title">
+                            <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
+                            <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
+                            <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
+                        </h2>
 
                         <!-- Group Search Box -->
-                        <div v-if="!editMode && group.element && group.element.monitorList && group.element.monitorList.length > 0" 
-                            class="search-container">
+                        <div v-if="!editMode && group.element && group.element.monitorList && group.element.monitorList.length > 0"
+                             class="search-container">
                             <div class="search-input-wrapper">
-                                <input 
-                                    type="text" 
-                                    v-model="group.element.searchKeyword" 
-                                    :placeholder="$t('Search...')" 
+                                <input
+                                    type="text"
+                                    v-model="group.element.searchKeyword"
+                                    :placeholder="$t('Search...')"
                                     class="search-input form-control form-control-sm"
                                     @keyup.esc="clearSearch(group.element)"
                                 >
-                                <button 
+                                <button
                                     class="search-button btn btn-sm"
                                     @click="clearSearch(group.element)"
                                     v-if="group.element && group.element.searchKeyword"
@@ -116,8 +116,8 @@
                     </div>
 
                     <!-- Group Sort Button Bar -->
-                    <div v-if="!editMode && group.element && group.element.monitorList && group.element.monitorList.length > 0" 
-                        class="sort-bar">
+                    <div v-if="!editMode && group.element && group.element.monitorList && group.element.monitorList.length > 0"
+                         class="sort-bar">
                         <div class="sort-controls">
                             <span class="sort-label me-2">
                                 {{ $t("Sort By") }}:
@@ -132,10 +132,10 @@
                                     @click="setSort(group.element, 'status')"
                                 >
                                     {{ $t("Status") }}
-                                    <font-awesome-icon 
+                                    <font-awesome-icon
                                         v-if="(isGlobalSortActive && !group.element.useOwnSort && globalSortKey === 'status') || 
-                                            ((isGlobalSortActive && group.element.useOwnSort || !isGlobalSortActive) && group.element.sortKey === 'status')" 
-                                        :icon="(isGlobalSortActive && !group.element.useOwnSort ? globalSortDirection : group.element.sortDirection) === 'asc' ? 'arrow-up' : 'arrow-down'" 
+                                            ((isGlobalSortActive && group.element.useOwnSort || !isGlobalSortActive) && group.element.sortKey === 'status')"
+                                        :icon="(isGlobalSortActive && !group.element.useOwnSort ? globalSortDirection : group.element.sortDirection) === 'asc' ? 'arrow-up' : 'arrow-down'"
                                     />
                                 </button>
                                 <button
@@ -147,10 +147,10 @@
                                     @click="setSort(group.element, 'name')"
                                 >
                                     {{ $t("Name") }}
-                                    <font-awesome-icon 
+                                    <font-awesome-icon
                                         v-if="(isGlobalSortActive && !group.element.useOwnSort && globalSortKey === 'name') || 
-                                            ((isGlobalSortActive && group.element.useOwnSort || !isGlobalSortActive) && group.element.sortKey === 'name')" 
-                                        :icon="(isGlobalSortActive && !group.element.useOwnSort ? globalSortDirection : group.element.sortDirection) === 'asc' ? 'arrow-up' : 'arrow-down'" 
+                                            ((isGlobalSortActive && group.element.useOwnSort || !isGlobalSortActive) && group.element.sortKey === 'name')"
+                                        :icon="(isGlobalSortActive && !group.element.useOwnSort ? globalSortDirection : group.element.sortDirection) === 'asc' ? 'arrow-up' : 'arrow-down'"
                                     />
                                 </button>
                                 <button
@@ -162,10 +162,10 @@
                                     @click="setSort(group.element, 'uptime')"
                                 >
                                     {{ $t("Uptime") }}
-                                    <font-awesome-icon 
+                                    <font-awesome-icon
                                         v-if="(isGlobalSortActive && !group.element.useOwnSort && globalSortKey === 'uptime') || 
-                                            ((isGlobalSortActive && group.element.useOwnSort || !isGlobalSortActive) && group.element.sortKey === 'uptime')" 
-                                        :icon="(isGlobalSortActive && !group.element.useOwnSort ? globalSortDirection : group.element.sortDirection) === 'asc' ? 'arrow-up' : 'arrow-down'" 
+                                            ((isGlobalSortActive && group.element.useOwnSort || !isGlobalSortActive) && group.element.sortKey === 'uptime')"
+                                        :icon="(isGlobalSortActive && !group.element.useOwnSort ? globalSortDirection : group.element.sortDirection) === 'asc' ? 'arrow-up' : 'arrow-down'"
                                     />
                                 </button>
                                 <button
@@ -178,10 +178,10 @@
                                     @click="setSort(group.element, 'cert')"
                                 >
                                     {{ $t("Cert Exp.") }}
-                                    <font-awesome-icon 
+                                    <font-awesome-icon
                                         v-if="(isGlobalSortActive && !group.element.useOwnSort && globalSortKey === 'cert') || 
-                                            ((isGlobalSortActive && group.element.useOwnSort || !isGlobalSortActive) && group.element.sortKey === 'cert')" 
-                                        :icon="(isGlobalSortActive && !group.element.useOwnSort ? globalSortDirection : group.element.sortDirection) === 'asc' ? 'arrow-up' : 'arrow-down'" 
+                                            ((isGlobalSortActive && group.element.useOwnSort || !isGlobalSortActive) && group.element.sortKey === 'cert')"
+                                        :icon="(isGlobalSortActive && !group.element.useOwnSort ? globalSortDirection : group.element.sortDirection) === 'asc' ? 'arrow-up' : 'arrow-down'"
                                     />
                                 </button>
                             </div>
@@ -191,70 +191,70 @@
                     <!-- Monitor List -->
                     <div class="monitor-list-container">
                         <div v-if="!group.element || !group.element.monitorList || group.element.monitorList.length === 0" class="text-center no-monitor-msg">
-                        {{ $t("No Monitors") }}
+                            {{ $t("No Monitors") }}
                         </div>
                         <div v-else-if="getFilteredMonitorList(group.element).length === 0" class="text-center no-monitor-msg">
                             {{ $t("No services found") }}
-                    </div>
+                        </div>
 
-                    <!-- Monitor List -->
-                    <Draggable
+                        <!-- Monitor List -->
+                        <Draggable
                             v-if="group.element && group.element.monitorList && group.element.monitorList.length > 0"
-                        v-model="group.element.monitorList"
-                        class="monitor-list"
-                        group="same-group"
-                        :disabled="!editMode"
-                        :animation="100"
-                        item-key="id"
-                    >
+                            v-model="group.element.monitorList"
+                            class="monitor-list"
+                            group="same-group"
+                            :disabled="!editMode"
+                            :animation="100"
+                            item-key="id"
+                        >
                             <template #item="{ element: monitor, index: monitorIndex }">
                                 <div v-if="shouldShowMonitor(monitor, group.element)" class="item" data-testid="monitor">
-                                <div class="row">
-                                    <div class="col-9 col-md-8 small-padding">
-                                        <div class="info">
-                                            <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
+                                    <div class="row">
+                                        <div class="col-9 col-md-8 small-padding">
+                                            <div class="info">
+                                                <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                                 <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitorIndex)" />
 
                                                 <Uptime :monitor="monitor" type="24" :pill="true" />
-                                            <a
-                                                v-if="showLink(monitor)"
+                                                <a
+                                                    v-if="showLink(monitor)"
                                                     :href="monitor.url"
-                                                class="item-name"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                data-testid="monitor-name"
-                                            >
+                                                    class="item-name"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    data-testid="monitor-name"
+                                                >
                                                     {{ monitor.name }}
-                                            </a>
+                                                </a>
                                                 <p v-else class="item-name" data-testid="monitor-name"> {{ monitor.name }} </p>
 
-                                            <span
-                                                title="Setting"
-                                            >
+                                                <span
+                                                    title="Setting"
+                                                >
                                                 <font-awesome-icon
                                                     v-if="editMode"
                                                     :class="{'link-active': true, 'btn-link': true}"
                                                     icon="cog" class="action me-3"
-                                                        @click="$refs.monitorSettingDialog.show(group.element, monitor)"
+                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>
-                                        </div>
-                                        <div class="extra-info">
-                                                <div v-if="showCertificateExpiry && monitor.certExpiryDaysRemaining">
-                                                <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
                                             </div>
-                                            <div v-if="showTags">
+                                            <div class="extra-info">
+                                                <div v-if="showCertificateExpiry && monitor.certExpiryDaysRemaining">
+                                                    <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
+                                                </div>
+                                                <div v-if="showTags">
                                                     <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" data-testid="monitor-tag" />
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
+                                            <HeartbeatBar size="mid" :monitor-id="monitor.id" />
                                         </div>
                                     </div>
-                                    <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
-                                            <HeartbeatBar size="mid" :monitor-id="monitor.id" />
-                                    </div>
                                 </div>
-                            </div>
-                        </template>
-                    </Draggable>
+                            </template>
+                        </Draggable>
                     </div>
                 </div>
             </div>
@@ -320,26 +320,26 @@ export default {
             return (this.$root && this.$root.publicGroupList && this.$root.publicGroupList.length >= 2);
         },
         hasMonitors() {
-            return this.groups && Array.isArray(this.groups) && this.groups.some(group => 
+            return this.groups && Array.isArray(this.groups) && this.groups.some(group =>
                 group && group.element && group.element.monitorList && group.element.monitorList.length > 0
             );
         },
         hasPublicGroups() {
-            return this.$root && 
-                   this.$root.publicGroupList && 
-                   Array.isArray(this.$root.publicGroupList) && 
-                   this.$root.publicGroupList.length > 0 &&
-                   this.$root.publicGroupList.some(group => 
-                       group && group.monitorList && group.monitorList.length > 0
-                   );
+            return this.$root &&
+                this.$root.publicGroupList &&
+                Array.isArray(this.$root.publicGroupList) &&
+                this.$root.publicGroupList.length > 0 &&
+                this.$root.publicGroupList.some(group =>
+                    group && group.monitorList && group.monitorList.length > 0
+                );
         },
         filteredMonitorList() {
             if (!this.searchText || !this.monitorList) {
                 return this.monitorList || [];
             }
-            
+
             const searchLower = this.searchText.toLowerCase();
-            return this.monitorList.filter(monitor => 
+            return this.monitorList.filter(monitor =>
                 monitor && monitor.name && monitor.name.toLowerCase().includes(searchLower)
             );
         },
@@ -350,13 +350,13 @@ export default {
             if (!this.globalSearchKeyword) {
                 return null;
             }
-            
+
             let count = 0;
             if (!this.groups) return count;
-            
+
             for (const group of this.groups) {
                 if (!group || !group.element || !group.element.monitorList) continue;
-                
+
                 for (const monitor of group.element.monitorList) {
                     if (monitor && this.matchesGlobalSearch(monitor)) {
                         count++;
@@ -369,8 +369,8 @@ export default {
             if (!this.$root || !this.$root.publicGroupList) {
                 return false;
             }
-            
-            return this.$root.publicGroupList.some(group => 
+
+            return this.$root.publicGroupList.some(group =>
                 group && group.useOwnSort === true
             );
         },
@@ -391,7 +391,7 @@ export default {
         },
         // Watch for changes in uptimeList to re-apply sort
         '$root.uptimeList': {
-             handler() {
+            handler() {
                 if (this.$root && this.$root.publicGroupList) {
                     this.$root.publicGroupList.forEach(group => {
                         if (group) {
@@ -420,7 +420,7 @@ export default {
             try {
                 const groupId = group.id || group.name || 'Default Group';
                 const storageKey = `uptime-kuma-sort-${this.slug}-${groupId}`;
-                
+
                 const savedSettings = localStorage.getItem(storageKey);
                 if (savedSettings) {
                     const settings = JSON.parse(savedSettings);
@@ -459,15 +459,15 @@ export default {
                     if (group.searchKeyword === undefined) {
                         group.searchKeyword = '';
                     }
-                    
+
                     // Try to read saved sort settings from localStorage
                     const savedSettings = getSavedSortSettings(group);
-                    
+
                     if (savedSettings) {
                         // Apply saved settings if found
                         group.sortKey = savedSettings.key;
                         group.sortDirection = savedSettings.direction;
-                        
+
                         // Restore independent sort flag from localStorage
                         group.useOwnSort = savedSettings.useOwnSort === undefined ? false : savedSettings.useOwnSort;
                     } else {
@@ -480,7 +480,7 @@ export default {
                         }
                         group.useOwnSort = false;
                     }
-                    
+
                     // Apply initial sort when the component is created
                     this.applySort(group);
                 }
@@ -500,11 +500,11 @@ export default {
                             if (group.searchKeyword === undefined) {
                                 group.searchKeyword = '';
                             }
-                            
+
                             if (group.sortKey === undefined) {
                                 // Try to read sort settings from localStorage
                                 const savedSettings = getSavedSortSettings(group);
-                                
+
                                 if (savedSettings) {
                                     // Apply saved settings if found
                                     group.sortKey = savedSettings.key;
@@ -517,7 +517,7 @@ export default {
                                     group.sortDirection = 'desc';
                                     group.useOwnSort = false;
                                 }
-                                
+
                                 // Apply sort to newly added group
                                 this.applySort(group);
                             }
@@ -541,15 +541,15 @@ export default {
         monitorMatchesSearch(monitor, keyword) {
             if (!keyword) return true;
             if (!monitor) return false;
-            
+
             keyword = keyword.toLowerCase().trim();
-            
+
             // Search name, URL and description fields
-            return (monitor.name && monitor.name.toLowerCase().includes(keyword)) || 
-                   (monitor.url && monitor.url.toLowerCase().includes(keyword)) || 
-                   (monitor.description && monitor.description.toLowerCase().includes(keyword));
+            return (monitor.name && monitor.name.toLowerCase().includes(keyword)) ||
+                (monitor.url && monitor.url.toLowerCase().includes(keyword)) ||
+                (monitor.description && monitor.description.toLowerCase().includes(keyword));
         },
-        
+
         /**
          * Check if monitor matches global search criteria
          * @param {object} monitor Monitor object
@@ -558,10 +558,10 @@ export default {
         matchesGlobalSearch(monitor) {
             if (!this.globalSearchKeyword) return true;
             if (!monitor) return false;
-            
+
             return this.monitorMatchesSearch(monitor, this.globalSearchKeyword);
         },
-        
+
         /**
          * Determine if monitor should be displayed
          * @param {object} monitor Monitor object
@@ -570,20 +570,20 @@ export default {
          */
         shouldShowMonitor(monitor, group) {
             if (!monitor) return false;
-            
+
             // Check global search first
             if (this.globalSearchKeyword && !this.matchesGlobalSearch(monitor)) {
                 return false;
             }
-            
+
             // Then check group search
             if (group && group.searchKeyword) {
                 return this.monitorMatchesSearch(monitor, group.searchKeyword);
             }
-            
+
             return true;
         },
-        
+
         /**
          * Get filtered monitor list
          * @param {object} group Group object
@@ -591,26 +591,26 @@ export default {
          */
         getFilteredMonitorList(group) {
             if (!group || !group.monitorList || !Array.isArray(group.monitorList)) return [];
-            
+
             let result = [...group.monitorList]; // Create a copy to avoid modifying original array
-            
+
             // Apply global search first
             if (this.globalSearchKeyword) {
-                result = result.filter(monitor => 
+                result = result.filter(monitor =>
                     monitor && this.matchesGlobalSearch(monitor)
                 );
             }
-            
+
             // Then apply group search
             if (group.searchKeyword) {
-                result = result.filter(monitor => 
+                result = result.filter(monitor =>
                     monitor && this.monitorMatchesSearch(monitor, group.searchKeyword)
                 );
             }
-            
+
             return result;
         },
-        
+
         /**
          * Determine if group should be displayed
          * @param {object} group Group object
@@ -618,20 +618,20 @@ export default {
          */
         shouldShowGroup(group) {
             if (!group) return false;
-            
+
             // Always show in edit mode
             if (this.editMode) return true;
-            
+
             // If there's global search, only show groups containing matching monitors
             if (this.globalSearchKeyword) {
-                return group.monitorList && group.monitorList.some(monitor => 
+                return group.monitorList && group.monitorList.some(monitor =>
                     this.matchesGlobalSearch(monitor)
                 );
             }
-            
+
             return true;
         },
-        
+
         /**
          * Clear group search keyword
          * @param {object} group Group object
@@ -641,14 +641,14 @@ export default {
                 group.searchKeyword = '';
             }
         },
-        
+
         /**
          * Clear global search keyword
          */
         clearGlobalSearch() {
             this.globalSearchKeyword = '';
         },
-        
+
         /**
          * Set sort key and direction for a group, then apply the sort
          * @param {object} group The group object
@@ -662,16 +662,16 @@ export default {
                 group.sortKey = key;
                 group.sortDirection = (key === 'status') ? 'desc' : 'asc';
             }
-            
+
             // Set independent sort flag for current group when clicking on its sort buttons
             group.useOwnSort = true;
-            
+
             // Save sort settings to localStorage
             try {
                 // Get a unique identifier for the group, use name if id is not available
                 const groupId = group.id || group.name || 'Default Group';
                 const storageKey = `uptime-kuma-sort-${this.slug}-${groupId}`;
-                
+
                 // Save sort settings with the useOwnSort flag
                 const sortSettings = {
                     key: group.sortKey,
@@ -682,7 +682,7 @@ export default {
             } catch (error) {
                 console.error('Cannot save sort settings', error);
             }
-            
+
             // Apply sort to this group
             this.applySortToGroup(group);
         },
@@ -695,7 +695,7 @@ export default {
             if (!group || !group.monitorList || !Array.isArray(group.monitorList)) {
                 return;
             }
-            
+
             // Check if group has independent sort settings
             if (group.useOwnSort || !this.isGlobalSortActive) {
                 // Use group's own sort settings
@@ -729,14 +729,14 @@ export default {
 
             monitorList.sort((a, b) => {
                 if (!a || !b) return 0;
-                
+
                 let comparison = 0;
                 let valueA, valueB;
 
                 if (sortKey === 'status') {
                     const getStatusPriority = (monitor) => {
                         if (!monitor || !monitor.id) return 4;
-                        
+
                         // Ensure heartbeatList is available
                         const hbList = this.$root.heartbeatList || {};
                         const hbArr = hbList[monitor.id];
@@ -853,14 +853,14 @@ export default {
          */
         toggleGlobalSort() {
             this.isGlobalSortActive = !this.isGlobalSortActive;
-            
+
             // Reset all groups' independent sort flags and save their status to localStorage
             if (this.$root && this.$root.publicGroupList) {
                 this.$root.publicGroupList.forEach(group => {
                     if (group) {
                         // When toggling global sort, reset all group's independent sort flags
                         group.useOwnSort = false;
-                        
+
                         // Save the updated status to localStorage for each group
                         try {
                             const groupId = group.id || group.name || 'Default Group';
@@ -877,7 +877,7 @@ export default {
                     }
                 });
             }
-            
+
             // Save global sort toggle state
             try {
                 const storageKey = `uptime-kuma-global-sort-${this.slug}`;
@@ -890,7 +890,7 @@ export default {
             } catch (error) {
                 console.error('Cannot save global sort settings', error);
             }
-            
+
             // Apply appropriate sorting based on global sort state
             if (this.isGlobalSortActive) {
                 this.applyGlobalSort();
@@ -918,17 +918,17 @@ export default {
                 this.globalSortKey = key;
                 this.globalSortDirection = (key === 'status') ? 'desc' : 'asc';
             }
-            
+
             // Activate global sort
             this.isGlobalSortActive = true;
-            
+
             // Clear all groups' independent sort flags and save each group's settings
             if (this.$root && this.$root.publicGroupList) {
                 this.$root.publicGroupList.forEach(group => {
                     if (group) {
                         // Set useOwnSort to false for all groups
                         group.useOwnSort = false;
-                        
+
                         // Save the group's sort settings with useOwnSort=false to localStorage
                         try {
                             const groupId = group.id || group.name || 'Default Group';
@@ -945,11 +945,11 @@ export default {
                     }
                 });
             }
-            
+
             // Save global sort settings to localStorage
             try {
                 const storageKey = `uptime-kuma-global-sort-${this.slug}`;
-                
+
                 // Save global sort settings
                 const globalSortSettings = {
                     key: this.globalSortKey,
@@ -960,7 +960,7 @@ export default {
             } catch (error) {
                 console.error('Cannot save global sort settings', error);
             }
-            
+
             // Apply global sort
             this.applyGlobalSort();
         },
@@ -970,14 +970,14 @@ export default {
          */
         disableGlobalSort() {
             this.isGlobalSortActive = false;
-            
+
             // Save the updated useOwnSort=false status for all groups
             if (this.$root && this.$root.publicGroupList) {
                 this.$root.publicGroupList.forEach(group => {
                     if (group) {
                         // Mark all groups as not using independent sort when global sort is disabled
                         group.useOwnSort = false;
-                        
+
                         // Save the updated status to localStorage
                         try {
                             const groupId = group.id || group.name || 'Default Group';
@@ -994,7 +994,7 @@ export default {
                     }
                 });
             }
-            
+
             // Save global sort settings with active=false
             try {
                 const storageKey = `uptime-kuma-global-sort-${this.slug}`;
@@ -1007,7 +1007,7 @@ export default {
             } catch (error) {
                 console.error('Cannot save global sort settings', error);
             }
-            
+
             // Restore original sorting for each group
             if (this.$root && this.$root.publicGroupList) {
                 this.$root.publicGroupList.forEach(group => {
@@ -1025,7 +1025,7 @@ export default {
             if (!this.isGlobalSortActive || !this.$root || !this.$root.publicGroupList) {
                 return;
             }
-            
+
             // Apply global sort settings to all groups not using independent sorting
             this.$root.publicGroupList.forEach(group => {
                 if (group && group.monitorList && !group.useOwnSort) {
@@ -1156,11 +1156,11 @@ export default {
 
 .monitor-list {
     min-height: 46px;
-    
+
     .item {
         padding: 0.75rem 1.25rem;
         border-bottom: 1px solid #f0f0f0;
-        
+
         &:last-child {
             border-bottom: none;
         }
@@ -1172,7 +1172,7 @@ export default {
     overflow: hidden;
     background-color: #fff;
     border: 1px solid #e9ecef;
-    
+
     .dark & {
         background-color: #2d3748;
         border-color: #4a5568;
@@ -1324,13 +1324,13 @@ export default {
 
     .input-group {
         position: relative;
-        
+
         .form-control {
             border: 1px solid #dee2e6;
             border-radius: 4px;
             background-color: #fff;
         }
-        
+
         .btn {
             position: absolute;
             right: 1px; /* Position inside the input border */
@@ -1343,7 +1343,7 @@ export default {
             padding: 0 0.75rem;
         }
     }
-    
+
     small {
         display: none; /* Hide the 'Found X monitors' text */
     }
@@ -1366,19 +1366,19 @@ export default {
             color: $dark-font-color;
             border-color: transparent;
         }
-        
+
         .sort-buttons {
             border-color: #4a5568;
-            
+
             .sort-button {
                 background-color: #1a202c;
                 border-right-color: #4a5568;
                 color: #e2e8f0;
-                
+
                 &:hover {
                     background-color: #4a5568;
                 }
-                
+
                 &.active {
                     background-color: #28a745;
                     color: white;
@@ -1393,10 +1393,10 @@ export default {
             border-color: #4a5568;
             color: $dark-font-color;
         }
-        
+
         .btn {
             color: $dark-font-color;
-            
+
             &:hover {
                 color: white;
             }
@@ -1409,26 +1409,26 @@ export default {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .search-container {
         margin-left: 0;
         margin-top: 0.5rem;
         width: 100%;
     }
-    
+
     .search-input {
         width: 100%;
     }
-    
+
     .sort-controls {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .sort-buttons {
         margin-top: 0.5rem;
     }
-    
+
     .sort-button {
         margin-bottom: 0.5rem;
     }
