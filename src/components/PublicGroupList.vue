@@ -426,7 +426,8 @@ export default {
                     const settings = JSON.parse(savedSettings);
                     return {
                         key: settings.key,
-                        direction: settings.direction
+                        direction: settings.direction,
+                        useOwnSort: settings.useOwnSort
                     };
                 }
             } catch (error) {
@@ -466,6 +467,9 @@ export default {
                         // Apply saved settings if found
                         group.sortKey = savedSettings.key;
                         group.sortDirection = savedSettings.direction;
+                        
+                        // Restore independent sort flag from localStorage
+                        group.useOwnSort = savedSettings.useOwnSort === undefined ? false : savedSettings.useOwnSort;
                     } else {
                         // Use default settings otherwise
                         if (group.sortKey === undefined) {
@@ -474,6 +478,7 @@ export default {
                         if (group.sortDirection === undefined) {
                             group.sortDirection = 'desc';
                         }
+                        group.useOwnSort = false;
                     }
                     
                     // Apply initial sort when the component is created
@@ -504,10 +509,13 @@ export default {
                                     // Apply saved settings if found
                                     group.sortKey = savedSettings.key;
                                     group.sortDirection = savedSettings.direction;
+                                    // Restore independent sort flag from localStorage
+                                    group.useOwnSort = savedSettings.useOwnSort === undefined ? false : savedSettings.useOwnSort;
                                 } else {
                                     // Use default settings otherwise
                                     group.sortKey = 'status';
                                     group.sortDirection = 'desc';
+                                    group.useOwnSort = false;
                                 }
                                 
                                 // Apply sort to newly added group
@@ -655,29 +663,24 @@ export default {
                 group.sortDirection = (key === 'status') ? 'desc' : 'asc';
             }
             
+            // Set independent sort flag for current group when clicking on its sort buttons
+            group.useOwnSort = true;
+            
             // Save sort settings to localStorage
             try {
                 // Get a unique identifier for the group, use name if id is not available
                 const groupId = group.id || group.name || 'Default Group';
                 const storageKey = `uptime-kuma-sort-${this.slug}-${groupId}`;
                 
-                // Save sort settings
+                // Save sort settings with the useOwnSort flag
                 const sortSettings = {
                     key: group.sortKey,
-                    direction: group.sortDirection
+                    direction: group.sortDirection,
+                    useOwnSort: group.useOwnSort
                 };
                 localStorage.setItem(storageKey, JSON.stringify(sortSettings));
             } catch (error) {
                 console.error('Cannot save sort settings', error);
-            }
-            
-            // If global sort is active, we need to temporarily disable it to apply group's sort
-            const wasGlobalSortActive = this.isGlobalSortActive;
-            
-            // Temporarily disable global sort
-            if (wasGlobalSortActive) {
-                // Set independent sort flag for current group
-                group.useOwnSort = true;
             }
             
             // Apply sort to this group
@@ -851,16 +854,31 @@ export default {
         toggleGlobalSort() {
             this.isGlobalSortActive = !this.isGlobalSortActive;
             
-            // Reset all groups' independent sort flags when toggling global sort state
+            // Reset all groups' independent sort flags and save their status to localStorage
             if (this.$root && this.$root.publicGroupList) {
                 this.$root.publicGroupList.forEach(group => {
                     if (group) {
+                        // When toggling global sort, reset all group's independent sort flags
                         group.useOwnSort = false;
+                        
+                        // Save the updated status to localStorage for each group
+                        try {
+                            const groupId = group.id || group.name || 'Default Group';
+                            const groupStorageKey = `uptime-kuma-sort-${this.slug}-${groupId}`;
+                            const groupSortSettings = {
+                                key: group.sortKey,
+                                direction: group.sortDirection,
+                                useOwnSort: false
+                            };
+                            localStorage.setItem(groupStorageKey, JSON.stringify(groupSortSettings));
+                        } catch (error) {
+                            console.error('Cannot save group sort settings', error);
+                        }
                     }
                 });
             }
             
-            // Save settings
+            // Save global sort toggle state
             try {
                 const storageKey = `uptime-kuma-global-sort-${this.slug}`;
                 const globalSortSettings = {
@@ -904,11 +922,26 @@ export default {
             // Activate global sort
             this.isGlobalSortActive = true;
             
-            // Clear all groups' independent sort flags
+            // Clear all groups' independent sort flags and save each group's settings
             if (this.$root && this.$root.publicGroupList) {
                 this.$root.publicGroupList.forEach(group => {
                     if (group) {
+                        // Set useOwnSort to false for all groups
                         group.useOwnSort = false;
+                        
+                        // Save the group's sort settings with useOwnSort=false to localStorage
+                        try {
+                            const groupId = group.id || group.name || 'Default Group';
+                            const groupStorageKey = `uptime-kuma-sort-${this.slug}-${groupId}`;
+                            const groupSortSettings = {
+                                key: group.sortKey,
+                                direction: group.sortDirection,
+                                useOwnSort: false
+                            };
+                            localStorage.setItem(groupStorageKey, JSON.stringify(groupSortSettings));
+                        } catch (error) {
+                            console.error('Cannot save group sort settings', error);
+                        }
                     }
                 });
             }
@@ -938,16 +971,31 @@ export default {
         disableGlobalSort() {
             this.isGlobalSortActive = false;
             
-            // Clear all groups' independent sort flags
+            // Save the updated useOwnSort=false status for all groups
             if (this.$root && this.$root.publicGroupList) {
                 this.$root.publicGroupList.forEach(group => {
                     if (group) {
+                        // Mark all groups as not using independent sort when global sort is disabled
                         group.useOwnSort = false;
+                        
+                        // Save the updated status to localStorage
+                        try {
+                            const groupId = group.id || group.name || 'Default Group';
+                            const groupStorageKey = `uptime-kuma-sort-${this.slug}-${groupId}`;
+                            const groupSortSettings = {
+                                key: group.sortKey,
+                                direction: group.sortDirection,
+                                useOwnSort: false
+                            };
+                            localStorage.setItem(groupStorageKey, JSON.stringify(groupSortSettings));
+                        } catch (error) {
+                            console.error('Cannot save group sort settings', error);
+                        }
                     }
                 });
             }
             
-            // Save settings
+            // Save global sort settings with active=false
             try {
                 const storageKey = `uptime-kuma-global-sort-${this.slug}`;
                 const globalSortSettings = {
