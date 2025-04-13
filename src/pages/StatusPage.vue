@@ -775,24 +775,10 @@ export default {
                     const { heartbeatList, uptimeList } = res.data;
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
-                    if (!this.enableEditMode) {
-                        this.$root.publicGroupList.forEach((group) => {
-                            const downs = [];
-                            const others = [];
-                            // Traverse all monitors in the current group
-                            for (const monitor of group.monitorList) {
-                                const hbArr = heartbeatList[monitor.id];
-                                // Check if the last heartbeat status is Down (status === 0)
-                                if (hbArr && hbArr.length > 0 && hbArr.at(-1).status === 0) {
-                                    downs.push(monitor);
-                                } else {
-                                    others.push(monitor);
-                                }
-                            }
-                            // Place Down monitors at the front, keep the original order for others
-                            group.monitorList = downs.concat(others);
-                        });
-                    }
+                    
+                    // 注：移除了原有的"宕机优先"排序逻辑
+                    // 现在监控器的排序将完全由PublicGroupList组件的排序功能控制
+                    
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
                         const monitorHeartbeats = heartbeatList[currentId];
