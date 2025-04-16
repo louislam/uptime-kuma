@@ -31,6 +31,7 @@ import MonitorHistory from "./components/settings/MonitorHistory.vue";
 const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
 import About from "./components/settings/About.vue";
+import Licenses from "./components/settings/Licenses.vue";
 import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
 
 const routes = [
@@ -135,6 +136,10 @@ const routes = [
                             {
                                 path: "about",
                                 component: About,
+                            },
+                            {
+                                path: "licenses",
+                                component: Licenses,
                             },
                         ]
                     },
