@@ -33,6 +33,7 @@ const Octopush = require("./notification-providers/octopush");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
+const Pumble = require('./notification-providers/pumble');
 const FlashDuty = require("./notification-providers/flashduty");
 const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
@@ -126,6 +127,7 @@ class Notification {
             new FlashDuty(),
             new PagerTree(),
             new PromoSMS(),
+            new Pumble(),
             new Pushbullet(),
             new PushDeer(),
             new Pushover(),
