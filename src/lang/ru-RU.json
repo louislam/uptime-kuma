@@ -1109,5 +1109,21 @@
     "Json Query Expression": "Выражение запроса Json",
     "templateServiceName": "имя сервиса",
     "templateHostnameOrURL": "hostname или URL",
-    "templateStatus": "статус"
+    "templateStatus": "статус",
+    "telegramServerUrlDescription": "Чтобы поднять ограничения API API Telegram или получить доступ к заблокированным районам (Китай, Иран и т.д.). Для получения дополнительной информации нажмите {0}. По умолчанию: {1}",
+    "wayToGetWahaApiKey": "Ключ API - это значение переменной среды WHATSAPP_API_KEY, которое вы использовали для запуска WAHA.",
+    "wayToGetWahaSession": "Из этой сессии WAHA отправляет уведомления на удостоверение личности чата. Вы можете найти его на приборной панели Waha.",
+    "wayToWriteWahaChatId": "Номер телефона с международным префиксом, но без знака плюс в начале ({0}), идентификатор контакта ({1}) или идентификатора группы ({2}). Уведомления отправляются на этот идентификатор чата от сеанса Waha.",
+    "wahaSession": "Сессия",
+    "wahaChatId": "Идентификатор чата (номер телефона / идентификатор контакта / идентификатор группы)",
+    "wayToGetWahaApiUrl": "Ваш экземпляр WAHA URL.",
+    "YZJ Webhook URL": "YZJ Вебхук URL",
+    "YZJ Robot Token": "YZJ Токен Робота",
+    "telegramServerUrl": "(Необязательно) URL Сервера",
+    "telegramUseTemplate": "Используйте пользовательский шаблон сообщения",
+    "telegramUseTemplateDescription": "Если включено, сообщение будет отправлено с помощью пользовательского шаблона.",
+    "telegramTemplateFormatDescription": "Telegram позволяет использовать различные языки разметки для сообщений, см. Telegram {0} для конкретных деталей.",
+    "Plain Text": "Простой текст",
+    "Message Template": "Шаблон сообщения",
+    "Template Format": "Формат шаблона"
 }
