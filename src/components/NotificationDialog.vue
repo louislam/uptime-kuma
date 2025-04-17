@@ -41,6 +41,35 @@
 
                             <br>
 
+                            <select id="notificationTrigger" v-model="notification.defaultTrigger" class="form-select">
+                                <option value="always">
+                                    {{ $t("notificationTriggerAlways") }}
+                                </option>
+                                <option value="up_down">
+                                    {{ $t("notificationTriggerUpDown") }}
+                                </option>
+                                <option value="up">
+                                    {{ $t("notificationTriggerUp") }}
+                                </option>
+                                <option value="down">
+                                    {{ $t("notificationTriggerDown") }}
+                                </option>
+                                <option value="certificate">
+                                    {{ $t("notificationTriggerCertificate") }}
+                                </option>
+                                <option value="up_certificate">
+                                    {{ $t("notificationTriggerUpCertificate") }}
+                                </option>
+                                <option value="down_certificate">
+                                    {{ $t("notificationTriggerDownCertificate") }}
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                {{ $t("enableDefaultTriggerNotificationDescription") }}
+                            </div>
+
+                            <br>
+
                             <div class="form-check form-switch">
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
                                 <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
@@ -95,6 +124,7 @@ export default {
                 /** @type { null | keyof NotificationFormList } */
                 type: null,
                 isDefault: false,
+                defaultTrigger: "always",
                 // Do not set default value here, please scroll to show()
             }
         };
@@ -270,6 +300,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
+                    defaultTrigger: "always",
                 };
             }
 
@@ -291,7 +322,7 @@ export default {
 
                     // Emit added event, doesn't emit edit.
                     if (! this.id) {
-                        this.$emit("added", res.id);
+                        this.$emit("added", res.id, res.defaultTrigger);
                     }
 
                 }

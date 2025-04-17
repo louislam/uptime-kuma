@@ -1067,5 +1067,14 @@
     "YZJ Robot Token": "YZJ Robot token",
     "Plain Text": "Plain Text",
     "Message Template": "Message Template",
-    "Template Format": "Template Format"
+    "Template Format": "Template Format",
+    "notificationTriggerAlways": "Notify on up, down state or certificate expiry",
+    "notificationTriggerUpDown": "Notify on up or down state",
+    "notificationTriggerUp": "Notify on up state only",
+    "notificationTriggerDown": "Notify on down state only",
+    "notificationTriggerUpCertificate": "Notify on up state or certificate expiry",
+    "notificationTriggerDownCertificate": "Notify on down state or certificate expiry",
+    "notificationTriggerCertificate": "Notify on certificate expiry only",
+    "notificationTriggerCertificateWarning": "Certificate expiry notifications are disabled for this monitor. You will not receive alerts when the certificate is about to expire.",
+    "enableDefaultTriggerNotificationDescription": "This notification trigger will be the default for new monitors. You can still edit the notification trigger separately for each monitor."
 }

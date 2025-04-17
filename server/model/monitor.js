@@ -1340,7 +1340,14 @@ class Monitor extends BeanModel {
                     heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
-                    await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
+                    if (
+                        notification.trigger === "always" ||
+                        notification.trigger === "up_down" ||
+                        ((notification.trigger === "up" || notification.trigger === "up_certificate") && bean.status === UP) ||
+                        ((notification.trigger === "down" || notification.trigger === "down_certificate") && bean.status === DOWN)
+                    ) {
+                        await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
+                    }
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1355,7 +1362,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<LooseObject<any>[]>} List of notifications
      */
     static async getNotificationList(monitor) {
-        let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+        let notificationList = await R.getAll("SELECT notification.*, monitor_notification.trigger FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
             monitor.id,
         ]);
         return notificationList;
@@ -1432,6 +1439,9 @@ class Monitor extends BeanModel {
         log.debug("monitor", "Send certificate notification");
 
         for (let notification of notificationList) {
+            if (notification.trigger !== "always" && notification.trigger !== "certificate" && notification.trigger !== "up_certificate" && notification.trigger !== "down_certificate") {
+                continue;
+            }
             try {
                 log.debug("monitor", "Sending to " + notification.name);
                 await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`);
@@ -1509,7 +1519,7 @@ class Monitor extends BeanModel {
      */
     static async getMonitorNotification(monitorIDs) {
         return await R.getAll(`
-            SELECT monitor_notification.monitor_id, monitor_notification.notification_id
+            SELECT monitor_notification.monitor_id, monitor_notification.notification_id, monitor_notification.trigger
             FROM monitor_notification
             WHERE monitor_notification.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
         `, monitorIDs);
@@ -1558,7 +1568,10 @@ class Monitor extends BeanModel {
                 if (!notificationsMap.has(row.monitor_id)) {
                     notificationsMap.set(row.monitor_id, {});
                 }
-                notificationsMap.get(row.monitor_id)[row.notification_id] = true;
+                notificationsMap.get(row.monitor_id)[row.notification_id] = {
+                    active: true,
+                    trigger: row.trigger,
+                };
             });
 
             tags.forEach(row => {

@@ -733,17 +733,49 @@
                                 {{ $t("Not available, please setup.") }}
                             </p>
 
-                            <div v-for="notification in $root.notificationList" :key="notification.id" class="form-check form-switch my-3">
-                                <input :id=" 'notification' + notification.id" v-model="monitor.notificationIDList[notification.id]" class="form-check-input" type="checkbox">
+                            <div v-if="Object.keys(monitor.notificationIDList).length > 0">
+                                <div v-for="notification in $root.notificationList" :key="notification.id" class="form-check form-switch my-3">
+                                    <input :id=" 'notification' + notification.id" v-model="monitor.notificationIDList[notification.id].active" class="form-check-input" type="checkbox">
 
-                                <label class="form-check-label" :for=" 'notification' + notification.id">
-                                    {{ notification.name }}
-                                    <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
-                                </label>
+                                    <label class="form-check-label" :for=" 'notification' + notification.id">
+                                        {{ notification.name }}
+                                        <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
+                                    </label>
 
-                                <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
+                                    <span v-if="notification.isDefault == true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
+                                    <div v-if="monitor.notificationIDList[notification.id].active">
+                                        <select id="notificationTrigger" v-model="monitor.notificationIDList[notification.id].trigger" class="form-select">
+                                            <option value="always">
+                                                {{ $t("notificationTriggerAlways") }}
+                                            </option>
+                                            <option value="up_down">
+                                                {{ $t("notificationTriggerUpDown") }}
+                                            </option>
+                                            <option value="up">
+                                                {{ $t("notificationTriggerUp") }}
+                                            </option>
+                                            <option value="down">
+                                                {{ $t("notificationTriggerDown") }}
+                                            </option>
+                                            <option value="certificate">
+                                                {{ $t("notificationTriggerCertificate") }}
+                                            </option>
+                                            <option value="up_certificate">
+                                                {{ $t("notificationTriggerUpCertificate") }}
+                                            </option>
+                                            <option value="down_certificate">
+                                                {{ $t("notificationTriggerDownCertificate") }}
+                                            </option>
+                                        </select>
+                                        <div
+                                            v-if="(monitor.notificationIDList[notification.id].trigger === 'certificate' || monitor.notificationIDList[notification.id].trigger === 'up_certificate' || monitor.notificationIDList[notification.id].trigger === 'down_certificate') && (!(monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query') || !monitor.expiryNotification)"
+                                            class="alert alert-warning my-2" role="alert"
+                                        >
+                                            {{ $t("notificationTriggerCertificateWarning") }}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                                 {{ $t("Setup Notification") }}
                             </button>
@@ -1576,9 +1608,11 @@ message HealthCheckResponse {
                 }
 
                 for (let i = 0; i < this.$root.notificationList.length; i++) {
-                    if (this.$root.notificationList[i].isDefault === true) {
-                        this.monitor.notificationIDList[this.$root.notificationList[i].id] = true;
-                    }
+                    let notification = this.$root.notificationList[i];
+                    this.monitor.notificationIDList[notification.id] = {
+                        active: notification.isDefault === true,
+                        trigger: notification.defaultTrigger,
+                    };
                 }
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMonitor", this.$route.params.id, (res) => {
@@ -1592,6 +1626,16 @@ message HealthCheckResponse {
                         }
 
                         this.monitor = res.monitor;
+
+                        for (let i = 0; i < this.$root.notificationList.length; i++) {
+                            let notification = this.$root.notificationList[i];
+                            if (!this.monitor.notificationIDList[notification.id]) {
+                                this.monitor.notificationIDList[notification.id] = {
+                                    active: notification.isDefault === true,
+                                    trigger: notification.defaultTrigger,
+                                };
+                            }
+                        }
 
                         if (this.isClone) {
                             /*
@@ -1794,10 +1838,14 @@ message HealthCheckResponse {
          * Added a Notification Event
          * Enable it if the notification is added in EditMonitor.vue
          * @param {number} id ID of notification to add
+         * @param {string} defaultTrigger default notification trigger (both, up, down, certificate, up_certificate, down_certificate)
          * @returns {void}
          */
-        addedNotification(id) {
-            this.monitor.notificationIDList[id] = true;
+        addedNotification(id, defaultTrigger) {
+            this.monitor.notificationIDList[id] = {
+                active: true,
+                trigger: defaultTrigger,
+            };
         },
 
         /**

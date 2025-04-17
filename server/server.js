@@ -1426,6 +1426,7 @@ let needSetup = false;
                     ok: true,
                     msg: "Saved.",
                     msgi18n: true,
+                    defaultTrigger: notificationBean.default_trigger,
                     id: notificationBean.id,
                 });
 
@@ -1636,10 +1637,11 @@ async function updateMonitorNotification(monitorID, notificationIDList) {
     ]);
 
     for (let notificationID in notificationIDList) {
-        if (notificationIDList[notificationID]) {
+        if (notificationIDList[notificationID].active) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitorID;
             relation.notification_id = notificationID;
+            relation.trigger = notificationIDList[notificationID].trigger;
             await R.store(relation);
         }
     }
