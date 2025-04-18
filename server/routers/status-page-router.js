@@ -2,7 +2,7 @@ let express = require("express");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
-const { allowDevAllOrigin, sendHttpError } = require("../util-server");
+const { allowAllOrigin, allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
@@ -33,6 +33,39 @@ router.get("/status", cache("5 minutes"), async (request, response) => {
 router.get("/status-page", cache("5 minutes"), async (request, response) => {
     let slug = "default";
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
+});
+
+// Status page config, incident, monitor list with status ("up" or "down")
+router.get("/api/status-page/:slug/summary", cache("5 minutes"), async (request, response) => {
+    allowAllOrigin(response);
+    let slug = request.params.slug;
+
+    try {
+        // Get Status Page
+        let statusPage = await R.findOne("status_page", " slug = ? ", [
+            slug
+        ]);
+
+        if (!statusPage) {
+            return null;
+        }
+
+        let statusPageData = await StatusPage.getStatusPageData(statusPage, true, false);
+
+        if (!statusPageData) {
+            response.statusCode = 404;
+            response.json({
+                msg: "Not Found"
+            });
+            return;
+        }
+
+        // Response
+        response.json(statusPageData);
+
+    } catch (error) {
+        sendHttpError(response, error.message);
+    }
 });
 
 // Status page config, incident, monitor list
