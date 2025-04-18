@@ -140,6 +140,7 @@ export default {
                 "Opsgenie": "Opsgenie",
                 "PagerDuty": "PagerDuty",
                 "PagerTree": "PagerTree",
+                "pumble": "Pumble",
                 "pushbullet": "Pushbullet",
                 "PushByTechulus": "Push by Techulus",
                 "pushover": "Pushover",
