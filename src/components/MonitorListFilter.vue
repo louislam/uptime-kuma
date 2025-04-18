@@ -14,10 +14,10 @@
             <font-awesome-icon v-if="numFiltersActive > 0" icon="times" />
         </button>
         <MonitorListFilterDropdown
-            :filterActive="filterState.status?.length > 0"
+            :filterActive="$router.currentRoute.value.query?.status?.length > 0"
         >
             <template #status>
-                <Status v-if="filterState.status?.length === 1" :status="filterState.status[0]" />
+                <Status v-if="$router.currentRoute.value.query?.status?.length === 1" :status="$router.currentRoute.value.query?.status[0]" />
                 <span v-else>
                     {{ $t('Status') }}
                 </span>
@@ -29,7 +29,10 @@
                             <Status :status="1" />
                             <span class="ps-3">
                                 {{ $root.stats.up }}
-                                <span v-if="filterState.status?.includes(1)" class="px-1 filter-active">
+                                <span
+                                    v-if="$router.currentRoute.value.query?.status?.includes('1')"
+                                    class="px-1 filter-active"
+                                >
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -42,7 +45,10 @@
                             <Status :status="0" />
                             <span class="ps-3">
                                 {{ $root.stats.down }}
-                                <span v-if="filterState.status?.includes(0)" class="px-1 filter-active">
+                                <span
+                                    v-if="$router.currentRoute.value.query?.status?.includes('0')"
+                                    class="px-1 filter-active"
+                                >
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -55,7 +61,10 @@
                             <Status :status="2" />
                             <span class="ps-3">
                                 {{ $root.stats.pending }}
-                                <span v-if="filterState.status?.includes(2)" class="px-1 filter-active">
+                                <span
+                                    v-if="$router.currentRoute.value.query?.status?.includes('2')"
+                                    class="px-1 filter-active"
+                                >
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -68,7 +77,10 @@
                             <Status :status="3" />
                             <span class="ps-3">
                                 {{ $root.stats.maintenance }}
-                                <span v-if="filterState.status?.includes(3)" class="px-1 filter-active">
+                                <span
+                                    v-if="$router.currentRoute.value.query?.status?.includes('3')"
+                                    class="px-1 filter-active"
+                                >
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -77,10 +89,10 @@
                 </li>
             </template>
         </MonitorListFilterDropdown>
-        <MonitorListFilterDropdown :filterActive="filterState.active?.length > 0">
+        <MonitorListFilterDropdown :filterActive="$router.currentRoute.value.query?.active?.length > 0">
             <template #status>
-                <span v-if="filterState.active?.length === 1">
-                    <span v-if="filterState.active[0]">{{ $t("Running") }}</span>
+                <span v-if="$router.currentRoute.value.query?.active?.length === 1">
+                    <span v-if="$router.currentRoute.value.query?.active[0]">{{ $t("Running") }}</span>
                     <span v-else>{{ $t("filterActivePaused") }}</span>
                 </span>
                 <span v-else>
@@ -94,7 +106,10 @@
                             <span>{{ $t("Running") }}</span>
                             <span class="ps-3">
                                 {{ $root.stats.active }}
-                                <span v-if="filterState.active?.includes(true)" class="px-1 filter-active">
+                                <span
+                                    v-if="$router.currentRoute.value.query?.active?.includes(true)"
+                                    class="px-1 filter-active"
+                                >
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -107,7 +122,10 @@
                             <span>{{ $t("filterActivePaused") }}</span>
                             <span class="ps-3">
                                 {{ $root.stats.pause }}
-                                <span v-if="filterState.active?.includes(false)" class="px-1 filter-active">
+                                <span
+                                    v-if="$router.currentRoute.value.query?.active?.includes(false)"
+                                    class="px-1 filter-active"
+                                >
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -116,12 +134,11 @@
                 </li>
             </template>
         </MonitorListFilterDropdown>
-        <MonitorListFilterDropdown :filterActive="filterState.tags?.length > 0">
+        <MonitorListFilterDropdown :filterActive="$router.currentRoute.value.query?.tags?.length > 0">
             <template #status>
                 <Tag
-                    v-if="filterState.tags?.length === 1"
-                    :item="tagsList.find(tag => tag.id === filterState.tags[0])"
-                    :size="'sm'"
+                    v-if="$router.currentRoute.value.query?.tags?.split?.(',')?.length === 1 && tagsList.find(tag => tag.id === +$router.currentRoute.value.query?.tags?.split?.(',')?.[0])"
+                    :item="tagsList.find(tag => tag.id === +$router.currentRoute.value.query?.tags?.split?.(',')?.[0])" :size="'sm'"
                 />
                 <span v-else>
                     {{ $t('Tags') }}
@@ -131,10 +148,15 @@
                 <li v-for="tag in tagsList" :key="tag.id">
                     <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
                         <div class="d-flex align-items-center justify-content-between">
-                            <span><Tag :item="tag" :size="'sm'" /></span>
+                            <span>
+                                <Tag :item="tag" :size="'sm'" />
+                            </span>
                             <span class="ps-3">
                                 {{ getTaggedMonitorCount(tag) }}
-                                <span v-if="filterState.tags?.includes(tag.id)" class="px-1 filter-active">
+                                <span
+                                    v-if="$router.currentRoute.value.query?.tags?.split(',').includes(''+tag.id)"
+                                    class="px-1 filter-active"
+                                >
                                     <font-awesome-icon icon="check" />
                                 </span>
                             </span>
@@ -162,12 +184,6 @@ export default {
         Status,
         Tag,
     },
-    props: {
-        filterState: {
-            type: Object,
-            required: true,
-        }
-    },
     emits: [ "updateFilter" ],
     data() {
         return {
@@ -176,72 +192,68 @@ export default {
     },
     computed: {
         numFiltersActive() {
-            let num = 0;
-
-            Object.values(this.filterState).forEach(item => {
-                if (item != null && item.length > 0) {
-                    num += 1;
-                }
-            });
-
-            return num;
+            return this.$router.currentRoute.value.query.status?.length > 0 ? 1 : 0 +
+                this.$router.currentRoute.value.query.active?.length > 0 ? 1 : 0 +
+                this.$router.currentRoute.value.query.tags?.length > 0 ? 1 : 0;
         }
     },
     mounted() {
         this.getExistingTags();
     },
     methods: {
+        getActiveFilters: function () {
+            const filters = this.$router.currentRoute.value.query;
+
+            return {
+                status: filters["status"] ? filters["status"].split(",") : [],
+                active: filters["active"] ? filters["active"].split(",") : [],
+                tags: filters["tags"] ? filters["tags"].split(",") : [],
+            };
+        },
         toggleStatusFilter(status) {
             let newFilter = {
-                ...this.filterState
+                ...this.getActiveFilters(),
             };
 
-            if (newFilter.status == null) {
-                newFilter.status = [ status ];
+            if (newFilter.status.includes("" + status)) {
+                newFilter.status = newFilter.status.filter(item => item !== "" + status);
             } else {
-                if (newFilter.status.includes(status)) {
-                    newFilter.status = newFilter.status.filter(item => item !== status);
-                } else {
-                    newFilter.status.push(status);
-                }
+                newFilter.status.push(status);
             }
+
             this.$emit("updateFilter", newFilter);
         },
         toggleActiveFilter(active) {
             let newFilter = {
-                ...this.filterState
+                ...this.getActiveFilters(),
             };
 
-            if (newFilter.active == null) {
-                newFilter.active = [ active ];
+            if (newFilter.active.includes("" + active)) {
+                newFilter.active = newFilter.active.filter(item => item !== "" + active);
             } else {
-                if (newFilter.active.includes(active)) {
-                    newFilter.active = newFilter.active.filter(item => item !== active);
-                } else {
-                    newFilter.active.push(active);
-                }
+                newFilter.active.push(active);
             }
+
             this.$emit("updateFilter", newFilter);
         },
         toggleTagFilter(tag) {
             let newFilter = {
-                ...this.filterState
+                ...this.getActiveFilters(),
             };
 
-            if (newFilter.tags == null) {
-                newFilter.tags = [ tag.id ];
+            if (newFilter.tags.includes("" + tag.id)) {
+                newFilter.tags = newFilter.tags.filter(item => item !== "" + tag.id);
             } else {
-                if (newFilter.tags.includes(tag.id)) {
-                    newFilter.tags = newFilter.tags.filter(item => item !== tag.id);
-                } else {
-                    newFilter.tags.push(tag.id);
-                }
+                newFilter.tags.push(tag.id);
             }
+
             this.$emit("updateFilter", newFilter);
         },
         clearFilters() {
             this.$emit("updateFilter", {
-                status: null,
+                status: undefined,
+                active: undefined,
+                tags: undefined,
             });
         },
         getExistingTags() {
