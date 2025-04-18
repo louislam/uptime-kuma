@@ -119,9 +119,6 @@ export default {
                 about: {
                     title: this.$t("About"),
                 },
-                licenses: {
-                    title: this.$t("Licenses"),
-                },
             };
         },
     },
