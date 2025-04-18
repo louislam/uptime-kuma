@@ -82,6 +82,7 @@
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
         "compression": "~1.7.4",
+        "country-flag-emoji-polyfill": "^0.1.8",
         "croner": "~8.1.0",
         "dayjs": "~1.11.5",
         "dev-null": "^0.1.1",
