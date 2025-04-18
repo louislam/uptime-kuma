@@ -10,7 +10,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="my-3 form-check">
-                        <input id="show-clickable-link" v-model="monitor.isClickAble" class="form-check-input" type="checkbox" @click="toggleLink(monitor.group_index, monitor.monitor_index)" />
+                        <input id="show-clickable-link" v-model="monitor.isClickable" class="form-check-input" type="checkbox" @click="toggleLink(monitor.group_index, monitor.monitor_index)" />
                         <label class="form-check-label" for="show-clickable-link">
                             {{ $t("Show Clickable Link") }}
                         </label>
@@ -54,6 +54,9 @@ export default {
             monitor: {
                 id: null,
                 name: null,
+                monitor_index: null,
+                group_index: null,
+                isClickable: null,
             },
         };
     },
@@ -77,7 +80,7 @@ export default {
                 name: monitor.element.name,
                 monitor_index: monitor.index,
                 group_index: group.index,
-                isClickAble: this.showLink(monitor),
+                isClickable: this.showLink(monitor),
             };
 
             this.MonitorSettingDialog.show();
@@ -98,17 +101,10 @@ export default {
          * Attempts to guess if a link should be shown based upon if
          * sendUrl is set and if the URL is default or not.
          * @param {object} monitor Monitor to check
-         * @param {boolean} ignoreSendUrl Should the presence of the sendUrl
-         * property be ignored. This will only work in edit mode.
          * @returns {boolean} Should the link be shown?
          */
-        showLink(monitor, ignoreSendUrl = false) {
-            // We must check if there are any elements in monitorList to
-            // prevent undefined errors if it hasn't been loaded yet
-            if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
-                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
-            }
-            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://" && !this.editMode;
+        showLink(monitor) {
+            return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
         },
     },
 };
