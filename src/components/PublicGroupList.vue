@@ -20,19 +20,19 @@
                         <div class="dropdown">
                             <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" :id="'sortDropdown' + group.index" data-bs-toggle="dropdown" aria-expanded="false">
                                 <div class="sort-arrows">
-                                    <font-awesome-icon 
-                                        icon="arrow-down" 
+                                    <font-awesome-icon
+                                        icon="arrow-down"
                                         :class="{ 
                                             'arrow-inactive': !group.element.sortKey || group.element.sortDirection !== 'desc',
                                             'arrow-active': group.element.sortKey && group.element.sortDirection === 'desc'
-                                        }" 
+                                        }"
                                     />
-                                    <font-awesome-icon 
-                                        icon="arrow-up" 
+                                    <font-awesome-icon
+                                        icon="arrow-up"
                                         :class="{ 
                                             'arrow-inactive': !group.element.sortKey || group.element.sortDirection !== 'asc',
                                             'arrow-active': group.element.sortKey && group.element.sortDirection === 'asc'
-                                        }" 
+                                        }"
                                     />
                                 </div>
                             </button>
@@ -42,9 +42,9 @@
                                         <div class="sort-item-content">
                                             <span>{{ $t("Status") }}</span>
                                             <span v-if="getSortKey(group.element) === 'status'" class="sort-indicators">
-                                                <font-awesome-icon 
-                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
-                                                    class="arrow-active me-1" 
+                                                <font-awesome-icon
+                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
+                                                    class="arrow-active me-1"
                                                 />
                                             </span>
                                         </div>
@@ -55,9 +55,9 @@
                                         <div class="sort-item-content">
                                             <span>{{ $t("Name") }}</span>
                                             <span v-if="getSortKey(group.element) === 'name'" class="sort-indicators">
-                                                <font-awesome-icon 
-                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
-                                                    class="arrow-active me-1" 
+                                                <font-awesome-icon
+                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
+                                                    class="arrow-active me-1"
                                                 />
                                             </span>
                                         </div>
@@ -68,9 +68,9 @@
                                         <div class="sort-item-content">
                                             <span>{{ $t("Uptime") }}</span>
                                             <span v-if="getSortKey(group.element) === 'uptime'" class="sort-indicators">
-                                                <font-awesome-icon 
-                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
-                                                    class="arrow-active me-1" 
+                                                <font-awesome-icon
+                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
+                                                    class="arrow-active me-1"
                                                 />
                                             </span>
                                         </div>
@@ -81,9 +81,9 @@
                                         <div class="sort-item-content">
                                             <span>{{ $t("Cert Exp.") }}</span>
                                             <span v-if="getSortKey(group.element) === 'cert'" class="sort-indicators">
-                                                <font-awesome-icon 
-                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
-                                                    class="arrow-active me-1" 
+                                                <font-awesome-icon
+                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"
+                                                    class="arrow-active me-1"
                                                 />
                                             </span>
                                         </div>
@@ -387,21 +387,32 @@ export default {
                 if (!a || !b) return 0;
 
                 let comparison = 0;
-                let valueA, valueB;
+                let valueA;
+                let valueB;
 
                 if (sortKey === "status") {
                     // Sort by status
                     const getStatusPriority = (monitor) => {
-                        if (!monitor || !monitor.id) return 4;
+                        if (!monitor || !monitor.id) {
+                            return 4;
+                        }
 
                         const hbList = this.$root.heartbeatList || {};
                         const hbArr = hbList[monitor.id];
                         if (hbArr && hbArr.length > 0) {
                             const lastStatus = hbArr.at(-1).status;
-                            if (lastStatus === 0) return 0; // Down
-                            if (lastStatus === 1) return 1; // Up
-                            if (lastStatus === 2) return 2; // Pending
-                            if (lastStatus === 3) return 3; // Maintenance
+                            if (lastStatus === 0) {
+                                return 0;
+                            } // Down
+                            if (lastStatus === 1) {
+                                return 1;
+                            } // Up
+                            if (lastStatus === 2) {
+                                return 2;
+                            } // Pending
+                            if (lastStatus === 3) {
+                                return 3;
+                            } // Maintenance
                         }
                         return 4; // Unknown/No data
                     };
@@ -471,7 +482,9 @@ export default {
             // We must check if there are any elements in monitorList to
             // prevent undefined errors if it hasn't been loaded yet
             if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
-                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
+                return this.$root.monitorList[monitor.element.id].type === "http" ||
+                    this.$root.monitorList[monitor.element.id].type === "keyword" ||
+                    this.$root.monitorList[monitor.element.id].type === "json-query";
             }
             return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
         },
@@ -516,13 +529,17 @@ export default {
          * @returns {void}
          */
         loadSortSettingsFromURL() {
-            if (!this.$root.publicGroupList) return;
+            if (!this.$root.publicGroupList) {
+                return;
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
 
             // Iterate through all groups, look for sort parameters in URL
             this.$root.publicGroupList.forEach(group => {
-                if (!group) return;
+                if (!group) {
+                    return;
+                }
 
                 const groupId = this.getGroupIdentifier(group);
                 const sortParam = urlParams.get(`sort_${groupId}`);
@@ -544,7 +561,9 @@ export default {
          * @returns {void}
          */
         updateURLSortParams() {
-            if (!this.$root.publicGroupList) return;
+            if (!this.$root.publicGroupList) {
+                return;
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
 
@@ -562,7 +581,9 @@ export default {
 
             // Add current sort parameters
             this.$root.publicGroupList.forEach(group => {
-                if (!group || !group.sortKey) return;
+                if (!group || !group.sortKey) {
+                    return;
+                }
 
                 const groupId = this.getGroupIdentifier(group);
                 urlParams.set(`sort_${groupId}`, `${group.sortKey}_${group.sortDirection}`);
@@ -679,11 +700,11 @@ export default {
     border: none;
     box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
     transition: all ease-in-out 0.15s;
-    
+
     &:hover {
         background-color: #f8f9fa;
     }
-    
+
     &:focus, &:active {
         box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
         border: none;
@@ -723,7 +744,7 @@ export default {
 
 .sort-item {
     padding: 0.4rem 0.8rem;
-    
+
     &:hover {
         background-color: #f8f9fa;
     }
@@ -769,5 +790,4 @@ export default {
 .bg-maintenance {
     background-color: $maintenance;
 }
-
 </style>
