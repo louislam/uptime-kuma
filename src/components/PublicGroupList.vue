@@ -19,12 +19,22 @@
                     <div v-if="group.element && group.element.monitorList && group.element.monitorList.length > 1" class="sort-dropdown">
                         <div class="dropdown">
                             <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" :id="'sortDropdown' + group.index" data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ $t("Sort By") }}
-                                <span v-if="group.element.sortKey" class="ms-1">
-                                    <span class="sort-direction-indicator">
-                                        {{ getSortDirectionSymbol(group.element) }}
-                                    </span>
-                                </span>
+                                <div class="sort-arrows">
+                                    <font-awesome-icon 
+                                        icon="arrow-down" 
+                                        :class="{ 
+                                            'arrow-inactive': !group.element.sortKey || group.element.sortDirection !== 'desc',
+                                            'arrow-active': group.element.sortKey && group.element.sortDirection === 'desc'
+                                        }" 
+                                    />
+                                    <font-awesome-icon 
+                                        icon="arrow-up" 
+                                        :class="{ 
+                                            'arrow-inactive': !group.element.sortKey || group.element.sortDirection !== 'asc',
+                                            'arrow-active': group.element.sortKey && group.element.sortDirection === 'asc'
+                                        }" 
+                                    />
+                                </div>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end sort-menu" :aria-labelledby="'sortDropdown' + group.index">
                                 <li>
@@ -32,7 +42,10 @@
                                         <div class="sort-item-content">
                                             <span>{{ $t("Status") }}</span>
                                             <span v-if="getSortKey(group.element) === 'status'" class="sort-indicators">
-                                                <span class="sort-direction-indicator">{{ getSortDirectionSymbol(group.element) }}</span>
+                                                <font-awesome-icon 
+                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
+                                                    class="arrow-active me-1" 
+                                                />
                                             </span>
                                         </div>
                                     </a>
@@ -42,7 +55,10 @@
                                         <div class="sort-item-content">
                                             <span>{{ $t("Name") }}</span>
                                             <span v-if="getSortKey(group.element) === 'name'" class="sort-indicators">
-                                                <span class="sort-direction-indicator">{{ getSortDirectionSymbol(group.element) }}</span>
+                                                <font-awesome-icon 
+                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
+                                                    class="arrow-active me-1" 
+                                                />
                                             </span>
                                         </div>
                                     </a>
@@ -52,7 +68,10 @@
                                         <div class="sort-item-content">
                                             <span>{{ $t("Uptime") }}</span>
                                             <span v-if="getSortKey(group.element) === 'uptime'" class="sort-indicators">
-                                                <span class="sort-direction-indicator">{{ getSortDirectionSymbol(group.element) }}</span>
+                                                <font-awesome-icon 
+                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
+                                                    class="arrow-active me-1" 
+                                                />
                                             </span>
                                         </div>
                                     </a>
@@ -62,7 +81,10 @@
                                         <div class="sort-item-content">
                                             <span>{{ $t("Cert Exp.") }}</span>
                                             <span v-if="getSortKey(group.element) === 'cert'" class="sort-indicators">
-                                                <span class="sort-direction-indicator">{{ getSortDirectionSymbol(group.element) }}</span>
+                                                <font-awesome-icon 
+                                                    :icon="group.element.sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'" 
+                                                    class="arrow-active me-1" 
+                                                />
                                             </span>
                                         </div>
                                     </a>
@@ -647,21 +669,64 @@ export default {
 }
 
 .sort-button {
-    min-width: 100px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.3rem 0.7rem;
+    justify-content: center;
+    padding: 0.3rem 0.6rem;
+    min-width: 40px;
+    border-radius: 10px;
+    background-color: white;
+    border: none;
+    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
+    transition: all ease-in-out 0.15s;
+    
+    &:hover {
+        background-color: #f8f9fa;
+    }
+    
+    &:focus, &:active {
+        box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
+        border: none;
+        outline: none;
+    }
+}
+
+.sort-arrows {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 2px;
+}
+
+.arrow-inactive {
+    color: #aaa;
+    font-size: 0.7rem;
+    opacity: 0.5;
+}
+
+.arrow-active {
+    color: #4caf50;
+    font-size: 0.8rem;
 }
 
 .sort-menu {
     min-width: auto;
     width: auto;
     padding: 0.2rem 0;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 .sort-item {
     padding: 0.4rem 0.8rem;
+    
+    &:hover {
+        background-color: #f8f9fa;
+    }
 }
 
 .sort-item-content {
