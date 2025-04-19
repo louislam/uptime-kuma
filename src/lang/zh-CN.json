@@ -27,7 +27,6 @@
     "notificationDescription": "通知必须被分配给监控项才能正常工作。",
     "keywordDescription": "在纯 HTML 或 JSON 响应中搜索关键字，区分大小写。",
     "pauseDashboardHome": "暂停",
-    "Sort By": "排序方式",
     "deleteMonitorMsg": "确定要删除此监控项吗？",
     "deleteMaintenanceMsg": "确定要删除此维护吗？",
     "deleteNotificationMsg": "确定要为所有监控项删除此通知吗？",
@@ -1118,7 +1117,5 @@
     "wayToGetWahaApiKey": "API 密钥是你用于运行 WAHA 的 WHATSAPP_API_KEY 环境变量值。",
     "telegramTemplateFormatDescription": "Telegram 允许在消息中使用不同的标记语言，具体细节请参见 Telegram {0}。",
     "YZJ Webhook URL": "YZJ Webhook 地址",
-    "YZJ Robot Token": "YZJ 机器人令牌",
-    "Search...": "搜索...",
-    "No services found": "未找到服务"
+    "YZJ Robot Token": "YZJ 机器人令牌"
 }

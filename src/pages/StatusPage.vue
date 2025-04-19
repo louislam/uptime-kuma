@@ -328,7 +328,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :slug="slug" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -773,12 +773,10 @@ export default {
             if (! this.editMode) {
                 axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
                     const { heartbeatList, uptimeList } = res.data;
+
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
-                    
-                    // 注：移除了原有的"宕机优先"排序逻辑
-                    // 现在监控器的排序将完全由PublicGroupList组件的排序功能控制
-                    
+
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
                         const monitorHeartbeats = heartbeatList[currentId];

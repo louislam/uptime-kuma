@@ -20,8 +20,8 @@ import {
     faTachometerAlt,
     faTimes,
     faTimesCircle,
-    faCheckCircle,
     faTrash,
+    faCheckCircle,
     faStream,
     faSave,
     faExclamationCircle,
@@ -50,8 +50,6 @@ import {
     faInfoCircle,
     faClone,
     faCertificate,
-    faArrowUp,
-    faArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -68,8 +66,8 @@ library.add(
     faTachometerAlt,
     faTimes,
     faTimesCircle,
-    faCheckCircle,
     faTrash,
+    faCheckCircle,
     faStream,
     faSave,
     faExclamationCircle,
@@ -99,8 +97,6 @@ library.add(
     faInfoCircle,
     faClone,
     faCertificate,
-    faArrowUp,
-    faArrowDown,
 );
 
 export { FontAwesomeIcon };
