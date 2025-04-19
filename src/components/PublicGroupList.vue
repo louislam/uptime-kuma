@@ -18,8 +18,8 @@
 
                     <div v-if="group.element && group.element.monitorList && group.element.monitorList.length > 1" class="sort-dropdown">
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" type="button" :id="'sortDropdown' + group.index" data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ $t('Sort By') }}
+                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" :id="'sortDropdown' + group.index" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ $t("Sort By") }}
                                 <span v-if="group.element.sortKey" class="ms-1">
                                     <span class="sort-direction-indicator">
                                         {{ getSortDirectionSymbol(group.element) }}
@@ -30,9 +30,8 @@
                                 <li>
                                     <a class="dropdown-item sort-item" href="#" @click.prevent="setSort(group.element, 'status')">
                                         <div class="sort-item-content">
-                                            <span>{{ $t('Status') }}</span>
+                                            <span>{{ $t("Status") }}</span>
                                             <span v-if="getSortKey(group.element) === 'status'" class="sort-indicators">
-                                                <font-awesome-icon icon="check" />
                                                 <span class="sort-direction-indicator">{{ getSortDirectionSymbol(group.element) }}</span>
                                             </span>
                                         </div>
@@ -41,9 +40,8 @@
                                 <li>
                                     <a class="dropdown-item sort-item" href="#" @click.prevent="setSort(group.element, 'name')">
                                         <div class="sort-item-content">
-                                            <span>{{ $t('Name') }}</span>
+                                            <span>{{ $t("Name") }}</span>
                                             <span v-if="getSortKey(group.element) === 'name'" class="sort-indicators">
-                                                <font-awesome-icon icon="check" />
                                                 <span class="sort-direction-indicator">{{ getSortDirectionSymbol(group.element) }}</span>
                                             </span>
                                         </div>
@@ -52,9 +50,8 @@
                                 <li>
                                     <a class="dropdown-item sort-item" href="#" @click.prevent="setSort(group.element, 'uptime')">
                                         <div class="sort-item-content">
-                                            <span>{{ $t('Uptime') }}</span>
+                                            <span>{{ $t("Uptime") }}</span>
                                             <span v-if="getSortKey(group.element) === 'uptime'" class="sort-indicators">
-                                                <font-awesome-icon icon="check" />
                                                 <span class="sort-direction-indicator">{{ getSortDirectionSymbol(group.element) }}</span>
                                             </span>
                                         </div>
@@ -63,9 +60,8 @@
                                 <li v-if="showCertificateExpiry">
                                     <a class="dropdown-item sort-item" href="#" @click.prevent="setSort(group.element, 'cert')">
                                         <div class="sort-item-content">
-                                            <span>{{ $t('Cert Exp.') }}</span>
+                                            <span>{{ $t("Cert Exp.") }}</span>
                                             <span v-if="getSortKey(group.element) === 'cert'" class="sort-indicators">
-                                                <font-awesome-icon icon="check" />
                                                 <span class="sort-direction-indicator">{{ getSortDirectionSymbol(group.element) }}</span>
                                             </span>
                                         </div>
@@ -82,7 +78,6 @@
                     </div>
 
                     <!-- Monitor List -->
-                    <!-- animation is not working, no idea why -->
                     <Draggable
                         v-model="group.element.monitorList"
                         class="monitor-list"
@@ -193,15 +188,15 @@ export default {
         // Load sort settings from URL
         this.loadSortSettingsFromURL();
         // Listen for URL changes
-        window.addEventListener('popstate', this.handlePopState);
+        window.addEventListener("popstate", this.handlePopState);
     },
     beforeUnmount() {
         // Remove URL change listener
-        window.removeEventListener('popstate', this.handlePopState);
+        window.removeEventListener("popstate", this.handlePopState);
     },
     watch: {
         // Watch for changes in heartbeat list, reapply sorting
-        '$root.heartbeatList': {
+        "$root.heartbeatList": {
             handler() {
                 if (this.$root && this.$root.publicGroupList) {
                     this.$root.publicGroupList.forEach(group => {
@@ -215,7 +210,7 @@ export default {
         },
 
         // Watch for changes in uptime list, reapply sorting
-        '$root.uptimeList': {
+        "$root.uptimeList": {
             handler() {
                 if (this.$root && this.$root.publicGroupList) {
                     this.$root.publicGroupList.forEach(group => {
@@ -231,6 +226,7 @@ export default {
     methods: {
         /**
          * Initialize group sort settings
+         * @returns {void}
          */
         initializeSortSettings() {
             if (this.$root.publicGroupList) {
@@ -246,10 +242,10 @@ export default {
                         } else {
                             // Use default settings
                             if (group.sortKey === undefined) {
-                                group.sortKey = 'status';
+                                group.sortKey = "status";
                             }
                             if (group.sortDirection === undefined) {
-                                group.sortDirection = 'desc';
+                                group.sortDirection = "desc";
                             }
                         }
                         // Apply initial sorting
@@ -259,7 +255,7 @@ export default {
             }
             // Watch for new groups being added and initialize their sort state
             if (this.$root) {
-                this.$root.$watch('publicGroupList', (newGroups) => {
+                this.$root.$watch("publicGroupList", (newGroups) => {
                     if (newGroups) {
                         newGroups.forEach(group => {
                             if (group && group.sortKey === undefined) {
@@ -269,8 +265,8 @@ export default {
                                     group.sortKey = savedSettings.key;
                                     group.sortDirection = savedSettings.direction;
                                 } else {
-                                    group.sortKey = 'status';
-                                    group.sortDirection = 'desc';
+                                    group.sortKey = "status";
+                                    group.sortDirection = "desc";
                                 }
 
                                 this.applySort(group);
@@ -289,7 +285,7 @@ export default {
         getSavedSortSettings(group) {
             try {
                 const groupId = this.getGroupIdentifier(group);
-                const slug = this.$root.statusPage ? this.$root.statusPage.slug : 'default';
+                const slug = this.$root.statusPage ? this.$root.statusPage.slug : "default";
                 const storageKey = `uptime-kuma-sort-${slug}-${groupId}`;
 
                 const savedSettings = localStorage.getItem(storageKey);
@@ -297,7 +293,7 @@ export default {
                     return JSON.parse(savedSettings);
                 }
             } catch (error) {
-                console.error('Cannot read sort settings', error);
+                console.error("Cannot read sort settings", error);
             }
             return null;
         },
@@ -308,7 +304,7 @@ export default {
          * @returns {string} sort key
          */
         getSortKey(group) {
-            return group.sortKey || 'status';
+            return group.sortKey || "status";
         },
 
         /**
@@ -317,24 +313,25 @@ export default {
          * @returns {string} sort direction symbol
          */
         getSortDirectionSymbol(group) {
-            return (group.sortDirection === 'asc') ? '↑' : '↓';
+            return (group.sortDirection === "asc") ? "↑" : "↓";
         },
 
         /**
          * Set group sort key and direction, then apply sorting
          * @param {object} group object
-         * @param {string} sort key ('status', 'name', 'uptime', 'cert')
+         * @param {string} key - sort key ('status', 'name', 'uptime', 'cert')
+         * @returns {void}
          */
         setSort(group, key) {
             if (group.sortKey === key) {
-                group.sortDirection = group.sortDirection === 'asc' ? 'desc' : 'asc';
+                group.sortDirection = group.sortDirection === "asc" ? "desc" : "asc";
             } else {
                 group.sortKey = key;
-                group.sortDirection = (key === 'status') ? 'desc' : 'asc';
+                group.sortDirection = (key === "status") ? "desc" : "asc";
             }
             try {
                 const groupId = this.getGroupIdentifier(group);
-                const slug = this.$root.statusPage ? this.$root.statusPage.slug : 'default';
+                const slug = this.$root.statusPage ? this.$root.statusPage.slug : "default";
                 const storageKey = `uptime-kuma-sort-${slug}-${groupId}`;
 
                 const sortSettings = {
@@ -343,7 +340,7 @@ export default {
                 };
                 localStorage.setItem(storageKey, JSON.stringify(sortSettings));
             } catch (error) {
-                console.error('Cannot save sort settings', error);
+                console.error("Cannot save sort settings", error);
             }
 
             this.applySort(group);
@@ -354,14 +351,15 @@ export default {
         /**
          * Apply sorting logic directly to the group's monitorList (in-place)
          * @param {object} group object containing monitorList
+         * @returns {void}
          */
         applySort(group) {
             if (!group || !group.monitorList || !Array.isArray(group.monitorList)) {
                 return;
             }
 
-            const sortKey = group.sortKey || 'status';
-            const sortDirection = group.sortDirection || 'desc';
+            const sortKey = group.sortKey || "status";
+            const sortDirection = group.sortDirection || "desc";
 
             group.monitorList.sort((a, b) => {
                 if (!a || !b) return 0;
@@ -369,7 +367,7 @@ export default {
                 let comparison = 0;
                 let valueA, valueB;
 
-                if (sortKey === 'status') {
+                if (sortKey === "status") {
                     // Sort by status
                     const getStatusPriority = (monitor) => {
                         if (!monitor || !monitor.id) return 4;
@@ -387,18 +385,18 @@ export default {
                     };
                     valueA = getStatusPriority(a);
                     valueB = getStatusPriority(b);
-                } else if (sortKey === 'name') {
+                } else if (sortKey === "name") {
                     // Sort alphabetically by name
-                    valueA = a.name ? a.name.toLowerCase() : '';
-                    valueB = b.name ? b.name.toLowerCase() : '';
-                } else if (sortKey === 'uptime') {
+                    valueA = a.name ? a.name.toLowerCase() : "";
+                    valueB = b.name ? b.name.toLowerCase() : "";
+                } else if (sortKey === "uptime") {
                     // Sort by uptime
                     const uptimeList = this.$root.uptimeList || {};
                     const uptimeA = a.id ? parseFloat(uptimeList[`${a.id}_24`]) || 0 : 0;
                     const uptimeB = b.id ? parseFloat(uptimeList[`${b.id}_24`]) || 0 : 0;
                     valueA = uptimeA;
                     valueB = uptimeB;
-                } else if (sortKey === 'cert') {
+                } else if (sortKey === "cert") {
                     // Sort by certificate expiry time
                     valueA = a.validCert && a.certExpiryDaysRemaining ? a.certExpiryDaysRemaining : -1;
                     valueB = b.validCert && b.certExpiryDaysRemaining ? b.certExpiryDaysRemaining : -1;
@@ -411,10 +409,10 @@ export default {
                 }
 
                 // Special handling for status sorting
-                if (sortKey === 'status') {
-                    return sortDirection === 'desc' ? (comparison * -1) : comparison;
+                if (sortKey === "status") {
+                    return sortDirection === "desc" ? (comparison * -1) : comparison;
                 } else {
-                    return sortDirection === 'asc' ? comparison : (comparison * -1);
+                    return sortDirection === "asc" ? comparison : (comparison * -1);
                 }
             });
         },
@@ -430,8 +428,7 @@ export default {
 
         /**
          * Remove a monitor from a group
-         * @param {number} groupIndex Index of group to remove monitor
-         * from
+         * @param {number} groupIndex Index of group to remove monitor from
          * @param {number} index Index of monitor to remove
          * @returns {void}
          */
@@ -486,6 +483,7 @@ export default {
 
         /**
          * Handle browser back/forward button events
+         * @returns {void}
          */
         handlePopState() {
             this.loadSortSettingsFromURL();
@@ -493,6 +491,7 @@ export default {
 
         /**
          * Load sort settings from URL
+         * @returns {void}
          */
         loadSortSettingsFromURL() {
             if (!this.$root.publicGroupList) return;
@@ -507,9 +506,9 @@ export default {
                 const sortParam = urlParams.get(`sort_${groupId}`);
 
                 if (sortParam) {
-                    const [key, direction] = sortParam.split('_');
-                    if (key && ['status', 'name', 'uptime', 'cert'].includes(key) &&
-                        direction && ['asc', 'desc'].includes(direction)) {
+                    const [key, direction] = sortParam.split("_");
+                    if (key && ["status", "name", "uptime", "cert"].includes(key) &&
+                        direction && ["asc", "desc"].includes(direction)) {
                         group.sortKey = key;
                         group.sortDirection = direction;
                         this.applySort(group);
@@ -520,6 +519,7 @@ export default {
 
         /**
          * Update sort parameters in URL
+         * @returns {void}
          */
         updateURLSortParams() {
             if (!this.$root.publicGroupList) return;
@@ -529,7 +529,7 @@ export default {
             // First clear all sort_ parameters
             const paramsToRemove = [];
             for (const [key] of urlParams.entries()) {
-                if (key.startsWith('sort_')) {
+                if (key.startsWith("sort_")) {
                     paramsToRemove.push(key);
                 }
             }
@@ -547,8 +547,8 @@ export default {
             });
 
             // Update URL without refreshing the page
-            const newUrl = `${window.location.pathname}${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
-            window.history.pushState({ path: newUrl }, '', newUrl);
+            const newUrl = `${window.location.pathname}${urlParams.toString() ? "?" + urlParams.toString() : ""}`;
+            window.history.pushState({ path: newUrl }, "", newUrl);
         },
 
         /**
@@ -560,7 +560,7 @@ export default {
             // Use the name directly if available
             if (group.name) {
                 // Only remove spaces and use encodeURIComponent for URL safety
-                const cleanName = group.name.replace(/\s+/g, '');
+                const cleanName = group.name.replace(/\s+/g, "");
                 return cleanName;
             }
             // Fallback to ID or index
