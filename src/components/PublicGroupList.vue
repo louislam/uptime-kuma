@@ -206,12 +206,6 @@ export default {
         // Initialize sort settings
         this.initializeSortSettings();
     },
-    mounted() {
-        // Load sort settings from URL
-        this.loadSortSettingsFromURL();
-        // Listen for URL changes
-        window.addEventListener("popstate", this.handlePopState);
-    },
     watch: {
         // Watch for changes in heartbeat list, reapply sorting
         "$root.heartbeatList": {
@@ -240,6 +234,12 @@ export default {
             },
             deep: true,
         },
+    },
+    mounted() {
+        // Load sort settings from URL
+        this.loadSortSettingsFromURL();
+        // Listen for URL changes
+        window.addEventListener("popstate", this.handlePopState);
     },
     beforeUnmount() {
         // Remove URL change listener
