@@ -202,10 +202,6 @@ export default {
             return (this.$root.publicGroupList.length >= 2);
         }
     },
-    created() {
-        // Initialize sort settings
-        this.initializeSortSettings();
-    },
     watch: {
         // Watch for changes in heartbeat list, reapply sorting
         "$root.heartbeatList": {
@@ -234,6 +230,10 @@ export default {
             },
             deep: true,
         },
+    },
+    created() {
+        // Initialize sort settings
+        this.initializeSortSettings();
     },
     mounted() {
         // Load sort settings from URL
@@ -267,7 +267,7 @@ export default {
                                 group.sortKey = "status";
                             }
                             if (group.sortDirection === undefined) {
-                                group.sortDirection = "desc";
+                                group.sortDirection = "asc";
                             }
                         }
                         // Apply initial sorting
@@ -288,7 +288,7 @@ export default {
                                     group.sortDirection = savedSettings.direction;
                                 } else {
                                     group.sortKey = "status";
-                                    group.sortDirection = "desc";
+                                    group.sortDirection = "asc";
                                 }
 
                                 this.applySort(group);
@@ -349,7 +349,7 @@ export default {
                 group.sortDirection = group.sortDirection === "asc" ? "desc" : "asc";
             } else {
                 group.sortKey = key;
-                group.sortDirection = (key === "status") ? "desc" : "asc";
+                group.sortDirection = "asc";
             }
             try {
                 const groupId = this.getGroupIdentifier(group);
