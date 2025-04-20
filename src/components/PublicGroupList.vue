@@ -202,10 +202,6 @@ export default {
             return (this.$root.publicGroupList.length >= 2);
         }
     },
-    created() {
-        // Initialize sort settings
-        this.initializeSortSettings();
-    },
     watch: {
         // Watch for changes in heartbeat list, reapply sorting
         "$root.heartbeatList": {
@@ -234,6 +230,10 @@ export default {
             },
             deep: true,
         },
+    },
+    created() {
+        // Initialize sort settings
+        this.initializeSortSettings();
     },
     mounted() {
         // Load sort settings from URL
