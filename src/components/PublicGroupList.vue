@@ -18,18 +18,18 @@
 
                     <div v-if="group.element && group.element.monitorList && group.element.monitorList.length > 1" class="sort-dropdown">
                         <div class="dropdown">
-                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" :id="'sortDropdown' + group.index" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button :id="'sortDropdown' + group.index" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <div class="sort-arrows">
                                     <font-awesome-icon
                                         icon="arrow-down"
-                                        :class="{ 
+                                        :class="{
                                             'arrow-inactive': !group.element.sortKey || group.element.sortDirection !== 'desc',
                                             'arrow-active': group.element.sortKey && group.element.sortDirection === 'desc'
                                         }"
                                     />
                                     <font-awesome-icon
                                         icon="arrow-up"
-                                        :class="{ 
+                                        :class="{
                                             'arrow-inactive': !group.element.sortKey || group.element.sortDirection !== 'asc',
                                             'arrow-active': group.element.sortKey && group.element.sortDirection === 'asc'
                                         }"
@@ -212,10 +212,6 @@ export default {
         // Listen for URL changes
         window.addEventListener("popstate", this.handlePopState);
     },
-    beforeUnmount() {
-        // Remove URL change listener
-        window.removeEventListener("popstate", this.handlePopState);
-    },
     watch: {
         // Watch for changes in heartbeat list, reapply sorting
         "$root.heartbeatList": {
@@ -244,6 +240,10 @@ export default {
             },
             deep: true,
         },
+    },
+    beforeUnmount() {
+        // Remove URL change listener
+        window.removeEventListener("popstate", this.handlePopState);
     },
     methods: {
         /**
@@ -384,7 +384,9 @@ export default {
             const sortDirection = group.sortDirection || "desc";
 
             group.monitorList.sort((a, b) => {
-                if (!a || !b) return 0;
+                if (!a || !b) {
+                    return 0;
+                }
 
                 let comparison = 0;
                 let valueA;
@@ -545,9 +547,9 @@ export default {
                 const sortParam = urlParams.get(`sort_${groupId}`);
 
                 if (sortParam) {
-                    const [key, direction] = sortParam.split("_");
-                    if (key && ["status", "name", "uptime", "cert"].includes(key) &&
-                        direction && ["asc", "desc"].includes(direction)) {
+                    const [ key, direction ] = sortParam.split("_");
+                    if (key && [ "status", "name", "uptime", "cert" ].includes(key) &&
+                        direction && [ "asc", "desc" ].includes(direction)) {
                         group.sortKey = key;
                         group.sortDirection = direction;
                         this.applySort(group);
@@ -569,7 +571,7 @@ export default {
 
             // First clear all sort_ parameters
             const paramsToRemove = [];
-            for (const [key] of urlParams.entries()) {
+            for (const [ key ] of urlParams.entries()) {
                 if (key.startsWith("sort_")) {
                     paramsToRemove.push(key);
                 }
