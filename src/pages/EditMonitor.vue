@@ -64,6 +64,9 @@
                                         <option value="mqtt">
                                             MQTT
                                         </option>
+                                        <option value="rabbitmq">
+                                            RabbitMQ
+                                        </option>
                                         <option value="kafka-producer">
                                             Kafka Producer
                                         </option>
@@ -90,6 +93,13 @@
                                         </option>
                                     </optgroup>
                                 </select>
+                                <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
+                                    <template #rabitmq_documentation>
+                                        <a href="https://www.rabbitmq.com/management" target="_blank" rel="noopener noreferrer">
+                                            RabbitMQ documentation
+                                        </a>
+                                    </template>
+                                </i18n-t>
                             </div>
 
                             <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
@@ -230,6 +240,43 @@
                                     <label class="form-check-label" for="kafkaProducerAllowAutoTopicCreation">
                                         {{ $t("Enable Kafka Producer Auto Topic Creation") }}
                                     </label>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'rabbitmq'">
+                                <!-- RabbitMQ Nodes List -->
+                                <div class="my-3">
+                                    <label for="rabbitmqNodes" class="form-label">{{ $t("RabbitMQ Nodes") }}</label>
+                                    <VueMultiselect
+                                        id="rabbitmqNodes"
+                                        v-model="monitor.rabbitmqNodes"
+                                        :required="true"
+                                        :multiple="true"
+                                        :options="[]"
+                                        :placeholder="$t('Enter the list of nodes')"
+                                        :tag-placeholder="$t('Press Enter to add node')"
+                                        :max-height="500"
+                                        :taggable="true"
+                                        :show-no-options="false"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :preselect-first="false"
+                                        @tag="addRabbitmqNode"
+                                    ></VueMultiselect>
+                                    <div class="form-text">
+                                        {{ $t("rabbitmqNodesDescription", ["https://node1.rabbitmq.com:15672"]) }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="rabbitmqUsername" class="form-label">RabbitMQ {{ $t("RabbitMQ Username") }}</label>
+                                    <input id="rabbitmqUsername" v-model="monitor.rabbitmqUsername" type="text" required class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="rabbitmqPassword" class="form-label">{{ $t("RabbitMQ Password") }}</label>
+                                    <HiddenInput id="rabbitmqPassword" v-model="monitor.rabbitmqPassword" autocomplete="false" required="true"></HiddenInput>
                                 </div>
                             </template>
 
@@ -549,7 +596,7 @@
                             </div>
 
                             <!-- Timeout: HTTP / Keyword / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp' || monitor.type === 'rabbitmq'" class="my-3">
                                 <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
                                 <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
                             </div>
@@ -982,22 +1029,12 @@
                     <div class="fixed-bottom-bar p-3">
                         <button
                             id="monitor-submit-btn"
-                            class="btn btn-primary me-2"
+                            class="btn btn-primary"
                             type="submit"
                             :disabled="processing"
                             data-testid="save-button"
                         >
                             {{ $t("Save") }}
-                        </button>
-                        <button
-                            v-if="monitor.type === 'http'"
-                            id="monitor-debug-btn"
-                            class="btn btn-outline-primary"
-                            type="button"
-                            :disabled="processing"
-                            @click.stop="modal.show()"
-                        >
-                            {{ $t("Debug") }}
                         </button>
                     </div>
                 </div>
@@ -1010,58 +1047,9 @@
             <RemoteBrowserDialog ref="remoteBrowserDialog" />
         </div>
     </transition>
-    <div ref="modal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <textarea id="curl-debug" v-model="curlCommand" class="form-control mb-3" readonly wrap="off"></textarea>
-                    <button id="debug-copy-btn" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-3 border-0" type="button" @click.stop="copyToClipboard">
-                        <font-awesome-icon icon="copy" />
-                    </button>
-                    <i18n-t keypath="CurlDebugInfo" tag="p" class="form-text">
-                        <template #newiline>
-                            <br>
-                        </template>
-                        <template #firewalls>
-                            <a href="https://xkcd.com/2259/" target="_blank">{{ $t('firewalls') }}</a>
-                        </template>
-                        <template #dns_resolvers>
-                            <a href="https://www.reddit.com/r/sysadmin/comments/rxho93/thank_you_for_the_running_its_always_dns_joke_its/" target="_blank">{{ $t('dns resolvers') }}</a>
-                        </template>
-                        <template #docker_networks>
-                            <a href="https://youtu.be/bKFMS5C4CG0" target="_blank">{{ $t('docker networks') }}</a>
-                        </template>
-                    </i18n-t>
-                    <div v-if="monitor.authMethod === 'oauth2-cc'" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
-                        <div role="img" aria-label="Warning:">⚠️</div>
-                        <i18n-t keypath="CurlDebugInfoOAuth2CCUnsupported" tag="div">
-                            <template #curl>
-                                <code>curl</code>
-                            </template>
-                            <template #newline>
-                                <br>
-                            </template>
-                            <template #oauth2_bearer>
-                                <code>--oauth2-bearer TOKEN</code>
-                            </template>
-                        </i18n-t>
-                    </div>
-                    <div v-if="monitor.proxyId" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
-                        <div role="img" aria-label="Warning:">⚠️</div>
-                        <i18n-t keypath="CurlDebugInfoProxiesUnsupported" tag="div">
-                            <template #curl>
-                                <code>curl</code>
-                            </template>
-                        </i18n-t>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </template>
 
 <script>
-import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
@@ -1076,8 +1064,6 @@ import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } fro
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
-import { version } from "../../package.json";
-const userAgent = `'Uptime-Kuma/${version}'`;
 
 const toast = useToast();
 
@@ -1122,6 +1108,9 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     remote_browser: null,
+    rabbitmqNodes: [],
+    rabbitmqUsername: "",
+    rabbitmqPassword: "",
     conditions: []
 };
 
@@ -1142,7 +1131,6 @@ export default {
 
     data() {
         return {
-            modal: null,
             minInterval: MIN_INTERVAL_SECOND,
             maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
@@ -1169,54 +1157,6 @@ export default {
     },
 
     computed: {
-
-        curlCommand() {
-            const command = [ "curl", "--verbose", "--head", "--request", this.monitor.method, "\\\n", "--user-agent", userAgent, "\\\n" ];
-            if (this.monitor.ignoreTls) {
-                command.push("--insecure", "\\\n");
-            }
-            if (this.monitor.headers) {
-                try {
-                    // trying to parse the supplied data as json to trim whitespace
-                    for (const [ key, value ] of Object.entries(JSON.parse(this.monitor.headers))) {
-                        command.push("--header", `'${key}: ${value}'`, "\\\n");
-                    }
-                } catch (e) {
-                    command.push("--header", `'${this.monitor.headers}'`, "\\\n");
-                }
-            }
-            if (this.monitor.authMethod === "basic") {
-                command.push("--user", `${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}`, "--basic", "\\\n");
-            } else if (this.monitor.authmethod === "mtls") {
-                command.push("--cacert", `'${this.monitor.tlsCa}'`, "\\\n", "--key", `'${this.monitor.tlsKey}'`, "\\\n", "--cert", `'${this.monitor.tlsCert}'`, "\\\n");
-            } else if (this.monitor.authMethod === "ntlm") {
-                command.push("--user", `'${this.monitor.authDomain ? `${this.monitor.authDomain}/` : ""}${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}'`, "--ntlm", "\\\n");
-            }
-            if (this.monitor.body && this.monitor.httpBodyEncoding === "json") {
-                let json = "";
-                try {
-                    // trying to parse the supplied data as json to trim whitespace
-                    json = JSON.stringify(JSON.parse(this.monitor.body));
-                } catch (e) {
-                    json = this.monitor.body;
-                }
-                command.push("--header", "'Content-Type: application/json'", "\\\n", "--data", `'${json}'`, "\\\n");
-            } else if (this.monitor.body && this.monitor.httpBodyEncoding === "xml") {
-                command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}'`, "\\\n");
-            }
-            if (this.monitor.maxredirects) {
-                command.push("--location", "--max-redirs", this.monitor.maxredirects, "\\\n");
-            }
-            if (this.monitor.timeout) {
-                command.push("--max-time", this.monitor.timeout, "\\\n");
-            }
-            if (this.monitor.maxretries) {
-                command.push("--retry", this.monitor.maxretries, "\\\n");
-            }
-            command.push("--url", this.monitor.url);
-            return command.join(" ");
-        },
-
         ipRegex() {
 
             // Allow to test with simple dns server with port (127.0.0.1:5300)
@@ -1503,11 +1443,14 @@ message HealthCheckResponse {
                 }
             }
 
-            if (this.monitor.type === "snmp") {
+            // Set a default timeout if the monitor type has changed or if it's a new monitor
+            if (oldType || this.isAdd) {
+                if (this.monitor.type === "snmp") {
                 // snmp is not expected to be executed via the internet => we can choose a lower default timeout
-                this.monitor.timeout = 5;
-            } else {
-                this.monitor.timeout = 48;
+                    this.monitor.timeout = 5;
+                } else {
+                    this.monitor.timeout = 48;
+                }
             }
 
             // Set default SNMP version
@@ -1573,7 +1516,6 @@ message HealthCheckResponse {
         },
     },
     mounted() {
-        this.modal = new Modal(this.$refs.modal);
         this.init();
 
         let acceptedStatusCodeOptions = [
@@ -1614,14 +1556,6 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        async copyToClipboard() {
-            try {
-                await navigator.clipboard.writeText(this.curlCommand);
-                toast.success(this.$t("CopyToClipboardSuccess"));
-            } catch (err) {
-                toast.error(this.$t("CopyToClipboardError", { error: err.message }));
-            }
-        },
         /**
          * Initialize the edit monitor form
          * @returns {void}
@@ -1709,6 +1643,10 @@ message HealthCheckResponse {
             this.monitor.kafkaProducerBrokers.push(newBroker);
         },
 
+        addRabbitmqNode(newNode) {
+            this.monitor.rabbitmqNodes.push(newNode);
+        },
+
         /**
          * Validate form input
          * @returns {boolean} Is the form input valid?
@@ -1733,6 +1671,17 @@ message HealthCheckResponse {
             if (this.monitor.type === "docker") {
                 if (this.monitor.docker_host == null) {
                     toast.error(this.$t("DockerHostRequired"));
+                    return false;
+                }
+            }
+
+            if (this.monitor.type === "rabbitmq") {
+                if (this.monitor.rabbitmqNodes.length === 0) {
+                    toast.error(this.$t("rabbitmqNodesRequired"));
+                    return false;
+                }
+                if (!this.monitor.rabbitmqNodes.every(node => node.startsWith("http://") || node.startsWith("https://"))) {
+                    toast.error(this.$t("rabbitmqNodesInvalid"));
                     return false;
                 }
             }
@@ -1908,10 +1857,5 @@ message HealthCheckResponse {
 
     textarea {
         min-height: 200px;
-    }
-
-    #curl-debug {
-        font-family: monospace;
-        overflow: auto;
     }
 </style>

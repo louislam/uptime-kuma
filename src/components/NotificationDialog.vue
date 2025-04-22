@@ -163,8 +163,10 @@ export default {
                 "ZohoCliq": "ZohoCliq",
                 "SevenIO": "SevenIO",
                 "whapi": "WhatsApp (Whapi)",
+                "waha": "WhatsApp (WAHA)",
                 "gtxmessaging": "GtxMessaging",
                 "Cellsynt": "Cellsynt",
+                "SendGrid": "SendGrid"
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
@@ -180,8 +182,10 @@ export default {
                 "SMSManager": "SmsManager (smsmanager.cz)",
                 "WeCom": "WeCom (企业微信群机器人)",
                 "ServerChan": "ServerChan (Server酱)",
+                "PushPlus": "PushPlus (推送加)",
                 "smsc": "SMSC",
                 "WPush": "WPush(wpush.cn)",
+                "YZJ": "YZJ (云之家自定义机器人)"
             };
 
             // Sort by notification name
@@ -230,6 +234,9 @@ export default {
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal);
+    },
+    beforeUnmount() {
+        this.cleanupModal();
     },
     methods: {
 
@@ -335,6 +342,20 @@ export default {
                 });
             } while (this.$root.notificationList.find(it => it.name === name));
             return name;
+        },
+
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
         }
     },
 };
