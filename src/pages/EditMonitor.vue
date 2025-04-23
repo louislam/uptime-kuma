@@ -109,7 +109,7 @@
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required data-testid="friendly-name-input">
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" data-testid="friendly-name-input" :placeholder="defaultFriendlyName">
                             </div>
 
                             <!-- URL -->
@@ -1157,6 +1157,23 @@ export default {
     },
 
     computed: {
+        defaultFriendlyName() {
+            if (this.monitor.hostname) {
+                return this.monitor.hostname;
+            }
+            if (this.monitor.url) {
+                try {
+                    const url = new URL(this.monitor.url);
+                    return url.hostname;
+                } catch (e) {
+                    // Handle invalid URL, maybe return a generic placeholder or empty string
+                    return this.$t("My Monitor");
+                }
+            }
+            // Default placeholder if neither hostname nor URL is available
+            return this.$t("My Monitor");
+        },
+
         ipRegex() {
 
             // Allow to test with simple dns server with port (127.0.0.1:5300)
@@ -1699,6 +1716,11 @@ message HealthCheckResponse {
         async submit() {
 
             this.processing = true;
+
+            // Use defaultFriendlyName if Friendly Name is empty
+            if (!this.monitor.name) {
+                this.monitor.name = this.defaultFriendlyName;
+            }
 
             if (!this.isInputValid()) {
                 this.processing = false;
