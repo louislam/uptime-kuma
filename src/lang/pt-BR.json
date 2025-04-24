@@ -1081,5 +1081,6 @@
     "YZJ Robot Token": "YZJ Robot token",
     "telegramServerUrl": "(Opcional) URL do Servidor",
     "Message Template": "Modelo de Mensagem",
-    "Template Format": "Formato do Modelo"
+    "Template Format": "Formato do Modelo",
+    "Font Twemoji by Twitter licensed under": "Fonte Twemoji do Twitter licenciada sob"
 }
