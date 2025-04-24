@@ -59,7 +59,7 @@
     "day": "giorno | giorni",
     "-day": "-giorni",
     "hour": "ora",
-    "-hour": "-ore",
+    "-hour": "-ora",
     "Response": "Risposta",
     "Ping": "Ping",
     "Monitor Type": "Modalità di monitoraggio",
@@ -80,7 +80,7 @@
     "pushOptionalParams": "Parametri aggiuntivi: {0}",
     "Save": "Salva",
     "Notifications": "Notifiche",
-    "Not available, please setup.": "Non disponibili, richiesta configurazione manuale.",
+    "Not available, please setup.": "Non disponibile, richiesta configurazione manuale.",
     "Setup Notification": "Configura le notifiche",
     "Light": "Chiaro",
     "Dark": "Scuro",
@@ -738,5 +738,9 @@
     "invertKeywordDescription": "Cerca la parola chiave essere assente anziché presente.",
     "octopushAPIKey": "\"API Key\" dalle credenziali API HTTP nel pannello di controllo",
     "Enable TLS": "Abilita TLS",
-    "ignoredTLSError": "Ignora errori TLS/SSL"
+    "ignoredTLSError": "Ignora errori TLS/SSL",
+    "templateHostnameOrURL": "nome host o URL",
+    "templateStatus": "stato",
+    "templateServiceName": "nome del servizio",
+    "locally configured mail transfer agent": "agente mail configurato localmente"
 }
