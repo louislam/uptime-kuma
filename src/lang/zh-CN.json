@@ -1119,5 +1119,6 @@
     "YZJ Webhook URL": "YZJ Webhook 地址",
     "YZJ Robot Token": "YZJ 机器人令牌",
     "telegramServerUrl": "(可选) 服务器 Url",
-    "telegramServerUrlDescription": "要解除 Telegram 的机器人 API 限制或在封锁区域（中国、伊朗等）获得访问权限。获取更多信息，请点击 {0}。默认值：{1}"
+    "telegramServerUrlDescription": "用以解除 Telegram 的机器人 API 限制或在封锁区域（中国、伊朗等）获得访问权限。获取更多信息，请点击 {0}。默认值：{1}",
+    "Font Twemoji by Twitter licensed under": "由 Twitter 制作的 Twemoji 字体根据此许可证授权"
 }
