@@ -33,11 +33,7 @@ class SMSEagle extends NotificationProvider {
                     recipientType = "to";
                     sendMethod = "/send_sms";
                     if (notification.smseagleMsgType !== "smseagle-sms") {
-                        if (notification.smseagleDuration) {
-                            duration = notification.smseagleDuration;
-                        } else {
-                            duration = 10;
-                        }
+                        duration = notification.smseagleDuration ?? 10;
 
                         if (notification.smseagleMsgType === "smseagle-ring") {
                             sendMethod = "/ring_call";
@@ -54,7 +50,7 @@ class SMSEagle extends NotificationProvider {
 
                 url.searchParams.append("access_token", notification.smseagleToken);
                 url.searchParams.append(recipientType, notification.smseagleRecipient);
-                if (![ "smseagle-ring", "smseagle-tts", "smseagle-tts-advanced" ].includes(notification.smseagleRecipientType)) {
+                if ("smseagle-sms" === notification.smseagleRecipientType) {
                     url.searchParams.append("unicode", (notification.smseagleEncoding) ? "1" : "0");
                     url.searchParams.append("highpriority", (notification.smseaglePriority) ? notification.smseaglePriority : "0");
                 } else {
@@ -142,22 +138,18 @@ class SMSEagle extends NotificationProvider {
 
                 let resp = await axios.post(notification.smseagleUrl + "/api/v2" + endpoint, postData, config);
 
-                let countAll = resp.data.length;
-                let countQueued = resp.data.filter(x => x.status === "queued").length;
+                const queuedCount = resp.data.filter(x => x.status === "queued").length;
+                const unqueuedCount = resp.data.length - queuedCount;
 
-                if (resp.status !== 200 || countQueued === 0) {
-                    let error = "";
-                    if (resp.data.length > 0) {
-                        error = `SMSEagle API returned error: ${JSON.stringify(resp.data)}`;
-                    } else {
-                        error = "SMSEagle API returned an unexpected response";
+                if (resp.status !== 200 || queuedCount === 0) {
+                    if (!resp.data.length) {
+                        throw new Error("SMSEagle API returned an empty response");
                     }
-                    throw new Error(error);
+                    throw new Error(`SMSEagle API returned error: ${JSON.stringify(resp.data)}`);
                 }
 
-                if (countAll !== countQueued) {
-                    let okWithErrorsMsg = "Sent " + countQueued + "/" + countAll + " Messages Successfully.";
-                    return okWithErrorsMsg;
+                if (unqueuedCount) {
+                    return `Sent ${countQueued}/${resp.data.length} Messages Successfully.`;
                 }
 
                 return okMsg;
