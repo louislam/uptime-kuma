@@ -50,9 +50,9 @@ class SMSEagle extends NotificationProvider {
 
                 url.searchParams.append("access_token", notification.smseagleToken);
                 url.searchParams.append(recipientType, notification.smseagleRecipient);
-                if ("smseagle-sms" === notification.smseagleRecipientType) {
+                if (notification.smseagleRecipientType == null || notification.smseagleRecipientType === "smseagle-sms") {
                     url.searchParams.append("unicode", (notification.smseagleEncoding) ? "1" : "0");
-                    url.searchParams.append("highpriority", (notification.smseaglePriority) ? notification.smseaglePriority : "0");
+                    url.searchParams.append("highpriority", notification.smseaglePriority ?? "0");
                 } else {
                     url.searchParams.append("duration", duration);
                 }
@@ -80,7 +80,7 @@ class SMSEagle extends NotificationProvider {
                 };
 
                 let encoding = (notification.smseagleEncoding) ? "unicode" : "standard";
-                let priority = (notification.smseaglePriority) ? notification.smseaglePriority : 0;
+                let priority = (notification.smseaglePriority) ?? 0;
 
                 let postData = {
                     text: msg,
@@ -88,43 +88,21 @@ class SMSEagle extends NotificationProvider {
                     priority: priority
                 };
 
-                let to = notification.smseagleRecipientTo;
-                let contacts = notification.smseagleRecipientContact;
-                let groups = notification.smseagleRecipientGroup;
-
-                if (contacts) {
-                    contacts = contacts.split(",");
-                    contacts = contacts.map(e => {
-                        return Number(e);
-                    });
-                    postData["contacts"] = contacts;
+                if (notification.smseagleRecipientContact) {
+                    postData["contacts"] = notification.smseagleRecipientContact.split(",").map(Number);
                 }
-
-                if (groups) {
-                    groups = groups.split(",");
-                    groups = groups.map(e => {
-                        return Number(e);
-                    });
-                    postData["groups"] = groups;
+                if (notification.smseagleRecipientGroup) {
+                    postData["groups"] = notification.smseagleRecipientGroup.split(",").map(Number);
                 }
-
-                if (to) {
-                    to = to.split(",");
-                    postData["to"] = to;
+                if (notification.smseagleRecipientTo) {
+                    postData["to"] = notification.smseagleRecipientTo.split(",");
                 }
 
                 let endpoint = "/messages/sms";
 
                 if (notification.smseagleMsgType !== "smseagle-sms") {
 
-                    let duration;
-                    if (notification.smseagleDuration) {
-                        duration = notification.smseagleDuration;
-                    } else {
-                        duration = 10;
-                    }
-
-                    postData["duration"] = duration;
+                    postData["duration"] = notification.smseagleDuration ?? 10;
 
                     if (notification.smseagleMsgType === "smseagle-ring") {
                         endpoint = "/calls/ring";
@@ -132,7 +110,7 @@ class SMSEagle extends NotificationProvider {
                         endpoint = "/calls/tts";
                     } else if (notification.smseagleMsgType === "smseagle-tts-advanced") {
                         endpoint = "/calls/tts_advanced";
-                        postData["voice_id"] = notification.smseagleTtsModel ? notification.smseagleTtsModel : "1";
+                        postData["voice_id"] = notification.smseagleTtsModel ?? 1;
                     }
                 }
 
@@ -149,7 +127,7 @@ class SMSEagle extends NotificationProvider {
                 }
 
                 if (unqueuedCount) {
-                    return `Sent ${countQueued}/${resp.data.length} Messages Successfully.`;
+                    return `Sent ${queuedCount}/${resp.data.length} Messages Successfully.`;
                 }
 
                 return okMsg;
