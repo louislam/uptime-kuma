@@ -50,7 +50,7 @@ class SMSEagle extends NotificationProvider {
 
                 url.searchParams.append("access_token", notification.smseagleToken);
                 url.searchParams.append(recipientType, notification.smseagleRecipient);
-                if (notification.smseagleRecipientType == null || notification.smseagleRecipientType === "smseagle-sms") {
+                if (!notification.smseagleRecipientType || notification.smseagleRecipientType === "smseagle-sms") {
                     url.searchParams.append("unicode", (notification.smseagleEncoding) ? "1" : "0");
                     url.searchParams.append("highpriority", notification.smseaglePriority ?? "0");
                 } else {
