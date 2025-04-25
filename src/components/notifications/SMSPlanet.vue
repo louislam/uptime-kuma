@@ -12,12 +12,12 @@
     <div class="mb-3">
         <label for="smsplanet-phone-numbers" class="form-label">{{ $t("smsplanetPhoneNumber") }}</label>
         <textarea
-                id="smsplanet-phone-numbers"
-                v-model="$parent.notification.smsplanetPhoneNumbers"
-                class="form-control"
-                :placeholder="smsplanetPhoneNumbers"
-                required
-            ></textarea>
+            id="smsplanet-phone-numbers"
+            v-model="$parent.notification.smsplanetPhoneNumbers"
+            class="form-control"
+            :placeholder="smsplanetPhoneNumbers"
+            required
+        ></textarea>
     </div>
     <div class="mb-3">
         <label for="smsplanet-sender-name" class="form-label">{{ $t("smsplanetSenderName") }}</label>
@@ -35,7 +35,7 @@ export default {
     computed: {
         smsplanetPhoneNumbers() {
             return this.$t("Example:", [
-`+48123456789,+48111222333`,
+                "+48123456789,+48111222333",
             ]);
         }
     }

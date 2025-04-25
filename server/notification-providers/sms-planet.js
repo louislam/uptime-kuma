@@ -17,13 +17,13 @@ class SMSPlanet extends NotificationProvider {
                     "Authorization": "Bearer " + notification.smsplanetApiToken,
                     "content-type": "multipart/form-data"
                 }
-            }
+            };
 
             let data = {
                 "from": notification.smsplanetSenderName,
                 "to": notification.smsplanetPhoneNumbers,
-                "msg":  msg.replace(/🔴/, "❌")
-            }
+                "msg": msg.replace(/🔴/, "❌")
+            };
 
             let response = await axios.post(url, data, config);
             if (!response.data?.messageId) {
