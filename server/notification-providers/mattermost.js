@@ -79,11 +79,13 @@ class Mattermost extends NotificationProvider {
                         fallback:
                             "Your " +
                             monitorJSON.pathName +
+                            monitorJSON.name +
                             " service went " +
                             statusText,
                         color: color,
                         title:
                             monitorJSON.pathName +
+                            monitorJSON.name +
                             " service went " +
                             statusText,
                         title_link: monitorJSON.url,
