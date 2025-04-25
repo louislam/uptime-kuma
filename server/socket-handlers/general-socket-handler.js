@@ -10,6 +10,8 @@ const path = require("path");
 let gameResolver = new GameResolver();
 let gameList = null;
 
+const LANGUAGE_REGEX = /^[a-zA-Z0-9-_]+$/;
+
 /**
  * Get a game list via GameDig
  * @returns {object[]} list of games supported by GameDig
@@ -91,6 +93,19 @@ module.exports.generalSocketHandler = (socket, server) => {
     });
 
     socket.on("getPushExample", (language, callback) => {
+        try {
+            checkLogin(socket);
+
+            if (!LANGUAGE_REGEX.test(language)) {
+                throw new Error("Invalid language");
+            }
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+            return;
+        }
 
         try {
             let dir = path.join("./extra/push-examples", language);
