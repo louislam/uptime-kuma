@@ -22,7 +22,7 @@
                             </span>
                             {{ monitor.name }}
                         </div>
-                        <div v-if="monitor.tags.length > 0" class="tags">
+                        <div v-if="monitor.tags.length > 0" class="tags gap-1">
                             <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
                         </div>
                     </div>

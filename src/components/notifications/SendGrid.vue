@@ -5,20 +5,20 @@
     </div>
     <div class="mb-3">
         <label for="sendgrid-from-email" class="form-label">{{ $t("From Email") }}</label>
-        <input id="sendgrid-from-email" v-model="$parent.notification.sendgridFromEmail" type="email" class="form-control" required>
+        <input id="sendgrid-from-email" v-model="$parent.notification.sendgridFromEmail" type="text" class="form-control" required>
     </div>
     <div class="mb-3">
         <label for="sendgrid-to-email" class="form-label">{{ $t("To Email") }}</label>
-        <input id="sendgrid-to-email" v-model="$parent.notification.sendgridToEmail" type="email" class="form-control" required>
+        <input id="sendgrid-to-email" v-model="$parent.notification.sendgridToEmail" type="text" class="form-control" required>
     </div>
     <div class="mb-3">
         <label for="sendgrid-cc-email" class="form-label">{{ $t("smtpCC") }}</label>
-        <input id="sendgrid-cc-email" v-model="$parent.notification.sendgridCcEmail" type="email" class="form-control">
+        <input id="sendgrid-cc-email" v-model="$parent.notification.sendgridCcEmail" type="text" class="form-control">
         <div class="form-text">{{ $t("Separate multiple email addresses with commas") }}</div>
     </div>
     <div class="mb-3">
         <label for="sendgrid-bcc-email" class="form-label">{{ $t("smtpBCC") }}</label>
-        <input id="sendgrid-bcc-email" v-model="$parent.notification.sendgridBccEmail" type="email" class="form-control">
+        <input id="sendgrid-bcc-email" v-model="$parent.notification.sendgridBccEmail" type="text" class="form-control">
         <small class="form-text text-muted">{{ $t("Separate multiple email addresses with commas") }}</small>
     </div>
     <div class="mb-3">
