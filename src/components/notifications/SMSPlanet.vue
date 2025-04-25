@@ -24,7 +24,7 @@
     <div class="mb-3">
         <label for="smsplanet-sender-name" class="form-label">{{ $t("Sender name") }}</label>
         <input id="smsplanet-sender-name" v-model="$parent.notification.smsplanetSenderName" type="text" minlength="3" maxlength="11" class="form-control">
-        <div class="form-text">{{ $t("smsplanetNeedToApproveName") }}<div>
+        <div class="form-text">{{ $t("smsplanetNeedToApproveName") }}</div>
     </div>
 </template>
 
