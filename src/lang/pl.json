@@ -1098,9 +1098,5 @@
     "RabbitMQ Username": "Nazwa użytkownika RabbitMQ",
     "RabbitMQ Password": "Hasło RabbitMQ",
     "SendGrid API Key": "Klucz API SendGrid",
-    "Separate multiple email addresses with commas": "Oddziel wiele adresów e-mail przecinkami",
-    "smsplanetApiToken": "Token do Api SMSPlanet",
-    "smsplanetApiDocs": "Szczegółowe informacje o uzyskaniu API tokena znajdziesz w dokumentacji dostępnej {0}.",
-    "smsplanetPhoneNumber": "Numery telefonów",
-    "smsplanetSenderName": "Nazwa nadawcy (zatwierdzona w panelu klienta)"
+    "Separate multiple email addresses with commas": "Oddziel wiele adresów e-mail przecinkami"
 }
