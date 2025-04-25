@@ -185,7 +185,8 @@ export default {
                 "PushPlus": "PushPlus (推送加)",
                 "smsc": "SMSC",
                 "WPush": "WPush(wpush.cn)",
-                "YZJ": "YZJ (云之家自定义机器人)"
+                "YZJ": "YZJ (云之家自定义机器人)",
+                "SMSPlanet": "SMSPlanet.pl"
             };
 
             // Sort by notification name

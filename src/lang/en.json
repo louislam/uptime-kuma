@@ -1068,5 +1068,9 @@
     "Plain Text": "Plain Text",
     "Message Template": "Message Template",
     "Template Format": "Template Format",
-    "Font Twemoji by Twitter licensed under": "Font Twemoji by Twitter licensed under"
+    "Font Twemoji by Twitter licensed under": "Font Twemoji by Twitter licensed under",
+    "smsplanetApiToken": "Token for the SMSPlanet API",
+    "smsplanetApiDocs": "Detailed information on obtaining the API token can be found in the documentation available at {0}.",
+    "smsplanetPhoneNumber": "Phone numbers",
+    "smsplanetSenderName": "Sender name (approved in the client panel)"
 }
