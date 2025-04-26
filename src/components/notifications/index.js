@@ -36,6 +36,7 @@ import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
 import PagerTree from "./PagerTree.vue";
 import PromoSMS from "./PromoSMS.vue";
+import Pumble from "./Pumble.vue";
 import Pushbullet from "./Pushbullet.vue";
 import PushDeer from "./PushDeer.vue";
 import Pushover from "./Pushover.vue";
@@ -114,6 +115,7 @@ const NotificationFormList = {
     "FlashDuty": FlashDuty,
     "PagerTree": PagerTree,
     "promosms": PromoSMS,
+    "pumble": Pumble,
     "pushbullet": Pushbullet,
     "PushByTechulus": TechulusPush,
     "PushDeer": PushDeer,
