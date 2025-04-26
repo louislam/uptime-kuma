@@ -70,6 +70,7 @@ import WPush from "./WPush.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
 import YZJ from "./YZJ.vue";
+import SMSPlanet from "./SMSPlanet.vue";
 
 /**
  * Manage all notification form.
@@ -148,6 +149,7 @@ const NotificationFormList = {
     "WPush": WPush,
     "SendGrid": SendGrid,
     "YZJ": YZJ,
+    "SMSPlanet": SMSPlanet,
 };
 
 export default NotificationFormList;
