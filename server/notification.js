@@ -73,6 +73,7 @@ const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
 const YZJ = require("./notification-providers/yzj");
+const SMSPlanet = require("./notification-providers/sms-planet");
 
 class Notification {
 
@@ -162,7 +163,8 @@ class Notification {
             new Cellsynt(),
             new Wpush(),
             new SendGrid(),
-            new YZJ()
+            new YZJ(),
+            new SMSPlanet(),
         ];
         for (let item of list) {
             if (! item.name) {
