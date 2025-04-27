@@ -1082,5 +1082,11 @@
     "telegramServerUrl": "(Opcional) URL do Servidor",
     "Message Template": "Modelo de Mensagem",
     "Template Format": "Formato do Modelo",
-    "Font Twemoji by Twitter licensed under": "Fonte Twemoji do Twitter licenciada sob"
+    "Font Twemoji by Twitter licensed under": "Fonte Twemoji do Twitter licenciada sob",
+    "the smsplanet documentation": "a documentação do smsplanet",
+    "Phone numbers": "Números de telefone",
+    "Sender name": "Nome do remetente",
+    "smsplanetNeedToApproveName": "Precisa ser aprovado no painel do cliente",
+    "smsplanetApiToken": "Token para a API SMSPlanet",
+    "smsplanetApiDocs": "Informações detalhadas sobre a obtenção de tokens de API podem ser encontradas em {the_smsplanet_documentation}."
 }
