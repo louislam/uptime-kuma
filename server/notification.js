@@ -34,12 +34,14 @@ const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
+const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
 const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const PushDeer = require("./notification-providers/pushdeer");
 const Pushover = require("./notification-providers/pushover");
+const PushPlus = require("./notification-providers/pushplus");
 const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
@@ -72,6 +74,7 @@ const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
 const YZJ = require("./notification-providers/yzj");
+const SMSPlanet = require("./notification-providers/sms-planet");
 
 class Notification {
 
@@ -127,9 +130,11 @@ class Notification {
             new FlashDuty(),
             new PagerTree(),
             new PromoSMS(),
+            new Pumble(),
             new Pushbullet(),
             new PushDeer(),
             new Pushover(),
+            new PushPlus(),
             new Pushy(),
             new RocketChat(),
             new ServerChan(),
@@ -160,7 +165,8 @@ class Notification {
             new Cellsynt(),
             new Wpush(),
             new SendGrid(),
-            new YZJ()
+            new YZJ(),
+            new SMSPlanet(),
         ];
         for (let item of list) {
             if (! item.name) {
