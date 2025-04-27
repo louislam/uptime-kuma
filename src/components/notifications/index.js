@@ -29,6 +29,7 @@ import Mattermost from "./Mattermost.vue";
 import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
+import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
@@ -108,6 +109,7 @@ const NotificationFormList = {
     "nostr": Nostr,
     "ntfy": Ntfy,
     "octopush": Octopush,
+    "OneChat": OneChat,
     "OneBot": OneBot,
     "Onesender": Onesender,
     "Opsgenie": Opsgenie,

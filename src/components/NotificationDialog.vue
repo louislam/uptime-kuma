@@ -135,6 +135,7 @@ export default {
                 "nostr": "Nostr",
                 "ntfy": "Ntfy",
                 "octopush": "Octopush",
+                "OneChat": "OneChat",
                 "OneBot": "OneBot",
                 "Onesender": "Onesender",
                 "Opsgenie": "Opsgenie",
