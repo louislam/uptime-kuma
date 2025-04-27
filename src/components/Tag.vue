@@ -6,7 +6,6 @@
                   'm-2': size == 'normal',
                   'px-2': size == 'sm',
                   'py-0': size == 'sm',
-                  'mx-1': size == 'sm',
         }"
         :style="{ backgroundColor: item.color, fontSize: size == 'sm' ? '0.7em' : '1em' }"
     >
@@ -48,7 +47,7 @@ export default {
     },
     computed: {
         displayText() {
-            if (this.item.value === "" || this.item.value === undefined) {
+            if (this.item.value === "" || this.item.value === undefined || this.item.value === null) {
                 return this.item.name;
             } else {
                 return `${this.item.name}: ${this.item.value}`;
