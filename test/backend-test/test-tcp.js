@@ -107,6 +107,6 @@ describe("TCP Monitor", () => {
         await tcpMonitor.check(monitor, heartbeat, {});
 
         assert.strictEqual(heartbeat.status, DOWN);
-        assert([ "Certificate is invalid", "Connection failed" ].includes(heartbeat.msg));
+        assert([ "Certificate is invalid", "TLS Connection failed:" ].some(prefix => heartbeat.msg.startsWith(prefix)));
     });
 });
