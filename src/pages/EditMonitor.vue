@@ -1162,16 +1162,18 @@ export default {
                 return this.monitor.hostname;
             }
             if (this.monitor.url) {
-                try {
-                    const url = new URL(this.monitor.url);
-                    return url.hostname;
-                } catch (e) {
-                    // Handle invalid URL, maybe return a generic placeholder or empty string
-                    return this.$t("My Monitor");
+                if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
+                    // Ensure monitor without a URL is not affected by invisible URL.
+                    try {
+                        const url = new URL(this.monitor.url);
+                        return url.hostname;
+                    } catch (e) {
+                        return this.monitor.url.replace(/https?:\/\//, "");
+                    }
                 }
             }
             // Default placeholder if neither hostname nor URL is available
-            return this.$t("My Monitor");
+            return this.$t("defaultFriendlyName");
         },
 
         ipRegex() {
@@ -1717,7 +1719,6 @@ message HealthCheckResponse {
 
             this.processing = true;
 
-            // Use defaultFriendlyName if Friendly Name is empty
             if (!this.monitor.name) {
                 this.monitor.name = this.defaultFriendlyName;
             }
