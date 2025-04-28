@@ -56,8 +56,9 @@ class TCPMonitorType extends MonitorType {
                     heartbeat.msg = "Certificate is invalid";
                 }
             } catch (error) {
+                const message = error instanceof Error ? error.message : "Unknown error";
                 heartbeat.status = DOWN;
-                heartbeat.msg = "Connection failed";
+                heartbeat.msg = `TLS Connection failed: ${message}`;
             } finally {
                 if (socket && !socket.destroyed) {
                     socket.end();
