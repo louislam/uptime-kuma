@@ -89,7 +89,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ?
                     ORDER BY time DESC
-                    LIMIT 50
+                    LIMIT 100
             `, [
                 monitorID,
             ]);
