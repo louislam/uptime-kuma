@@ -1260,10 +1260,10 @@ class Monitor extends BeanModel {
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
         // MAINTENANCE -> MAINTENANCE = not important
-        // MAINTENANCE -> UP = not important
+        // * MAINTENANCE -> UP = important
         // * MAINTENANCE -> DOWN = important
-        // DOWN -> MAINTENANCE = not important
-        // UP -> MAINTENANCE = not important
+        // * DOWN -> MAINTENANCE = important
+        // * UP -> MAINTENANCE = important
         return isFirstBeat ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
