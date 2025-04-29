@@ -14,7 +14,7 @@
 
             <router-link :to="monitorURL(monitor.id)" class="item" :class="{ 'disabled': ! monitor.active }">
                 <div class="row">
-                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div class="col-6 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                         <div class="info">
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                             <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
@@ -22,11 +22,11 @@
                             </span>
                             {{ monitor.name }}
                         </div>
-                        <div v-if="monitor.tags.length > 0" class="tags">
+                        <div v-if="monitor.tags.length > 0" class="tags gap-1">
                             <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
+                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-6">
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>

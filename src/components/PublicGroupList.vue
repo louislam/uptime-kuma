@@ -33,7 +33,7 @@
                         <template #item="monitor">
                             <div class="item" data-testid="monitor">
                                 <div class="row">
-                                    <div class="col-9 col-md-8 small-padding">
+                                    <div class="col-6 small-padding">
                                         <div class="info">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
@@ -71,7 +71,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
+                                    <div :key="$root.userHeartbeatBar" class="col-6">
                                         <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
