@@ -1290,7 +1290,7 @@ class Monitor extends BeanModel {
             } else if(bean.status === DOWN) {
                 text = "🔴 Down";
             } else if(bean.status === MAINTENANCE) {
-                text = "🔴 Maintenance";
+                text = "🟦 Maintenance";
             }
 
             let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
