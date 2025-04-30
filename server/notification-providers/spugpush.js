@@ -5,6 +5,9 @@ class SpugPush extends NotificationProvider {
 
     name = "SpugPush";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
@@ -25,11 +28,11 @@ class SpugPush extends NotificationProvider {
 
     /**
      * Get the formatted target for message
-     * @param {?Object} monitorJSON Monitor details (For Up/Down only)
+     * @param {object} monitorJSON Monitor details (For Up/Down only)
      * @returns {string} Formatted target
      */
     getTarget(monitorJSON) {
-        let target = '-'
+        let target = "-";
         if (monitorJSON["hostname"]) {
             target = monitorJSON["hostname"];
             if (monitorJSON["port"]) {

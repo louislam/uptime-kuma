@@ -4,7 +4,7 @@
         <HiddenInput id="spugpush-templateKey" v-model="$parent.notification.templateKey" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
-	    <a href="https://push.spug.cc/guide/plugin/kuma" rel="noopener noreferrer" target="_blank">https://push.spug.cc</a>
+        <a href="https://push.spug.cc/guide/plugin/kuma" rel="noopener noreferrer" target="_blank">https://push.spug.cc</a>
     </i18n-t>
 </template>
 
