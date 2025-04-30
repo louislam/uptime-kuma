@@ -29,6 +29,7 @@ import Mattermost from "./Mattermost.vue";
 import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
+import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
@@ -36,9 +37,11 @@ import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
 import PagerTree from "./PagerTree.vue";
 import PromoSMS from "./PromoSMS.vue";
+import Pumble from "./Pumble.vue";
 import Pushbullet from "./Pushbullet.vue";
 import PushDeer from "./PushDeer.vue";
 import Pushover from "./Pushover.vue";
+import PushPlus from "./PushPlus.vue";
 import Pushy from "./Pushy.vue";
 import RocketChat from "./RocketChat.vue";
 import ServerChan from "./ServerChan.vue";
@@ -63,10 +66,13 @@ import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
+import WAHA from "./WAHA.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
+import YZJ from "./YZJ.vue";
+import SMSPlanet from "./SMSPlanet.vue";
 
 /**
  * Manage all notification form.
@@ -103,6 +109,7 @@ const NotificationFormList = {
     "nostr": Nostr,
     "ntfy": Ntfy,
     "octopush": Octopush,
+    "OneChat": OneChat,
     "OneBot": OneBot,
     "Onesender": Onesender,
     "Opsgenie": Opsgenie,
@@ -110,10 +117,12 @@ const NotificationFormList = {
     "FlashDuty": FlashDuty,
     "PagerTree": PagerTree,
     "promosms": PromoSMS,
+    "pumble": Pumble,
     "pushbullet": Pushbullet,
     "PushByTechulus": TechulusPush,
     "PushDeer": PushDeer,
     "pushover": Pushover,
+    "PushPlus": PushPlus,
     "pushy": Pushy,
     "rocket.chat": RocketChat,
     "serwersms": SerwerSMS,
@@ -138,10 +147,13 @@ const NotificationFormList = {
     "ZohoCliq": ZohoCliq,
     "SevenIO": SevenIO,
     "whapi": Whapi,
+    "waha": WAHA,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
     "WPush": WPush,
     "SendGrid": SendGrid,
+    "YZJ": YZJ,
+    "SMSPlanet": SMSPlanet,
 };
 
 export default NotificationFormList;
