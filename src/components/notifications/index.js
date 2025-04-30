@@ -64,6 +64,7 @@ import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
+import SpugPush from "./SpugPush.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import WAHA from "./WAHA.vue";
@@ -140,6 +141,7 @@ const NotificationFormList = {
     "threema": Threema,
     "twilio": Twilio,
     "Splunk": Splunk,
+    "SpugPush": SpugPush,
     "webhook": Webhook,
     "WeCom": WeCom,
     "GoAlert": GoAlert,

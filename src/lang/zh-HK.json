@@ -1076,6 +1076,7 @@
     "Conditions": "條件",
     "Kafka Topic Name": "Kafka 主題名稱",
     "Kafka Producer Message": "Kafka 生成者（Producer）消息",
+    "SpugPush Template Key": "模板編碼",
     "Mechanism": "鑒權方式",
     "toastSuccessTimeout": "成功類彈窗通知的自動關閉用時",
     "pushoverMessageTtl": "消息存活時間（秒）",

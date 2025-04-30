@@ -75,6 +75,7 @@ const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
+const SpugPush = require("./notification-providers/spugpush");
 
 class Notification {
 
@@ -167,6 +168,7 @@ class Notification {
             new SendGrid(),
             new YZJ(),
             new SMSPlanet(),
+            new SpugPush(),
         ];
         for (let item of list) {
             if (! item.name) {

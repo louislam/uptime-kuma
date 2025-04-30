@@ -821,6 +821,7 @@
     "Enable Kafka SSL": "啟用 Kafka SSL",
     "Enable Kafka Producer Auto Topic Creation": "啟用 Kafka Producer 自動主題建立",
     "Kafka SASL Options": "Kafka SASL 選項",
+    "SpugPush Template Key": "模板編碼",
     "Mechanism": "機制",
     "gamedigGuessPortDescription": "Valve 伺服器查詢協定使用的連接埠可能與客戶端連接埠不同。如果監控無法連線到您的伺服器，請嘗試此選項。",
     "Saved.": "已儲存。",
