@@ -517,6 +517,7 @@
     "Clone": "Clone",
     "cloneOf": "Clone of {0}",
     "smtp": "Email (SMTP)",
+    "Use HTML for custom E-mail body": "Use HTML for custom E-mail body",
     "secureOptionNone": "None / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
     "Ignore TLS Error": "Ignore TLS Error",
