@@ -16,7 +16,7 @@ class SpugPush extends NotificationProvider {
                 "msg": heartbeatJSON["msg"],
                 "duration": heartbeatJSON["duration"],
                 "name": monitorJSON["name"],
-                "target": this.getTarget(monitorJSON),
+                "target": this.extractAddress(monitorJSON),
             });
 
             return okMsg;
@@ -24,24 +24,6 @@ class SpugPush extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-    }
-
-    /**
-     * Get the formatted target for message
-     * @param {object} monitorJSON Monitor details (For Up/Down only)
-     * @returns {string} Formatted target
-     */
-    getTarget(monitorJSON) {
-        let target = "-";
-        if (monitorJSON["hostname"]) {
-            target = monitorJSON["hostname"];
-            if (monitorJSON["port"]) {
-                target += ":" + monitorJSON["port"];
-            }
-        } else if (monitorJSON["url"]) {
-            target = monitorJSON["url"];
-        }
-        return target;
     }
 }
 
