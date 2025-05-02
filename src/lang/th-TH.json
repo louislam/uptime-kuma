@@ -912,5 +912,6 @@
     "aboutSlackUsername": "เปลี่ยนชื่อที่แสดงของผู้ส่งข้อความ หากคุณต้องการกล่าวถึงใคร ให้รวมไว้ในชื่อที่เป็นมิตรแทน",
     "grpcMethodDescription": "ชื่อเมธอดจะถูกแปลงเป็นรูปแบบ camelCase เช่น sayHello, check, เป็นต้น",
     "Enable TLS": "เปิดใช้งาน TLS",
-    "pagertreeSilent": "เงียบ"
+    "pagertreeSilent": "เงียบ",
+    "enableGRPCTls": "อนุญาตให้ส่งคำขอแบบ gRPC ด้วยการเชื่อมต่อ TLS"
 }
