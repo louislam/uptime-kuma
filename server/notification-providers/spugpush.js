@@ -12,16 +12,18 @@ class SpugPush extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let okMsg = "Sent Successfully.";
         try {
-            let formData = {msg}
+            let formData = {
+                msg
+            };
             const apiUrl = `https://push.spug.cc/send/${notification.templateKey}`;
             if (heartbeatJSON == null) {
                 formData.title = "Uptime Kuma Message";
             } else if (heartbeatJSON["status"] === UP) {
                 formData.title = `UptimeKuma 「${monitorJSON["name"]}」 is Up`;
-                formData.msg = `[✅ Up] ${heartbeatJSON["msg"]}`
+                formData.msg = `[✅ Up] ${heartbeatJSON["msg"]}`;
             } else if (heartbeatJSON["status"] === DOWN) {
                 formData.title = `UptimeKuma 「${monitorJSON["name"]}」 is Down`;
-                formData.msg = `[🔴 Down] ${heartbeatJSON["msg"]}`
+                formData.msg = `[🔴 Down] ${heartbeatJSON["msg"]}`;
             }
 
             await axios.post(apiUrl, formData);
