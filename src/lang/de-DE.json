@@ -944,7 +944,7 @@
     "whapiRecipient": "Telefonnummer / Kontakt-ID / Gruppen-ID",
     "API URL": "API URL",
     "wayToWriteWhapiRecipient": "Die Rufnummer mit der internationalen Vorwahl, aber ohne das Pluszeichen am Anfang ({0}), die Kontakt-ID ({1}) oder die Gruppen-ID ({2}).",
-    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Gib entweder den Hostnamen des Servers ein, mit dem eine Verbindung hergestellt werden soll, oder {localhost}, wenn ein {local_mta} verwendet werden soll.",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Gib entweder den Hostnamen des Servers ein, mit dem eine Verbindung hergestellt werden soll, oder {localhost}, wenn ein {local_mta} verwendet werden soll",
     "locally configured mail transfer agent": "Lokal konfigurierter Mail-Transfer-Agent",
     "Mentioning": "Erwähnung",
     "Don't mention people": "Keine Personen erwähnen",
