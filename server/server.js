@@ -330,7 +330,7 @@ let needSetup = false;
     // Get notification
     app.get("/notification/:id", async (req, res) => {
         try {
-            const notification = await R.findOne("notification", " id = ? ", [req.params.id]);
+            const notification = await R.findOne("notification", " id = ? ", [ req.params.id ]);
             res.json({
                 disableUrl: notification.disableUrl,
             });
