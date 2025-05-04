@@ -53,12 +53,23 @@
             </div>
         </div>
     </div>
+
+    <div class="mb-3">
+        <label for="discord-disable-url" class="form-label">{{ $t("Disable URL in Notification") }}</label>
+        <div class="form-check form-switch">
+            <input id="discord-disable-url" v-model="$parent.notification.disableUrl" class="form-check-input" type="checkbox">
+            <label class="form-check-label" for="discord-disable-url">{{ $t("Disable URL") }}</label>
+        </div>
+    </div>
 </template>
 <script>
 export default {
     mounted() {
         if (!this.$parent.notification.discordChannelType) {
             this.$parent.notification.discordChannelType = "channel";
+        }
+        if (this.$parent.notification.disableUrl === undefined) {
+            this.$parent.notification.disableUrl = false;
         }
     }
 };
