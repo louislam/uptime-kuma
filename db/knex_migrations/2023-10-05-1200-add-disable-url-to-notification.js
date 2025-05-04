@@ -1,11 +1,11 @@
 exports.up = function (knex) {
     return knex.schema.alterTable("notification", function (table) {
-        table.boolean("disableUrl").defaultTo(false).notNullable().comment("Disable URL in Discord notifications");
+        table.boolean("disable_url").defaultTo(false).notNullable().comment("Disable URL in Discord notifications");
     });
 };
 
 exports.down = function (knex) {
     return knex.schema.alterTable("notification", function (table) {
-        table.dropColumn("disableUrl");
+        table.dropColumn("disable_url");
     });
 };
