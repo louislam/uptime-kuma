@@ -1,0 +1,106 @@
+---
+name: 🚀 Feature Request
+description: |
+  Submit a proposal for a new feature
+# title: "[Feature]"
+labels: ["feature-request", "P3-low"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❗Important Announcement
+
+        ### 🚧 Temporary Delay in Feature Requests and Pull Request Reviews
+
+        **At this time, we may be slower to respond to new feature requests and review pull requests. Existing requests and PRs will remain in the backlog but may not be prioritized immediately.**
+
+        - **Reason**: Our current focus is on addressing bugs, improving system performance, and implementing essential updates. This will help stabilize the project and ensure smoother management.
+        - **Impact**: While no new feature requests or pull requests are being outright rejected, there may be significant delays in reviews. We encourage the community to help by reviewing PRs or assisting other users in the meantime.
+        - **What You Can Do**: If you're interested in contributing, reviewing open PRs by following our [Review Guidelines](https://github.com/louislam/uptime-kuma/blob/master/.github/REVIEW_GUIDELINES.md) or offering help to other users is greatly appreciated. All feature requests and PRs will be revisited once the suspension period is lifted.
+
+        We appreciate your patience and understanding as we continue to improve Uptime Kuma.
+
+        ### 🚫 Please Avoid Unnecessary Pinging of Maintainers
+
+        **We kindly ask you to refrain from pinging maintainers unless absolutely necessary. Pings are reserved for critical/urgent pull requests that require immediate attention.**
+
+        **Why**: Reserving pings for urgent matters ensures maintainers can prioritize critical tasks effectively.
+  - type: textarea
+    id: related-issues
+    validations:
+      required: true
+    attributes:
+      label: 📑 I have found these related issues/pull requests
+      description: |
+        Please search for related **[ISSUES](https://github.com/louislam/uptime-kuma/issues?q=is%3Aissue%20sort%3Acreated-desc)**
+        and **[PULL REQUESTS](https://github.com/louislam/uptime-kuma/pulls?q=is%3Apr+sort%3Acreated-desc+)**.
+        Explain the differences between them or clarify if you were unable to find any related issues/pull requests.
+      placeholder: |
+        Example: This relates to issue #1, which also affects the ... system. It should not be merged because ...
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: 🏷️ Feature Request Type
+      description: |
+        What kind of feature request is this?
+      multiple: true
+      options:
+        - API / automation options
+        - New notification-provider
+        - Change to existing notification-provider
+        - New monitor
+        - Change to existing monitor
+        - Dashboard
+        - Status-page
+        - Maintenance
+        - Deployment
+        - Certificate expiry
+        - Settings
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature-description
+    validations:
+      required: true
+    attributes:
+      label: 🔖 Feature description
+      description: |
+        A clear and concise description of what the feature request is.
+      placeholder: |
+        You should add ...
+
+  - type: textarea
+    id: solution
+    validations:
+      required: true
+    attributes:
+      label: ✔️ Solution
+      description: |
+        A clear and concise description of what you want to happen.
+      placeholder: |
+        In my use-case, ...
+
+  - type: textarea
+    id: alternatives
+    validations:
+      required: false
+    attributes:
+      label: ❓ Alternatives
+      description: |
+        A clear and concise description of any alternative solutions or features you've considered.
+      placeholder: |
+        I have considered ...
+
+  - type: textarea
+    id: additional-context
+    validations:
+      required: false
+    attributes:
+      label: 📝 Additional Context
+      description: |
+        Add any other context or screenshots about the feature request here.
+      placeholder: |
+        ...
