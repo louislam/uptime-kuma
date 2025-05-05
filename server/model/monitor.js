@@ -1271,7 +1271,6 @@ class Monitor extends BeanModel {
             (previousBeatStatus === DOWN && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
     }
 
@@ -1292,7 +1291,7 @@ class Monitor extends BeanModel {
             } else if (bean.status === DOWN) {
                 text = "🔴 Down";
             } else if (bean.status === MAINTENANCE) {
-                text = "Under Maintenance";
+                text = "🔵 Maintenance";
             }
 
             let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
