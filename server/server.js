@@ -313,32 +313,6 @@ let needSetup = false;
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
 
-    // Update notification
-    app.put("/notification/:id", async (req, res) => {
-        try {
-            await R.exec("UPDATE notification SET disableUrl = ? WHERE id = ?", [
-                req.body.disableUrl || false,
-                req.params.id,
-            ]);
-
-            res.status(200).send({ message: "Notification updated successfully" });
-        } catch (error) {
-            res.status(500).send({ error: "Failed to update notification" });
-        }
-    });
-
-    // Get notification
-    app.get("/notification/:id", async (req, res) => {
-        try {
-            const notification = await R.findOne("notification", " id = ? ", [ req.params.id ]);
-            res.json({
-                disableUrl: notification.disableUrl,
-            });
-        } catch (error) {
-            res.status(500).send({ error: "Failed to retrieve notification" });
-        }
-    });
-
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {

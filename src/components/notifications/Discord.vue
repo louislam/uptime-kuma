@@ -55,10 +55,9 @@
     </div>
 
     <div class="mb-3">
-        <label for="discord-disable-url" class="form-label">{{ $t("Disable URL in Notification") }}</label>
         <div class="form-check form-switch">
-            <input id="discord-disable-url" v-model="$parent.notification.disableUrl" class="form-check-input" type="checkbox">
-            <label class="form-check-label" for="discord-disable-url">{{ $t("Disable URL") }}</label>
+            <input id="discord-disable-url" v-model="$parent.notification.disableUrl" class="form-check-input" type="checkbox" role="switch">
+            <label class="form-check-label" for="discord-disable-url">{{ $t("Disable URL in Notification") }}</label>
         </div>
     </div>
 </template>
