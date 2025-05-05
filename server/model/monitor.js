@@ -1256,6 +1256,7 @@ class Monitor extends BeanModel {
         // PENDING -> PENDING = not important
         // * PENDING -> DOWN = important
         // PENDING -> UP = not important
+        // PENDING -> MAINTENANCE = important
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
@@ -1271,6 +1272,7 @@ class Monitor extends BeanModel {
             (previousBeatStatus === DOWN && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
     }
 
