@@ -1093,5 +1093,6 @@
     "the smsplanet documentation": "the smsplanet documentation",
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
-    "smsplanetNeedToApproveName": "Needs to be approved in the client panel"
+    "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
+    "Disable URL in Notification": "Disable URL in Notification"
 }
