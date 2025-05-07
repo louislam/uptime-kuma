@@ -457,7 +457,7 @@
     "installing": "Instal·lant",
     "uninstall": "Desinstal·la",
     "confirmUninstallPlugin": "Estàs segur de desinstal·lar aquest connector?",
-    "notificationRegional": "Regional",
+    "notificationRegional": "Local",
     "Clone Monitor": "Clona el monitor",
     "Clone": "Clona",
     "cloneOf": "Clon de {0}",
@@ -478,7 +478,7 @@
     "To Email": "Destí email",
     "smtpCC": "CC",
     "smtpBCC": "BCC",
-    "Discord Webhook URL": "Discord Webhook URL",
+    "Discord Webhook URL": "URL del Webhook de Discord",
     "wayToGetDiscordURL": "Pots rebre aquest per anar a Paràmetres de Servidor -> Integracions -> Vista *Webhooks -> Nou *Webhook",
     "Bot Display Name": "Nom de pantalla de bot",
     "Prefix Custom Message": "Prefix de missatge personalitzat",
@@ -560,5 +560,14 @@
     "templateStatus": "Estat",
     "telegramUseTemplate": "Fes servir una plantilla de missatge personalitzada",
     "telegramUseTemplateDescription": "Si s'activa, el missatge s'enviarà fent servir una plantilla personalitzada.",
-    "telegramTemplateFormatDescription": "Telegram permet l'ús de diferents tipus de llenguatges de marcat, llegeix Telegram {0} per més detalls."
+    "telegramTemplateFormatDescription": "Telegram permet l'ús de diferents tipus de llenguatges de marcat, llegeix Telegram {0} per més detalls.",
+    "wayToGetDiscordThreadId": "Obtenir un identificador de publicació del fil/fòrum és semblant a obtenir un identificador de canal. Més informació sobre com obtenir identificadors {0}",
+    "lineDevConsoleTo": "Consola de desenvolupadors de linia - {0}",
+    "Basic Settings": "Configuracions bàsiques",
+    "User ID": "ID d'usuari",
+    "Your User ID": "El teu identificador d'usuari",
+    "Messaging API": "API de missatges",
+    "wayToGetLineChannelToken": "Primer accediu a {0}, creeu un proveïdor i un canal (API de missatgeria) i, a continuació, podeu obtenir el token d'accés al canal i l'identificador d'usuari dels elements del menú esmentats anteriorment.",
+    "Icon URL": "URL de la icona",
+    "aboutIconURL": "Pots donar un enllaç a la imatge a \"URL de la icona\" per sobreposar-la a la imatge de perfil pere defecte. No s'usarà si hi ha una icona d'emoji establerta."
 }

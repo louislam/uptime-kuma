@@ -21,6 +21,9 @@
                     <label><input v-model="settings.checkBeta" type="checkbox" :disabled="!settings.checkUpdate" @change="saveSettings()" /> {{ $t("Also check beta release") }}</label>
                 </div>
             </div>
+            <div class="mt-5">
+                <p>{{ $t("Font Twemoji by Twitter licensed under") }} <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0</a></p>
+            </div>
         </div>
     </div>
 </template>

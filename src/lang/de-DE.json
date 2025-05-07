@@ -1117,5 +1117,6 @@
     "wayToGetWahaSession": "Von dieser Sitzung aus sendet WAHA Benachrichtigungen an die Chat-ID. Du kannst sie im WAHA Dashboard finden.",
     "wayToWriteWahaChatId": "Die Telefonnummer mit internationaler Vorwahl, ohne den anfänglichen Pluszeichen ({0}), die Kontakt-ID ({1}) oder die Gruppen-ID ({2}). Die Benachrichtigungen werden an diese Chat-ID von der WAHA-Sitzung gesendet.",
     "telegramServerUrlDescription": "Um die Telegram-Bot-API-Beschränkungen aufzuheben oder in gesperrten Gebieten (China, Iran usw.) Zugriff zu erhalten. Weitere Informationen findest du unter {0}. Standard: {1}",
-    "telegramServerUrl": "(Optional) Server URL"
+    "telegramServerUrl": "(Optional) Server URL",
+    "Font Twemoji by Twitter licensed under": "Schriftart Twemoji von Twitter lizenziert unter"
 }

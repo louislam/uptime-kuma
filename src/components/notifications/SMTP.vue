@@ -79,6 +79,15 @@
             <div class="form-text">{{ $t("leave blank for default body") }}</div>
         </div>
 
+        <div class="mb-3">
+            <div class="form-check">
+                <input id="use-html-body" v-model="$parent.notification.htmlBody" class="form-check-input" type="checkbox" value="">
+                <label class="form-check-label" for="use-html-body">
+                    {{ $t("Use HTML for custom E-mail body") }}
+                </label>
+            </div>
+        </div>
+
         <ToggleSection :heading="$t('smtpDkimSettings')">
             <i18n-t tag="div" keypath="smtpDkimDesc" class="form-text mb-3">
                 <a href="https://nodemailer.com/dkim/" target="_blank">{{ $t("documentation") }}</a>

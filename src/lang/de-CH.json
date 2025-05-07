@@ -1114,5 +1114,6 @@
     "wayToGetWahaApiKey": "API-Schlüssel ist der Wert der WHATSAPP_API_KEY-Umgebungsvariable, den du beim Ausführen von WAHA verwendet hast.",
     "wayToWriteWahaChatId": "Die Telefonnummer mit internationaler Vorwahl, ohne den anfänglichen Pluszeichen ({0}), die Kontakt-ID ({1}) oder die Gruppen-ID ({2}). Die Benachrichtigungen werden an diese Chat-ID von der WAHA-Sitzung gesendet.",
     "telegramServerUrl": "(Optional) Server URL",
-    "telegramServerUrlDescription": "Um die Telegram-Bot-API-Beschränkungen aufzuheben oder in gesperrten Gebieten (China, Iran usw.) Zugriff zu erhalten. Weitere Informationen findest du unter {0}. Standard: {1}"
+    "telegramServerUrlDescription": "Um die Telegram-Bot-API-Beschränkungen aufzuheben oder in gesperrten Gebieten (China, Iran usw.) Zugriff zu erhalten. Weitere Informationen findest du unter {0}. Standard: {1}",
+    "Font Twemoji by Twitter licensed under": "Schriftart Twemoji von Twitter lizenziert unter"
 }
