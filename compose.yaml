@@ -1,5 +1,6 @@
 services:
   uptime-kuma:
+    hostname: uptime-kuma
     image: louislam/uptime-kuma:1
     volumes:
       - ./data:/app/data
