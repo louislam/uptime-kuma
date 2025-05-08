@@ -64,6 +64,7 @@
     "Expected Value": "Expected Value",
     "Json Query Expression": "Json Query Expression",
     "Friendly Name": "Friendly Name",
+    "defaultFriendlyName": "New Monitor",
     "URL": "URL",
     "Hostname": "Hostname",
     "Host URL": "Host URL",
