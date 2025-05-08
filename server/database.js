@@ -10,6 +10,7 @@ const { Settings } = require("./settings");
 const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
+const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
 
 /**
  * Database & App Data Folder
@@ -198,6 +199,14 @@ class Database {
      * @returns {Promise<void>}
      */
     static async connect(testMode = false, autoloadModels = true, noLog = false) {
+        // Patch "mysql2" knex client
+        // Workaround: Tried extending the ColumnCompiler class, but it didn't work for unknown reasons, so I override the function via prototype
+        const { getDialectByNameOrAlias } = require("knex/lib/dialects");
+        const mysql2 = getDialectByNameOrAlias("mysql2");
+        mysql2.prototype.columnCompiler = function () {
+            return new KumaColumnCompiler(this, ...arguments);
+        };
+
         const acquireConnectionTimeout = 120 * 1000;
         let dbConfig;
         try {
@@ -287,7 +296,7 @@ class Database {
                 client: "mysql2",
                 connection: {
                     socketPath: embeddedMariaDB.socketPath,
-                    user: "node",
+                    user: embeddedMariaDB.username,
                     database: "kuma",
                     timezone: "Z",
                     typeCast: function (field, next) {
@@ -883,11 +892,13 @@ class Database {
                 AND important = 0
                 AND time < ${sqlHourOffset}
                 AND id NOT IN (
-                    SELECT id
-                    FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT ?
+                    SELECT id FROM ( -- written this way for Maria's support
+                        SELECT id
+                        FROM heartbeat
+                        WHERE monitor_id = ?
+                        ORDER BY time DESC
+                        LIMIT ?
+                    )  AS limited_ids
                 )
             `, [
                 monitor.id,

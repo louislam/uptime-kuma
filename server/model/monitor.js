@@ -377,39 +377,6 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                } else if (this.type === "group") {
-                    const children = await Monitor.getChildren(this.id);
-
-                    if (children.length > 0) {
-                        bean.status = UP;
-                        bean.msg = "All children up and running";
-                        for (const child of children) {
-                            if (!child.active) {
-                                // Ignore inactive childs
-                                continue;
-                            }
-                            const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
-
-                            // Only change state if the monitor is in worse conditions then the ones before
-                            // lastBeat.status could be null
-                            if (!lastBeat) {
-                                bean.status = PENDING;
-                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
-                                bean.status = lastBeat.status;
-                            } else if (bean.status === PENDING && lastBeat.status === DOWN) {
-                                bean.status = lastBeat.status;
-                            }
-                        }
-
-                        if (bean.status !== UP) {
-                            bean.msg = "Child inaccessible";
-                        }
-                    } else {
-                        // Set status pending if group is empty
-                        bean.status = PENDING;
-                        bean.msg = "Group empty";
-                    }
-
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -1324,7 +1291,8 @@ class Monitor extends BeanModel {
                 try {
                     const heartbeatJSON = bean.toJSON();
                     const monitorData = [{ id: monitor.id,
-                        active: monitor.active
+                        active: monitor.active,
+                        name: monitor.name
                     }];
                     const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
@@ -1431,7 +1399,7 @@ class Monitor extends BeanModel {
         for (let notification of notificationList) {
             try {
                 log.debug("monitor", "Sending to " + notification.name);
-                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will be expired in ${daysRemaining} days`);
+                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`);
                 sent = true;
             } catch (e) {
                 log.error("monitor", "Cannot send cert notification to " + notification.name);
@@ -1519,7 +1487,7 @@ class Monitor extends BeanModel {
      */
     static async getMonitorTag(monitorIDs) {
         return await R.getAll(`
-            SELECT monitor_tag.monitor_id, monitor_tag.tag_id, tag.name, tag.color
+            SELECT monitor_tag.monitor_id, monitor_tag.tag_id, monitor_tag.value, tag.name, tag.color
             FROM monitor_tag
             JOIN tag ON monitor_tag.tag_id = tag.id
             WHERE monitor_tag.monitor_id IN (${monitorIDs.map((_) => "?").join(",")})
@@ -1564,6 +1532,8 @@ class Monitor extends BeanModel {
                 }
                 tagsMap.get(row.monitor_id).push({
                     tag_id: row.tag_id,
+                    monitor_id: row.monitor_id,
+                    value: row.value,
                     name: row.name,
                     color: row.color
                 });
@@ -1620,7 +1590,7 @@ class Monitor extends BeanModel {
     /**
      * Gets all Children of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>} Children
+     * @returns {Promise<LooseObject<any>[]>} Children
      */
     static async getChildren(monitorID) {
         return await R.getAll(`
