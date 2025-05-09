@@ -24,7 +24,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
-const os = require('os');
+const os = require("os");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -1302,6 +1302,8 @@ class Monitor extends BeanModel {
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     if (!heartbeatJSON["msg"]) {
                         heartbeatJSON["msg"] = "N/A";
+                    } else {
+                        heartbeatJSON["msg"] = `[${os.hostname()}] ${heartbeatJSON["msg"]}`;
                     }
 
                     // Also provide the time in server timezone
