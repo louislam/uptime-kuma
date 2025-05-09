@@ -13,7 +13,7 @@ test.describe("Status Page", () => {
         const tagName = "Client";
         const tagValue = "Acme Inc";
         const monitorUrl = "https://www.example.com/status";
-        const monitorPublicUrl = "https://www.example.com";
+        const monitorCustomUrl = "https://www.example.com";
 
         // Status Page
         const footerText = "This is footer text.";
@@ -39,7 +39,6 @@ test.describe("Status Page", () => {
         await page.getByTestId("tag-color-select").click(); // Vue-Multiselect component
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Orange" }).click();
         await page.getByTestId("tag-submit-button").click();
-        await page.getByTestId("public-url-input").fill(monitorPublicUrl);
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
 
@@ -87,6 +86,7 @@ test.describe("Status Page", () => {
         // Set public url on
         await page.getByTestId("monitor-settings").click();
         await page.getByTestId("show-clickable-link").check();
+        await page.getByTestId("custom-url-input").fill(monitorCustomUrl);
         await page.getByTestId("monitor-settings-close").click();
 
         // Save the changes
@@ -103,7 +103,7 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("footer-text")).toContainText(footerText);
         await expect(page.getByTestId("powered-by")).toHaveCount(0);
 
-        await expect(page.getByTestId("monitor-name")).toHaveAttribute("href", monitorPublicUrl);
+        await expect(page.getByTestId("monitor-name")).toHaveAttribute("href", monitorCustomUrl);
 
         await expect(page.getByTestId("update-countdown-text")).toContainText("00:");
         const updateCountdown = Number((await page.getByTestId("update-countdown-text").textContent()).match(/(\d+):(\d+)/)[2]);
