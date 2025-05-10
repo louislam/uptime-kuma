@@ -13,6 +13,7 @@ const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Elks = require("./notification-providers/46elks");
 const Feishu = require("./notification-providers/feishu");
+const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
@@ -169,6 +170,7 @@ class Notification {
             new YZJ(),
             new SMSPlanet(),
             new SpugPush(),
+            new Notifery(),
         ];
         for (let item of list) {
             if (! item.name) {
