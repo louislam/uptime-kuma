@@ -24,6 +24,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const os = require("os");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -1288,7 +1289,7 @@ class Monitor extends BeanModel {
                 text = "🔴 Down";
             }
 
-            let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
+            let msg = `[${os.hostname()}] [${monitor.name}] [${text}] ${bean.msg}`;
 
             for (let notification of notificationList) {
                 try {
@@ -1301,6 +1302,8 @@ class Monitor extends BeanModel {
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
                     if (!heartbeatJSON["msg"]) {
                         heartbeatJSON["msg"] = "N/A";
+                    } else {
+                        heartbeatJSON["msg"] = `[${os.hostname()}] ${heartbeatJSON["msg"]}`;
                     }
 
                     // Also provide the time in server timezone
