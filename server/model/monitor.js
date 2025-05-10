@@ -37,14 +37,30 @@ const rootCertificates = rootCertificatesFingerprints();
 class Monitor extends BeanModel {
 
     /**
+     * Formats the status code to a human readable form
+     * @param {number} status the internal status code of the monitor
+     * @returns {string} a human readable string that corresponds to the status code
+     */
+    statusToKey(status) {
+        switch (status) {
+            case 0: return "down";
+            case 1: return "up";
+            case 2: return "pending";
+            case 4: return "maintenance";
+            default: return "unknown";
+        }
+    }
+
+    /**
      * Return an object that ready to parse to JSON for public Only show
      * necessary data to public
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
      * JSON
+     * @param {boolean} showStatus Should the JSON show the status
      * @returns {Promise<object>} Object ready to parse
      */
-    async toPublicJSON(showTags = false, certExpiry = false) {
+    async toPublicJSON(showTags = false, certExpiry = false, showStatus = false) {
         let obj = {
             id: this.id,
             name: this.name,
@@ -64,6 +80,11 @@ class Monitor extends BeanModel {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
+        }
+
+        if (showStatus) {
+            const heartbeat = await Monitor.getPreviousHeartbeat(this.id);
+            obj.status = this.statusToKey(heartbeat.status);
         }
 
         return obj;
