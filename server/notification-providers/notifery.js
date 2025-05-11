@@ -13,30 +13,24 @@ class Notifery extends NotificationProvider {
         const okMsg = "Sent Successfully.";
         const url = "https://api.notifery.com/event";
 
-        // Prepare request data
         let data = {
             title: notification.notiferyTitle || "Uptime Kuma Alert",
             message: msg,
         };
 
-        // Add group if specified
         if (notification.notiferyGroup) {
             data.group = notification.notiferyGroup;
         }
 
-        // Add link to monitor
+        // Link to the monitor
         const baseURL = await setting("primaryBaseURL");
         if (baseURL && monitorJSON) {
-            // Add monitor link as part of the message
             data.message += `\n\nMonitor: ${baseURL}${getMonitorRelativeURL(monitorJSON.id)}`;
         }
 
-        // Add code and duration if heartbeat exists
         if (heartbeatJSON) {
-            // Add status code - if DOWN use code 1, otherwise 0
             data.code = heartbeatJSON.status === UP ? 0 : 1;
 
-            // Add ping duration if available
             if (heartbeatJSON.ping) {
                 data.duration = heartbeatJSON.ping;
             }
