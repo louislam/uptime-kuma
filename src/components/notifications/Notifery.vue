@@ -18,7 +18,7 @@
             v-model="$parent.notification.notiferyTitle"
             type="text"
             class="form-control"
-            :placeholder="$t('Uptime Kuma Alert')"
+            placeholder="Uptime Kuma Alert"
         />
     </div>
 
