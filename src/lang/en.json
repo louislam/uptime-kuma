@@ -1074,6 +1074,8 @@
     "rabbitmqHelpText": "To use the monitor, you will need to enable the Management Plugin in your RabbitMQ setup. For more information, please consult the {rabitmq_documentation}.",
     "SendGrid API Key": "SendGrid API Key",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
+    "Custom URL": "Custom URL",
+    "customUrlDescription": "Will be used as the clickable URL instead of the monitor's one.",
     "OneChatAccessToken": "OneChat Access Token",
     "OneChatUserIdOrGroupId": "OneChat User ID or Group ID",
     "OneChatBotId": "OneChat Bot ID",
