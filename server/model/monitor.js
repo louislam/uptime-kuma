@@ -1292,6 +1292,7 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
+                    const triggers = notification.trigger.split(",");
                     const heartbeatJSON = bean.toJSON();
                     const monitorData = [{ id: monitor.id,
                         active: monitor.active,
@@ -1308,7 +1309,9 @@ class Monitor extends BeanModel {
                     heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
                     heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
-                    await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
+                    if ((bean.status === UP && triggers.includes("up")) || (bean.status === DOWN && triggers.includes("down"))) {
+                        await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
+                    }
                 } catch (e) {
                     log.error("monitor", "Cannot send notification to " + notification.name);
                     log.error("monitor", e);
@@ -1400,6 +1403,11 @@ class Monitor extends BeanModel {
         log.debug("monitor", "Send certificate notification");
 
         for (let notification of notificationList) {
+            const triggers = notification.trigger.split(",");
+            if (!triggers.includes("certificate")) {
+                log.debug("monitor", "Notification does not trigger on certificate");
+                continue;
+            }
             try {
                 log.debug("monitor", "Sending to " + notification.name);
                 await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`);

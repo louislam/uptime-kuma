@@ -40,6 +40,56 @@
                             </div>
 
                             <br>
+                            <MonitorListFilterDropdown :filter-active="false" style="margin-left: -5px;">
+                                <template #status>
+                                    <span>{{ notification.trigger?.split(',')
+                                        ?.map(tt => $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1)))
+                                        ?.join(", ") || $t("Default") }}</span>
+                                </template>
+                                <template #dropdown>
+                                    <li>
+                                        <div class="dropdown-item" tabindex="0" @click.stop="updateTriggers('up')">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <span>{{ $t("UpTrigger") }}</span>
+                                                <span class="ps-3">
+                                                    <span v-if="notification.trigger?.split(',').includes('up')" class="px-1 filter-active">
+                                                        <font-awesome-icon icon="check" />
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-item" tabindex="0" @click.stop="updateTriggers('down')">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <span>{{ $t("DownTrigger") }}</span>
+                                                <span class="ps-3">
+                                                    <span v-if="notification.trigger?.split(',').includes('down')" class="px-1 filter-active">
+                                                        <font-awesome-icon icon="check" />
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="dropdown-item" tabindex="0" @click.stop="updateTriggers('certificate')">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <span>{{ $t("CertificateTrigger") }}</span>
+                                                <span class="ps-3">
+                                                    <span v-if="notification.trigger?.split(',').includes('certificate')" class="px-1 filter-active">
+                                                        <font-awesome-icon icon="check" />
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </template>
+                            </MonitorListFilterDropdown>
+
+                            <div class="form-text">
+                                {{ $t("NotificationTriggerDescription") }}
+                            </div>
+                            <br>
 
                             <div class="form-check form-switch">
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
@@ -75,10 +125,12 @@ import { Modal } from "bootstrap";
 
 import Confirm from "./Confirm.vue";
 import NotificationFormList from "./notifications";
+import MonitorListFilterDropdown from "./MonitorListFilterDropdown.vue";
 
 export default {
     components: {
         Confirm,
+        MonitorListFilterDropdown,
     },
     props: {},
     emits: [ "added" ],
@@ -275,6 +327,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
+                    trigger: "up,down,certificate",
                 };
             }
 
@@ -287,6 +340,9 @@ export default {
          */
         submit() {
             this.processing = true;
+            if (!this.notification.trigger) {
+                this.notification.trigger = "up,down,certificate";
+            }
             this.$root.getSocket().emit("addNotification", this.notification, this.id, (res) => {
                 this.$root.toastRes(res);
                 this.processing = false;
@@ -361,6 +417,21 @@ export default {
                     console.warn("Modal hide failed:", e);
                 }
             }
+        },
+
+        updateTriggers(trigger) {
+            let triggers;
+            if (!this.notification.trigger) {
+                triggers = [];
+            } else {
+                triggers = this.notification.trigger.split(",");
+            }
+            if (triggers.includes(trigger)) {
+                triggers = triggers.filter(t => t !== trigger);
+            } else {
+                triggers.push(trigger);
+            }
+            this.notification.trigger = triggers.join(",");
         }
     },
 };
