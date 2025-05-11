@@ -4,6 +4,7 @@ import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bark from "./Bark.vue";
 import Bitrix24 from "./Bitrix24.vue";
+import Notifery from "./Notifery.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
@@ -149,6 +150,7 @@ const NotificationFormList = {
     "ZohoCliq": ZohoCliq,
     "SevenIO": SevenIO,
     "whapi": Whapi,
+    "notifery": Notifery,
     "waha": WAHA,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
