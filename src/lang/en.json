@@ -64,6 +64,7 @@
     "Expected Value": "Expected Value",
     "Json Query Expression": "Json Query Expression",
     "Friendly Name": "Friendly Name",
+    "defaultFriendlyName": "New Monitor",
     "URL": "URL",
     "Hostname": "Hostname",
     "Host URL": "Host URL",
@@ -517,6 +518,7 @@
     "Clone": "Clone",
     "cloneOf": "Clone of {0}",
     "smtp": "Email (SMTP)",
+    "Use HTML for custom E-mail body": "Use HTML for custom E-mail body",
     "secureOptionNone": "None / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
     "Ignore TLS Error": "Ignore TLS Error",
@@ -798,6 +800,7 @@
     "PushDeer Server": "PushDeer Server",
     "pushDeerServerDescription": "Leave blank to use the official server",
     "PushDeer Key": "PushDeer Key",
+    "SpugPush Template Code": "Template Code",
     "wayToGetClickSendSMSToken": "You can get API Username and API Key from {0} .",
     "Custom Monitor Type": "Custom Monitor Type",
     "Google Analytics ID": "Google Analytics ID",
@@ -1080,6 +1083,8 @@
     "pingPerRequestTimeoutLabel": "Per-Ping Timeout",
     "pingPerRequestTimeoutDescription": "This is the maximum waiting time (in seconds) before considering a single ping packet lost",
     "pingIntervalAdjustedInfo": "Interval adjusted based on packet count, global timeout and per-ping timeout",
+    "Custom URL": "Custom URL",
+    "customUrlDescription": "Will be used as the clickable URL instead of the monitor's one.",
     "OneChatAccessToken": "OneChat Access Token",
     "OneChatUserIdOrGroupId": "OneChat User ID or Group ID",
     "OneChatBotId": "OneChat Bot ID",
@@ -1100,5 +1105,6 @@
     "the smsplanet documentation": "the smsplanet documentation",
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
-    "smsplanetNeedToApproveName": "Needs to be approved in the client panel"
+    "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
+    "Disable URL in Notification": "Disable URL in Notification"
 }

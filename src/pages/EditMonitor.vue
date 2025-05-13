@@ -109,7 +109,7 @@
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required data-testid="friendly-name-input">
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" data-testid="friendly-name-input" :placeholder="defaultFriendlyName">
                             </div>
 
                             <!-- URL -->
@@ -1218,6 +1218,25 @@ export default {
             return "";
         },
 
+        defaultFriendlyName() {
+            if (this.monitor.hostname) {
+                return this.monitor.hostname;
+            }
+            if (this.monitor.url) {
+                if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
+                    // Ensure monitor without a URL is not affected by invisible URL.
+                    try {
+                        const url = new URL(this.monitor.url);
+                        return url.hostname;
+                    } catch (e) {
+                        return this.monitor.url.replace(/https?:\/\//, "");
+                    }
+                }
+            }
+            // Default placeholder if neither hostname nor URL is available
+            return this.$t("defaultFriendlyName");
+        },
+
         ipRegex() {
 
             // Allow to test with simple dns server with port (127.0.0.1:5300)
@@ -1236,6 +1255,7 @@ export default {
             }
             return this.$t(name);
         },
+
         remoteBrowsersOptions() {
             return this.$root.remoteBrowserList.map(browser => {
                 return {
@@ -1244,6 +1264,7 @@ export default {
                 };
             });
         },
+
         remoteBrowsersToggle: {
             get() {
                 return this.remoteBrowsersEnabled || this.monitor.remote_browser != null;
@@ -1261,6 +1282,7 @@ export default {
                 }
             }
         },
+
         isAdd() {
             return this.$route.path === "/add";
         },
@@ -1311,6 +1333,7 @@ message HealthCheckResponse {
 }
             ` ]);
         },
+
         bodyPlaceholder() {
             if (this.monitor && this.monitor.httpBodyEncoding && this.monitor.httpBodyEncoding === "xml") {
                 return this.$t("Example:", [ `
@@ -1787,6 +1810,10 @@ message HealthCheckResponse {
         async submit() {
 
             this.processing = true;
+
+            if (!this.monitor.name) {
+                this.monitor.name = this.defaultFriendlyName;
+            }
 
             if (!this.isInputValid()) {
                 this.processing = false;
