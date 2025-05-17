@@ -43,7 +43,7 @@ class Opsgenie extends NotificationProvider {
 
             if (heartbeatJSON.status === DOWN) {
                 let data = {
-                    "message": monitorJSON ? textMsg + `: ${monitorJSON.name}` : textMsg,
+                    "message": monitorJSON ? textMsg + `: ${monitorJSON.pathName}` : textMsg,
                     "alias": monitorJSON.name,
                     "description": msg,
                     "source": "Uptime Kuma",

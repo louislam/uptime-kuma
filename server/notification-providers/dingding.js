@@ -21,8 +21,8 @@ class DingDing extends NotificationProvider {
                 let params = {
                     msgtype: "markdown",
                     markdown: {
-                        title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]}`,
-                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}${mentionStr}`,
+                        title: `[${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["pathName"]}`,
+                        text: `## [${this.statusToString(heartbeatJSON["status"])}] ${monitorJSON["pathName"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}${mentionStr}`,
                     },
                     at: {
                         isAtAll: mentionAll,
