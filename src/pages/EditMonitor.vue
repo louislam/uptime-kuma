@@ -733,7 +733,12 @@
                                 {{ $t("Not available, please setup.") }}
                             </p>
 
-                            <div v-for="notification in $root.notificationList" :key="notification.id" class="form-check form-switch my-3">
+                            <div
+                                v-for="notification in $root.notificationList" :key="notification.id" class="form-check form-switch my-3"
+                                :title="`${$t('MonitorNotification', [notification.trigger.split(',')
+                                    .map(tt => $t(String(tt).charAt(0).toUpperCase() + String(tt).slice(1)))
+                                    .join(', ')])}`"
+                            >
                                 <input :id=" 'notification' + notification.id" v-model="monitor.notificationIDList[notification.id]" class="form-check-input" type="checkbox">
 
                                 <label class="form-check-label" :for=" 'notification' + notification.id">

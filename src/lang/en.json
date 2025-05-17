@@ -1097,5 +1097,11 @@
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
-    "Disable URL in Notification": "Disable URL in Notification"
+    "Disable URL in Notification": "Disable URL in Notification",
+    "UpTrigger": "Notify on up status",
+    "DownTrigger": "Notify on down status",
+    "Certificate": "Certificate",
+    "CertificateTrigger": "Notify on certificate expiration",
+    "NotificationTriggerDescription": "Customise which alerts trigger this notification provider",
+    "MonitorNotification": "Notification will be sent on {0} status changes"
 }
