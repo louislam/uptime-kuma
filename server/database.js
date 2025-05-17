@@ -736,7 +736,7 @@ class Database {
         if (Database.dbConfig.type === "sqlite") {
             return "DATETIME('now', ? || ' hours')";
         } else {
-            return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
+            return "DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? HOUR)";
         }
     }
 
