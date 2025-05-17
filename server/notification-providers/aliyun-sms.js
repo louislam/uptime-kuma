@@ -17,7 +17,7 @@ class AliyunSMS extends NotificationProvider {
             if (heartbeatJSON != null) {
                 let msgBody = JSON.stringify({
                     name: monitorJSON["name"],
-                    time: heartbeatJSON["time"],
+                    time: heartbeatJSON["localDateTime"],
                     status: this.statusToString(heartbeatJSON["status"]),
                     msg: heartbeatJSON["msg"],
                 });
