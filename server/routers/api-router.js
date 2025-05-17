@@ -98,15 +98,15 @@ router.all("/api/push/:pushToken", async (request, response) => {
             // Reset down count
             bean.downCount = 0;
 
-            log.debug("monitor", `[${this.name}] sendNotification`);
+            log.debug("monitor", `[${monitor.name}] sendNotification`);
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         } else {
-            if (bean.status === DOWN && this.resendInterval > 0) {
+            if (bean.status === DOWN && monitor.resendInterval > 0) {
                 ++bean.downCount;
-                if (bean.downCount >= this.resendInterval) {
+                if (bean.downCount >= monitor.resendInterval) {
                     // Send notification again, because we are still DOWN
-                    log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
-                    await Monitor.sendNotification(isFirstBeat, this, bean);
+                    log.debug("monitor", `[${monitor.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${monitor.resendInterval}`);
+                    await Monitor.sendNotification(isFirstBeat, monitor, bean);
 
                     // Reset down count
                     bean.downCount = 0;
