@@ -169,6 +169,7 @@ export default {
                 "gtxmessaging": "GtxMessaging",
                 "Cellsynt": "Cellsynt",
                 "SendGrid": "SendGrid",
+                "Webpush": "Webpush",
                 "notifery": "Notifery"
             };
 

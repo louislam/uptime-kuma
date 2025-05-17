@@ -73,6 +73,7 @@ import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
+import Webpush from "./Webpush.vue";
 import YZJ from "./YZJ.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 
@@ -156,6 +157,7 @@ const NotificationFormList = {
     "Cellsynt": Cellsynt,
     "WPush": WPush,
     "SendGrid": SendGrid,
+    "Webpush": Webpush,
     "YZJ": YZJ,
     "SMSPlanet": SMSPlanet,
 };

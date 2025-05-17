@@ -74,6 +74,7 @@ const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
+const Webpush = require("./notification-providers/Webpush");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
@@ -167,6 +168,7 @@ class Notification {
             new Cellsynt(),
             new Wpush(),
             new SendGrid(),
+            new Webpush(),
             new YZJ(),
             new SMSPlanet(),
             new SpugPush(),
