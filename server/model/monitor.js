@@ -1255,18 +1255,23 @@ class Monitor extends BeanModel {
         // PENDING -> PENDING = not important
         // * PENDING -> DOWN = important
         // PENDING -> UP = not important
+        // PENDING -> MAINTENANCE = important
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
         // MAINTENANCE -> MAINTENANCE = not important
-        // MAINTENANCE -> UP = not important
+        // * MAINTENANCE -> UP = important
         // * MAINTENANCE -> DOWN = important
-        // DOWN -> MAINTENANCE = not important
-        // UP -> MAINTENANCE = not important
+        // * DOWN -> MAINTENANCE = important
+        // * UP -> MAINTENANCE = important
         return isFirstBeat ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
+            (previousBeatStatus === UP && currentBeatStatus === MAINTENANCE) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === MAINTENANCE) ||
             (previousBeatStatus === PENDING && currentBeatStatus === DOWN);
     }
 
@@ -1284,8 +1289,10 @@ class Monitor extends BeanModel {
             let text;
             if (bean.status === UP) {
                 text = "✅ Up";
-            } else {
+            } else if (bean.status === DOWN) {
                 text = "🔴 Down";
+            } else if (bean.status === MAINTENANCE) {
+                text = "🔵 In Maintenance";
             }
 
             let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
