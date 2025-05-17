@@ -1498,8 +1498,8 @@ let needSetup = false;
                     log.debug("webpush", "Generating new VAPID keys");
                     const vapidKeys = webpush.generateVAPIDKeys();
 
-                    await Settings.set("webpushPublicVapidKey", vapidKeys.publicKey);
                     await Settings.set("webpushPrivateVapidKey", vapidKeys.privateKey);
+                    await Settings.set("webpushPublicVapidKey", vapidKeys.publicKey);
 
                     publicVapidKey = vapidKeys.publicKey;
                 }
