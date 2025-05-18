@@ -16,9 +16,7 @@ export default defineConfig({
     },
     define: {
         "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
-        "DEVCONTAINER": JSON.stringify(process.env.DEVCONTAINER),
-        "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN": JSON.stringify(process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN),
-        "CODESPACE_NAME": JSON.stringify(process.env.CODESPACE_NAME),
+        "process.env": {},
     },
     plugins: [
         vue(),

@@ -10,6 +10,10 @@ const jwt = require("jsonwebtoken");
 const config = require("../config");
 const { RemoteBrowser } = require("../remote-browser");
 
+/**
+ * Cached instance of a browser
+ * @type {import ("playwright-core").Browser}
+ */
 let browser = null;
 
 let allowedList = [];
@@ -71,10 +75,12 @@ async function isAllowedChromeExecutable(executablePath) {
 /**
  * Get the current instance of the browser. If there isn't one, create
  * it.
- * @returns {Promise<Browser>} The browser
+ * @returns {Promise<import ("playwright-core").Browser>} The browser
  */
 async function getBrowser() {
-    if (!browser) {
+    if (browser && browser.isConnected()) {
+        return browser;
+    } else {
         let executablePath = await Settings.get("chromeExecutable");
 
         executablePath = await prepareChromeExecutable(executablePath);
@@ -83,8 +89,9 @@ async function getBrowser() {
             //headless: false,
             executablePath,
         });
+
+        return browser;
     }
-    return browser;
 }
 
 /**
@@ -232,6 +239,14 @@ class RealBrowserMonitorType extends MonitorType {
         const browser = monitor.remote_browser ? await getRemoteBrowser(monitor.remote_browser, monitor.user_id) : await getBrowser();
         const context = await browser.newContext();
         const page = await context.newPage();
+
+        // Prevent Local File Inclusion
+        // Accept only http:// and https://
+        // https://github.com/louislam/uptime-kuma/security/advisories/GHSA-2qgm-m29m-cj2h
+        let url = new URL(monitor.url);
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+            throw new Error("Invalid url protocol, only http and https are allowed.");
+        }
 
         const res = await page.goto(monitor.url, {
             waitUntil: "networkidle",

@@ -33,7 +33,7 @@
     "Down": "ကွန်ရက်ပြတ်တောက်နေသည်",
     "Pending": "ဆိုင်းငံ့ဆဲ",
     "statusMaintenance": "ပြုပြင်ထိန်းသိမ်းခြင်း",
-    "Cannot connect to the socket server": "Socket Server အားချိတ်ဆက်မှုမအောင်မြင်ပါ",
+    "Cannot connect to the socket server": "Why Socket Server အားချိတ်ဆက်မှုမအောင်မြင်ပါ",
     "Passive Monitor Type": "Passive စောင့်ကြည့်မှုပုံစံ",
     "Specific Monitor Type": "သီးခြားစောင့်ကြည့်မှုပုံစံ",
     "Resume": "ဆက်သွားမည်",
@@ -89,5 +89,7 @@
     "Heartbeat Retry Interval": "ကွန်ယက်ချိတ်ဆက်နိုင်မှုတိုင်းတာခြင်း ထပ်မံကြိုးစားခြင်း အချိန်ကွာဟချက်",
     "Resend Notification if Down X times consecutively": "ကွန်ယက်ချိတ်ဆက်မှု X အကြိမ်ထိ ဆက်တိုက်ကျနေပါက သတိပေးချက်ထပ်မံပေးပို့ရန်",
     "retriesDescription": "ဝန်ဆောင်မှုကွန်ယက်ပြတ်တောက်နေ၍ သတိပေးချက်ပေးပို့ပြီး အများဆုံးထပ်မံကြိုးစားနိုင်မှု",
-    "Search Engine Visibility": "ရှာဖွေမှုအင်ဂျင်များ၏မြင်နိုင်စွမ်း"
+    "Search Engine Visibility": "ရှာဖွေမှုအင်ဂျင်များ၏မြင်နိုင်စွမ်း",
+    "setupDatabaseEmbeddedMariaDB": "You don't need to set anything. This docker image has embedded and configured MariaDB for you automatically. Uptime Kuma will connect to this database via unix socket.",
+    "setupDatabaseChooseDatabase": "English"
 }

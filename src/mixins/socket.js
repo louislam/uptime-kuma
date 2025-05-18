@@ -38,6 +38,7 @@ export default {
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
             monitorList: { },
+            monitorTypeList: {},
             maintenanceList: {},
             apiKeyList: {},
             heartbeatList: { },
@@ -129,18 +130,36 @@ export default {
                 this.allowLoginDialog = false;
             });
 
+            socket.on("loginRequired", () => {
+                let token = this.storage().token;
+                if (token && token !== "autoLogin") {
+                    this.loginByToken(token);
+                } else {
+                    this.$root.storage().removeItem("token");
+                    this.allowLoginDialog = true;
+                }
+            });
+
             socket.on("monitorList", (data) => {
-                // Add Helper function
-                Object.entries(data).forEach(([ monitorID, monitor ]) => {
-                    monitor.getUrl = () => {
-                        try {
-                            return new URL(monitor.url);
-                        } catch (_) {
-                            return null;
-                        }
-                    };
-                });
+                this.assignMonitorUrlParser(data);
                 this.monitorList = data;
+            });
+
+            socket.on("updateMonitorIntoList", (data) => {
+                this.assignMonitorUrlParser(data);
+                Object.entries(data).forEach(([ monitorID, updatedMonitor ]) => {
+                    this.monitorList[monitorID] = updatedMonitor;
+                });
+            });
+
+            socket.on("deleteMonitorFromList", (monitorID) => {
+                if (this.monitorList[monitorID]) {
+                    delete this.monitorList[monitorID];
+                }
+            });
+
+            socket.on("monitorTypeList", (data) => {
+                this.monitorTypeList = data;
             });
 
             socket.on("maintenanceList", (data) => {
@@ -241,7 +260,7 @@ export default {
 
             socket.on("disconnect", () => {
                 console.log("disconnect");
-                this.connectionErrorMsg = "Lost connection to the socket server. Reconnecting...";
+                this.connectionErrorMsg = `${this.$t("Lost connection to the socket server.")} ${this.$t("Reconnecting...")}`;
                 this.socket.connected = false;
             });
 
@@ -254,24 +273,6 @@ export default {
                 // Reset Heartbeat list if it is re-connect
                 if (this.socket.connectCount >= 2) {
                     this.clearData();
-                }
-
-                let token = this.storage().token;
-
-                if (token) {
-                    if (token !== "autoLogin") {
-                        this.loginByToken(token);
-                    } else {
-                        // Timeout if it is not actually auto login
-                        setTimeout(() => {
-                            if (! this.loggedIn) {
-                                this.allowLoginDialog = true;
-                                this.$root.storage().removeItem("token");
-                            }
-                        }, 5000);
-                    }
-                } else {
-                    this.allowLoginDialog = true;
                 }
 
                 this.socket.firstConnect = false;
@@ -291,6 +292,23 @@ export default {
             socket.on("refresh", () => {
                 location.reload();
             });
+        },
+        /**
+         * parse all urls from list.
+         * @param {object} data Monitor data to modify
+         * @returns {object} list
+         */
+        assignMonitorUrlParser(data) {
+            Object.entries(data).forEach(([ monitorID, monitor ]) => {
+                monitor.getUrl = () => {
+                    try {
+                        return new URL(monitor.url);
+                    } catch (_) {
+                        return null;
+                    }
+                };
+            });
+            return data;
         },
 
         /**
@@ -323,7 +341,7 @@ export default {
         },
 
         /**
-         * Show success or error toast dependant on response status code
+         * Show success or error toast dependent on response status code
          * @param {object} res Response object
          * @returns {void}
          */
@@ -681,6 +699,17 @@ export default {
         getMonitorBeats(monitorID, period, callback) {
             socket.emit("getMonitorBeats", monitorID, period, callback);
         },
+
+        /**
+         * Retrieves monitor chart data.
+         * @param {string} monitorID - The ID of the monitor.
+         * @param {number} period - The time period for the chart data, in hours.
+         * @param {socketCB} callback - The callback function to handle the chart data.
+         * @returns {void}
+         */
+        getMonitorChartData(monitorID, period, callback) {
+            socket.emit("getMonitorChartData", monitorID, period, callback);
+        }
     },
 
     computed: {
