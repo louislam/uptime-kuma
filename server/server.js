@@ -866,6 +866,7 @@ let needSetup = false;
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.remote_browser = monitor.remote_browser;
+                bean.smtpSecurity = monitor.smtpSecurity;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;
                 bean.jsonPathOperator = monitor.jsonPathOperator;
