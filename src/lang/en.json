@@ -64,6 +64,7 @@
     "Expected Value": "Expected Value",
     "Json Query Expression": "Json Query Expression",
     "Friendly Name": "Friendly Name",
+    "defaultFriendlyName": "New Monitor",
     "URL": "URL",
     "Hostname": "Hostname",
     "Host URL": "Host URL",
@@ -1074,6 +1075,8 @@
     "SendGrid API Key": "SendGrid API Key",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
     "smtpHelpText": "“SMTPS” tests that SMTP/TLS is working; “Ignore TLS” connects over plaintext; “STARTTLS” connects, issues a STARTTLS command and verifies the server certificate. None of these send an email.",
+    "Custom URL": "Custom URL",
+    "customUrlDescription": "Will be used as the clickable URL instead of the monitor's one.",
     "OneChatAccessToken": "OneChat Access Token",
     "OneChatUserIdOrGroupId": "OneChat User ID or Group ID",
     "OneChatBotId": "OneChat Bot ID",
@@ -1094,5 +1097,6 @@
     "the smsplanet documentation": "the smsplanet documentation",
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
-    "smsplanetNeedToApproveName": "Needs to be approved in the client panel"
+    "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
+    "Disable URL in Notification": "Disable URL in Notification"
 }
