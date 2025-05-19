@@ -38,7 +38,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("tag-value-input").fill(tagValue);
         await page.getByTestId("tag-color-select").click(); // Vue-Multiselect component
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Orange" }).click();
-        await page.getByTestId("tag-submit-button").click();
+        await page.getByTestId("tag-final-add-button").click();
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
 

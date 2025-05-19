@@ -128,8 +128,8 @@
 
                         <!-- Action Buttons: Clear current form and Stage current tag -->
                         <div class="d-flex justify-content-end align-items-center mt-3">
-                            <a href="#" @click.prevent="clearDraftTag" class="me-3">{{ $t("Clear Form") }}</a>
-                            <button type="button" class="btn btn-outline-primary" @click.stop="stageCurrentTag" :disabled="processing || validateDraftTag.invalid">
+                            <a class="me-3" href="#" @click.prevent="clearDraftTag">{{ $t("Clear Form") }}</a>
+                            <button type="button" class="btn btn-outline-primary" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
                                 {{ $t("Add Another Tag") }}
                             </button>
                         </div>
@@ -140,7 +140,7 @@
                     <!-- Modal Footer: Cancel batch or Confirm and Add all staged tags -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
-                        <button type="button" class="btn btn-primary" @click.stop="confirmAndCommitStagedTags" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)">{{ $t("Add") }}</button>
+                        <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="tag-final-add-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Add") }}</button>
                     </div>
                     <!-- End Modal Footer -->
                 </div>
@@ -197,7 +197,7 @@ export default {
             /** @type {Tag[]} */
             deleteTags: [],
             /**
-             * @type {Array<Object>} Holds tag objects staged for addition.
+             * @type {Array<object>} Holds tag objects staged for addition.
              * Each object: { name, color, value, isNewSystemTag, systemTagId, keyForList }
              */
             stagedForBatchAdd: [],
@@ -224,17 +224,21 @@ export default {
             return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.tag_id === tag.tag_id));
         },
         /**
-         * @returns {boolean} True if more new system tags can be staged.
+         * @returns {boolean} True if more new system tags can be staged, false otherwise.
          */
         canStageMoreNewSystemTags() {
             return this.stagedForBatchAdd.filter(t => t.isNewSystemTag).length < MAX_NEW_SYSTEM_TAGS_PER_BATCH;
         },
+        /**
+         * Provides the color options for the tag color selector.
+         * @returns {Array<object>} Array of color options.
+         */
         colorOptions() {
             return colorOptions(this);
         },
         /**
          * Validates the current draft tag based on several conditions.
-         * @returns {{invalid: boolean, messageKey: string|null, messageParams: object|null}}
+         * @returns {{invalid: boolean, messageKey: string|null, messageParams: object|null}} Object indicating validity, and a message key/params if invalid.
          */
         validateDraftTag() {
             // If defining a new system tag (newDraftTag.select == null)
@@ -243,15 +247,23 @@ export default {
                     return {
                         invalid: true,
                         messageKey: "tagLimitReached",
-                        messageParams: { limit: MAX_NEW_SYSTEM_TAGS_PER_BATCH }
+                        messageParams: { limit: MAX_NEW_SYSTEM_TAGS_PER_BATCH },
                     };
                 }
                 if (!this.newDraftTag.name || this.newDraftTag.name.trim() === "" || !this.newDraftTag.color) {
                     // Keep button disabled, but don't show the explicit message for this case
-                    return { invalid: true, messageKey: null, messageParams: null };
+                    return {
+                        invalid: true,
+                        messageKey: null,
+                        messageParams: null,
+                    };
                 }
                 if (this.tagOptions.find(opt => opt.name.toLowerCase() === this.newDraftTag.name.trim().toLowerCase())) {
-                    return { invalid: true, messageKey: "tagNameExists", messageParams: null };
+                    return {
+                        invalid: true,
+                        messageKey: "tagNameExists",
+                        messageParams: null,
+                    };
                 }
             }
 
@@ -261,7 +273,11 @@ export default {
 
             // Check if (name + value) combination already exists in this.stagedForBatchAdd
             if (this.stagedForBatchAdd.find(staged => staged.name === draftTagName && staged.value === draftTagValue)) {
-                return { invalid: true, messageKey: "tagAlreadyStaged", messageParams: null };
+                return {
+                    invalid: true,
+                    messageKey: "tagAlreadyStaged",
+                    messageParams: null,
+                };
             }
 
             // Check if (name + value) combination already exists in this.selectedTags (final list on monitor)
@@ -272,17 +288,28 @@ export default {
             );
 
             if (!isUndoDelete && this.selectedTags.find(sTag => sTag.name === draftTagName && sTag.value === draftTagValue)) {
-                return { invalid: true, messageKey: "tagAlreadyOnMonitor", messageParams: null };
+                return {
+                    invalid: true,
+                    messageKey: "tagAlreadyOnMonitor",
+                    messageParams: null,
+                };
             }
-            
             // If an existing tag is selected at this point, it has passed all relevant checks
             if (this.newDraftTag.select != null) {
-                return { invalid: false, messageKey: null, messageParams: null };
+                return {
+                    invalid: false,
+                    messageKey: null,
+                    messageParams: null,
+                };
             }
 
             // If it's a new tag definition, and it passed its specific checks, it's valid.
             // (This also serves as a final default to valid if other logic paths were missed, though ideally covered above)
-            return { invalid: false, messageKey: null, messageParams: null };
+            return {
+                invalid: false,
+                messageKey: null,
+                messageParams: null,
+            };
         },
     },
     mounted() {
