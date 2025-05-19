@@ -191,8 +191,8 @@
     "Add New below or Select...": "Add New below or Select…",
     "Tag with this name already exist.": "Tag with this name already exists.",
     "Tag with this value already exist.": "Tag with this value already exists.",
-    "tagAlreadyOnMonitor": "This tag (name + value) is already on this monitor.",
-    "tagAlreadyStaged": "This tag (name + value) is already staged for this batch.",
+    "tagAlreadyOnMonitor": "This tag (name and value) is already on the monitor or pending addition.",
+    "tagAlreadyStaged": "This tag (name and value) is already staged for this batch.",
     "tagLimitReached": "Cannot stage more than {limit} new system tags in a single batch.",
     "tagNameExists": "A system tag with this name already exists. Select it from the list or use a different name.",
     "color": "Color",
@@ -1104,5 +1104,7 @@
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
     "Disable URL in Notification": "Disable URL in Notification",
     "Add Another Tag": "Add Another Tag",
-    "Staged Tags for Batch Add": "Staged Tags for Batch Add"
+    "Staged Tags for Batch Add": "Staged Tags for Batch Add",
+    "Clear Form": "Clear Form",
+    "pause": "Pause"
 }

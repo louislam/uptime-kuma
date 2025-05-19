@@ -126,27 +126,21 @@
                         </div>
                         <!-- End IV.3 -->
 
-                        <!-- IV.2 "Stage This Tag" Button (Modified current "Add" button) -->
-                        <div class="mb-2">
-                             <button
-                                type="button"
-                                class="btn btn-secondary float-end" 
-                                :disabled="processing || validateDraftTag.invalid"
-                                data-testid="stage-tag-button" 
-                                @click.stop="stageCurrentTag" 
-                            >
+                        <!-- Action Buttons: Clear Form and Add Another Tag -->
+                        <div class="d-flex justify-content-end align-items-center mt-3">
+                            <a href="#" @click.prevent="clearDraftTag" class="me-3">{{ $t("Clear Form") }}</a>
+                            <button type="button" class="btn btn-outline-primary" @click.stop="stageCurrentTag" :disabled="processing || validateDraftTag.invalid">
                                 {{ $t("Add Another Tag") }}
                             </button>
-                            <div v-if="newDraftTag.select == null && !canStageMoreNewSystemTags && validateDraftTag.invalid && validateDraftTag.messageKey === 'tagLimitReached'" class="form-text text-danger float-end me-2">
-                                {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
-                            </div>
                         </div>
-                        <!-- End IV.2 -->
+                        <div v-if="newDraftTag.select == null && !canStageMoreNewSystemTags && validateDraftTag.invalid && validateDraftTag.messageKey === 'tagLimitReached'" class="form-text text-danger text-end mt-1">
+                            {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
+                        </div>
                     </div>
                     <!-- IV.4 Modal Footer Buttons -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
-                        <button type="button" class="btn btn-primary" @click.stop="confirmAndCommitStagedTags" :disabled="processing || stagedForBatchAdd.length === 0">{{ $t("Add") }}</button>
+                        <button type="button" class="btn btn-primary" @click.stop="confirmAndCommitStagedTags" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)">{{ $t("Add") }}</button>
                     </div>
                     <!-- End IV.4 -->
                 </div>
@@ -281,12 +275,13 @@ export default {
                 return { invalid: true, messageKey: "tagAlreadyOnMonitor", messageParams: null };
             }
             
-            // If an existing tag is selected and has no value, it's valid (value is optional)
-            if (this.newDraftTag.select != null && draftTagValue === "") {
-                 return { invalid: false, messageKey: null, messageParams: null };
+            // If an existing tag is selected at this point, it has passed all relevant checks
+            if (this.newDraftTag.select != null) {
+                return { invalid: false, messageKey: null, messageParams: null };
             }
 
-            // If none of the above, invalid: false
+            // If it's a new tag definition, and it passed its specific checks, it's valid.
+            // (This also serves as a final default to valid if other logic paths were missed, though ideally covered above)
             return { invalid: false, messageKey: null, messageParams: null };
         },
     },
@@ -554,7 +549,26 @@ export default {
          * @returns {void}
          */
         confirmAndCommitStagedTags() {
+            // Phase 1: If there's a currently valid newDraftTag that hasn't been staged yet,
+            // (e.g. user typed a full tag and directly clicked the footer "Add"), then stage it now.
+            // stageCurrentTag has its own check for validateDraftTag.invalid and will clear the draft.
+            if (!this.validateDraftTag.invalid) {
+                // Check if newDraftTag actually has content, to avoid staging an empty cleared draft.
+                // A valid draft implies it has content, but double-checking select or name is safer.
+                if (this.newDraftTag.select || (this.newDraftTag.name && this.newDraftTag.color)) {
+                    this.stageCurrentTag();
+                }
+            }
+
+            // Phase 2: Process everything that is now in stagedForBatchAdd.
+            if (this.stagedForBatchAdd.length === 0) {
+                this.clearDraftTag(); // Ensure draft is clear even if nothing was committed
+                this.modal.hide();
+                return;
+            }
+
             for (const sTag of this.stagedForBatchAdd) {
+                let isAnUndo = false; // Flag to track if this was an undo
                 // Check if it's an "undo delete"
                 if (sTag.systemTagId) { // Only existing system tags can be an undo delete
                     const undoDeleteIndex = this.deleteTags.findIndex(
@@ -562,30 +576,27 @@ export default {
                     );
                     if (undoDeleteIndex > -1) {
                         this.deleteTags.splice(undoDeleteIndex, 1);
-                        // If it was an undo, we don't need to add it to newTags again, as it's already in preSelectedTags or newTags from a previous session effectively
-                        // However, the plan implies adding to newTags regardless. Let's stick to the plan.
-                        // If this tag was previously in preSelectedTags and then deleted (in deleteTags),
-                        // removing it from deleteTags makes it active again via selectedTags computed prop.
-                        // If it was newly added in this session, then deleted, then re-staged, it would be in newTags.
-                        // For simplicity and to align with the plan V.4 which says "Push this object to this.newTags":
+                        isAnUndo = true;
                     }
                 }
 
-                // Create tag object for this.newTags
-                // The `new: true` flag indicates it's part of this transaction for the monitor.
-                // It does not strictly mean it is a new system tag.
-                const tagObjectForNewTags = {
-                    id: sTag.systemTagId, // This will be null for brand new system tags
-                    color: sTag.color,
-                    name: sTag.name,
-                    value: sTag.value,
-                    new: true, // As per plan, signals new to this monitor transaction
-                };
-                this.newTags.push(tagObjectForNewTags);
+                // Only add to newTags if it's not an "undo delete" operation.
+                // An "undo delete" means the tag is now considered active again from its previous state.
+                if (!isAnUndo) {
+                    const tagObjectForNewTags = {
+                        id: sTag.systemTagId, // This will be null for brand new system tags
+                        color: sTag.color,
+                        name: sTag.name,
+                        value: sTag.value,
+                        new: true, // As per plan, signals new to this monitor transaction
+                    };
+                    this.newTags.push(tagObjectForNewTags);
+                }
             }
 
-            this.stagedForBatchAdd = [];
-            this.clearDraftTag(); // Resets input fields
+            // newDraftTag should have been cleared if stageCurrentTag ran in Phase 1, or earlier.
+            // Call clearDraftTag again to be certain the form is reset before closing.
+            this.clearDraftTag();
             this.modal.hide();
         },
     },
