@@ -24,7 +24,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body">
-                        <!-- IV.1 Staging Display Area -->
+                        <!-- Display area for tags staged for batch addition -->
                         <h4 v-if="stagedForBatchAdd.length > 0">{{ $t("Staged Tags for Batch Add") }}</h4>
                         <div v-if="stagedForBatchAdd.length > 0" class="mb-3 staging-area" style="max-height: 150px; overflow-y: auto;">
                             <Tag
@@ -34,7 +34,7 @@
                                 :remove="() => unstageTag(stagedTag)"
                             />
                         </div>
-                        <!-- End IV.1 -->
+                        <!-- End Staging Display -->
 
                         <vue-multiselect
                             v-model="newDraftTag.select"
@@ -120,13 +120,13 @@
                             />
                         </div>
 
-                        <!-- IV.3 Feedback Area for Validation (General) -->
+                        <!-- General feedback area for tag input validation messages -->
                         <div v-if="validateDraftTag.invalid && validateDraftTag.messageKey && (newDraftTag.select != null || canStageMoreNewSystemTags || validateDraftTag.messageKey !== 'tagLimitReached')" class="form-text text-danger mb-2">
                             {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
                         </div>
-                        <!-- End IV.3 -->
+                        <!-- End Validation Feedback -->
 
-                        <!-- Action Buttons: Clear Form and Add Another Tag -->
+                        <!-- Action Buttons: Clear current form and Stage current tag -->
                         <div class="d-flex justify-content-end align-items-center mt-3">
                             <a href="#" @click.prevent="clearDraftTag" class="me-3">{{ $t("Clear Form") }}</a>
                             <button type="button" class="btn btn-outline-primary" @click.stop="stageCurrentTag" :disabled="processing || validateDraftTag.invalid">
@@ -137,12 +137,12 @@
                             {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
                         </div>
                     </div>
-                    <!-- IV.4 Modal Footer Buttons -->
+                    <!-- Modal Footer: Cancel batch or Confirm and Add all staged tags -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
                         <button type="button" class="btn btn-primary" @click.stop="confirmAndCommitStagedTags" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)">{{ $t("Add") }}</button>
                     </div>
-                    <!-- End IV.4 -->
+                    <!-- End Modal Footer -->
                 </div>
             </div>
         </div>
