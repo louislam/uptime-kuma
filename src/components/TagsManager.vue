@@ -24,6 +24,18 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body">
+                        <!-- IV.1 Staging Display Area -->
+                        <h4 v-if="stagedForBatchAdd.length > 0">{{ $t("Staged Tags for Batch Add") }}</h4>
+                        <div v-if="stagedForBatchAdd.length > 0" class="mb-3 staging-area" style="max-height: 150px; overflow-y: auto;">
+                            <Tag
+                                v-for="stagedTag in stagedForBatchAdd"
+                                :key="stagedTag.keyForList"
+                                :item="mapStagedTagToDisplayItem(stagedTag)"
+                                :remove="() => unstageTag(stagedTag)"
+                            />
+                        </div>
+                        <!-- End IV.1 -->
+
                         <vue-multiselect
                             v-model="newDraftTag.select"
                             class="mb-2"
@@ -58,14 +70,11 @@
                             <div class="w-50 pe-2">
                                 <input
                                     v-model="newDraftTag.name" class="form-control"
-                                    :class="{'is-invalid': validateDraftTag.nameInvalid}"
+                                    :class="{'is-invalid': validateDraftTag.invalid && (validateDraftTag.messageKey === 'tagNameColorRequired' || validateDraftTag.messageKey === 'tagNameExists')}"
                                     :placeholder="$t('Name')"
                                     data-testid="tag-name-input"
                                     @keydown.enter.prevent="onEnter"
                                 />
-                                <div class="invalid-feedback">
-                                    {{ $t("Tag with this name already exist.") }}
-                                </div>
                             </div>
                             <div class="w-50 ps-2">
                                 <vue-multiselect
@@ -104,27 +113,42 @@
                         <div class="mb-2">
                             <input
                                 v-model="newDraftTag.value" class="form-control"
-                                :class="{'is-invalid': validateDraftTag.valueInvalid}"
+                                :class="{'is-invalid': validateDraftTag.invalid && validateDraftTag.messageKey === 'tagAlreadyOnMonitor'}"
                                 :placeholder="$t('value (optional)')"
                                 data-testid="tag-value-input"
                                 @keydown.enter.prevent="onEnter"
                             />
-                            <div class="invalid-feedback">
-                                {{ $t("Tag with this value already exist.") }}
+                        </div>
+
+                        <!-- IV.3 Feedback Area for Validation (General) -->
+                        <div v-if="validateDraftTag.invalid && validateDraftTag.messageKey && (newDraftTag.select != null || canStageMoreNewSystemTags || validateDraftTag.messageKey !== 'tagLimitReached')" class="form-text text-danger mb-2">
+                            {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
+                        </div>
+                        <!-- End IV.3 -->
+
+                        <!-- IV.2 "Stage This Tag" Button (Modified current "Add" button) -->
+                        <div class="mb-2">
+                             <button
+                                type="button"
+                                class="btn btn-secondary float-end" 
+                                :disabled="processing || validateDraftTag.invalid"
+                                data-testid="stage-tag-button" 
+                                @click.stop="stageCurrentTag" 
+                            >
+                                {{ $t("Add Another Tag") }}
+                            </button>
+                            <div v-if="newDraftTag.select == null && !canStageMoreNewSystemTags && validateDraftTag.invalid && validateDraftTag.messageKey === 'tagLimitReached'" class="form-text text-danger float-end me-2">
+                                {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
                             </div>
                         </div>
-                        <div class="mb-2">
-                            <button
-                                type="button"
-                                class="btn btn-secondary float-end"
-                                :disabled="processing || validateDraftTag.invalid"
-                                data-testid="tag-submit-button"
-                                @click.stop="addDraftTag"
-                            >
-                                {{ $t("Add") }}
-                            </button>
-                        </div>
+                        <!-- End IV.2 -->
                     </div>
+                    <!-- IV.4 Modal Footer Buttons -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
+                        <button type="button" class="btn btn-primary" @click.stop="confirmAndCommitStagedTags" :disabled="processing || stagedForBatchAdd.length === 0">{{ $t("Add") }}</button>
+                    </div>
+                    <!-- End IV.4 -->
                 </div>
             </div>
         </div>
@@ -132,6 +156,8 @@
 </template>
 
 <script>
+const MAX_NEW_SYSTEM_TAGS_PER_BATCH = 10; // Example limit
+
 import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
@@ -176,13 +202,17 @@ export default {
             newTags: [],
             /** @type {Tag[]} */
             deleteTags: [],
+            /**
+             * @type {Array<Object>} Holds tag objects staged for addition.
+             * Each object: { name, color, value, isNewSystemTag, systemTagId, keyForList }
+             */
+            stagedForBatchAdd: [],
             newDraftTag: {
                 name: null,
                 select: null,
                 color: null,
                 value: "",
-                invalid: true,
-                nameInvalid: false,
+                // invalid: true, // Initial validation will be handled by computed prop
             },
         };
     },
@@ -199,49 +229,65 @@ export default {
         selectedTags() {
             return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.tag_id === tag.tag_id));
         },
+        /**
+         * @returns {boolean} True if more new system tags can be staged.
+         */
+        canStageMoreNewSystemTags() {
+            return this.stagedForBatchAdd.filter(t => t.isNewSystemTag).length < MAX_NEW_SYSTEM_TAGS_PER_BATCH;
+        },
         colorOptions() {
             return colorOptions(this);
         },
+        /**
+         * Validates the current draft tag based on several conditions.
+         * @returns {{invalid: boolean, messageKey: string|null, messageParams: object|null}}
+         */
         validateDraftTag() {
-            let nameInvalid = false;
-            let valueInvalid = false;
-            let invalid = true;
-            if (this.deleteTags.find(tag => tag.name === this.newDraftTag.select?.name && tag.value === this.newDraftTag.value)) {
-                // Undo removing a Tag
-                nameInvalid = false;
-                valueInvalid = false;
-                invalid = false;
-            } else if (this.existingTags.filter(tag => tag.name === this.newDraftTag.name).length > 0 && this.newDraftTag.select == null) {
-                // Try to create new tag with existing name
-                nameInvalid = true;
-                invalid = true;
-            } else if (this.newTags.concat(this.preSelectedTags).filter(tag => (
-                tag.name === this.newDraftTag.select?.name && tag.value === this.newDraftTag.value
-            ) || (
-                tag.name === this.newDraftTag.name && tag.value === this.newDraftTag.value
-            )).length > 0) {
-                // Try to add a tag with existing name and value
-                valueInvalid = true;
-                invalid = true;
-            } else if (this.newDraftTag.select != null) {
-                // Select an existing tag, no need to validate
-                invalid = false;
-                valueInvalid = false;
-            } else if (this.newDraftTag.color == null || this.newDraftTag.name === "") {
-                // Missing form inputs
-                nameInvalid = false;
-                invalid = true;
-            } else {
-                // Looks valid
-                invalid = false;
-                nameInvalid = false;
-                valueInvalid = false;
+            // If defining a new system tag (newDraftTag.select == null)
+            if (this.newDraftTag.select == null) {
+                if (!this.canStageMoreNewSystemTags) {
+                    return {
+                        invalid: true,
+                        messageKey: "tagLimitReached",
+                        messageParams: { limit: MAX_NEW_SYSTEM_TAGS_PER_BATCH }
+                    };
+                }
+                if (!this.newDraftTag.name || this.newDraftTag.name.trim() === "" || !this.newDraftTag.color) {
+                    // Keep button disabled, but don't show the explicit message for this case
+                    return { invalid: true, messageKey: null, messageParams: null };
+                }
+                if (this.tagOptions.find(opt => opt.name.toLowerCase() === this.newDraftTag.name.trim().toLowerCase())) {
+                    return { invalid: true, messageKey: "tagNameExists", messageParams: null };
+                }
             }
-            return {
-                invalid,
-                nameInvalid,
-                valueInvalid,
-            };
+
+            // For any tag definition (new or existing system tag + value)
+            const draftTagName = this.newDraftTag.select ? this.newDraftTag.select.name : this.newDraftTag.name.trim();
+            const draftTagValue = this.newDraftTag.value ? this.newDraftTag.value.trim() : ""; // Treat null/undefined value as empty string for comparison
+
+            // Check if (name + value) combination already exists in this.stagedForBatchAdd
+            if (this.stagedForBatchAdd.find(staged => staged.name === draftTagName && staged.value === draftTagValue)) {
+                return { invalid: true, messageKey: "tagAlreadyStaged", messageParams: null };
+            }
+
+            // Check if (name + value) combination already exists in this.selectedTags (final list on monitor)
+            // AND it's NOT an "undo delete"
+            const isUndoDelete = this.deleteTags.find(dTag =>
+                dTag.tag_id === (this.newDraftTag.select ? this.newDraftTag.select.id : null) &&
+                dTag.value === draftTagValue
+            );
+
+            if (!isUndoDelete && this.selectedTags.find(sTag => sTag.name === draftTagName && sTag.value === draftTagValue)) {
+                return { invalid: true, messageKey: "tagAlreadyOnMonitor", messageParams: null };
+            }
+            
+            // If an existing tag is selected and has no value, it's valid (value is optional)
+            if (this.newDraftTag.select != null && draftTagValue === "") {
+                 return { invalid: false, messageKey: null, messageParams: null };
+            }
+
+            // If none of the above, invalid: false
+            return { invalid: false, messageKey: null, messageParams: null };
         },
     },
     mounted() {
@@ -257,6 +303,9 @@ export default {
          * @returns {void}
          */
         showAddDialog() {
+            this.stagedForBatchAdd = [];
+            this.clearDraftTag();
+            this.getExistingTags();
             this.modal.show();
         },
         /**
@@ -301,37 +350,6 @@ export default {
             }
         },
         /**
-         * Add a draft tag
-         * @returns {void}
-         */
-        addDraftTag() {
-            console.log("Adding Draft Tag: ", this.newDraftTag);
-            if (this.newDraftTag.select != null) {
-                if (this.deleteTags.find(tag => tag.name === this.newDraftTag.select.name && tag.value === this.newDraftTag.value)) {
-                    // Undo removing a tag
-                    this.deleteTags = this.deleteTags.filter(tag => !(tag.name === this.newDraftTag.select.name && tag.value === this.newDraftTag.value));
-                } else {
-                    // Add an existing Tag
-                    this.newTags.push({
-                        id: this.newDraftTag.select.id,
-                        color: this.newDraftTag.select.color,
-                        name: this.newDraftTag.select.name,
-                        value: this.newDraftTag.value,
-                        new: true,
-                    });
-                }
-            } else {
-                // Add new Tag
-                this.newTags.push({
-                    color: this.newDraftTag.color.color,
-                    name: this.newDraftTag.name.trim(),
-                    value: this.newDraftTag.value,
-                    new: true,
-                });
-            }
-            this.clearDraftTag();
-        },
-        /**
          * Remove a draft tag
          * @returns {void}
          */
@@ -341,10 +359,8 @@ export default {
                 select: null,
                 color: null,
                 value: "",
-                invalid: true,
-                nameInvalid: false,
+                // invalid: true, // Initial validation will be handled by computed prop
             };
-            this.modal.hide();
         },
         /**
          * Add a tag asynchronously
@@ -386,7 +402,7 @@ export default {
          */
         onEnter() {
             if (!this.validateDraftTag.invalid) {
-                this.addDraftTag();
+                this.stageCurrentTag();
             }
         },
         /**
@@ -475,7 +491,103 @@ export default {
                     console.warn("Modal hide failed:", e);
                 }
             }
-        }
+            this.stagedForBatchAdd = [];
+        },
+        /**
+         * Stages the current draft tag for batch addition.
+         * @returns {void}
+         */
+        stageCurrentTag() {
+            if (this.validateDraftTag.invalid) {
+                return;
+            }
+
+            const isNew = this.newDraftTag.select == null;
+            const name = isNew ? this.newDraftTag.name.trim() : this.newDraftTag.select.name;
+            const color = isNew ? this.newDraftTag.color.color : this.newDraftTag.select.color;
+            const value = this.newDraftTag.value ? this.newDraftTag.value.trim() : "";
+
+            const stagedTagObject = {
+                name: name,
+                color: color,
+                value: value,
+                isNewSystemTag: isNew,
+                systemTagId: isNew ? null : this.newDraftTag.select.id,
+                keyForList: `staged-${Date.now()}-${Math.random().toString(36).substring(2, 15)}` // Unique key
+            };
+
+            this.stagedForBatchAdd.push(stagedTagObject);
+            this.clearDraftTag(); // Reset input fields for the next tag
+        },
+        /**
+         * Removes a tag from the staged list.
+         * @param {object} tagToUnstage The tag object to remove from staging.
+         * @returns {void}
+         */
+        unstageTag(tagToUnstage) {
+            this.stagedForBatchAdd = this.stagedForBatchAdd.filter(tag => tag.keyForList !== tagToUnstage.keyForList);
+        },
+        /**
+         * Maps a staged tag object to the structure expected by the Tag component.
+         * @param {object} stagedTag The staged tag object.
+         * @returns {object} Object with name, color, value for the Tag component.
+         */
+        mapStagedTagToDisplayItem(stagedTag) {
+            return {
+                name: stagedTag.name,
+                color: stagedTag.color,
+                value: stagedTag.value,
+                // id: stagedTag.keyForList, // Pass keyForList as id for the Tag component if it expects an id for display/keying internally beyond v-for key
+            };
+        },
+        /**
+         * Clears the staging list, draft inputs, and closes the modal.
+         * @returns {void}
+         */
+        clearStagingAndCloseModal() {
+            this.stagedForBatchAdd = [];
+            this.clearDraftTag(); // Clears input fields
+            this.modal.hide();
+        },
+        /**
+         * Processes all staged tags, adds them to the monitor, and closes the modal.
+         * @returns {void}
+         */
+        confirmAndCommitStagedTags() {
+            for (const sTag of this.stagedForBatchAdd) {
+                // Check if it's an "undo delete"
+                if (sTag.systemTagId) { // Only existing system tags can be an undo delete
+                    const undoDeleteIndex = this.deleteTags.findIndex(
+                        dTag => dTag.tag_id === sTag.systemTagId && dTag.value === sTag.value
+                    );
+                    if (undoDeleteIndex > -1) {
+                        this.deleteTags.splice(undoDeleteIndex, 1);
+                        // If it was an undo, we don't need to add it to newTags again, as it's already in preSelectedTags or newTags from a previous session effectively
+                        // However, the plan implies adding to newTags regardless. Let's stick to the plan.
+                        // If this tag was previously in preSelectedTags and then deleted (in deleteTags),
+                        // removing it from deleteTags makes it active again via selectedTags computed prop.
+                        // If it was newly added in this session, then deleted, then re-staged, it would be in newTags.
+                        // For simplicity and to align with the plan V.4 which says "Push this object to this.newTags":
+                    }
+                }
+
+                // Create tag object for this.newTags
+                // The `new: true` flag indicates it's part of this transaction for the monitor.
+                // It does not strictly mean it is a new system tag.
+                const tagObjectForNewTags = {
+                    id: sTag.systemTagId, // This will be null for brand new system tags
+                    color: sTag.color,
+                    name: sTag.name,
+                    value: sTag.value,
+                    new: true, // As per plan, signals new to this monitor transaction
+                };
+                this.newTags.push(tagObjectForNewTags);
+            }
+
+            this.stagedForBatchAdd = [];
+            this.clearDraftTag(); // Resets input fields
+            this.modal.hide();
+        },
     },
 };
 </script>

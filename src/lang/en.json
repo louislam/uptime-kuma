@@ -191,6 +191,10 @@
     "Add New below or Select...": "Add New below or Select…",
     "Tag with this name already exist.": "Tag with this name already exists.",
     "Tag with this value already exist.": "Tag with this value already exists.",
+    "tagAlreadyOnMonitor": "This tag (name + value) is already on this monitor.",
+    "tagAlreadyStaged": "This tag (name + value) is already staged for this batch.",
+    "tagLimitReached": "Cannot stage more than {limit} new system tags in a single batch.",
+    "tagNameExists": "A system tag with this name already exists. Select it from the list or use a different name.",
     "color": "Color",
     "value (optional)": "value (optional)",
     "Gray": "Gray",
@@ -1074,7 +1078,7 @@
     "rabbitmqHelpText": "To use the monitor, you will need to enable the Management Plugin in your RabbitMQ setup. For more information, please consult the {rabitmq_documentation}.",
     "SendGrid API Key": "SendGrid API Key",
     "Separate multiple email addresses with commas": "Separate multiple email addresses with commas",
-    "smtpHelpText": "“SMTPS” tests that SMTP/TLS is working; “Ignore TLS” connects over plaintext; “STARTTLS” connects, issues a STARTTLS command and verifies the server certificate. None of these send an email.",
+    "smtpHelpText": "SMTPS tests that SMTP/TLS is working; Ignore TLS connects over plaintext; STARTTLS connects, issues a STARTTLS command and verifies the server certificate. None of these send an email.",
     "Custom URL": "Custom URL",
     "customUrlDescription": "Will be used as the clickable URL instead of the monitor's one.",
     "OneChatAccessToken": "OneChat Access Token",
@@ -1098,5 +1102,7 @@
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
-    "Disable URL in Notification": "Disable URL in Notification"
+    "Disable URL in Notification": "Disable URL in Notification",
+    "Add Another Tag": "Add Another Tag",
+    "Staged Tags for Batch Add": "Staged Tags for Batch Add"
 }
