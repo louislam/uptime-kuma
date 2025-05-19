@@ -7,6 +7,7 @@ const commonLabels = [
     "monitor_url",
     "monitor_hostname",
     "monitor_port",
+    "monitor_tags"
 ];
 
 const monitorCertDaysRemaining = new PrometheusClient.Gauge({
@@ -37,15 +38,49 @@ class Prometheus {
 
     /**
      * @param {object} monitor Monitor object to monitor
+     * @param {Array<object>} tags Tags to add to the monitor
      */
-    constructor(monitor) {
+    constructor(monitor, tags) {
+        let sanitizedTags = this.sanitizeTags(tags);
+
+        if (sanitizedTags.length <= 0) {
+            sanitizedTags = "null";
+        }
+
         this.monitorLabelValues = {
             monitor_name: monitor.name,
             monitor_type: monitor.type,
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
-            monitor_port: monitor.port
+            monitor_port: monitor.port,
+            monitor_tags: sanitizedTags
         };
+    }
+
+    /**
+     * Sanitize tags to remove non-ASCII characters
+     * See https://github.com/louislam/uptime-kuma/pull/4704#issuecomment-2366524692
+     * @param {Array<object>} tags The tags to sanitize
+     * @returns {*[]} The sanitized tags
+     */
+    sanitizeTags(tags) {
+        const nonAsciiRegex = /[^\x00-\x7F]/g;
+        const sanitizedTags = [];
+        tags.forEach((tag) => {
+            if (tag.name.match(nonAsciiRegex) || tag.value.match(nonAsciiRegex)) {
+                // If the tag name or value contains non-ASCII characters, skip it
+                return;
+            }
+
+            if (tag.value !== "") {
+                sanitizedTags.push(tag.name + ":" + tag.value);
+                return;
+            }
+
+            sanitizedTags.push(tag.name);
+        });
+
+        return sanitizedTags;
     }
 
     /**
@@ -55,7 +90,6 @@ class Prometheus {
      * @returns {void}
      */
     update(heartbeat, tlsInfo) {
-
         if (typeof tlsInfo !== "undefined") {
             try {
                 let isValid;
