@@ -25,7 +25,7 @@
                 <div class="modal-content">
                     <div class="modal-body">
                         <!-- Display area for tags staged for batch addition -->
-                        <h4 v-if="stagedForBatchAdd.length > 0">{{ $t("Staged Tags for Batch Add") }}</h4>
+                        <h4 v-if="stagedForBatchAdd.length > 0">{{ $t("Add Tags") }}</h4>
                         <div v-if="stagedForBatchAdd.length > 0" class="mb-3 staging-area" style="max-height: 150px; overflow-y: auto;">
                             <Tag
                                 v-for="stagedTag in stagedForBatchAdd"
@@ -126,21 +126,22 @@
                         </div>
                         <!-- End Validation Feedback -->
 
+                        <!-- Add Another Tag Button -->
+                        <!-- This button will be moved to the footer -->
+
                         <!-- Action Buttons: Clear current form and Stage current tag -->
-                        <div class="d-flex justify-content-end align-items-center mt-3">
-                            <a class="me-3" href="#" @click.prevent="clearDraftTag">{{ $t("Clear Form") }}</a>
-                            <button type="button" class="btn btn-outline-primary" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
-                                {{ $t("Add Another Tag") }}
-                            </button>
-                        </div>
+                        <!-- Removed original action buttons here -->
                         <div v-if="newDraftTag.select == null && !canStageMoreNewSystemTags && validateDraftTag.invalid && validateDraftTag.messageKey === 'tagLimitReached'" class="form-text text-danger text-end mt-1">
                             {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
                         </div>
                     </div>
                     <!-- Modal Footer: Cancel batch or Confirm and Add all staged tags -->
                     <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-primary me-2" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
+                            {{ $t("Add Another Tag") }}
+                        </button>
                         <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
-                        <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="tag-final-add-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Add") }}</button>
+                        <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="add-tags-final-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Add Tags") }}</button>
                     </div>
                     <!-- End Modal Footer -->
                 </div>

@@ -33,12 +33,30 @@ test.describe("Status Page", () => {
         await page.getByTestId("monitor-type-select").selectOption("http");
         await page.getByTestId("friendly-name-input").fill(monitorName);
         await page.getByTestId("url-input").fill(monitorUrl);
+
+        // Open Tags modal
         await page.getByTestId("add-tag-button").click();
+        await expect(page.getByTestId("tag-name-input")).toBeVisible({ timeout: 10000 });
+
+        // Define and Stage the first tag
         await page.getByTestId("tag-name-input").fill(tagName);
         await page.getByTestId("tag-value-input").fill(tagValue);
-        await page.getByTestId("tag-color-select").click(); // Vue-Multiselect component
+        await page.getByTestId("tag-color-select").click();
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Orange" }).click();
-        await page.getByTestId("tag-final-add-button").click();
+        await page.getByRole("button", { name: "Add Another Tag" }).click();
+
+        // Define the second tag (inputs should be clear after staging the first)
+        const tagName2 = "Project";
+        const tagValue2 = "Phoenix";
+        await page.getByTestId("tag-name-input").fill(tagName2);
+        await page.getByTestId("tag-value-input").fill(tagValue2);
+        await page.getByTestId("tag-color-select").click();
+        await page.getByTestId("tag-color-select").getByRole("option", { name: "Blue" }).click();
+
+        // Commit both staged tags (and the current draft if any)
+        await page.getByTestId("add-tags-final-button").click();
+        await expect(page.getByTestId("tag-name-input")).not.toBeVisible({ timeout: 5000 });
+
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
 
@@ -61,7 +79,27 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-certificate-expiry-checkbox").uncheck();
         await page.getByTestId("google-analytics-input").fill(googleAnalyticsId);
         await page.getByTestId("custom-css-input").getByTestId("textarea").fill(customCss); // Prism
+
+        // Wait for the description-editable to reflect the input
+        await page.waitForFunction(
+            (expectedText) => {
+                const element = document.querySelector("[data-testid=description-editable]");
+                return element && element.textContent === expectedText;
+            },
+            descriptionText,
+            { timeout: 7000 } 
+        );
+
         await expect(page.getByTestId("description-editable")).toHaveText(descriptionText);
+        // Assuming footer text updates similarly, let's apply a similar pattern or ensure it's checked after description
+        await page.waitForFunction(
+            (expectedText) => {
+                const element = document.querySelector("[data-testid=custom-footer-editable]");
+                return element && element.textContent === expectedText;
+            },
+            footerText,
+            { timeout: 7000 } 
+        );
         await expect(page.getByTestId("custom-footer-editable")).toHaveText(footerText);
 
         // Add an incident
@@ -129,7 +167,8 @@ test.describe("Status Page", () => {
 
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
         await expect(page.getByTestId("powered-by")).toContainText("Powered by");
-        await expect(page.getByTestId("monitor-tag")).toContainText(tagValue);
+        await expect(page.getByTestId("monitor-tag").filter({ hasText: tagValue })).toBeVisible();
+        await expect(page.getByTestId("monitor-tag").filter({ hasText: tagValue2 })).toBeVisible();
 
         await screenshot(testInfo, page);
     });
