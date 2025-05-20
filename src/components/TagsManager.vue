@@ -206,7 +206,6 @@ export default {
                 select: null,
                 color: null,
                 value: "",
-                // invalid: true, // Initial validation will be handled by computed prop
             },
         };
     },
