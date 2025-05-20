@@ -87,7 +87,7 @@ test.describe("Status Page", () => {
                 return element && element.textContent === expectedText;
             },
             descriptionText,
-            { timeout: 7000 } 
+            { timeout: 7000 }
         );
 
         await expect(page.getByTestId("description-editable")).toHaveText(descriptionText);
@@ -98,10 +98,9 @@ test.describe("Status Page", () => {
                 return element && element.textContent === expectedText;
             },
             footerText,
-            { timeout: 7000 } 
+            { timeout: 7000 }
         );
         await expect(page.getByTestId("custom-footer-editable")).toHaveText(footerText);
-
         // Add an incident
         await page.getByTestId("create-incident-button").click();
         await page.getByTestId("incident-title").isEditable();
