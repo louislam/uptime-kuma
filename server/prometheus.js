@@ -41,10 +41,10 @@ class Prometheus {
      * @param {Array<object>} tags Tags to add to the monitor
      */
     constructor(monitor, tags) {
-        let sanitizedTags = this.sanitizeTags(tags);
+        let filteredValidAsciiTags = this.filterValidAsciiTags(tags);
 
-        if (sanitizedTags.length <= 0) {
-            sanitizedTags = "null";
+        if (filteredValidAsciiTags.length <= 0) {
+            filteredValidAsciiTags = "null";
         }
 
         this.monitorLabelValues = {
@@ -53,34 +53,28 @@ class Prometheus {
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port,
-            monitor_tags: sanitizedTags
+            monitor_tags: filteredValidAsciiTags
         };
     }
 
     /**
-     * Sanitize tags to remove non-ASCII characters
+     * Filter tags to remove the ones that contain non-ASCII characters
      * See https://github.com/louislam/uptime-kuma/pull/4704#issuecomment-2366524692
-     * @param {Array<object>} tags The tags to sanitize
-     * @returns {*[]} The sanitized tags
+     * @param {Array<{name: string, value:string}>} tags The tags to filter
+     * @returns {string[]} The filtered tags
      */
-    sanitizeTags(tags) {
-        const nonAsciiRegex = /[^\x00-\x7F]/g;
-        const sanitizedTags = [];
-        tags.forEach((tag) => {
-            if (tag.name.match(nonAsciiRegex) || tag.value.match(nonAsciiRegex)) {
-                // If the tag name or value contains non-ASCII characters, skip it
-                return;
+    filterValidAsciiTags(tags) {
+        const asciiRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+        return tags.reduce((filteredTags, tag) => {
+            if (asciiRegex.test(tag.name)) {
+                if (tag.value !== "" && asciiRegex.test(tag.value)) {
+                    filteredTags.push(`${tag.name}:${tag.value}`);
+                } else {
+                    filteredTags.push(tag.name);
+                }
             }
-
-            if (tag.value !== "") {
-                sanitizedTags.push(tag.name + ":" + tag.value);
-                return;
-            }
-
-            sanitizedTags.push(tag.name);
-        });
-
-        return sanitizedTags;
+            return filteredTags;
+        }, []);
     }
 
     /**
