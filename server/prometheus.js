@@ -38,7 +38,7 @@ class Prometheus {
 
     /**
      * @param {object} monitor Monitor object to monitor
-     * @param {Array<object>} tags Tags to add to the monitor
+     * @param {Array<{name:string,value:?string}>} tags Tags to add to the monitor
      */
     constructor(monitor, tags) {
         let filteredValidAsciiTags = this.filterValidAsciiTags(tags);
@@ -60,7 +60,7 @@ class Prometheus {
     /**
      * Filter tags to remove the ones that contain non-ASCII characters
      * See https://github.com/louislam/uptime-kuma/pull/4704#issuecomment-2366524692
-     * @param {Array<{name: string, value:string}>} tags The tags to filter
+     * @param {Array<{name: string, value:?string}>} tags The tags to filter
      * @returns {string[]} The filtered tags
      */
     filterValidAsciiTags(tags) {
