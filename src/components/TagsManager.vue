@@ -137,10 +137,10 @@
                     </div>
                     <!-- Modal Footer: Cancel batch or Confirm and Add all staged tags -->
                     <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
                         <button type="button" class="btn btn-outline-primary me-2" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
                             {{ $t("Add Another Tag") }}
                         </button>
-                        <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
                         <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="add-tags-final-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Add Tags") }}</button>
                     </div>
                     <!-- End Modal Footer -->
