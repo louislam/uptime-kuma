@@ -890,7 +890,7 @@ class Monitor extends BeanModel {
 
                 if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
-                    await Monitor.sendNotification(isFirstBeat, this, bean);
+                    await Monitor.sendNotification(isFirstBeat, this, previousBeat, bean);
                 } else {
                     log.debug("monitor", `[${this.name}] will not sendNotification because it is (or was) under maintenance`);
                 }
@@ -912,7 +912,7 @@ class Monitor extends BeanModel {
                     if (bean.downCount >= this.resendInterval) {
                         // Send notification again, because we are still DOWN
                         log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
-                        await Monitor.sendNotification(isFirstBeat, this, bean);
+                        await Monitor.sendNotification(isFirstBeat, this, previousBeat,  bean);
 
                         // Reset down count
                         bean.downCount = 0;
@@ -1283,24 +1283,32 @@ class Monitor extends BeanModel {
      * @param {Bean} bean Status information about monitor
      * @returns {void}
      */
-    static async sendNotification(isFirstBeat, monitor, bean) {
-        if (!isFirstBeat || bean.status === DOWN) {
+    static async sendNotification(isFirstBeat, monitor, previousbean, actualbean) {
+        if (!isFirstBeat || actualbean.status === DOWN) {
             const notificationList = await Monitor.getNotificationList(monitor);
 
             let text;
-            if (bean.status === UP) {
-                text = "✅ Up";
-            } else if (bean.status === DOWN) {
-                text = "🔴 Down";
-            } else if (bean.status === MAINTENANCE) {
+            if (actualbean.status === UP) {
+                if(previousbean.status === MAINTENANCE){
+                    text = "✅ Up After Maintenance";
+                } else {
+                    text = "✅ Up";
+                }
+            } else if (actualbean.status === DOWN) {
+                if(previousbean.status === MAINTENANCE){
+                    text = "🔴 Down After Maintenance";
+                } else {
+                    text = "🔴 Down";
+                }
+            } else if (actualbean.status === MAINTENANCE) {
                 text = "🔵 In Maintenance";
             }
 
-            let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
+            let msg = `[${monitor.name}] [${text}] ${actualbean.msg}`;
 
             for (let notification of notificationList) {
                 try {
-                    const heartbeatJSON = bean.toJSON();
+                    const heartbeatJSON = actualbean.toJSON();
                     const monitorData = [{ id: monitor.id,
                         active: monitor.active,
                         name: monitor.name
