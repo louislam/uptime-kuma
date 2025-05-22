@@ -121,7 +121,7 @@
                         </div>
 
                         <!-- General feedback area for tag input validation messages -->
-                        <div v-if="validateDraftTag.invalid && validateDraftTag.messageKey && (newDraftTag.select != null || canStageMoreNewSystemTags || validateDraftTag.messageKey !== 'tagLimitReached')" class="form-text text-danger mb-2">
+                        <div v-if="validateDraftTag.invalid && validateDraftTag.messageKey" class="form-text text-danger mb-2">
                             {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
                         </div>
                         <!-- End Validation Feedback -->
@@ -131,9 +131,6 @@
 
                         <!-- Action Buttons: Clear current form and Stage current tag -->
                         <!-- Removed original action buttons here -->
-                        <div v-if="newDraftTag.select == null && !canStageMoreNewSystemTags && validateDraftTag.invalid && validateDraftTag.messageKey === 'tagLimitReached'" class="form-text text-danger text-end mt-1">
-                            {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
-                        </div>
                     </div>
                     <!-- Modal Footer: Cancel batch or Confirm and Add all staged tags -->
                     <div class="modal-footer">
@@ -151,8 +148,6 @@
 </template>
 
 <script>
-const MAX_NEW_SYSTEM_TAGS_PER_BATCH = 10; // Example limit
-
 import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
@@ -227,7 +222,7 @@ export default {
          * @returns {boolean} True if more new system tags can be staged, false otherwise.
          */
         canStageMoreNewSystemTags() {
-            return this.stagedForBatchAdd.filter(t => t.isNewSystemTag).length < MAX_NEW_SYSTEM_TAGS_PER_BATCH;
+            return true; // Always allow adding more tags, no limit
         },
         /**
          * Provides the color options for the tag color selector.
@@ -243,13 +238,6 @@ export default {
         validateDraftTag() {
             // If defining a new system tag (newDraftTag.select == null)
             if (this.newDraftTag.select == null) {
-                if (!this.canStageMoreNewSystemTags) {
-                    return {
-                        invalid: true,
-                        messageKey: "tagLimitReached",
-                        messageParams: { limit: MAX_NEW_SYSTEM_TAGS_PER_BATCH },
-                    };
-                }
                 if (!this.newDraftTag.name || this.newDraftTag.name.trim() === "" || !this.newDraftTag.color) {
                     // Keep button disabled, but don't show the explicit message for this case
                     return {
