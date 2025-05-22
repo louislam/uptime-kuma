@@ -125,6 +125,11 @@ test.describe("Status Page", () => {
         expect(updateCountdown).toBeLessThanOrEqual(refreshInterval + 10);
 
         await expect(page.locator("body")).toHaveClass(theme);
+        
+        // Add Google Analytics ID to head and verify
+        await page.waitForFunction(() => {
+            return document.head.innerHTML.includes("googletagmanager.com");
+        }, { timeout: 5000 });
         expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
 
         const backgroundColor = await page.evaluate(() => window.getComputedStyle(document.body).backgroundColor);
