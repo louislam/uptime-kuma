@@ -9,7 +9,7 @@ test.describe("Status Page", () => {
 
     test("create and edit", async ({ page }, testInfo) => {
         test.setTimeout(60000); // Keep the timeout increase for stability
-        
+
         // Monitor
         const monitorName = "Monitor for Status Page";
         const tagName = "Client";
@@ -37,26 +37,26 @@ test.describe("Status Page", () => {
         await page.getByTestId("monitor-type-select").selectOption("http");
         await page.getByTestId("friendly-name-input").fill(monitorName);
         await page.getByTestId("url-input").fill(monitorUrl);
-        
+
         // Modified tag section to add multiple tags
         await page.getByTestId("add-tag-button").click();
         await page.getByTestId("tag-name-input").fill(tagName);
         await page.getByTestId("tag-value-input").fill(tagValue);
         await page.getByTestId("tag-color-select").click(); // Vue-Multiselect component
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Orange" }).click();
-        
+
         // Add another tag instead of submitting directly
         await page.getByRole("button", { name: "Add Another Tag" }).click();
-        
+
         // Add second tag
         await page.getByTestId("tag-name-input").fill(tagName2);
         await page.getByTestId("tag-value-input").fill(tagValue2);
         await page.getByTestId("tag-color-select").click();
         await page.getByTestId("tag-color-select").getByRole("option", { name: "Blue" }).click();
-        
+
         // Submit both tags
         await page.getByTestId("add-tags-final-button").click();
-        
+
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
 
@@ -79,7 +79,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-certificate-expiry-checkbox").uncheck();
         await page.getByTestId("google-analytics-input").fill(googleAnalyticsId);
         await page.getByTestId("custom-css-input").getByTestId("textarea").fill(customCss); // Prism
-        
+
         // Add an incident
         await page.getByTestId("create-incident-button").click();
         await page.getByTestId("incident-title").isEditable();
@@ -143,7 +143,7 @@ test.describe("Status Page", () => {
 
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
         await expect(page.getByTestId("powered-by")).toContainText("Powered by");
-        
+
         // Modified tag verification to check both tags
         await expect(page.getByTestId("monitor-tag").filter({ hasText: tagValue })).toBeVisible();
         await expect(page.getByTestId("monitor-tag").filter({ hasText: tagValue2 })).toBeVisible();
