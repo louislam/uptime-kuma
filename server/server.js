@@ -36,6 +36,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
     console.warn("\x1b[31m%s\x1b[0m", `Warning: Your Node.js version: ${nodeVersion} is not officially supported, please upgrade your Node.js to ${requiredNodeVersionsComma}.`);
 }
 
+const path = require("path");
 const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
 const config = require("./config");
@@ -294,7 +295,7 @@ let needSetup = false;
     // With Basic Auth using the first user's username/password
     app.get("/metrics", apiAuth, prometheusAPIMetrics());
 
-    app.use("/", expressStaticGzip("dist", {
+    app.use("/", expressStaticGzip(path.join(__dirname, "../dist"), {
         enableBrotli: true,
     }));
 

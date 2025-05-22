@@ -21,7 +21,7 @@ class Database {
      * Boostrap database for SQLite
      * @type {string}
      */
-    static templatePath = "./db/kuma.db";
+    static templatePath = path.join(__dirname, "../db/kuma.db");
 
     /**
      * Data Dir (Default: ./data)
@@ -124,7 +124,7 @@ class Database {
 
     static dbConfig = {};
 
-    static knexMigrationsPath = "./db/knex_migrations";
+    static knexMigrationsPath = path.join(__dirname, "../db/knex_migrations");
 
     /**
      * Initialize the data directory
@@ -334,7 +334,7 @@ class Database {
         R.freeze(true);
 
         if (autoloadModels) {
-            await R.autoloadModels("./server/model");
+            await R.autoloadModels(path.join(__dirname, "./model"));
         }
 
         if (dbConfig.type === "sqlite") {
@@ -470,7 +470,7 @@ class Database {
             // Try catch anything here
             try {
                 for (let i = version + 1; i <= this.latestVersion; i++) {
-                    const sqlFile = `./db/old_migrations/patch${i}.sql`;
+                    const sqlFile = path.join(__dirname, `../db/old_migrations/patch${i}.sql`);
                     log.info("db", `Patching ${sqlFile}`);
                     await Database.importSQLFile(sqlFile);
                     log.info("db", `Patched ${sqlFile}`);
@@ -629,7 +629,7 @@ class Database {
 
             log.info("db", sqlFilename + " is patching");
             this.patched = true;
-            await this.importSQLFile("./db/old_migrations/" + sqlFilename);
+            await this.importSQLFile(path.join(__dirname, "../db/old_migrations/" + sqlFilename));
             databasePatchedFiles[sqlFilename] = true;
             log.info("db", sqlFilename + " was patched successfully");
 

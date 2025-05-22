@@ -243,7 +243,7 @@ class SetupDatabase {
 
             });
 
-            app.use("/", expressStaticGzip("dist", {
+            app.use("/", expressStaticGzip(path.join(__dirname, "../dist"), {
                 enableBrotli: true,
             }));
 

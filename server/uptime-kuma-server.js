@@ -99,7 +99,7 @@ class UptimeKumaServer {
         }
 
         try {
-            this.indexHTML = fs.readFileSync("./dist/index.html").toString();
+            this.indexHTML = fs.readFileSync(path.join(__dirname, "../dist/index.html")).toString();
         } catch (e) {
             // "dist/index.html" is not necessary for development
             if (process.env.NODE_ENV !== "development") {
