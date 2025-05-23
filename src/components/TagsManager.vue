@@ -4,7 +4,7 @@
         <div v-if="selectedTags.length > 0" class="mb-2 p-1">
             <tag
                 v-for="item in selectedTags"
-                :key="item.id"
+                :key="`${item.tag_id || item.id}-${item.value || ''}`"
                 :item="item"
                 :remove="deleteTag"
             />
@@ -20,7 +20,7 @@
                 <font-awesome-icon class="me-1" icon="plus" /> {{ $t("Add") }}
             </button>
         </div>
-        <div ref="modal" class="modal fade" tabindex="-1">
+        <div ref="modal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body">
@@ -138,7 +138,7 @@
                         <button type="button" class="btn btn-outline-primary me-2" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
                             {{ $t("Add Another Tag") }}
                         </button>
-                        <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="add-tags-final-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Add Tags") }}</button>
+                        <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="add-tags-final-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Done") }}</button>
                     </div>
                     <!-- End Modal Footer -->
                 </div>
@@ -207,16 +207,51 @@ export default {
     },
     computed: {
         tagOptions() {
-            const tagOptions = this.existingTags;
+            const tagOptions = [ ...this.existingTags ]; // Create a copy
+
+            // Add tags from newTags
             for (const tag of this.newTags) {
                 if (!tagOptions.find(t => t.name === tag.name && t.color === tag.color)) {
                     tagOptions.push(tag);
                 }
             }
+
+            // Add newly created system tags from staging area
+            for (const stagedTag of this.stagedForBatchAdd) {
+                if (stagedTag.isNewSystemTag) {
+                    // Check if this system tag is already in the options
+                    if (!tagOptions.find(t => t.name === stagedTag.name && t.color === stagedTag.color)) {
+                        // Create a tag option object for the dropdown
+                        tagOptions.push({
+                            id: null, // Will be assigned when actually created
+                            name: stagedTag.name,
+                            color: stagedTag.color
+                        });
+                    }
+                }
+            }
+
             return tagOptions;
         },
         selectedTags() {
-            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.tag_id === tag.tag_id));
+            // Helper function to normalize tag values for comparison
+            const normalizeValue = (value) => {
+                if (value === null || value === undefined) {
+                    return "";
+                }
+                return String(value).trim();
+            };
+
+            // Helper function to get tag ID from different structures
+            const getTagId = (tag) => tag.tag_id || tag.id;
+
+            return this.preSelectedTags.concat(this.newTags).filter(tag =>
+                !this.deleteTags.find(monitorTag => {
+                    const tagIdMatch = getTagId(monitorTag) === getTagId(tag);
+                    const valueMatch = normalizeValue(monitorTag.value) === normalizeValue(tag.value);
+                    return tagIdMatch && valueMatch;
+                })
+            );
         },
         /**
          * @returns {boolean} True if more new system tags can be staged, false otherwise.
