@@ -18,7 +18,6 @@ dist-ssr
 /extra/healthcheck.exe
 /extra/healthcheck
 /extra/healthcheck-armv7
-/studies
 
 extra/exe-builder/bin
 extra/exe-builder/obj
