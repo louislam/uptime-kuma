@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="header-filter">
-                <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
+                <MonitorListFilter @update-filter="updateFilter" />
             </div>
 
             <!-- Selection Controls -->
@@ -95,11 +95,6 @@ export default {
             disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
-            filterState: {
-                status: null,
-                active: null,
-                tags: null,
-            }
         };
     },
     computed: {
@@ -169,7 +164,7 @@ export default {
          * @returns {boolean} True if any filter is active, false otherwise.
          */
         filtersActive() {
-            return this.filterState.status != null || this.filterState.active != null || this.filterState.tags != null || this.searchText !== "";
+            return this.$router.currentRoute.value.query?.status != null || this.$router.currentRoute.value.query?.active != null || this.$router.currentRoute.value.query?.tags != null || this.searchText !== "";
         }
     },
     watch: {
@@ -204,8 +199,46 @@ export default {
             }
         },
     },
-    mounted() {
+    async mounted() {
         window.addEventListener("scroll", this.onScroll);
+
+        const queryParams = this.$router.currentRoute.value.query;
+        const statusParams = queryParams?.["status"];
+        const activeParams = queryParams?.["active"];
+        const tagParams = queryParams?.["tags"];
+
+        const tags = await (() => {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("getTags", (res) => {
+                    if (res.ok) {
+                        resolve(res.tags);
+                    }
+                });
+            });
+        })();
+
+        const fetchedTagIDs = tagParams
+            ? tagParams
+                .split(",")
+                .map(identifier => {
+                    const tagID = parseInt(identifier, 10);
+                    if (isNaN(tagID)) {
+                        return;
+                    }
+                    return tags.find(t => t.tag_id === tagID)?.id ?? 1;
+                })
+                .filter(tagID => tagID !== 0)
+            : undefined;
+
+        this.updateFilter({
+            status: statusParams ? statusParams.split(",").map(
+                status => status.trim()
+            ) : queryParams?.["status"],
+            active: activeParams ? activeParams.split(",").map(
+                active => active.trim()
+            ) : queryParams?.["active"],
+            tags: tagParams ? fetchedTagIDs : queryParams?.["tags"],
+        });
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
@@ -243,7 +276,20 @@ export default {
          * @returns {void}
          */
         updateFilter(newFilter) {
-            this.filterState = newFilter;
+            const newQuery = { ...this.$router.currentRoute.value.query };
+
+            for (const [ key, value ] of Object.entries(newFilter)) {
+                if (!value
+                    || (value instanceof Array && value.length === 0)) {
+                    delete newQuery[key];
+                    continue;
+                }
+
+                newQuery[key] = value instanceof Array
+                    ? value.length > 0 ? value.join(",") : null
+                    : value;
+            }
+            this.$router.push({ query: newQuery });
         },
         /**
          * Deselect a monitor
@@ -333,25 +379,25 @@ export default {
 
             // filter by status
             let statusMatch = true;
-            if (this.filterState.status != null && this.filterState.status.length > 0) {
+            if (this.$router.currentRoute.value.query?.status != null && this.$router.currentRoute.value.query?.status.length > 0) {
                 if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
                     monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
                 }
-                statusMatch = this.filterState.status.includes(monitor.status);
+                statusMatch = this.$router.currentRoute.value.query?.status.includes(monitor.status);
             }
 
             // filter by active
             let activeMatch = true;
-            if (this.filterState.active != null && this.filterState.active.length > 0) {
-                activeMatch = this.filterState.active.includes(monitor.active);
+            if (this.$router.currentRoute.value.query?.active != null && this.$router.currentRoute.value.query?.active.length > 0) {
+                activeMatch = this.$router.currentRoute.value.query?.active.includes(monitor.active);
             }
 
             // filter by tags
             let tagsMatch = true;
-            if (this.filterState.tags != null && this.filterState.tags.length > 0) {
-                tagsMatch = monitor.tags.map(tag => tag.tag_id) // convert to array of tag IDs
-                    .filter(monitorTagId => this.filterState.tags.includes(monitorTagId)) // perform Array Intersaction between filter and monitor's tags
-                    .length > 0;
+            const tagsInURL = this.$router.currentRoute.value.query?.tags?.split(",") || [];
+            if (this.$router.currentRoute.value.query?.tags != null && this.$router.currentRoute.value.query?.tags.length > 0) {
+                const monitorTagIds = monitor.tags.map(tag => tag.tag_id);
+                tagsMatch = tagsInURL.map(Number).some(tagId => monitorTagIds.includes(tagId));
             }
 
             return searchTextMatch && statusMatch && activeMatch && tagsMatch;
