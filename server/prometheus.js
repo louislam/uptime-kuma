@@ -7,6 +7,7 @@ const commonLabels = [
     "monitor_url",
     "monitor_hostname",
     "monitor_port",
+    "monitor_tags"
 ];
 
 const monitorCertDaysRemaining = new PrometheusClient.Gauge({
@@ -37,15 +38,43 @@ class Prometheus {
 
     /**
      * @param {object} monitor Monitor object to monitor
+     * @param {Array<{name:string,value:?string}>} tags Tags to add to the monitor
      */
-    constructor(monitor) {
+    constructor(monitor, tags) {
+        let filteredValidAsciiTags = this.filterValidAsciiTags(tags);
+
+        if (filteredValidAsciiTags.length <= 0) {
+            filteredValidAsciiTags = "null";
+        }
+
         this.monitorLabelValues = {
             monitor_name: monitor.name,
             monitor_type: monitor.type,
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
-            monitor_port: monitor.port
+            monitor_port: monitor.port,
+            monitor_tags: filteredValidAsciiTags
         };
+    }
+
+    /**
+     * Filter tags to remove the ones that contain non-ASCII characters
+     * See https://github.com/louislam/uptime-kuma/pull/4704#issuecomment-2366524692
+     * @param {Array<{name: string, value:?string}>} tags The tags to filter
+     * @returns {string[]} The filtered tags
+     */
+    filterValidAsciiTags(tags) {
+        const asciiRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+        return tags.reduce((filteredTags, tag) => {
+            if (asciiRegex.test(tag.name)) {
+                if (tag.value !== "" && asciiRegex.test(tag.value)) {
+                    filteredTags.push(`${tag.name}:${tag.value}`);
+                } else {
+                    filteredTags.push(tag.name);
+                }
+            }
+            return filteredTags;
+        }, []);
     }
 
     /**
@@ -55,7 +84,6 @@ class Prometheus {
      * @returns {void}
      */
     update(heartbeat, tlsInfo) {
-
         if (typeof tlsInfo !== "undefined") {
             try {
                 let isValid;
