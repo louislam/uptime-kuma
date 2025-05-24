@@ -610,10 +610,14 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
-                            <!-- Timeout: HTTP / Keyword / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp' || monitor.type === 'rabbitmq'" class="my-3">
-                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
-                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
+                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
+                                <label for="timeout" class="form-label">
+                                    {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
+                                    <span v-if="monitor.type !== 'ping'">({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</span>
+                                </label>
+                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" :min="timeoutMin" :max="timeoutMax" :step="timeoutStep" required>
+                                <div v-if="monitor.type === 'ping'" class="form-text">{{ $t("pingGlobalTimeoutDescription") }}</div>
                             </div>
 
                             <div class="my-3">
@@ -675,10 +679,39 @@
                                 </div>
                             </div>
 
-                            <!-- Ping packet size -->
+                            <!-- Max Packets / Count -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping-count" class="form-label">{{ $t("pingCountLabel") }}</label>
+                                <input id="ping-count" v-model="monitor.ping_count" type="number" class="form-control" required min="1" max="100" step="1">
+                                <div class="form-text">
+                                    {{ $t("pingCountDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Numeric Output -->
+                            <div v-if="monitor.type === 'ping'" class="my-3 form-check">
+                                <input id="ping_numeric" v-model="monitor.ping_numeric" type="checkbox" class="form-check-input" :checked="monitor.ping_numeric">
+                                <label class="form-check-label" for="ping_numeric">
+                                    {{ $t("pingNumericLabel") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("pingNumericDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Packet size -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
                                 <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
-                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" max="65500" step="1">
+                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" :max="65500" step="1">
+                            </div>
+
+                            <!-- per-request timeout -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping_per_request_timeout" class="form-label">{{ $t("pingPerRequestTimeoutLabel") }}</label>
+                                <input id="ping_per_request_timeout" v-model="monitor.ping_per_request_timeout" type="number" class="form-control" required min="0" max="300" step="1">
+                                <div class="form-text">
+                                    {{ $t("pingPerRequestTimeoutDescription") }}
+                                </div>
                             </div>
 
                             <!-- HTTP / Keyword only -->
@@ -1075,7 +1108,13 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
+import {
+    genSecret,
+    isDev,
+    MAX_INTERVAL_SECOND,
+    MIN_INTERVAL_SECOND,
+    sleep,
+} from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
@@ -1097,7 +1136,6 @@ const monitorDefaults = {
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
-    packetSize: 56,
     expiryNotification: false,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
@@ -1172,6 +1210,29 @@ export default {
     },
 
     computed: {
+        timeoutStep() {
+            return this.monitor.type === "ping" ? 1 : 0.1;
+        },
+
+        timeoutMin() {
+            return this.monitor.type === "ping" ? 1 : 0;
+        },
+
+        timeoutMax() {
+            return this.monitor.type === "ping" ? 60 : undefined;
+        },
+
+        timeoutLabel() {
+            return this.monitor.type === "ping" ? this.$t("pingTimeoutLabel") : this.$t("Request Timeout");
+        },
+
+        timeoutDescription() {
+            if (this.monitor.type === "ping") {
+                return this.$t("pingTimeoutDescription");
+            }
+            return "";
+        },
+
         defaultFriendlyName() {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
@@ -1209,6 +1270,7 @@ export default {
             }
             return this.$t(name);
         },
+
         remoteBrowsersOptions() {
             return this.$root.remoteBrowserList.map(browser => {
                 return {
@@ -1217,6 +1279,7 @@ export default {
                 };
             });
         },
+
         remoteBrowsersToggle: {
             get() {
                 return this.remoteBrowsersEnabled || this.monitor.remote_browser != null;
@@ -1234,6 +1297,7 @@ export default {
                 }
             }
         },
+
         isAdd() {
             return this.$route.path === "/add";
         },
@@ -1284,6 +1348,7 @@ message HealthCheckResponse {
 }
             ` ]);
         },
+
         bodyPlaceholder() {
             if (this.monitor && this.monitor.httpBodyEncoding && this.monitor.httpBodyEncoding === "xml") {
                 return this.$t("Example:", [ `
@@ -1449,9 +1514,25 @@ message HealthCheckResponse {
         },
 
         "monitor.timeout"(value, oldValue) {
-            // keep timeout within 80% range
-            if (value && value !== oldValue) {
-                this.monitor.timeout = this.clampTimeout(value);
+            if (this.monitor.type === "ping") {
+                this.finishUpdateInterval();
+            } else {
+                // keep timeout within 80% range
+                if (value && value !== oldValue) {
+                    this.monitor.timeout = this.clampTimeout(value);
+                }
+            }
+        },
+
+        "monitor.ping_count"() {
+            if (this.monitor.type === "ping") {
+                this.finishUpdateInterval();
+            }
+        },
+
+        "monitor.ping_per_request_timeout"() {
+            if (this.monitor.type === "ping") {
+                this.finishUpdateInterval();
             }
         },
 
@@ -1480,8 +1561,10 @@ message HealthCheckResponse {
             // Set a default timeout if the monitor type has changed or if it's a new monitor
             if (oldType || this.isAdd) {
                 if (this.monitor.type === "snmp") {
-                // snmp is not expected to be executed via the internet => we can choose a lower default timeout
+                    // snmp is not expected to be executed via the internet => we can choose a lower default timeout
                     this.monitor.timeout = 5;
+                } else if (this.monitor.type === "ping") {
+                    this.monitor.timeout = 10;
                 } else {
                     this.monitor.timeout = 48;
                 }
@@ -1598,7 +1681,11 @@ message HealthCheckResponse {
             if (this.isAdd) {
 
                 this.monitor = {
-                    ...monitorDefaults
+                    ...monitorDefaults,
+                    ping_count: 3,
+                    ping_numeric: true,
+                    packetSize: 56,
+                    ping_per_request_timeout: 2,
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -1661,7 +1748,12 @@ message HealthCheckResponse {
                         }
                         // Handling for monitors that are missing/zeroed timeout
                         if (!this.monitor.timeout) {
-                            this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
+                            if (this.monitor.type === "ping") {
+                                // set to default
+                                this.monitor.timeout = 10;
+                            } else {
+                                this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
+                            }
                         }
                     } else {
                         this.$root.toastError(res.msg);
@@ -1878,11 +1970,48 @@ message HealthCheckResponse {
             return Number.isFinite(clamped) ? clamped : maxTimeout;
         },
 
+        calculatePingInterval() {
+            // If monitor.type is not "ping", simply return the configured interval
+            if (this.monitor.type !== "ping") {
+                return this.monitor.interval;
+            }
+
+            // Calculate the maximum theoretical time needed if every ping request times out
+            const theoreticalTotal = this.monitor.ping_count * this.monitor.ping_per_request_timeout;
+
+            // The global timeout (aka deadline) forces ping to terminate, so the effective limit
+            // is the smaller value between deadline and theoreticalTotal
+            const effectiveLimit = Math.min(this.monitor.timeout, theoreticalTotal);
+
+            // Add a 10% margin to the effective limit to ensure proper handling
+            const adjustedLimit = Math.ceil(effectiveLimit * 1.1);
+
+            // If the calculated limit is lower than the minimum allowed interval, use the minimum interval
+            if (adjustedLimit < this.minInterval) {
+                return this.minInterval;
+            }
+
+            return adjustedLimit;
+        },
+
         finishUpdateInterval() {
-            // Update timeout if it is greater than the clamp timeout
-            let clampedValue = this.clampTimeout(this.monitor.interval);
-            if (this.monitor.timeout > clampedValue) {
-                this.monitor.timeout = clampedValue;
+            if (this.monitor.type === "ping") {
+                // Calculate the minimum required interval based on ping configuration
+                const calculatedPingInterval = this.calculatePingInterval();
+
+                // If the configured interval is too small, adjust it to the minimum required value
+                if (this.monitor.interval < calculatedPingInterval) {
+                    this.monitor.interval = calculatedPingInterval;
+
+                    // Notify the user that the interval has been automatically adjusted
+                    toast.info(this.$t("pingIntervalAdjustedInfo"));
+                }
+            } else {
+                // Update timeout if it is greater than the clamp timeout
+                let clampedValue = this.clampTimeout(this.monitor.interval);
+                if (this.monitor.timeout > clampedValue) {
+                    this.monitor.timeout = clampedValue;
+                }
             }
         },
 
