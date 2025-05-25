@@ -194,7 +194,6 @@
     "Tag with this value already exist.": "Tag with this value already exists.",
     "tagAlreadyOnMonitor": "This tag (name and value) is already on the monitor or pending addition.",
     "tagAlreadyStaged": "This tag (name and value) is already staged for this batch.",
-    "tagLimitReached": "Cannot stage more than {limit} new system tags in a single batch.",
     "tagNameExists": "A system tag with this name already exists. Select it from the list or use a different name.",
     "color": "Color",
     "value (optional)": "value (optional)",
