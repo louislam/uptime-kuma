@@ -93,16 +93,10 @@ module.exports.generalSocketHandler = (socket, server) => {
     });
 
     socket.on("getPushExample", (language, callback) => {
-        try {
-            checkLogin(socket);
-
-            if (!LANGUAGE_REGEX.test(language)) {
-                throw new Error("Invalid language");
-            }
-        } catch (e) {
-            callback({
+        if (!LANGUAGE_REGEX.test(language)) {
+           callback({
                 ok: false,
-                msg: e.message,
+                msg: "requested language is not recognised as valid by the server",
             });
             return;
         }
