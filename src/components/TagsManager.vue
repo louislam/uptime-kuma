@@ -24,7 +24,6 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-body">
-                        <!-- Display area for tags staged for batch addition -->
                         <h4 v-if="stagedForBatchAdd.length > 0">{{ $t("Add Tags") }}</h4>
                         <div v-if="stagedForBatchAdd.length > 0" class="mb-3 staging-area" style="max-height: 150px; overflow-y: auto;">
                             <Tag
@@ -34,7 +33,6 @@
                                 :remove="() => unstageTag(stagedTag)"
                             />
                         </div>
-                        <!-- End Staging Display -->
 
                         <vue-multiselect
                             v-model="newDraftTag.select"
@@ -120,19 +118,10 @@
                             />
                         </div>
 
-                        <!-- General feedback area for tag input validation messages -->
                         <div v-if="validateDraftTag.invalid && validateDraftTag.messageKey" class="form-text text-danger mb-2">
                             {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
                         </div>
-                        <!-- End Validation Feedback -->
-
-                        <!-- Add Another Tag Button -->
-                        <!-- This button will be moved to the footer -->
-
-                        <!-- Action Buttons: Clear current form and Stage current tag -->
-                        <!-- Removed original action buttons here -->
                     </div>
-                    <!-- Modal Footer: Cancel batch or Confirm and Add all staged tags -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
                         <button type="button" class="btn btn-outline-primary me-2" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
@@ -140,7 +129,6 @@
                         </button>
                         <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="add-tags-final-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Done") }}</button>
                     </div>
-                    <!-- End Modal Footer -->
                 </div>
             </div>
         </div>
