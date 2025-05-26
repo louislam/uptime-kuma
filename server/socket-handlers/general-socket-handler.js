@@ -10,8 +10,6 @@ const path = require("path");
 let gameResolver = new GameResolver();
 let gameList = null;
 
-const LANGUAGE_REGEX = /^[a-z]{2,3}(-[A-Z]{2,})?$/;
-
 /**
  * Get a game list via GameDig
  * @returns {object[]} list of games supported by GameDig
