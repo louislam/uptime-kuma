@@ -12,7 +12,6 @@ class UptimeCalculator {
      * @private
      * @type {{string:UptimeCalculator}}
      */
-
     static list = {};
 
     /**
@@ -54,6 +53,15 @@ class UptimeCalculator {
     lastDailyStatBean = null;
     lastHourlyStatBean = null;
     lastMinutelyStatBean = null;
+
+    /**
+     * For migration purposes.
+     * @type {boolean}
+     */
+    migrationMode = false;
+
+    statMinutelyKeepHour = 24;
+    statHourlyKeepDay = 30;
 
     /**
      * Get the uptime calculator for a monitor
@@ -189,16 +197,19 @@ class UptimeCalculator {
     /**
      * @param {number} status status
      * @param {number} ping Ping
+     * @param {dayjs.Dayjs} date Date (Only for migration)
      * @returns {dayjs.Dayjs} date
      * @throws {Error} Invalid status
      */
-    async update(status, ping = 0) {
-        let date = this.getCurrentDate();
+    async update(status, ping = 0, date) {
+        if (!date) {
+            date = this.getCurrentDate();
+        }
 
         let flatStatus = this.flatStatus(status);
 
         if (flatStatus === DOWN && ping > 0) {
-            log.warn("uptime-calc", "The ping is not effective when the status is DOWN");
+            log.debug("uptime-calc", "The ping is not effective when the status is DOWN");
         }
 
         let divisionKey = this.getMinutelyKey(date);
@@ -297,47 +308,61 @@ class UptimeCalculator {
         }
         await R.store(dailyStatBean);
 
-        let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
-        hourlyStatBean.up = hourlyData.up;
-        hourlyStatBean.down = hourlyData.down;
-        hourlyStatBean.ping = hourlyData.avgPing;
-        hourlyStatBean.pingMin = hourlyData.minPing;
-        hourlyStatBean.pingMax = hourlyData.maxPing;
-        {
-            // eslint-disable-next-line no-unused-vars
-            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
-            if (Object.keys(extras).length > 0) {
-                hourlyStatBean.extras = JSON.stringify(extras);
+        let currentDate = this.getCurrentDate();
+
+        // For migration mode, we don't need to store old hourly and minutely data, but we need 30-day's hourly data
+        // Run anyway for non-migration mode
+        if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statHourlyKeepDay, "day"))) {
+            let hourlyStatBean = await this.getHourlyStatBean(hourlyKey);
+            hourlyStatBean.up = hourlyData.up;
+            hourlyStatBean.down = hourlyData.down;
+            hourlyStatBean.ping = hourlyData.avgPing;
+            hourlyStatBean.pingMin = hourlyData.minPing;
+            hourlyStatBean.pingMax = hourlyData.maxPing;
+            {
+                // eslint-disable-next-line no-unused-vars
+                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
+                if (Object.keys(extras).length > 0) {
+                    hourlyStatBean.extras = JSON.stringify(extras);
+                }
             }
+            await R.store(hourlyStatBean);
         }
-        await R.store(hourlyStatBean);
 
-        let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
-        minutelyStatBean.up = minutelyData.up;
-        minutelyStatBean.down = minutelyData.down;
-        minutelyStatBean.ping = minutelyData.avgPing;
-        minutelyStatBean.pingMin = minutelyData.minPing;
-        minutelyStatBean.pingMax = minutelyData.maxPing;
-        {
-            // eslint-disable-next-line no-unused-vars
-            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
-            if (Object.keys(extras).length > 0) {
-                minutelyStatBean.extras = JSON.stringify(extras);
+        // For migration mode, we don't need to store old hourly and minutely data, but we need 24-hour's minutely data
+        // Run anyway for non-migration mode
+        if (!this.migrationMode || date.isAfter(currentDate.subtract(this.statMinutelyKeepHour, "hour"))) {
+            let minutelyStatBean = await this.getMinutelyStatBean(divisionKey);
+            minutelyStatBean.up = minutelyData.up;
+            minutelyStatBean.down = minutelyData.down;
+            minutelyStatBean.ping = minutelyData.avgPing;
+            minutelyStatBean.pingMin = minutelyData.minPing;
+            minutelyStatBean.pingMax = minutelyData.maxPing;
+            {
+                // eslint-disable-next-line no-unused-vars
+                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
+                if (Object.keys(extras).length > 0) {
+                    minutelyStatBean.extras = JSON.stringify(extras);
+                }
             }
+            await R.store(minutelyStatBean);
         }
-        await R.store(minutelyStatBean);
 
-        // Remove the old data
-        log.debug("uptime-calc", "Remove old data");
-        await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
-            this.monitorID,
-            this.getMinutelyKey(date.subtract(24, "hour")),
-        ]);
+        // No need to remove old data in migration mode
+        if (!this.migrationMode) {
+            // Remove the old data
+            // TODO: Improvement: Convert it to a job?
+            log.debug("uptime-calc", "Remove old data");
+            await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
+                this.monitorID,
+                this.getMinutelyKey(currentDate.subtract(this.statMinutelyKeepHour, "hour")),
+            ]);
 
-        await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ? AND timestamp < ?", [
-            this.monitorID,
-            this.getHourlyKey(date.subtract(30, "day")),
-        ]);
+            await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ? AND timestamp < ?", [
+                this.monitorID,
+                this.getHourlyKey(currentDate.subtract(this.statHourlyKeepDay, "day")),
+            ]);
+        }
 
         return date;
     }
@@ -543,7 +568,9 @@ class UptimeCalculator {
         if (type === "minute" && num > 24 * 60) {
             throw new Error("The maximum number of minutes is 1440");
         }
-
+        if (type === "day" && num > 365) {
+            throw new Error("The maximum number of days is 365");
+        }
         // Get the current time period key based on the type
         let key = this.getKey(this.getCurrentDate(), type);
 
@@ -741,20 +768,36 @@ class UptimeCalculator {
     }
 
     /**
-     * Get the uptime data by duration
-     * @param {'24h'|'30d'|'1y'} duration Only accept 24h, 30d, 1y
+     * Get the uptime data for given duration.
+     * @param {string} duration  A string with a number and a unit (m,h,d,w,M,y), such as 24h, 30d, 1y.
      * @returns {UptimeDataResult} UptimeDataResult
-     * @throws {Error} Invalid duration
+     * @throws {Error} Invalid duration / Unsupported unit
      */
     getDataByDuration(duration) {
-        if (duration === "24h") {
-            return this.get24Hour();
-        } else if (duration === "30d") {
-            return this.get30Day();
-        } else if (duration === "1y") {
-            return this.get1Year();
-        } else {
-            throw new Error("Invalid duration");
+        const durationNumStr = duration.slice(0, -1);
+
+        if (!/^[0-9]+$/.test(durationNumStr)) {
+            throw new Error(`Invalid duration: ${duration}`);
+        }
+        const num = Number(durationNumStr);
+        const unit = duration.slice(-1);
+
+        switch (unit) {
+            case "m":
+                return this.getData(num, "minute");
+            case "h":
+                return this.getData(num, "hour");
+            case "d":
+                return this.getData(num, "day");
+            case "w":
+                return this.getData(7 * num, "day");
+            case "M":
+                return this.getData(30 * num, "day");
+            case "y":
+                return this.getData(365 * num, "day");
+            default:
+                throw new Error(`Unsupported unit (${unit}) for badge duration ${duration}`
+                );
         }
     }
 
@@ -794,6 +837,14 @@ class UptimeCalculator {
         return dayjs.utc();
     }
 
+    /**
+     * For migration purposes.
+     * @param {boolean} value Migration mode on/off
+     * @returns {void}
+     */
+    setMigrationMode(value) {
+        this.migrationMode = value;
+    }
 }
 
 class UptimeDataResult {

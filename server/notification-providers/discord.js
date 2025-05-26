@@ -33,26 +33,6 @@ class Discord extends NotificationProvider {
                 return okMsg;
             }
 
-            let address;
-
-            switch (monitorJSON["type"]) {
-                case "ping":
-                    address = monitorJSON["hostname"];
-                    break;
-                case "port":
-                case "dns":
-                case "gamedig":
-                case "steam":
-                    address = monitorJSON["hostname"];
-                    if (monitorJSON["port"]) {
-                        address += ":" + monitorJSON["port"];
-                    }
-                    break;
-                default:
-                    address = monitorJSON["url"];
-                    break;
-            }
-
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
@@ -66,10 +46,10 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            {
+                            ...(!notification.disableUrl ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
-                            },
+                                value: this.extractAddress(monitorJSON),
+                            }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],
@@ -103,10 +83,10 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            {
+                            ...(!notification.disableUrl ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
-                            },
+                                value: this.extractAddress(monitorJSON),
+                            }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],

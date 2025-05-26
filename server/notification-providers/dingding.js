@@ -87,7 +87,6 @@ class DingDing extends NotificationProvider {
      * @returns {string} Status
      */
     statusToString(status) {
-        // TODO: Move to notification-provider.js to avoid repetition in classes
         switch (status) {
             case DOWN:
                 return "DOWN";

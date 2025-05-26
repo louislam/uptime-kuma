@@ -5,7 +5,7 @@ const util = require("../../src/util");
 
 util.polyfill();
 
-const version = process.env.VERSION;
+const version = process.env.RELEASE_BETA_VERSION;
 
 console.log("Beta Version: " + version);
 

@@ -4,7 +4,6 @@ const { MongoClient } = require("mongodb");
 const jsonata = require("jsonata");
 
 class MongodbMonitorType extends MonitorType {
-
     name = "mongodb";
 
     /**
@@ -49,8 +48,7 @@ class MongodbMonitorType extends MonitorType {
      * Connect to and run MongoDB command on a MongoDB database
      * @param {string} connectionString The database connection string
      * @param {object} command MongoDB command to run on the database
-     * @returns {Promise<(string[] | object[] | object)>} Response from
-     * server
+     * @returns {Promise<(string[] | object[] | object)>} Response from server
      */
     async runMongodbCommand(connectionString, command) {
         let client = await MongoClient.connect(connectionString);

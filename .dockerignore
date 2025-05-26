@@ -1,7 +1,6 @@
 /.idea
 /node_modules
 /data*
-/cypress
 /out
 /test
 /kubernetes
@@ -18,7 +17,6 @@ README.md
 .vscode
 .eslint*
 .stylelint*
-/.devcontainer
 /.github
 yarn.lock
 app.json
@@ -34,7 +32,6 @@ tsconfig.json
 /extra/healthcheck.exe
 /extra/healthcheck
 /extra/exe-builder
-/extra/push-examples
 /extra/uptime-kuma-push
 
 # Comment the following line if you want to rebuild the healthcheck binary

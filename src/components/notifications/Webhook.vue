@@ -32,20 +32,7 @@
             </template>
         </i18n-t>
         <template v-else-if="$parent.notification.webhookContentType == 'custom'">
-            <i18n-t tag="div" keypath="liquidIntroduction" class="form-text">
-                <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
-            </i18n-t>
-            <code v-pre>{{msg}}</code>: {{ $t("templateMsg") }}<br />
-            <code v-pre>{{heartbeatJSON}}</code>: {{ $t("templateHeartbeatJSON") }} <b>({{ $t("templateLimitedToUpDownNotifications") }})</b><br />
-            <code v-pre>{{monitorJSON}}</code>: {{ $t("templateMonitorJSON") }} <b>({{ $t("templateLimitedToUpDownCertNotifications") }})</b><br />
-
-            <textarea
-                id="customBody"
-                v-model="$parent.notification.webhookCustomBody"
-                class="form-control"
-                :placeholder="customBodyPlaceholder"
-                required
-            ></textarea>
+            <TemplatedTextarea id="customBody" v-model="$parent.notification.webhookCustomBody" :required="true" :placeholder="customBodyPlaceholder"></TemplatedTextarea>
         </template>
     </div>
 
@@ -67,7 +54,12 @@
 </template>
 
 <script>
+import TemplatedTextarea from "../TemplatedTextarea.vue";
+
 export default {
+    components: {
+        TemplatedTextarea,
+    },
     data() {
         return {
             showAdditionalHeadersField: this.$parent.notification.webhookAdditionalHeaders != null,
