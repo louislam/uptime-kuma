@@ -834,5 +834,15 @@
     "Select message type": "메시지 유형 선택",
     "Send to channel": "채널로 전송",
     "Create new forum post": "새 포럼 게시물 만들기",
-    "Your User ID": "사용자 ID"
+    "Your User ID": "사용자 ID",
+    "emailTemplateMonitorJSON": "모니터를 설명하는 객체",
+    "postToExistingThread": "기존 스레드/포럼 게시물에 게시",
+    "forumPostName": "포럼 게시물 이름",
+    "threadForumPostID": "스레드 / 포럼 게시물 ID",
+    "e.g. {discordThreadID}": "예: {discordThreadID}",
+    "whatHappensAtForumPost": "새 포럼 게시물을 만드세요. 기존 게시물에는 메시지가 게시되지 않습니다. 기존 게시물에 게시하려면 \"{option}\"을 사용하세요",
+    "wayToGetDiscordThreadId": "스레드/포럼 게시물 ID를 얻는 것은 채널 ID를 얻는 것과 비슷합니다. ID를 얻는 방법에 대해 자세히 알아보세요. {0}",
+    "Channel access token (Long-lived)": "채널 액세스 토큰(장기)",
+    "invertKeywordDescription": "키워드가 존재하지 않는지 살펴보세요.",
+    "emailTemplateLimitedToUpDownNotification": "UP/DOWN 하트비트에만 사용 가능, 그렇지 않으면 null"
 }
