@@ -819,6 +819,7 @@
     "tailscalePingWarning": "Tailscale Ping monitörünü kullanabilmek için Docker olmadan Uptime Kuma kurmanız ve ayrıca sunucunuza Tailscale client kurmanız gerekmektedir.",
     "Server URL should not contain the nfty topic": "Sunucu URL'si nfty konusunu içermemelidir",
     "FlashDuty Severity": "Önem derecesi",
+    "FlashDuty Push URL": "Push URL'si",
     "nostrRelays": "Nostr röleleri",
     "nostrRelaysHelp": "Satır başına bir geçiş URL'si",
     "nostrSender": "Gönderen Özel Anahtarı (nsec)",

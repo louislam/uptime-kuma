@@ -833,6 +833,7 @@
     "Request Body": "Tijelo zahtjeva",
     "wayToGetFlashDutyKey": "Možete otići na 'Channel' -> (Odaberite kanal) -> 'Integrations' -> 'Add a new integration' i odaberite 'Uptime Kuma' da biste dobili push adresu. Zatim kopirajte integracijski ključ u adresu. Za više informacija posjetite",
     "FlashDuty Severity": "Stupanj ozbiljnosti",
+    "FlashDuty Push URL": "push URL",
     "nostrRelays": "Nostr releji",
     "nostrRelaysHelp": "Jedan URL releja po liniji",
     "nostrSender": "Privatni ključ pošiljatelja (nsec)",

@@ -849,6 +849,7 @@
     "Close": "Sulje",
     "Request Body": "Pyynnön sisältörunko",
     "FlashDuty Severity": "Vakavuus",
+    "FlashDuty Push URL": "push URL",
     "nostrRelays": "Nostr-releet",
     "nostrSender": "Lähettäjän yksityisavain (nsec)",
     "nostrRecipients": "Vastaanottajan julkiset avaimet (npub)",

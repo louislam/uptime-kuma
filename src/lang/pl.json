@@ -830,6 +830,7 @@
     "Session Token": "Token sesji",
     "Request Body": "Treść żądania",
     "FlashDuty Severity": "Poziom istotności",
+    "FlashDuty Push URL": "Adres URL push",
     "nostrRelays": "Przekaźniki Nostr",
     "nostrSender": "Prywatny klucz nadawcy (nsec)",
     "Badge Up Color": "Kolor odznaki Online",

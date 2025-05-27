@@ -822,6 +822,7 @@
     "emailTemplateLimitedToUpDownNotification": "disponível apenas para pulsações UP/DOWN, caso contrário, nulo",
     "wayToGetFlashDutyKey": "Você pode ir em Canal -> (Selecionar um Canal) -> Integrações -> Adicionar uma nova integração, adicione um 'Uptime Kuma' para obter um endereço de push, copie a Chave de Integração no endereço. Para mais informações, visite",
     "FlashDuty Severity": "Gravidade",
+    "FlashDuty Push URL": "URL de Push do",
     "templateMsg": "mensagem da notificação",
     "templateHeartbeatJSON": "objeto que descreve o batimento cardíaco",
     "templateMonitorJSON": "objeto que descreve o monitor",

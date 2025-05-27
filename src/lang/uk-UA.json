@@ -825,6 +825,7 @@
     "tailscalePingWarning": "Для того, щоб використовувати монітор Tailscale Ping, вам потрібно встановити Uptime Kuma без Docker, а також встановити клієнт Tailscale на вашому сервері.",
     "Server URL should not contain the nfty topic": "URL-адреса сервера не повинна містити тему nfty",
     "FlashDuty Severity": "Серйозність",
+    "FlashDuty Push URL": "URL-адреса пуш-повідомлень",
     "nostrRelays": "Реле Nostr",
     "nostrRelaysHelp": "Одна URL-адреса реле в рядку",
     "nostrSender": "Приватний ключ відправника (nsec)",

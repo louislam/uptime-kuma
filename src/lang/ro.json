@@ -881,6 +881,7 @@
     "Secret AccessKey": "AccessKey Secret",
     "Session Token": "Token Sesiune",
     "FlashDuty Severity": "Severitate",
+    "FlashDuty Push URL": "URL Push",
     "nostrRelays": "Relee Nostr",
     "nostrRelaysHelp": "Un URL releu pe linie",
     "nostrSender": "Cheia privată a expeditorului (nsec)",
