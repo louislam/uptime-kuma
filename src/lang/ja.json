@@ -951,7 +951,6 @@
     "Close": "閉じる",
     "Request Body": "リクエストボディ",
     "FlashDuty Severity": "重要度",
-    "FlashDuty Push URL": "プッシュ URL",
     "nostrRelays": "Nostrリレー",
     "nostrRelaysHelp": "1行につき1つのリレーURL",
     "nostrSender": "送信者プライベートキー(nsec)",

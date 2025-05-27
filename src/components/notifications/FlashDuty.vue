@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="flashduty-integration-url" class="form-label">{{ $t("FlashDuty Push URL") }} <span style="color: red;"><sup>*</sup></span></label>
-        <input id="flashduty-integration-url" v-model="$parent.notification.flashdutyIntegrationKey" type="text" class="form-control" required></input>
+        <input id="flashduty-integration-url" v-model="$parent.notification.flashdutyIntegrationKey" type="text" class="form-control" required />
         <div class="form-text">
             <p><span style="color: red;"><sup>*</sup></span>{{ $t("Required") }}</p>
         </div>

@@ -810,7 +810,6 @@
     "Close": "Cerrar",
     "Request Body": "Cuerpo de solicitud",
     "FlashDuty Severity": "Gravedad",
-    "FlashDuty Push URL": "URL de Push de",
     "nostrRelays": "Relays de Nostr",
     "nostrRelaysHelp": "Una URL de retransmisión por línea",
     "nostrSender": "Clave Privada del remitente (nsec)",

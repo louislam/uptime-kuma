@@ -879,7 +879,6 @@
     "Secret AccessKey": "Geheim AccessKey",
     "Session Token": "Sessietoken",
     "FlashDuty Severity": "Hevigheid",
-    "FlashDuty Push URL": "Push URL",
     "nostrRelays": "Nostr relays",
     "nostrRelaysHelp": "Een relay-URL per regel",
     "nostrSender": "Private key van de afzender (nsec)",

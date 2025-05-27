@@ -854,7 +854,6 @@
     "Enable Kafka Producer Auto Topic Creation": "Aktifkan Pembuatan Topik Otomatis Produser Kafka",
     "Mechanism": "Mekanisme",
     "FlashDuty Severity": "Severity",
-    "FlashDuty Push URL": "URL Push",
     "nostrRelaysHelp": "Satu URL relai per baris",
     "nostrSender": "Kunci Pribadi Pengirim (ndetik)",
     "nostrRecipients": "Kunci Publik Penerima (npub)",

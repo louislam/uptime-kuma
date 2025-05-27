@@ -881,7 +881,6 @@
     "Badge Label": "徽章標籤",
     "wayToGetFlashDutyKey": "您可以前往「頻道 -> (選擇一個頻道) -> 整合 -> 新增一個新的整合」頁面，新增一個「自訂事件」以取得推送地址，並複製地址中的整合金鑰。欲知更多資訊，請訪問",
     "FlashDuty Severity": "嚴重性",
-    "FlashDuty Push URL": "推送網址",
     "nostrRelays": "Nostr 中繼",
     "nostrRelaysHelp": "每行一個中繼網址",
     "nostrSender": "傳送者私鑰 (nsec)",

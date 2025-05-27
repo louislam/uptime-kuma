@@ -820,7 +820,6 @@
     "Server URL should not contain the nfty topic": "Die Server-URL sollte das nfty-Thema nicht enthalten",
     "pushDeerServerDescription": "Leer lassen um den offiziellen Server zu verwenden",
     "FlashDuty Severity": "Schweregrad",
-    "FlashDuty Push URL": "Push URL",
     "nostrRelays": "Nostr Relays",
     "gamedigGuessPort": "Gamedig: Vermuteter Port",
     "Request Timeout": "Zeitüberschreitung der Anfrage",

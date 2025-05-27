@@ -830,7 +830,6 @@
     "noOrBadCertificate": "Žádný/Vadný certifikát",
     "nostrRelays": "Relé Nostr",
     "FlashDuty Severity": "Závažnost",
-    "FlashDuty Push URL": "Push URL",
     "PushDeer Server": "Server PushDeer",
     "wayToGetFlashDutyKey": "Můžete přejít na stránku \"Kanál -> (Vyberte kanál) -> Integrace -> Přidat novou integraci\", přidat \"Uptime Kuma\" a získat push adresu, zkopírovat integrační klíč v adrese. Další informace naleznete na adrese",
     "Request Timeout": "Časový limit požadavku",

@@ -554,7 +554,6 @@
     "setupDatabaseSQLite": "Egy egyszerű adatbázisfájl, amely kis méretű telepítésekhez ajánlott. A v2.0.0 előtt az Uptime Kuma az SQLite-ot használta alapértelmezett adatbázisként.",
     "dbName": "Adazbázis neve",
     "FlashDuty Severity": "Súlyosság",
-    "FlashDuty Push URL": "push URL",
     "lunaseaDeviceID": "Eszköz azonosító",
     "lunaseaUserID": "Felhasználó azonosító",
     "successPaused": "Sikeres szüneteltetés.",

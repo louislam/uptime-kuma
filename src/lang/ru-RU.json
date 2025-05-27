@@ -846,7 +846,6 @@
     "nostrRecipients": "Открытые ключи получателей (npub)",
     "nostrRecipientsHelp": "формат npub, по одному в строке",
     "FlashDuty Severity": "Серьёзность",
-    "FlashDuty Push URL": "URL-адреса пуш-повідомлень",
     "nostrRelays": "Реле Nostr",
     "nostrRelaysHelp": "Один URL-адрес ретрансляции в каждой строке",
     "enableNSCD": "Включить NSCD (Name Service Cache Daemon) для кэширования всех DNS-запросов",
