@@ -705,6 +705,7 @@
     "useRemoteBrowser": "Använd en fjärrwebbläsare",
     "Saved.": "Sparad.",
     "FlashDuty Severity": "Allvarlighetsgrad",
+    "FlashDuty Push URL": "Push URL",
     "2faAlreadyEnabled": "2FA är redan aktiverat.",
     "2faEnabled": "2FA aktiverat.",
     "2faDisabled": "2FA inaktiverat.",

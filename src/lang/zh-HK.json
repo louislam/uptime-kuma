@@ -889,6 +889,7 @@
     "Request Body": "請求體",
     "wayToGetFlashDutyKey": "您可以進入 協作空間 -> (選擇一個 協作空間) -> 集成數據 -> 新增一個集成 頁面，添加“Uptime Kuma”集成獲得一個推送地址，複製地址中的 Integration Key，更多資訊前往{0}",
     "FlashDuty Severity": "嚴重程度",
+    "FlashDuty Push URL": "推送網址",
     "nostrRelays": "Nostr relay 服務",
     "nostrRelaysHelp": "Relay 服務地址，每行一個",
     "nostrSender": "發送者私鑰（nsec 格式）",

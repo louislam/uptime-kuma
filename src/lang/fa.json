@@ -768,6 +768,7 @@
     "Notify Channel": "آگاه کردن کانال",
     "timeoutAfter": "تایم اوت بعد از {0} ثانیه",
     "FlashDuty Severity": "شدت",
+    "FlashDuty Push URL": "آدرس پوش",
     "nostrRelays": "ریلی Nostr",
     "nostrRelaysHelp": "یک آدرس ریلی به ازای هر خط",
     "nostrSender": "کلید محرمانه فرسته (nsec)",
