@@ -14,6 +14,7 @@
                 type="button"
                 class="btn btn-outline-secondary btn-add"
                 :disabled="processing"
+                data-testid="add-tag-button"
                 @click.stop="showAddDialog"
             >
                 <font-awesome-icon class="me-1" icon="plus" /> {{ $t("Add") }}
@@ -59,6 +60,7 @@
                                     v-model="newDraftTag.name" class="form-control"
                                     :class="{'is-invalid': validateDraftTag.nameInvalid}"
                                     :placeholder="$t('Name')"
+                                    data-testid="tag-name-input"
                                     @keydown.enter.prevent="onEnter"
                                 />
                                 <div class="invalid-feedback">
@@ -76,6 +78,7 @@
                                     label="name"
                                     select-label=""
                                     deselect-label=""
+                                    data-testid="tag-color-select"
                                 >
                                     <template #option="{ option }">
                                         <div
@@ -103,6 +106,7 @@
                                 v-model="newDraftTag.value" class="form-control"
                                 :class="{'is-invalid': validateDraftTag.valueInvalid}"
                                 :placeholder="$t('value (optional)')"
+                                data-testid="tag-value-input"
                                 @keydown.enter.prevent="onEnter"
                             />
                             <div class="invalid-feedback">
@@ -114,6 +118,7 @@
                                 type="button"
                                 class="btn btn-secondary float-end"
                                 :disabled="processing || validateDraftTag.invalid"
+                                data-testid="tag-submit-button"
                                 @click.stop="addDraftTag"
                             >
                                 {{ $t("Add") }}
@@ -192,7 +197,7 @@ export default {
             return tagOptions;
         },
         selectedTags() {
-            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.id === tag.id));
+            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.tag_id === tag.tag_id));
         },
         colorOptions() {
             return colorOptions(this);
@@ -242,6 +247,9 @@ export default {
     mounted() {
         this.modal = new Modal(this.$refs.modal);
         this.getExistingTags();
+    },
+    beforeUnmount() {
+        this.cleanupModal();
     },
     methods: {
         /**
@@ -454,6 +462,19 @@ export default {
             this.newTags = [];
             this.deleteTags = [];
             this.processing = false;
+        },
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
         }
     },
 };

@@ -27,7 +27,6 @@ RUN mkdir ./data
 # ⭐ Main Image
 ############################################
 FROM $BASE_IMAGE AS release
-USER node
 WORKDIR /app
 
 LABEL org.opencontainers.image.source="https://github.com/louislam/uptime-kuma"
@@ -46,6 +45,7 @@ CMD ["node", "server/server.js"]
 # Rootless Image
 ############################################
 FROM release AS rootless
+USER node
 
 ############################################
 # Mark as Nightly
