@@ -280,6 +280,41 @@
                 </div>
             </template>
 
+            <!-- Incident History with improved styling -->
+            <div class="mb-4 incident-history">
+                <h2>{{ $t("Incident History") }}</h2>
+                <div v-if="isLoading">{{ $t("Loading") }}...</div>
+                <div v-else-if="incidentReports.length">
+                    <div
+                        v-for="report in incidentReports"
+                        :key="report.id"
+                        class="shadow-box alert mb-4 p-4 incident-report"
+                        :class="'bg-' + report.style"
+                        role="alert"
+                    >
+                        <h4 class="alert-heading">{{ report.title }}</h4>
+                        <!-- eslint-disable-next-line vue/no-v-html-->
+                        <div class="content markdown-content" v-html="formatIncidentContent(report.content)"></div>
+                        <div class="incident-meta mt-3">
+                            <div class="incident-date">
+                                <font-awesome-icon icon="calendar-alt" class="me-1" />
+                                {{ $t("Date Created") }}: {{ datetimeFormat(report.createdDate) }} 
+                                <span class="text-muted">({{ dateFromNow(report.createdDate) }})</span>
+                            </div>
+                            <div v-if="report.lastUpdatedDate" class="incident-updated">
+                                <font-awesome-icon icon="clock" class="me-1" />
+                                {{ $t("Last Updated") }}: {{ datetimeFormat(report.lastUpdatedDate) }} 
+                                <span class="text-muted">({{ dateFromNow(report.lastUpdatedDate) }})</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p v-else class="text-center py-4">
+                    <font-awesome-icon icon="info-circle" class="me-2" />
+                    {{ $t("No incident reports found.") }}
+                </p>
+            </div>
+
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
             <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" />
@@ -829,20 +864,31 @@ export default {
             }
         },
         async fetchIncidentReports() {
-            const socket = io();
             this.isLoading = true;
-            socket.emit("fetchIncidentReports");
-
-            socket.on("incidentReports", (data) => {
-                this.incidentReports = data;
-                this.isLoading = false;
-            });
-
-            socket.on("incidentReportsError", (error) => {
+            try {
+                const socket = this.$root.getSocket();
+                
+                socket.emit("getStatusPageIncidentHistory", this.slug, (data) => {
+                    if (data.ok) {
+                        this.incidentReports = data.incidents;
+                    } else {
+                        this.error = data.msg;
+                        console.error("Error fetching incident reports:", data.msg);
+                    }
+                    this.isLoading = false;
+                });
+            } catch (error) {
                 this.error = error;
-                console.error("", error);
+                console.error("Error fetching incident reports:", error);
                 this.isLoading = false;
-            });
+            }
+        },
+        formatIncidentContent(content) {
+            // Convert markdown to HTML and sanitize
+            if (!content) {
+                return "";
+            }
+            return DOMPurify.sanitize(marked(content));
         },
         /**
          * Setup timer to display countdown to refresh
@@ -1314,4 +1360,154 @@ footer {
     opacity: 0.7;
 }
 
+.incident-history {
+    .incident-report {
+        transition: all 0.3s ease;
+        border-left: 5px solid;
+        
+        &.bg-info {
+            border-left-color: $info;
+        }
+        
+        &.bg-warning {
+            border-left-color: $warning;
+        }
+        
+        &.bg-danger {
+            border-left-color: $danger;
+        }
+        
+        &.bg-primary {
+            border-left-color: $primary;
+        }
+        
+        &.bg-light {
+            border-left-color: #ccc;
+        }
+        
+        &.bg-dark {
+            border-left-color: #333;
+        }
+        
+        &.bg-maintenance {
+            border-left-color: $maintenance;
+        }
+        
+        .alert-heading {
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        
+        .incident-meta {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding-top: 0.75rem;
+            margin-top: 1rem;
+            
+            .incident-date, .incident-updated {
+                margin-bottom: 0.25rem;
+            }
+        }
+    }
+    
+    /* Ensure markdown content is properly styled */
+    :deep(.markdown-content) {
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+        
+        code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
+        
+        pre {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        
+        blockquote {
+            border-left: 4px solid rgba(0, 0, 0, 0.1);
+            padding-left: 1rem;
+            margin-left: 0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        a {
+            text-decoration: underline;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1rem;
+            
+            th, td {
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                padding: 0.5rem;
+            }
+            
+            th {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+        }
+    }
+    
+    /* Dark mode adjustments */
+    .dark & {
+        .incident-report {
+            &.bg-light {
+                color: $dark-bg;
+            }
+            
+            .incident-meta {
+                border-top-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+        
+        :deep(.markdown-content) {
+            code, pre {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            
+            blockquote {
+                border-left-color: rgba(255, 255, 255, 0.2);
+                color: rgba(255, 255, 255, 0.7);
+            }
+            
+            table {
+                th, td {
+                    border-color: rgba(255, 255, 255, 0.1);
+                }
+                
+                th {
+                    background-color: rgba(255, 255, 255, 0.05);
+                }
+            }
+        }
+    }
+}
 </style>
+
+
+
+

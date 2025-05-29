@@ -348,6 +348,50 @@ module.exports.statusPageSocketHandler = (socket) => {
             });
         }
     });
+
+    /**
+     * Get incident history for a status page
+     */
+    socket.on("getStatusPageIncidentHistory", async (slug, callback) => {
+        try {
+            const statusPageBean = await R.findOne("status_page", " slug = ? ", [
+                slug
+            ]);
+
+            if (!statusPageBean) {
+                throw new Error("Status page not found");
+            }
+
+            // Fetch all incidents for this status page, ordered by creation date descending
+            const incidents = await R.find("incident", " status_page_id = ? ORDER BY created_date DESC ", [
+                statusPageBean.id
+            ]);
+
+            // Convert to public JSON format
+            const incidentsJSON = incidents.map(incident => {
+                return {
+                    id: incident.id,
+                    title: incident.title,
+                    content: incident.content,
+                    style: incident.style,
+                    createdDate: incident.created_date,
+                    lastUpdatedDate: incident.last_updated_date,
+                    pin: incident.pin,
+                    active: incident.active
+                };
+            });
+
+            callback({
+                ok: true,
+                incidents: incidentsJSON
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message
+            });
+        }
+    });
 };
 
 /**
