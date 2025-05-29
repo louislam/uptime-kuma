@@ -1366,7 +1366,7 @@ footer {
         border-left: 5px solid;
 
         &.bg-info {
-            border-left-color: $info;
+            border-left-color: #0dcaf0; /* Hardcoded Bootstrap info color */
         }
 
         &.bg-warning {
@@ -1411,8 +1411,8 @@ footer {
         }
     }
 
-    /* Ensure markdown content is properly styled */
-    :deep(.markdown-content) {
+    /* Fix the :deep selector issue by using ::v-deep instead */
+    ::v-deep .markdown-content {
         h1, h2, h3, h4, h5, h6 {
             margin-top: 1rem;
             margin-bottom: 0.5rem;
@@ -1484,7 +1484,7 @@ footer {
             }
         }
 
-        :deep(.markdown-content) {
+        ::v-deep .markdown-content {
             code, pre {
                 background-color: rgba(255, 255, 255, 0.05);
             }
