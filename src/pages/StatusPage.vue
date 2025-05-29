@@ -298,12 +298,12 @@
                         <div class="incident-meta mt-3">
                             <div class="incident-date">
                                 <font-awesome-icon icon="calendar-alt" class="me-1" />
-                                {{ $t("Date Created") }}: {{ datetimeFormat(report.createdDate) }} 
+                                {{ $t("Date Created") }}: {{ datetimeFormat(report.createdDate) }}
                                 <span class="text-muted">({{ dateFromNow(report.createdDate) }})</span>
                             </div>
                             <div v-if="report.lastUpdatedDate" class="incident-updated">
                                 <font-awesome-icon icon="clock" class="me-1" />
-                                {{ $t("Last Updated") }}: {{ datetimeFormat(report.lastUpdatedDate) }} 
+                                {{ $t("Last Updated") }}: {{ datetimeFormat(report.lastUpdatedDate) }}
                                 <span class="text-muted">({{ dateFromNow(report.lastUpdatedDate) }})</span>
                             </div>
                         </div>
@@ -436,7 +436,6 @@ import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
-import io from "socket.io-client";
 
 const toast = useToast();
 
@@ -868,7 +867,7 @@ export default {
             this.isLoading = true;
             try {
                 const socket = this.$root.getSocket();
-                
+
                 socket.emit("getStatusPageIncidentHistory", this.slug, (data) => {
                     if (data.ok) {
                         this.incidentReports = data.incidents;
@@ -1365,141 +1364,141 @@ footer {
     .incident-report {
         transition: all 0.3s ease;
         border-left: 5px solid;
-        
+
         &.bg-info {
             border-left-color: $info;
         }
-        
+
         &.bg-warning {
             border-left-color: $warning;
         }
-        
+
         &.bg-danger {
             border-left-color: $danger;
         }
-        
+
         &.bg-primary {
             border-left-color: $primary;
         }
-        
+
         &.bg-light {
             border-left-color: #ccc;
         }
-        
+
         &.bg-dark {
             border-left-color: #333;
         }
-        
+
         &.bg-maintenance {
             border-left-color: $maintenance;
         }
-        
+
         .alert-heading {
             font-weight: bold;
             margin-bottom: 1rem;
         }
-        
+
         .incident-meta {
             font-size: 0.85rem;
             opacity: 0.8;
             border-top: 1px solid rgba(0, 0, 0, 0.1);
             padding-top: 0.75rem;
             margin-top: 1rem;
-            
+
             .incident-date, .incident-updated {
                 margin-bottom: 0.25rem;
             }
         }
     }
-    
+
     /* Ensure markdown content is properly styled */
     :deep(.markdown-content) {
         h1, h2, h3, h4, h5, h6 {
             margin-top: 1rem;
             margin-bottom: 0.5rem;
         }
-        
+
         p {
             margin-bottom: 1rem;
         }
-        
+
         ul, ol {
             margin-bottom: 1rem;
             padding-left: 2rem;
         }
-        
+
         code {
             background-color: rgba(0, 0, 0, 0.05);
             padding: 0.2rem 0.4rem;
             border-radius: 3px;
         }
-        
+
         pre {
             background-color: rgba(0, 0, 0, 0.05);
             padding: 1rem;
             border-radius: 5px;
             overflow-x: auto;
         }
-        
+
         blockquote {
             border-left: 4px solid rgba(0, 0, 0, 0.1);
             padding-left: 1rem;
             margin-left: 0;
             color: rgba(0, 0, 0, 0.6);
         }
-        
+
         img {
             max-width: 100%;
             height: auto;
         }
-        
+
         a {
             text-decoration: underline;
         }
-        
+
         table {
             border-collapse: collapse;
             width: 100%;
             margin-bottom: 1rem;
-            
+
             th, td {
                 border: 1px solid rgba(0, 0, 0, 0.1);
                 padding: 0.5rem;
             }
-            
+
             th {
                 background-color: rgba(0, 0, 0, 0.05);
             }
         }
     }
-    
+
     /* Dark mode adjustments */
     .dark & {
         .incident-report {
             &.bg-light {
                 color: $dark-bg;
             }
-            
+
             .incident-meta {
                 border-top-color: rgba(255, 255, 255, 0.1);
             }
         }
-        
+
         :deep(.markdown-content) {
             code, pre {
                 background-color: rgba(255, 255, 255, 0.05);
             }
-            
+
             blockquote {
                 border-left-color: rgba(255, 255, 255, 0.2);
                 color: rgba(255, 255, 255, 0.7);
             }
-            
+
             table {
                 th, td {
                     border-color: rgba(255, 255, 255, 0.1);
                 }
-                
+
                 th {
                     background-color: rgba(255, 255, 255, 0.05);
                 }
@@ -1508,7 +1507,4 @@ footer {
     }
 }
 </style>
-
-
-
 
