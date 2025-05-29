@@ -41,7 +41,6 @@
                         {{ $t("Refresh Interval Description", [config.autoRefreshInterval]) }}
                     </div>
                 </div>
-
                 <div class="my-3">
                     <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
                     <select id="switch-theme" v-model="config.theme" class="form-select" data-testid="theme-select">
@@ -281,6 +280,41 @@
                 </div>
             </template>
 
+            <!-- Incident History with improved styling -->
+            <div class="mb-4 incident-history">
+                <h2>{{ $t("Incident History") }}</h2>
+                <div v-if="isLoading">{{ $t("Loading") }}...</div>
+                <div v-else-if="incidentReports.length">
+                    <div
+                        v-for="report in incidentReports"
+                        :key="report.id"
+                        class="shadow-box alert mb-4 p-4 incident-report"
+                        :class="'bg-' + report.style"
+                        role="alert"
+                    >
+                        <h4 class="alert-heading">{{ report.title }}</h4>
+                        <!-- eslint-disable-next-line vue/no-v-html-->
+                        <div class="content markdown-content" v-html="formatIncidentContent(report.content)"></div>
+                        <div class="incident-meta mt-3">
+                            <div class="incident-date">
+                                <font-awesome-icon icon="calendar-alt" class="me-1" />
+                                {{ $t("Date Created") }}: {{ datetimeFormat(report.createdDate) }}
+                                <span class="text-muted">({{ dateFromNow(report.createdDate) }})</span>
+                            </div>
+                            <div v-if="report.lastUpdatedDate" class="incident-updated">
+                                <font-awesome-icon icon="clock" class="me-1" />
+                                {{ $t("Last Updated") }}: {{ datetimeFormat(report.lastUpdatedDate) }}
+                                <span class="text-muted">({{ dateFromNow(report.lastUpdatedDate) }})</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p v-else class="text-center py-4">
+                    <font-awesome-icon icon="info-circle" class="me-2" />
+                    {{ $t("No incident reports found.") }}
+                </p>
+            </div>
+
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
             <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" data-testid="description-editable" />
@@ -327,7 +361,25 @@
                     <!-- 👀 Nothing here, please add a group or a monitor. -->
                     👀 {{ $t("statusPageNothing") }}
                 </div>
-
+                <div>
+                    <h1>Incident Reports</h1>
+                    <div v-if="isLoading">Loading...</div>
+                    <div v-else-if="filteredReports.length">
+                        <div
+                            v-for="report in filteredReports"
+                            :key="report._id"
+                            class="big-padding"
+                        >
+                            <h3>{{ (report._createdDate) }}</h3>
+                            <hr />
+                            <h4>{{ report._title }}</h4>
+                            <p>{{ report._content }}</p>
+                            <hr />
+                            <br /><br />
+                        </div>
+                    </div>
+                    <p v-else>No incident reports found or an error occurred.</p>
+                </div>
                 <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
             </div>
 
@@ -379,12 +431,14 @@ import DOMPurify from "dompurify";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
+import dateTime from "../mixins/datetime.js";
 import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
 
 const toast = useToast();
+
 dayjs.extend(duration);
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
@@ -407,7 +461,7 @@ export default {
         Tag,
         VueMultiselect
     },
-
+    mixins: [ dateTime ],
     // Leave Page for vue route change
     beforeRouteLeave(to, from, next) {
         if (this.editMode) {
@@ -429,7 +483,6 @@ export default {
             default: null,
         },
     },
-
     data() {
         return {
             slug: null,
@@ -451,10 +504,24 @@ export default {
             updateCountdown: null,
             updateCountdownText: null,
             loading: true,
+            isLoading: false,
+            incidentReports: [],
+            error: null,
         };
     },
     computed: {
-
+        filteredReports() {
+            for (let reports in this.incidentReports) {
+                this.datetime(reports._createdDate);
+            }
+            return this.incidentReports
+                .slice()
+                .sort(
+                    (a, b) =>
+                        new Date(b._createdDate) - new Date(a._createdDate),
+                )
+                .slice(-25);
+        },
         logoURL() {
             if (this.imgDataUrl.startsWith("data:")) {
                 return this.imgDataUrl;
@@ -462,7 +529,6 @@ export default {
                 return this.baseURL + this.imgDataUrl;
             }
         },
-
         /**
          * If the monitor is added to public list, which will not be in this list.
          * @returns {object[]} List of monitors
@@ -731,7 +797,7 @@ export default {
         });
 
         this.updateHeartbeatList();
-
+        this.fetchIncidentReports();
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
         if (this.$route.query.edit || this.$route.query.edit === null) {
@@ -797,7 +863,33 @@ export default {
                 });
             }
         },
+        async fetchIncidentReports() {
+            this.isLoading = true;
+            try {
+                const socket = this.$root.getSocket();
 
+                socket.emit("getStatusPageIncidentHistory", this.slug, (data) => {
+                    if (data.ok) {
+                        this.incidentReports = data.incidents;
+                    } else {
+                        this.error = data.msg;
+                        console.error("Error fetching incident reports:", data.msg);
+                    }
+                    this.isLoading = false;
+                });
+            } catch (error) {
+                this.error = error;
+                console.error("Error fetching incident reports:", error);
+                this.isLoading = false;
+            }
+        },
+        formatIncidentContent(content) {
+            // Convert markdown to HTML and sanitize
+            if (!content) {
+                return "";
+            }
+            return DOMPurify.sanitize(marked(content));
+        },
         /**
          * Setup timer to display countdown to refresh
          * @returns {void}
@@ -1056,216 +1148,157 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+/* Import the variables file to access the theme colors */
 @import "../assets/vars.scss";
 
-.overall-status {
-    font-weight: bold;
-    font-size: 25px;
+/* Remove the scoped attribute from the style tag to allow targeting child components */
+.incident-history {
+    .incident-report {
+        transition: all 0.3s ease;
+        border-left: 5px solid;
 
-    .ok {
-        color: $primary;
-    }
+        &.bg-info {
+            border-left-color: #0dcaf0; /* Hardcoded Bootstrap info color */
+        }
 
-    .warning {
-        color: $warning;
-    }
+        &.bg-warning {
+            border-left-color: $warning;
+        }
 
-    .danger {
-        color: $danger;
-    }
-}
+        &.bg-danger {
+            border-left-color: $danger;
+        }
 
-h1 {
-    font-size: 30px;
+        &.bg-primary {
+            border-left-color: $primary;
+        }
 
-    img {
-        vertical-align: middle;
-        height: 60px;
-        width: 60px;
-    }
-}
+        &.bg-light {
+            border-left-color: #ccc;
+        }
 
-.main {
-    transition: all ease-in-out 0.1s;
+        &.bg-dark {
+            border-left-color: #333;
+        }
 
-    &.edit {
-        margin-left: 300px;
-    }
-}
+        &.bg-maintenance {
+            border-left-color: $maintenance;
+        }
 
-.sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 300px;
-    height: 100vh;
+        .alert-heading {
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
 
-    border-right: 1px solid #ededed;
+        .incident-meta {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding-top: 0.75rem;
+            margin-top: 1rem;
 
-    .danger-zone {
-        border-top: 1px solid #ededed;
-        padding-top: 15px;
-    }
-
-    .sidebar-body {
-        padding: 0 10px 10px 10px;
-        overflow-x: hidden;
-        overflow-y: auto;
-        height: calc(100% - 70px);
-    }
-
-    .sidebar-footer {
-        border-top: 1px solid #ededed;
-        border-right: 1px solid #ededed;
-        padding: 10px;
-        width: 300px;
-        height: 70px;
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        background-color: white;
-        display: flex;
-        align-items: center;
-    }
-}
-
-footer {
-    text-align: center;
-    font-size: 14px;
-}
-
-.description span {
-    min-width: 50px;
-}
-
-.title-flex {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.logo-wrapper {
-    display: inline-block;
-    position: relative;
-
-    &:hover {
-        .icon-upload {
-            transform: scale(1.2);
+            .incident-date, .incident-updated {
+                margin-bottom: 0.25rem;
+            }
         }
     }
 
-    .icon-upload {
-        transition: all $easing-in 0.2s;
-        position: absolute;
-        bottom: 6px;
-        font-size: 20px;
-        left: -14px;
-        background-color: white;
-        padding: 5px;
-        border-radius: 10px;
-        cursor: pointer;
-        box-shadow: 0 15px 70px rgba(0, 0, 0, 0.9);
-    }
-}
-
-.logo {
-    transition: all $easing-in 0.2s;
-
-    &.edit-mode {
-        cursor: pointer;
-
-        &:hover {
-            transform: scale(1.2);
-        }
-    }
-}
-
-.incident {
-    .content {
-        &[contenteditable="true"] {
-            min-height: 60px;
-        }
-    }
-
-    .date {
-        font-size: 12px;
-    }
-}
-
-.maintenance-bg-info {
-    color: $maintenance;
-}
-
-.maintenance-icon {
-    font-size: 35px;
-    vertical-align: middle;
-}
-
-.dark .shadow-box {
-    background-color: #0d1117;
-}
-
-.status-maintenance {
-    color: $maintenance;
-    margin-right: 5px;
-}
-
-.mobile {
-    h1 {
-        font-size: 22px;
-    }
-
-    .overall-status {
-        font-size: 20px;
-    }
-}
-
-.dark {
-    .sidebar {
-        background-color: $dark-header-bg;
-        border-right-color: $dark-border-color;
-
-        .danger-zone {
-            border-top-color: $dark-border-color;
+    /* Markdown content styles without using ::v-deep */
+    .markdown-content {
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
         }
 
-        .sidebar-footer {
-            border-right-color: $dark-border-color;
-            border-top-color: $dark-border-color;
-            background-color: $dark-header-bg;
+        p {
+            margin-bottom: 1rem;
         }
-    }
-}
 
-.domain-name-list {
-    li {
-        display: flex;
-        align-items: center;
-        padding: 10px 0 10px 10px;
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
 
-        .domain-input {
-            flex-grow: 1;
-            background-color: transparent;
-            border: none;
-            color: $dark-font-color;
-            outline: none;
+        code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+        }
 
-            &::placeholder {
-                color: #1d2634;
+        pre {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        blockquote {
+            border-left: 4px solid rgba(0, 0, 0, 0.1);
+            padding-left: 1rem;
+            margin-left: 0;
+            color: rgba(0, 0, 0, 0.6);
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        a {
+            text-decoration: underline;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1rem;
+
+            th, td {
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                padding: 0.5rem;
+            }
+
+            th {
+                background-color: rgba(0, 0, 0, 0.05);
             }
         }
     }
 }
 
-.bg-maintenance {
-    .alert-heading {
-        font-weight: bold;
+/* Dark mode adjustments */
+.dark {
+    .incident-history {
+        .incident-report {
+            &.bg-light {
+                color: $dark-bg;
+            }
+
+            .incident-meta {
+                border-top-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        .markdown-content {
+            code, pre {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+
+            blockquote {
+                border-left-color: rgba(255, 255, 255, 0.2);
+                color: rgba(255, 255, 255, 0.7);
+            }
+
+            table {
+                th, td {
+                    border-color: rgba(255, 255, 255, 0.1);
+                }
+
+                th {
+                    background-color: rgba(255, 255, 255, 0.05);
+                }
+            }
+        }
     }
 }
-
-.refresh-info {
-    opacity: 0.7;
-}
-
 </style>
