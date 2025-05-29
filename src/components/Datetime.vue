@@ -15,6 +15,10 @@ export default {
             type: Boolean,
             default: false,
         },
+        use12HourTimeFormat: {
+            type: Boolean,
+            default: false
+        },
     },
 
     computed: {
@@ -22,7 +26,7 @@ export default {
             if (this.dateOnly) {
                 return this.$root.date(this.value);
             } else {
-                return this.$root.datetime(this.value);
+                return this.$root.datetime(this.value, this.use12HourTimeFormat);
             }
         },
     },
