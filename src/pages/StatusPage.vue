@@ -1148,218 +1148,11 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+/* Import the variables file to access the theme colors */
 @import "../assets/vars.scss";
 
-.overall-status {
-    font-weight: bold;
-    font-size: 25px;
-
-    .ok {
-        color: $primary;
-    }
-
-    .warning {
-        color: $warning;
-    }
-
-    .danger {
-        color: $danger;
-    }
-}
-
-h1 {
-    font-size: 30px;
-
-    img {
-        vertical-align: middle;
-        height: 60px;
-        width: 60px;
-    }
-}
-
-.main {
-    transition: all ease-in-out 0.1s;
-
-    &.edit {
-        margin-left: 300px;
-    }
-}
-
-.sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 300px;
-    height: 100vh;
-
-    border-right: 1px solid #ededed;
-
-    .danger-zone {
-        border-top: 1px solid #ededed;
-        padding-top: 15px;
-    }
-
-    .sidebar-body {
-        padding: 0 10px 10px 10px;
-        overflow-x: hidden;
-        overflow-y: auto;
-        height: calc(100% - 70px);
-    }
-
-    .sidebar-footer {
-        border-top: 1px solid #ededed;
-        border-right: 1px solid #ededed;
-        padding: 10px;
-        width: 300px;
-        height: 70px;
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        background-color: white;
-        display: flex;
-        align-items: center;
-    }
-}
-
-footer {
-    text-align: center;
-    font-size: 14px;
-}
-
-.description span {
-    min-width: 50px;
-}
-
-.title-flex {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.logo-wrapper {
-    display: inline-block;
-    position: relative;
-
-    &:hover {
-        .icon-upload {
-            transform: scale(1.2);
-        }
-    }
-
-    .icon-upload {
-        transition: all $easing-in 0.2s;
-        position: absolute;
-        bottom: 6px;
-        font-size: 20px;
-        left: -14px;
-        background-color: white;
-        padding: 5px;
-        border-radius: 10px;
-        cursor: pointer;
-        box-shadow: 0 15px 70px rgba(0, 0, 0, 0.9);
-    }
-}
-
-.logo {
-    transition: all $easing-in 0.2s;
-
-    &.edit-mode {
-        cursor: pointer;
-
-        &:hover {
-            transform: scale(1.2);
-        }
-    }
-}
-
-.incident {
-    .content {
-        &[contenteditable="true"] {
-            min-height: 60px;
-        }
-    }
-
-    .date {
-        font-size: 12px;
-    }
-}
-
-.maintenance-bg-info {
-    color: $maintenance;
-}
-
-.maintenance-icon {
-    font-size: 35px;
-    vertical-align: middle;
-}
-
-.dark .shadow-box {
-    background-color: #0d1117;
-}
-
-.status-maintenance {
-    color: $maintenance;
-    margin-right: 5px;
-}
-
-.mobile {
-    h1 {
-        font-size: 22px;
-    }
-
-    .overall-status {
-        font-size: 20px;
-    }
-}
-
-.dark {
-    .sidebar {
-        background-color: $dark-header-bg;
-        border-right-color: $dark-border-color;
-
-        .danger-zone {
-            border-top-color: $dark-border-color;
-        }
-
-        .sidebar-footer {
-            border-right-color: $dark-border-color;
-            border-top-color: $dark-border-color;
-            background-color: $dark-header-bg;
-        }
-    }
-}
-
-.domain-name-list {
-    li {
-        display: flex;
-        align-items: center;
-        padding: 10px 0 10px 10px;
-
-        .domain-input {
-            flex-grow: 1;
-            background-color: transparent;
-            border: none;
-            color: $dark-font-color;
-            outline: none;
-
-            &::placeholder {
-                color: #1d2634;
-            }
-        }
-    }
-}
-
-.bg-maintenance {
-    .alert-heading {
-        font-weight: bold;
-    }
-}
-
-.refresh-info {
-    opacity: 0.7;
-}
-
+/* Remove the scoped attribute from the style tag to allow targeting child components */
 .incident-history {
     .incident-report {
         transition: all 0.3s ease;
@@ -1411,8 +1204,8 @@ footer {
         }
     }
 
-    /* Fix the :deep selector issue by using ::v-deep instead */
-    ::v-deep .markdown-content {
+    /* Markdown content styles without using ::v-deep */
+    .markdown-content {
         h1, h2, h3, h4, h5, h6 {
             margin-top: 1rem;
             margin-bottom: 0.5rem;
@@ -1471,9 +1264,11 @@ footer {
             }
         }
     }
+}
 
-    /* Dark mode adjustments */
-    .dark & {
+/* Dark mode adjustments */
+.dark {
+    .incident-history {
         .incident-report {
             &.bg-light {
                 color: $dark-bg;
@@ -1484,7 +1279,7 @@ footer {
             }
         }
 
-        ::v-deep .markdown-content {
+        .markdown-content {
             code, pre {
                 background-color: rgba(255, 255, 255, 0.05);
             }
@@ -1507,4 +1302,3 @@ footer {
     }
 }
 </style>
-
