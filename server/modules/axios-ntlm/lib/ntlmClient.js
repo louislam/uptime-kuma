@@ -89,6 +89,8 @@ function NtlmClient(credentials, AxiosConfig) {
             switch (_b.label) {
                 case 0:
                     error = err.response;
+                    // The header may look like this: `Negotiate, NTLM, Basic realm="itsahiddenrealm.example.net"`Add commentMore actions
+                    // so extract the 'NTLM' part first
                     const ntlmheader = error.headers['www-authenticate'].split(',').find(_ => _.match(/ *NTLM/))?.trim() || '';
                     if (!(error && error.status === 401
                         && error.headers['www-authenticate']
