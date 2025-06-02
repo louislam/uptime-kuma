@@ -1117,5 +1117,6 @@
     "wayToGetWahaApiKey": "La clé API est la valeur de la variable d'environnement WHATSAPP_API_KEY que vous avez utilisée pour exécuter WAHA.",
     "wayToWriteWahaChatId": "Le numéro de téléphone avec le préfixe international, mais sans le signe plus ({0}), l'identifiant de contact ({1}) ni l'identifiant de groupe ({2}). Les notifications sont envoyées à cet identifiant de chat depuis la session WAHA.",
     "telegramServerUrlDescription": "Pour lever les limitations de l’API des bots Telegram ou accéder aux zones bloquées (Chine, Iran, etc.). Pour plus d’informations, cliquez sur {0}. Par défaut : {1}",
-    "telegramServerUrl": "(Facultatif) URL du serveur"
+    "telegramServerUrl": "(Facultatif) URL du serveur",
+    "Font Twemoji by Twitter licensed under": "La police Twemoji de Twitter est sous licence"
 }

@@ -1068,5 +1068,19 @@
     "telegramTemplateFormatDescription": "O Telegram permite o uso de diferentes linguagens de marcação para mensagens. Veja o Telegram {0} para detalhes específicos.",
     "templateHostnameOrURL": "hostname ou URL",
     "templateStatus": "status",
-    "telegramUseTemplateDescription": "Se habilitado, a mensagem será enviada usando um template personalizado."
+    "telegramUseTemplateDescription": "Se habilitado, a mensagem será enviada usando um template personalizado.",
+    "telegramServerUrlDescription": "Para suspender as limitações da API de bots do Telegram ou obter acesso em áreas bloqueadas (China, Irã, etc). Para mais informações, clique em {0}. Padrão: {1}",
+    "wahaSession": "Sessão",
+    "wayToGetWahaApiUrl": "URL da sua instância WAHA.",
+    "wayToGetWahaApiKey": "API Key é o valor da variável de ambiente WHATSAPP_API_KEY que você usou para executar o WAHA.",
+    "wayToGetWahaSession": "A partir desta sessão, o WAHA envia notificações para o Chat ID. Você pode encontrá-lo no WAHA Dashboard.",
+    "wayToWriteWahaChatId": "O número de telefone com o prefixo internacional, mas sem o sinal de mais no início ({0}), o Contact ID ({1}) ou o Group ID ({2}). As notificações são enviadas para este Chat ID da sessão WAHA.",
+    "Plain Text": "Texto Simples",
+    "wahaChatId": "Chat ID (Número de Telefone / Contact ID / Group ID)",
+    "YZJ Webhook URL": "YZJ Webhook URL",
+    "YZJ Robot Token": "YZJ Robot token",
+    "telegramServerUrl": "(Opcional) URL do Servidor",
+    "Message Template": "Modelo de Mensagem",
+    "Template Format": "Formato do Modelo",
+    "Font Twemoji by Twitter licensed under": "Fonte Twemoji do Twitter licenciada sob"
 }
