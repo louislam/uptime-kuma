@@ -2,7 +2,11 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT, evaluateJsonQuery
+    SQL_DATETIME_FORMAT, evaluateJsonQuery,
+    PING_PACKET_SIZE_MIN, PING_PACKET_SIZE_MAX, PING_PACKET_SIZE_DEFAULT,
+    PING_GLOBAL_TIMEOUT_MIN, PING_GLOBAL_TIMEOUT_MAX, PING_GLOBAL_TIMEOUT_DEFAULT,
+    PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
+    PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
@@ -53,7 +57,7 @@ class Monitor extends BeanModel {
         };
 
         if (this.sendUrl) {
-            obj.url = this.url;
+            obj.url = this.customUrl ?? this.url;
         }
 
         if (showTags) {
@@ -153,8 +157,14 @@ class Monitor extends BeanModel {
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
+            smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
+
+            // ping advanced options
+            ping_numeric: this.isPingNumeric(),
+            ping_count: this.ping_count,
+            ping_per_request_timeout: this.ping_per_request_timeout,
         };
 
         if (includeSensitiveData) {
@@ -245,6 +255,14 @@ class Monitor extends BeanModel {
      */
     isEnabledExpiryNotification() {
         return Boolean(this.expiryNotification);
+    }
+
+    /**
+     * Check if ping should use numeric output only
+     * @returns {boolean} True if IP addresses will be output instead of symbolic hostnames
+     */
+    isPingNumeric() {
+        return Boolean(this.ping_numeric);
     }
 
     /**
@@ -380,39 +398,6 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                } else if (this.type === "group") {
-                    const children = await Monitor.getChildren(this.id);
-
-                    if (children.length > 0) {
-                        bean.status = UP;
-                        bean.msg = "All children up and running";
-                        for (const child of children) {
-                            if (!child.active) {
-                                // Ignore inactive childs
-                                continue;
-                            }
-                            const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
-
-                            // Only change state if the monitor is in worse conditions then the ones before
-                            // lastBeat.status could be null
-                            if (!lastBeat) {
-                                bean.status = PENDING;
-                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
-                                bean.status = lastBeat.status;
-                            } else if (bean.status === PENDING && lastBeat.status === DOWN) {
-                                bean.status = lastBeat.status;
-                            }
-                        }
-
-                        if (bean.status !== UP) {
-                            bean.msg = "Child inaccessible";
-                        }
-                    } else {
-                        // Set status pending if group is empty
-                        bean.status = PENDING;
-                        bean.msg = "Group empty";
-                    }
-
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -617,7 +602,7 @@ class Monitor extends BeanModel {
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname, this.packetSize);
+                    bean.ping = await ping(this.hostname, this.ping_count, "", this.ping_numeric, this.packetSize, this.timeout, this.ping_per_request_timeout);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
@@ -689,7 +674,7 @@ class Monitor extends BeanModel {
                         bean.msg = res.data.response.servers[0].name;
 
                         try {
-                            bean.ping = await ping(this.hostname, this.packetSize);
+                            bean.ping = await ping(this.hostname, PING_COUNT_DEFAULT, "", true, this.packetSize, PING_GLOBAL_TIMEOUT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT);
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");
@@ -1327,7 +1312,8 @@ class Monitor extends BeanModel {
                 try {
                     const heartbeatJSON = bean.toJSON();
                     const monitorData = [{ id: monitor.id,
-                        active: monitor.active
+                        active: monitor.active,
+                        name: monitor.name
                     }];
                     const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
@@ -1434,7 +1420,7 @@ class Monitor extends BeanModel {
         for (let notification of notificationList) {
             try {
                 log.debug("monitor", "Sending to " + notification.name);
-                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will be expired in ${daysRemaining} days`);
+                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`);
                 sent = true;
             } catch (e) {
                 log.error("monitor", "Cannot send cert notification to " + notification.name);
@@ -1499,6 +1485,31 @@ class Monitor extends BeanModel {
         }
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.type === "ping") {
+            // ping parameters validation
+            if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {
+                throw new Error(`Packet size must be between ${PING_PACKET_SIZE_MIN} and ${PING_PACKET_SIZE_MAX} (default: ${PING_PACKET_SIZE_DEFAULT})`);
+            }
+
+            if (this.ping_per_request_timeout && (this.ping_per_request_timeout < PING_PER_REQUEST_TIMEOUT_MIN || this.ping_per_request_timeout > PING_PER_REQUEST_TIMEOUT_MAX)) {
+                throw new Error(`Per-ping timeout must be between ${PING_PER_REQUEST_TIMEOUT_MIN} and ${PING_PER_REQUEST_TIMEOUT_MAX} seconds (default: ${PING_PER_REQUEST_TIMEOUT_DEFAULT})`);
+            }
+
+            if (this.ping_count && (this.ping_count < PING_COUNT_MIN || this.ping_count > PING_COUNT_MAX)) {
+                throw new Error(`Echo requests count must be between ${PING_COUNT_MIN} and ${PING_COUNT_MAX} (default: ${PING_COUNT_DEFAULT})`);
+            }
+
+            if (this.timeout) {
+                const pingGlobalTimeout = Math.round(Number(this.timeout));
+
+                if (pingGlobalTimeout < this.ping_per_request_timeout || pingGlobalTimeout < PING_GLOBAL_TIMEOUT_MIN || pingGlobalTimeout > PING_GLOBAL_TIMEOUT_MAX) {
+                    throw new Error(`Timeout must be between ${PING_GLOBAL_TIMEOUT_MIN} and ${PING_GLOBAL_TIMEOUT_MAX} seconds (default: ${PING_GLOBAL_TIMEOUT_DEFAULT})`);
+                }
+
+                this.timeout = pingGlobalTimeout;
+            }
         }
     }
 
@@ -1625,7 +1636,7 @@ class Monitor extends BeanModel {
     /**
      * Gets all Children of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>} Children
+     * @returns {Promise<LooseObject<any>[]>} Children
      */
     static async getChildren(monitorID) {
         return await R.getAll(`

@@ -213,6 +213,10 @@ module.exports.statusPageSocketHandler = (socket) => {
                         relationBean.send_url = monitor.sendUrl;
                     }
 
+                    if (monitor.url !== undefined) {
+                        relationBean.custom_url = monitor.url;
+                    }
+
                     await R.store(relationBean);
                 }
 
@@ -294,6 +298,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ok: true,
                 msg: "successAdded",
                 msgi18n: true,
+                slug: slug
             });
 
         } catch (error) {

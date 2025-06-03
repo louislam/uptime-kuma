@@ -197,7 +197,7 @@ export default {
             return tagOptions;
         },
         selectedTags() {
-            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.id === tag.id));
+            return this.preSelectedTags.concat(this.newTags).filter(tag => !this.deleteTags.find(monitorTag => monitorTag.tag_id === tag.tag_id));
         },
         colorOptions() {
             return colorOptions(this);
@@ -247,6 +247,9 @@ export default {
     mounted() {
         this.modal = new Modal(this.$refs.modal);
         this.getExistingTags();
+    },
+    beforeUnmount() {
+        this.cleanupModal();
     },
     methods: {
         /**
@@ -459,6 +462,19 @@ export default {
             this.newTags = [];
             this.deleteTags = [];
             this.processing = false;
+        },
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
         }
     },
 };
