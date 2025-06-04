@@ -41,10 +41,10 @@ class Prometheus {
      * @param {Array<{name:string,value:?string}>} tags Tags to add to the monitor
      */
     constructor(monitor, tags) {
-        let filteredValidAsciiTags = this.filterValidAsciiTags(tags);
+        let sanitizedTags = this.sanitizeTags(tags);
 
-        if (filteredValidAsciiTags.length <= 0) {
-            filteredValidAsciiTags = "null";
+        if (sanitizedTags.length <= 0) {
+            sanitizedTags = "null";
         }
 
         this.monitorLabelValues = {
@@ -53,27 +53,27 @@ class Prometheus {
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port,
-            monitor_tags: filteredValidAsciiTags
+            monitor_tags: sanitizedTags
         };
     }
 
     /**
-     * Filter tags to remove the ones that contain non-ASCII characters
+     * Sanitize tags to ensure they can be processed by Prometheus.
      * See https://github.com/louislam/uptime-kuma/pull/4704#issuecomment-2366524692
-     * @param {Array<{name: string, value:?string}>} tags The tags to filter
-     * @returns {string[]} The filtered tags
+     * @param {Array<{name: string, value:?string}>} tags The tags to sanitize
+     * @returns {string[]} The sanitized tags
      */
-    filterValidAsciiTags(tags) {
-        const asciiRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-        return tags.reduce((filteredTags, tag) => {
-            if (asciiRegex.test(tag.name)) {
-                if (tag.value !== "" && asciiRegex.test(tag.value)) {
-                    filteredTags.push(`${tag.name}:${tag.value}`);
-                } else {
-                    filteredTags.push(tag.name);
-                }
+    sanitizeTags(tags) {
+        return tags.reduce((sanitizedTags, tag) => {
+            let tagText = tag.name;
+            tagText = tagText.replace(/[^a-zA-Z0-9_]/g, "")
+            tagText = tagText.replace(/^[^a-zA-Z_]+/, "")
+
+            if (tagText !== "") {
+                sanitizedTags.push(tagText);
             }
-            return filteredTags;
+
+            return sanitizedTags;
         }, []);
     }
 
