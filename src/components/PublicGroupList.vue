@@ -262,7 +262,7 @@ export default {
          */
         initializeSortSettings() {
             // Load sort settings from URL
-            this.loadSortSettingsFromURL();
+            this.handlePopState();
 
             // Set default sort values for groups not configured in URL
             if (this.$root.publicGroupList) {
@@ -305,15 +305,6 @@ export default {
          */
         getSortKey(group) {
             return group.sortKey || "status";
-        },
-
-        /**
-         * Get sort direction symbol
-         * @param {object} group object
-         * @returns {string} sort direction symbol
-         */
-        getSortDirectionSymbol(group) {
-            return (group.sortDirection === "asc") ? "↑" : "↓";
         },
 
         /**
@@ -487,14 +478,6 @@ export default {
          * @returns {void}
          */
         handlePopState() {
-            this.loadSortSettingsFromURL();
-        },
-
-        /**
-         * Load sort settings from URL
-         * @returns {void}
-         */
-        loadSortSettingsFromURL() {
             if (!this.$root.publicGroupList) {
                 return;
             }
