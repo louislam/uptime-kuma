@@ -18,11 +18,11 @@
 
                     <div v-if="group.element && group.element.monitorList && group.element.monitorList.length > 1" class="sort-dropdown">
                         <div class="dropdown">
-                            <button :id="'sortDropdown' + group.index" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" 
-                                data-bs-toggle="dropdown" 
-                                aria-expanded="false"
-                                :aria-label="$t('Sort options')"
-                                :title="$t('Sort options')">
+                            <button :id="'sortDropdown' + group.index" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    :aria-label="$t('Sort options')"
+                                    :title="$t('Sort options')">
                                 <div class="sort-arrows">
                                     <font-awesome-icon
                                         icon="arrow-down"
@@ -42,9 +42,9 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end sort-menu" :aria-labelledby="'sortDropdown' + group.index">
                                 <li>
-                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'status')" 
-                                        :aria-label="$t('Sort by status')" 
-                                        :title="$t('Sort by status')">
+                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'status')"
+                                            :aria-label="$t('Sort by status')"
+                                            :title="$t('Sort by status')">
                                         <div class="sort-item-content">
                                             <span>{{ $t("Status") }}</span>
                                             <span v-if="getSortKey(group.element) === 'status'" class="sort-indicators">
@@ -57,9 +57,9 @@
                                     </button>
                                 </li>
                                 <li>
-                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'name')" 
-                                        :aria-label="$t('Sort by name')" 
-                                        :title="$t('Sort by name')">
+                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'name')"
+                                            :aria-label="$t('Sort by name')"
+                                            :title="$t('Sort by name')">
                                         <div class="sort-item-content">
                                             <span>{{ $t("Name") }}</span>
                                             <span v-if="getSortKey(group.element) === 'name'" class="sort-indicators">
@@ -72,9 +72,9 @@
                                     </button>
                                 </li>
                                 <li>
-                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'uptime')" 
-                                        :aria-label="$t('Sort by uptime')" 
-                                        :title="$t('Sort by uptime')">
+                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'uptime')"
+                                            :aria-label="$t('Sort by uptime')"
+                                            :title="$t('Sort by uptime')">
                                         <div class="sort-item-content">
                                             <span>{{ $t("Uptime") }}</span>
                                             <span v-if="getSortKey(group.element) === 'uptime'" class="sort-indicators">
@@ -87,9 +87,9 @@
                                     </button>
                                 </li>
                                 <li v-if="showCertificateExpiry">
-                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'cert')" 
-                                        :aria-label="$t('Sort by certificate expiry')" 
-                                        :title="$t('Sort by certificate expiry')">
+                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'cert')"
+                                            :aria-label="$t('Sort by certificate expiry')"
+                                            :title="$t('Sort by certificate expiry')">
                                         <div class="sort-item-content">
                                             <span>{{ $t("Cert Exp.") }}</span>
                                             <span v-if="getSortKey(group.element) === 'cert'" class="sort-indicators">
@@ -248,8 +248,6 @@ export default {
         this.initializeSortSettings();
     },
     mounted() {
-        // Load sort settings from URL
-        this.loadSortSettingsFromURL();
         // Listen for URL changes
         window.addEventListener("popstate", this.handlePopState);
     },
@@ -263,73 +261,41 @@ export default {
          * @returns {void}
          */
         initializeSortSettings() {
+            // Load sort settings from URL
+            this.loadSortSettingsFromURL();
+
+            // Set default sort values for groups not configured in URL
             if (this.$root.publicGroupList) {
                 this.$root.publicGroupList.forEach(group => {
                     if (group) {
-                        // Try to read saved sort settings from localStorage
-                        const savedSettings = this.getSavedSortSettings(group);
-
-                        if (savedSettings) {
-                            // Apply saved settings
-                            group.sortKey = savedSettings.key;
-                            group.sortDirection = savedSettings.direction;
-                        } else {
-                            // Use default settings
-                            if (group.sortKey === undefined) {
-                                group.sortKey = "status";
-                            }
-                            if (group.sortDirection === undefined) {
-                                group.sortDirection = "asc";
-                            }
+                        // If sort settings are not defined from URL, use default settings
+                        if (group.sortKey === undefined) {
+                            group.sortKey = "status";
                         }
+                        if (group.sortDirection === undefined) {
+                            group.sortDirection = "asc";
+                        }
+
                         // Apply initial sorting
                         this.applySort(group);
                     }
                 });
             }
+
             // Watch for new groups being added and initialize their sort state
             if (this.$root) {
                 this.$root.$watch("publicGroupList", (newGroups) => {
                     if (newGroups) {
                         newGroups.forEach(group => {
                             if (group && group.sortKey === undefined) {
-                                const savedSettings = this.getSavedSortSettings(group);
-
-                                if (savedSettings) {
-                                    group.sortKey = savedSettings.key;
-                                    group.sortDirection = savedSettings.direction;
-                                } else {
-                                    group.sortKey = "status";
-                                    group.sortDirection = "asc";
-                                }
-
+                                group.sortKey = "status";
+                                group.sortDirection = "asc";
                                 this.applySort(group);
                             }
                         });
                     }
                 }, { deep: true });
             }
-        },
-
-        /**
-         * Get saved sort settings from localStorage
-         * @param {object} group object
-         * @returns {object|null} saved sorting settings
-         */
-        getSavedSortSettings(group) {
-            try {
-                const groupId = this.getGroupIdentifier(group);
-                const slug = this.$root.statusPage ? this.$root.statusPage.slug : "default";
-                const storageKey = `uptime-kuma-sort-${slug}-${groupId}`;
-
-                const savedSettings = localStorage.getItem(storageKey);
-                if (savedSettings) {
-                    return JSON.parse(savedSettings);
-                }
-            } catch (error) {
-                console.error("Cannot read sort settings", error);
-            }
-            return null;
         },
 
         /**
@@ -363,22 +329,8 @@ export default {
                 group.sortKey = key;
                 group.sortDirection = "asc";
             }
-            try {
-                const groupId = this.getGroupIdentifier(group);
-                const slug = this.$root.statusPage ? this.$root.statusPage.slug : "default";
-                const storageKey = `uptime-kuma-sort-${slug}-${groupId}`;
-
-                const sortSettings = {
-                    key: group.sortKey,
-                    direction: group.sortDirection
-                };
-                localStorage.setItem(storageKey, JSON.stringify(sortSettings));
-            } catch (error) {
-                console.error("Cannot save sort settings", error);
-            }
 
             this.applySort(group);
-
             this.updateURLSortParams();
         },
 
@@ -724,16 +676,16 @@ export default {
         border: none;
         outline: none;
     }
-    
+
     .dark & {
         background-color: $dark-bg;
         color: $dark-font-color;
         box-shadow: 0 15px 70px rgba(0, 0, 0, 0.3);
-        
+
         &:hover {
             background-color: $dark-bg2;
         }
-        
+
         &:focus, &:active {
             box-shadow: 0 15px 70px rgba(0, 0, 0, 0.3);
         }
@@ -753,7 +705,7 @@ export default {
     color: #aaa;
     font-size: 0.7rem;
     opacity: 0.5;
-    
+
     .dark & {
         color: #6c757d;
     }
@@ -762,7 +714,7 @@ export default {
 .arrow-active {
     color: #4caf50;
     font-size: 0.8rem;
-    
+
     .dark & {
         color: $primary;
     }
@@ -776,7 +728,7 @@ export default {
     border: none;
     box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    
+
     .dark & {
         background-color: $dark-bg;
         color: $dark-font-color;
@@ -796,10 +748,10 @@ export default {
     &:hover {
         background-color: #f8f9fa;
     }
-    
+
     .dark & {
         color: $dark-font-color;
-        
+
         &:hover {
             background-color: $dark-bg2;
         }
