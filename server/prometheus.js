@@ -66,8 +66,8 @@ class Prometheus {
     sanitizeTags(tags) {
         return tags.reduce((sanitizedTags, tag) => {
             let tagText = tag.name;
-            tagText = tagText.replace(/[^a-zA-Z0-9_]/g, "")
-            tagText = tagText.replace(/^[^a-zA-Z_]+/, "")
+            tagText = tagText.replace(/[^a-zA-Z0-9_]/g, "");
+            tagText = tagText.replace(/^[^a-zA-Z_]+/, "");
 
             if (tagText !== "") {
                 sanitizedTags.push(tagText);
