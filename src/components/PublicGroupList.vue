@@ -212,6 +212,27 @@ export default {
     computed: {
         showGroupDrag() {
             return (this.$root.publicGroupList.length >= 2);
+        },
+
+        /**
+         * Parse sort settings from URL query parameters
+         * @returns {object} Parsed sort settings for all groups
+         */
+        sortSettingsFromURL() {
+            const sortSettings = {};
+            if (this.$route && this.$route.query) {
+                for (const [key, value] of Object.entries(this.$route.query)) {
+                    if (key.startsWith('sort_') && typeof value === 'string') {
+                        const groupId = key.replace('sort_', '');
+                        const [sortKey, direction] = value.split('_');
+                        if (sortKey && ['status', 'name', 'uptime', 'cert'].includes(sortKey) &&
+                            direction && ['asc', 'desc'].includes(direction)) {
+                            sortSettings[groupId] = { sortKey, direction };
+                        }
+                    }
+                }
+            }
+            return sortSettings;
         }
     },
     watch: {
@@ -242,18 +263,41 @@ export default {
             },
             deep: true,
         },
+
+        // Watch for URL changes and apply sort settings
+        sortSettingsFromURL: {
+            handler(newSortSettings) {
+                if (this.$root && this.$root.publicGroupList) {
+                    this.$root.publicGroupList.forEach(group => {
+                        if (!group) return;
+
+                        const groupId = this.getGroupIdentifier(group);
+                        const urlSetting = newSortSettings[groupId];
+                        
+                        if (urlSetting) {
+                            group.sortKey = urlSetting.sortKey;
+                            group.sortDirection = urlSetting.direction;
+                        } else {
+                            // Set defaults if not in URL
+                            if (group.sortKey === undefined) {
+                                group.sortKey = "status";
+                            }
+                            if (group.sortDirection === undefined) {
+                                group.sortDirection = "asc";
+                            }
+                        }
+                        
+                        this.applySort(group);
+                    });
+                }
+            },
+            immediate: true,
+            deep: true
+        }
     },
     created() {
         // Initialize sort settings
         this.initializeSortSettings();
-    },
-    mounted() {
-        // Listen for URL changes
-        window.addEventListener("popstate", this.handlePopState);
-    },
-    beforeUnmount() {
-        // Remove URL change listener
-        window.removeEventListener("popstate", this.handlePopState);
     },
     methods: {
         /**
@@ -261,27 +305,6 @@ export default {
          * @returns {void}
          */
         initializeSortSettings() {
-            // Load sort settings from URL
-            this.handlePopState();
-
-            // Set default sort values for groups not configured in URL
-            if (this.$root.publicGroupList) {
-                this.$root.publicGroupList.forEach(group => {
-                    if (group) {
-                        // If sort settings are not defined from URL, use default settings
-                        if (group.sortKey === undefined) {
-                            group.sortKey = "status";
-                        }
-                        if (group.sortDirection === undefined) {
-                            group.sortDirection = "asc";
-                        }
-
-                        // Apply initial sorting
-                        this.applySort(group);
-                    }
-                });
-            }
-
             // Watch for new groups being added and initialize their sort state
             if (this.$root) {
                 this.$root.$watch("publicGroupList", (newGroups) => {
@@ -322,7 +345,27 @@ export default {
             }
 
             this.applySort(group);
-            this.updateURLSortParams();
+            this.updateRouterQuery(group);
+        },
+
+        /**
+         * Update router query parameters with sort settings
+         * @param {object} group object
+         * @returns {void}
+         */
+        updateRouterQuery(group) {
+            if (!this.$router) return;
+
+            const query = { ...this.$route.query };
+            const groupId = this.getGroupIdentifier(group);
+            
+            if (group.sortKey && group.sortDirection) {
+                query[`sort_${groupId}`] = `${group.sortKey}_${group.sortDirection}`;
+            } else {
+                delete query[`sort_${groupId}`];
+            }
+
+            this.$router.push({ query }).catch(() => {});
         },
 
         /**
@@ -471,76 +514,6 @@ export default {
                 return "#059669";
             }
             return "#DC2626";
-        },
-
-        /**
-         * Handle browser back/forward button events
-         * @returns {void}
-         */
-        handlePopState() {
-            if (!this.$root.publicGroupList) {
-                return;
-            }
-
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // Iterate through all groups, look for sort parameters in URL
-            this.$root.publicGroupList.forEach(group => {
-                if (!group) {
-                    return;
-                }
-
-                const groupId = this.getGroupIdentifier(group);
-                const sortParam = urlParams.get(`sort_${groupId}`);
-
-                if (sortParam) {
-                    const [ key, direction ] = sortParam.split("_");
-                    if (key && [ "status", "name", "uptime", "cert" ].includes(key) &&
-                        direction && [ "asc", "desc" ].includes(direction)) {
-                        group.sortKey = key;
-                        group.sortDirection = direction;
-                        this.applySort(group);
-                    }
-                }
-            });
-        },
-
-        /**
-         * Update sort parameters in URL
-         * @returns {void}
-         */
-        updateURLSortParams() {
-            if (!this.$root.publicGroupList) {
-                return;
-            }
-
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // First clear all sort_ parameters
-            const paramsToRemove = [];
-            for (const [ key ] of urlParams.entries()) {
-                if (key.startsWith("sort_")) {
-                    paramsToRemove.push(key);
-                }
-            }
-
-            paramsToRemove.forEach(key => {
-                urlParams.delete(key);
-            });
-
-            // Add current sort parameters
-            this.$root.publicGroupList.forEach(group => {
-                if (!group || !group.sortKey) {
-                    return;
-                }
-
-                const groupId = this.getGroupIdentifier(group);
-                urlParams.set(`sort_${groupId}`, `${group.sortKey}_${group.sortDirection}`);
-            });
-
-            // Update URL without refreshing the page
-            const newUrl = `${window.location.pathname}${urlParams.toString() ? "?" + urlParams.toString() : ""}`;
-            window.history.pushState({ path: newUrl }, "", newUrl);
         },
 
         /**
