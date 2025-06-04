@@ -48,21 +48,21 @@ class KumaRateLimiter {
 }
 
 const loginRateLimiter = new KumaRateLimiter({
-    tokensPerInterval: 20,
+    tokensPerInterval: process.env.UPTIME_KUMA_RATE_LIMITER_LOGIN_TOKENS || 20,
     interval: "minute",
     fireImmediately: true,
     errorMessage: "Too frequently, try again later."
 });
 
 const apiRateLimiter = new KumaRateLimiter({
-    tokensPerInterval: 60,
+    tokensPerInterval: process.env.UPTIME_KUMA_RATE_LIMITER_API_TOKENS || 60,
     interval: "minute",
     fireImmediately: true,
     errorMessage: "Too frequently, try again later."
 });
 
 const twoFaRateLimiter = new KumaRateLimiter({
-    tokensPerInterval: 30,
+    tokensPerInterval: process.env.UPTIME_KUMA_RATE_LIMITER_2FA_TOKENS || 30,
     interval: "minute",
     fireImmediately: true,
     errorMessage: "Too frequently, try again later."
