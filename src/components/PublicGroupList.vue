@@ -18,7 +18,11 @@
 
                     <div v-if="group.element && group.element.monitorList && group.element.monitorList.length > 1" class="sort-dropdown">
                         <div class="dropdown">
-                            <button :id="'sortDropdown' + group.index" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button :id="'sortDropdown' + group.index" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button" 
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false"
+                                :aria-label="$t('Sort options')"
+                                :title="$t('Sort options')">
                                 <div class="sort-arrows">
                                     <font-awesome-icon
                                         icon="arrow-down"
@@ -38,7 +42,9 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end sort-menu" :aria-labelledby="'sortDropdown' + group.index">
                                 <li>
-                                    <a class="dropdown-item sort-item" href="#" @click.prevent="setSort(group.element, 'status')">
+                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'status')" 
+                                        :aria-label="$t('Sort by status')" 
+                                        :title="$t('Sort by status')">
                                         <div class="sort-item-content">
                                             <span>{{ $t("Status") }}</span>
                                             <span v-if="getSortKey(group.element) === 'status'" class="sort-indicators">
@@ -48,10 +54,12 @@
                                                 />
                                             </span>
                                         </div>
-                                    </a>
+                                    </button>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item sort-item" href="#" @click.prevent="setSort(group.element, 'name')">
+                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'name')" 
+                                        :aria-label="$t('Sort by name')" 
+                                        :title="$t('Sort by name')">
                                         <div class="sort-item-content">
                                             <span>{{ $t("Name") }}</span>
                                             <span v-if="getSortKey(group.element) === 'name'" class="sort-indicators">
@@ -61,10 +69,12 @@
                                                 />
                                             </span>
                                         </div>
-                                    </a>
+                                    </button>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item sort-item" href="#" @click.prevent="setSort(group.element, 'uptime')">
+                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'uptime')" 
+                                        :aria-label="$t('Sort by uptime')" 
+                                        :title="$t('Sort by uptime')">
                                         <div class="sort-item-content">
                                             <span>{{ $t("Uptime") }}</span>
                                             <span v-if="getSortKey(group.element) === 'uptime'" class="sort-indicators">
@@ -74,10 +84,12 @@
                                                 />
                                             </span>
                                         </div>
-                                    </a>
+                                    </button>
                                 </li>
                                 <li v-if="showCertificateExpiry">
-                                    <a class="dropdown-item sort-item" href="#" @click.prevent="setSort(group.element, 'cert')">
+                                    <button class="dropdown-item sort-item" type="button" @click="setSort(group.element, 'cert')" 
+                                        :aria-label="$t('Sort by certificate expiry')" 
+                                        :title="$t('Sort by certificate expiry')">
                                         <div class="sort-item-content">
                                             <span>{{ $t("Cert Exp.") }}</span>
                                             <span v-if="getSortKey(group.element) === 'cert'" class="sort-indicators">
@@ -87,7 +99,7 @@
                                                 />
                                             </span>
                                         </div>
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </div>
@@ -712,6 +724,20 @@ export default {
         border: none;
         outline: none;
     }
+    
+    .dark & {
+        background-color: $dark-bg;
+        color: $dark-font-color;
+        box-shadow: 0 15px 70px rgba(0, 0, 0, 0.3);
+        
+        &:hover {
+            background-color: $dark-bg2;
+        }
+        
+        &:focus, &:active {
+            box-shadow: 0 15px 70px rgba(0, 0, 0, 0.3);
+        }
+    }
 }
 
 .sort-arrows {
@@ -727,11 +753,19 @@ export default {
     color: #aaa;
     font-size: 0.7rem;
     opacity: 0.5;
+    
+    .dark & {
+        color: #6c757d;
+    }
 }
 
 .arrow-active {
     color: #4caf50;
     font-size: 0.8rem;
+    
+    .dark & {
+        color: $primary;
+    }
 }
 
 .sort-menu {
@@ -742,13 +776,33 @@ export default {
     border: none;
     box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    
+    .dark & {
+        background-color: $dark-bg;
+        color: $dark-font-color;
+        border-color: $dark-border-color;
+        box-shadow: 0 15px 70px rgba(0, 0, 0, 0.3);
+    }
 }
 
 .sort-item {
     padding: 0.4rem 0.8rem;
+    text-align: left;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
 
     &:hover {
         background-color: #f8f9fa;
+    }
+    
+    .dark & {
+        color: $dark-font-color;
+        
+        &:hover {
+            background-color: $dark-bg2;
+        }
     }
 }
 
