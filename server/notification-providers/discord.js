@@ -37,6 +37,7 @@ class Discord extends NotificationProvider {
             if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
                     username: discordDisplayName,
+                    avatar_url: "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png",
                     embeds: [{
                         title: "❌ Your service " + monitorJSON["name"] + " went down. ❌",
                         color: 16711680,
@@ -74,6 +75,7 @@ class Discord extends NotificationProvider {
             } else if (heartbeatJSON["status"] === UP) {
                 let discordupdata = {
                     username: discordDisplayName,
+                    avatar_url: "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png",
                     embeds: [{
                         title: "✅ Your service " + monitorJSON["name"] + " is up! ✅",
                         color: 65280,
