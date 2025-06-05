@@ -253,9 +253,9 @@ export default {
             const groupId = this.getGroupIdentifier();
 
             if (this.group.sortKey && this.group.sortDirection) {
-                query[ `sort_${ groupId }` ] = `${ this.group.sortKey }_${ this.group.sortDirection }`;
+                query[ `sort_${groupId}` ] = `${this.group.sortKey}_${this.group.sortDirection}`;
             } else {
-                delete query[ `sort_${ groupId }` ];
+                delete query[ `sort_${groupId}` ];
             }
 
             this.$router.push({ query }).catch(() => {});
@@ -318,8 +318,8 @@ export default {
                     } else if (sortKey === "uptime") {
                         // Sort by uptime
                         const uptimeList = this.$root.uptimeList || {};
-                        const uptimeA = a.id ? parseFloat(uptimeList[ `${ a.id }_24` ]) || 0 : 0;
-                        const uptimeB = b.id ? parseFloat(uptimeList[ `${ b.id }_24` ]) || 0 : 0;
+                        const uptimeA = a.id ? parseFloat(uptimeList[ `${a.id}_24` ]) || 0 : 0;
+                        const uptimeB = b.id ? parseFloat(uptimeList[ `${b.id}_24` ]) || 0 : 0;
                         valueA = uptimeA;
                         valueB = uptimeB;
                     } else if (sortKey === "cert") {
@@ -356,7 +356,7 @@ export default {
                 return cleanName;
             }
             // Fallback to ID or index
-            return this.group.id ? `group${ this.group.id }` : `group${ this.groupIndex }`;
+            return this.group.id ? `group${this.group.id}` : `group${this.groupIndex}`;
         }
     }
 };
@@ -485,4 +485,4 @@ export default {
     align-items: center;
     margin-left: 10px;
 }
-</style> 
+</style>

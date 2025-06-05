@@ -11,9 +11,9 @@
                 <!-- Group Title -->
                 <h2 class="group-title">
                     <div class="title-section">
-                    <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
-                    <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
-                    <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
+                        <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
+                        <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
+                        <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
                     </div>
 
                     <GroupSortDropdown
