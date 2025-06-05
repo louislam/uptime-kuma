@@ -1,11 +1,15 @@
 <template>
     <div v-if="group && group.monitorList && group.monitorList.length > 1" class="sort-dropdown">
         <div class="dropdown">
-            <button :id="'sortDropdown' + groupIndex" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    :aria-label="$t('Sort options')"
-                    :title="$t('Sort options')">
+            <button
+                :id="'sortDropdown' + groupIndex"
+                type="button"
+                class="btn btn-sm btn-outline-secondary dropdown-toggle sort-button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                :aria-label="$t('Sort options')"
+                :title="$t('Sort options')"
+            >
                 <div class="sort-arrows">
                     <font-awesome-icon
                         icon="arrow-down"
@@ -25,9 +29,13 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end sort-menu" :aria-labelledby="'sortDropdown' + groupIndex">
                 <li>
-                    <button class="dropdown-item sort-item" type="button" @click="setSort('status')"
-                            :aria-label="$t('Sort by status')"
-                            :title="$t('Sort by status')">
+                    <button
+                        class="dropdown-item sort-item"
+                        type="button"
+                        :aria-label="$t('Sort by status')"
+                        :title="$t('Sort by status')"
+                        @click="setSort('status')"
+                    >
                         <div class="sort-item-content">
                             <span>{{ $t("Status") }}</span>
                             <span v-if="getSortKey() === 'status'" class="sort-indicators">
@@ -40,9 +48,13 @@
                     </button>
                 </li>
                 <li>
-                    <button class="dropdown-item sort-item" type="button" @click="setSort('name')"
-                            :aria-label="$t('Sort by name')"
-                            :title="$t('Sort by name')">
+                    <button
+                        class="dropdown-item sort-item"
+                        type="button"
+                        :aria-label="$t('Sort by name')"
+                        :title="$t('Sort by name')"
+                        @click="setSort('name')"
+                    >
                         <div class="sort-item-content">
                             <span>{{ $t("Name") }}</span>
                             <span v-if="getSortKey() === 'name'" class="sort-indicators">
@@ -55,9 +67,13 @@
                     </button>
                 </li>
                 <li>
-                    <button class="dropdown-item sort-item" type="button" @click="setSort('uptime')"
-                            :aria-label="$t('Sort by uptime')"
-                            :title="$t('Sort by uptime')">
+                    <button
+                        class="dropdown-item sort-item"
+                        type="button"
+                        :aria-label="$t('Sort by uptime')"
+                        :title="$t('Sort by uptime')"
+                        @click="setSort('uptime')"
+                    >
                         <div class="sort-item-content">
                             <span>{{ $t("Uptime") }}</span>
                             <span v-if="getSortKey() === 'uptime'" class="sort-indicators">
@@ -70,9 +86,13 @@
                     </button>
                 </li>
                 <li v-if="showCertificateExpiry">
-                    <button class="dropdown-item sort-item" type="button" @click="setSort('cert')"
-                            :aria-label="$t('Sort by certificate expiry')"
-                            :title="$t('Sort by certificate expiry')">
+                    <button
+                        class="dropdown-item sort-item"
+                        type="button"
+                        :aria-label="$t('Sort by certificate expiry')"
+                        :title="$t('Sort by certificate expiry')"
+                        @click="setSort('cert')"
+                    >
                         <div class="sort-item-content">
                             <span>{{ $t("Cert Exp.") }}</span>
                             <span v-if="getSortKey() === 'cert'" class="sort-indicators">
@@ -109,6 +129,7 @@ export default {
             default: false,
         }
     },
+    emits: [ "update-group" ],
     computed: {
         /**
          * Parse sort settings from URL query parameters
@@ -117,13 +138,16 @@ export default {
         sortSettingsFromURL() {
             const sortSettings = {};
             if (this.$route && this.$route.query) {
-                for (const [key, value] of Object.entries(this.$route.query)) {
-                    if (key.startsWith('sort_') && typeof value === 'string') {
-                        const groupId = key.replace('sort_', '');
-                        const [sortKey, direction] = value.split('_');
-                        if (sortKey && ['status', 'name', 'uptime', 'cert'].includes(sortKey) &&
-                            direction && ['asc', 'desc'].includes(direction)) {
-                            sortSettings[groupId] = { sortKey, direction };
+                for (const [ key, value ] of Object.entries(this.$route.query)) {
+                    if (key.startsWith("sort_") && typeof value === "string") {
+                        const groupId = key.replace("sort_", "");
+                        const [ sortKey, direction ] = value.split("_");
+                        if (sortKey && [ "status", "name", "uptime", "cert" ].includes(sortKey) &&
+                            direction && [ "asc", "desc" ].includes(direction)) {
+                            sortSettings[ groupId ] = {
+                                sortKey,
+                                direction
+                            };
                         }
                     }
                 }
@@ -153,21 +177,23 @@ export default {
             handler(newSortSettings) {
                 if (this.group) {
                     const groupId = this.getGroupIdentifier();
-                    const urlSetting = newSortSettings[groupId];
-                    
+                    const urlSetting = newSortSettings[ groupId ];
+
                     if (urlSetting) {
-                        this.group.sortKey = urlSetting.sortKey;
-                        this.group.sortDirection = urlSetting.direction;
+                        this.updateGroup({
+                            sortKey: urlSetting.sortKey,
+                            sortDirection: urlSetting.direction
+                        });
                     } else {
                         // Set defaults if not in URL
                         if (this.group.sortKey === undefined) {
-                            this.group.sortKey = "status";
+                            this.updateGroup({ sortKey: "status" });
                         }
                         if (this.group.sortDirection === undefined) {
-                            this.group.sortDirection = "asc";
+                            this.updateGroup({ sortDirection: "asc" });
                         }
                     }
-                    
+
                     this.applySort();
                 }
             },
@@ -185,16 +211,29 @@ export default {
         },
 
         /**
+         * Update group properties by emitting to parent
+         * @param {object} updates - object with properties to update
+         * @returns {void}
+         */
+        updateGroup(updates) {
+            this.$emit("update-group", this.groupIndex, updates);
+        },
+
+        /**
          * Set group sort key and direction, then apply sorting
          * @param {string} key - sort key ('status', 'name', 'uptime', 'cert')
          * @returns {void}
          */
         setSort(key) {
             if (this.group.sortKey === key) {
-                this.group.sortDirection = this.group.sortDirection === "asc" ? "desc" : "asc";
+                this.updateGroup({
+                    sortDirection: this.group.sortDirection === "asc" ? "desc" : "asc"
+                });
             } else {
-                this.group.sortKey = key;
-                this.group.sortDirection = "asc";
+                this.updateGroup({
+                    sortKey: key,
+                    sortDirection: "asc"
+                });
             }
 
             this.applySort();
@@ -206,15 +245,17 @@ export default {
          * @returns {void}
          */
         updateRouterQuery() {
-            if (!this.$router) return;
+            if (!this.$router) {
+                return;
+            }
 
             const query = { ...this.$route.query };
             const groupId = this.getGroupIdentifier();
-            
+
             if (this.group.sortKey && this.group.sortDirection) {
-                query[`sort_${groupId}`] = `${this.group.sortKey}_${this.group.sortDirection}`;
+                query[ `sort_${ groupId }` ] = `${ this.group.sortKey }_${ this.group.sortDirection }`;
             } else {
-                delete query[`sort_${groupId}`];
+                delete query[ `sort_${ groupId }` ];
             }
 
             this.$router.push({ query }).catch(() => {});
@@ -232,72 +273,74 @@ export default {
             const sortKey = this.group.sortKey || "status";
             const sortDirection = this.group.sortDirection || "desc";
 
-            this.group.monitorList.sort((a, b) => {
-                if (!a || !b) {
-                    return 0;
-                }
+            this.updateGroup({
+                monitorList: [ ...this.group.monitorList ].sort((a, b) => {
+                    if (!a || !b) {
+                        return 0;
+                    }
 
-                let comparison = 0;
-                let valueA;
-                let valueB;
+                    let comparison = 0;
+                    let valueA;
+                    let valueB;
 
-                if (sortKey === "status") {
-                    // Sort by status
-                    const getStatusPriority = (monitor) => {
-                        if (!monitor || !monitor.id) {
-                            return 4;
-                        }
+                    if (sortKey === "status") {
+                        // Sort by status
+                        const getStatusPriority = (monitor) => {
+                            if (!monitor || !monitor.id) {
+                                return 4;
+                            }
 
-                        const hbList = this.$root.heartbeatList || {};
-                        const hbArr = hbList[monitor.id];
-                        if (hbArr && hbArr.length > 0) {
-                            const lastStatus = hbArr.at(-1).status;
-                            if (lastStatus === 0) {
-                                return 0;
-                            } // Down
-                            if (lastStatus === 1) {
-                                return 1;
-                            } // Up
-                            if (lastStatus === 2) {
-                                return 2;
-                            } // Pending
-                            if (lastStatus === 3) {
-                                return 3;
-                            } // Maintenance
-                        }
-                        return 4; // Unknown/No data
-                    };
-                    valueA = getStatusPriority(a);
-                    valueB = getStatusPriority(b);
-                } else if (sortKey === "name") {
-                    // Sort alphabetically by name
-                    valueA = a.name ? a.name.toLowerCase() : "";
-                    valueB = b.name ? b.name.toLowerCase() : "";
-                } else if (sortKey === "uptime") {
-                    // Sort by uptime
-                    const uptimeList = this.$root.uptimeList || {};
-                    const uptimeA = a.id ? parseFloat(uptimeList[`${a.id}_24`]) || 0 : 0;
-                    const uptimeB = b.id ? parseFloat(uptimeList[`${b.id}_24`]) || 0 : 0;
-                    valueA = uptimeA;
-                    valueB = uptimeB;
-                } else if (sortKey === "cert") {
-                    // Sort by certificate expiry time
-                    valueA = a.validCert && a.certExpiryDaysRemaining ? a.certExpiryDaysRemaining : -1;
-                    valueB = b.validCert && b.certExpiryDaysRemaining ? b.certExpiryDaysRemaining : -1;
-                }
+                            const hbList = this.$root.heartbeatList || {};
+                            const hbArr = hbList[ monitor.id ];
+                            if (hbArr && hbArr.length > 0) {
+                                const lastStatus = hbArr.at(-1).status;
+                                if (lastStatus === 0) {
+                                    return 0;
+                                } // Down
+                                if (lastStatus === 1) {
+                                    return 1;
+                                } // Up
+                                if (lastStatus === 2) {
+                                    return 2;
+                                } // Pending
+                                if (lastStatus === 3) {
+                                    return 3;
+                                } // Maintenance
+                            }
+                            return 4; // Unknown/No data
+                        };
+                        valueA = getStatusPriority(a);
+                        valueB = getStatusPriority(b);
+                    } else if (sortKey === "name") {
+                        // Sort alphabetically by name
+                        valueA = a.name ? a.name.toLowerCase() : "";
+                        valueB = b.name ? b.name.toLowerCase() : "";
+                    } else if (sortKey === "uptime") {
+                        // Sort by uptime
+                        const uptimeList = this.$root.uptimeList || {};
+                        const uptimeA = a.id ? parseFloat(uptimeList[ `${ a.id }_24` ]) || 0 : 0;
+                        const uptimeB = b.id ? parseFloat(uptimeList[ `${ b.id }_24` ]) || 0 : 0;
+                        valueA = uptimeA;
+                        valueB = uptimeB;
+                    } else if (sortKey === "cert") {
+                        // Sort by certificate expiry time
+                        valueA = a.validCert && a.certExpiryDaysRemaining ? a.certExpiryDaysRemaining : -1;
+                        valueB = b.validCert && b.certExpiryDaysRemaining ? b.certExpiryDaysRemaining : -1;
+                    }
 
-                if (valueA < valueB) {
-                    comparison = -1;
-                } else if (valueA > valueB) {
-                    comparison = 1;
-                }
+                    if (valueA < valueB) {
+                        comparison = -1;
+                    } else if (valueA > valueB) {
+                        comparison = 1;
+                    }
 
-                // Special handling for status sorting
-                if (sortKey === "status") {
-                    return sortDirection === "desc" ? (comparison * -1) : comparison;
-                } else {
-                    return sortDirection === "asc" ? comparison : (comparison * -1);
-                }
+                    // Special handling for status sorting
+                    if (sortKey === "status") {
+                        return sortDirection === "desc" ? (comparison * -1) : comparison;
+                    } else {
+                        return sortDirection === "asc" ? comparison : (comparison * -1);
+                    }
+                })
             });
         },
 
@@ -313,7 +356,7 @@ export default {
                 return cleanName;
             }
             // Fallback to ID or index
-            return this.group.id ? `group${this.group.id}` : `group${this.groupIndex}`;
+            return this.group.id ? `group${ this.group.id }` : `group${ this.groupIndex }`;
         }
     }
 };
@@ -347,16 +390,16 @@ export default {
         border: none;
         outline: none;
     }
-    
+
     .dark & {
         background-color: $dark-bg;
         color: $dark-font-color;
         box-shadow: 0 15px 70px rgba(0, 0, 0, 0.3);
-        
+
         &:hover {
             background-color: $dark-bg2;
         }
-        
+
         &:focus, &:active {
             box-shadow: 0 15px 70px rgba(0, 0, 0, 0.3);
         }
@@ -376,7 +419,7 @@ export default {
     color: #aaa;
     font-size: 0.7rem;
     opacity: 0.5;
-    
+
     .dark & {
         color: #6c757d;
     }
@@ -385,7 +428,7 @@ export default {
 .arrow-active {
     color: #4caf50;
     font-size: 0.8rem;
-    
+
     .dark & {
         color: $primary;
     }
@@ -399,7 +442,7 @@ export default {
     border: none;
     box-shadow: 0 15px 70px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    
+
     .dark & {
         background-color: $dark-bg;
         color: $dark-font-color;
@@ -419,10 +462,10 @@ export default {
     &:hover {
         background-color: #f8f9fa;
     }
-    
+
     .dark & {
         color: $dark-font-color;
-        
+
         &:hover {
             background-color: $dark-bg2;
         }

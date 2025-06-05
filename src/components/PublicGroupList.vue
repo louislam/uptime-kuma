@@ -11,15 +11,16 @@
                 <!-- Group Title -->
                 <h2 class="group-title">
                     <div class="title-section">
-                        <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
-                        <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
-                        <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
+                    <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
+                    <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
+                    <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
                     </div>
 
-                    <GroupSortDropdown 
-                        :group="group.element" 
-                        :group-index="group.index" 
-                        :show-certificate-expiry="showCertificateExpiry" 
+                    <GroupSortDropdown
+                        :group="group.element"
+                        :group-index="group.index"
+                        :show-certificate-expiry="showCertificateExpiry"
+                        @update-group="updateGroup"
                     />
                 </h2>
 
@@ -204,6 +205,16 @@ export default {
                 return "#059669";
             }
             return "#DC2626";
+        },
+
+        /**
+         * Update group properties
+         * @param {number} groupIndex Index of group to update
+         * @param {object} updates Object with properties to update
+         * @returns {void}
+         */
+        updateGroup(groupIndex, updates) {
+            Object.assign(this.$root.publicGroupList[groupIndex], updates);
         },
 
         /**
