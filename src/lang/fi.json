@@ -1104,7 +1104,7 @@
     "wahaChatId": "Viesti ID (Puhelinnumero / Yhteystieto ID / Ryhmä ID)",
     "Template Format": "Malli Muotoilu",
     "wayToGetWahaApiUrl": "Sinun WAHA instanssin URL.",
-    "YZJ Webhook URL": "YZJ Webhook URL",
+    "YZJ Webhook URL": "YZJ Webhook URL-osoite",
     "telegramServerUrl": "(Valinnainen) Palvelin Url",
     "telegramServerUrlDescription": "Telegramin bot-api-rajoitusten poistamiseksi tai pääsyn saamiseksi estetyille alueille (Kiina, Iran jne.). Saat lisätietoja napsauttamalla {0}. Oletus: {1}",
     "Message Template": "Viesti Malli",
@@ -1116,5 +1116,11 @@
     "templateStatus": "tila",
     "telegramUseTemplate": "Käytä mukautettua viesti mallia",
     "telegramUseTemplateDescription": "Jos aktivoitu, viesti lähetetään käyttämällä mukautettua mallia.",
-    "telegramTemplateFormatDescription": "Telegram sallii erilaisten merkintäkielien käytön viesteissä, katso Telegram {0} tarkempia tietoja."
+    "telegramTemplateFormatDescription": "Telegram sallii erilaisten merkintäkielien käytön viesteissä, katso Telegram {0} tarkempia tietoja.",
+    "smsplanetApiToken": "SMSPlanet API:n tunnus",
+    "smsplanetApiDocs": "Yksityiskohtaiset tiedot API-tunnusten hankkimisesta löytyvät osoitteesta {the_smsplanet_documentation}.",
+    "the smsplanet documentation": "smsplanetin dokumentaatio",
+    "Phone numbers": "Puhelinnumerot",
+    "Sender name": "Lähettäjän nimi",
+    "smsplanetNeedToApproveName": "On hyväksyttävä asiakaspaneelissa"
 }
