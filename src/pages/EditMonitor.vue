@@ -906,6 +906,21 @@
                                     </select>
                                 </div>
 
+                                <div class="my-3">
+                                    <label for="forceIp" class="form-label">{{ $t("Force Ip") }}</label>
+                                    <select id="forceIp" v-model="monitor.forceIp" class="form-select">
+                                        <option :value="null">
+                                            {{ $t("None") }}
+                                        </option>
+                                        <option value="ipv4">
+                                            ipv4
+                                        </option>
+                                        <option value="ipv6">
+                                            ipv6
+                                        </option>
+                                    </select>
+                                </div>
+
                                 <!-- Encoding -->
                                 <div class="my-3">
                                     <label for="httpBodyEncoding" class="form-label">{{ $t("Body Encoding") }}</label>
@@ -1129,6 +1144,7 @@ const monitorDefaults = {
     parent: null,
     url: "https://",
     method: "GET",
+    forceIp: null,
     interval: 60,
     retryInterval: 60,
     resendInterval: 0,
