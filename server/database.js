@@ -11,6 +11,7 @@ const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
+const { tmpdir } = require("node:os");
 
 /**
  * Database & App Data Folder
@@ -183,11 +184,29 @@ class Database {
     }
 
     /**
+     * @throws The CA file must be a pem file and not contain any illegal characters inside the filename which would allow it to escape the data directory
      * @typedef {string|undefined} envString
-     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
+     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, caFilePath:envString}} dbConfig the database configuration that should be written
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {
+        // Move CA file to the data directory
+        const temporaryDirectoryPath = tmpdir();
+        if (dbConfig.caFilePath && dbConfig.caFile && dbConfig.caFilePath.startsWith(temporaryDirectoryPath)) {
+            const dataCaFilePath = path.resolve(Database.dataDir, "mariadb-ca.pem");
+            const sourcePath = fs.realpathSync(path.resolve(temporaryDirectoryPath, dbConfig.caFilePath));
+            if (dataCaFilePath.startsWith(path.resolve(Database.dataDir)) && path.resolve(sourcePath).startsWith(temporaryDirectoryPath)) {
+                fs.renameSync(sourcePath, dataCaFilePath);
+            } else {
+                throw new Error("The file cannot contains any characters that would allow it to escape the data directory");
+            }
+            dbConfig.caFilePath = dataCaFilePath;
+        }
+        if (dbConfig.caFilePath && dbConfig.caFilePath.startsWith(temporaryDirectoryPath)) {
+            dbConfig.caFilePath = undefined;
+        }
+        dbConfig.ssl = undefined;
+        dbConfig.caFile = undefined;
         fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
     }
 
@@ -259,11 +278,22 @@ class Database {
                 throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
             }
 
+            let sslConfig = null;
+            let serverCa = undefined;
+            if (dbConfig.caFilePath) {
+                serverCa = [ fs.readFileSync(dbConfig.caFilePath, "utf8") ];
+                sslConfig = {
+                    rejectUnauthorized: true,
+                    ca: serverCa
+                };
+            }
+
             const connection = await mysql.createConnection({
                 host: dbConfig.hostname,
                 port: dbConfig.port,
                 user: dbConfig.username,
                 password: dbConfig.password,
+                ssl: sslConfig
             });
 
             await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
@@ -277,7 +307,9 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
+                    ssl: sslConfig,
                     timezone: "Z",
+                    //ssl: sslConfig,
                     typeCast: function (field, next) {
                         if (field.type === "DATETIME") {
                             // Do not perform timezone conversion
