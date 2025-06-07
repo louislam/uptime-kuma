@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "2.0.0-beta.2",
+    "version": "2.0.0-beta.3",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -32,7 +32,7 @@
         "test-e2e-ui": "playwright test --config ./config/playwright.config.js --ui --ui-port=51063",
         "playwright-codegen": "playwright codegen localhost:3000 --save-storage=./private/e2e-auth.json",
         "playwright-show-report": "playwright show-report ./private/playwright-report",
-        "tsc": "tsc",
+        "tsc": "tsc --project ./tsconfig-backend.json",
         "vite-preview-dist": "vite preview --host --config ./config/vite.config.js",
         "build-docker-base": "docker buildx build -f docker/debian-base.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:base2 --target base2 . --push",
         "build-docker-base-slim": "docker buildx build -f docker/debian-base.dockerfile --platform linux/amd64,linux/arm64,linux/arm/v7 -t louislam/uptime-kuma:base2-slim --target base2-slim . --push",
