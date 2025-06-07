@@ -1118,5 +1118,11 @@
     "wayToGetWahaSession": "От тази сесия WAHA изпраща известия до чат ID. Можете да го намерите в таблото за управление на WAHA.",
     "telegramServerUrlDescription": "За премахване на API бот ограниченията за Telegram или за получаване на достъп в блокирани зони (Китай, Иран и др.). За повече информация щракнете върху {0}. По подразбиране: {1}",
     "telegramServerUrl": "(По избор) URL адрес на сървъра",
-    "Font Twemoji by Twitter licensed under": "Шрифт Twemoji от Twitter, лицензиран под"
+    "Font Twemoji by Twitter licensed under": "Шрифт Twemoji от Twitter, лицензиран под",
+    "the smsplanet documentation": "документацията на smsplanet",
+    "Phone numbers": "Телефонни номера",
+    "Sender name": "Име на подател",
+    "smsplanetNeedToApproveName": "Трябва да бъде одобрен в клиентския панел",
+    "smsplanetApiToken": "Токен код за SMSPlanet API",
+    "smsplanetApiDocs": "Подробна информация, за получаване на API токен кодове, можете да намерите в {the_smsplanet_documentation}."
 }

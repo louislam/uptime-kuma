@@ -1124,5 +1124,11 @@
     "wayToWriteWahaChatId": "Номер телефону з міжнародним префіксом, але без знака плюс на початку ({0}), ID контакту ({1}) або ID групи ({2}). На цей ID чату надсилаються сповіщення з сеансу WAHA.",
     "telegramServerUrl": "(Необов'язково) URL сервера",
     "telegramServerUrlDescription": "Щоб зняти обмеження з Telegram bot api або отримати доступ у заблокованих регіонах (Китай, Іран тощо). Для отримання додаткової інформації натисніть {0}. За замовчуванням: {1}",
-    "Font Twemoji by Twitter licensed under": "Шрифт Twemoji від Twitter ліцензований під"
+    "Font Twemoji by Twitter licensed under": "Шрифт Twemoji від Twitter ліцензований під",
+    "the smsplanet documentation": "документації smsplanet",
+    "Phone numbers": "Номери телефонів",
+    "Sender name": "Ім'я відправника",
+    "smsplanetNeedToApproveName": "Потребує схвалення в клієнтській панелі",
+    "smsplanetApiToken": "Токен для API SMSPlanet",
+    "smsplanetApiDocs": "Детальну інформацію про отримання токенів API можна знайти в {the_smsplanet_documentation}."
 }
