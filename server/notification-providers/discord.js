@@ -22,6 +22,7 @@ class Discord extends NotificationProvider {
             if (heartbeatJSON == null) {
                 let discordtestdata = {
                     username: discordDisplayName,
+                    avatar_url: "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png",
                     content: msg,
                 };
 
