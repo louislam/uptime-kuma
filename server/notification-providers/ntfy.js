@@ -42,7 +42,7 @@ class Ntfy extends NotificationProvider {
                 if (heartbeatJSON.status === DOWN) {
                     tags = [ "red_circle" ];
                     status = "Down";
-                    priority = downPriority
+                    priority = downPriority;
                 } else if (heartbeatJSON["status"] === UP) {
                     tags = [ "green_circle" ];
                     status = "Up";
