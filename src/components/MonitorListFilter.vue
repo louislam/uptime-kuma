@@ -129,9 +129,9 @@
             </template>
             <template #dropdown>
                 <li v-for="tag in tagsList" :key="tag.id">
-                    <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
+                    <div class="dropdown-item tag-dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
                         <div class="d-flex align-items-center justify-content-between">
-                            <span><Tag :item="tag" :size="'sm'" /></span>
+                            <Tag :item="tag" :size="'sm'" />
                             <span class="ps-3">
                                 {{ getTaggedMonitorCount(tag) }}
                                 <span v-if="filterState.tags?.includes(tag.id)" class="px-1 filter-active">
@@ -141,13 +141,49 @@
                         </div>
                     </div>
                 </li>
-                <li v-if="tagsList.length === 0">
-                    <div class="dropdown-item disabled px-3">
+                <li v-if="tagsList.length === 0" class="no-tags-found">
+                    <div class="dropdown-item disabled px-3 text-center">
                         {{ $t('No tags found.') }}
+                    </div>
+                </li>
+                <li v-if="tagsList.length > 0">
+                    <hr class="dropdown-divider">
+                    <div class="dropdown-item px-3 py-2">
+                        <button class="btn btn-danger w-100 delete-tag-button" @click.stop="openDeleteTagModal = true">{{ $t('Delete tag') }}</button>
                     </div>
                 </li>
             </template>
         </MonitorListFilterDropdown>
+    </div>
+
+    <!-- Modal -->
+    <div v-if="openDeleteTagModal" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ $t('Delete tag') }}</h5>
+                    <button type="button" class="btn-close" @click="openDeleteTagModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="tagsList.length > 0">
+                        <label class="form-label">{{ $t('Select tags to delete:') }}</label>
+                        <div v-for="tag in tagsList" :key="tag.id" class="form-check tag-delete-checkbox">
+                            <input class="form-check-input" type="checkbox" :id="'delete-tag-' + tag.id" v-model="selectedTagsToDelete" :value="tag.id">
+                            <label class="form-check-label" :for="'delete-tag-' + tag.id">
+                                <Tag :item="tag" :size="'sm'" />
+                            </label>
+                        </div>
+                    </div>
+                    <div v-else class="text-center text-muted">
+                        {{ $t('No tags found.') }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @click="openDeleteTagModal = false">{{ $t('Cancel') }}</button>
+                    <button type="button" class="btn btn-danger" :disabled="selectedTagsToDelete.length === 0" @click="deleteSelectedTags">{{ $t('Delete') }}</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -172,6 +208,8 @@ export default {
     data() {
         return {
             tagsList: [],
+            openDeleteTagModal: false,
+            selectedTagsToDelete: [],
         };
     },
     computed: {
@@ -255,7 +293,18 @@ export default {
             return Object.values(this.$root.monitorList).filter(monitor => {
                 return monitor.tags.find(monitorTag => monitorTag.tag_id === tag.id);
             }).length;
-        }
+        },
+        async deleteSelectedTags() {
+            for (const tagId of this.selectedTagsToDelete) {
+                await new Promise((resolve) => {
+                    this.$root.getSocket().emit('deleteTag', tagId, resolve);
+                });
+            }
+            this.openDeleteTagModal = false;
+            this.selectedTagsToDelete = [];
+            this.getExistingTags();
+            this.$root.toastSuccess(this.$t('successDeleted'));
+        },
     }
 };
 </script>

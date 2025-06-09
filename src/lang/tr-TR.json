@@ -1117,5 +1117,7 @@
     "Template Format": "Şablon Biçimi",
     "YZJ Webhook URL": "YZJ Webhook URL'si",
     "YZJ Robot Token": "YZJ Robot tokeni",
-    "telegramServerUrl": "(İsteğe bağlı) Sunucu URL'si"
+    "telegramServerUrl": "(İsteğe bağlı) Sunucu URL'si",
+    "Delete tag": "Etiketi Sil",
+    "Select tags to delete:": "Silmek istediğiniz etiketleri seçin:"
 }
