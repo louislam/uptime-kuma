@@ -37,7 +37,8 @@ class Ntfy extends NotificationProvider {
             let tags = [];
             let status = "unknown";
             let priority = notification.ntfyPriority || 4;
-            let downPriority = notification.ntfyPriorityDown || 5;
+            // defaults to max(priority + 1, 5)
+            let downPriority = notification.ntfyPriorityDown || (priority === 5 ? priority : priority + 1);
             if ("status" in heartbeatJSON) {
                 if (heartbeatJSON.status === DOWN) {
                     tags = [ "red_circle" ];
