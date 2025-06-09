@@ -1111,5 +1111,12 @@
     "wayToGetWahaSession": "Iz ove sjednice WAHA šalje obavijesti na identifikator razgovora. Može se pronaći na WAHA nadzornoj ploči.",
     "wayToWriteWahaChatId": "Telefonski broj s međunarodnim prefiksom, ali bez znaka plus na početku ({0}), identifikator kontakta ({1}) ili identifikator grupe ({2}). Obavijesti se šalju na ovaj identifikator chata iz WAHA sesije.",
     "telegramServerUrl": "(Neobvezno) URL Poslužitelja",
-    "telegramServerUrlDescription": "Za ukidanje ograničenja API-ja za botove Telegrama ili dobivanje pristupa u blokiranim područjima (Kina, Iran, itd.). Za više informacija kliknite {0}. Zadano: {1}"
+    "telegramServerUrlDescription": "Za ukidanje ograničenja API-ja za botove Telegrama ili dobivanje pristupa u blokiranim područjima (Kina, Iran, itd.). Za više informacija kliknite {0}. Zadano: {1}",
+    "Font Twemoji by Twitter licensed under": "Font Twemoji tvrtke Twitter je pod licencom",
+    "the smsplanet documentation": "dokumentaciji usluge SMSPLANET",
+    "Phone numbers": "Brojevi telefona",
+    "Sender name": "Naziv pošiljatelja",
+    "smsplanetNeedToApproveName": "Potrebno je odobrenje u klijentskoj nadzornoj ploči",
+    "smsplanetApiToken": "Token za pristup SMSPLANET API-ju",
+    "smsplanetApiDocs": "Detaljne informacije o dobivanju tokena za API možete pronaći u {the_smsplanet_documentation}."
 }
