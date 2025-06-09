@@ -1109,5 +1109,7 @@
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
-    "Disable URL in Notification": "Disable URL in Notification"
+    "Disable URL in Notification": "Disable URL in Notification",
+    "Delete tag": "Delete tag",
+    "Select tags to delete:": "Select tags to delete:"
 }
