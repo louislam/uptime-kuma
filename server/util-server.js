@@ -4,6 +4,7 @@ const { R } = require("redbean-node");
 const { log, genSecret, badgeConstants } = require("../src/util");
 const passwordHash = require("./password-hash");
 const dnsPacket = require("dns-packet");
+const optioncodes = require("dns-packet/optioncodes.js");
 const dgram = require("dgram");
 const { Socket, isIP, isIPv4, isIPv6 } = require("net");
 const { Address6 } = require("ip-address");
@@ -286,16 +287,98 @@ exports.httpNtlm = function (options, ntlmOptions) {
 };
 
 /**
+ * Adapted from https://github.com/hildjj/dohdec/blob/v7.0.2/pkg/dohdec/lib/dnsUtils.js
+ * Encode a DNS query packet to a buffer.
+ * @param {object} opts Options for the query.
+ * @param {string} opts.name The name to look up.
+ * @param {number} [opts.id=0] ID for the query.  SHOULD be 0 for DOH.
+ * @param {packet.RecordType} [opts.rrtype="A"] The record type to look up.
+ * @param {boolean} [opts.dnssec=false] Request DNSSec information?
+ * @param {boolean} [opts.dnssecCheckingDisabled=false] Disable DNSSec
+ *   validation?
+ * @param {string} [opts.ecsSubnet] Subnet to use for ECS.
+ * @param {number} [opts.ecs] Number of ECS bits.  Defaults to 24 or 56
+ *   (IPv4/IPv6).
+ * @param {boolean} [opts.stream=false] Encode for streaming, with the packet
+ *   prefixed by a 2-byte big-endian integer of the number of bytes in the
+ *   packet.
+ * @returns {Buffer} The encoded packet.
+ * @throws {TypeError} opts does not contain a name attribute.
+ */
+exports.makePacket = function (opts) {
+    const PAD_SIZE = 128;
+
+    if (!opts?.name) {
+        throw new TypeError("Name is required");
+    }
+
+    /** @type {dnsPacket.OptAnswer} */
+    const opt = {
+        name: ".",
+        type: "OPT",
+        udpPayloadSize: 4096,
+        extendedRcode: 0,
+        flags: 0,
+        flag_do: false, // Setting here has no effect
+        ednsVersion: 0,
+        options: [],
+    };
+
+    /** @type {dnsPacket.Packet} */
+    const dns = {
+        type: "query",
+        id: opts.id || 0,
+        flags: dnsPacket.RECURSION_DESIRED,
+        questions: [{
+            type: opts.rrtype || "A",
+            class: "IN",
+            name: opts.name,
+        }],
+        additionals: [ opt ],
+    };
+    //assert(dns.flags !== undefined);
+    if (opts.dnssec) {
+        dns.flags |= dnsPacket.AUTHENTIC_DATA;
+        opt.flags |= dnsPacket.DNSSEC_OK;
+    }
+    if (opts.dnssecCheckingDisabled) {
+        dns.flags |= dnsPacket.CHECKING_DISABLED;
+    }
+    if (
+        (opts.ecs != null) ||
+        (opts.ecsSubnet && (isIP(opts.ecsSubnet) !== 0))
+    ) {
+        // https://tools.ietf.org/html/rfc7871#section-11.1
+        const prefix = (opts.ecsSubnet && isIPv4(opts.ecsSubnet)) ? 24 : 56;
+        opt.options.push({
+            code: optioncodes.toCode("CLIENT_SUBNET"),
+            ip: opts.ecsSubnet || "0.0.0.0",
+            sourcePrefixLength: (opts.ecs == null) ? prefix : opts.ecs,
+        });
+    }
+    const unpadded = dnsPacket.encodingLength(dns);
+    opt.options.push({
+        code: optioncodes.toCode("PADDING"),
+        // Next pad size, minus what we already have, minus another 4 bytes for
+        // the option header
+        length: (Math.ceil(unpadded / PAD_SIZE) * PAD_SIZE) - unpadded - 4,
+    });
+    if (opts.stream) {
+        return dnsPacket.streamEncode(dns);
+    }
+    return dnsPacket.encode(dns);
+};
+
+/**
  * Resolves a given record using the specified DNS server
- * @param {string} hostname The hostname of the record to lookup
+ * @param {string} opts Options for the query
  * @param {string} resolverServer The DNS server to use
  * @param {string} resolverPort Port the DNS server is listening on
- * @param {string} rrtype The type of record to request
  * @param {string} transport The transport method to use
  * @param {string} dohQuery The query path used only for DoH
  * @returns {Promise<(string[] | object[] | object)>} DNS response
  */
-exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype, transport, dohQuery) {
+exports.dnsResolve = function (opts, resolverServer, resolverPort, transport, dohQuery) {
     // Parse IPv4 and IPv6 addresses to determine address family and
     // add square brackets to IPv6 addresses, following RFC 3986 syntax
     resolverServer = resolverServer.replace("[", "").replace("]", "");
@@ -306,27 +389,23 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype, t
 
     // If performing reverse (PTR) record lookup, ensure hostname
     // syntax follows RFC 1034 / RFC 3596
-    if (rrtype === "PTR") {
-        if (isIPv4(hostname)) {
-            let octets = hostname.split(".");
+    if (opts.rrtype === "PTR") {
+        if (isIPv4(opts.name)) {
+            let octets = opts.name.split(".");
             octets.reverse();
-            hostname = octets.join(".") + ".in-addr.arpa";
-        } else if (isIPv6(hostname)) {
-            let address = new Address6(hostname);
-            hostname = address.reverseForm();
+            opts.name = octets.join(".") + ".in-addr.arpa";
+        } else if (isIPv6(opts.name)) {
+            let address = new Address6(opts.name);
+            opts.name = address.reverseForm();
         }
     }
 
-    // This is the DNS request data that will get encoded later
-    const requestData = {
-        type: "query",
-        id: Math.floor(Math.random() * 65534) + 1,
-        flags: dnsPacket.RECURSION_DESIRED,
-        questions: [{
-            type: rrtype,
-            name: hostname,
-        }],
-    };
+    // Set request ID
+    if (opts.id == null) {
+        // Set query ID to "0" for HTTP cache friendlyness on DoH requests.
+        // See https://github.com/mafintosh/dns-packet/issues/77
+        opts.id = (transport.toUpperCase() === "DOH") ? 0 : Math.floor(Math.random() * 65534) + 1;
+    }
 
     let client;
     let resolver = null;
@@ -336,7 +415,8 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype, t
 
         case "TCP":
         case "DOT": {
-            const buf = dnsPacket.streamEncode(requestData);
+            opts.stream = true;
+            const buf = exports.makePacket(opts);
             if (isSecure) {
                 const options = {
                     port: resolverPort,
@@ -387,10 +467,7 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype, t
         }
 
         case "DOH": {
-            // Set query ID to "0" for HTTP cache friendlyness. See
-            // https://github.com/mafintosh/dns-packet/issues/77
-            requestData.id = 0;
-            const buf = dnsPacket.encode(requestData);
+            const buf = exports.makePacket(opts);
             // TODO: implement POST requests for wireformat and JSON
             dohQuery = dohQuery || "dns-query?dns={query}";
             dohQuery = dohQuery.replace("{query}", buf.toString("base64url"));
@@ -436,7 +513,7 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype, t
 
         //case "UDP":
         default: {
-            const buf = dnsPacket.encode(requestData);
+            const buf = exports.makePacket(opts);
             client = dgram.createSocket("udp" + String(addressFamily));
             client.on("connect", () => {
                 log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);

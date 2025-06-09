@@ -120,6 +120,7 @@ class Monitor extends BeanModel {
             dns_resolve_server: this.dns_resolve_server,
             dns_transport: this.dns_transport,
             doh_query_path: this.doh_query_path,
+            skip_remote_dnssec: this.skip_remote_dnssec,
             dns_last_result: this.dns_last_result,
             docker_container: this.docker_container,
             docker_host: this.docker_host,

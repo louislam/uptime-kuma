@@ -4,7 +4,7 @@ const dayjs = require("dayjs");
 const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
 const { ConditionVariable } = require("../monitor-conditions/variables");
-const { defaultStringOperators } = require("../monitor-conditions/operators");
+const { defaultStringOperators, defaultNumberOperators, defaultArrayOperators } = require("../monitor-conditions/operators");
 const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
 const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
 
@@ -14,7 +14,25 @@ class DnsMonitorType extends MonitorType {
     supportsConditions = true;
 
     conditionVariables = [
-        new ConditionVariable("record", defaultStringOperators ),
+        // A, AAAA, TXT, PTR, NS
+        new ConditionVariable("records", defaultArrayOperators),
+        // CNAME
+        new ConditionVariable("hostname", defaultStringOperators),
+        // CAA
+        new ConditionVariable("flags", defaultStringOperators),
+        new ConditionVariable("tag", defaultStringOperators),
+        new ConditionVariable("value", defaultStringOperators),
+        // MX
+        new ConditionVariable("hostnames", defaultArrayOperators),
+        // SOA
+        new ConditionVariable("mname", defaultStringOperators),
+        new ConditionVariable("rname", defaultStringOperators),
+        new ConditionVariable("serial", defaultStringOperators),
+        new ConditionVariable("refresh", defaultNumberOperators),
+        new ConditionVariable("retry", defaultNumberOperators),
+        new ConditionVariable("minimum", defaultNumberOperators),
+        // SRV
+        new ConditionVariable("targets", defaultArrayOperators),
     ];
 
     /**
@@ -24,7 +42,13 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        let dnsRes = await dnsResolve(monitor.hostname, monitor.dns_resolve_server, monitor.port, monitor.dns_resolve_type, monitor.dns_transport, monitor.doh_query_path);
+        const requestData = {
+            name: monitor.hostname,
+            rrtype: monitor.dns_resolve_type,
+            dnssec: true, // Request DNSSEC information in the response
+            dnssecCheckingDisabled: monitor.skip_remote_dnssec,
+        };
+        let dnsRes = await dnsResolve(requestData, monitor.dns_resolve_server, monitor.port, monitor.dns_transport, monitor.doh_query_path);
         const records = dnsRes.answers.map(record => {
             return Buffer.isBuffer(record.data) ? record.data.toString() : record.data;
         });
@@ -41,22 +65,22 @@ class DnsMonitorType extends MonitorType {
             case "PTR":
             case "NS":
                 dnsMessage = records.join(" | ");
-                conditionsResult = records.some(record => handleConditions({ record }));
+                conditionsResult = handleConditions({ records: records });
                 break;
 
             case "CNAME":
                 dnsMessage = records[0];
-                conditionsResult = handleConditions({ record: records[0] });
+                conditionsResult = handleConditions({ hostname: records[0].value });
                 break;
 
             case "CAA":
                 dnsMessage = records.map(record => `${record.flags} ${record.tag} "${record.value}"`).join(" | ");
-                conditionsResult = handleConditions({ record: records[0] });
+                conditionsResult = handleConditions(records[0]);
                 break;
 
             case "MX":
                 dnsMessage = records.map(record => `Hostname: ${record.exchange}; Priority: ${record.priority}`).join(" | ");
-                conditionsResult = records.some(record => handleConditions({ record }));
+                conditionsResult = handleConditions({ hostnames: records.map(record => record.exchange) });
                 break;
 
             case "SOA": {
@@ -71,7 +95,7 @@ class DnsMonitorType extends MonitorType {
                 }).map(([ name, value ]) => {
                     return `${name}: ${value}`;
                 }).join("; ");
-                conditionsResult = handleConditions({ record: records[0] });
+                conditionsResult = handleConditions(records[0]);
                 break;
             }
 
@@ -86,7 +110,7 @@ class DnsMonitorType extends MonitorType {
                         return `${name}: ${value}`;
                     }).join("; ");
                 }).join(" | ");
-                conditionsResult = records.some(record => handleConditions({ record }));
+                conditionsResult = handleConditions({ targets: records.map(record => record.target) });
                 break;
         }
 

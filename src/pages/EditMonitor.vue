@@ -377,17 +377,6 @@
                                     </div>
                                 </div>
 
-                                <div v-if="dohSelected" class="my-3">
-                                    <label for="doh_query_path" class="form-label">{{ $t("Query Path") }}</label>
-                                    <div class="d-flex">
-                                        <label for="doh_query_path" class="px-2 fs-5">/</label>
-                                        <input id="doh_query_path" v-model="monitor.doh_query_path" type="text" class="form-control" :pattern="urlQueryRegex" placeholder="dns-query?dns={query}">
-                                    </div>
-                                    <div class="form-text">
-                                        {{ $t("dohQueryPathDescription") + " " }}{{ '"{query}".' }}
-                                    </div>
-                                </div>
-
                                 <div class="my-3">
                                     <label for="dns_transport" class="form-label">{{ $t("Transport Method") }}</label>
                                     <VueMultiselect
@@ -398,7 +387,7 @@
                                         :close-on-select="true"
                                         :clear-on-select="false"
                                         :preserve-search="false"
-                                        :placeholder="$t('Select the transport method')"
+                                        :placeholder="$t('Select the transport method...')"
                                         :preselect-first="false"
                                         :max-height="500"
                                         :taggable="false"
@@ -673,6 +662,30 @@
                                 </label>
                                 <div class="form-text">
                                     {{ $t("cacheBusterParamDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Advanced DNS monitor settings -->
+                            <div v-if="monitor.type === 'dns'" class="my-3">
+                                <div v-if="dohSelected">
+                                    <label for="doh_query_path" class="form-label">{{ $t("Query Path") }}</label>
+                                    <div class="d-flex">
+                                        <label for="doh_query_path" class="px-2 fs-5">/</label>
+                                        <input id="doh_query_path" v-model="monitor.doh_query_path" type="text" class="form-control" :pattern="urlQueryRegex" placeholder="dns-query?dns={query}">
+                                    </div>
+                                    <div class="form-text">
+                                        {{ $t("dohQueryPathDescription") + ' "{query}".' }}
+                                    </div>
+                                </div>
+
+                                <div class="form-check">
+                                    <input id="skip_remote_dnssec" v-model="monitor.skip_remote_dnssec" class="form-check-input" type="checkbox" value="">
+                                    <label class="form-check-label" for="skip_remote_dnssec">
+                                        {{ $t("Skip Remote DNSSEC Verification") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("skipRemoteDnssecDescription") }}
+                                    </div>
                                 </div>
                             </div>
 
@@ -1125,6 +1138,7 @@ const monitorDefaults = {
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
     dns_transport: "UDP",
+    skip_remote_dnssec: false,
     docker_container: "",
     docker_host: null,
     proxyId: null,
@@ -1464,6 +1478,32 @@ message HealthCheckResponse {
         },
 
         conditionVariables() {
+            if (this.monitor.type === "dns") {
+                // When the monitor type is DNS, the conditions depend on
+                // record type. Condition variables are all added to a single
+                // array defined in server\monitor-types\dns.js in order to
+                // pass to Vue, then sliced below based on index.
+                const dnsConditionVariables = this.$root.monitorTypeList["dns"]?.conditionVariables;
+                switch (this.monitor.dns_resolve_type) {
+                    case "A":
+                    case "AAAA":
+                    case "TXT":
+                    case "PTR":
+                    case "NS":
+                        return dnsConditionVariables.slice(0, 1);
+                    case "CNAME":
+                        return dnsConditionVariables.slice(1, 2);
+                    case "CAA":
+                        return dnsConditionVariables.slice(2, 5);
+                    case "MX":
+                        return dnsConditionVariables.slice(5, 6);
+                    case "SOA":
+                        return dnsConditionVariables.slice(6, 12);
+                    case "SRV":
+                        return dnsConditionVariables.slice(12, 13);
+                }
+                return [];
+            }
             return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
         },
 

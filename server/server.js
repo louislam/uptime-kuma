@@ -828,6 +828,7 @@ let needSetup = false;
                 bean.dns_resolve_server = monitor.dns_resolve_server;
                 bean.dns_transport = monitor.dns_transport;
                 bean.doh_query_path = monitor.doh_query_path;
+                bean.skip_remote_dnssec = monitor.skip_remote_dnssec;
                 bean.pushToken = monitor.pushToken;
                 bean.docker_container = monitor.docker_container;
                 bean.docker_host = monitor.docker_host;

@@ -296,6 +296,11 @@ const defaultNumberOperators = [
     operatorMap.get(OP_GTE)
 ];
 
+const defaultArrayOperators = [
+    operatorMap.get(OP_CONTAINS),
+    operatorMap.get(OP_NOT_CONTAINS)
+];
+
 module.exports = {
     OP_STR_EQUALS,
     OP_STR_NOT_EQUALS,
@@ -314,5 +319,6 @@ module.exports = {
     operatorMap,
     defaultStringOperators,
     defaultNumberOperators,
+    defaultArrayOperators,
     ConditionOperator,
 };

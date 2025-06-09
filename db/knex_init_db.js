@@ -88,6 +88,7 @@ async function createTables() {
         table.string("dns_resolve_server", 255);
         table.string("dns_transport", 3);
         table.string("doh_query_path", 255);
+        table.boolean("skip_remote_dnssec").defaultTo(false);
         table.string("dns_last_result", 255);
         table.integer("retry_interval").notNullable().defaultTo(0);
         table.string("push_token", 20).defaultTo(null);
