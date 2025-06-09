@@ -168,7 +168,7 @@
                     <div v-if="tagsList.length > 0">
                         <label class="form-label">{{ $t('Select tags to delete:') }}</label>
                         <div v-for="tag in tagsList" :key="tag.id" class="form-check tag-delete-checkbox">
-                            <input class="form-check-input" :id="'delete-tag-' + tag.id" type="checkbox" v-model="selectedTagsToDelete" :value="tag.id">
+                            <input :id="'delete-tag-' + tag.id" v-model="selectedTagsToDelete" type="checkbox" class="form-check-input" :value="tag.id">
                             <label class="form-check-label" :for="'delete-tag-' + tag.id">
                                 <Tag :item="tag" :size="'sm'" />
                             </label>
