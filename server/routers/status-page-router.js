@@ -190,11 +190,11 @@ router.get("/api/status-page/heartbeat-daily/:slug", cache("5 minutes"), async (
                         date: row.date,
                         // Additional daily stats
                         dailyStats: {
-                            total: row.total_beats,
-                            up: row.up_beats,
-                            down: row.down_beats,
-                            pending: row.pending_beats,
-                            maintenance: row.maintenance_beats
+                            total: parseInt(row.total_beats) || 0,
+                            up: parseInt(row.up_beats) || 0,
+                            down: parseInt(row.down_beats) || 0,
+                            pending: parseInt(row.pending_beats) || 0,
+                            maintenance: parseInt(row.maintenance_beats) || 0
                         }
                     };
                 });
@@ -211,8 +211,9 @@ router.get("/api/status-page/heartbeat-daily/:slug", cache("5 minutes"), async (
                     
                     recentData.forEach(day => {
                         if (day.dailyStats) {
-                            totalUp += day.dailyStats.up;
-                            totalDown += day.dailyStats.down;
+                            // Convert strings to numbers to avoid concatenation
+                            totalUp += parseInt(day.dailyStats.up) || 0;
+                            totalDown += parseInt(day.dailyStats.down) || 0;
                         }
                     });
                     
