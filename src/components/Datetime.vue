@@ -7,7 +7,7 @@ export default {
     props: {
         /** Value of date time */
         value: {
-            type: [ String, Number ],
+            type: String,
             default: null,
         },
         /** Should only the date be displayed? */

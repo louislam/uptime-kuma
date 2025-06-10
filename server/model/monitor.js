@@ -636,17 +636,7 @@ class Monitor extends BeanModel {
                         bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");
                     }
-                } else if (this.type === "manual") {
-                    const lastHeartbeat = await Monitor.getPreviousHeartbeat(this.id);
-                    if (lastHeartbeat) {
-                        bean.status = lastHeartbeat.status;
-                        bean.msg = lastHeartbeat.msg || "Manual monitoring";
-                    } else {
-                        bean.status = PENDING;
-                        bean.msg = "Manual monitoring - No previous status";
-                    }
-                    bean.time = new Date().getTime();
-                    retries = 0;
+
                 } else if (this.type === "steam") {
                     const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
                     const steamAPIKey = await setting("steamAPIKey");

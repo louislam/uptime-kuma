@@ -776,7 +776,7 @@
 
                             <div v-if="monitor.type === 'manual'" class="mb-3">
                                 <label class="form-label">{{ $t("Manual Status") }}</label>
-                                <div class="btn-group w-100">
+                                <div v-if="!isAdd" class="btn-group w-100 mb-3">
                                     <button class="btn btn-success" @click="setManualStatus('up')">
                                         <i class="fas fa-check"></i> {{ $t("Up") }}
                                     </button>
@@ -786,6 +786,9 @@
                                     <button class="btn btn-warning" @click="setManualStatus('maintenance')">
                                         <i class="fas fa-tools"></i> {{ $t("Maintenance") }}
                                     </button>
+                                </div>
+                                <div v-else class="alert alert-secondary">
+                                    {{ $t("Manual status can be set after monitor is created") }}
                                 </div>
                             </div>
                         </div>
@@ -1229,6 +1232,7 @@ export default {
             remoteBrowsersEnabled: false,
         };
     },
+
     computed: {
         timeoutStep() {
             return this.monitor.type === "ping" ? 1 : 0.1;
@@ -2039,12 +2043,11 @@ message HealthCheckResponse {
             let updatedMonitor = { ...this.monitor };
             updatedMonitor.id = this.monitor.id;
 
-            this.$root.getSocket().emit("addHeartbeat", {
+            this.$root.getSocket().emit("updateManual", {
                 monitorID: this.monitor.id,
-                status: status === "up" ? 1 : status === "down" ? 0 : status === "maintenance" ? 3 : 2,
+                status: status === "up" ? 1 : status === "down" ? 0 : 3,
                 msg: status === "up" ? "Up" : status === "down" ? "Down" : "Maintenance",
                 time: new Date().getTime(),
-                ping: 0
             }, (res) => {
                 if (res.ok) {
                     this.toast.success(this.$t("Success"));

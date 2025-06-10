@@ -37,7 +37,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret, isDev, UP, DOWN, PENDING, MAINTENANCE } = require("../src/util");
 const config = require("./config");
 
 log.debug("server", "Arguments");
@@ -1542,34 +1542,6 @@ let needSetup = false;
             }
         });
 
-        socket.on("addHeartbeat", async (heartbeat, callback) => {
-            try {
-                checkLogin(socket);
-
-                let bean = R.dispense("heartbeat");
-                bean.monitor_id = heartbeat.monitorID;
-                bean.status = heartbeat.status;
-                bean.msg = heartbeat.msg;
-                bean.time = heartbeat.time;
-                bean.ping = heartbeat.ping;
-                bean.important = true;
-
-                await R.store(bean);
-
-                io.to(socket.userID).emit("heartbeat", bean.toJSON());
-
-                callback({
-                    ok: true,
-                });
-
-            } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            }
-        });
-
         socket.on("clearStatistics", async (callback) => {
             try {
                 checkLogin(socket);
@@ -1625,6 +1597,48 @@ let needSetup = false;
             socket.emit("loginRequired");
             log.debug("auth", "need auth");
         }
+
+        socket.on("updateManual", async (data, callback) => {
+            try {
+                checkLogin(socket);
+
+                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+                    data.monitorID,
+                    socket.userID,
+                ]);
+
+                if (!monitor) {
+                    throw new Error("Monitor not found");
+                }
+
+                let status;
+                if (data.status === 1) {
+                    status = UP;
+                } else if (data.status === 0) {
+                    status = DOWN;
+                } else if (data.status === 3) {
+                    status = MAINTENANCE;
+                } else {
+                    status = PENDING;
+                }
+
+                monitor.manual_status = status;
+                await R.store(monitor);
+
+                callback({
+                    ok: true,
+                    msg: "Saved.",
+                    msgi18n: true,
+                    id: monitor.id,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: true,
+                    msg: e.message,
+                });
+            }
+        });
 
     });
 
