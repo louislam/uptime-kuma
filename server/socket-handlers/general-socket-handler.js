@@ -91,6 +91,18 @@ module.exports.generalSocketHandler = (socket, server) => {
     });
 
     socket.on("getPushExample", (language, callback) => {
+        try {
+            checkLogin(socket);
+            if (!/^[a-z-]+$/.test(language)) {
+                throw new Error("Invalid language");
+            }
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+            return;
+        }
 
         try {
             let dir = path.join("./extra/push-examples", language);
