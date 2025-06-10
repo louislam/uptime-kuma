@@ -785,6 +785,13 @@ export default {
                         if (dailyViewSettings[monitorId]) {
                             // This monitor uses daily view
                             this.$root.dailyHeartbeatList[monitorId] = heartbeatList[monitorId];
+                            
+                            // Set up lastHeartbeatList for uptime color calculation
+                            if (heartbeatList[monitorId] && heartbeatList[monitorId].length > 0) {
+                                const lastDailyBeat = heartbeatList[monitorId][heartbeatList[monitorId].length - 1];
+                                // Create a minimal heartbeat list with just the last beat for color calculation
+                                this.$root.heartbeatList[monitorId] = [lastDailyBeat];
+                            }
                         } else {
                             // This monitor uses regular view
                             this.$root.heartbeatList[monitorId] = heartbeatList[monitorId];
