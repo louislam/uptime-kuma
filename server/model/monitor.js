@@ -427,7 +427,13 @@ class Monitor extends BeanModel {
                         }
                     }
 
-                    const agentFamily = this.forceIp ? (this.forceIp === "ipv4" ? 4 : 6) : undefined;
+                    let agentFamily = undefined;
+                    if (this.forceIp === "ipv4") {
+                        agentFamily = 4;
+                    }
+                    if (this.forceIp === "ipv6") {
+                        agentFamily = 6;
+                    }
 
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)

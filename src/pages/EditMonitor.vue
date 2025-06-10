@@ -745,6 +745,26 @@
                                         {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
                                 </div>
+
+                                <div class="my-3">
+                                    <label for="forceIp" class="form-label">{{ $t("Force Ip") }}</label>
+
+                                    <select id="forceIp" v-model="monitor.forceIp" class="form-select">
+                                        <option :value="null">
+                                            {{ $t("None") }}
+                                        </option>
+                                        <option value="ipv4">
+                                            IPv4
+                                        </option>
+                                        <option value="ipv6">
+                                            IPv6
+                                        </option>
+                                    </select>
+
+                                    <div class="form-text">
+                                        {{ $t("forceIpDescription") }}
+                                    </div>
+                                </div>
                             </template>
 
                             <!-- Parent Monitor -->
@@ -902,21 +922,6 @@
                                         </option>
                                         <option value="OPTIONS">
                                             OPTIONS
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div class="my-3">
-                                    <label for="forceIp" class="form-label">{{ $t("Force Ip") }}</label>
-                                    <select id="forceIp" v-model="monitor.forceIp" class="form-select">
-                                        <option :value="null">
-                                            {{ $t("None") }}
-                                        </option>
-                                        <option value="ipv4">
-                                            ipv4
-                                        </option>
-                                        <option value="ipv6">
-                                            ipv6
                                         </option>
                                     </select>
                                 </div>

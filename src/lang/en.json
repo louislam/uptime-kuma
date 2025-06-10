@@ -1111,5 +1111,7 @@
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
-    "Disable URL in Notification": "Disable URL in Notification"
+    "Disable URL in Notification": "Disable URL in Notification",
+    "Force Ip": "Force IP",
+    "forceIpDescription": "If not None, the monitor will enforce using either IPv4 or IPv6 for connecting to the target."
 }
