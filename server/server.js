@@ -1542,6 +1542,34 @@ let needSetup = false;
             }
         });
 
+        socket.on("addHeartbeat", async (heartbeat, callback) => {
+            try {
+                checkLogin(socket);
+
+                let bean = R.dispense("heartbeat");
+                bean.monitor_id = heartbeat.monitorID;
+                bean.status = heartbeat.status;
+                bean.msg = heartbeat.msg;
+                bean.time = heartbeat.time;
+                bean.ping = heartbeat.ping;
+                bean.important = true;
+
+                await R.store(bean);
+
+                io.to(socket.userID).emit("heartbeat", bean.toJSON());
+
+                callback({
+                    ok: true,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("clearStatistics", async (callback) => {
             try {
                 checkLogin(socket);

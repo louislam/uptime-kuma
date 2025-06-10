@@ -543,6 +543,10 @@ class UptimeCalculator {
      * @throws {Error} Invalid status
      */
     flatStatus(status) {
+        if (typeof status !== "number") {
+            throw new Error("Invalid status: status must be a number");
+        }
+
         switch (status) {
             case UP:
             case MAINTENANCE:
@@ -550,8 +554,9 @@ class UptimeCalculator {
             case DOWN:
             case PENDING:
                 return DOWN;
+            default:
+                throw new Error("Invalid status: " + status);
         }
-        throw new Error("Invalid status");
     }
 
     /**

@@ -1109,5 +1109,9 @@
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
-    "Disable URL in Notification": "Disable URL in Notification"
+    "Disable URL in Notification": "Disable URL in Notification",
+    "Manual": "Manual",
+    "Manual Status": "Manual Status",
+    "Manual status set to": "Manual status set to",
+    "Status updated": "Status updated"
 }

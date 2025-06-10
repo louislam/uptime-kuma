@@ -55,6 +55,9 @@
                                         <option value="push">
                                             Push
                                         </option>
+                                        <option value="manual">
+                                            {{ $t("Manual") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Specific Monitor Type')">
@@ -770,6 +773,21 @@
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                             </div>
+
+                            <div v-if="monitor.type === 'manual'" class="mb-3">
+                                <label class="form-label">{{ $t("Manual Status") }}</label>
+                                <div class="btn-group w-100">
+                                    <button class="btn btn-success" @click="setManualStatus('up')">
+                                        <i class="fas fa-check"></i> {{ $t("Up") }}
+                                    </button>
+                                    <button class="btn btn-danger" @click="setManualStatus('down')">
+                                        <i class="fas fa-times"></i> {{ $t("Down") }}
+                                    </button>
+                                    <button class="btn btn-warning" @click="setManualStatus('maintenance')">
+                                        <i class="fas fa-tools"></i> {{ $t("Maintenance") }}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -1181,7 +1199,10 @@ export default {
         VueMultiselect,
         EditMonitorConditions,
     },
-
+    setup() {
+        const toast = useToast();
+        return { toast };
+    },
     data() {
         return {
             minInterval: MIN_INTERVAL_SECOND,
@@ -1208,7 +1229,6 @@ export default {
             remoteBrowsersEnabled: false,
         };
     },
-
     computed: {
         timeoutStep() {
             return this.monitor.type === "ping" ? 1 : 0.1;
@@ -2015,6 +2035,24 @@ message HealthCheckResponse {
             }
         },
 
+        setManualStatus(status) {
+            let updatedMonitor = { ...this.monitor };
+            updatedMonitor.id = this.monitor.id;
+
+            this.$root.getSocket().emit("addHeartbeat", {
+                monitorID: this.monitor.id,
+                status: status === "up" ? 1 : status === "down" ? 0 : status === "maintenance" ? 3 : 2,
+                msg: status === "up" ? "Up" : status === "down" ? "Down" : "Maintenance",
+                time: new Date().getTime(),
+                ping: 0
+            }, (res) => {
+                if (res.ok) {
+                    this.toast.success(this.$t("Success"));
+                } else {
+                    this.toast.error(res.msg);
+                }
+            });
+        },
     },
 };
 </script>
