@@ -771,29 +771,51 @@ export default {
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
-                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList } = res.data;
+                // Fetch mixed data based on per-monitor daily view settings
+                axios.get("/api/status-page/heartbeat-daily/" + this.slug).then((res) => {
+                    const { heartbeatList, uptimeList, dailyViewSettings, hasMixedData } = res.data;
 
-                    this.$root.heartbeatList = heartbeatList;
+                    // Store both regular and daily data appropriately
+                    this.$root.heartbeatList = {};
+                    this.$root.dailyHeartbeatList = {};
                     this.$root.uptimeList = uptimeList;
 
-                    const heartbeatIds = Object.keys(heartbeatList);
-                    const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
-                        const monitorHeartbeats = heartbeatList[currentId];
-                        const lastHeartbeat = monitorHeartbeats.at(-1);
-
-                        if (lastHeartbeat) {
-                            return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
+                    // Distribute data based on monitor's daily view setting
+                    Object.keys(heartbeatList).forEach(monitorId => {
+                        if (dailyViewSettings[monitorId]) {
+                            // This monitor uses daily view
+                            this.$root.dailyHeartbeatList[monitorId] = heartbeatList[monitorId];
                         } else {
-                            return downMonitorsAmount;
+                            // This monitor uses regular view
+                            this.$root.heartbeatList[monitorId] = heartbeatList[monitorId];
                         }
-                    }, 0);
+                    });
 
-                    favicon.badge(downMonitors);
+                    const heartbeatIds = Object.keys(heartbeatList);
+                    const favicon = new Favico({
+                        animation: "none"
+                    });
 
-                    this.loadedData = true;
-                    this.lastUpdateTime = dayjs();
-                    this.updateUpdateTimer();
+                    let count = 0;
+
+                    for (let id of heartbeatIds) {
+                        const list = heartbeatList[id];
+                        if (list && list.length > 0) {
+                            const beat = list[list.length - 1];
+                            if (beat.status === 0) {
+                                count++;
+                            }
+                        }
+                    }
+
+                    if (count > 0) {
+                        favicon.badge(count);
+                    } else {
+                        favicon.reset();
+                    }
+
+                }).catch((error) => {
+                    console.error(error);
                 });
             }
         },

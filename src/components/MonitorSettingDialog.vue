@@ -19,6 +19,17 @@
                         </div>
                     </div>
 
+                    <!-- Daily View Toggle -->
+                    <div class="my-3 form-check">
+                        <input id="daily-view" v-model="monitor.dailyView" class="form-check-input" type="checkbox" data-testid="daily-view" @click="toggleDailyView(monitor.group_index, monitor.monitor_index)" />
+                        <label class="form-check-label" for="daily-view">
+                            {{ $t("Daily View") }}
+                        </label>
+                        <div class="form-text">
+                            {{ $t("Daily View Description") }}
+                        </div>
+                    </div>
+
                     <!-- Custom URL -->
                     <template v-if="monitor.isClickAble">
                         <label for="customUrl" class="form-label">{{ $t("Custom URL") }}</label>
@@ -89,6 +100,7 @@ export default {
                 group_index: group.index,
                 isClickAble: this.showLink(monitor),
                 url: monitor.element.url,
+                dailyView: !!monitor.element.dailyView,
             };
 
             this.MonitorSettingDialog.show();
@@ -102,6 +114,16 @@ export default {
          */
         toggleLink(groupIndex, index) {
             this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl = !this.$root.publicGroupList[groupIndex].monitorList[index].sendUrl;
+        },
+
+        /**
+         * Toggle the daily view setting
+         * @param {number} groupIndex Index of group monitor is member of
+         * @param {number} index Index of monitor within group
+         * @returns {void}
+         */
+        toggleDailyView(groupIndex, index) {
+            this.$root.publicGroupList[groupIndex].monitorList[index].dailyView = !this.$root.publicGroupList[groupIndex].monitorList[index].dailyView;
         },
 
         /**

@@ -215,6 +215,10 @@ module.exports.statusPageSocketHandler = (socket) => {
                         relationBean.custom_url = monitor.url;
                     }
 
+                    if (monitor.dailyView !== undefined) {
+                        relationBean.daily_view = monitor.dailyView;
+                    }
+
                     await R.store(relationBean);
                 }
 

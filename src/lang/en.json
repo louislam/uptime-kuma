@@ -1111,5 +1111,9 @@
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
-    "Disable URL in Notification": "Disable URL in Notification"
+    "Disable URL in Notification": "Disable URL in Notification",
+    "Today": "Today",
+    "Yesterday": "Yesterday",
+    "Daily View": "Daily View",
+    "Daily View Description": "Show 3-month history aggregated by day instead of recent individual checks"
 }

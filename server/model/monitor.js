@@ -60,6 +60,11 @@ class Monitor extends BeanModel {
             obj.url = this.customUrl ?? this.url;
         }
 
+        // Add daily_view field from monitor_group table
+        if (this.daily_view !== undefined) {
+            obj.dailyView = this.daily_view;
+        }
+
         if (showTags) {
             obj.tags = await this.getTags();
         }

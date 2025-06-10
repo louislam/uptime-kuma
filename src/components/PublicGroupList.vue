@@ -73,7 +73,8 @@
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-6">
-                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                        <DailyHeartbeatBar v-if="monitor.element.dailyView" size="mid" :monitor-id="monitor.element.id" />
+                                        <HeartbeatBar v-else size="mid" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
                             </div>
@@ -89,17 +90,19 @@
 <script>
 import MonitorSettingDialog from "./MonitorSettingDialog.vue";
 import Draggable from "vuedraggable";
-import HeartbeatBar from "./HeartbeatBar.vue";
+import DailyHeartbeatBar from "./DailyHeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
+import HeartbeatBar from "./HeartbeatBar.vue";
 
 export default {
     components: {
         MonitorSettingDialog,
         Draggable,
-        HeartbeatBar,
+        DailyHeartbeatBar,
         Uptime,
         Tag,
+        HeartbeatBar,
     },
     props: {
         /** Are we in edit mode? */
