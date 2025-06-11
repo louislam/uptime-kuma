@@ -158,14 +158,20 @@ class Maintenance extends BeanModel {
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
-            new Date(obj.dateRange[0]); // Ensure it's a valid date
+            const parsedDate = new Date(obj.dateRange[0]);
+            if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() > 9999)
+                throw new Error("Invalid start date");
+
             bean.start_date = obj.dateRange[0];
         } else {
             bean.start_date = null;
         }
 
         if (obj.dateRange[1]) {
-            new Date(obj.dateRange[1]); // Ensure it's a valid date
+            const parsedDate = new Date(obj.dateRange[1]);
+            if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() > 9999)
+                throw new Error("Invalid end date");
+
             bean.end_date = obj.dateRange[1];
         } else {
             bean.end_date = null;
