@@ -440,22 +440,6 @@ export default {
             &.daily-beat {
                 border: 1px solid rgba(0, 0, 0, 0.1);
 
-                &.down {
-                    border-color: darken($danger, 10%);
-                }
-
-                &.pending {
-                    border-color: darken($warning, 10%);
-                }
-
-                &.maintenance {
-                    border-color: darken($maintenance, 10%);
-                }
-
-                &:not(.empty):not(.down):not(.pending):not(.maintenance):not(.missing) {
-                    border-color: darken($primary, 10%);
-                }
-
                 &.missing {
                     border-color: transparent;
                 }
@@ -476,22 +460,6 @@ export default {
 
     .hp-bar-big .beat.daily-beat {
         border-color: rgba(255, 255, 255, 0.2);
-
-        &.down {
-            border-color: lighten($danger, 10%);
-        }
-
-        &.pending {
-            border-color: lighten($warning, 10%);
-        }
-
-        &.maintenance {
-            border-color: lighten($maintenance, 10%);
-        }
-
-        &:not(.empty):not(.down):not(.pending):not(.maintenance):not(.missing) {
-            border-color: lighten($primary, 10%);
-        }
 
         &.missing {
             border-color: transparent;

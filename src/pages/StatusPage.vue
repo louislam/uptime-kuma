@@ -392,10 +392,6 @@ const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
 // eslint-disable-next-line no-unused-vars
 let feedInterval;
 
-const favicon = new Favico({
-    animation: "none"
-});
-
 export default {
 
     components: {
