@@ -748,22 +748,16 @@
 
                                 <div class="my-3">
                                     <label for="ipFamily" class="form-label">{{ $t("Ip Family") }}</label>
-
                                     <select id="ipFamily" v-model="monitor.ipFamily" class="form-select">
-                                        <option :value="null">
-                                            {{ $t("auto-select") }}
-                                        </option>
-                                        <option value="ipv4">
-                                            IPv4
-                                        </option>
-                                        <option value="ipv6">
-                                            IPv6
-                                        </option>
+                                        <option :value="null">{{ $t("auto-select") }}</option>
+                                        <option value="ipv4">IPv4</option>
+                                        <option value="ipv6">IPv6</option>
                                     </select>
-
-                                    <div class="form-text">
-                                        {{ $t("ipFamilyDescription") }} (<a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">{{ $t('Learn More') }}</a>)
-                                    </div>
+                                    <i18n-t tag="div" class="form-text" key="ipFamilyDescriptionAutoSelect" v-if="monitor.ipFamily === 'null'">
+                                        <template #happyEyeballs>
+                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">"Happy Eyeballs"</a>
+                                        </template
+                                    </i18n-t>
                                 </div>
                             </template>
 
