@@ -223,12 +223,12 @@
                                     <div class="row">
                                         <div class="col">
                                             <div class="mb-2">{{ $t("startDateTime") }}</div>
-                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
+                                            <input v-model="maintenance.dateRange[0]" type="datetime-local" max="9999-12-31T23:59" class="form-control" :required="maintenance.strategy === 'single'">
                                         </div>
 
                                         <div class="col">
                                             <div class="mb-2">{{ $t("endDateTime") }}</div>
-                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" class="form-control" :required="maintenance.strategy === 'single'">
+                                            <input v-model="maintenance.dateRange[1]" type="datetime-local" max="9999-12-31T23:59" class="form-control" :required="maintenance.strategy === 'single'">
                                         </div>
                                     </div>
                                 </div>
