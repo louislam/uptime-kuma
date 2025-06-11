@@ -762,7 +762,7 @@
                                     </select>
 
                                     <div class="form-text">
-                                        {{ $t("ipFamilyDescription") }} (<a href="https://en.wikipedia.org/wiki/Happy_Eyeballs">{{ $t('Learn More') }}</a>)
+                                        {{ $t("ipFamilyDescription") }} (<a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">{{ $t('Learn More') }}</a>)
                                     </div>
                                 </div>
                             </template>
