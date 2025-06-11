@@ -18,15 +18,22 @@ class ManualMonitorType extends MonitorType {
     async check(monitor, heartbeat) {
         if (monitor.manual_status !== null) {
             heartbeat.status = monitor.manual_status;
-            heartbeat.msg = monitor.manual_status === UP ? "Up" :
-                monitor.manual_status === DOWN ? "Down" :
-                    monitor.manual_status === MAINTENANCE ? "Maintenance" :
-                        "Pending";
-            heartbeat.ping = null;
+            switch (monitor.manual_status) {
+                case UP:
+                    heartbeat.msg = "Up";
+                    break;
+                case DOWN:
+                    heartbeat.msg = "Down"; 
+                    break;
+                case MAINTENANCE:
+                    heartbeat.msg = "Maintenance";
+                    break;
+                default:
+                    heartbeat.msg = "Pending";
+            }
         } else {
             heartbeat.status = PENDING;
             heartbeat.msg = "Manual monitoring - No status set";
-            heartbeat.ping = null;
         }
     }
 }

@@ -875,6 +875,7 @@ let needSetup = false;
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
+                bean.manual_status = monitor.manual_status;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
@@ -1597,48 +1598,6 @@ let needSetup = false;
             socket.emit("loginRequired");
             log.debug("auth", "need auth");
         }
-
-        socket.on("updateManual", async (data, callback) => {
-            try {
-                checkLogin(socket);
-
-                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
-                    data.monitorID,
-                    socket.userID,
-                ]);
-
-                if (!monitor) {
-                    throw new Error("Monitor not found");
-                }
-
-                let status;
-                if (data.status === 1) {
-                    status = UP;
-                } else if (data.status === 0) {
-                    status = DOWN;
-                } else if (data.status === 3) {
-                    status = MAINTENANCE;
-                } else {
-                    status = PENDING;
-                }
-
-                monitor.manual_status = status;
-                await R.store(monitor);
-
-                callback({
-                    ok: true,
-                    msg: "Saved.",
-                    msgi18n: true,
-                    id: monitor.id,
-                });
-
-            } catch (e) {
-                callback({
-                    ok: true,
-                    msg: e.message,
-                });
-            }
-        });
 
     });
 

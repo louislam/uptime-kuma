@@ -1202,10 +1202,6 @@ export default {
         VueMultiselect,
         EditMonitorConditions,
     },
-    setup() {
-        const toast = useToast();
-        return { toast };
-    },
     data() {
         return {
             minInterval: MIN_INTERVAL_SECOND,
@@ -2040,15 +2036,8 @@ message HealthCheckResponse {
         },
 
         setManualStatus(status) {
-            let updatedMonitor = { ...this.monitor };
-            updatedMonitor.id = this.monitor.id;
-
-            this.$root.getSocket().emit("updateManual", {
-                monitorID: this.monitor.id,
-                status: status === "up" ? 1 : status === "down" ? 0 : 3,
-                msg: status === "up" ? "Up" : status === "down" ? "Down" : "Maintenance",
-                time: new Date().getTime(),
-            }, (res) => {
+            this.monitor.manual_status = this.getStatusCode(status);
+            this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
                 if (res.ok) {
                     this.toast.success(this.$t("Success"));
                 } else {
