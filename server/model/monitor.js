@@ -160,7 +160,7 @@ class Monitor extends BeanModel {
             smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
-            forceIp: this.forceIp,
+            ipFamily: this.ipFamily,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -428,10 +428,10 @@ class Monitor extends BeanModel {
                     }
 
                     let agentFamily = undefined;
-                    if (this.forceIp === "ipv4") {
+                    if (this.ipFamily === "ipv4") {
                         agentFamily = 4;
                     }
-                    if (this.forceIp === "ipv6") {
+                    if (this.ipFamily === "ipv6") {
                         agentFamily = 6;
                     }
 
@@ -439,11 +439,13 @@ class Monitor extends BeanModel {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
                         secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                        autoSelectFamily: true,
                         ...(agentFamily ? { family: agentFamily } : {})
                     };
 
                     const httpAgentOptions = {
                         maxCachedSessions: 0,
+                        autoSelectFamily: true,
                         ...(agentFamily ? { family: agentFamily } : {})
                     };
 

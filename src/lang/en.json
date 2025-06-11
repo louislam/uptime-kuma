@@ -1112,6 +1112,6 @@
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
     "Disable URL in Notification": "Disable URL in Notification",
-    "Force Ip": "Force IP",
-    "forceIpDescription": "If not None, the monitor will enforce using either IPv4 or IPv6 for connecting to the target."
+    "Ip Family": "IP Family",
+    "ipFamilyDescription": "Choose the IP version to use (IPv4 or IPv6). If \"auto-select\" is chosen, it will use \"Happy Eyeballs\" for determining the IP version."
 }
