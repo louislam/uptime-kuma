@@ -753,10 +753,10 @@
                                         <option value="ipv4">IPv4</option>
                                         <option value="ipv6">IPv6</option>
                                     </select>
-                                    <i18n-t tag="div" class="form-text" key="ipFamilyDescriptionAutoSelect" v-if="monitor.ipFamily === 'null'">
+                                    <i18n-t v-if="monitor.ipFamily == null" keypath="ipFamilyDescriptionAutoSelect" tag="div" class="form-text">
                                         <template #happyEyeballs>
-                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">"Happy Eyeballs"</a>
-                                        </template
+                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">Happy Eyeballs</a>
+                                        </template>
                                     </i18n-t>
                                 </div>
                             </template>

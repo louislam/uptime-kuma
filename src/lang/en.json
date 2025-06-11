@@ -1113,5 +1113,5 @@
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
     "Disable URL in Notification": "Disable URL in Notification",
     "Ip Family": "IP Family",
-    "ipFamilyDescriptionAutoSelect": "Use {happyEyeballs} for determining the IP family."
+    "ipFamilyDescriptionAutoSelect": "Use \"{happyEyeballs}\" for determining the IP family."
 }
