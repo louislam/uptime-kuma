@@ -841,6 +841,8 @@
     "ntfyAuthenticationMethod": "Authentication Method",
     "ntfyPriorityHelptextAllEvents": "All events are sent with the maximum priority",
     "ntfyPriorityHelptextAllExceptDown": "All events are sent with this priority, except {0}-events, which have a priority of {1}",
+    "ntfyPriorityHelptextPriorityHigherThanDown": "Regular priority should be higher than {0} priority. Priority {1} is higher than {0} priority {2}",
+    "ntfyPriorityDown": "Priority for DOWN-events",
     "ntfyUsernameAndPassword": "Username and Password",
     "twilioAccountSID": "Account SID",
     "twilioApiKey": "Api Key (optional)",

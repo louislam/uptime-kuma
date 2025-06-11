@@ -13,13 +13,20 @@
     <div class="mb-3">
         <label for="ntfy-priority" class="form-label">{{ $t("Priority") }}</label>
         <input id="ntfy-priority" v-model="$parent.notification.ntfyPriority" type="number" class="form-control" required min="1" max="5" step="1">
+        <label for="ntfy-priority-down" class="form-label">{{ $t("ntfyPriorityDown") }}</label>
+        <input id="ntfy-priority-down" v-model="$parent.notification.ntfyPriorityDown" type="number" class="form-control" required min="1" max="5" step="1">
         <div class="form-text">
-            <p v-if="$parent.notification.ntfyPriority >= 5">
+            <p v-if="$parent.notification.ntfyPriority == $parent.notification.ntfyPriorityDown && $parent.notification.ntfyPriority >= 5">
                 {{ $t("ntfyPriorityHelptextAllEvents") }}
             </p>
+            <i18n-t v-else-if="$parent.notification.ntfyPriority > $parent.notification.ntfyPriorityDown" tag="p" keypath="ntfyPriorityHelptextPriorityHigherThanDown">
+                <code>DOWN</code>
+                <code>{{ $parent.notification.ntfyPriority }}</code>
+                <code>{{ $parent.notification.ntfyPriorityDown }}</code>
+            </i18n-t>
             <i18n-t v-else tag="p" keypath="ntfyPriorityHelptextAllExceptDown">
                 <code>DOWN</code>
-                <code>{{ $parent.notification.ntfyPriority + 1 }}</code>
+                <code>{{ $parent.notification.ntfyPriorityDown }}</code>
             </i18n-t>
         </div>
     </div>
@@ -67,6 +74,11 @@ export default {
         if (typeof this.$parent.notification.ntfyPriority === "undefined") {
             this.$parent.notification.ntfyserverurl = "https://ntfy.sh";
             this.$parent.notification.ntfyPriority = 5;
+        }
+
+        // Setting down priority if it's undefined
+        if (typeof this.$parent.notification.ntfyPriorityDown === "undefined") {
+            this.$parent.notification.ntfyPriorityDown = 5;
         }
 
         // Handling notifications that added before 1.22.0
