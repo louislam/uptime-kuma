@@ -9,11 +9,7 @@ class ManualMonitorType extends MonitorType {
     conditionVariables = [];
 
     /**
-     * Checks the status of the monitor based on the manually set status
-     * This monitor type is specifically designed for status pages where manual control is needed
-     * @param {object} monitor - Monitor object containing the current status and message
-     * @param {object} heartbeat - Object to write the status of the check
-     * @returns {Promise<void>}
+     * @inheritdoc
      */
     async check(monitor, heartbeat) {
         if (monitor.manual_status !== null) {

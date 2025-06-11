@@ -1202,6 +1202,7 @@ export default {
         VueMultiselect,
         EditMonitorConditions,
     },
+
     data() {
         return {
             minInterval: MIN_INTERVAL_SECOND,
