@@ -755,7 +755,7 @@
                                     </select>
                                     <i18n-t v-if="monitor.ipFamily == null" keypath="ipFamilyDescriptionAutoSelect" tag="div" class="form-text">
                                         <template #happyEyeballs>
-                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">Happy Eyeballs</a>
+                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">{{ $t("Happy Eyeballs algorithm") }}</a>
                                         </template>
                                     </i18n-t>
                                 </div>
