@@ -944,7 +944,7 @@
     "whapiRecipient": "Telefonnummer / Kontakt-ID / Gruppen-ID",
     "API URL": "API URL",
     "wayToWriteWhapiRecipient": "Die Rufnummer mit der internationalen Vorwahl, aber ohne das Pluszeichen am Anfang ({0}), die Kontakt-ID ({1}) oder die Gruppen-ID ({2}).",
-    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Gib entweder den Hostnamen des Servers ein, mit dem eine Verbindung hergestellt werden soll, oder {localhost}, wenn ein {local_mta} verwendet werden soll.",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Gib entweder den Hostnamen des Servers ein, mit dem eine Verbindung hergestellt werden soll, oder {localhost}, wenn ein {local_mta} verwendet werden soll",
     "locally configured mail transfer agent": "Lokal konfigurierter Mail-Transfer-Agent",
     "Mentioning": "Erwähnung",
     "Don't mention people": "Keine Personen erwähnen",
@@ -1118,5 +1118,11 @@
     "wayToWriteWahaChatId": "Die Telefonnummer mit internationaler Vorwahl, ohne den anfänglichen Pluszeichen ({0}), die Kontakt-ID ({1}) oder die Gruppen-ID ({2}). Die Benachrichtigungen werden an diese Chat-ID von der WAHA-Sitzung gesendet.",
     "telegramServerUrlDescription": "Um die Telegram-Bot-API-Beschränkungen aufzuheben oder in gesperrten Gebieten (China, Iran usw.) Zugriff zu erhalten. Weitere Informationen findest du unter {0}. Standard: {1}",
     "telegramServerUrl": "(Optional) Server URL",
-    "Font Twemoji by Twitter licensed under": "Schriftart Twemoji von Twitter lizenziert unter"
+    "Font Twemoji by Twitter licensed under": "Schriftart Twemoji von Twitter lizenziert unter",
+    "the smsplanet documentation": "die smsplanet Dokumentation",
+    "Phone numbers": "Telefonnummern",
+    "Sender name": "Absendername",
+    "smsplanetNeedToApproveName": "Muss im Kundenpanel genehmigt werden",
+    "smsplanetApiToken": "Token für die SMSPlanet API",
+    "smsplanetApiDocs": "Ausführliche Informationen zum Erhalt von API-Tokens findest du in {the_smsplanet_documentation}."
 }

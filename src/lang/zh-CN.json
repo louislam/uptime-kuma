@@ -1120,5 +1120,11 @@
     "YZJ Robot Token": "YZJ 机器人令牌",
     "telegramServerUrl": "(可选) 服务器 Url",
     "telegramServerUrlDescription": "用以解除 Telegram 的机器人 API 限制或在封锁区域（中国、伊朗等）获得访问权限。获取更多信息，请点击 {0}。默认值：{1}",
-    "Font Twemoji by Twitter licensed under": "由 Twitter 制作的 Twemoji 字体根据此许可证授权"
+    "Font Twemoji by Twitter licensed under": "由 Twitter 制作的 Twemoji 字体根据此许可证授权",
+    "smsplanetApiDocs": "有关获取 API token 的详细信息，请参阅 {the_smsplanet_documentation}。",
+    "smsplanetNeedToApproveName": "需要在客户端面板进行确认",
+    "Sender name": "发件人名称",
+    "Phone numbers": "手机号码",
+    "the smsplanet documentation": "smsplanet 文档",
+    "smsplanetApiToken": "SMSPlanet API 的 Token"
 }
