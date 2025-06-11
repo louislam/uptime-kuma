@@ -11,12 +11,12 @@
             >
                 <div
                     class="beat daily-beat"
-                    :class="{ 
-                        'empty': (beat === 0), 
+                    :class="{
+                        'empty': (beat === 0),
                         'missing': (beat.missing || beat.status === -1),
-                        'down': (beat.status === 0), 
-                        'pending': (beat.status === 2), 
-                        'maintenance': (beat.status === 3) 
+                        'down': (beat.status === 0),
+                        'pending': (beat.status === 2),
+                        'maintenance': (beat.status === 3)
                     }"
                     :style="getBeatStyle(beat)"
                 />
@@ -178,8 +178,10 @@ export default {
          */
         timeSinceFirstBeat() {
             const firstValidBeat = this.shortBeatList.at(this.numPadding);
-            if (!firstValidBeat || !firstValidBeat.date) return "";
-            
+            if (!firstValidBeat || !firstValidBeat.date) {
+                return "";
+            }
+
             const days = dayjs().diff(dayjs(firstValidBeat.date), "days");
             if (days > 30) {
                 return Math.floor(days / 30) + "mo";
@@ -194,10 +196,12 @@ export default {
          */
         timeSinceLastBeat() {
             const lastValidBeat = this.shortBeatList.at(-1);
-            if (!lastValidBeat || !lastValidBeat.date) return "";
-            
+            if (!lastValidBeat || !lastValidBeat.date) {
+                return "";
+            }
+
             const days = dayjs().diff(dayjs(lastValidBeat.date), "days");
-            
+
             if (days === 0) {
                 return this.$t("Today");
             } else if (days === 1) {
@@ -273,31 +277,37 @@ export default {
          * @returns {string} Beat title
          */
         getBeatTitle(beat) {
-            if (!beat || beat === 0) return "";
-            
+            if (!beat || beat === 0) {
+                return "";
+            }
+
             // Handle missing data
             if (beat.missing || beat.status === -1) {
-                const date = beat.date || beat.time.split(' ')[0];
+                const date = beat.date || beat.time.split(" ")[0];
                 return `${date}\nNo data available`;
             }
-            
-            const date = beat.date || beat.time.split(' ')[0];
+
+            const date = beat.date || beat.time.split(" ")[0];
             const uptime = Math.round(beat.uptime * 100);
             const stats = beat.dailyStats;
-            
+
             let tooltip = `${date}\nUptime: ${uptime}%`;
-            
+
             if (stats) {
                 tooltip += `\nUp: ${stats.up}, Down: ${stats.down}`;
-                if (stats.pending > 0) tooltip += `, Pending: ${stats.pending}`;
-                if (stats.maintenance > 0) tooltip += `, Maintenance: ${stats.maintenance}`;
+                if (stats.pending > 0) {
+                    tooltip += `, Pending: ${stats.pending}`;
+                }
+                if (stats.maintenance > 0) {
+                    tooltip += `, Maintenance: ${stats.maintenance}`;
+                }
                 tooltip += `\nTotal checks: ${stats.total}`;
             }
-            
+
             if (beat.ping) {
                 tooltip += `\nAvg ping: ${beat.ping}ms`;
             }
-            
+
             return tooltip;
         },
 
@@ -329,23 +339,23 @@ export default {
          */
         generateCompleteTimeline(actualData) {
             const timeline = [];
-            const today = dayjs().startOf('day');
-            const startDate = today.subtract(90, 'day'); // 3 months back
-            
+            const today = dayjs().startOf("day");
+            const startDate = today.subtract(90, "day"); // 3 months back
+
             // Create a map of existing data by date for quick lookup
             const dataMap = {};
             actualData.forEach(beat => {
                 if (beat && beat.date) {
-                    const dateKey = dayjs(beat.date).format('YYYY-MM-DD');
+                    const dateKey = dayjs(beat.date).format("YYYY-MM-DD");
                     dataMap[dateKey] = beat;
                 }
             });
-            
+
             // Generate complete timeline from startDate to today
             for (let i = 0; i <= 90; i++) {
-                const currentDate = startDate.add(i, 'day');
-                const dateKey = currentDate.format('YYYY-MM-DD');
-                
+                const currentDate = startDate.add(i, "day");
+                const dateKey = currentDate.format("YYYY-MM-DD");
+
                 if (dataMap[dateKey]) {
                     // Use actual data if available
                     timeline.push(dataMap[dateKey]);
@@ -354,7 +364,7 @@ export default {
                     timeline.push({
                         status: -1, // Special status for missing data
                         date: dateKey,
-                        time: dateKey + ' 00:00:00',
+                        time: dateKey + " 00:00:00",
                         uptime: 0,
                         ping: 0,
                         missing: true,
@@ -368,7 +378,7 @@ export default {
                     });
                 }
             }
-            
+
             return timeline;
         },
 
@@ -429,23 +439,23 @@ export default {
             // Daily beats get special styling
             &.daily-beat {
                 border: 1px solid rgba(0, 0, 0, 0.1);
-                
+
                 &.down {
                     border-color: darken($danger, 10%);
                 }
-                
+
                 &.pending {
                     border-color: darken($warning, 10%);
                 }
-                
+
                 &.maintenance {
                     border-color: darken($maintenance, 10%);
                 }
-                
+
                 &:not(.empty):not(.down):not(.pending):not(.maintenance):not(.missing) {
                     border-color: darken($primary, 10%);
                 }
-                
+
                 &.missing {
                     border-color: transparent;
                 }
@@ -458,31 +468,31 @@ export default {
     .hp-bar-big .beat.empty {
         background-color: #848484;
     }
-    
+
     .hp-bar-big .beat.missing {
         background-color: #555555;
         opacity: 0.6;
     }
-    
+
     .hp-bar-big .beat.daily-beat {
         border-color: rgba(255, 255, 255, 0.2);
-        
+
         &.down {
             border-color: lighten($danger, 10%);
         }
-        
+
         &.pending {
             border-color: lighten($warning, 10%);
         }
-        
+
         &.maintenance {
             border-color: lighten($maintenance, 10%);
         }
-        
+
         &:not(.empty):not(.down):not(.pending):not(.maintenance):not(.missing) {
             border-color: lighten($primary, 10%);
         }
-        
+
         &.missing {
             border-color: transparent;
         }
@@ -506,4 +516,4 @@ export default {
         background-color: #333;
     }
 }
-</style> 
+</style>

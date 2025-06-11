@@ -10,4 +10,4 @@ exports.down = function (knex) {
     return knex.schema.alterTable("monitor_group", function (table) {
         table.dropColumn("daily_view");
     });
-}; 
+};

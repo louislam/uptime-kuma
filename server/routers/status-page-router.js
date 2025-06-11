@@ -142,7 +142,7 @@ router.get("/api/status-page/heartbeat-daily/:slug", cache("5 minutes"), async (
         for (let monitor of monitorData) {
             const monitorID = monitor.monitor_id;
             const useDailyView = monitor.daily_view;
-            
+
             dailyViewSettings[monitorID] = useDailyView;
 
             if (useDailyView) {
@@ -173,7 +173,7 @@ router.get("/api/status-page/heartbeat-daily/:slug", cache("5 minutes"), async (
                     // Determine overall status for the day based on majority
                     if (row.maintenance_beats > 0) {
                         status = 3; // Maintenance
-                    } else if (row.down_beats > row.up_beats / 2) { 
+                    } else if (row.down_beats > row.up_beats / 2) {
                         status = 0; // Down if more than 50% down
                     } else if (row.up_beats > 0) {
                         status = 1; // Up
@@ -200,15 +200,15 @@ router.get("/api/status-page/heartbeat-daily/:slug", cache("5 minutes"), async (
                 });
 
                 heartbeatList[monitorID] = processedData;
-                
+
                 // Calculate uptime based only on actual daily data (not including missing days)
                 if (processedData.length > 0) {
                     // Get recent data (last 30 days worth of actual data)
                     const recentData = processedData.slice(-30);
-                    
+
                     let totalUp = 0;
                     let totalDown = 0;
-                    
+
                     recentData.forEach(day => {
                         if (day.dailyStats) {
                             // Convert strings to numbers to avoid concatenation
@@ -216,7 +216,7 @@ router.get("/api/status-page/heartbeat-daily/:slug", cache("5 minutes"), async (
                             totalDown += parseInt(day.dailyStats.down) || 0;
                         }
                     });
-                    
+
                     const totalChecks = totalUp + totalDown;
                     uptimeList[`${monitorID}_24`] = totalChecks > 0 ? (totalUp / totalChecks) : 0;
                 } else {
@@ -235,7 +235,7 @@ router.get("/api/status-page/heartbeat-daily/:slug", cache("5 minutes"), async (
 
                 list = R.convertToBeans("heartbeat", list);
                 heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
-                
+
                 const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
                 uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
             }

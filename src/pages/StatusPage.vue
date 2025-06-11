@@ -773,7 +773,7 @@ export default {
             if (! this.editMode) {
                 // Fetch mixed data based on per-monitor daily view settings
                 axios.get("/api/status-page/heartbeat-daily/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList, dailyViewSettings, hasMixedData } = res.data;
+                    const { heartbeatList, uptimeList, dailyViewSettings } = res.data;
 
                     // Store both regular and daily data appropriately
                     this.$root.heartbeatList = {};
@@ -785,12 +785,12 @@ export default {
                         if (dailyViewSettings[monitorId]) {
                             // This monitor uses daily view
                             this.$root.dailyHeartbeatList[monitorId] = heartbeatList[monitorId];
-                            
+
                             // Set up lastHeartbeatList for uptime color calculation
                             if (heartbeatList[monitorId] && heartbeatList[monitorId].length > 0) {
                                 const lastDailyBeat = heartbeatList[monitorId][heartbeatList[monitorId].length - 1];
                                 // Create a minimal heartbeat list with just the last beat for color calculation
-                                this.$root.heartbeatList[monitorId] = [lastDailyBeat];
+                                this.$root.heartbeatList[monitorId] = [ lastDailyBeat ];
                             }
                         } else {
                             // This monitor uses regular view
