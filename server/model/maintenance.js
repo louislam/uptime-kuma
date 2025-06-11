@@ -200,7 +200,7 @@ class Maintenance extends BeanModel {
      * @returns {void}
      */
     static validateCron(cron) {
-        let job = new Cron(cron, () => { });
+        let job = new Cron(cron, () => {});
         job.stop();
     }
 
