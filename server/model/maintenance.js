@@ -262,7 +262,7 @@ class Maintenance extends BeanModel {
                 if (this.strategy === "recurring-interval") {
                     // For recurring-interval, Croner needs to have interval and startAt
                     const startDate = dayjs(this.startDate);
-                    const [hour, minute] = this.startTime.split(":");
+                    const [ hour, minute ] = this.startTime.split(":");
                     const startDateTime = startDate.hour(hour).minute(minute);
                     this.beanMeta.job = new Cron(this.cron, {
                         timezone: await this.getTimezone(),
@@ -453,7 +453,7 @@ class Maintenance extends BeanModel {
             }
 
             // Remove duplicate
-            dayList = [...new Set(dayList)];
+            dayList = [ ...new Set(dayList) ];
 
             this.cron = minute + " " + hour + " " + dayList.join(",") + " * *";
             this.duration = this.calcDuration();
