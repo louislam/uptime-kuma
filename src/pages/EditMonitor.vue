@@ -776,7 +776,7 @@
 
                             <div v-if="monitor.type === 'manual'" class="mb-3">
                                 <label class="form-label">{{ $t("Manual Status") }}</label>
-                                <div v-if="!isAdd" class="btn-group w-100 mb-3">
+                                <div class="btn-group w-100 mb-3">
                                     <button class="btn btn-success" @click="setManualStatus('up')">
                                         <i class="fas fa-check"></i> {{ $t("Up") }}
                                     </button>
@@ -787,9 +787,9 @@
                                         <i class="fas fa-tools"></i> {{ $t("Maintenance") }}
                                     </button>
                                 </div>
-                                <div v-else class="alert alert-secondary">
+                                <!-- <div v-else class="alert alert-secondary">
                                     {{ $t("Manual status can be set after monitor is created") }}
-                                </div>
+                                </div> -->
                             </div>
                         </div>
 
@@ -2035,15 +2035,18 @@ message HealthCheckResponse {
             }
         },
 
+        getStatusCode(status) {
+            const statusMap = {
+                "up": 1,
+                "down": 0,
+                "pending": 2,
+                "maintenance": 3
+            };
+            return statusMap[status] ?? 2;
+        },
+
         setManualStatus(status) {
             this.monitor.manual_status = this.getStatusCode(status);
-            this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
-                if (res.ok) {
-                    this.toast.success(this.$t("Success"));
-                } else {
-                    this.toast.error(res.msg);
-                }
-            });
         },
     },
 };
