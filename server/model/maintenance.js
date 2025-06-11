@@ -158,12 +158,14 @@ class Maintenance extends BeanModel {
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
+            new Date(obj.dateRange[0]); // Ensure it's a valid date
             bean.start_date = obj.dateRange[0];
         } else {
             bean.start_date = null;
         }
 
         if (obj.dateRange[1]) {
+            new Date(obj.dateRange[1]); // Ensure it's a valid date
             bean.end_date = obj.dateRange[1];
         } else {
             bean.end_date = null;
@@ -192,7 +194,7 @@ class Maintenance extends BeanModel {
      * @returns {void}
      */
     static validateCron(cron) {
-        let job = new Cron(cron, () => {});
+        let job = new Cron(cron, () => { });
         job.stop();
     }
 
@@ -254,7 +256,7 @@ class Maintenance extends BeanModel {
                 if (this.strategy === "recurring-interval") {
                     // For recurring-interval, Croner needs to have interval and startAt
                     const startDate = dayjs(this.startDate);
-                    const [ hour, minute ] = this.startTime.split(":");
+                    const [hour, minute] = this.startTime.split(":");
                     const startDateTime = startDate.hour(hour).minute(minute);
                     this.beanMeta.job = new Cron(this.cron, {
                         timezone: await this.getTimezone(),
@@ -445,7 +447,7 @@ class Maintenance extends BeanModel {
             }
 
             // Remove duplicate
-            dayList = [ ...new Set(dayList) ];
+            dayList = [...new Set(dayList)];
 
             this.cron = minute + " " + hour + " " + dayList.join(",") + " * *";
             this.duration = this.calcDuration();
