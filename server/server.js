@@ -37,7 +37,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, isDev, UP, DOWN, PENDING, MAINTENANCE } = require("../src/util");
+const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
 const config = require("./config");
 
 log.debug("server", "Arguments");

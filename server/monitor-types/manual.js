@@ -19,7 +19,7 @@ class ManualMonitorType extends MonitorType {
                     heartbeat.msg = "Up";
                     break;
                 case DOWN:
-                    heartbeat.msg = "Down"; 
+                    heartbeat.msg = "Down";
                     break;
                 case MAINTENANCE:
                     heartbeat.msg = "Maintenance";
