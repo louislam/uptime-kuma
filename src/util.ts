@@ -9,7 +9,7 @@
 // Frontend uses util.ts
 */
 
-import dayjs from "dayjs";
+import * as dayjs from "dayjs";
 
 // For loading dayjs plugins, don't remove event though it is not used in this file
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -38,6 +38,26 @@ export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
 export const MIN_INTERVAL_SECOND = 20; // 20 seconds
+
+// Packet Size limits
+export const PING_PACKET_SIZE_MIN = 1;
+export const PING_PACKET_SIZE_MAX = 65500;
+export const PING_PACKET_SIZE_DEFAULT = 56;
+
+// Global timeout (aka deadline) limits in seconds
+export const PING_GLOBAL_TIMEOUT_MIN = 1;
+export const PING_GLOBAL_TIMEOUT_MAX = 300;
+export const PING_GLOBAL_TIMEOUT_DEFAULT = 10;
+
+// Ping count limits
+export const PING_COUNT_MIN = 1;
+export const PING_COUNT_MAX = 100;
+export const PING_COUNT_DEFAULT = 1;
+
+// per-request timeout (aka timeout) limits in seconds
+export const PING_PER_REQUEST_TIMEOUT_MIN = 1;
+export const PING_PER_REQUEST_TIMEOUT_MAX = 60;
+export const PING_PER_REQUEST_TIMEOUT_DEFAULT = 2;
 
 // Console colors
 // https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
