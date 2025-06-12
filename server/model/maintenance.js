@@ -158,12 +158,22 @@ class Maintenance extends BeanModel {
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
+            const parsedDate = new Date(obj.dateRange[0]);
+            if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() > 9999) {
+                throw new Error("Invalid start date");
+            }
+
             bean.start_date = obj.dateRange[0];
         } else {
             bean.start_date = null;
         }
 
         if (obj.dateRange[1]) {
+            const parsedDate = new Date(obj.dateRange[1]);
+            if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() > 9999) {
+                throw new Error("Invalid end date");
+            }
+
             bean.end_date = obj.dateRange[1];
         } else {
             bean.end_date = null;
@@ -233,7 +243,7 @@ class Maintenance extends BeanModel {
             try {
                 this.beanMeta.status = "scheduled";
 
-                let startEvent = (customDuration = 0) => {
+                let startEvent = async (customDuration = 0) => {
                     log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
 
                     this.beanMeta.status = "under-maintenance";
