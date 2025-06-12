@@ -243,7 +243,7 @@ class Maintenance extends BeanModel {
             try {
                 this.beanMeta.status = "scheduled";
 
-                let startEvent = (customDuration = 0) => {
+                let startEvent = async (customDuration = 0) => {
                     log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
 
                     this.beanMeta.status = "under-maintenance";
