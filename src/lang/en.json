@@ -188,9 +188,13 @@
     "Show URI": "Show URI",
     "Tags": "Tags",
     "Add New Tag": "Add New Tag",
+    "Add Tags": "Add Tags",
     "Add New below or Select...": "Add New below or Select…",
     "Tag with this name already exist.": "Tag with this name already exists.",
     "Tag with this value already exist.": "Tag with this value already exists.",
+    "tagAlreadyOnMonitor": "This tag (name and value) is already on the monitor or pending addition.",
+    "tagAlreadyStaged": "This tag (name and value) is already staged for this batch.",
+    "tagNameExists": "A system tag with this name already exists. Select it from the list or use a different name.",
     "color": "Color",
     "value (optional)": "value (optional)",
     "Gray": "Gray",
@@ -1111,5 +1115,9 @@
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
-    "Disable URL in Notification": "Disable URL in Notification"
+    "Disable URL in Notification": "Disable URL in Notification",
+    "Add Another Tag": "Add Another Tag",
+    "Staged Tags for Batch Add": "Staged Tags for Batch Add",
+    "Clear Form": "Clear Form",
+    "pause": "Pause"
 }
