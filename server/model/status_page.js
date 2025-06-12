@@ -120,8 +120,8 @@ class StatusPage extends BeanModel {
 
         const head = $("head");
 
-        if (statusPage.googleAnalyticsTagId) {
-            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId);
+        if (statusPage.google_analytics_tag_id) {
+            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.google_analytics_tag_id);
             head.append($(escapedGoogleAnalyticsScript));
         }
 
