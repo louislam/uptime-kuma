@@ -792,6 +792,7 @@ let needSetup = false;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
+                bean.ipFamily = monitor.ipFamily;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
@@ -875,6 +876,7 @@ let needSetup = false;
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
+                bean.manual_status = monitor.manual_status;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;

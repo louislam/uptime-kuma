@@ -55,6 +55,9 @@
                                         <option value="push">
                                             Push
                                         </option>
+                                        <option value="manual">
+                                            {{ $t("Manual") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Specific Monitor Type')">
@@ -113,6 +116,18 @@
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" data-testid="friendly-name-input" :placeholder="defaultFriendlyName">
+                            </div>
+
+                            <!-- Manual Status switcher -->
+                            <div v-if="monitor.type === 'manual'" class="mb-3">
+                                <div class="btn-group w-100 mb-3">
+                                    <button class="btn btn-success" @click="monitor.manual_status = 1">
+                                        <i class="fas fa-check"></i> {{ $t("Up") }}
+                                    </button>
+                                    <button class="btn btn-danger" @click="monitor.manual_status = 0">
+                                        <i class="fas fa-times"></i> {{ $t("Down") }}
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- URL -->
@@ -745,6 +760,20 @@
                                         {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
                                 </div>
+
+                                <div class="my-3">
+                                    <label for="ipFamily" class="form-label">{{ $t("Ip Family") }}</label>
+                                    <select id="ipFamily" v-model="monitor.ipFamily" class="form-select">
+                                        <option :value="null">{{ $t("auto-select") }}</option>
+                                        <option value="ipv4">IPv4</option>
+                                        <option value="ipv6">IPv6</option>
+                                    </select>
+                                    <i18n-t v-if="monitor.ipFamily == null" keypath="ipFamilyDescriptionAutoSelect" tag="div" class="form-text">
+                                        <template #happyEyeballs>
+                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">{{ $t("Happy Eyeballs algorithm") }}</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
                             </template>
 
                             <!-- Parent Monitor -->
@@ -1129,6 +1158,7 @@ const monitorDefaults = {
     parent: null,
     url: "https://",
     method: "GET",
+    ipFamily: null,
     interval: 60,
     retryInterval: 60,
     resendInterval: 0,

@@ -160,6 +160,7 @@ class Monitor extends BeanModel {
             smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
+            ipFamily: this.ipFamily,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -426,10 +427,26 @@ class Monitor extends BeanModel {
                         }
                     }
 
+                    let agentFamily = undefined;
+                    if (this.ipFamily === "ipv4") {
+                        agentFamily = 4;
+                    }
+                    if (this.ipFamily === "ipv6") {
+                        agentFamily = 6;
+                    }
+
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
                         secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                        autoSelectFamily: true,
+                        ...(agentFamily ? { family: agentFamily } : {})
+                    };
+
+                    const httpAgentOptions = {
+                        maxCachedSessions: 0,
+                        autoSelectFamily: true,
+                        ...(agentFamily ? { family: agentFamily } : {})
                     };
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
@@ -491,12 +508,17 @@ class Monitor extends BeanModel {
                         if (proxy && proxy.active) {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
                                 httpsAgentOptions: httpsAgentOptions,
+                                httpAgentOptions: httpAgentOptions,
                             });
 
                             options.proxy = false;
                             options.httpAgent = httpAgent;
                             options.httpsAgent = httpsAgent;
                         }
+                    }
+
+                    if (!options.httpAgent) {
+                        options.httpAgent = new http.Agent(httpAgentOptions);
                     }
 
                     if (!options.httpsAgent) {
