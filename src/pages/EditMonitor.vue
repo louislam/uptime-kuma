@@ -118,6 +118,18 @@
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" data-testid="friendly-name-input" :placeholder="defaultFriendlyName">
                             </div>
 
+                            <!-- Manual Status switcher -->
+                            <div v-if="monitor.type === 'manual'" class="mb-3">
+                                <div class="btn-group w-100 mb-3">
+                                    <button class="btn btn-success" @click="monitor.manual_status = 1">
+                                        <i class="fas fa-check"></i> {{ $t("Up") }}
+                                    </button>
+                                    <button class="btn btn-danger" @click="monitor.manual_status = 0">
+                                        <i class="fas fa-times"></i> {{ $t("Down") }}
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- URL -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
@@ -774,17 +786,6 @@
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                             </div>
 
-                            <div v-if="monitor.type === 'manual'" class="mb-3">
-                                <label class="form-label">{{ $t("Manual Status") }}</label>
-                                <div class="btn-group w-100 mb-3">
-                                    <button class="btn btn-success" @click="monitor.manual_status = 1">
-                                        <i class="fas fa-check"></i> {{ $t("Up") }}
-                                    </button>
-                                    <button class="btn btn-danger" @click="monitor.manual_status = 0">
-                                        <i class="fas fa-times"></i> {{ $t("Down") }}
-                                    </button>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="col-md-6">

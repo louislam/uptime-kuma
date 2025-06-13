@@ -21,9 +21,6 @@ class ManualMonitorType extends MonitorType {
                 case DOWN:
                     heartbeat.msg = "Down";
                     break;
-                case MAINTENANCE:
-                    heartbeat.msg = "Maintenance";
-                    break;
                 default:
                     heartbeat.msg = "Pending";
             }
