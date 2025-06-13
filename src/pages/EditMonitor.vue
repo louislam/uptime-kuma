@@ -55,6 +55,9 @@
                                         <option value="push">
                                             Push
                                         </option>
+                                        <option value="manual">
+                                            {{ $t("Manual") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Specific Monitor Type')">
@@ -113,6 +116,18 @@
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
                                 <input id="name" v-model="monitor.name" type="text" class="form-control" data-testid="friendly-name-input" :placeholder="defaultFriendlyName">
+                            </div>
+
+                            <!-- Manual Status switcher -->
+                            <div v-if="monitor.type === 'manual'" class="mb-3">
+                                <div class="btn-group w-100 mb-3">
+                                    <button class="btn btn-success" @click="monitor.manual_status = 1">
+                                        <i class="fas fa-check"></i> {{ $t("Up") }}
+                                    </button>
+                                    <button class="btn btn-danger" @click="monitor.manual_status = 0">
+                                        <i class="fas fa-times"></i> {{ $t("Down") }}
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- URL -->
