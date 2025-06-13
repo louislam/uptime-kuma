@@ -760,6 +760,20 @@
                                         {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
                                 </div>
+
+                                <div class="my-3">
+                                    <label for="ipFamily" class="form-label">{{ $t("Ip Family") }}</label>
+                                    <select id="ipFamily" v-model="monitor.ipFamily" class="form-select">
+                                        <option :value="null">{{ $t("auto-select") }}</option>
+                                        <option value="ipv4">IPv4</option>
+                                        <option value="ipv6">IPv6</option>
+                                    </select>
+                                    <i18n-t v-if="monitor.ipFamily == null" keypath="ipFamilyDescriptionAutoSelect" tag="div" class="form-text">
+                                        <template #happyEyeballs>
+                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">{{ $t("Happy Eyeballs algorithm") }}</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
                             </template>
 
                             <!-- Parent Monitor -->
@@ -1144,6 +1158,7 @@ const monitorDefaults = {
     parent: null,
     url: "https://",
     method: "GET",
+    ipFamily: null,
     interval: 60,
     retryInterval: 60,
     resendInterval: 0,
