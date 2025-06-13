@@ -192,7 +192,7 @@ class Maintenance extends BeanModel {
      * @returns {void}
      */
     static validateCron(cron) {
-        let job = new Cron(cron, () => {});
+        let job = new Cron(cron, () => { });
         job.stop();
     }
 
@@ -209,8 +209,8 @@ class Maintenance extends BeanModel {
 
         log.debug("maintenance", "Run maintenance id: " + this.id);
 
-        // 1.21.2 migration
-        if (!this.cron) {
+        // 1.21.2 migration and 2.0.0-beta.4 migration
+        if (!this.cron || this.strategy === "recurring-interval" && this.cron === "* * * * *") {
             await this.generateCron();
             if (!this.timezone) {
                 this.timezone = "UTC";
@@ -229,6 +229,8 @@ class Maintenance extends BeanModel {
                 apicache.clear();
             });
         } else if (this.cron != null) {
+            let current = dayjs();
+
             // Here should be cron or recurring
             try {
                 this.beanMeta.status = "scheduled";
@@ -248,6 +250,10 @@ class Maintenance extends BeanModel {
                         this.beanMeta.status = "scheduled";
                         UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
                     }, duration);
+
+                    // Set last start date to current time
+                    this.last_start_date = current.toISOString();
+                    R.store(this);
                 };
 
                 // Create Cron
@@ -258,9 +264,24 @@ class Maintenance extends BeanModel {
                     const startDateTime = startDate.hour(hour).minute(minute);
                     this.beanMeta.job = new Cron(this.cron, {
                         timezone: await this.getTimezone(),
-                        interval: this.interval_day * 24 * 60 * 60,
                         startAt: startDateTime.toISOString(),
-                    }, startEvent);
+                    }, () => {
+                        if (!this.lastStartDate || this.interval_day === 1) {
+                            return startEvent();
+                        }
+
+                        // If last start date is set, it means the maintenance has been started before
+                        let lastStartDate = dayjs(this.lastStartDate);
+
+                        // Check if the interval is enough
+                        if (current.diff(lastStartDate, "day") < this.interval_day) {
+                            log.debug("maintenance", "Maintenance id: " + this.id + " is still in the window, skipping start event");
+                            return;
+                        }
+
+                        log.debug("maintenance", "Maintenance id: " + this.id + " is not in the window, starting event");
+                        return startEvent();
+                    });
                 } else {
                     this.beanMeta.job = new Cron(this.cron, {
                         timezone: await this.getTimezone(),
@@ -269,7 +290,6 @@ class Maintenance extends BeanModel {
 
                 // Continue if the maintenance is still in the window
                 let runningTimeslot = this.getRunningTimeslot();
-                let current = dayjs();
 
                 if (runningTimeslot) {
                     let duration = dayjs(runningTimeslot.endDate).diff(current, "second") * 1000;
@@ -413,8 +433,11 @@ class Maintenance extends BeanModel {
         } else if (!this.strategy.startsWith("recurring-")) {
             this.cron = "";
         } else if (this.strategy === "recurring-interval") {
-            // For intervals, the pattern is calculated in the run function as the interval-option is set
-            this.cron = "* * * * *";
+            // For intervals, the pattern is used to check if the execution should be started
+            let array = this.start_time.split(":");
+            let hour = parseInt(array[0]);
+            let minute = parseInt(array[1]);
+            this.cron = minute + " " + hour + " * * *";
             this.duration = this.calcDuration();
             log.debug("maintenance", "Cron: " + this.cron);
             log.debug("maintenance", "Duration: " + this.duration);
