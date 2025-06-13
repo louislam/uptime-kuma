@@ -43,6 +43,21 @@
                 </div>
 
                 <div class="my-3">
+                    <label for="heartbeat-bar-range" class="form-label">{{ $t("Heartbeat Bar Range") }}</label>
+                    <select id="heartbeat-bar-range" v-model="config.heartbeatBarRangeDays" class="form-select" data-testid="heartbeat-bar-range-select">
+                        <option value="7">{{ $t("7 days") }}</option>
+                        <option value="30">{{ $t("30 days") }}</option>
+                        <option value="60">{{ $t("60 days") }}</option>
+                        <option value="90">{{ $t("90 days") }}</option>
+                        <option value="180">{{ $t("180 days") }}</option>
+                        <option value="365">{{ $t("365 days") }}</option>
+                    </select>
+                    <div class="form-text">
+                        {{ $t("How many days of heartbeat history to show in the status page") }}
+                    </div>
+                </div>
+
+                <div class="my-3">
                     <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
                     <select id="switch-theme" v-model="config.theme" class="form-select" data-testid="theme-select">
                         <option value="auto">{{ $t("Auto") }}</option>
@@ -705,6 +720,10 @@ export default {
 
             if (!this.config.domainNameList) {
                 this.config.domainNameList = [];
+            }
+
+            if (!this.config.heartbeatBarRangeDays) {
+                this.config.heartbeatBarRangeDays = 90;
             }
 
             if (this.config.icon) {

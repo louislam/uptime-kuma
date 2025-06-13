@@ -84,14 +84,22 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             statusPageID
         ]);
 
+        // Get the status page to determine the heartbeat range
+        let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
+        let heartbeatRangeDays = (statusPage && statusPage.heartbeat_bar_range_days) ? statusPage.heartbeat_bar_range_days : 90;
+
+        // Calculate the date range for heartbeats
+        let dateFrom = new Date();
+        dateFrom.setDate(dateFrom.getDate() - heartbeatRangeDays);
+
         for (let monitorID of monitorIDList) {
             let list = await R.getAll(`
                     SELECT * FROM heartbeat
-                    WHERE monitor_id = ?
+                    WHERE monitor_id = ? AND time >= ?
                     ORDER BY time DESC
-                    LIMIT 100
             `, [
                 monitorID,
+                dateFrom.toISOString(),
             ]);
 
             list = R.convertToBeans("heartbeat", list);
