@@ -785,7 +785,6 @@
                             <div class="my-3">
                                 <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                             </div>
-
                         </div>
 
                         <div class="col-md-6">

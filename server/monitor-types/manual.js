@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, PENDING, MAINTENANCE } = require("../../src/util");
+const { UP, DOWN, PENDING } = require("../../src/util");
 
 class ManualMonitorType extends MonitorType {
     name = "Manual";
