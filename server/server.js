@@ -876,6 +876,7 @@ let needSetup = false;
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
+                bean.manual_status = monitor.manual_status;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
