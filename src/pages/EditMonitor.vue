@@ -777,19 +777,13 @@
                             <div v-if="monitor.type === 'manual'" class="mb-3">
                                 <label class="form-label">{{ $t("Manual Status") }}</label>
                                 <div class="btn-group w-100 mb-3">
-                                    <button class="btn btn-success" @click="setManualStatus('up')">
+                                    <button class="btn btn-success" @click="monitor.manual_status = 1">
                                         <i class="fas fa-check"></i> {{ $t("Up") }}
                                     </button>
-                                    <button class="btn btn-danger" @click="setManualStatus('down')">
+                                    <button class="btn btn-danger" @click="monitor.manual_status = 0">
                                         <i class="fas fa-times"></i> {{ $t("Down") }}
                                     </button>
-                                    <button class="btn btn-warning" @click="setManualStatus('maintenance')">
-                                        <i class="fas fa-tools"></i> {{ $t("Maintenance") }}
-                                    </button>
                                 </div>
-                                <!-- <div v-else class="alert alert-secondary">
-                                    {{ $t("Manual status can be set after monitor is created") }}
-                                </div> -->
                             </div>
                         </div>
 
@@ -2036,19 +2030,6 @@ message HealthCheckResponse {
             }
         },
 
-        getStatusCode(status) {
-            const statusMap = {
-                "up": 1,
-                "down": 0,
-                "pending": 2,
-                "maintenance": 3
-            };
-            return statusMap[status] ?? 2;
-        },
-
-        setManualStatus(status) {
-            this.monitor.manual_status = this.getStatusCode(status);
-        },
     },
 };
 </script>
