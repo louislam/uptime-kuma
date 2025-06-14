@@ -137,22 +137,19 @@ export default {
             const buckets = [];
 
             // Parse the range to get total time and determine bucket size
+            // Parse range to get total hours
             let totalHours;
-            let bucketSize; // in hours
-            let totalBuckets = this.maxBeat || 50; // Use maxBeat to determine bucket count
-
             if (this.heartbeatBarRange.endsWith("h")) {
                 totalHours = parseInt(this.heartbeatBarRange);
             } else if (this.heartbeatBarRange.endsWith("d")) {
-                const days = parseInt(this.heartbeatBarRange);
-                totalHours = days * 24;
+                totalHours = parseInt(this.heartbeatBarRange) * 24;
             } else {
-                // Fallback
-                totalHours = 90 * 24;
+                totalHours = 90 * 24; // Fallback
             }
 
-            // Calculate bucket size to fit the desired number of buckets
-            bucketSize = totalHours / totalBuckets;
+            // Calculate bucket size and count
+            const totalBuckets = this.maxBeat || 50;
+            const bucketSize = totalHours / totalBuckets;
 
             // Create time buckets from oldest to newest
             const startTime = now.subtract(totalHours, "hours");

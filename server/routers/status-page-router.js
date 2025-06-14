@@ -3,6 +3,7 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
+const { rangeToDatabaseDate } = require("../util/heartbeat-range");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
@@ -89,28 +90,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let heartbeatRange = statusPage ? statusPage.heartbeat_bar_range : "auto";
 
         // Calculate the date range for heartbeats based on range setting
-        let dateFrom = null;
-        if (heartbeatRange === "auto") {
-            // Auto mode: limit to last 100 beats (original behavior)
-            dateFrom = null;
-        } else if (heartbeatRange.endsWith("h")) {
-            // Hours
-            let hours = parseInt(heartbeatRange);
-            let date = new Date();
-            date.setHours(date.getHours() - hours);
-            dateFrom = date.toISOString().slice(0, 19).replace('T', ' ');
-        } else if (heartbeatRange.endsWith("d")) {
-            // Days
-            let days = parseInt(heartbeatRange);
-            let date = new Date();
-            date.setDate(date.getDate() - days);
-            dateFrom = date.toISOString().slice(0, 19).replace('T', ' ');
-        } else {
-            // Fallback to 90 days
-            let date = new Date();
-            date.setDate(date.getDate() - 90);
-            dateFrom = date.toISOString().slice(0, 19).replace('T', ' ');
-        }
+        let dateFrom = rangeToDatabaseDate(heartbeatRange);
 
         for (let monitorID of monitorIDList) {
             let list;
