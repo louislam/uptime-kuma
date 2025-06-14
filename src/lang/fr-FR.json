@@ -592,7 +592,7 @@
     "Domain": "Domaine",
     "Workstation": "Poste de travail",
     "disableCloudflaredNoAuthMsg": "Vous êtes en mode No Auth, un mot de passe n'est pas nécessaire.",
-    "trustProxyDescription": "Faire confiance aux en-têtes 'X-Forwarded-*'. Si vous souhaitez obtenir la bonne adresse IP client et que votre Uptime Kuma se situe derrière un proxy (comme nginx ou Apache) vous devez l'activer.",
+    "trustProxyDescription": "Faire confiance aux en-têtes 'X-Forwarded-*'. Si vous souhaitez obtenir la bonne adresse IP client et que votre Uptime Kuma se situe derrière un proxy (comme nginx ou Apache), vous devez l'activer.",
     "wayToGetLineNotifyToken": "Vous pouvez obtenir un jeton d'accès auprès de {0}",
     "Examples": "Exemples",
     "Home Assistant URL": "URL vers Home Assistant",
