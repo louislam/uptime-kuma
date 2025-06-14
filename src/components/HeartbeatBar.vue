@@ -29,6 +29,7 @@
 
 <script>
 import dayjs from "dayjs";
+import axios from "axios";
 
 export default {
     props: {
@@ -51,6 +52,11 @@ export default {
         heartbeatBarRange: {
             type: String,
             default: "auto",
+        },
+        /** Status page slug for API calls */
+        statusPageSlug: {
+            type: String,
+            default: null,
         }
     },
     data() {
@@ -61,6 +67,7 @@ export default {
             beatHoverAreaPadding: 4,
             move: false,
             maxBeat: -1,
+            aggregatedBeatData: null, // Store fetched data for aggregated mode
         };
     },
     computed: {
@@ -71,6 +78,10 @@ export default {
          */
         beatList() {
             if (this.heartbeatList === null) {
+                // In aggregated mode (non-auto), use fetched data if available
+                if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto" && this.aggregatedBeatData) {
+                    return this.aggregatedBeatData;
+                }
                 return this.$root.heartbeatList[this.monitorId];
             } else {
                 return this.heartbeatList;
@@ -344,6 +355,19 @@ export default {
             },
             deep: true,
         },
+        
+        heartbeatBarRange: {
+            handler(newRange, oldRange) {
+                if (newRange && newRange !== "auto" && this.heartbeatList === null) {
+                    // Fetch data for aggregated mode when range changes
+                    this.fetchAggregatedData();
+                } else if (newRange === "auto") {
+                    // Clear cached data when switching back to auto
+                    this.aggregatedBeatData = null;
+                }
+            },
+            immediate: true,
+        },
     },
     unmounted() {
         window.removeEventListener("resize", this.resize);
@@ -410,6 +434,40 @@ export default {
             }
 
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
+        },
+
+        /**
+         * Fetch heartbeat data for aggregated mode
+         * @returns {void}
+         */
+        async fetchAggregatedData() {
+            // Use provided slug or extract from route
+            let slug = this.statusPageSlug || "default";
+            
+            if (!slug || slug === "default") {
+                // Try to get slug from route params
+                if (this.$route && this.$route.params && this.$route.params.slug) {
+                    slug = this.$route.params.slug;
+                } else {
+                    // Try to extract from URL path
+                    const path = window.location.pathname;
+                    const match = path.match(/\/status\/([^\/]+)/);
+                    if (match) {
+                        slug = match[1];
+                    }
+                }
+            }
+
+            try {
+                const response = await axios.get(`/api/status-page/heartbeat/${slug}`);
+                if (response.data.heartbeatList && response.data.heartbeatList[this.monitorId]) {
+                    this.aggregatedBeatData = response.data.heartbeatList[this.monitorId];
+                }
+            } catch (error) {
+                console.warn(`Failed to fetch aggregated heartbeat data for slug "${slug}":`, error);
+                // Fall back to WebSocket data
+                this.aggregatedBeatData = null;
+            }
         },
 
     },
