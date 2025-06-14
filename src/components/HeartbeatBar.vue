@@ -5,19 +5,19 @@
                 v-for="(beat, index) in shortBeatList"
                 :key="index"
                 class="beat-hover-area"
-                :class="{ 'empty': (beat === 0) }"
+                :class="{ 'empty': (beat === 0 || beat === null || beat.status === null) }"
                 :style="beatHoverAreaStyle"
                 :title="getBeatTitle(beat)"
             >
                 <div
                     class="beat"
-                    :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
+                    :class="{ 'empty': (beat === 0 || beat === null || beat.status === null), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
                     :style="beatStyle"
                 />
             </div>
         </div>
         <div
-            v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
+            v-if="!$root.isMobile && size !== 'small' && shortBeatList.length > 4 && $root.styleElapsedTime !== 'none'"
             class="d-flex justify-content-between align-items-center word" :style="timeStyle"
         >
             <div>{{ timeSinceFirstBeat }}</div>
@@ -46,6 +46,11 @@ export default {
         heartbeatList: {
             type: Array,
             default: null,
+        },
+        /** Heartbeat bar range */
+        heartbeatBarRange: {
+            type: String,
+            default: "auto",
         }
     },
     data() {
@@ -98,6 +103,12 @@ export default {
                 return [];
             }
 
+            // If heartbeat range is configured (not auto), aggregate by time periods
+            if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
+                return this.aggregatedBeatList;
+            }
+
+            // Original logic for short time ranges
             let placeholders = [];
 
             let start = this.beatList.length - this.maxBeat;
@@ -115,6 +126,101 @@ export default {
             }
 
             return placeholders.concat(this.beatList.slice(start));
+        },
+
+        aggregatedBeatList() {
+            if (!this.beatList || !this.heartbeatBarRange || this.heartbeatBarRange === "auto") {
+                return [];
+            }
+
+            const now = dayjs();
+            const buckets = [];
+
+            // Parse the range to get total time and determine bucket size
+            let totalHours;
+            let bucketSize; // in hours
+            let totalBuckets = this.maxBeat || 50; // Use maxBeat to determine bucket count
+
+            if (this.heartbeatBarRange.endsWith("h")) {
+                totalHours = parseInt(this.heartbeatBarRange);
+            } else if (this.heartbeatBarRange.endsWith("d")) {
+                const days = parseInt(this.heartbeatBarRange);
+                totalHours = days * 24;
+            } else {
+                // Fallback
+                totalHours = 90 * 24;
+            }
+
+            // Calculate bucket size to fit the desired number of buckets
+            bucketSize = totalHours / totalBuckets;
+
+            // Create time buckets from oldest to newest
+            const startTime = now.subtract(totalHours, "hours");
+            
+            for (let i = 0; i < totalBuckets; i++) {
+                let bucketStart;
+                let bucketEnd;
+                if (bucketSize < 1) {
+                    // Handle sub-hour buckets (minutes)
+                    const minutes = bucketSize * 60;
+                    bucketStart = startTime.add(i * minutes, "minutes");
+                    bucketEnd = bucketStart.add(minutes, "minutes");
+                } else {
+                    // Handle hour+ buckets
+                    bucketStart = startTime.add(i * bucketSize, "hours");
+                    bucketEnd = bucketStart.add(bucketSize, "hours");
+                }
+
+                buckets.push({
+                    start: bucketStart,
+                    end: bucketEnd,
+                    beats: [],
+                    status: 1, // default to up
+                    time: bucketEnd.toISOString()
+                });
+            }
+
+            // Group heartbeats into buckets
+            this.beatList.forEach(beat => {
+                const beatTime = dayjs.utc(beat.time).local();
+                const bucket = buckets.find(b =>
+                    (beatTime.isAfter(b.start) || beatTime.isSame(b.start)) &&
+                    (beatTime.isBefore(b.end) || beatTime.isSame(b.end))
+                );
+                if (bucket) {
+                    bucket.beats.push(beat);
+                }
+            });
+
+            // Calculate status for each bucket
+            buckets.forEach(bucket => {
+                if (bucket.beats.length === 0) {
+                    bucket.status = null; // no data - will be rendered as empty/grey
+                    bucket.time = bucket.end.toISOString();
+                } else {
+                    // If any beat is down, bucket is down
+                    // If any beat is maintenance, bucket is maintenance
+                    // Otherwise bucket is up
+                    const hasDown = bucket.beats.some(b => b.status === 0);
+                    const hasMaintenance = bucket.beats.some(b => b.status === 3);
+
+                    if (hasDown) {
+                        bucket.status = 0;
+                    } else if (hasMaintenance) {
+                        bucket.status = 3;
+                    } else {
+                        bucket.status = 1;
+                    }
+
+                    // Use the latest beat time in the bucket
+                    const latestBeat = bucket.beats.reduce((latest, beat) =>
+                        dayjs(beat.time).isAfter(dayjs(latest.time)) ? beat : latest
+                    );
+                    bucket.time = latestBeat.time;
+                }
+            });
+
+            return buckets;
         },
 
         wrapStyle() {
@@ -162,6 +268,14 @@ export default {
          * @returns {object} The style object containing the CSS properties for positioning the time element.
          */
         timeStyle() {
+            // For aggregated mode, don't use padding-based positioning
+            if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
+                return {
+                    "margin-left": "0px",
+                };
+            }
+            
+            // Original logic for auto mode
             return {
                 "margin-left": this.numPadding * (this.beatWidth + this.beatHoverAreaPadding * 2) + "px",
             };
@@ -172,6 +286,22 @@ export default {
          * @returns {string} The time elapsed in minutes or hours.
          */
         timeSinceFirstBeat() {
+            // For aggregated beats, calculate from the configured range
+            if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
+                if (this.heartbeatBarRange.endsWith("h")) {
+                    const hours = parseInt(this.heartbeatBarRange);
+                    return hours + "h";
+                } else if (this.heartbeatBarRange.endsWith("d")) {
+                    const days = parseInt(this.heartbeatBarRange);
+                    if (days < 2) {
+                        return (days * 24) + "h";
+                    } else {
+                        return days + "d";
+                    }
+                }
+            }
+
+            // Original logic for auto mode
             const firstValidBeat = this.shortBeatList.at(this.numPadding);
             const minutes = dayjs().diff(dayjs.utc(firstValidBeat?.time), "minutes");
             if (minutes > 60) {
@@ -267,6 +397,18 @@ export default {
          * @returns {string} Beat title
          */
         getBeatTitle(beat) {
+            if (beat === 0) {
+                return "";
+            }
+
+            // For aggregated beats, show time range and status
+            if (beat.beats !== undefined && this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
+                const start = this.$root.datetime(beat.start);
+                const end = this.$root.datetime(beat.end);
+                const statusText = beat.status === 1 ? "Up" : beat.status === 0 ? "Down" : beat.status === 3 ? "Maintenance" : "No Data";
+                return `${start} - ${end}: ${statusText} (${beat.beats.length} checks)`;
+            }
+
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
         },
 

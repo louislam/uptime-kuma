@@ -44,16 +44,20 @@
 
                 <div class="my-3">
                     <label for="heartbeat-bar-range" class="form-label">{{ $t("Heartbeat Bar Range") }}</label>
-                    <select id="heartbeat-bar-range" v-model="config.heartbeatBarRangeDays" class="form-select" data-testid="heartbeat-bar-range-select">
-                        <option value="7">{{ $t("7 days") }}</option>
-                        <option value="30">{{ $t("30 days") }}</option>
-                        <option value="60">{{ $t("60 days") }}</option>
-                        <option value="90">{{ $t("90 days") }}</option>
-                        <option value="180">{{ $t("180 days") }}</option>
-                        <option value="365">{{ $t("365 days") }}</option>
+                    <select id="heartbeat-bar-range" v-model="config.heartbeatBarRange" class="form-select" data-testid="heartbeat-bar-range-select">
+                        <option value="auto">{{ $t("Auto") }}</option>
+                        <option value="6h">{{ $t("6 hours") }}</option>
+                        <option value="12h">{{ $t("12 hours") }}</option>
+                        <option value="24h">{{ $t("24 hours") }}</option>
+                        <option value="7d">{{ $t("7 days") }}</option>
+                        <option value="30d">{{ $t("30 days") }}</option>
+                        <option value="60d">{{ $t("60 days") }}</option>
+                        <option value="90d">{{ $t("90 days") }}</option>
+                        <option value="180d">{{ $t("180 days") }}</option>
+                        <option value="365d">{{ $t("365 days") }}</option>
                     </select>
                     <div class="form-text">
-                        {{ $t("How many days of heartbeat history to show in the status page") }}
+                        {{ $t("How much heartbeat history to show in the status page") }}
                     </div>
                 </div>
 
@@ -343,7 +347,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :heartbeat-bar-range="config.heartbeatBarRange" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -715,24 +719,27 @@ export default {
             this.slug = "default";
         }
 
-        this.getData().then((res) => {
-            this.config = res.data.config;
+        Promise.all([
+            this.getData(),
+            this.editMode ? Promise.resolve() : this.loadHeartbeatData()
+        ]).then(([configRes]) => {
+            this.config = configRes.data.config;
 
             if (!this.config.domainNameList) {
                 this.config.domainNameList = [];
             }
 
-            if (!this.config.heartbeatBarRangeDays) {
-                this.config.heartbeatBarRangeDays = 90;
+            if (!this.config.heartbeatBarRange) {
+                this.config.heartbeatBarRange = "auto";
             }
 
             if (this.config.icon) {
                 this.imgDataUrl = this.config.icon;
             }
 
-            this.incident = res.data.incident;
-            this.maintenanceList = res.data.maintenanceList;
-            this.$root.publicGroupList = res.data.publicGroupList;
+            this.incident = configRes.data.incident;
+            this.maintenanceList = configRes.data.maintenanceList;
+            this.$root.publicGroupList = configRes.data.publicGroupList;
 
             this.loading = false;
 
@@ -748,8 +755,6 @@ export default {
             }
             console.log(error);
         });
-
-        this.updateHeartbeatList();
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
@@ -784,36 +789,44 @@ export default {
         },
 
         /**
+         * Load heartbeat data from API
+         * @returns {Promise} Promise that resolves when data is loaded
+         */
+        loadHeartbeatData() {
+            return axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
+                const { heartbeatList, uptimeList } = res.data;
+
+                this.$root.heartbeatList = heartbeatList;
+                this.$root.uptimeList = uptimeList;
+
+                const heartbeatIds = Object.keys(heartbeatList);
+                const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
+                    const monitorHeartbeats = heartbeatList[currentId];
+                    const lastHeartbeat = monitorHeartbeats.at(-1);
+
+                    if (lastHeartbeat) {
+                        return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
+                    } else {
+                        return downMonitorsAmount;
+                    }
+                }, 0);
+
+                favicon.badge(downMonitors);
+
+                this.loadedData = true;
+                this.lastUpdateTime = dayjs();
+                this.updateUpdateTimer();
+            });
+        },
+
+        /**
          * Update the heartbeat list and update favicon if necessary
          * @returns {void}
          */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
-                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList } = res.data;
-
-                    this.$root.heartbeatList = heartbeatList;
-                    this.$root.uptimeList = uptimeList;
-
-                    const heartbeatIds = Object.keys(heartbeatList);
-                    const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
-                        const monitorHeartbeats = heartbeatList[currentId];
-                        const lastHeartbeat = monitorHeartbeats.at(-1);
-
-                        if (lastHeartbeat) {
-                            return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
-                        } else {
-                            return downMonitorsAmount;
-                        }
-                    }, 0);
-
-                    favicon.badge(downMonitors);
-
-                    this.loadedData = true;
-                    this.lastUpdateTime = dayjs();
-                    this.updateUpdateTimer();
-                });
+                this.loadHeartbeatData();
             }
         },
 

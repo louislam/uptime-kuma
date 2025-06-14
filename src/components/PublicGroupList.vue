@@ -73,7 +73,7 @@
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-6">
-                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" :heartbeat-bar-range="heartbeatBarRange" />
                                     </div>
                                 </div>
                             </div>
@@ -114,6 +114,11 @@ export default {
         /** Should expiry be shown? */
         showCertificateExpiry: {
             type: Boolean,
+        },
+        /** Heartbeat bar range */
+        heartbeatBarRange: {
+            type: String,
+            default: "auto",
         }
     },
     data() {

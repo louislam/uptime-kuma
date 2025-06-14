@@ -86,21 +86,49 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
         // Get the status page to determine the heartbeat range
         let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
-        let heartbeatRangeDays = (statusPage && statusPage.heartbeat_bar_range_days) ? statusPage.heartbeat_bar_range_days : 90;
+        let heartbeatRange = (statusPage && statusPage.heartbeat_bar_range) ? statusPage.heartbeat_bar_range : "auto";
 
-        // Calculate the date range for heartbeats
+        // Calculate the date range for heartbeats based on range setting
         let dateFrom = new Date();
-        dateFrom.setDate(dateFrom.getDate() - heartbeatRangeDays);
+        if (heartbeatRange === "auto") {
+            // Auto mode: limit to last 100 beats (original behavior)
+            dateFrom = null;
+        } else if (heartbeatRange.endsWith("h")) {
+            // Hours
+            let hours = parseInt(heartbeatRange);
+            dateFrom.setHours(dateFrom.getHours() - hours);
+        } else if (heartbeatRange.endsWith("d")) {
+            // Days
+            let days = parseInt(heartbeatRange);
+            dateFrom.setDate(dateFrom.getDate() - days);
+        } else {
+            // Fallback to 90 days
+            dateFrom.setDate(dateFrom.getDate() - 90);
+        }
 
         for (let monitorID of monitorIDList) {
-            let list = await R.getAll(`
+            let list;
+            if (dateFrom === null) {
+                // Auto mode: use original logic with LIMIT 100
+                list = await R.getAll(`
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ?
+                    ORDER BY time DESC
+                    LIMIT 100
+                `, [
+                    monitorID,
+                ]);
+            } else {
+                // Time-based filtering
+                list = await R.getAll(`
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ? AND time >= ?
                     ORDER BY time DESC
-            `, [
-                monitorID,
-                dateFrom.toISOString(),
-            ]);
+                `, [
+                    monitorID,
+                    dateFrom.toISOString(),
+                ]);
+            }
 
             list = R.convertToBeans("heartbeat", list);
             heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
