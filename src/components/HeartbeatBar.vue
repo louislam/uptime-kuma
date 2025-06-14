@@ -49,8 +49,12 @@ export default {
         },
         /** Heartbeat bar days */
         heartbeatBarDays: {
-            type: Number,
+            type: [Number, String],
             default: 0,
+            validator(value) {
+                const num = Number(value);
+                return !isNaN(num) && num >= 0 && num <= 365;
+            }
         }
     },
     data() {
@@ -64,6 +68,15 @@ export default {
         };
     },
     computed: {
+
+        /**
+         * Normalized heartbeatBarDays as a number
+         * @returns {number} Number of days for heartbeat bar
+         */
+        normalizedHeartbeatBarDays() {
+            const num = Number(this.heartbeatBarDays);
+            return isNaN(num) ? 0 : Math.max(0, Math.min(365, Math.floor(num)));
+        },
 
         /**
          * If heartbeatList is null, get it from $root.heartbeatList
@@ -103,12 +116,13 @@ export default {
                 return [];
             }
 
-            // If heartbeat days is configured (not auto), aggregate by time periods
-            if (this.heartbeatBarDays > 0) {
+            // If heartbeat days is configured (not auto), always use client-side aggregation
+            // This ensures consistent behavior between edit mode and published mode
+            if (this.normalizedHeartbeatBarDays > 0) {
                 return this.aggregatedBeatList;
             }
 
-            // Original logic for short time ranges
+            // Original logic for auto mode (heartbeatBarDays = 0)
             let placeholders = [];
 
             let start = this.beatList.length - this.maxBeat;
@@ -138,7 +152,7 @@ export default {
             const buckets = [];
 
             // Calculate total hours from days
-            const totalHours = this.heartbeatBarDays * 24;
+            const totalHours = this.normalizedHeartbeatBarDays * 24;
 
             // Use dynamic maxBeat calculated from screen size
             const totalBuckets = this.maxBeat > 0 ? this.maxBeat : 50;
@@ -245,7 +259,7 @@ export default {
          */
         timeStyle() {
             // For aggregated mode, don't use padding-based positioning
-            if (this.heartbeatBarDays > 0) {
+            if (this.normalizedHeartbeatBarDays > 0) {
                 return {
                     "margin-left": "0px",
                 };
@@ -263,11 +277,11 @@ export default {
          */
         timeSinceFirstBeat() {
             // For aggregated beats, calculate from the configured days
-            if (this.heartbeatBarDays > 0) {
-                if (this.heartbeatBarDays < 2) {
-                    return (this.heartbeatBarDays * 24) + "h";
+            if (this.normalizedHeartbeatBarDays > 0) {
+                if (this.normalizedHeartbeatBarDays < 2) {
+                    return (this.normalizedHeartbeatBarDays * 24) + "h";
                 } else {
-                    return this.heartbeatBarDays + "d";
+                    return this.normalizedHeartbeatBarDays + "d";
                 }
             }
 
@@ -371,14 +385,15 @@ export default {
                 return "";
             }
 
-            // For aggregated beats, show time range and status
-            if (beat.beats !== undefined && this.heartbeatBarDays > 0) {
+            // For aggregated beats (client-side aggregation), show time range and status
+            if (beat.beats !== undefined && this.normalizedHeartbeatBarDays > 0) {
                 const start = this.$root.datetime(beat.start);
                 const end = this.$root.datetime(beat.end);
                 const statusText = beat.status === 1 ? "Up" : beat.status === 0 ? "Down" : beat.status === 3 ? "Maintenance" : "No Data";
                 return `${start} - ${end}: ${statusText} (${beat.beats.length} checks)`;
             }
 
+            // For published mode with configured days, show simple timestamp
             return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
         },
 

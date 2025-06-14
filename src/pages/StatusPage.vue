@@ -627,6 +627,12 @@ export default {
                     if (res.ok) {
                         this.config = res.config;
 
+                        if (this.config.heartbeatBarDays === undefined || this.config.heartbeatBarDays === null || this.config.heartbeatBarDays === "") {
+                            this.config.heartbeatBarDays = 0;
+                        } else {
+                            this.config.heartbeatBarDays = parseInt(this.config.heartbeatBarDays, 10) || 0;
+                        }
+
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" +
                                 "  \n" +
@@ -718,8 +724,10 @@ export default {
                 this.config.domainNameList = [];
             }
 
-            if (!this.config.heartbeatBarRange) {
-                this.config.heartbeatBarRange = "auto";
+            if (this.config.heartbeatBarDays === undefined || this.config.heartbeatBarDays === null || this.config.heartbeatBarDays === "") {
+                this.config.heartbeatBarDays = 0;
+            } else {
+                this.config.heartbeatBarDays = parseInt(this.config.heartbeatBarDays, 10) || 0;
             }
 
             if (this.config.icon) {

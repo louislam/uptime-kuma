@@ -433,7 +433,7 @@ class StatusPage extends BeanModel {
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
-            heartbeatBarRange: this.heartbeat_bar_range || "auto",
+            heartbeatBarDays: this.heartbeat_bar_days || 0,
         };
     }
 
