@@ -5,7 +5,7 @@
                 v-for="(beat, index) in shortBeatList"
                 :key="index"
                 class="beat-hover-area"
-                :class="{ 'empty': (beat === 0 || beat === null || beat.status === null) }"
+                :class="{ 'empty': (beat === 0) }"
                 :style="beatHoverAreaStyle"
                 :title="getBeatTitle(beat)"
             >
@@ -17,7 +17,7 @@
             </div>
         </div>
         <div
-            v-if="!$root.isMobile && size !== 'small' && shortBeatList.length > 4 && $root.styleElapsedTime !== 'none'"
+            v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
             class="d-flex justify-content-between align-items-center word" :style="timeStyle"
         >
             <div>{{ timeSinceFirstBeat }}</div>
@@ -118,17 +118,9 @@ export default {
                 return [];
             }
 
-            // If heartbeat days is configured (not auto), data should be aggregated from server
+            // If heartbeat days is configured (not auto), data is already aggregated from server
             if (this.normalizedHeartbeatBarDays > 0 && this.beatList.length > 0) {
-                // Calculate how many beats can fit on screen with proper beat size
-                const maxBeatsOnScreen = this.maxBeat > 0 ? this.maxBeat : 50; // fallback
-
-                // If we have more beats than can fit, aggregate them client-side
-                if (this.beatList.length > maxBeatsOnScreen) {
-                    return this.aggregateBeats(this.beatList, maxBeatsOnScreen);
-                }
-
-                // Otherwise show all beats
+                // Show all beats from server - they are already properly aggregated
                 return this.beatList;
             }
 
@@ -302,87 +294,6 @@ export default {
             if (this.$refs.wrap) {
                 this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
             }
-        },
-
-        /**
-         * Aggregate beats to fit screen width while maintaining proper beat size
-         * @param {Array} beats Array of beats to aggregate
-         * @param {number} targetCount Target number of beats to display
-         * @returns {Array} Aggregated beats array
-         */
-        aggregateBeats(beats, targetCount) {
-            if (beats.length <= targetCount) {
-                return beats;
-            }
-
-            const aggregated = [];
-            const beatsPerBucket = beats.length / targetCount;
-
-            for (let i = 0; i < targetCount; i++) {
-                const startIdx = Math.floor(i * beatsPerBucket);
-                const endIdx = Math.floor((i + 1) * beatsPerBucket);
-                const bucketBeats = beats.slice(startIdx, endIdx);
-
-                if (bucketBeats.length === 0) {
-                    continue;
-                }
-
-                // Aggregate the beats in this bucket
-                let aggregatedBeat = {
-                    status: null,
-                    time: bucketBeats[bucketBeats.length - 1].time, // Use end time
-                    msg: "",
-                    ping: null,
-                    _aggregated: true,
-                    _startTime: bucketBeats[0]._startTime || bucketBeats[0].time,
-                    _endTime: bucketBeats[bucketBeats.length - 1]._endTime || bucketBeats[bucketBeats.length - 1].time,
-                    _counts: {
-                        up: 0,
-                        down: 0,
-                        maintenance: 0,
-                        pending: 0
-                    }
-                };
-
-                // Sum up counts from all beats in bucket
-                for (const beat of bucketBeats) {
-                    if (beat && beat._counts) {
-                        aggregatedBeat._counts.up += beat._counts.up || 0;
-                        aggregatedBeat._counts.down += beat._counts.down || 0;
-                        aggregatedBeat._counts.maintenance += beat._counts.maintenance || 0;
-                        aggregatedBeat._counts.pending += beat._counts.pending || 0;
-                    } else if (beat && beat.status !== null) {
-                        // Handle non-aggregated beats
-                        if (beat.status === 1) {
-                            aggregatedBeat._counts.up += 1;
-                        } else if (beat.status === 0) {
-                            aggregatedBeat._counts.down += 1;
-                        } else if (beat.status === 3) {
-                            aggregatedBeat._counts.maintenance += 1;
-                        } else if (beat.status === 2) {
-                            aggregatedBeat._counts.pending += 1;
-                        }
-                    }
-                }
-
-                // Determine aggregated status (priority: DOWN > MAINTENANCE > PENDING > UP)
-                const counts = aggregatedBeat._counts;
-                if (counts.down > 0) {
-                    aggregatedBeat.status = 0; // DOWN
-                } else if (counts.maintenance > 0) {
-                    aggregatedBeat.status = 3; // MAINTENANCE
-                } else if (counts.pending > 0) {
-                    aggregatedBeat.status = 2; // PENDING
-                } else if (counts.up > 0) {
-                    aggregatedBeat.status = 1; // UP
-                } else {
-                    aggregatedBeat.status = null; // No data
-                }
-
-                aggregated.push(aggregatedBeat);
-            }
-
-            return aggregated;
         },
 
         /**
