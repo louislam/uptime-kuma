@@ -115,9 +115,25 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                 uptime = uptimeCalculator.get24Hour().uptime;
             } else {
                 // For configured day ranges, use aggregated data from UptimeCalculator
-                heartbeats = await getAggregatedHeartbeats(uptimeCalculator, heartbeatBarDays, maxBeats);
-                // Calculate uptime for the configured range instead of just 24h
-                uptime = uptimeCalculator.get24Hour().uptime; // TODO: Calculate range-specific uptime
+                const buckets = uptimeCalculator.getAggregatedBuckets(heartbeatBarDays, maxBeats);
+                heartbeats = buckets.map(bucket => ({
+                    status: bucket.down > 0 ? DOWN :
+                        bucket.maintenance > 0 ? MAINTENANCE :
+                            bucket.pending > 0 ? PENDING :
+                                bucket.up > 0 ? UP : null,
+                    time: dayjs.unix(bucket.end).toISOString(),
+                    msg: "",
+                    ping: null
+                }));
+
+                // Calculate uptime for the configured range
+                if (heartbeatBarDays <= 1) {
+                    uptime = uptimeCalculator.get24Hour().uptime;
+                } else if (heartbeatBarDays <= 30) {
+                    uptime = uptimeCalculator.get30Day().uptime;
+                } else {
+                    uptime = uptimeCalculator.get1Year().uptime;
+                }
             }
 
             return {
@@ -278,104 +294,5 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
         sendHttpError(response, error.message);
     }
 });
-
-/**
- * Get aggregated heartbeats for status page display
- * @param {UptimeCalculator} uptimeCalculator The uptime calculator instance
- * @param {number} days Number of days to show
- * @param {number} targetBuckets Number of buckets to aggregate into (default 100)
- * @returns {Promise<Array>} Array of aggregated heartbeat data
- */
-async function getAggregatedHeartbeats(uptimeCalculator, days, targetBuckets = 100) {
-    const now = dayjs.utc();
-    const result = [];
-
-    // Force exact time range: exactly N days ago to exactly now
-    const startTime = now.subtract(days, "day");
-    const totalMinutes = days * 60 * 24;
-    const bucketSizeMinutes = totalMinutes / targetBuckets;
-
-    // Get available data from UptimeCalculator for lookup
-    const availableData = {};
-    let rawDataPoints;
-
-    if (days <= 1) {
-        const exactMinutes = Math.ceil(days * 24 * 60);
-        rawDataPoints = uptimeCalculator.getDataArray(exactMinutes, "minute");
-    } else if (days <= 30) {
-        const exactHours = Math.ceil(days * 24);
-        rawDataPoints = uptimeCalculator.getDataArray(exactHours, "hour");
-    } else {
-        // For > 30 days, use daily data to avoid hitting the 720-hour limit
-        const requestDays = Math.min(days, 365);
-        rawDataPoints = uptimeCalculator.getDataArray(requestDays, "day");
-    }
-
-    // Create lookup map for available data
-    for (const point of rawDataPoints) {
-        if (point && point.timestamp) {
-            availableData[point.timestamp] = point;
-        }
-    }
-
-    // Create exactly targetBuckets buckets spanning the full requested time range
-    const buckets = [];
-    for (let i = 0; i < targetBuckets; i++) {
-        const bucketStart = startTime.add(i * bucketSizeMinutes, "minute");
-        const bucketEnd = startTime.add((i + 1) * bucketSizeMinutes, "minute");
-
-        buckets.push({
-            start: bucketStart.unix(),
-            end: bucketEnd.unix(),
-            up: 0,
-            down: 0,
-            maintenance: 0,
-            pending: 0
-        });
-    }
-
-    // Aggregate available data into buckets
-    let bucketIndex = 0;
-    for (const [ timestamp, dataPoint ] of Object.entries(availableData)) {
-        const timestampNum = parseInt(timestamp);
-
-        // Find the appropriate bucket for this data point (more efficient)
-        while (bucketIndex < buckets.length - 1 && timestampNum >= buckets[bucketIndex].end) {
-            bucketIndex++;
-        }
-
-        const bucket = buckets[bucketIndex];
-        if (bucket && timestampNum >= bucket.start && timestampNum < bucket.end && dataPoint) {
-            bucket.up += dataPoint.up || 0;
-            bucket.down += dataPoint.down || 0;
-            bucket.maintenance += 0; // UptimeCalculator treats maintenance as up
-            bucket.pending += 0;     // UptimeCalculator doesn't track pending separately
-        }
-    }
-
-    // Convert buckets to heartbeat format
-    for (const bucket of buckets) {
-        // Determine status based on priority: DOWN > MAINTENANCE > PENDING > UP
-        let status = null; // No data
-        if (bucket.down > 0) {
-            status = DOWN;
-        } else if (bucket.maintenance > 0) {
-            status = MAINTENANCE;
-        } else if (bucket.pending > 0) {
-            status = PENDING;
-        } else if (bucket.up > 0) {
-            status = UP;
-        }
-
-        result.push({
-            status: status,
-            time: dayjs.unix(bucket.end).toISOString(),
-            msg: "",
-            ping: null
-        });
-    }
-
-    return result;
-}
 
 module.exports = router;
