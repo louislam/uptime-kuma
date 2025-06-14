@@ -282,7 +282,7 @@ async function getAggregatedHeartbeats(uptimeCalculator, days) {
     if (days <= 1) {
         const exactMinutes = Math.ceil(days * 24 * 60);
         rawDataPoints = uptimeCalculator.getDataArray(exactMinutes, "minute");
-    } else if (days <= 30) {
+    } else if (days <= 90) {
         const exactHours = Math.ceil(days * 24);
         rawDataPoints = uptimeCalculator.getDataArray(exactHours, "hour");
     } else {
