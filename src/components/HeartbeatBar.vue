@@ -129,94 +129,9 @@ export default {
         },
 
         aggregatedBeatList() {
-            if (!this.beatList || !this.heartbeatBarRange || this.heartbeatBarRange === "auto") {
-                return [];
-            }
-
-            const now = dayjs();
-            const buckets = [];
-
-            // Parse the range to get total time and determine bucket size
-            // Parse range to get total hours
-            let totalHours;
-            if (this.heartbeatBarRange.endsWith("h")) {
-                totalHours = parseInt(this.heartbeatBarRange);
-            } else if (this.heartbeatBarRange.endsWith("d")) {
-                totalHours = parseInt(this.heartbeatBarRange) * 24;
-            } else {
-                totalHours = 90 * 24; // Fallback
-            }
-
-            // Calculate bucket size and count
-            const totalBuckets = this.maxBeat || 50;
-            const bucketSize = totalHours / totalBuckets;
-
-            // Create time buckets from oldest to newest
-            const startTime = now.subtract(totalHours, "hours");
-            for (let i = 0; i < totalBuckets; i++) {
-                let bucketStart;
-                let bucketEnd;
-                if (bucketSize < 1) {
-                    // Handle sub-hour buckets (minutes)
-                    const minutes = bucketSize * 60;
-                    bucketStart = startTime.add(i * minutes, "minutes");
-                    bucketEnd = bucketStart.add(minutes, "minutes");
-                } else {
-                    // Handle hour+ buckets
-                    bucketStart = startTime.add(i * bucketSize, "hours");
-                    bucketEnd = bucketStart.add(bucketSize, "hours");
-                }
-
-                buckets.push({
-                    start: bucketStart,
-                    end: bucketEnd,
-                    beats: [],
-                    status: 1, // default to up
-                    time: bucketEnd.toISOString()
-                });
-            }
-
-            // Group heartbeats into buckets
-            this.beatList.forEach(beat => {
-                const beatTime = dayjs.utc(beat.time).local();
-                const bucket = buckets.find(b =>
-                    (beatTime.isAfter(b.start) || beatTime.isSame(b.start)) &&
-                    (beatTime.isBefore(b.end) || beatTime.isSame(b.end))
-                );
-                if (bucket) {
-                    bucket.beats.push(beat);
-                }
-            });
-
-            // Calculate status for each bucket
-            buckets.forEach(bucket => {
-                if (bucket.beats.length === 0) {
-                    bucket.status = null; // no data - will be rendered as empty/grey
-                    bucket.time = bucket.end.toISOString();
-                } else {
-                    // If any beat is down, bucket is down
-                    // If any beat is maintenance, bucket is maintenance
-                    // Otherwise bucket is up
-                    const hasDown = bucket.beats.some(b => b.status === 0);
-                    const hasMaintenance = bucket.beats.some(b => b.status === 3);
-
-                    if (hasDown) {
-                        bucket.status = 0;
-                    } else if (hasMaintenance) {
-                        bucket.status = 3;
-                    } else {
-                        bucket.status = 1;
-                    }
-
-                    // Use the latest beat time in the bucket
-                    const latestBeat = bucket.beats.reduce((latest, beat) =>
-                        dayjs(beat.time).isAfter(dayjs(latest.time)) ? beat : latest
-                    );
-                    bucket.time = latestBeat.time;
-                }
-            });
-
-            return buckets;
+            // Data is now pre-aggregated by the server using stat tables
+            // No client-side processing needed for non-auto ranges
+            return this.beatList || [];
         },
 
         wrapStyle() {

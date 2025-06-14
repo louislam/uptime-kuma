@@ -3,7 +3,7 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
-const { rangeToDatabaseDate } = require("../util/heartbeat-range");
+const { getAggregatedHeartbeatData } = require("../util/heartbeat-range");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
@@ -89,13 +89,17 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
         let heartbeatRange = statusPage ? statusPage.heartbeat_bar_range : "auto";
 
-        // Calculate the date range for heartbeats based on range setting
-        let dateFrom = rangeToDatabaseDate(heartbeatRange);
-
         for (let monitorID of monitorIDList) {
             let list;
-            if (dateFrom === null) {
-                // Auto mode: use original logic with LIMIT 100
+            
+            // Try to use aggregated data from stat tables for better performance
+            const aggregatedData = await getAggregatedHeartbeatData(monitorID, heartbeatRange);
+            
+            if (aggregatedData) {
+                // Use pre-aggregated stat data
+                heartbeatList[monitorID] = aggregatedData;
+            } else {
+                // Fall back to raw heartbeat data for auto mode
                 list = await R.getAll(`
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ?
@@ -104,20 +108,10 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                 `, [
                     monitorID,
                 ]);
-            } else {
-                // Time-based filtering
-                list = await R.getAll(`
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ? AND time >= ?
-                    ORDER BY time DESC
-                `, [
-                    monitorID,
-                    dateFrom,
-                ]);
-            }
 
-            list = R.convertToBeans("heartbeat", list);
-            heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+                list = R.convertToBeans("heartbeat", list);
+                heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+            }
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
             uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
