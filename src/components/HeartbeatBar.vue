@@ -120,8 +120,15 @@ export default {
 
             // If heartbeat days is configured (not auto), data should be aggregated from server
             if (this.normalizedHeartbeatBarDays > 0 && this.beatList.length > 0) {
-                // Data is already aggregated from server covering exact time range requested
-                // Show all beats to display the full requested time period
+                // Calculate how many beats can fit on screen with proper beat size
+                const maxBeatsOnScreen = this.maxBeat > 0 ? this.maxBeat : 50; // fallback
+
+                // If we have more beats than can fit, aggregate them client-side
+                if (this.beatList.length > maxBeatsOnScreen) {
+                    return this.aggregateBeats(this.beatList, maxBeatsOnScreen);
+                }
+
+                // Otherwise show all beats
                 return this.beatList;
             }
 
@@ -152,7 +159,7 @@ export default {
 
         wrapStyle() {
             let topBottom = (((this.beatHeight * this.hoverScale) - this.beatHeight) / 2);
-            let leftRight = (((this.dynamicBeatWidth * this.hoverScale) - this.dynamicBeatWidth) / 2);
+            let leftRight = (((this.beatWidth * this.hoverScale) - this.beatWidth) / 2);
 
             return {
                 padding: `${topBottom}px ${leftRight}px`,
@@ -161,8 +168,8 @@ export default {
         },
 
         barStyle() {
-            if (this.move && this.maxBeat > 0 && this.shortBeatList.length > this.maxBeat) {
-                let width = -(this.dynamicBeatWidth + this.beatHoverAreaPadding * 2);
+            if (this.move && this.shortBeatList.length > this.maxBeat) {
+                let width = -(this.beatWidth + this.beatHoverAreaPadding * 2);
 
                 return {
                     transition: "all ease-in-out 0.25s",
@@ -183,28 +190,9 @@ export default {
             };
         },
 
-        /**
-         * Calculate dynamic beat width for configured ranges
-         * @returns {number} Beat width in pixels
-         */
-        dynamicBeatWidth() {
-            // For configured ranges, fit all beats to available width
-            if (this.normalizedHeartbeatBarDays > 0 && this.shortBeatList.length > 0) {
-                if (this.$refs.wrap) {
-                    const availableWidth = this.$refs.wrap.clientWidth;
-                    const totalBeats = this.shortBeatList.length;
-                    const totalPadding = totalBeats * (this.beatHoverAreaPadding * 2);
-                    const availableForBeats = availableWidth - totalPadding;
-                    const calculatedWidth = Math.max(1, Math.floor(availableForBeats / totalBeats));
-                    return Math.min(calculatedWidth, this.beatWidth); // Don't exceed original width
-                }
-            }
-            return this.beatWidth;
-        },
-
         beatStyle() {
             return {
-                width: this.dynamicBeatWidth + "px",
+                width: this.beatWidth + "px",
                 height: this.beatHeight + "px",
             };
         },
@@ -215,7 +203,7 @@ export default {
          */
         timeStyle() {
             return {
-                "margin-left": this.numPadding * (this.dynamicBeatWidth + this.beatHoverAreaPadding * 2) + "px",
+                "margin-left": this.numPadding * (this.beatWidth + this.beatHoverAreaPadding * 2) + "px",
             };
         },
 
@@ -312,14 +300,89 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
-                // For configured ranges, don't limit maxBeat - show all beats
-                if (this.normalizedHeartbeatBarDays > 0) {
-                    this.maxBeat = -1; // No limit
-                } else {
-                    // For auto mode, calculate based on screen width
-                    this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
-                }
+                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
             }
+        },
+
+        /**
+         * Aggregate beats to fit screen width while maintaining proper beat size
+         * @param {Array} beats Array of beats to aggregate
+         * @param {number} targetCount Target number of beats to display
+         * @returns {Array} Aggregated beats array
+         */
+        aggregateBeats(beats, targetCount) {
+            if (beats.length <= targetCount) {
+                return beats;
+            }
+
+            const aggregated = [];
+            const beatsPerBucket = beats.length / targetCount;
+
+            for (let i = 0; i < targetCount; i++) {
+                const startIdx = Math.floor(i * beatsPerBucket);
+                const endIdx = Math.floor((i + 1) * beatsPerBucket);
+                const bucketBeats = beats.slice(startIdx, endIdx);
+
+                if (bucketBeats.length === 0) {
+                    continue;
+                }
+
+                // Aggregate the beats in this bucket
+                let aggregatedBeat = {
+                    status: null,
+                    time: bucketBeats[bucketBeats.length - 1].time, // Use end time
+                    msg: "",
+                    ping: null,
+                    _aggregated: true,
+                    _startTime: bucketBeats[0]._startTime || bucketBeats[0].time,
+                    _endTime: bucketBeats[bucketBeats.length - 1]._endTime || bucketBeats[bucketBeats.length - 1].time,
+                    _counts: {
+                        up: 0,
+                        down: 0,
+                        maintenance: 0,
+                        pending: 0
+                    }
+                };
+
+                // Sum up counts from all beats in bucket
+                for (const beat of bucketBeats) {
+                    if (beat && beat._counts) {
+                        aggregatedBeat._counts.up += beat._counts.up || 0;
+                        aggregatedBeat._counts.down += beat._counts.down || 0;
+                        aggregatedBeat._counts.maintenance += beat._counts.maintenance || 0;
+                        aggregatedBeat._counts.pending += beat._counts.pending || 0;
+                    } else if (beat && beat.status !== null) {
+                        // Handle non-aggregated beats
+                        if (beat.status === 1) {
+                            aggregatedBeat._counts.up += 1;
+                        } else if (beat.status === 0) {
+                            aggregatedBeat._counts.down += 1;
+                        } else if (beat.status === 3) {
+                            aggregatedBeat._counts.maintenance += 1;
+                        } else if (beat.status === 2) {
+                            aggregatedBeat._counts.pending += 1;
+                        }
+                    }
+                }
+
+                // Determine aggregated status (priority: DOWN > MAINTENANCE > PENDING > UP)
+                const counts = aggregatedBeat._counts;
+                if (counts.down > 0) {
+                    aggregatedBeat.status = 0; // DOWN
+                } else if (counts.maintenance > 0) {
+                    aggregatedBeat.status = 3; // MAINTENANCE
+                } else if (counts.pending > 0) {
+                    aggregatedBeat.status = 2; // PENDING
+                } else if (counts.up > 0) {
+                    aggregatedBeat.status = 1; // UP
+                } else {
+                    aggregatedBeat.status = null; // No data
+                }
+
+                aggregated.push(aggregatedBeat);
+            }
+
+            return aggregated;
         },
 
         /**
