@@ -89,6 +89,9 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
         let heartbeatBarDays = statusPage ? (statusPage.heartbeat_bar_days || 0) : 0;
 
+        // Get max beats parameter from query string (for client-side screen width constraints)
+        const maxBeats = parseInt(request.query.maxBeats) || 100;
+
         // Process all monitors in parallel using Promise.all
         const monitorPromises = monitorIDList.map(async (monitorID) => {
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
@@ -112,7 +115,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                 uptime = uptimeCalculator.get24Hour().uptime;
             } else {
                 // For configured day ranges, use aggregated data from UptimeCalculator
-                heartbeats = await getAggregatedHeartbeats(uptimeCalculator, heartbeatBarDays);
+                heartbeats = await getAggregatedHeartbeats(uptimeCalculator, heartbeatBarDays, maxBeats);
                 // Calculate uptime for the configured range instead of just 24h
                 uptime = uptimeCalculator.get24Hour().uptime; // TODO: Calculate range-specific uptime
             }
@@ -280,16 +283,16 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
  * Get aggregated heartbeats for status page display
  * @param {UptimeCalculator} uptimeCalculator The uptime calculator instance
  * @param {number} days Number of days to show
+ * @param {number} targetBuckets Number of buckets to aggregate into (default 100)
  * @returns {Promise<Array>} Array of aggregated heartbeat data
  */
-async function getAggregatedHeartbeats(uptimeCalculator, days) {
+async function getAggregatedHeartbeats(uptimeCalculator, days, targetBuckets = 100) {
     const now = dayjs.utc();
     const result = [];
 
     // Force exact time range: exactly N days ago to exactly now
     const startTime = now.subtract(days, "day");
     const totalMinutes = days * 60 * 24;
-    const targetBuckets = 100;
     const bucketSizeMinutes = totalMinutes / targetBuckets;
 
     // Get available data from UptimeCalculator for lookup

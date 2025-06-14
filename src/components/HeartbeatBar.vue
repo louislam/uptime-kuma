@@ -292,7 +292,24 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
-                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+                const newMaxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+
+                // If maxBeat changed and we're in configured days mode, notify parent to reload data
+                if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
+                    this.maxBeat = newMaxBeat;
+                    console.log(`HeartBeat Debug: Container width changed, maxBeat=${newMaxBeat}, notifying parent`);
+
+                    // Find the closest parent with reloadHeartbeatData method (StatusPage)
+                    let parent = this.$parent;
+                    while (parent && !parent.reloadHeartbeatData) {
+                        parent = parent.$parent;
+                    }
+                    if (parent && parent.reloadHeartbeatData) {
+                        parent.reloadHeartbeatData(newMaxBeat);
+                    }
+                } else {
+                    this.maxBeat = newMaxBeat;
+                }
             }
         },
 

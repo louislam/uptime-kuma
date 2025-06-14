@@ -787,10 +787,19 @@ export default {
 
         /**
          * Load heartbeat data from API
+         * @param {number|null} maxBeats Maximum number of beats to request from server
          * @returns {Promise} Promise that resolves when data is loaded
          */
-        loadHeartbeatData() {
-            return axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
+        loadHeartbeatData(maxBeats = null) {
+            // If maxBeats is provided (from HeartbeatBar resize), use it
+            // Otherwise, use a default that will be updated when components mount
+            const targetMaxBeats = maxBeats || 50; // Default, will be updated by actual container measurement
+
+            console.log(`HeartBeat Debug: Using maxBeats=${targetMaxBeats}, provided=${maxBeats !== null}`);
+
+            return axios.get("/api/status-page/heartbeat/" + this.slug, {
+                params: { maxBeats: targetMaxBeats }
+            }).then((res) => {
                 const { heartbeatList, uptimeList } = res.data;
 
                 this.$root.heartbeatList = heartbeatList;
@@ -842,6 +851,20 @@ export default {
                     this.updateCountdownText = countdown.format("mm:ss");
                 }
             }, 1000);
+        },
+
+        /**
+         * Reload heartbeat data with specific maxBeats count
+         * Called by child components when they determine optimal beat count
+         * @param {number} maxBeats Maximum number of beats that fit in container
+         * @returns {void}
+         */
+        reloadHeartbeatData(maxBeats) {
+            // Only reload if we have configured days (not auto mode)
+            if (this.config && this.config.heartbeatBarDays > 0) {
+                console.log(`HeartBeat Debug: Reloading with maxBeats=${maxBeats} for ${this.config.heartbeatBarDays} days`);
+                this.loadHeartbeatData(maxBeats);
+            }
         },
 
         /**
