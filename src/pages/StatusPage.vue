@@ -43,21 +43,10 @@
                 </div>
 
                 <div class="my-3">
-                    <label for="heartbeat-bar-range" class="form-label">{{ $t("Heartbeat Bar Range") }}</label>
-                    <select id="heartbeat-bar-range" v-model="config.heartbeatBarRange" class="form-select" data-testid="heartbeat-bar-range-select">
-                        <option value="auto">{{ $t("Auto") }}</option>
-                        <option value="6h">{{ $t("6 hours") }}</option>
-                        <option value="12h">{{ $t("12 hours") }}</option>
-                        <option value="24h">{{ $t("24 hours") }}</option>
-                        <option value="7d">{{ $t("7 days") }}</option>
-                        <option value="30d">{{ $t("30 days") }}</option>
-                        <option value="60d">{{ $t("60 days") }}</option>
-                        <option value="90d">{{ $t("90 days") }}</option>
-                        <option value="180d">{{ $t("180 days") }}</option>
-                        <option value="365d">{{ $t("365 days") }}</option>
-                    </select>
+                    <label for="heartbeat-bar-days" class="form-label">{{ $t("Heartbeat Bar Days") }}</label>
+                    <input id="heartbeat-bar-days" v-model.number="config.heartbeatBarDays" type="number" class="form-control" min="0" max="365" data-testid="heartbeat-bar-days-input">
                     <div class="form-text">
-                        {{ $t("How much heartbeat history to show in the status page") }}
+                        {{ $t("Number of days of heartbeat history to show (0 = auto)") }}
                     </div>
                 </div>
 
@@ -347,7 +336,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :heartbeat-bar-range="config.heartbeatBarRange" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :heartbeat-bar-days="config.heartbeatBarDays" />
             </div>
 
             <footer class="mt-5 mb-4">

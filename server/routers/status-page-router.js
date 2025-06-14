@@ -3,7 +3,7 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
-const { getAggregatedHeartbeatData, parseRangeHours } = require("../util/heartbeat-range");
+const dayjs = require("dayjs");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
@@ -87,48 +87,57 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
         // Get the status page to determine the heartbeat range
         let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
-        let heartbeatRange = statusPage ? statusPage.heartbeat_bar_range : "auto";
+        let heartbeatBarDays = statusPage ? (statusPage.heartbeat_bar_days || 0) : 0;
 
         for (let monitorID of monitorIDList) {
-            let list;
-
-            // Try to use aggregated data from stat tables for better performance
-            const aggregatedData = await getAggregatedHeartbeatData(monitorID, heartbeatRange);
-
-            if (aggregatedData) {
-                // Use pre-aggregated stat data
-                heartbeatList[monitorID] = aggregatedData;
-            } else {
-                // Fall back to raw heartbeat data (auto mode or no stat data)
-                if (heartbeatRange === "auto") {
-                    // Auto mode - use original LIMIT 100 logic
-                    list = await R.getAll(`
-                        SELECT * FROM heartbeat
-                        WHERE monitor_id = ?
-                        ORDER BY time DESC
-                        LIMIT 100
-                    `, [
-                        monitorID,
-                    ]);
-                } else {
-                    // Non-auto range but no stat data - filter raw heartbeat data by time
-                    const hours = parseRangeHours(heartbeatRange);
-                    const date = new Date();
-                    date.setHours(date.getHours() - hours);
-                    const dateFrom = date.toISOString().slice(0, 19).replace("T", " ");
-
-                    list = await R.getAll(`
-                        SELECT * FROM heartbeat
-                        WHERE monitor_id = ? AND time >= ?
-                        ORDER BY time DESC
-                    `, [
-                        monitorID,
-                        dateFrom
-                    ]);
-                }
+            if (heartbeatBarDays === 0) {
+                // Auto mode - use original LIMIT 100 logic
+                let list = await R.getAll(`
+                    SELECT * FROM heartbeat
+                    WHERE monitor_id = ?
+                    ORDER BY time DESC
+                    LIMIT 100
+                `, [
+                    monitorID,
+                ]);
 
                 list = R.convertToBeans("heartbeat", list);
                 heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+            } else {
+                // Use UptimeCalculator for configured day ranges
+                const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+
+                if (heartbeatBarDays <= 1) {
+                    // Use 24-hour data
+                    const data = uptimeCalculator.get24Hour();
+                    heartbeatList[monitorID] = Object.entries(data.minutelyUptimeDataList || {}).map(([ timestamp, uptimeData ]) => ({
+                        time: dayjs(parseInt(timestamp)).format("YYYY-MM-DD HH:mm:ss"),
+                        status: uptimeData.up > 0 ? 1 : (uptimeData.down > 0 ? 0 : 1),
+                        up: uptimeData.up,
+                        down: uptimeData.down,
+                        ping: uptimeData.avgPing
+                    }));
+                } else if (heartbeatBarDays <= 30) {
+                    // Use 30-day hourly data
+                    const data = uptimeCalculator.get30Day();
+                    heartbeatList[monitorID] = Object.entries(data.hourlyUptimeDataList || {}).map(([ timestamp, uptimeData ]) => ({
+                        time: dayjs(parseInt(timestamp)).format("YYYY-MM-DD HH:mm:ss"),
+                        status: uptimeData.up > 0 ? 1 : (uptimeData.down > 0 ? 0 : 1),
+                        up: uptimeData.up,
+                        down: uptimeData.down,
+                        ping: uptimeData.avgPing
+                    }));
+                } else {
+                    // Use daily data for longer ranges
+                    const data = uptimeCalculator.getData();
+                    heartbeatList[monitorID] = Object.entries(data.dailyUptimeDataList || {}).map(([ timestamp, uptimeData ]) => ({
+                        time: dayjs(parseInt(timestamp)).format("YYYY-MM-DD HH:mm:ss"),
+                        status: uptimeData.up > 0 ? 1 : (uptimeData.down > 0 ? 0 : 1),
+                        up: uptimeData.up,
+                        down: uptimeData.down,
+                        ping: uptimeData.avgPing
+                    }));
+                }
             }
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);

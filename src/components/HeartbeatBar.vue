@@ -47,10 +47,10 @@ export default {
             type: Array,
             default: null,
         },
-        /** Heartbeat bar range */
-        heartbeatBarRange: {
-            type: String,
-            default: "auto",
+        /** Heartbeat bar days */
+        heartbeatBarDays: {
+            type: Number,
+            default: 0,
         }
     },
     data() {
@@ -103,8 +103,8 @@ export default {
                 return [];
             }
 
-            // If heartbeat range is configured (not auto), aggregate by time periods
-            if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
+            // If heartbeat days is configured (not auto), aggregate by time periods
+            if (this.heartbeatBarDays > 0) {
                 return this.aggregatedBeatList;
             }
 
@@ -137,15 +137,8 @@ export default {
             const now = dayjs();
             const buckets = [];
 
-            // Parse range to get total hours
-            let totalHours;
-            if (this.heartbeatBarRange.endsWith("h")) {
-                totalHours = parseInt(this.heartbeatBarRange);
-            } else if (this.heartbeatBarRange.endsWith("d")) {
-                totalHours = parseInt(this.heartbeatBarRange) * 24;
-            } else {
-                totalHours = 90 * 24; // Fallback
-            }
+            // Calculate total hours from days
+            const totalHours = this.heartbeatBarDays * 24;
 
             // Use dynamic maxBeat calculated from screen size
             const totalBuckets = this.maxBeat > 0 ? this.maxBeat : 50;
@@ -252,7 +245,7 @@ export default {
          */
         timeStyle() {
             // For aggregated mode, don't use padding-based positioning
-            if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
+            if (this.heartbeatBarDays > 0) {
                 return {
                     "margin-left": "0px",
                 };
@@ -269,18 +262,12 @@ export default {
          * @returns {string} The time elapsed in minutes or hours.
          */
         timeSinceFirstBeat() {
-            // For aggregated beats, calculate from the configured range
-            if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
-                if (this.heartbeatBarRange.endsWith("h")) {
-                    const hours = parseInt(this.heartbeatBarRange);
-                    return hours + "h";
-                } else if (this.heartbeatBarRange.endsWith("d")) {
-                    const days = parseInt(this.heartbeatBarRange);
-                    if (days < 2) {
-                        return (days * 24) + "h";
-                    } else {
-                        return days + "d";
-                    }
+            // For aggregated beats, calculate from the configured days
+            if (this.heartbeatBarDays > 0) {
+                if (this.heartbeatBarDays < 2) {
+                    return (this.heartbeatBarDays * 24) + "h";
+                } else {
+                    return this.heartbeatBarDays + "d";
                 }
             }
 
@@ -385,7 +372,7 @@ export default {
             }
 
             // For aggregated beats, show time range and status
-            if (beat.beats !== undefined && this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
+            if (beat.beats !== undefined && this.heartbeatBarDays > 0) {
                 const start = this.$root.datetime(beat.start);
                 const end = this.$root.datetime(beat.end);
                 const statusText = beat.status === 1 ? "Up" : beat.status === 0 ? "Down" : beat.status === 3 ? "Maintenance" : "No Data";
