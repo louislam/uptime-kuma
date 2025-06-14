@@ -91,16 +91,15 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
         for (let monitorID of monitorIDList) {
             let list;
-            
+
             // Try to use aggregated data from stat tables for better performance
             const aggregatedData = await getAggregatedHeartbeatData(monitorID, heartbeatRange);
-            
+
             if (aggregatedData) {
                 // Use pre-aggregated stat data
                 heartbeatList[monitorID] = aggregatedData;
             } else {
                 // Fall back to raw heartbeat data (auto mode or no stat data)
-                
                 if (heartbeatRange === "auto") {
                     // Auto mode - use original LIMIT 100 logic
                     list = await R.getAll(`
@@ -116,9 +115,8 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                     const hours = parseRangeHours(heartbeatRange);
                     const date = new Date();
                     date.setHours(date.getHours() - hours);
-                    const dateFrom = date.toISOString().slice(0, 19).replace('T', ' ');
-                    
-                    
+                    const dateFrom = date.toISOString().slice(0, 19).replace("T", " ");
+
                     list = await R.getAll(`
                         SELECT * FROM heartbeat
                         WHERE monitor_id = ? AND time >= ?

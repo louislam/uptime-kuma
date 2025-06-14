@@ -99,7 +99,6 @@ export default {
         },
 
         shortBeatList() {
-            
             if (!this.beatList) {
                 return [];
             }
@@ -130,7 +129,6 @@ export default {
         },
 
         aggregatedBeatList() {
-            
             if (!this.beatList || this.beatList.length === 0) {
                 return [];
             }
