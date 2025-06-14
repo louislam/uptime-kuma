@@ -46,9 +46,9 @@ async function getAggregatedHeartbeatData(monitorId, range) {
     if (hours <= 24) {
         // Use hourly stats for ranges up to 24 hours
         const startTime = now.subtract(hours, "hours");
-        const timestampKey = Math.floor(startTime.valueOf() / (60 * 60 * 1000)) * (60 * 60 * 1000);
+        const timestampKey = Math.floor(startTime.valueOf() / (60 * 60 * 1000)); // Convert to seconds
         
-        console.log(`[HEARTBEAT-RANGE] Using hourly stats from timestamp ${timestampKey} (${dayjs(timestampKey).format()})`);
+        console.log(`[HEARTBEAT-RANGE] Using hourly stats from timestamp ${timestampKey} (${dayjs(timestampKey * 1000).format()})`);
         
         const stats = await R.getAll(`
             SELECT * FROM stat_hourly 
@@ -66,7 +66,7 @@ async function getAggregatedHeartbeatData(monitorId, range) {
         
         // Convert to heartbeat-like format
         const result = stats.map(stat => ({
-            time: dayjs(stat.timestamp).format("YYYY-MM-DD HH:mm:ss"),
+            time: dayjs(stat.timestamp * 1000).format("YYYY-MM-DD HH:mm:ss"), // Convert seconds to milliseconds
             status: stat.up > 0 ? 1 : (stat.down > 0 ? 0 : 1), // Simplified status logic
             up: stat.up,
             down: stat.down,
