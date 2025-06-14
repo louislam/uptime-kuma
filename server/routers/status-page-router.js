@@ -4,9 +4,10 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
-const { badgeConstants } = require("../../src/util");
+const { badgeConstants, UP, DOWN, MAINTENANCE, PENDING } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
+const dayjs = require("dayjs");
 
 let router = express.Router();
 
@@ -89,6 +90,8 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let heartbeatBarDays = statusPage ? (statusPage.heartbeat_bar_days || 0) : 0;
 
         for (let monitorID of monitorIDList) {
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+
             if (heartbeatBarDays === 0) {
                 // Auto mode - use original LIMIT 100 logic
                 let list = await R.getAll(`
@@ -103,26 +106,10 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                 list = R.convertToBeans("heartbeat", list);
                 heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
             } else {
-                // For configured day ranges, always use raw heartbeat data for client-side aggregation
-                // This ensures consistent behavior between edit mode and published mode
-                const date = new Date();
-                date.setDate(date.getDate() - heartbeatBarDays);
-                const dateFrom = date.toISOString().slice(0, 19).replace("T", " ");
-
-                let list = await R.getAll(`
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ? AND time >= ?
-                    ORDER BY time DESC
-                `, [
-                    monitorID,
-                    dateFrom
-                ]);
-
-                list = R.convertToBeans("heartbeat", list);
-                heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+                // For configured day ranges, use aggregated data from UptimeCalculator
+                heartbeatList[monitorID] = await getAggregatedHeartbeats(uptimeCalculator, heartbeatBarDays);
             }
 
-            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
             uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
         }
 
@@ -268,5 +255,149 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
         sendHttpError(response, error.message);
     }
 });
+
+/**
+ * Get aggregated heartbeats for status page display
+ * @param {UptimeCalculator} uptimeCalculator The uptime calculator instance
+ * @param {number} days Number of days to show
+ * @returns {Promise<Array>} Array of aggregated heartbeat data
+ */
+async function getAggregatedHeartbeats(uptimeCalculator, days) {
+    const targetBuckets = 100; // Always show ~100 buckets for consistent display
+    const now = dayjs.utc();
+    const result = [];
+
+    // Determine data granularity based on days
+    let dataPoints;
+    let granularity;
+    let bucketSizeMinutes;
+
+    if (days <= 1) {
+        // For 1 day or less, use minutely data
+        granularity = "minute";
+        dataPoints = uptimeCalculator.getDataArray(days * 24 * 60, granularity);
+        bucketSizeMinutes = Math.max(1, Math.floor((days * 24 * 60) / targetBuckets));
+    } else if (days <= 30) {
+        // For 2-30 days, use hourly data
+        granularity = "hour";
+        dataPoints = uptimeCalculator.getDataArray(days * 24, granularity);
+        bucketSizeMinutes = Math.max(60, Math.floor((days * 24 * 60) / targetBuckets));
+    } else {
+        // For 31+ days, use daily data
+        granularity = "day";
+        dataPoints = uptimeCalculator.getDataArray(days, granularity);
+        bucketSizeMinutes = Math.max(1440, Math.floor((days * 24 * 60) / targetBuckets));
+    }
+
+    // Create time buckets
+    const startTime = now.subtract(days, "day").startOf("minute");
+    const endTime = now;
+    const buckets = [];
+
+    for (let i = 0; i < targetBuckets; i++) {
+        const bucketStart = startTime.add(i * bucketSizeMinutes, "minute");
+        let bucketEnd = bucketStart.add(bucketSizeMinutes, "minute");
+
+        // Don't create buckets that start after current time
+        if (bucketStart.isAfter(endTime)) {
+            break;
+        }
+
+        // Ensure bucket doesn't extend beyond current time
+        if (bucketEnd.isAfter(endTime)) {
+            bucketEnd = endTime;
+        }
+
+        buckets.push({
+            start: bucketStart.unix(),
+            end: bucketEnd.unix(),
+            up: 0,
+            down: 0,
+            maintenance: 0,
+            pending: 0,
+            hasData: false
+        });
+    }
+
+    // Aggregate data points into buckets
+    for (const dataPoint of dataPoints) {
+        if (!dataPoint || !dataPoint.timestamp) {
+            continue;
+        }
+
+        // Find the appropriate bucket for this data point
+        const bucket = buckets.find(b =>
+            dataPoint.timestamp >= b.start && dataPoint.timestamp < b.end
+        );
+
+        if (bucket) {
+            bucket.up += dataPoint.up || 0;
+            bucket.down += dataPoint.down || 0;
+            bucket.maintenance += dataPoint.maintenance || 0;
+            bucket.pending += dataPoint.pending || 0;
+            bucket.hasData = true;
+        }
+    }
+
+    // Convert buckets to heartbeat format
+    for (const bucket of buckets) {
+        let status = null; // No data
+
+        if (bucket.hasData) {
+            // Determine status based on priority: DOWN > MAINTENANCE > PENDING > UP
+            if (bucket.down > 0) {
+                status = DOWN;
+            } else if (bucket.maintenance > 0) {
+                status = MAINTENANCE;
+            } else if (bucket.pending > 0) {
+                status = PENDING;
+            } else if (bucket.up > 0) {
+                status = UP;
+            }
+        }
+
+        result.push({
+            status: status,
+            time: dayjs.unix(bucket.end).toISOString(),
+            msg: "",
+            ping: null,
+            // Include aggregation info for client-side display
+            _aggregated: true,
+            _startTime: dayjs.unix(bucket.start).toISOString(),
+            _endTime: dayjs.unix(bucket.end).toISOString(),
+            _counts: {
+                up: bucket.up,
+                down: bucket.down,
+                maintenance: bucket.maintenance,
+                pending: bucket.pending
+            }
+        });
+    }
+
+    // Ensure we always return targetBuckets number of items by padding at the start
+    while (result.length < targetBuckets) {
+        const firstStartTime = result.length > 0 ? dayjs(result[0]._startTime || result[0].time) : now.subtract(days, "day");
+        const paddedStart = firstStartTime.subtract(bucketSizeMinutes, "minute");
+        const paddedEnd = firstStartTime;
+        
+        result.unshift({
+            status: null,
+            time: paddedEnd.toISOString(),
+            msg: "",
+            ping: null,
+            _aggregated: true,
+            _startTime: paddedStart.toISOString(),
+            _endTime: paddedEnd.toISOString(),
+            _counts: {
+                up: 0,
+                down: 0,
+                maintenance: 0,
+                pending: 0
+            }
+        });
+    }
+
+    return result;
+}
 
 module.exports = router;
