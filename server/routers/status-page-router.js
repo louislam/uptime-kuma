@@ -271,8 +271,13 @@ async function getAggregatedHeartbeats(uptimeCalculator, days) {
     const startTime = now.subtract(days, "day");
     const totalMinutes = endTime.diff(startTime, "minute");
 
-    // Always create exactly 100 buckets spanning the full time range
-    const numBuckets = 100;
+    // Calculate optimal bucket count based on available data granularity
+    // For longer periods with daily data, use fewer buckets to match available data points
+    let numBuckets = 100;
+    if (days > 30) {
+        // For daily data, limit buckets to available data points to prevent sparse data
+        numBuckets = Math.min(100, Math.max(50, days));
+    }
     const bucketSizeMinutes = totalMinutes / numBuckets;
 
     // Get available data from UptimeCalculator for lookup
@@ -282,11 +287,13 @@ async function getAggregatedHeartbeats(uptimeCalculator, days) {
     if (days <= 1) {
         const exactMinutes = Math.ceil(days * 24 * 60);
         rawDataPoints = uptimeCalculator.getDataArray(exactMinutes, "minute");
-    } else if (days <= 90) {
+    } else if (days <= 30) {
         const exactHours = Math.ceil(days * 24);
         rawDataPoints = uptimeCalculator.getDataArray(exactHours, "hour");
     } else {
-        rawDataPoints = uptimeCalculator.getDataArray(days, "day");
+        // For > 30 days, use daily data to avoid hitting the 720-hour limit
+        const requestDays = Math.min(days, 365);
+        rawDataPoints = uptimeCalculator.getDataArray(requestDays, "day");
     }
 
     // Create lookup map for available data
