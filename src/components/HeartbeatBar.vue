@@ -99,16 +99,13 @@ export default {
         },
 
         shortBeatList() {
-            console.log(`[HEARTBEAT-BAR] shortBeatList called with range: ${this.heartbeatBarRange}, beatList: ${this.beatList ? this.beatList.length : 'null'} items`);
             
             if (!this.beatList) {
-                console.log(`[HEARTBEAT-BAR] No beatList - returning empty array`);
                 return [];
             }
 
             // If heartbeat range is configured (not auto), aggregate by time periods
             if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
-                console.log(`[HEARTBEAT-BAR] Using aggregated beat list for range: ${this.heartbeatBarRange}`);
                 return this.aggregatedBeatList;
             }
 
@@ -133,15 +130,12 @@ export default {
         },
 
         aggregatedBeatList() {
-            console.log(`[HEARTBEAT-BAR] aggregatedBeatList called with range: ${this.heartbeatBarRange}, beatList length: ${this.beatList ? this.beatList.length : 'null'}, maxBeat: ${this.maxBeat}`);
             
             if (!this.beatList || this.beatList.length === 0) {
-                console.log(`[HEARTBEAT-BAR] No beatList data`);
                 return [];
             }
 
             // Always do client-side aggregation using dynamic maxBeat for proper screen sizing
-            console.log(`[HEARTBEAT-BAR] Performing client-side aggregation with ${this.maxBeat} buckets`);
             const now = dayjs();
             const buckets = [];
 
@@ -211,7 +205,6 @@ export default {
                 }
             });
 
-            console.log(`[HEARTBEAT-BAR] Generated ${buckets.length} aggregated buckets using dynamic maxBeat`);
             return buckets;
         },
 

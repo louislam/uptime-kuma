@@ -89,8 +89,6 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
         let heartbeatRange = statusPage ? statusPage.heartbeat_bar_range : "auto";
 
-        console.log(`[STATUS-PAGE] Processing ${monitorIDList.length} monitors with range: ${heartbeatRange}`);
-        
         for (let monitorID of monitorIDList) {
             let list;
             
@@ -99,11 +97,9 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             
             if (aggregatedData) {
                 // Use pre-aggregated stat data
-                console.log(`[STATUS-PAGE] Using aggregated data for monitor ${monitorID}: ${aggregatedData.length} records`);
                 heartbeatList[monitorID] = aggregatedData;
             } else {
                 // Fall back to raw heartbeat data (auto mode or no stat data)
-                console.log(`[STATUS-PAGE] Using raw heartbeat data for monitor ${monitorID} (range: ${heartbeatRange})`);
                 
                 if (heartbeatRange === "auto") {
                     // Auto mode - use original LIMIT 100 logic
@@ -122,7 +118,6 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                     date.setHours(date.getHours() - hours);
                     const dateFrom = date.toISOString().slice(0, 19).replace('T', ' ');
                     
-                    console.log(`[STATUS-PAGE] Filtering heartbeat data from ${dateFrom} for ${hours} hours`);
                     
                     list = await R.getAll(`
                         SELECT * FROM heartbeat
@@ -136,7 +131,6 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
                 list = R.convertToBeans("heartbeat", list);
                 heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
-                console.log(`[STATUS-PAGE] Raw heartbeat data for monitor ${monitorID}: ${heartbeatList[monitorID].length} records`);
             }
 
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);

@@ -32,23 +32,17 @@ function parseRangeHours(range) {
  * @returns {Promise<Array>} Aggregated heartbeat data
  */
 async function getAggregatedHeartbeatData(monitorId, range) {
-    console.log(`[HEARTBEAT-RANGE] Getting aggregated data for monitor ${monitorId}, range: ${range}`);
-    
     if (!range || range === "auto") {
-        console.log(`[HEARTBEAT-RANGE] Auto mode - returning null to use regular heartbeat query`);
         return null;
     }
     
     const now = dayjs();
     const hours = parseRangeHours(range);
-    console.log(`[HEARTBEAT-RANGE] Parsed ${range} to ${hours} hours`);
     
     if (hours <= 24) {
         // Use hourly stats for ranges up to 24 hours
         const startTime = now.subtract(hours, "hours");
         const timestampKey = Math.floor(startTime.valueOf() / (60 * 60 * 1000)); // Convert to seconds
-        
-        console.log(`[HEARTBEAT-RANGE] Using hourly stats from timestamp ${timestampKey} (${dayjs(timestampKey * 1000).format()})`);
         
         const stats = await R.getAll(`
             SELECT * FROM stat_hourly 
@@ -56,11 +50,8 @@ async function getAggregatedHeartbeatData(monitorId, range) {
             ORDER BY timestamp ASC
         `, [monitorId, timestampKey]);
         
-        console.log(`[HEARTBEAT-RANGE] Found ${stats.length} hourly stat records`);
-        
         // If no stat data, fall back to raw heartbeat data
         if (stats.length === 0) {
-            console.log(`[HEARTBEAT-RANGE] No stat data found, falling back to raw heartbeat data`);
             return null; // This will trigger fallback in router
         }
         
@@ -73,7 +64,6 @@ async function getAggregatedHeartbeatData(monitorId, range) {
             ping: stat.ping
         }));
         
-        console.log(`[HEARTBEAT-RANGE] Returning ${result.length} stat records for client aggregation`);
         return result;
     } else {
         // Use daily stats for ranges over 24 hours
@@ -81,19 +71,14 @@ async function getAggregatedHeartbeatData(monitorId, range) {
         const startTime = now.subtract(days, "days");
         const timestampKey = Math.floor(startTime.valueOf() / (24 * 60 * 60 * 1000)); // Convert to seconds
         
-        console.log(`[HEARTBEAT-RANGE] Using daily stats from timestamp ${timestampKey} (${dayjs(timestampKey * 1000).format()})`);
-        
         const stats = await R.getAll(`
             SELECT * FROM stat_daily 
             WHERE monitor_id = ? AND timestamp >= ? 
             ORDER BY timestamp ASC
         `, [monitorId, timestampKey]);
         
-        console.log(`[HEARTBEAT-RANGE] Found ${stats.length} daily stat records`);
-        
         // If no stat data, fall back to raw heartbeat data
         if (stats.length === 0) {
-            console.log(`[HEARTBEAT-RANGE] No stat data found, falling back to raw heartbeat data`);
             return null; // This will trigger fallback in router
         }
         
@@ -106,7 +91,6 @@ async function getAggregatedHeartbeatData(monitorId, range) {
             ping: stat.ping
         }));
         
-        console.log(`[HEARTBEAT-RANGE] Returning ${result.length} stat records for client aggregation`);
         return result;
     }
 }
