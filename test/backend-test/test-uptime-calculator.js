@@ -366,29 +366,29 @@ function memoryUsage() {
 test("Test getAggregatedBuckets - Basic functionality", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
-    
+
     // Add some test data
     await c.update(UP);
     await c.update(DOWN);
     await c.update(UP);
-    
+
     // Test basic 1-day aggregation
     let buckets = c.getAggregatedBuckets(1, 10);
-    
+
     // Should return exactly 10 buckets
     assert.strictEqual(buckets.length, 10);
-    
+
     // Each bucket should have required properties
     buckets.forEach(bucket => {
-        assert.ok(typeof bucket.start === 'number');
-        assert.ok(typeof bucket.end === 'number');
-        assert.ok(typeof bucket.up === 'number');
-        assert.ok(typeof bucket.down === 'number');
-        assert.ok(typeof bucket.maintenance === 'number');
-        assert.ok(typeof bucket.pending === 'number');
+        assert.ok(typeof bucket.start === "number");
+        assert.ok(typeof bucket.end === "number");
+        assert.ok(typeof bucket.up === "number");
+        assert.ok(typeof bucket.down === "number");
+        assert.ok(typeof bucket.maintenance === "number");
+        assert.ok(typeof bucket.pending === "number");
         assert.ok(bucket.start < bucket.end);
     });
-    
+
     // Buckets should be contiguous
     for (let i = 0; i < buckets.length - 1; i++) {
         assert.strictEqual(buckets[i].end, buckets[i + 1].start);
@@ -398,20 +398,20 @@ test("Test getAggregatedBuckets - Basic functionality", async (t) => {
 test("Test getAggregatedBuckets - Time range accuracy", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
-    
+
     let buckets = c.getAggregatedBuckets(2, 48); // 2 days, 48 buckets = 1 hour per bucket
-    
+
     assert.strictEqual(buckets.length, 48);
-    
+
     // First bucket should start 2 days ago from current time
     let currentTime = dayjs.utc("2025-08-12 12:00:00");
     let expectedStart = currentTime.subtract(2, "day").unix();
     assert.strictEqual(buckets[0].start, expectedStart);
-    
+
     // Last bucket should end at current time
     let expectedEnd = currentTime.unix();
     assert.strictEqual(buckets[buckets.length - 1].end, expectedEnd);
-    
+
     // Each bucket should be exactly 1 hour (3600 seconds)
     buckets.forEach(bucket => {
         assert.strictEqual(bucket.end - bucket.start, 3600);
@@ -421,19 +421,19 @@ test("Test getAggregatedBuckets - Time range accuracy", async (t) => {
 test("Test getAggregatedBuckets - Different time ranges", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
-    
+
     // Test 1 day (should use minutely data)
     let buckets1d = c.getAggregatedBuckets(1, 24);
     assert.strictEqual(buckets1d.length, 24);
-    
+
     // Test 7 days (should use hourly data)
     let buckets7d = c.getAggregatedBuckets(7, 50);
     assert.strictEqual(buckets7d.length, 50);
-    
+
     // Test 60 days (should use daily data)
     let buckets60d = c.getAggregatedBuckets(60, 60);
     assert.strictEqual(buckets60d.length, 60);
-    
+
     // Test maximum days (365)
     let buckets365d = c.getAggregatedBuckets(365, 100);
     assert.strictEqual(buckets365d.length, 100);
@@ -442,10 +442,10 @@ test("Test getAggregatedBuckets - Different time ranges", async (t) => {
 test("Test getAggregatedBuckets - Data aggregation", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
-    
+
     // Create test data - add heartbeats over the past hour
     let currentTime = dayjs.utc("2025-08-12 12:00:00");
-    
+
     // Add some recent data (within the last hour) to ensure it's captured
     for (let i = 0; i < 10; i++) {
         UptimeCalculator.currentDate = currentTime.subtract(60 - (i * 5), "minute"); // Go back in time
@@ -455,24 +455,24 @@ test("Test getAggregatedBuckets - Data aggregation", async (t) => {
             await c.update(DOWN);
         }
     }
-    
+
     // Reset to current time
     UptimeCalculator.currentDate = currentTime;
-    
+
     // Get aggregated buckets for 1 hour with 6 buckets (10 minutes each)
-    let buckets = c.getAggregatedBuckets(1/24, 6); // 1/24 day = 1 hour
-    
+    let buckets = c.getAggregatedBuckets(1 / 24, 6); // 1/24 day = 1 hour
+
     assert.strictEqual(buckets.length, 6);
-    
+
     // Check that we have bucket structure even if no data (should not crash)
     buckets.forEach(bucket => {
-        assert.ok(typeof bucket.start === 'number');
-        assert.ok(typeof bucket.end === 'number');
-        assert.ok(typeof bucket.up === 'number');
-        assert.ok(typeof bucket.down === 'number');
+        assert.ok(typeof bucket.start === "number");
+        assert.ok(typeof bucket.end === "number");
+        assert.ok(typeof bucket.up === "number");
+        assert.ok(typeof bucket.down === "number");
         assert.ok(bucket.start < bucket.end);
     });
-    
+
     // For this test, we'll just verify the method works and returns proper structure
     // The actual data aggregation depends on the complex internal storage which is tested separately
 });
@@ -480,7 +480,7 @@ test("Test getAggregatedBuckets - Data aggregation", async (t) => {
 test("Test getAggregatedBuckets - Edge cases", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
-    
+
     // Test with no data
     let emptyBuckets = c.getAggregatedBuckets(1, 10);
     assert.strictEqual(emptyBuckets.length, 10);
@@ -490,12 +490,12 @@ test("Test getAggregatedBuckets - Edge cases", async (t) => {
         assert.strictEqual(bucket.maintenance, 0);
         assert.strictEqual(bucket.pending, 0);
     });
-    
+
     // Test with single bucket
     let singleBucket = c.getAggregatedBuckets(1, 1);
     assert.strictEqual(singleBucket.length, 1);
     assert.strictEqual(singleBucket[0].end - singleBucket[0].start, 24 * 60 * 60); // 1 day in seconds
-    
+
     // Test with very small time range
     let smallRange = c.getAggregatedBuckets(0.1, 5); // 0.1 days = 2.4 hours
     assert.strictEqual(smallRange.length, 5);
@@ -507,25 +507,25 @@ test("Test getAggregatedBuckets - Edge cases", async (t) => {
 test("Test getAggregatedBuckets - Bucket size calculation", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
-    
+
     // Test different bucket counts for same time range
     let days = 3;
     let buckets10 = c.getAggregatedBuckets(days, 10);
     let buckets50 = c.getAggregatedBuckets(days, 50);
     let buckets100 = c.getAggregatedBuckets(days, 100);
-    
+
     assert.strictEqual(buckets10.length, 10);
     assert.strictEqual(buckets50.length, 50);
     assert.strictEqual(buckets100.length, 100);
-    
+
     // Bucket sizes should be inversely proportional to bucket count
     let bucket10Size = buckets10[0].end - buckets10[0].start;
     let bucket50Size = buckets50[0].end - buckets50[0].start;
     let bucket100Size = buckets100[0].end - buckets100[0].start;
-    
+
     assert.ok(bucket10Size > bucket50Size);
     assert.ok(bucket50Size > bucket100Size);
-    
+
     // All buckets should cover the same total time range
     assert.strictEqual(buckets10[buckets10.length - 1].end - buckets10[0].start, days * 24 * 60 * 60);
     assert.strictEqual(buckets50[buckets50.length - 1].end - buckets50[0].start, days * 24 * 60 * 60);
@@ -535,11 +535,11 @@ test("Test getAggregatedBuckets - Bucket size calculation", async (t) => {
 test("Test getAggregatedBuckets - Default parameters", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
-    
+
     // Test default targetBuckets (should be 100)
     let defaultBuckets = c.getAggregatedBuckets(7);
     assert.strictEqual(defaultBuckets.length, 100);
-    
+
     // Test explicit targetBuckets
     let explicitBuckets = c.getAggregatedBuckets(7, 50);
     assert.strictEqual(explicitBuckets.length, 50);
@@ -548,17 +548,17 @@ test("Test getAggregatedBuckets - Default parameters", async (t) => {
 test("Test getAggregatedBuckets - Rounding precision", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
-    
+
     // Test with non-integer bucket sizes (should not have rounding drift)
     let buckets = c.getAggregatedBuckets(1, 7); // 1 day / 7 buckets = ~3.43 hours per bucket
-    
+
     assert.strictEqual(buckets.length, 7);
-    
+
     // Verify no gaps or overlaps between buckets
     for (let i = 0; i < buckets.length - 1; i++) {
         assert.strictEqual(buckets[i].end, buckets[i + 1].start, `Gap found between bucket ${i} and ${i + 1}`);
     }
-    
+
     // Verify total time range is exactly as requested
     let totalTime = buckets[buckets.length - 1].end - buckets[0].start;
     let expectedTime = 1 * 24 * 60 * 60; // 1 day in seconds
