@@ -112,20 +112,14 @@ export default {
                 return [];
             }
 
-            // If heartbeat days is configured (not auto), check if data is already aggregated
-            if (this.normalizedHeartbeatBarDays > 0) {
-                // Check if the data is already aggregated from the server
-                if (this.beatList.length > 0 && this.beatList[0]._aggregated) {
-                    // Data is already aggregated from server, use it directly
-                    // But still limit to maxBeat for display
-                    if (this.beatList.length > this.maxBeat) {
-                        return this.beatList.slice(this.beatList.length - this.maxBeat);
-                    }
-                    return this.beatList;
-                } else {
-                    // Fallback to client-side aggregation for edit mode
-                    return this.aggregatedBeatList;
+            // If heartbeat days is configured (not auto), data should be aggregated from server
+            if (this.normalizedHeartbeatBarDays > 0 && this.beatList.length > 0) {
+                // Data is already aggregated from server, use it directly
+                // But still limit to maxBeat for display
+                if (this.beatList.length > this.maxBeat) {
+                    return this.beatList.slice(this.beatList.length - this.maxBeat);
                 }
+                return this.beatList;
             }
 
             // Original logic for auto mode (heartbeatBarDays = 0)
@@ -146,80 +140,6 @@ export default {
             }
 
             return placeholders.concat(this.beatList.slice(start));
-        },
-
-        aggregatedBeatList() {
-            if (!this.beatList || this.beatList.length === 0) {
-                return [];
-            }
-
-            // Always do client-side aggregation using fixed time buckets
-            const now = dayjs();
-            const days = this.normalizedHeartbeatBarDays;
-
-            // Calculate the actual time range
-            const startTime = now.subtract(days, "day").startOf("minute");
-            const endTime = now;
-            const totalMinutes = endTime.diff(startTime, "minute");
-
-            // Calculate bucket size to fit the display width
-            const targetBuckets = Math.min(this.maxBeat > 0 ? this.maxBeat : 100, totalMinutes);
-            const bucketSizeMinutes = Math.max(1, Math.floor(totalMinutes / targetBuckets));
-
-            // Create time buckets
-            const buckets = [];
-            const actualBuckets = Math.floor(totalMinutes / bucketSizeMinutes);
-
-            for (let i = 0; i < actualBuckets; i++) {
-                const bucketStart = startTime.add(i * bucketSizeMinutes, "minute");
-                const bucketEnd = bucketStart.add(bucketSizeMinutes, "minute");
-
-                buckets.push({
-                    start: bucketStart,
-                    end: bucketEnd,
-                    beats: [],
-                    status: null, // default to no data
-                    time: bucketEnd.toISOString()
-                });
-            }
-
-            // Group heartbeats into buckets
-            this.beatList.forEach(beat => {
-                const beatTime = dayjs.utc(beat.time).local();
-                const bucket = buckets.find(b =>
-                    beatTime.unix() >= b.start.unix() && beatTime.unix() < b.end.unix()
-                );
-                if (bucket) {
-                    bucket.beats.push(beat);
-                }
-            });
-
-            // Calculate status for each bucket
-            buckets.forEach(bucket => {
-                if (bucket.beats.length === 0) {
-                    bucket.status = null; // no data - will be rendered as empty/grey
-                } else {
-                    // Priority: DOWN (0) > MAINTENANCE (3) > PENDING (2) > UP (1)
-                    const hasDown = bucket.beats.some(b => b.status === 0);
-                    const hasMaintenance = bucket.beats.some(b => b.status === 3);
-                    const hasPending = bucket.beats.some(b => b.status === 2);
-
-                    if (hasDown) {
-                        bucket.status = 0;
-                    } else if (hasMaintenance) {
-                        bucket.status = 3;
-                    } else if (hasPending) {
-                        bucket.status = 2;
-                    } else {
-                        bucket.status = 1;
-                    }
-
-                    // Use the bucket end time for consistency
-                    bucket.time = bucket.end.toISOString();
-                }
-            });
-
-            return buckets;
         },
 
         wrapStyle() {
@@ -267,14 +187,6 @@ export default {
          * @returns {object} The style object containing the CSS properties for positioning the time element.
          */
         timeStyle() {
-            // For aggregated mode, don't use padding-based positioning
-            if (this.normalizedHeartbeatBarDays > 0) {
-                return {
-                    "margin-left": "0px",
-                };
-            }
-
-            // Original logic for auto mode
             return {
                 "margin-left": this.numPadding * (this.beatWidth + this.beatHoverAreaPadding * 2) + "px",
             };
@@ -386,14 +298,6 @@ export default {
         getBeatTitle(beat) {
             if (beat === 0 || !beat) {
                 return "";
-            }
-
-            // For client-side aggregated beats (edit mode)
-            if (beat.beats !== undefined) {
-                const start = this.$root.datetime(beat.start);
-                const end = this.$root.datetime(beat.end);
-                const statusText = beat.status === 1 ? "Up" : beat.status === 0 ? "Down" : beat.status === 3 ? "Maintenance" : "No Data";
-                return `${start} - ${end}: ${statusText} (${beat.beats.length} checks)`;
             }
 
             // For server-side aggregated beats
