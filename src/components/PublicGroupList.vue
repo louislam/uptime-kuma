@@ -73,7 +73,7 @@
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-6">
-                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" :heartbeat-bar-range="heartbeatBarRange" :status-page-slug="statusPageSlug" />
+                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" :heartbeat-bar-range="heartbeatBarRange" />
                                     </div>
                                 </div>
                             </div>
@@ -119,11 +119,6 @@ export default {
         heartbeatBarRange: {
             type: String,
             default: "auto",
-        },
-        /** Status page slug */
-        statusPageSlug: {
-            type: String,
-            default: "default",
         }
     },
     data() {
