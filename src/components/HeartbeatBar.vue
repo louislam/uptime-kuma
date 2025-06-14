@@ -155,30 +155,24 @@ export default {
 
             // Always do client-side aggregation using fixed time buckets
             const now = dayjs();
-            const buckets = [];
-
-            // Use same logic as server-side: 100 buckets
-            const targetBuckets = 100;
             const days = this.normalizedHeartbeatBarDays;
-            const bucketSizeMinutes = Math.max(1, Math.floor((days * 24 * 60) / targetBuckets));
 
-            // Create time buckets from oldest to newest
+            // Calculate the actual time range
             const startTime = now.subtract(days, "day").startOf("minute");
             const endTime = now;
-            
-            for (let i = 0; i < targetBuckets; i++) {
-                let bucketStart = startTime.add(i * bucketSizeMinutes, "minute");
-                let bucketEnd = bucketStart.add(bucketSizeMinutes, "minute");
+            const totalMinutes = endTime.diff(startTime, "minute");
 
-                // Don't create buckets that start after current time
-                if (bucketStart.isAfter(endTime)) {
-                    break;
-                }
+            // Calculate bucket size to fit the display width
+            const targetBuckets = Math.min(this.maxBeat > 0 ? this.maxBeat : 100, totalMinutes);
+            const bucketSizeMinutes = Math.max(1, Math.floor(totalMinutes / targetBuckets));
 
-                // Ensure bucket doesn't extend beyond current time
-                if (bucketEnd.isAfter(endTime)) {
-                    bucketEnd = endTime;
-                }
+            // Create time buckets
+            const buckets = [];
+            const actualBuckets = Math.floor(totalMinutes / bucketSizeMinutes);
+
+            for (let i = 0; i < actualBuckets; i++) {
+                const bucketStart = startTime.add(i * bucketSizeMinutes, "minute");
+                const bucketEnd = bucketStart.add(bucketSizeMinutes, "minute");
 
                 buckets.push({
                     start: bucketStart,
@@ -224,26 +218,6 @@ export default {
                     bucket.time = bucket.end.toISOString();
                 }
             });
-
-            // Ensure we always return targetBuckets number of items by padding at the start
-            while (buckets.length < targetBuckets) {
-                const firstStart = buckets.length > 0 ? buckets[0].start : now.subtract(days, "day");
-                const paddedStart = firstStart.subtract(bucketSizeMinutes, "minute");
-                const paddedEnd = firstStart;
-                
-                buckets.unshift({
-                    start: paddedStart,
-                    end: paddedEnd,
-                    beats: [],
-                    status: null,
-                    time: paddedEnd.toISOString()
-                });
-            }
-
-            // Limit to maxBeat for display
-            if (buckets.length > this.maxBeat) {
-                return buckets.slice(buckets.length - this.maxBeat);
-            }
 
             return buckets;
         },
@@ -429,7 +403,7 @@ export default {
 
                 // Use start time for display if available
                 const displayTime = beat._startTime ? beat._startTime : beat.time;
-                
+
                 if (total === 0) {
                     return `${this.$root.datetime(displayTime)}: No Data`;
                 }
