@@ -133,21 +133,15 @@ export default {
         },
 
         aggregatedBeatList() {
-            console.log(`[HEARTBEAT-BAR] aggregatedBeatList called with range: ${this.heartbeatBarRange}, beatList length: ${this.beatList ? this.beatList.length : 'null'}`);
+            console.log(`[HEARTBEAT-BAR] aggregatedBeatList called with range: ${this.heartbeatBarRange}, beatList length: ${this.beatList ? this.beatList.length : 'null'}, maxBeat: ${this.maxBeat}`);
             
             if (!this.beatList || this.beatList.length === 0) {
                 console.log(`[HEARTBEAT-BAR] No beatList data`);
                 return [];
             }
 
-            // If data is already aggregated from server (has 'up'/'down' fields), use as-is
-            if (this.beatList[0] && typeof this.beatList[0].up !== 'undefined') {
-                console.log(`[HEARTBEAT-BAR] Using pre-aggregated server data`);
-                return this.beatList;
-            }
-
-            // Otherwise, do client-side aggregation for raw heartbeat data
-            console.log(`[HEARTBEAT-BAR] Performing client-side aggregation`);
+            // Always do client-side aggregation using dynamic maxBeat for proper screen sizing
+            console.log(`[HEARTBEAT-BAR] Performing client-side aggregation with ${this.maxBeat} buckets`);
             const now = dayjs();
             const buckets = [];
 
@@ -161,8 +155,8 @@ export default {
                 totalHours = 90 * 24; // Fallback
             }
 
-            // Calculate bucket size and count
-            const totalBuckets = this.maxBeat || 50;
+            // Use dynamic maxBeat calculated from screen size
+            const totalBuckets = this.maxBeat > 0 ? this.maxBeat : 50;
             const bucketSize = totalHours / totalBuckets;
 
             // Create time buckets from oldest to newest
@@ -217,7 +211,7 @@ export default {
                 }
             });
 
-            console.log(`[HEARTBEAT-BAR] Generated ${buckets.length} aggregated buckets`);
+            console.log(`[HEARTBEAT-BAR] Generated ${buckets.length} aggregated buckets using dynamic maxBeat`);
             return buckets;
         },
 

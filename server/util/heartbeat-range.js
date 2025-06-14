@@ -64,24 +64,24 @@ async function getAggregatedHeartbeatData(monitorId, range) {
             return null; // This will trigger fallback in router
         }
         
-        // Convert to heartbeat-like format
+        // Convert stat data to simplified format for client-side aggregation
         const result = stats.map(stat => ({
-            time: dayjs(stat.timestamp * 1000).format("YYYY-MM-DD HH:mm:ss"), // Convert seconds to milliseconds
-            status: stat.up > 0 ? 1 : (stat.down > 0 ? 0 : 1), // Simplified status logic
+            time: dayjs(stat.timestamp * 1000).format("YYYY-MM-DD HH:mm:ss"),
+            status: stat.up > 0 ? 1 : (stat.down > 0 ? 0 : 1),
             up: stat.up,
             down: stat.down,
             ping: stat.ping
         }));
         
-        console.log(`[HEARTBEAT-RANGE] Returning ${result.length} converted records`);
+        console.log(`[HEARTBEAT-RANGE] Returning ${result.length} stat records for client aggregation`);
         return result;
     } else {
         // Use daily stats for ranges over 24 hours
         const days = Math.ceil(hours / 24);
         const startTime = now.subtract(days, "days");
-        const timestampKey = Math.floor(startTime.valueOf() / (24 * 60 * 60 * 1000)) * (24 * 60 * 60 * 1000);
+        const timestampKey = Math.floor(startTime.valueOf() / (24 * 60 * 60 * 1000)); // Convert to seconds
         
-        console.log(`[HEARTBEAT-RANGE] Using daily stats from timestamp ${timestampKey} (${dayjs(timestampKey).format()})`);
+        console.log(`[HEARTBEAT-RANGE] Using daily stats from timestamp ${timestampKey} (${dayjs(timestampKey * 1000).format()})`);
         
         const stats = await R.getAll(`
             SELECT * FROM stat_daily 
@@ -97,16 +97,16 @@ async function getAggregatedHeartbeatData(monitorId, range) {
             return null; // This will trigger fallback in router
         }
         
-        // Convert to heartbeat-like format
+        // Convert stat data to simplified format for client-side aggregation
         const result = stats.map(stat => ({
-            time: dayjs(stat.timestamp).format("YYYY-MM-DD HH:mm:ss"),
-            status: stat.up > 0 ? 1 : (stat.down > 0 ? 0 : 1), // Simplified status logic
+            time: dayjs(stat.timestamp * 1000).format("YYYY-MM-DD HH:mm:ss"),
+            status: stat.up > 0 ? 1 : (stat.down > 0 ? 0 : 1),
             up: stat.up,
             down: stat.down,
             ping: stat.ping
         }));
         
-        console.log(`[HEARTBEAT-RANGE] Returning ${result.length} converted records`);
+        console.log(`[HEARTBEAT-RANGE] Returning ${result.length} stat records for client aggregation`);
         return result;
     }
 }
