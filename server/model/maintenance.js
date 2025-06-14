@@ -219,8 +219,8 @@ class Maintenance extends BeanModel {
 
         log.debug("maintenance", "Run maintenance id: " + this.id);
 
-        // 1.21.2 migration and 2.0.0-beta.4 migration
-        if (!this.cron || this.strategy === "recurring-interval" && this.cron === "* * * * *") {
+        // 1.21.2 migration
+        if (!this.cron) {
             await this.generateCron();
             if (!this.timezone) {
                 this.timezone = "UTC";
@@ -281,7 +281,8 @@ class Maintenance extends BeanModel {
                         }
 
                         // If last start date is set, it means the maintenance has been started before
-                        let lastStartDate = dayjs(this.lastStartDate);
+                        let lastStartDate = dayjs(this.lastStartDate)
+                            .subtract(1.1, "hour"); // Subtract 1.1 hour to avoid issues with timezone differences
 
                         // Check if the interval is enough
                         if (current.diff(lastStartDate, "day") < this.interval_day) {
@@ -447,7 +448,7 @@ class Maintenance extends BeanModel {
             let array = this.start_time.split(":");
             let hour = parseInt(array[0]);
             let minute = parseInt(array[1]);
-            this.cron = minute + " " + hour + " * * *";
+            this.cron = `${minute} ${hour}  * * *`;
             this.duration = this.calcDuration();
             log.debug("maintenance", "Cron: " + this.cron);
             log.debug("maintenance", "Duration: " + this.duration);
