@@ -853,7 +853,7 @@ class UptimeCalculator {
      * @returns {Array} Array of aggregated bucket data
      */
     getAggregatedBuckets(days, targetBuckets = 100) {
-        const now = dayjs.utc();
+        const now = this.getCurrentDate();
         const startTime = now.subtract(days, "day");
         const totalMinutes = days * 60 * 24;
         const bucketSizeMinutes = totalMinutes / targetBuckets;
