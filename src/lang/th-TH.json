@@ -987,5 +987,7 @@
     "Elevator": "ลิฟต์",
     "Doorbell": "ออด",
     "Money": "เงิน",
-    "Guitar": "กีตาร์"
+    "Guitar": "กีตาร์",
+    "successKeywordExplanation": "คีย์เวิร์ด MQTT ที่จะถูกพิจารณาว่าสำเร็จ",
+    "defaultFriendlyName": "มอนิเตอร์ใหม่"
 }
