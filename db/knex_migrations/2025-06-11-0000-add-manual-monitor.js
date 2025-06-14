@@ -1,7 +1,7 @@
 exports.up = function (knex) {
     return knex.schema
         .alterTable("monitor", function (table) {
-            table.string("manual_status").defaultTo(null);
+            table.smallint("manual_status").defaultTo(null);
         });
 };
 
