@@ -1069,5 +1069,6 @@
     "telegramUseTemplate": "استفاده از قالب پیام دلخواه",
     "telegramUseTemplateDescription": "در صورت فعال‌سازی، پیام با قالب دلخواه ارسال خواهد شد.",
     "telegramTemplateFormatDescription": "در تلگرام امکان استفاده از زبان‌های نشانه‌گذاری مختلفی وجود دارد، برای جزئیات بیشتر {0} را ببینید.",
-    "defaultFriendlyName": "مانیتور جدید"
+    "defaultFriendlyName": "مانیتور جدید",
+    "shrinkDatabaseDescriptionSqlite": "اجرای {vacuum} برای پایگاه داده SQLite. {auto_vacuum} به صورت پیش‌فرض فعال است اما اعمال یکپارچه‌سازی یا ... را مشابه {vacuum} انجام نمیدهد."
 }
