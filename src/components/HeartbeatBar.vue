@@ -99,12 +99,16 @@ export default {
         },
 
         shortBeatList() {
+            console.log(`[HEARTBEAT-BAR] shortBeatList called with range: ${this.heartbeatBarRange}, beatList: ${this.beatList ? this.beatList.length : 'null'} items`);
+            
             if (!this.beatList) {
+                console.log(`[HEARTBEAT-BAR] No beatList - returning empty array`);
                 return [];
             }
 
             // If heartbeat range is configured (not auto), aggregate by time periods
             if (this.heartbeatBarRange && this.heartbeatBarRange !== "auto") {
+                console.log(`[HEARTBEAT-BAR] Using aggregated beat list for range: ${this.heartbeatBarRange}`);
                 return this.aggregatedBeatList;
             }
 
@@ -129,9 +133,92 @@ export default {
         },
 
         aggregatedBeatList() {
-            // Data is now pre-aggregated by the server using stat tables
-            // No client-side processing needed for non-auto ranges
-            return this.beatList || [];
+            console.log(`[HEARTBEAT-BAR] aggregatedBeatList called with range: ${this.heartbeatBarRange}, beatList length: ${this.beatList ? this.beatList.length : 'null'}`);
+            
+            if (!this.beatList || this.beatList.length === 0) {
+                console.log(`[HEARTBEAT-BAR] No beatList data`);
+                return [];
+            }
+
+            // If data is already aggregated from server (has 'up'/'down' fields), use as-is
+            if (this.beatList[0] && typeof this.beatList[0].up !== 'undefined') {
+                console.log(`[HEARTBEAT-BAR] Using pre-aggregated server data`);
+                return this.beatList;
+            }
+
+            // Otherwise, do client-side aggregation for raw heartbeat data
+            console.log(`[HEARTBEAT-BAR] Performing client-side aggregation`);
+            const now = dayjs();
+            const buckets = [];
+
+            // Parse range to get total hours
+            let totalHours;
+            if (this.heartbeatBarRange.endsWith("h")) {
+                totalHours = parseInt(this.heartbeatBarRange);
+            } else if (this.heartbeatBarRange.endsWith("d")) {
+                totalHours = parseInt(this.heartbeatBarRange) * 24;
+            } else {
+                totalHours = 90 * 24; // Fallback
+            }
+
+            // Calculate bucket size and count
+            const totalBuckets = this.maxBeat || 50;
+            const bucketSize = totalHours / totalBuckets;
+
+            // Create time buckets from oldest to newest
+            const startTime = now.subtract(totalHours, "hours");
+            for (let i = 0; i < totalBuckets; i++) {
+                let bucketStart = startTime.add(i * bucketSize, "hours");
+                let bucketEnd = bucketStart.add(bucketSize, "hours");
+
+                buckets.push({
+                    start: bucketStart,
+                    end: bucketEnd,
+                    beats: [],
+                    status: 1, // default to up
+                    time: bucketEnd.toISOString()
+                });
+            }
+
+            // Group heartbeats into buckets
+            this.beatList.forEach(beat => {
+                const beatTime = dayjs.utc(beat.time).local();
+                const bucket = buckets.find(b =>
+                    (beatTime.isAfter(b.start) || beatTime.isSame(b.start)) &&
+                    (beatTime.isBefore(b.end) || beatTime.isSame(b.end))
+                );
+                if (bucket) {
+                    bucket.beats.push(beat);
+                }
+            });
+
+            // Calculate status for each bucket
+            buckets.forEach(bucket => {
+                if (bucket.beats.length === 0) {
+                    bucket.status = null; // no data - will be rendered as empty/grey
+                } else {
+                    // Priority: DOWN (0) > MAINTENANCE (3) > UP (1)
+                    const hasDown = bucket.beats.some(b => b.status === 0);
+                    const hasMaintenance = bucket.beats.some(b => b.status === 3);
+
+                    if (hasDown) {
+                        bucket.status = 0;
+                    } else if (hasMaintenance) {
+                        bucket.status = 3;
+                    } else {
+                        bucket.status = 1;
+                    }
+
+                    // Use the latest beat time in the bucket
+                    const latestBeat = bucket.beats.reduce((latest, beat) =>
+                        dayjs(beat.time).isAfter(dayjs(latest.time)) ? beat : latest
+                    );
+                    bucket.time = latestBeat.time;
+                }
+            });
+
+            console.log(`[HEARTBEAT-BAR] Generated ${buckets.length} aggregated buckets`);
+            return buckets;
         },
 
         wrapStyle() {
