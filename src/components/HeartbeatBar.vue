@@ -94,6 +94,12 @@ export default {
             if (!this.beatList) {
                 return 0;
             }
+
+            // For configured ranges, no padding needed since we show all beats
+            if (this.normalizedHeartbeatBarDays > 0) {
+                return 0;
+            }
+
             let num = this.beatList.length - this.maxBeat;
 
             if (this.move) {
@@ -114,16 +120,18 @@ export default {
 
             // If heartbeat days is configured (not auto), data should be aggregated from server
             if (this.normalizedHeartbeatBarDays > 0 && this.beatList.length > 0) {
-                // Data is already aggregated from server, use it directly
-                // But still limit to maxBeat for display
-                if (this.beatList.length > this.maxBeat) {
-                    return this.beatList.slice(this.beatList.length - this.maxBeat);
-                }
+                // Data is already aggregated from server covering exact time range requested
+                // Show all beats to display the full requested time period
                 return this.beatList;
             }
 
             // Original logic for auto mode (heartbeatBarDays = 0)
             let placeholders = [];
+
+            // Handle case where maxBeat is -1 (no limit)
+            if (this.maxBeat <= 0) {
+                return this.beatList;
+            }
 
             let start = this.beatList.length - this.maxBeat;
 
@@ -144,7 +152,7 @@ export default {
 
         wrapStyle() {
             let topBottom = (((this.beatHeight * this.hoverScale) - this.beatHeight) / 2);
-            let leftRight = (((this.beatWidth * this.hoverScale) - this.beatWidth) / 2);
+            let leftRight = (((this.dynamicBeatWidth * this.hoverScale) - this.dynamicBeatWidth) / 2);
 
             return {
                 padding: `${topBottom}px ${leftRight}px`,
@@ -153,8 +161,8 @@ export default {
         },
 
         barStyle() {
-            if (this.move && this.shortBeatList.length > this.maxBeat) {
-                let width = -(this.beatWidth + this.beatHoverAreaPadding * 2);
+            if (this.move && this.maxBeat > 0 && this.shortBeatList.length > this.maxBeat) {
+                let width = -(this.dynamicBeatWidth + this.beatHoverAreaPadding * 2);
 
                 return {
                     transition: "all ease-in-out 0.25s",
@@ -175,9 +183,28 @@ export default {
             };
         },
 
+        /**
+         * Calculate dynamic beat width for configured ranges
+         * @returns {number} Beat width in pixels
+         */
+        dynamicBeatWidth() {
+            // For configured ranges, fit all beats to available width
+            if (this.normalizedHeartbeatBarDays > 0 && this.shortBeatList.length > 0) {
+                if (this.$refs.wrap) {
+                    const availableWidth = this.$refs.wrap.clientWidth;
+                    const totalBeats = this.shortBeatList.length;
+                    const totalPadding = totalBeats * (this.beatHoverAreaPadding * 2);
+                    const availableForBeats = availableWidth - totalPadding;
+                    const calculatedWidth = Math.max(1, Math.floor(availableForBeats / totalBeats));
+                    return Math.min(calculatedWidth, this.beatWidth); // Don't exceed original width
+                }
+            }
+            return this.beatWidth;
+        },
+
         beatStyle() {
             return {
-                width: this.beatWidth + "px",
+                width: this.dynamicBeatWidth + "px",
                 height: this.beatHeight + "px",
             };
         },
@@ -188,7 +215,7 @@ export default {
          */
         timeStyle() {
             return {
-                "margin-left": this.numPadding * (this.beatWidth + this.beatHoverAreaPadding * 2) + "px",
+                "margin-left": this.numPadding * (this.dynamicBeatWidth + this.beatHoverAreaPadding * 2) + "px",
             };
         },
 
@@ -285,7 +312,13 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
-                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+                // For configured ranges, don't limit maxBeat - show all beats
+                if (this.normalizedHeartbeatBarDays > 0) {
+                    this.maxBeat = -1; // No limit
+                } else {
+                    // For auto mode, calculate based on screen width
+                    this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+                }
             }
         },
 

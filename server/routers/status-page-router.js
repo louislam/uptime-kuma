@@ -266,40 +266,41 @@ async function getAggregatedHeartbeats(uptimeCalculator, days) {
     const now = dayjs.utc();
     const result = [];
 
-    // Calculate the actual time range we have
-    const startTime = now.subtract(days, "day").startOf("minute");
+    // Force exact time range: exactly N days ago to exactly now
     const endTime = now;
+    const startTime = now.subtract(days, "day");
     const totalMinutes = endTime.diff(startTime, "minute");
 
-    // Calculate how many buckets we can actually show (max 100)
-    const targetBuckets = Math.min(100, totalMinutes);
-    const bucketSizeMinutes = Math.max(1, Math.floor(totalMinutes / targetBuckets));
+    // Always create exactly 100 buckets spanning the full time range
+    const numBuckets = 100;
+    const bucketSizeMinutes = totalMinutes / numBuckets;
 
-    // Determine data granularity based on days
-    let dataPoints;
-    let granularity;
+    // Get available data from UptimeCalculator for lookup
+    const availableData = {};
+    let rawDataPoints;
 
     if (days <= 1) {
-        // For 1 day or less, use minutely data
-        granularity = "minute";
-        dataPoints = uptimeCalculator.getDataArray(days * 24 * 60, granularity);
+        const exactMinutes = Math.ceil(days * 24 * 60);
+        rawDataPoints = uptimeCalculator.getDataArray(exactMinutes, "minute");
     } else if (days <= 30) {
-        // For 2-30 days, use hourly data
-        granularity = "hour";
-        dataPoints = uptimeCalculator.getDataArray(days * 24, granularity);
+        const exactHours = Math.ceil(days * 24);
+        rawDataPoints = uptimeCalculator.getDataArray(exactHours, "hour");
     } else {
-        // For 31+ days, use daily data
-        granularity = "day";
-        dataPoints = uptimeCalculator.getDataArray(days, granularity);
+        rawDataPoints = uptimeCalculator.getDataArray(days, "day");
     }
 
-    // Create time buckets
-    const buckets = [];
-    const actualBuckets = Math.floor(totalMinutes / bucketSizeMinutes);
+    // Create lookup map for available data
+    for (const point of rawDataPoints) {
+        if (point && point.timestamp) {
+            availableData[point.timestamp] = point;
+        }
+    }
 
-    for (let i = 0; i < actualBuckets; i++) {
+    // Create exactly numBuckets buckets spanning the full requested time range
+    const buckets = [];
+    for (let i = 0; i < numBuckets; i++) {
         const bucketStart = startTime.add(i * bucketSizeMinutes, "minute");
-        const bucketEnd = bucketStart.add(bucketSizeMinutes, "minute");
+        const bucketEnd = startTime.add((i + 1) * bucketSizeMinutes, "minute");
 
         buckets.push({
             start: bucketStart.unix(),
@@ -312,22 +313,20 @@ async function getAggregatedHeartbeats(uptimeCalculator, days) {
         });
     }
 
-    // Aggregate data points into buckets
-    for (const dataPoint of dataPoints) {
-        if (!dataPoint || !dataPoint.timestamp) {
-            continue;
-        }
+    // Aggregate available data into buckets
+    for (const [ timestamp, dataPoint ] of Object.entries(availableData)) {
+        const timestampNum = parseInt(timestamp);
 
         // Find the appropriate bucket for this data point
         const bucket = buckets.find(b =>
-            dataPoint.timestamp >= b.start && dataPoint.timestamp < b.end
+            timestampNum >= b.start && timestampNum < b.end
         );
 
-        if (bucket) {
+        if (bucket && dataPoint) {
             bucket.up += dataPoint.up || 0;
             bucket.down += dataPoint.down || 0;
-            bucket.maintenance += dataPoint.maintenance || 0;
-            bucket.pending += dataPoint.pending || 0;
+            bucket.maintenance += 0; // UptimeCalculator treats maintenance as up
+            bucket.pending += 0;     // UptimeCalculator doesn't track pending separately
             bucket.hasData = true;
         }
     }
