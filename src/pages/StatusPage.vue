@@ -795,8 +795,6 @@ export default {
             // Otherwise, use a default that will be updated when components mount
             const targetMaxBeats = maxBeats || 50; // Default, will be updated by actual container measurement
 
-            console.log(`HeartBeat Debug: Using maxBeats=${targetMaxBeats}, provided=${maxBeats !== null}`);
-
             return axios.get("/api/status-page/heartbeat/" + this.slug, {
                 params: { maxBeats: targetMaxBeats }
             }).then((res) => {
@@ -862,7 +860,6 @@ export default {
         reloadHeartbeatData(maxBeats) {
             // Only reload if we have configured days (not auto mode)
             if (this.config && this.config.heartbeatBarDays > 0) {
-                console.log(`HeartBeat Debug: Reloading with maxBeats=${maxBeats} for ${this.config.heartbeatBarDays} days`);
                 this.loadHeartbeatData(maxBeats);
             }
         },

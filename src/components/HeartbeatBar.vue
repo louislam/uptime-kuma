@@ -49,7 +49,7 @@ export default {
         },
         /** Heartbeat bar days */
         heartbeatBarDays: {
-            type: [ Number, String ],
+            type: Number,
             default: 0
         }
     },
@@ -70,8 +70,7 @@ export default {
          * @returns {number} Number of days for heartbeat bar
          */
         normalizedHeartbeatBarDays() {
-            const num = Number(this.heartbeatBarDays);
-            return isNaN(num) ? 0 : Math.max(0, Math.min(365, Math.floor(num)));
+            return Math.max(0, Math.min(365, Math.floor(this.heartbeatBarDays || 0)));
         },
 
         /**
@@ -241,7 +240,7 @@ export default {
     },
     watch: {
         beatList: {
-            handler(val, oldVal) {
+            handler() {
                 this.move = true;
 
                 setTimeout(() => {
@@ -297,7 +296,6 @@ export default {
                 // If maxBeat changed and we're in configured days mode, notify parent to reload data
                 if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
                     this.maxBeat = newMaxBeat;
-                    console.log(`HeartBeat Debug: Container width changed, maxBeat=${newMaxBeat}, notifying parent`);
 
                     // Find the closest parent with reloadHeartbeatData method (StatusPage)
                     let parent = this.$parent;
@@ -324,33 +322,7 @@ export default {
                 return "";
             }
 
-            // For server-side aggregated beats
-            if (beat._aggregated && beat._counts) {
-                const counts = beat._counts;
-                const total = counts.up + counts.down + counts.maintenance + counts.pending;
-
-                // Use start time for display if available
-                const displayTime = beat._startTime ? beat._startTime : beat.time;
-
-                if (total === 0) {
-                    return `${this.$root.datetime(displayTime)}: No Data`;
-                }
-
-                let statusText = "";
-                if (counts.down > 0) {
-                    statusText = "Down";
-                } else if (counts.maintenance > 0) {
-                    statusText = "Maintenance";
-                } else if (counts.pending > 0) {
-                    statusText = "Pending";
-                } else if (counts.up > 0) {
-                    statusText = "Up";
-                }
-
-                return `${this.$root.datetime(displayTime)}: ${statusText} (${total} checks)`;
-            }
-
-            // For individual beats, show timestamp
+            // Show timestamp for all beats (both individual and aggregated)
             return `${this.$root.datetime(beat.time)}${beat.msg ? ` - ${beat.msg}` : ""}`;
         },
 
