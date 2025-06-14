@@ -50,11 +50,7 @@ export default {
         /** Heartbeat bar days */
         heartbeatBarDays: {
             type: [ Number, String ],
-            default: 0,
-            validator(value) {
-                const num = Number(value);
-                return !isNaN(num) && num >= 0 && num <= 365;
-            }
+            default: 0
         }
     },
     data() {
@@ -276,23 +272,17 @@ export default {
          * @returns {string} The time elapsed in minutes or hours.
          */
         timeSinceFirstBeat() {
-            // For aggregated beats, calculate from the configured days
+            // For configured days mode, show the configured range
             if (this.normalizedHeartbeatBarDays > 0) {
-                if (this.normalizedHeartbeatBarDays < 2) {
-                    return (this.normalizedHeartbeatBarDays * 24) + "h";
-                } else {
-                    return this.normalizedHeartbeatBarDays + "d";
-                }
+                return this.normalizedHeartbeatBarDays < 2 ?
+                    (this.normalizedHeartbeatBarDays * 24) + "h" :
+                    this.normalizedHeartbeatBarDays + "d";
             }
 
-            // Original logic for auto mode
+            // For auto mode, calculate from actual data
             const firstValidBeat = this.shortBeatList.at(this.numPadding);
             const minutes = dayjs().diff(dayjs.utc(firstValidBeat?.time), "minutes");
-            if (minutes > 60) {
-                return (minutes / 60).toFixed(0) + "h";
-            } else {
-                return minutes + "m";
-            }
+            return minutes > 60 ? Math.floor(minutes / 60) + "h" : minutes + "m";
         },
 
         /**
@@ -381,20 +371,20 @@ export default {
          * @returns {string} Beat title
          */
         getBeatTitle(beat) {
-            if (beat === 0) {
+            if (beat === 0 || !beat) {
                 return "";
             }
 
-            // For aggregated beats (client-side aggregation), show time range and status
-            if (beat.beats !== undefined && this.normalizedHeartbeatBarDays > 0) {
+            // For aggregated beats, show time range and status
+            if (beat.beats !== undefined) {
                 const start = this.$root.datetime(beat.start);
                 const end = this.$root.datetime(beat.end);
                 const statusText = beat.status === 1 ? "Up" : beat.status === 0 ? "Down" : beat.status === 3 ? "Maintenance" : "No Data";
                 return `${start} - ${end}: ${statusText} (${beat.beats.length} checks)`;
             }
 
-            // For published mode with configured days, show simple timestamp
-            return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
+            // For individual beats, show timestamp
+            return `${this.$root.datetime(beat.time)}${beat.msg ? ` - ${beat.msg}` : ""}`;
         },
 
     },

@@ -118,11 +118,7 @@ export default {
         /** Heartbeat bar days */
         heartbeatBarDays: {
             type: [ Number, String ],
-            default: 0,
-            validator(value) {
-                const num = Number(value);
-                return !isNaN(num) && num >= 0 && num <= 365;
-            }
+            default: 0
         }
     },
     data() {
