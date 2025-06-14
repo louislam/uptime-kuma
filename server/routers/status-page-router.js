@@ -86,24 +86,30 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
         // Get the status page to determine the heartbeat range
         let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
-        let heartbeatRange = (statusPage && statusPage.heartbeat_bar_range) ? statusPage.heartbeat_bar_range : "auto";
+        let heartbeatRange = statusPage ? statusPage.heartbeat_bar_range : "auto";
 
         // Calculate the date range for heartbeats based on range setting
-        let dateFrom = new Date();
+        let dateFrom = null;
         if (heartbeatRange === "auto") {
             // Auto mode: limit to last 100 beats (original behavior)
             dateFrom = null;
         } else if (heartbeatRange.endsWith("h")) {
             // Hours
             let hours = parseInt(heartbeatRange);
-            dateFrom.setHours(dateFrom.getHours() - hours);
+            let date = new Date();
+            date.setHours(date.getHours() - hours);
+            dateFrom = date.toISOString().slice(0, 19).replace('T', ' ');
         } else if (heartbeatRange.endsWith("d")) {
             // Days
             let days = parseInt(heartbeatRange);
-            dateFrom.setDate(dateFrom.getDate() - days);
+            let date = new Date();
+            date.setDate(date.getDate() - days);
+            dateFrom = date.toISOString().slice(0, 19).replace('T', ' ');
         } else {
             // Fallback to 90 days
-            dateFrom.setDate(dateFrom.getDate() - 90);
+            let date = new Date();
+            date.setDate(date.getDate() - 90);
+            dateFrom = date.toISOString().slice(0, 19).replace('T', ' ');
         }
 
         for (let monitorID of monitorIDList) {
@@ -126,7 +132,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                     ORDER BY time DESC
                 `, [
                     monitorID,
-                    dateFrom.toISOString(),
+                    dateFrom,
                 ]);
             }
 
