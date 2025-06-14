@@ -156,7 +156,6 @@ export default {
 
             // Create time buckets from oldest to newest
             const startTime = now.subtract(totalHours, "hours");
-            
             for (let i = 0; i < totalBuckets; i++) {
                 let bucketStart;
                 let bucketEnd;
@@ -274,7 +273,7 @@ export default {
                     "margin-left": "0px",
                 };
             }
-            
+
             // Original logic for auto mode
             return {
                 "margin-left": this.numPadding * (this.beatWidth + this.beatHoverAreaPadding * 2) + "px",

@@ -722,7 +722,7 @@ export default {
         Promise.all([
             this.getData(),
             this.editMode ? Promise.resolve() : this.loadHeartbeatData()
-        ]).then(([configRes]) => {
+        ]).then(([ configRes ]) => {
             this.config = configRes.data.config;
 
             if (!this.config.domainNameList) {
