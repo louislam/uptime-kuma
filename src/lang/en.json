@@ -4,6 +4,7 @@
     "setupDatabaseEmbeddedMariaDB": "You don't need to set anything. This docker image has embedded and configured MariaDB for you automatically. Uptime Kuma will connect to this database via unix socket.",
     "setupDatabaseMariaDB": "Connect to an external MariaDB database. You need to set the database connection information.",
     "setupDatabaseSQLite": "A simple database file, recommended for small-scale deployments. Prior to v2.0.0, Uptime Kuma used SQLite as the default database.",
+    "configureMariaCaFile": "You will sometimes need to provide a CA certificate to connect to database with 'require-secure-transport' on. Such as when using Azure MySql flexible servers. You can upload the CA file that will be used to enable a secure connection.",
     "settingUpDatabaseMSG": "Setting up the database. It may take a while, please be patient.",
     "dbName": "Database Name",
     "Settings": "Settings",
