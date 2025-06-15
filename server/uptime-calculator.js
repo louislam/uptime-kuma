@@ -866,10 +866,11 @@ class UptimeCalculator {
             const exactMinutes = Math.ceil(days * 24 * 60);
             rawDataPoints = this.getDataArray(exactMinutes, "minute");
         } else if (days <= 30) {
-            const exactHours = Math.ceil(days * 24);
+            // For 1-30 days, use hourly data (up to 720 hours)
+            const exactHours = Math.min(Math.ceil(days * 24), 720);
             rawDataPoints = this.getDataArray(exactHours, "hour");
         } else {
-            // For > 30 days, use daily data to avoid hitting the 720-hour limit
+            // For > 30 days, use daily data
             const requestDays = Math.min(days, 365);
             rawDataPoints = this.getDataArray(requestDays, "day");
         }
@@ -898,21 +899,35 @@ class UptimeCalculator {
         }
 
         // Aggregate available data into buckets
-        let bucketIndex = 0;
         for (const [ timestamp, dataPoint ] of Object.entries(availableData)) {
             const timestampNum = parseInt(timestamp);
 
-            // Find the appropriate bucket for this data point (more efficient)
-            while (bucketIndex < buckets.length - 1 && timestampNum >= buckets[bucketIndex].end) {
-                bucketIndex++;
-            }
+            // Find the appropriate bucket for this data point
+            // For daily data (> 30 days), timestamps are at start of day
+            // We need to find which bucket this day belongs to
+            for (let i = 0; i < buckets.length; i++) {
+                const bucket = buckets[i];
 
-            const bucket = buckets[bucketIndex];
-            if (bucket && timestampNum >= bucket.start && timestampNum < bucket.end && dataPoint) {
-                bucket.up += dataPoint.up || 0;
-                bucket.down += dataPoint.down || 0;
-                bucket.maintenance += 0; // UptimeCalculator treats maintenance as up
-                bucket.pending += 0;     // UptimeCalculator doesn't track pending separately
+                if (days > 30) {
+                    // For daily data, check if the timestamp falls within the bucket's day range
+                    // Add 86400 (1 day in seconds) to include the whole day
+                    if (timestampNum >= bucket.start && timestampNum < bucket.end) {
+                        bucket.up += dataPoint.up || 0;
+                        bucket.down += dataPoint.down || 0;
+                        bucket.maintenance += dataPoint.maintenance || 0;
+                        bucket.pending += dataPoint.pending || 0;
+                        break;
+                    }
+                } else {
+                    // For minute/hourly data, use exact timestamp matching
+                    if (timestampNum >= bucket.start && timestampNum < bucket.end && dataPoint) {
+                        bucket.up += dataPoint.up || 0;
+                        bucket.down += dataPoint.down || 0;
+                        bucket.maintenance += 0; // UptimeCalculator treats maintenance as up
+                        bucket.pending += 0;     // UptimeCalculator doesn't track pending separately
+                        break;
+                    }
+                }
             }
         }
 
