@@ -39,26 +39,46 @@ class DnsMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        let startTime = dayjs().valueOf();
-        let dnsMessage = "";
-
         const requestData = {
             name: monitor.hostname,
-            rrtype: monitor.dns_resolve_type,
+            rrtype: monitor.dnsResolveType,
             dnssec: true, // Request DNSSEC information in the response
             dnssecCheckingDisabled: monitor.skip_remote_dnssec,
         };
-        let dnsRes = await dnsResolve(requestData, monitor.dns_resolve_server, monitor.port, monitor.dns_transport, monitor.doh_query_path);
-        const records = dnsRes.answers.map(record => {
-            return Buffer.isBuffer(record.data) ? record.data.toString() : record.data;
-        });
+        const transportData = {
+            type: monitor.dnsTransport,
+            ignoreCertErrors: monitor.ignoreTls,
+            dohQueryPath: monitor.dohQueryPath,
+            dohUsePost: monitor.method === "POST",
+            dohUseHttp2: monitor.forceHttp2,
+        };
+
+        let startTime = dayjs().valueOf();
+        let dnsRes = await dnsResolve(requestData, monitor.dnsResolveServer, monitor.port, transportData);
         heartbeat.ping = dayjs().valueOf() - startTime;
 
+        let dnsMessage = "";
+        let rrtype = monitor.dnsResolveType;
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
         let conditionsResult = true;
         const handleConditions = (data) => conditions ? evaluateExpressionGroup(conditions, data) : true;
 
-        switch (monitor.dns_resolve_type) {
+        const records = dnsRes.answers.reduce((results, record) => {
+            // Omit records that are not the same as the requested rrtype
+            if (record.type === monitor.dnsResolveType) {
+                results.push(Buffer.isBuffer(record.data) ? record.data.toString() : record.data);
+            }
+            return results;
+        }, []);
+        // Return down status if no records are provided
+        if (records.length === 0) {
+            rrtype = null;
+            dnsMessage = "No records found";
+            conditionsResult = false;
+
+        }
+
+        switch (rrtype) {
             case "A":
             case "AAAA":
             case "TXT":
@@ -114,7 +134,7 @@ class DnsMonitorType extends MonitorType {
                 break;
         }
 
-        if (monitor.dns_last_result !== dnsMessage && dnsMessage !== undefined) {
+        if (monitor.dnsLastResult !== dnsMessage && dnsMessage !== undefined) {
             await R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [ dnsMessage, monitor.id ]);
         }
 

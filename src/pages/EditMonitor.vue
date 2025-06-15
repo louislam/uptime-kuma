@@ -370,18 +370,19 @@
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
-                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="dnsResolverRegex" required>
+                                    <label for="dns-resolve-server" class="form-label">{{ $t("Resolver Server") }}</label>
+                                    <input id="dns-resolve-server" ref="dns-resolve-server" v-model="monitor.dnsResolveServer" type="text" class="form-control" :pattern="dnsResolverRegex" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
                                     </div>
                                 </div>
 
+                                <!-- TODO center selected option text -->
                                 <div class="my-3">
-                                    <label for="dns_transport" class="form-label">{{ $t("Transport Method") }}</label>
+                                    <label for="dns-transport" class="form-label">{{ $t("Transport Method") }}</label>
                                     <VueMultiselect
-                                        id="dns_transport"
-                                        v-model="monitor.dns_transport"
+                                        id="dns-transport"
+                                        v-model="monitor.dnsTransport"
                                         :options="dnsTransportOptions"
                                         :multiple="false"
                                         :close-on-select="true"
@@ -408,12 +409,13 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
+                                    <label for="dns-resolve-type" class="form-label">{{ $t("Resource Record Type") }}</label>
 
                                     <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
+                                    <!-- TODO center selected option text -->
                                     <VueMultiselect
-                                        id="dns_resolve_type"
-                                        v-model="monitor.dns_resolve_type"
+                                        id="dns-resolve-type"
+                                        v-model="monitor.dnsResolveType"
                                         :options="dnsresolvetypeOptions"
                                         :multiple="false"
                                         :close-on-select="true"
@@ -646,10 +648,10 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' || (monitor.type === 'dns' && isSecureDnsTransport)" class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
+                                    {{ monitor.type === "redis" || monitor.type === "dns" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
                                 </label>
                             </div>
 
@@ -668,18 +670,51 @@
                             <!-- Advanced DNS monitor settings -->
                             <div v-if="monitor.type === 'dns'" class="my-3">
                                 <div v-if="dohSelected">
-                                    <label for="doh_query_path" class="form-label">{{ $t("Query Path") }}</label>
                                     <div class="d-flex">
-                                        <label for="doh_query_path" class="px-2 fs-5">/</label>
-                                        <input id="doh_query_path" v-model="monitor.doh_query_path" type="text" class="form-control" :pattern="urlQueryRegex" placeholder="dns-query?dns={query}">
+                                        <div class="my-3 flex-column flex-fill">
+                                            <div>
+                                                <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                            </div>
+                                            <div class="d-flex flex-row">
+                                                <div class="d-inline-flex">
+                                                    <select id="method" v-model="monitor.method" class="form-select">
+                                                        <option value="GET">
+                                                            GET
+                                                        </option>
+                                                        <option value="POST">
+                                                            POST
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="mx-3 flex-fill">
+                                                    <input :value="dohDisplayUrl" type="button" class="form-control text-center" @click="focusElement('dns-resolve-server')">
+                                                </div>
+                                            </div>
+                                            <div class="form-text">
+                                                {{ $t("dohHttpMethodDescription") }}
+                                            </div>
+                                        </div>
+                                        <div class="my-3 flex-column flex-fill">
+                                            <label for="doh-query-path" class="form-label">{{ $t("Query Path") }}</label>
+                                            <input id="doh-query-path" v-model="monitor.dohQueryPath" type="text" class="form-control" :pattern="urlQueryRegex" placeholder="dns-query">
+                                            <div class="form-text">
+                                                {{ $t("dohQueryPathDescription") }}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-text">
-                                        {{ $t("dohQueryPathDescription") + ' "{query}".' }}
+                                    <div class="my-3 form-check">
+                                        <input id="force-http2" v-model="monitor.forceHttp2" class="form-check-input" type="checkbox">
+                                        <label class="form-check-label" for="force-http2">
+                                            {{ $t("Force HTTP2") }}
+                                        </label>
+                                        <div class="form-text">
+                                            {{ $t("forceHttp2") }}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="form-check">
-                                    <input id="skip_remote_dnssec" v-model="monitor.skip_remote_dnssec" class="form-check-input" type="checkbox" value="">
+                                <div class="my-3 form-check">
+                                    <input id="skip_remote_dnssec" v-model="monitor.skip_remote_dnssec" class="form-check-input" type="checkbox">
                                     <label class="form-check-label" for="skip_remote_dnssec">
                                         {{ $t("Skip Remote DNSSEC Verification") }}
                                     </label>
@@ -1135,9 +1170,11 @@ const monitorDefaults = {
     expiryNotification: false,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
-    dns_resolve_type: "A",
-    dns_resolve_server: "1.1.1.1",
-    dns_transport: "UDP",
+    dnsResolveType: "A",
+    dnsResolveServer: "1.1.1.1",
+    dnsTransport: "UDP",
+    dohQueryPath: "dns-query",
+    forceHttp2: false,
     skip_remote_dnssec: false,
     docker_container: "",
     docker_host: null,
@@ -1235,7 +1272,7 @@ export default {
 
             // Permit IP address for TCP/UDP resolvers, hostname for DoH/DoT
             if (! isDev) {
-                switch (this.monitor.dns_transport) {
+                switch (this.monitor.dnsTransport) {
                     case "UDP":
                     case "TCP":
                         return this.ipRegexPattern.source;
@@ -1484,7 +1521,7 @@ message HealthCheckResponse {
                 // array defined in server\monitor-types\dns.js in order to
                 // pass to Vue, then sliced below based on index.
                 const dnsConditionVariables = this.$root.monitorTypeList["dns"]?.conditionVariables;
-                switch (this.monitor.dns_resolve_type) {
+                switch (this.monitor.dnsResolveType) {
                     case "A":
                     case "AAAA":
                     case "TXT":
@@ -1508,8 +1545,18 @@ message HealthCheckResponse {
         },
 
         dohSelected() {
-            return this.monitor.dns_transport === "DoH";
-        }
+            return this.monitor.dnsTransport === "DoH";
+        },
+
+        dohDisplayUrl() {
+            const port = (this.monitor.port !== 443) ? `:${this.monitor.port}` : "";
+            return `https://${this.monitor.dnsResolveServer}${port}/`;
+        },
+
+        isSecureDnsTransport() {
+            return [ "DoH", "DoT", "DoQ" ].includes(this.monitor.dnsTransport);
+        },
+
     },
     watch: {
         "$root.proxyList"() {
@@ -1975,6 +2022,11 @@ message HealthCheckResponse {
             if (this.monitor.timeout > clampedValue) {
                 this.monitor.timeout = clampedValue;
             }
+        },
+
+        focusElement(refId) {
+            // Focus the element that has a defined reference
+            this.$refs[refId].focus();
         },
 
     },

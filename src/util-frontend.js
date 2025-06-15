@@ -165,7 +165,7 @@ export function dnsNameRegexPattern() {
  * @param {boolean} qstr whether or not the url follows query string format
  * @returns {RegExp} The requested regex
  */
-export function urlPathRegexPattern(qstr = false) {
+export function urlPathRegexPattern(qstr = true) {
     // Ensures a URL path follows query string format
     const queryStringRegexPattern = /^\/?(([a-zA-Z0-9\-_%])+\/)*[a-zA-Z0-9\-_%]*\?([a-zA-Z0-9\-_%]+=[a-zA-Z0-9\-_%]*&?)+$/;
     // Only checks for valid URL path containing "{query}"

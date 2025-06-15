@@ -24,7 +24,18 @@ const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
 const https = require("https");
+const http2 = require("http2");
 const url = require("url");
+
+const {
+    HTTP2_HEADER_PATH,
+    HTTP2_HEADER_METHOD,
+    HTTP2_HEADER_AUTHORITY,
+    HTTP2_HEADER_ACCEPT,
+    HTTP2_HEADER_CONTENT_LENGTH,
+    HTTP2_HEADER_CONTENT_TYPE,
+    HTTP2_HEADER_STATUS,
+} = http2.constants;
 
 const {
     dictionaries: {
@@ -287,25 +298,24 @@ exports.httpNtlm = function (options, ntlmOptions) {
 };
 
 /**
- * Adapted from https://github.com/hildjj/dohdec/blob/v7.0.2/pkg/dohdec/lib/dnsUtils.js
- * Encode a DNS query packet to a buffer.
+ * Encode DNS query packet data to a buffer. Adapted from
+ * https://github.com/hildjj/dohdec/blob/v7.0.2/pkg/dohdec/lib/dnsUtils.js
  * @param {object} opts Options for the query.
  * @param {string} opts.name The name to look up.
- * @param {number} [opts.id=0] ID for the query.  SHOULD be 0 for DOH.
- * @param {packet.RecordType} [opts.rrtype="A"] The record type to look up.
- * @param {boolean} [opts.dnssec=false] Request DNSSec information?
- * @param {boolean} [opts.dnssecCheckingDisabled=false] Disable DNSSec
- *   validation?
- * @param {string} [opts.ecsSubnet] Subnet to use for ECS.
- * @param {number} [opts.ecs] Number of ECS bits.  Defaults to 24 or 56
- *   (IPv4/IPv6).
- * @param {boolean} [opts.stream=false] Encode for streaming, with the packet
- *   prefixed by a 2-byte big-endian integer of the number of bytes in the
- *   packet.
+ * @param {number} opts.id ID for the query. SHOULD be 0 for DOH.
+ * @param {packet.RecordType} opts.rrtype The record type to look up.
+ * @param {boolean} opts.dnssec Request DNSSec information?
+ * @param {boolean} opts.dnssecCheckingDisabled Disable DNSSec validation?
+ * @param {string} opts.ecsSubnet Subnet to use for ECS.
+ * @param {number} opts.ecs Number of ECS bits. Defaults to 24 (IPv4) or 56
+ *   (IPv6).
+ * @param {boolean} opts.stream Encode for streaming, with the packet prefixed
+ *   by a 2-byte big-endian integer of the number of bytes in the packet.
+ * @param {number} opts.udpPayloadSize Set a custom UDP payload size (EDNS).
  * @returns {Buffer} The encoded packet.
  * @throws {TypeError} opts does not contain a name attribute.
  */
-exports.makePacket = function (opts) {
+exports.makeDnsPacket = function (opts) {
     const PAD_SIZE = 128;
 
     if (!opts?.name) {
@@ -316,7 +326,7 @@ exports.makePacket = function (opts) {
     const opt = {
         name: ".",
         type: "OPT",
-        udpPayloadSize: 4096,
+        udpPayloadSize: opts.udpPayloadSize || 4096,
         extendedRcode: 0,
         flags: 0,
         flag_do: false, // Setting here has no effect
@@ -370,15 +380,64 @@ exports.makePacket = function (opts) {
 };
 
 /**
+ * Decodes DNS packet response data with error handling
+ * @param {Buffer} data DNS packet data to decode
+ * @param {boolean} isStream If the data is encoded as a stream
+ * @param {Function} callback function to call if error is encountered
+ *   Passes error object as a parameter to the function
+ * @returns {dnsPacket.Packet} DNS packet data in an object
+ */
+exports.decodeDnsPacket = function (data, isStream = false, callback) {
+    let decodedData;
+    try {
+        decodedData = isStream ? dnsPacket.streamDecode(data) : dnsPacket.decode(data);
+        log.debug("dns", "Response decoded");
+        // If the truncated bit is set, the answers section was too large
+        if (decodedData.flag_tc) {
+            callback({ message: "Response is truncated." });
+        }
+    } catch (err) {
+        err.message = `Error decoding DNS response data: ${err.message}`;
+        log.warn("dns", err.message);
+        if (callback) {
+            callback(err);
+        }
+    }
+    return decodedData;
+};
+
+/**
  * Resolves a given record using the specified DNS server
- * @param {string} opts Options for the query
+ * @param {object} opts Options for the query, used to generate DNS packet
+ * @param {string} opts.name The name of the record to query
+ * @param {string} opts.rrtype The resource record type
+ * @param {number} opts.id Set a specific ID number to use on the query
+ * @param {number} opts.udpPayloadSize Set a custom UDP payload size (EDNS).
+ *   Defaults to safe values, 1432 bytes (IPv4) or 1232 bytes (IPv6).
  * @param {string} resolverServer The DNS server to use
- * @param {string} resolverPort Port the DNS server is listening on
- * @param {string} transport The transport method to use
- * @param {string} dohQuery The query path used only for DoH
+ * @param {number} resolverPort Port the DNS server is listening on
+ * @param {object} transport The transport method and options
+ * @param {string} transport.type Transport method, default is UDP
+ * @param {number} transport.timeout Timeout to use for queries
+ * @param {boolean} transport.ignoreCertErrors Proceed with secure connections
+ *   even if the server presents an untrusted or expired certificate
+ * @param {string} transport.dohQueryPath Query path to use for DoH requests
+ * @param {boolean} transport.dohUsePost If true, DNS query will be sent using
+ *   HTTP POST method for DoH requests, otherwise use HTTP GET method
+ * @param {boolean} transport.dohUseHttp2 If true, DNS query will be made with
+ *   HTTP/2 session for DOH requests, otherwise use HTTP/1.1
  * @returns {Promise<(string[] | object[] | object)>} DNS response
  */
-exports.dnsResolve = function (opts, resolverServer, resolverPort, transport, dohQuery) {
+exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
+    // Set transport variables to defaults if not defined
+    const method = ("type" in transport) ? transport.type.toUpperCase() : "UDP";
+    const isSecure = [ "DOH", "DOT", "DOQ" ].includes(method);
+    const timeout = transport.timeout ?? 30000; // 30 seconds
+    const skipCertCheck = transport.ignoreCertErrors ?? false;
+    const dohQuery = transport.dohQueryPath ?? "dns-query";
+    const dohUsePost = transport.dohUsePost ?? false;
+    const dohUseHttp2 = transport.dohUseHttp2 ?? false;
+
     // Parse IPv4 and IPv6 addresses to determine address family and
     // add square brackets to IPv6 addresses, following RFC 3986 syntax
     resolverServer = resolverServer.replace("[", "").replace("]", "");
@@ -404,29 +463,42 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport, do
     if (opts.id == null) {
         // Set query ID to "0" for HTTP cache friendlyness on DoH requests.
         // See https://github.com/mafintosh/dns-packet/issues/77
-        opts.id = (transport.toUpperCase() === "DOH") ? 0 : Math.floor(Math.random() * 65534) + 1;
+        opts.id = (method === "DOH") ? 0 : Math.floor(Math.random() * 65534) + 1;
     }
 
+    // Set UDP payload size to safe levels for transmission over 1500 MTU
+    if (!opts.udpPayloadSize) {
+        opts.udpPayloadSize = (addressFamily === 4) ? 1432 : 1232;
+    }
+
+    // Enable stream encoding for TCP and DOT transport methods
+    if ([ "TCP", "DOT" ].includes(method)) {
+        opts.stream = true;
+    }
+    // Generate buffer with encoded DNS query
+    const buf = exports.makeDnsPacket(opts);
+
     let client;
-    let resolver = null;
+    let resolver;
     // Transport method determines which client type to use
-    const isSecure = [ "DOH", "DOT" ].includes(transport.toUpperCase());
-    switch (transport.toUpperCase()) {
+    switch (method) {
 
         case "TCP":
         case "DOT": {
-            opts.stream = true;
-            const buf = exports.makePacket(opts);
             if (isSecure) {
                 const options = {
                     port: resolverPort,
                     host: resolverServer,
-                    // TODO: Option for relaxing certificate validation
+                    rejectUnauthorized: !skipCertCheck,
                     secureContext: tls.createSecureContext({
-                        secureProtocol: "TLSv1_2_method",
+                        minVersion: "TLSv1.2",
                     }),
                 };
-                // TODO: Error handling for untrusted or expired cert
+                // Set TLS ServerName only if server is not an IP address per
+                // Section 3 of RFC 6066
+                if (addressFamily === 0) {
+                    options.servername = resolverServer;
+                }
                 client = tls.connect(options, () => {
                     log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
                     client.write(buf);
@@ -438,28 +510,41 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport, do
                     client.write(buf);
                 });
             }
-            client.on("close", () => {
-                log.debug("dns", "Connection closed");
-            });
             resolver = new Promise((resolve, reject) => {
+                // The below message is used when the response received does
+                // not follow Section 4.2.2 of RFC 1035
+                const lenErrMsg = "Resolver returned invalid DNS response";
                 let data = Buffer.alloc(0);
                 let expectedLength = 0;
+                let isValidLength = false;
+                client.on("error", (err) => {
+                    reject(err);
+                });
+                client.setTimeout(timeout, () => {
+                    client.destroy();
+                    reject({ message: "Connection timed out" });
+                });
                 client.on("data", (chunk) => {
                     if (data.length === 0) {
                         if (chunk.byteLength > 1) {
-                            const plen = chunk.readUInt16BE(0);
-                            expectedLength = plen;
-                            if (plen < 12) {
-                                reject("Response received is below DNS minimum packet length");
+                            expectedLength = chunk.readUInt16BE(0);
+                            if (expectedLength < 12) {
+                                reject({ message: lenErrMsg });
                             }
                         }
                     }
                     data = Buffer.concat([ data, chunk ]);
-                    if (data.byteLength >= expectedLength) {
+                    if (data.byteLength - 2 === expectedLength) {
+                        isValidLength = true;
                         client.destroy();
-                        const response = dnsPacket.streamDecode(data);
-                        log.debug("dns", "Response decoded");
+                        const response = exports.decodeDnsPacket(data, true, reject);
                         resolve(response);
+                    }
+                });
+                client.on("close", () => {
+                    log.debug("dns", "Connection closed");
+                    if (!isValidLength) {
+                        reject({ message: lenErrMsg });
                     }
                 });
             });
@@ -467,69 +552,158 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport, do
         }
 
         case "DOH": {
-            const buf = exports.makePacket(opts);
-            // TODO: implement POST requests for wireformat and JSON
-            dohQuery = dohQuery || "dns-query?dns={query}";
-            dohQuery = dohQuery.replace("{query}", buf.toString("base64url"));
-            const requestURL = url.parse(`https://${resolverServer}:${resolverPort}/${dohQuery}`, true);
+            const queryPath = dohUsePost ? dohQuery : `${dohQuery}?dns=${buf.toString("base64url")}`;
+            const requestURL = url.parse(`https://${resolverServer}:${resolverPort}/${queryPath}`, true);
+            const mimeType = "application/dns-message";
             const options = {
                 hostname: requestURL.hostname,
                 port: requestURL.port,
                 path: requestURL.path,
                 method: "GET",
                 headers: {
-                    "Content-Type": "application/dns-message",
+                    "accept": mimeType,
                 },
-                // TODO: Option for relaxing certificate validation
+                rejectUnauthorized: !skipCertCheck,
             };
+            if (dohUsePost) {
+                options.method = "POST";
+                // Setting Content-Length header is required for some resolvers
+                options.headers["content-length"] = buf.byteLength;
+                options.headers["content-type"] = mimeType;
+            }
             resolver = new Promise((resolve, reject) => {
-                client = https.request(options, (response) => {
+                /**
+                 * Helper function to validate HTTP response
+                 * @param {IncomingMessage|ClientHttp2Stream} httpResponse
+                 *   The response from https or http2 client
+                 * @param {object} http2Headers Response headers from http2
+                 * @returns {void}
+                 * @throws missing one or more headers for HTTP/2 response
+                 */
+                const handleResponse = (httpResponse, http2Headers) => {
+                    // Determine status code and content type
+                    let statusCode;
+                    let contentType;
+                    if (dohUseHttp2) {
+                        if (!http2Headers) {
+                            throw new Error("No headers passed for HTTP/2 response");
+                        }
+                        statusCode = http2Headers[HTTP2_HEADER_STATUS];
+                        contentType = http2Headers[HTTP2_HEADER_CONTENT_TYPE];
+                    } else {
+                        statusCode = httpResponse.statusCode;
+                        contentType = httpResponse.headers["content-type"];
+                    }
+                    // Validate response from resolver
+                    if (statusCode !== 200) {
+                        reject({ message: `Request failed with status code ${statusCode}` });
+                        return;
+                    } else if (contentType !== mimeType) {
+                        reject({ message: `Content-Type was "${contentType}", expected ${mimeType}` });
+                        return;
+                    }
+                    // Read the response body into a buffer
                     let data = Buffer.alloc(0);
-                    response.on("data", (chunk) => {
+                    httpResponse.on("data", (chunk) => {
                         data = Buffer.concat([ data, chunk ]);
                     });
-                    response.on("end", () => {
-                        const response = dnsPacket.decode(data);
-                        log.debug("dns", "Response decoded");
+                    httpResponse.on("end", () => {
+                        const response = exports.decodeDnsPacket(data, false, reject);
                         resolve(response);
                     });
-                });
-                client.on("socket", (socket) => {
-                    socket.on("secureConnect", () => {
+                };
+                if (dohUseHttp2) {
+                    const headers = {};
+                    headers[HTTP2_HEADER_AUTHORITY] = options.hostname;
+                    headers[HTTP2_HEADER_PATH] = options.path;
+                    headers[HTTP2_HEADER_METHOD] = options.method;
+                    headers[HTTP2_HEADER_ACCEPT] = options.headers["accept"];
+                    if (dohUsePost) {
+                        headers[HTTP2_HEADER_CONTENT_LENGTH] = options.headers["content-length"];
+                        headers[HTTP2_HEADER_CONTENT_TYPE] = options.headers["content-type"];
+                    }
+                    client = http2.connect(`https://${options.hostname}:${options.port}`, {
+                        rejectUnauthorized: options.rejectUnauthorized,
+                    });
+                    client.setTimeout(timeout, () => {
+                        client.destroy();
+                        reject({ message: "Request timed out" });
+                    });
+                    client.on("connect", () => {
                         log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
                     });
-                });
+                    const req = client.request(headers);
+                    req.on("error", (err) => {
+                        err.message = "HTTP/2: " + err.message;
+                        reject(err);
+                    });
+                    req.on("response", (resHeaders) => {
+                        handleResponse(req, resHeaders);
+                    });
+                    req.on("end", () => {
+                        client.close();
+                    });
+                    if (dohUsePost) {
+                        req.write(buf);
+                    }
+                    req.end();
+                } else {
+                    client = https.request(options, (httpResponse) => {
+                        handleResponse(httpResponse);
+                    });
+                    client.setTimeout(timeout, () => {
+                        client.destroy();
+                        reject({ message: "Request timed out" });
+                    });
+                    client.on("socket", (socket) => {
+                        socket.on("secureConnect", () => {
+                            log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                        });
+                    });
+                    if (dohUsePost) {
+                        client.write(buf);
+                    }
+                    client.end();
+                }
                 client.on("error", (err) => {
                     reject(err);
                 });
                 client.on("close", () => {
                     log.debug("dns", "Connection closed");
                 });
-                client.write(buf);
-                client.end();
             });
             break;
         }
 
-        //case "UDP":
+        case "UDP":
         default: {
-            const buf = exports.makePacket(opts);
-            client = dgram.createSocket("udp" + String(addressFamily));
-            client.on("connect", () => {
-                log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
-            });
-            client.on("close", () => {
-                log.debug("dns", "Connection closed");
-            });
+            if (addressFamily === 0) {
+                return new Promise((resolve, reject) => {
+                    reject({ message: "Resolver server must be IP address for UDP transport method" });
+                });
+            }
+            client = dgram.createSocket(`udp${addressFamily}`);
             resolver = new Promise((resolve, reject) => {
+                let timer;
                 client.on("message", (rdata, rinfo) => {
                     client.close();
-                    const response = dnsPacket.decode(rdata);
-                    log.debug("dns", "Response decoded");
+                    const response = exports.decodeDnsPacket(rdata, false, reject);
                     resolve(response);
                 });
                 client.on("error", (err) => {
+                    clearTimeout(timer);
                     reject(err);
+                });
+                client.on("listening", () => {
+                    log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                    timer = setTimeout(() => {
+                        reject({ message: "Query timed out" });
+                        client.close();
+                    }, timeout);
+                });
+                client.on("close", () => {
+                    clearTimeout(timer);
+                    log.debug("dns", "Connection closed");
                 });
             });
             client.send(buf, 0, buf.length, resolverPort, resolverServer);
