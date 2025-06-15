@@ -112,7 +112,7 @@ module.exports.generalSocketHandler = (socket, server) => {
                 if (file.startsWith("index.")) {
                     callback({
                         ok: true,
-                        code: fsAsync.readFile(path.join(dir, file), "utf8"),
+                        code: await fsAsync.readFile(path.join(dir, file), "utf8"),
                     });
                     return;
                 }
