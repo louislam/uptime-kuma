@@ -51,7 +51,7 @@ exports.initJWTSecret = async () => {
         jwtSecretBean.key = "jwtSecret";
     }
 
-    jwtSecretBean.value = passwordHash.generate(genSecret());
+    jwtSecretBean.value = await passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
 };
