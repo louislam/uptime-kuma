@@ -380,6 +380,7 @@ export default {
          * Show custom tooltip
          * @param {object} beat Beat data
          * @param {Event} event Mouse event
+         * @returns {void}
          */
         showTooltip(beat, event) {
             if (beat === 0 || !beat) {
@@ -436,6 +437,7 @@ export default {
 
         /**
          * Hide custom tooltip
+         * @returns {void}
          */
         hideTooltip() {
             if (this.tooltipTimeoutId) {

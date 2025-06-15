@@ -226,6 +226,7 @@ export default {
 }
 
 // Accessibility improvements
+
 @media (prefers-reduced-motion: reduce) {
     .tooltip-wrapper {
         animation: none !important;
