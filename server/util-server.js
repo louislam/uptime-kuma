@@ -1100,8 +1100,8 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
 
 /**
  * Async version of fs.existsSync
- * @param path
- * @returns {Promise<unknown>}
+ * @param {PathLike} path File path
+ * @returns {Promise<boolean>} True if file exists, false otherwise
  */
 function fsExists(path) {
     return new Promise(function (resolve, reject) {
