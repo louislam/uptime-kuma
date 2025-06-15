@@ -1,4 +1,5 @@
 const fs = require("fs");
+const fsAsync = fs.promises;
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
@@ -707,12 +708,12 @@ class Database {
 
     /**
      * Get the size of the database (SQLite only)
-     * @returns {number} Size of database
+     * @returns {Promise<number>} Size of database
      */
-    static getSize() {
+    static async getSize() {
         if (Database.dbConfig.type === "sqlite") {
             log.debug("db", "Database.getSize()");
-            let stats = fs.statSync(Database.sqlitePath);
+            let stats = await fsAsync.stat(Database.sqlitePath);
             log.debug("db", stats);
             return stats.size;
         }
