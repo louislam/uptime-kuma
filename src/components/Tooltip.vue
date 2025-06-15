@@ -1,6 +1,6 @@
 <template>
     <teleport to="body">
-        <div 
+        <div
             v-if="visible && content"
             ref="tooltip"
             class="tooltip-wrapper"
@@ -41,7 +41,7 @@ export default {
             type: Number,
             default: 0
         },
-        /** Y position (viewport coordinates) */  
+        /** Y position (viewport coordinates) */
         y: {
             type: Number,
             default: 0
@@ -49,50 +49,58 @@ export default {
         /** Position relative to target element */
         position: {
             type: String,
-            default: 'below',
-            validator: (value) => ['above', 'below'].includes(value)
+            default: "below",
+            validator: (value) => [ "above", "below" ].includes(value)
         }
     },
     computed: {
         tooltipStyle() {
             return {
-                left: this.x + 'px',
-                top: this.y + 'px',
+                left: this.x + "px",
+                top: this.y + "px",
             };
         },
 
         statusText() {
-            if (!this.content || this.content === 0) return this.$t('Unknown');
-            
+            if (!this.content || this.content === 0) {
+                return this.$t("Unknown");
+            }
+
             const statusMap = {
-                0: this.$t('Down'),
-                1: this.$t('Up'), 
-                2: this.$t('Pending'),
-                3: this.$t('Maintenance')
+                0: this.$t("Down"),
+                1: this.$t("Up"),
+                2: this.$t("Pending"),
+                3: this.$t("Maintenance")
             };
-            return statusMap[this.content.status] || this.$t('Unknown');
+            return statusMap[this.content.status] || this.$t("Unknown");
         },
 
         statusClass() {
-            if (!this.content || this.content === 0) return 'status-empty';
-            
+            if (!this.content || this.content === 0) {
+                return "status-empty";
+            }
+
             const classMap = {
-                0: 'status-down',
-                1: 'status-up',
-                2: 'status-pending', 
-                3: 'status-maintenance'
+                0: "status-down",
+                1: "status-up",
+                2: "status-pending",
+                3: "status-maintenance"
             };
-            return classMap[this.content.status] || 'status-unknown';
+            return classMap[this.content.status] || "status-unknown";
         },
 
         timeText() {
-            if (!this.content || this.content === 0) return '';
+            if (!this.content || this.content === 0) {
+                return "";
+            }
             return this.$root.datetime(this.content.time);
         },
 
         message() {
-            if (!this.content || this.content === 0) return '';
-            return this.content.msg || '';
+            if (!this.content || this.content === 0) {
+                return "";
+            }
+            return this.content.msg || "";
         }
     }
 };
@@ -106,7 +114,7 @@ export default {
     z-index: 9999;
     pointer-events: none;
     transform: translateX(-50%);
-    
+
     .tooltip-content {
         background: rgba(17, 24, 39, 0.95);
         backdrop-filter: blur(8px);
@@ -116,41 +124,41 @@ export default {
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
         min-width: 120px;
         text-align: center;
-        
+
         .tooltip-status {
             font-size: 12px;
             font-weight: 600;
             margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            
+
             &.status-up {
                 color: $primary;
             }
-            
+
             &.status-down {
                 color: $danger;
             }
-            
+
             &.status-pending {
                 color: $warning;
             }
-            
+
             &.status-maintenance {
                 color: $maintenance;
             }
-            
+
             &.status-empty {
                 color: $secondary-text;
             }
         }
-        
+
         .tooltip-time {
             color: #d1d5db;
             font-size: 11px;
             margin-bottom: 2px;
         }
-        
+
         .tooltip-message {
             color: #f3f4f6;
             font-size: 10px;
@@ -159,7 +167,7 @@ export default {
             border-top: 1px solid rgba(75, 85, 99, 0.3);
         }
     }
-    
+
     .tooltip-arrow {
         position: absolute;
         left: 50%;
@@ -168,11 +176,11 @@ export default {
         height: 0;
         border-left: 6px solid transparent;
         border-right: 6px solid transparent;
-        
+
         // Default: tooltip below element, arrow points up
         border-bottom: 6px solid rgba(17, 24, 39, 0.95);
         top: -6px;
-        
+
         &.arrow-above {
             // Tooltip above element, arrow points down
             top: auto;
@@ -181,10 +189,10 @@ export default {
             border-top: 6px solid rgba(17, 24, 39, 0.95);
         }
     }
-    
+
     // Smooth entrance animation
     animation: tooltip-fade-in 0.2s $easing-out;
-    
+
     &.tooltip-above {
         transform: translateX(-50%) translateY(-8px);
     }
@@ -196,10 +204,10 @@ export default {
         background: rgba(31, 41, 55, 0.95);
         border-color: rgba(107, 114, 128, 0.3);
     }
-    
+
     .tooltip-arrow {
         border-bottom-color: rgba(31, 41, 55, 0.95);
-        
+
         &.arrow-above {
             border-top-color: rgba(31, 41, 55, 0.95);
         }

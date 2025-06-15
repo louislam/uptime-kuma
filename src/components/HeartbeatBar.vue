@@ -30,11 +30,10 @@
             <div v-if="$root.styleElapsedTime === 'with-line'" class="connecting-line"></div>
             <div>{{ timeSinceLastBeat }}</div>
         </div>
-        
-        
+
         <!-- Custom Tooltip -->
-        <Tooltip 
-            :visible="tooltipVisible" 
+        <Tooltip
+            :visible="tooltipVisible"
             :content="tooltipContent"
             :x="tooltipX"
             :y="tooltipY"
@@ -86,7 +85,7 @@ export default {
             tooltipContent: null,
             tooltipX: 0,
             tooltipY: 0,
-            tooltipPosition: 'below',
+            tooltipPosition: "below",
             tooltipTimeoutId: null,
         };
     },
@@ -369,7 +368,7 @@ export default {
 
             const statusText = {
                 0: "Down",
-                1: "Up", 
+                1: "Up",
                 2: "Pending",
                 3: "Maintenance"
             }[beat.status] || "Unknown";
@@ -396,40 +395,40 @@ export default {
             // Small delay for better UX
             this.tooltipTimeoutId = setTimeout(() => {
                 this.tooltipContent = beat;
-                
+
                 // Calculate position relative to viewport
                 const rect = event.target.getBoundingClientRect();
-                
+
                 // Position relative to viewport
                 const x = rect.left + (rect.width / 2);
                 const y = rect.top;
-                
+
                 // Check if tooltip would go off-screen and adjust position
                 const tooltipHeight = 80; // Approximate tooltip height
                 const viewportHeight = window.innerHeight;
                 const spaceAbove = y;
                 const spaceBelow = viewportHeight - y - rect.height;
-                
+
                 if (spaceAbove > tooltipHeight && spaceBelow < tooltipHeight) {
                     // Show above - arrow points down
-                    this.tooltipPosition = 'above';
+                    this.tooltipPosition = "above";
                     this.tooltipY = y - 10;
                 } else {
                     // Show below - arrow points up
-                    this.tooltipPosition = 'below';
+                    this.tooltipPosition = "below";
                     this.tooltipY = y + rect.height + 10;
                 }
-                
+
                 // Ensure tooltip doesn't go off the left or right edge
                 const tooltipWidth = 120; // Approximate tooltip width
                 let adjustedX = x;
-                
-                if (x - tooltipWidth/2 < 10) {
-                    adjustedX = tooltipWidth/2 + 10;
-                } else if (x + tooltipWidth/2 > window.innerWidth - 10) {
-                    adjustedX = window.innerWidth - tooltipWidth/2 - 10;
+
+                if (x - tooltipWidth / 2 < 10) {
+                    adjustedX = tooltipWidth / 2 + 10;
+                } else if (x + tooltipWidth / 2 > window.innerWidth - 10) {
+                    adjustedX = window.innerWidth - tooltipWidth / 2 - 10;
                 }
-                
+
                 this.tooltipX = adjustedX;
                 this.tooltipVisible = true;
             }, 150);
@@ -443,7 +442,7 @@ export default {
                 clearTimeout(this.tooltipTimeoutId);
                 this.tooltipTimeoutId = null;
             }
-            
+
             this.tooltipVisible = false;
             this.tooltipContent = null;
         },
