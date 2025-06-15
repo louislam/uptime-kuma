@@ -8,6 +8,7 @@ const commonLabels = [
     "monitor_url",
     "monitor_hostname",
     "monitor_port",
+    "monitor_tags"
 ];
 
 const monitorCertDaysRemaining = new PrometheusClient.Gauge({
@@ -38,16 +39,44 @@ class Prometheus {
 
     /**
      * @param {object} monitor Monitor object to monitor
+     * @param {Array<{name:string,value:?string}>} tags Tags to add to the monitor
      */
-    constructor(monitor) {
+    constructor(monitor, tags) {
+        let sanitizedTags = this.sanitizeTags(tags);
+
+        if (sanitizedTags.length <= 0) {
+            sanitizedTags = "null";
+        }
+
         this.monitorLabelValues = {
             monitor_id: monitor.id,
             monitor_name: monitor.name,
             monitor_type: monitor.type,
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
-            monitor_port: monitor.port
+            monitor_port: monitor.port,
+            monitor_tags: sanitizedTags
         };
+    }
+
+    /**
+     * Sanitize tags to ensure they can be processed by Prometheus.
+     * See https://github.com/louislam/uptime-kuma/pull/4704#issuecomment-2366524692
+     * @param {Array<{name: string, value:?string}>} tags The tags to sanitize
+     * @returns {string[]} The sanitized tags
+     */
+    sanitizeTags(tags) {
+        return tags.reduce((sanitizedTags, tag) => {
+            let tagText = tag.name;
+            tagText = tagText.replace(/[^a-zA-Z0-9_]/g, "");
+            tagText = tagText.replace(/^[^a-zA-Z_]+/, "");
+
+            if (tagText !== "") {
+                sanitizedTags.push(tagText);
+            }
+
+            return sanitizedTags;
+        }, []);
     }
 
     /**
@@ -57,7 +86,6 @@ class Prometheus {
      * @returns {void}
      */
     update(heartbeat, tlsInfo) {
-
         if (typeof tlsInfo !== "undefined") {
             try {
                 let isValid;
