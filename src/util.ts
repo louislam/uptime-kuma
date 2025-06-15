@@ -9,9 +9,9 @@
 // Frontend uses util.ts
 */
 
-import * as dayjs from "dayjs";
+import dayjsFrontend from "dayjs";
 
-// For loading dayjs plugins, don't remove event though it is not used in this file
+// For dayjs plugins' type checking, don't remove event though it is not used in this file
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as timezone from "dayjs/plugin/timezone";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,6 +21,13 @@ import * as jsonata from "jsonata";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
+
+/**
+ * Smarter dayjs import that supports both frontend and backend
+ * @returns {dayjs.Dayjs} dayjs instance
+ */
+const dayjs = (isNode) ? require("dayjs") : dayjsFrontend;
+
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
