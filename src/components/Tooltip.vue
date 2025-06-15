@@ -219,6 +219,7 @@ export default {
         opacity: 0;
         transform: translateX(-50%) translateY(4px);
     }
+
     to {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
