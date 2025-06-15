@@ -259,12 +259,11 @@ class Notification {
 
     /**
      * Check if apprise exists
-     * @returns {boolean} Does the command apprise exist?
+     * @returns {Promise<boolean>} Does the command apprise exist?
      */
-    static checkApprise() {
-        let commandExistsSync = require("command-exists").sync;
-        let exists = commandExistsSync("apprise");
-        return exists;
+    static async checkApprise() {
+        const commandExists = require("command-exists-promise");
+        return await commandExists("apprise");
     }
 
 }
