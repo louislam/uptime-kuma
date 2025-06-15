@@ -571,7 +571,7 @@ test("Test getAggregatedBuckets - 31-63 day edge case (daily data)", async (t) =
 
     // Create test data for 40 days ago to ensure daily data is used
     let currentTime = dayjs.utc("2025-08-12 12:00:00");
-    
+
     // Add data for past 40 days
     for (let i = 0; i < 40; i++) {
         UptimeCalculator.currentDate = currentTime.subtract(i, "day").hour(10); // 10 AM each day
@@ -598,7 +598,7 @@ test("Test getAggregatedBuckets - 31-63 day edge case (daily data)", async (t) =
     // Verify total counts
     let totalUp = buckets.reduce((sum, b) => sum + b.up, 0);
     let totalDown = buckets.reduce((sum, b) => sum + b.down, 0);
-    
+
     // We added 35 days of data (within the range), with pattern: DOWN, UP, UP, DOWN, UP, UP...
     // So roughly 1/3 DOWN and 2/3 UP
     assert.ok(totalUp > 0, "Should have UP heartbeats");
@@ -627,7 +627,7 @@ test("Test getAggregatedBuckets - Large range with daily data (60 days)", async 
     let c = new UptimeCalculator();
 
     let currentTime = dayjs.utc("2025-08-12 12:00:00");
-    
+
     // Add daily data for past 60 days
     for (let i = 0; i < 60; i++) {
         UptimeCalculator.currentDate = currentTime.subtract(i, "day").hour(14); // 2 PM each day
@@ -653,7 +653,7 @@ test("Test getAggregatedBuckets - Large range with daily data (60 days)", async 
     // Verify data distribution
     let totalUp = buckets.reduce((sum, b) => sum + b.up, 0);
     let totalDown = buckets.reduce((sum, b) => sum + b.down, 0);
-    
+
     assert.ok(totalUp >= 40, `Expected at least 40 UP beats, got ${totalUp}`);
     assert.ok(totalDown >= 10, `Expected at least 10 DOWN beats, got ${totalDown}`);
 });
@@ -663,9 +663,9 @@ test("Test getAggregatedBuckets - Daily data bucket assignment", async (t) => {
     let c = new UptimeCalculator();
 
     let currentTime = dayjs.utc("2025-08-12 12:00:00");
-    
+
     // Add specific daily data points
-    const testDays = [1, 5, 10, 20, 35, 40]; // Days ago
+    const testDays = [ 1, 5, 10, 20, 35, 40 ]; // Days ago
     for (const daysAgo of testDays) {
         UptimeCalculator.currentDate = currentTime.subtract(daysAgo, "day").startOf("day").add(6, "hour"); // 6 AM
         await c.update(UP);
@@ -685,7 +685,7 @@ test("Test getAggregatedBuckets - Daily data bucket assignment", async (t) => {
             // Find the bucket that should contain this day
             const targetTime = currentTime.subtract(daysAgo, "day").startOf("day");
             const targetTimestamp = targetTime.unix();
-            
+
             let found = false;
             for (const bucket of buckets) {
                 // Check if this bucket's range includes our target day
@@ -706,30 +706,37 @@ test("Test getAggregatedBuckets - No gaps in 31-63 day range", async (t) => {
 
     // Test various day ranges that were problematic
     const testRanges = [
-        { days: 31, buckets: 100 },
-        { days: 35, buckets: 100 },
-        { days: 40, buckets: 100 },
-        { days: 45, buckets: 100 },
-        { days: 50, buckets: 100 },
-        { days: 60, buckets: 100 },
-        { days: 63, buckets: 100 }
+        { days: 31,
+            buckets: 100 },
+        { days: 35,
+            buckets: 100 },
+        { days: 40,
+            buckets: 100 },
+        { days: 45,
+            buckets: 100 },
+        { days: 50,
+            buckets: 100 },
+        { days: 60,
+            buckets: 100 },
+        { days: 63,
+            buckets: 100 }
     ];
 
     for (const { days, buckets: bucketCount } of testRanges) {
         let buckets = c.getAggregatedBuckets(days, bucketCount);
-        
+
         assert.strictEqual(buckets.length, bucketCount, `Should have exactly ${bucketCount} buckets for ${days} days`);
-        
+
         // Verify no gaps between buckets
         for (let i = 0; i < buckets.length - 1; i++) {
-            assert.strictEqual(buckets[i].end, buckets[i + 1].start, 
+            assert.strictEqual(buckets[i].end, buckets[i + 1].start,
                 `No gap should exist between buckets ${i} and ${i + 1} for ${days}-day range`);
         }
-        
+
         // Verify total time coverage
         const totalSeconds = buckets[buckets.length - 1].end - buckets[0].start;
         const expectedSeconds = days * 24 * 60 * 60;
-        assert.strictEqual(totalSeconds, expectedSeconds, 
+        assert.strictEqual(totalSeconds, expectedSeconds,
             `Total time should be exactly ${days} days for ${days}-day range`);
     }
 });
@@ -739,19 +746,19 @@ test("Test getAggregatedBuckets - Mixed data granularity", async (t) => {
     let c = new UptimeCalculator();
 
     let currentTime = dayjs.utc("2025-08-12 12:00:00");
-    
+
     // Add recent minute data (last hour)
     for (let i = 0; i < 60; i += 5) {
         UptimeCalculator.currentDate = currentTime.subtract(i, "minute");
         await c.update(UP);
     }
-    
+
     // Add hourly data (last 24 hours)
     for (let i = 1; i < 24; i++) {
         UptimeCalculator.currentDate = currentTime.subtract(i, "hour");
         await c.update(i % 4 === 0 ? DOWN : UP);
     }
-    
+
     // Add daily data (last 40 days)
     for (let i = 2; i <= 40; i++) {
         UptimeCalculator.currentDate = currentTime.subtract(i, "day").hour(12);
@@ -765,15 +772,15 @@ test("Test getAggregatedBuckets - Mixed data granularity", async (t) => {
     // 1-day range should use minute data
     let buckets1d = c.getAggregatedBuckets(1, 24);
     assert.strictEqual(buckets1d.length, 24);
-    
-    // 7-day range should use hourly data  
+
+    // 7-day range should use hourly data
     let buckets7d = c.getAggregatedBuckets(7, 50);
     assert.strictEqual(buckets7d.length, 50);
-    
+
     // 35-day range should use daily data
     let buckets35d = c.getAggregatedBuckets(35, 70);
     assert.strictEqual(buckets35d.length, 70);
-    
+
     // All should have some data
     assert.ok(buckets1d.some(b => b.up > 0));
     assert.ok(buckets7d.some(b => b.up > 0 || b.down > 0));
