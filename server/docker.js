@@ -1,10 +1,10 @@
 const axios = require("axios");
 const { R } = require("redbean-node");
 const https = require("https");
-const fs = require("fs");
+const fsAsync = require("fs").promises;
 const path = require("path");
 const Database = require("./database");
-const { axiosAbortSignal } = require("./util-server");
+const { axiosAbortSignal, fsExists } = require("./util-server");
 
 class DockerHost {
 
@@ -81,7 +81,7 @@ class DockerHost {
             options.socketPath = dockerHost.dockerDaemon;
         } else if (dockerHost.dockerType === "tcp") {
             options.baseURL = DockerHost.patchDockerURL(dockerHost.dockerDaemon);
-            options.httpsAgent = new https.Agent(DockerHost.getHttpsAgentOptions(dockerHost.dockerType, options.baseURL));
+            options.httpsAgent = new https.Agent(await DockerHost.getHttpsAgentOptions(dockerHost.dockerType, options.baseURL));
         }
 
         try {
@@ -141,9 +141,9 @@ class DockerHost {
      * File names can also be overridden via 'DOCKER_TLS_FILE_NAME_(CA|KEY|CERT)'.
      * @param {string} dockerType i.e. "tcp" or "socket"
      * @param {string} url The docker host URL rewritten to https://
-     * @returns {object} HTTP agent options
+     * @returns {Promise<object>} HTTP agent options
      */
-    static getHttpsAgentOptions(dockerType, url) {
+    static async getHttpsAgentOptions(dockerType, url) {
         let baseOptions = {
             maxCachedSessions: 0,
             rejectUnauthorized: true
@@ -156,10 +156,10 @@ class DockerHost {
         let certPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameCert);
         let keyPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameKey);
 
-        if (dockerType === "tcp" && fs.existsSync(caPath) && fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-            let ca = fs.readFileSync(caPath);
-            let key = fs.readFileSync(keyPath);
-            let cert = fs.readFileSync(certPath);
+        if (dockerType === "tcp" && await fsExists(caPath) && await fsExists(certPath) && await fsExists(keyPath)) {
+            let ca = await fsAsync.readFile(caPath);
+            let key = await fsAsync.readFile(keyPath);
+            let cert = await fsAsync.readFile(certPath);
             certOptions = {
                 ca,
                 key,
