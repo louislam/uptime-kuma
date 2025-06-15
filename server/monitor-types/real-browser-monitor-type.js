@@ -162,7 +162,7 @@ async function prepareChromeExecutable(executablePath) {
  * Find the chrome executable
  * @param {string[]} executables Executables to search through
  * @returns {Promise<string>} Executable
- * @throws Error Could not find executable
+ * @throws {Error} Could not find executable
  */
 async function findChrome(executables) {
     // Use the last working executable, so we don't have to search for it again
