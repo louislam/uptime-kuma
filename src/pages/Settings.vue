@@ -183,6 +183,15 @@ export default {
                     this.settings.trustProxy = false;
                 }
 
+                if (this.settings.defaultAppearance === undefined) {
+                    this.settings.defaultAppearance = {
+                        theme: null,
+                        language: null,
+                        heartbeatBarTheme: null,
+                        styleElapsedTime: null,
+                    };
+                }
+
                 this.settingsLoaded = true;
             });
         },
