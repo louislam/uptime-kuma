@@ -2,13 +2,13 @@ const { MonitorType } = require("./monitor-type");
 const { chromium } = require("playwright-core");
 const { UP, log } = require("../../src/util");
 const { Settings } = require("../settings");
-const commandExists = require("command-exists-promise");
 const childProcess = require("child_process");
 const path = require("path");
 const Database = require("../database");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 const { RemoteBrowser } = require("../remote-browser");
+const { commandExists } = require("../util-server");
 
 /**
  * Cached instance of a browser

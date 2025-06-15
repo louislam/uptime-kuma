@@ -77,6 +77,7 @@ const SendGrid = require("./notification-providers/send-grid");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
+const { commandExists } = require("./util-server");
 
 class Notification {
 
@@ -262,7 +263,6 @@ class Notification {
      * @returns {Promise<boolean>} Does the command apprise exist?
      */
     static async checkApprise() {
-        const commandExists = require("command-exists-promise");
         return await commandExists("apprise");
     }
 

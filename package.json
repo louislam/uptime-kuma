@@ -79,7 +79,7 @@
         "check-password-strength": "^2.0.5",
         "cheerio": "~1.0.0-rc.12",
         "chroma-js": "~2.4.2",
-        "command-exists-promise": "~2.0.2",
+        "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
         "compression": "~1.7.4",
         "country-flag-emoji-polyfill": "^0.1.8",
