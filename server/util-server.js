@@ -480,6 +480,7 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
 
     let client;
     let resolver;
+    const socketName = `${resolverServer}:${resolverPort}`;
     // Transport method determines which client type to use
     switch (method) {
 
@@ -500,13 +501,13 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     options.servername = resolverServer;
                 }
                 client = tls.connect(options, () => {
-                    log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                    log.debug("dns", `Connected to ${socketName}`);
                     client.write(buf);
                 });
             } else {
                 client = new Socket();
                 client.connect(resolverPort, resolverServer, () => {
-                    log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                    log.debug("dns", `Connected to ${socketName}`);
                     client.write(buf);
                 });
             }
@@ -518,11 +519,14 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                 let expectedLength = 0;
                 let isValidLength = false;
                 client.on("error", (err) => {
+                    if (err.code === "ETIMEDOUT") {
+                        err.message = `Connection to ${socketName} timed out`;
+                    }
                     reject(err);
                 });
                 client.setTimeout(timeout, () => {
                     client.destroy();
-                    reject({ message: "Connection timed out" });
+                    reject({ message: `Request to ${socketName} timed out` });
                 });
                 client.on("data", (chunk) => {
                     if (data.length === 0) {
@@ -542,7 +546,7 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     }
                 });
                 client.on("close", () => {
-                    log.debug("dns", "Connection closed");
+                    log.debug("dns", `Connection to ${socketName} closed`);
                     if (!isValidLength) {
                         reject({ message: lenErrMsg });
                     }
@@ -553,7 +557,7 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
 
         case "DOH": {
             const queryPath = dohUsePost ? dohQuery : `${dohQuery}?dns=${buf.toString("base64url")}`;
-            const requestURL = url.parse(`https://${resolverServer}:${resolverPort}/${queryPath}`, true);
+            const requestURL = url.parse(`https://${socketName}/${queryPath}`, true);
             const mimeType = "application/dns-message";
             const options = {
                 hostname: requestURL.hostname,
@@ -596,10 +600,10 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     }
                     // Validate response from resolver
                     if (statusCode !== 200) {
-                        reject({ message: `Request failed with status code ${statusCode}` });
+                        reject({ message: `Request to ${socketName} failed with status code ${statusCode}` });
                         return;
                     } else if (contentType !== mimeType) {
-                        reject({ message: `Content-Type was "${contentType}", expected ${mimeType}` });
+                        reject({ message: `Response from ${socketName} Content-Type was "${contentType}", expected ${mimeType}` });
                         return;
                     }
                     // Read the response body into a buffer
@@ -627,10 +631,10 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     });
                     client.setTimeout(timeout, () => {
                         client.destroy();
-                        reject({ message: "Request timed out" });
+                        reject({ message: `Request to ${socketName} timed out` });
                     });
                     client.on("connect", () => {
-                        log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                        log.debug("dns", `Connected to ${socketName}`);
                     });
                     const req = client.request(headers);
                     req.on("error", (err) => {
@@ -653,11 +657,11 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     });
                     client.setTimeout(timeout, () => {
                         client.destroy();
-                        reject({ message: "Request timed out" });
+                        reject({ message: `Request to ${socketName} timed out` });
                     });
                     client.on("socket", (socket) => {
                         socket.on("secureConnect", () => {
-                            log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                            log.debug("dns", `Connected to ${socketName}`);
                         });
                     });
                     if (dohUsePost) {
@@ -669,7 +673,7 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     reject(err);
                 });
                 client.on("close", () => {
-                    log.debug("dns", "Connection closed");
+                    log.debug("dns", `Connection to ${socketName} closed`);
                 });
             });
             break;
@@ -695,15 +699,15 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     reject(err);
                 });
                 client.on("listening", () => {
-                    log.debug("dns", `Connected to ${resolverServer}:${resolverPort}`);
+                    log.debug("dns", `Connected to ${socketName}`);
                     timer = setTimeout(() => {
-                        reject({ message: "Query timed out" });
+                        reject({ message: `Query to ${socketName} timed out` });
                         client.close();
                     }, timeout);
                 });
                 client.on("close", () => {
                     clearTimeout(timer);
-                    log.debug("dns", "Connection closed");
+                    log.debug("dns", `Connection to ${socketName} closed`);
                 });
             });
             client.send(buf, 0, buf.length, resolverPort, resolverServer);

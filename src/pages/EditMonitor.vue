@@ -1279,6 +1279,7 @@ export default {
                     case "DoH":
                         return this.hostnameRegexPattern.source;
                     case "DoT":
+                    case "DoQ":
                         return this.ipOrHostnameRegexPattern.source;
                 }
             }

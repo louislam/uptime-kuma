@@ -162,20 +162,27 @@ export function dnsNameRegexPattern() {
 
 /**
  * Regex patterns for validating URL paths
- * @param {boolean} qstr whether or not the url follows query string format
+ * @param {boolean} qstr True if the url should contain a query string
+ * @param {boolean} tmpl True if the url should contain templating, `{query}`
+ *   Takes precedence over qstr if both are true.
  * @returns {RegExp} The requested regex
  */
-export function urlPathRegexPattern(qstr = true) {
+export function urlPathRegexPattern(qstr = false, tmpl = false) {
+    // Matches any URL path, including empty string
+    const pathRegexPattern = /^\/?(([a-zA-Z0-9\-_%])+\/)*[a-zA-Z0-9\-_%]*(\?([a-zA-Z0-9\-_%]+=[a-zA-Z0-9\-_%]*&?)+)?$/;
     // Ensures a URL path follows query string format
-    const queryStringRegexPattern = /^\/?(([a-zA-Z0-9\-_%])+\/)*[a-zA-Z0-9\-_%]*\?([a-zA-Z0-9\-_%]+=[a-zA-Z0-9\-_%]*&?)+$/;
+    const queryRegexPattern = /^\/?(([a-zA-Z0-9\-_%])+\/)*[a-zA-Z0-9\-_%]*\?([a-zA-Z0-9\-_%]+=[a-zA-Z0-9\-_%]*&?)+$/;
     // Only checks for valid URL path containing "{query}"
     /* eslint-disable-next-line no-useless-escape */
-    const queryRegexPattern = /^[a-zA-Z0-9\-._~:\/?#\[\]@!$&'\(\)*+,;=]*\{query\}[a-zA-Z0-9\-._~:\/?#\[\]@!$&'\(\)*+,;=]*$/;
+    const queryTemplateRegexPattern = /^[a-zA-Z0-9\-._~:\/?#\[\]@!$&'\(\)*+,;=]*\{query\}[a-zA-Z0-9\-._~:\/?#\[\]@!$&'\(\)*+,;=]*$/;
 
-    if (qstr) {
-        return queryStringRegexPattern;
+    if (tmpl) {
+        return queryTemplateRegexPattern;
     }
-    return queryRegexPattern;
+    if (qstr) {
+        return queryRegexPattern;
+    }
+    return pathRegexPattern;
 }
 
 /**
