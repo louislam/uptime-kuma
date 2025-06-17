@@ -120,7 +120,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                     if (bucket.up === 0 && bucket.down === 0 && bucket.maintenance === 0 && bucket.pending === 0) {
                         return 0;
                     }
-                    
+
                     return {
                         status: bucket.down > 0 ? DOWN :
                             bucket.maintenance > 0 ? MAINTENANCE :
