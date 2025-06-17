@@ -791,12 +791,8 @@ export default {
          * @returns {Promise} Promise that resolves when data is loaded
          */
         loadHeartbeatData(maxBeats = null) {
-            // If maxBeats is provided (from HeartbeatBar resize), use it
-            // Otherwise, use a default that will be updated when components mount
-            const targetMaxBeats = maxBeats || 50; // Default, will be updated by actual container measurement
-
             return axios.get("/api/status-page/heartbeat/" + this.slug, {
-                params: { maxBeats: targetMaxBeats }
+                params: { maxBeats }
             }).then((res) => {
                 const { heartbeatList, uptimeList } = res.data;
 
