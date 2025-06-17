@@ -30,7 +30,7 @@ export default {
                 return this.$t("statusMaintenance");
             }
 
-            let key = this.monitor.id + "_" + this.type;
+            let key = this.monitor.id;
 
             if (this.$root.uptimeList[key] !== undefined) {
                 let result = Math.round(this.$root.uptimeList[key] * 10000) / 100;
