@@ -126,13 +126,18 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
                     ping: null
                 }));
 
-                // Calculate uptime for the configured range
-                if (heartbeatBarDays <= 1) {
-                    uptime = uptimeCalculator.get24Hour().uptime;
-                } else if (heartbeatBarDays <= 30) {
-                    uptime = uptimeCalculator.get30Day().uptime;
-                } else {
-                    uptime = uptimeCalculator.get1Year().uptime;
+                // Calculate uptime for the exact configured range
+                try {
+                    uptime = uptimeCalculator.getDataByDuration(`${heartbeatBarDays}d`).uptime;
+                } catch (e) {
+                    // Fall back to available ranges if duration exceeds limits
+                    if (heartbeatBarDays <= 1) {
+                        uptime = uptimeCalculator.get24Hour().uptime;
+                    } else if (heartbeatBarDays <= 30) {
+                        uptime = uptimeCalculator.get30Day().uptime;
+                    } else {
+                        uptime = uptimeCalculator.get1Year().uptime;
+                    }
                 }
             }
 
@@ -149,7 +154,14 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         // Populate the response objects
         for (const result of monitorResults) {
             heartbeatList[result.monitorID] = result.heartbeats;
+
+            // Always populate 24h uptime for compatibility
             uptimeList[`${result.monitorID}_24`] = result.uptime;
+
+            // Add dynamic uptime key for the exact range
+            if (heartbeatBarDays > 0) {
+                uptimeList[`${result.monitorID}_${heartbeatBarDays}d`] = result.uptime;
+            }
         }
 
         response.json({

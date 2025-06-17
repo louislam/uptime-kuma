@@ -90,6 +90,14 @@ export default {
             if (this.type === "720") {
                 return `30${this.$t("-day")}`;
             }
+            if (this.type === "24") {
+                return `24${this.$t("-hour")}`;
+            }
+            // Handle dynamic day formats (e.g., "7d", "14d", "30d")
+            const dayMatch = this.type.match(/^(\d+)d$/);
+            if (dayMatch) {
+                return `${dayMatch[1]}${this.$t("-day")}`;
+            }
             return `24${this.$t("-hour")}`;
         }
     },
