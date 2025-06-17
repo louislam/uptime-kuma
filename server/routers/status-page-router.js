@@ -87,7 +87,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
         // Get the status page to determine the heartbeat range
         let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
-        let heartbeatBarDays = statusPage ? (statusPage.heartbeat_bar_days || 0) : 0;
+        let heartbeatBarDays = statusPage.heartbeat_bar_days;
 
         // Get max beats parameter from query string (for client-side screen width constraints)
         const maxBeats = Math.min(parseInt(request.query.maxBeats) || 100, 100);
@@ -115,15 +115,22 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             } else {
                 // For configured day ranges, use aggregated data from UptimeCalculator
                 const buckets = uptimeCalculator.getAggregatedBuckets(heartbeatBarDays, maxBeats);
-                heartbeats = buckets.map(bucket => ({
-                    status: bucket.down > 0 ? DOWN :
-                        bucket.maintenance > 0 ? MAINTENANCE :
-                            bucket.pending > 0 ? PENDING :
-                                bucket.up > 0 ? UP : null,
-                    time: dayjs.unix(bucket.end).toISOString(),
-                    msg: "",
-                    ping: null
-                }));
+                heartbeats = buckets.map(bucket => {
+                    // If bucket has no data, return 0 (empty beat) to match original behavior
+                    if (bucket.up === 0 && bucket.down === 0 && bucket.maintenance === 0 && bucket.pending === 0) {
+                        return 0;
+                    }
+                    
+                    return {
+                        status: bucket.down > 0 ? DOWN :
+                            bucket.maintenance > 0 ? MAINTENANCE :
+                                bucket.pending > 0 ? PENDING :
+                                    bucket.up > 0 ? UP : 0,
+                        time: dayjs.unix(bucket.end).toISOString(),
+                        msg: "",
+                        ping: null
+                    };
+                });
             }
 
             // Calculate uptime based on the range

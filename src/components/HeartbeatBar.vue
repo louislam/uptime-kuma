@@ -11,7 +11,7 @@
             >
                 <div
                     class="beat"
-                    :class="{ 'empty': (beat === 0 || beat === null || beat.status === null), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
+                    :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
                     :style="beatStyle"
                 />
             </div>
@@ -318,7 +318,7 @@ export default {
          * @returns {string} Beat title
          */
         getBeatTitle(beat) {
-            if (beat === 0 || !beat) {
+            if (beat === 0) {
                 return "";
             }
 

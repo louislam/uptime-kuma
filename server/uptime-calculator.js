@@ -901,12 +901,12 @@ class UptimeCalculator {
         // Aggregate available data into buckets
         // Since data is sorted, we can optimize by tracking current bucket index
         let currentBucketIndex = 0;
-        
+
         for (const [ timestamp, dataPoint ] of Object.entries(availableData)) {
             const timestampNum = parseInt(timestamp);
 
             // Move to the correct bucket (since data is sorted, we only need to move forward)
-            while (currentBucketIndex < buckets.length && 
+            while (currentBucketIndex < buckets.length &&
                    timestampNum >= buckets[currentBucketIndex].end) {
                 currentBucketIndex++;
             }
@@ -914,11 +914,11 @@ class UptimeCalculator {
             // Check if we're within a valid bucket
             if (currentBucketIndex < buckets.length) {
                 const bucket = buckets[currentBucketIndex];
-                
+
                 if (timestampNum >= bucket.start && timestampNum < bucket.end) {
                     bucket.up += dataPoint.up || 0;
                     bucket.down += dataPoint.down || 0;
-                    
+
                     if (days > 30) {
                         // Daily data includes maintenance and pending
                         bucket.maintenance += dataPoint.maintenance || 0;
