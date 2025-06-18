@@ -424,9 +424,9 @@ export default {
                 const tooltipWidth = 120; // Approximate tooltip width
                 let adjustedX = x;
 
-                if (x - tooltipWidth / 2 < 10) {
+                if ((x - tooltipWidth / 2) < 10) {
                     adjustedX = tooltipWidth / 2 + 10;
-                } else if (x + tooltipWidth / 2 > window.innerWidth - 10) {
+                } else if ((x + tooltipWidth / 2) > (window.innerWidth - 10)) {
                     adjustedX = window.innerWidth - tooltipWidth / 2 - 10;
                 }
 
