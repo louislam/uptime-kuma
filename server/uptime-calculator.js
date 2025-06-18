@@ -3,7 +3,6 @@ const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
 const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
 const { R } = require("redbean-node");
-const { Database } = require("./database");
 
 /**
  * Calculates the uptime of a monitor.
@@ -300,19 +299,17 @@ class UptimeCalculator {
         dailyStatBean.ping = dailyData.avgPing;
         dailyStatBean.pingMin = dailyData.minPing;
         dailyStatBean.pingMax = dailyData.maxPing;
-        let dailyExtras = null;
         {
             // eslint-disable-next-line no-unused-vars
             const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = dailyData;
             if (Object.keys(extras).length > 0) {
                 dailyStatBean.extras = JSON.stringify(extras);
-                dailyExtras = JSON.stringify(extras);
             }
         }
         try {
-            await this.upsertStat("stat_daily", this.monitorID, dailyKey, 
-                dailyData.up, dailyData.down, dailyData.avgPing, 
-                dailyData.minPing, dailyData.maxPing, dailyExtras);
+            await this.upsertStat("stat_daily", this.monitorID, dailyKey,
+                dailyData.up, dailyData.down, dailyData.avgPing,
+                dailyData.minPing, dailyData.maxPing);
         } catch (error) {
             log.warn("uptime-calc", `Upsert failed for daily stat, falling back to R.store(): ${error.message}`);
             await R.store(dailyStatBean);
@@ -329,19 +326,17 @@ class UptimeCalculator {
             hourlyStatBean.ping = hourlyData.avgPing;
             hourlyStatBean.pingMin = hourlyData.minPing;
             hourlyStatBean.pingMax = hourlyData.maxPing;
-            let hourlyExtras = null;
             {
                 // eslint-disable-next-line no-unused-vars
                 const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
                 if (Object.keys(extras).length > 0) {
                     hourlyStatBean.extras = JSON.stringify(extras);
-                    hourlyExtras = JSON.stringify(extras);
                 }
             }
             try {
-                await this.upsertStat("stat_hourly", this.monitorID, hourlyKey, 
-                    hourlyData.up, hourlyData.down, hourlyData.avgPing, 
-                    hourlyData.minPing, hourlyData.maxPing, hourlyExtras);
+                await this.upsertStat("stat_hourly", this.monitorID, hourlyKey,
+                    hourlyData.up, hourlyData.down, hourlyData.avgPing,
+                    hourlyData.minPing, hourlyData.maxPing);
             } catch (error) {
                 log.warn("uptime-calc", `Upsert failed for hourly stat, falling back to R.store(): ${error.message}`);
                 await R.store(hourlyStatBean);
@@ -357,19 +352,17 @@ class UptimeCalculator {
             minutelyStatBean.ping = minutelyData.avgPing;
             minutelyStatBean.pingMin = minutelyData.minPing;
             minutelyStatBean.pingMax = minutelyData.maxPing;
-            let minutelyExtras = null;
             {
                 // eslint-disable-next-line no-unused-vars
                 const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
                 if (Object.keys(extras).length > 0) {
                     minutelyStatBean.extras = JSON.stringify(extras);
-                    minutelyExtras = JSON.stringify(extras);
                 }
             }
             try {
-                await this.upsertStat("stat_minutely", this.monitorID, divisionKey, 
-                    minutelyData.up, minutelyData.down, minutelyData.avgPing, 
-                    minutelyData.minPing, minutelyData.maxPing, minutelyExtras);
+                await this.upsertStat("stat_minutely", this.monitorID, divisionKey,
+                    minutelyData.up, minutelyData.down, minutelyData.avgPing,
+                    minutelyData.minPing, minutelyData.maxPing);
             } catch (error) {
                 log.warn("uptime-calc", `Upsert failed for minutely stat, falling back to R.store(): ${error.message}`);
                 await R.store(minutelyStatBean);
@@ -569,40 +562,46 @@ class UptimeCalculator {
      * @param {number} ping Average ping
      * @param {number} pingMin Minimum ping
      * @param {number} pingMax Maximum ping
-     * @param {string|null} extras JSON string of extra data
      * @returns {Promise<void>}
      */
-    async upsertStat(table, monitorId, timestamp, up, down, ping, pingMin, pingMax, extras = null) {
+    async upsertStat(table, monitorId, timestamp, up, down, ping, pingMin, pingMax) {
+        // Import Database locally to avoid circular dependency
+        const Database = require("./database");
+
+        // Check if database is initialized - dbConfig.type must exist and not be empty
+        if (!Database.dbConfig || !Database.dbConfig.type) {
+            log.warn("uptime-calc", `Database not initialized yet for ${table}, falling back to R.store()`);
+            throw new Error("Database not initialized");
+        }
+
         const dbType = Database.dbConfig.type;
 
         try {
             if (dbType === "sqlite") {
                 await R.exec(`
-                    INSERT INTO ${table} (monitor_id, timestamp, up, down, ping, pingMin, pingMax, extras)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO ${table} (monitor_id, timestamp, up, down, ping, ping_min, ping_max)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(monitor_id, timestamp) DO UPDATE SET
                         up = ?,
                         down = ?,
                         ping = ?,
-                        pingMin = ?,
-                        pingMax = ?,
-                        extras = ?
+                        ping_min = ?,
+                        ping_max = ?
                 `, [
-                    monitorId, timestamp, up, down, ping, pingMin, pingMax, extras,
-                    up, down, ping, pingMin, pingMax, extras
+                    monitorId, timestamp, up, down, ping, pingMin, pingMax,
+                    up, down, ping, pingMin, pingMax
                 ]);
             } else if (dbType.endsWith("mariadb")) {
                 await R.exec(`
-                    INSERT INTO ${table} (monitor_id, timestamp, up, down, ping, pingMin, pingMax, extras)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO ${table} (monitor_id, timestamp, up, down, ping, ping_min, ping_max)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE
                         up = VALUES(up),
                         down = VALUES(down),
                         ping = VALUES(ping),
-                        pingMin = VALUES(pingMin),
-                        pingMax = VALUES(pingMax),
-                        extras = VALUES(extras)
-                `, [monitorId, timestamp, up, down, ping, pingMin, pingMax, extras]);
+                        ping_min = VALUES(ping_min),
+                        ping_max = VALUES(ping_max)
+                `, [ monitorId, timestamp, up, down, ping, pingMin, pingMax ]);
             } else {
                 throw new Error(`Unsupported database type: ${dbType}`);
             }
