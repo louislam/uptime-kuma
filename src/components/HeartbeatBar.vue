@@ -348,7 +348,7 @@ export default {
          * @returns {string} Beat title
          */
         getBeatTitle(beat) {
-            if (beat === 0 || !beat) {
+            if (!beat) {
                 return "";
             }
 
