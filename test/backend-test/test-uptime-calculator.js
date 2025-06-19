@@ -501,9 +501,11 @@ test("Test getAggregatedBuckets - Data aggregation", async (t) => {
         assert.ok(bucket.start < bucket.end);
     });
 
-    // Verify bucket structure consistency
+    // Snapshot test - verify deterministic bucket structure
+    const snapshot = JSON.stringify(buckets);
     const secondCall = c.getAggregatedBuckets(1 / 24, 6);
-    assert.strictEqual(JSON.stringify(buckets), JSON.stringify(secondCall), "Bucket structure should be deterministic");
+    const secondSnapshot = JSON.stringify(secondCall);
+    assert.strictEqual(snapshot, secondSnapshot, "Bucket structure should be deterministic between calls");
 });
 
 test("Test getAggregatedBuckets - Edge cases", async (t) => {
