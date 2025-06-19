@@ -20,7 +20,7 @@ module.exports.apiKeySocketHandler = (socket) => {
             checkLogin(socket);
 
             let clearKey = nanoid(40);
-            let hashedKey = passwordHash.generate(clearKey);
+            let hashedKey = await passwordHash.generate(clearKey);
             key["key"] = hashedKey;
             let bean = await APIKey.save(key, socket.userID);
 
