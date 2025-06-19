@@ -5,13 +5,13 @@
                 v-for="(beat, index) in shortBeatList"
                 :key="index"
                 class="beat-hover-area"
-                :class="{ 'empty': (beat === 0) }"
+                :class="{ 'empty': (!beat) }"
                 :style="beatHoverAreaStyle"
                 :title="getBeatTitle(beat)"
             >
                 <div
                     class="beat"
-                    :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
+                    :class="{ 'empty': (!beat), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
                     :style="beatStyle"
                 />
             </div>
@@ -318,7 +318,7 @@ export default {
          * @returns {string} Beat title
          */
         getBeatTitle(beat) {
-            if (beat === 0) {
+            if (!beat) {
                 return "";
             }
 

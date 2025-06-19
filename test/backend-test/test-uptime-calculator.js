@@ -418,21 +418,49 @@ test("Test getAggregatedBuckets - Time range accuracy", async (t) => {
     });
 });
 
-test("Test getAggregatedBuckets - Different time ranges", async (t) => {
+test("Test getAggregatedBuckets - Data granularity selection", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
+    let currentTime = dayjs.utc("2025-08-12 12:00:00");
 
-    // Test 1 day (should use minutely data)
+    // Add minutely data (recent hour)
+    for (let i = 0; i < 60; i += 5) {
+        UptimeCalculator.currentDate = currentTime.subtract(i, "minute");
+        await c.update(UP);
+    }
+
+    // Add hourly data (past 24 hours)
+    for (let i = 1; i < 24; i++) {
+        UptimeCalculator.currentDate = currentTime.subtract(i, "hour");
+        await c.update(i % 3 === 0 ? DOWN : UP);
+    }
+
+    // Add daily data (past 60 days)
+    for (let i = 2; i <= 60; i++) {
+        UptimeCalculator.currentDate = currentTime.subtract(i, "day").hour(12);
+        await c.update(i % 4 === 0 ? DOWN : UP);
+    }
+
+    // Reset to current time
+    UptimeCalculator.currentDate = currentTime;
+
+    // Test 1 day range - should use minutely data and have data points
     let buckets1d = c.getAggregatedBuckets(1, 24);
     assert.strictEqual(buckets1d.length, 24);
+    let hasMinutelyData = buckets1d.some(b => b.up > 0 || b.down > 0);
+    assert.ok(hasMinutelyData, "1-day range should access minutely data and contain heartbeats");
 
-    // Test 7 days (should use hourly data)
+    // Test 7 day range - should use hourly data and have data points
     let buckets7d = c.getAggregatedBuckets(7, 50);
     assert.strictEqual(buckets7d.length, 50);
+    let hasHourlyData = buckets7d.some(b => b.up > 0 || b.down > 0);
+    assert.ok(hasHourlyData, "7-day range should access hourly data and contain heartbeats");
 
-    // Test 60 days (should use daily data)
+    // Test 60 day range - should use daily data and have data points
     let buckets60d = c.getAggregatedBuckets(60, 60);
     assert.strictEqual(buckets60d.length, 60);
+    let hasDailyData = buckets60d.some(b => b.up > 0 || b.down > 0);
+    assert.ok(hasDailyData, "60-day range should access daily data and contain heartbeats");
 
     // Test maximum days (365)
     let buckets365d = c.getAggregatedBuckets(365, 100);
