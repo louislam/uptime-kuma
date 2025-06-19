@@ -23,6 +23,8 @@
 </template>
 
 <script>
+import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
+
 export default {
     name: "Tooltip",
     props: {
@@ -67,13 +69,13 @@ export default {
             }
 
             switch (this.content.status) {
-                case 0:
+                case DOWN:
                     return this.$t("Down");
-                case 1:
+                case UP:
                     return this.$t("Up");
-                case 2:
+                case PENDING:
                     return this.$t("Pending");
-                case 3:
+                case MAINTENANCE:
                     return this.$t("Maintenance");
                 default:
                     return this.$t("Unknown");
@@ -85,13 +87,18 @@ export default {
                 return "status-empty";
             }
 
-            const classMap = {
-                0: "status-down",
-                1: "status-up",
-                2: "status-pending",
-                3: "status-maintenance"
-            };
-            return classMap[this.content.status] || "status-unknown";
+            switch (this.content.status) {
+                case DOWN:
+                    return "status-down";
+                case UP:
+                    return "status-up";
+                case PENDING:
+                    return "status-pending";
+                case MAINTENANCE:
+                    return "status-maintenance";
+                default:
+                    return "status-unknown";
+            }
         },
 
         timeText() {
@@ -177,12 +184,12 @@ export default {
 
         // Default: tooltip below element, arrow points up
         border-bottom: 6px solid rgba(17, 24, 39, 0.95);
-        top: -5px;
+        top: -6px;
 
         &.arrow-above {
             // Tooltip above element, arrow points down
             top: auto;
-            bottom: -5px;
+            bottom: -6px;
             border-bottom: none;
             border-top: 6px solid rgba(17, 24, 39, 0.95);
         }
@@ -205,11 +212,11 @@ export default {
 
     .tooltip-arrow {
         border-bottom-color: rgba(31, 41, 55, 0.95);
-        top: -5px;
+        top: -6px;
 
         &.arrow-above {
             border-top-color: rgba(31, 41, 55, 0.95);
-            bottom: -5px;
+            bottom: -6px;
         }
     }
 }
