@@ -178,7 +178,7 @@ export default {
 
         .tooltip-message {
             color: #f3f4f6;
-            font-size: 10px;
+            font-size: 12px;
             margin-top: 4px;
             padding-top: 4px;
             border-top: 1px solid rgba(75, 85, 99, 0.3);
