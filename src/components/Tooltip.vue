@@ -66,13 +66,18 @@ export default {
                 return this.$t("Unknown");
             }
 
-            const statusMap = {
-                0: this.$t("Down"),
-                1: this.$t("Up"),
-                2: this.$t("Pending"),
-                3: this.$t("Maintenance")
-            };
-            return statusMap[this.content.status] || this.$t("Unknown");
+            switch (this.content.status) {
+                case 0:
+                    return this.$t("Down");
+                case 1:
+                    return this.$t("Up");
+                case 2:
+                    return this.$t("Pending");
+                case 3:
+                    return this.$t("Maintenance");
+                default:
+                    return this.$t("Unknown");
+            }
         },
 
         statusClass() {
@@ -119,7 +124,7 @@ export default {
         text-align: center;
 
         .tooltip-status {
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 600;
             margin-bottom: 4px;
             text-transform: uppercase;
@@ -172,12 +177,12 @@ export default {
 
         // Default: tooltip below element, arrow points up
         border-bottom: 6px solid rgba(17, 24, 39, 0.95);
-        top: -6px;
+        top: -5px;
 
         &.arrow-above {
             // Tooltip above element, arrow points down
             top: auto;
-            bottom: -6px;
+            bottom: -5px;
             border-bottom: none;
             border-top: 6px solid rgba(17, 24, 39, 0.95);
         }
@@ -200,9 +205,11 @@ export default {
 
     .tooltip-arrow {
         border-bottom-color: rgba(31, 41, 55, 0.95);
+        top: -5px;
 
         &.arrow-above {
             border-top-color: rgba(31, 41, 55, 0.95);
+            bottom: -5px;
         }
     }
 }

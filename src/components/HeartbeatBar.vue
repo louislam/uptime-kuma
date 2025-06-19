@@ -17,7 +17,7 @@
             >
                 <div
                     class="beat"
-                    :class="{ 'empty': (beat === 0 || beat === null || beat.status === null), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
+                    :class="{ 'empty': (beat === 0 || beat === null || beat.status === null), 'down': (beat.status === DOWN), 'pending': (beat.status === PENDING), 'maintenance': (beat.status === MAINTENANCE) }"
                     :style="beatStyle"
                 />
             </div>
@@ -44,6 +44,7 @@
 
 <script>
 import dayjs from "dayjs";
+import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
 import Tooltip from "./Tooltip.vue";
 
 export default {
@@ -362,18 +363,18 @@ export default {
          * @returns {string} Aria label
          */
         getBeatAriaLabel(beat) {
-            if (beat === 0 || !beat) {
-                return "No data";
+            switch (beat?.status) {
+                case DOWN:
+                    return `Down at ${this.$root.datetime(beat.time)}`;
+                case UP:
+                    return `Up at ${this.$root.datetime(beat.time)}`;
+                case PENDING:
+                    return `Pending at ${this.$root.datetime(beat.time)}`;
+                case MAINTENANCE:
+                    return `Maintenance at ${this.$root.datetime(beat.time)}`;
+                default:
+                    return "No data";
             }
-
-            const statusText = {
-                0: "Down",
-                1: "Up",
-                2: "Pending",
-                3: "Maintenance"
-            }[beat.status] || "Unknown";
-
-            return `${statusText} at ${this.$root.datetime(beat.time)}`;
         },
 
         /**
