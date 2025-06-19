@@ -686,11 +686,11 @@ test("Test getAggregatedBuckets - Basic functionality", async (t) => {
     let buckets = c.getAggregatedBuckets(7, 14); // 7 days, 14 buckets
 
     assert.strictEqual(buckets.length, 14, "Should create requested number of buckets");
-    
+
     // Verify bucket structure
     buckets.forEach(bucket => {
         assert.ok(typeof bucket.up === "number", "Bucket should have up count");
-        assert.ok(typeof bucket.down === "number", "Bucket should have down count"); 
+        assert.ok(typeof bucket.down === "number", "Bucket should have down count");
         assert.ok(bucket.start < bucket.end, "Bucket should have valid time range");
     });
 });
@@ -803,7 +803,7 @@ test("Test getAggregatedBuckets - Scale factor prevents over-counting", async (t
     let smallBuckets = c.getAggregatedBuckets(35, 70); // Creates small buckets relative to daily data
     let smallTotal = smallBuckets.reduce((sum, b) => sum + b.up, 0);
 
-    // Test: When buckets match data granularity, no scaling should occur  
+    // Test: When buckets match data granularity, no scaling should occur
     let normalBuckets = c.getAggregatedBuckets(4, 4); // 1 bucket per day
     let normalTotal = normalBuckets.reduce((sum, b) => sum + b.up, 0);
 
