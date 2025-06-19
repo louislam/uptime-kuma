@@ -172,7 +172,7 @@ export default {
 
         .tooltip-time {
             color: #d1d5db;
-            font-size: 11px;
+            font-size: 13px;
             margin-bottom: 2px;
         }
 
