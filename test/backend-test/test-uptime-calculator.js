@@ -505,7 +505,7 @@ test("Test getAggregatedBuckets - Data aggregation", async (t) => {
     const expectedSnapshot = JSON.stringify(buckets);
     const secondCall = c.getAggregatedBuckets(1 / 24, 6);
     const secondSnapshot = JSON.stringify(secondCall);
-    assert.strictEqual(expectedSnapshot, secondSnapshot, "Bucket structure should be consistent between calls")
+    assert.strictEqual(expectedSnapshot, secondSnapshot, "Bucket structure should be consistent between calls");
 });
 
 test("Test getAggregatedBuckets - Edge cases", async (t) => {
@@ -765,16 +765,24 @@ test("Test getAggregatedBuckets - Hourly to daily data transition (30+ days)", a
 
     // Test various day ranges around the 30-day boundary
     const testRanges = [
-        { days: 30, buckets: 100, expectedDataType: "hourly" },
-        { days: 31, buckets: 100, expectedDataType: "daily" },
-        { days: 35, buckets: 100, expectedDataType: "daily" },
-        { days: 60, buckets: 100, expectedDataType: "daily" }
+        { days: 30,
+            buckets: 100,
+            expectedDataType: "hourly" },
+        { days: 31,
+            buckets: 100,
+            expectedDataType: "daily" },
+        { days: 35,
+            buckets: 100,
+            expectedDataType: "daily" },
+        { days: 60,
+            buckets: 100,
+            expectedDataType: "daily" }
     ];
 
     for (const { days, buckets: bucketCount, expectedDataType } of testRanges) {
         let buckets = c.getAggregatedBuckets(days, bucketCount);
 
-        assert.strictEqual(buckets.length, bucketCount, 
+        assert.strictEqual(buckets.length, bucketCount,
             `Should have exactly ${bucketCount} buckets for ${days} days (${expectedDataType} data)`);
 
         // Verify no gaps between buckets - critical for UI display
@@ -815,10 +823,10 @@ test("Test getAggregatedBuckets - No duplicate accounting with scale factor", as
     // Test with daily data (> 30 days), but using smaller range to see scale factor effect
     let buckets = c.getAggregatedBuckets(40, 20); // 40 days, 20 buckets = 2 days per bucket
 
-    // With scale factor, each daily data point (1440 minutes) should be scaled down 
+    // With scale factor, each daily data point (1440 minutes) should be scaled down
     // when put into 2-day buckets (2880 minutes): scaleFactor = 1440/2880 = 0.5
     let totalUp = buckets.reduce((sum, b) => sum + b.up, 0);
-    
+
     // We should have 10 * 0.5 = 5 total UP beats due to scale factor
     // This prevents double-counting when daily data points span multiple days
     assert.strictEqual(totalUp, 5, "Scale factor should prevent over-counting: 10 daily beats * 0.5 scale = 5");
@@ -826,7 +834,7 @@ test("Test getAggregatedBuckets - No duplicate accounting with scale factor", as
     // Test with exact bucket size match (no scaling needed)
     let bucketsExact = c.getAggregatedBuckets(10, 10); // 10 days, 10 buckets = 1 day per bucket
     let totalUpExact = bucketsExact.reduce((sum, b) => sum + b.up, 0);
-    
+
     // With 1:1 bucket to data ratio, scale factor = 1.0, so we get full counts
     assert.strictEqual(totalUpExact, 10, "No scaling needed when bucket size matches data granularity");
 });

@@ -928,7 +928,7 @@ class UptimeCalculator {
                 if (timestampNum >= bucket.start && timestampNum < bucket.end) {
                     // Calculate scale factor to prevent double-counting when data points span multiple buckets
                     const scaleFactor = Math.min(1.0, bucketSizeMinutes / dataPointSizeMinutes);
-                    
+
                     bucket.up += (dataPoint.up || 0) * scaleFactor;
                     bucket.down += (dataPoint.down || 0) * scaleFactor;
 

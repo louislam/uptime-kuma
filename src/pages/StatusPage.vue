@@ -45,10 +45,10 @@
                 <div class="my-3">
                     <label for="heartbeat-bar-days" class="form-label">{{ $t("Heartbeat Bar Days") }}</label>
                     <input id="heartbeat-bar-days" v-model.number="config.heartbeatBarDays" type="number" class="form-control" min="0" max="365" data-testid="heartbeat-bar-days-input">
-                    <div class="form-text" v-if="config.heartbeatBarDays === 0">
+                    <div v-if="config.heartbeatBarDays === 0" class="form-text">
                         {{ $t("Status page will show last beats", [100]) }}
                     </div>
-                    <div class="form-text" v-else>
+                    <div v-else class="form-text">
                         {{ $t("Status page shows heartbeat history days", [config.heartbeatBarDays]) }}
                     </div>
                 </div>
