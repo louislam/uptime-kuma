@@ -902,6 +902,16 @@ class UptimeCalculator {
         // Since data is sorted, we can optimize by tracking current bucket index
         let currentBucketIndex = 0;
 
+        // Calculate data point size in minutes based on the data type
+        let dataPointSizeMinutes;
+        if (days <= 1) {
+            dataPointSizeMinutes = 1; // Minutely data
+        } else if (days <= 30) {
+            dataPointSizeMinutes = 60; // Hourly data
+        } else {
+            dataPointSizeMinutes = 60 * 24; // Daily data
+        }
+
         for (const [ timestamp, dataPoint ] of Object.entries(availableData)) {
             const timestampNum = parseInt(timestamp);
 
@@ -916,13 +926,16 @@ class UptimeCalculator {
                 const bucket = buckets[currentBucketIndex];
 
                 if (timestampNum >= bucket.start && timestampNum < bucket.end) {
-                    bucket.up += dataPoint.up || 0;
-                    bucket.down += dataPoint.down || 0;
+                    // Calculate scale factor to prevent double-counting when data points span multiple buckets
+                    const scaleFactor = Math.min(1.0, bucketSizeMinutes / dataPointSizeMinutes);
+                    
+                    bucket.up += (dataPoint.up || 0) * scaleFactor;
+                    bucket.down += (dataPoint.down || 0) * scaleFactor;
 
                     if (days > 30) {
                         // Daily data includes maintenance and pending
-                        bucket.maintenance += dataPoint.maintenance || 0;
-                        bucket.pending += dataPoint.pending || 0;
+                        bucket.maintenance += (dataPoint.maintenance || 0) * scaleFactor;
+                        bucket.pending += (dataPoint.pending || 0) * scaleFactor;
                     } else {
                         // Minute/hourly data doesn't track maintenance/pending separately
                         bucket.maintenance += 0;

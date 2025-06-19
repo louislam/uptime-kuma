@@ -206,8 +206,8 @@ export default {
             // For configured days mode, show the configured range
             if (this.normalizedHeartbeatBarDays >= 2) {
                 return this.normalizedHeartbeatBarDays + "d";
-            if (this.normalizedHeartbeatBarDays == 1) {
-                return this.normalizedHeartbeatBarDays * 24) + "h";
+            } else if (this.normalizedHeartbeatBarDays === 1) {
+                return (this.normalizedHeartbeatBarDays * 24) + "h";
             }
 
             // Need to calculate from actual data

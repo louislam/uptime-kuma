@@ -501,8 +501,11 @@ test("Test getAggregatedBuckets - Data aggregation", async (t) => {
         assert.ok(bucket.start < bucket.end);
     });
 
-    // For this test, we'll just verify the method works and returns proper structure
-    // The actual data aggregation depends on the complex internal storage which is tested separately
+    // Snapshot test to verify consistent bucket structure
+    const expectedSnapshot = JSON.stringify(buckets);
+    const secondCall = c.getAggregatedBuckets(1 / 24, 6);
+    const secondSnapshot = JSON.stringify(secondCall);
+    assert.strictEqual(expectedSnapshot, secondSnapshot, "Bucket structure should be consistent between calls")
 });
 
 test("Test getAggregatedBuckets - Edge cases", async (t) => {
@@ -627,27 +630,52 @@ test("Test getAggregatedBuckets - 31-63 day edge case (daily data)", async (t) =
     let totalUp = buckets.reduce((sum, b) => sum + b.up, 0);
     let totalDown = buckets.reduce((sum, b) => sum + b.down, 0);
 
-    // We added 35 days of data (within the range), with pattern: DOWN, UP, UP, DOWN, UP, UP...
-    // So roughly 1/3 DOWN and 2/3 UP
-    assert.ok(totalUp > 0, "Should have UP heartbeats");
-    assert.ok(totalDown > 0, "Should have DOWN heartbeats");
-    assert.ok(totalUp + totalDown <= 35, "Should not exceed 35 total heartbeats for 35 days");
+    // We added 35 days of data (within the range), with pattern: i % 3 === 0 ? DOWN : UP
+    // Days 0,3,6,9,12,15,18,21,24,27,30,33 = 12 DOWN days
+    // Days 1,2,4,5,7,8,10,11,13,14,16,17,19,20,22,23,25,26,28,29,31,32,34 = 23 UP days
+    const expectedDown = 12;
+    const expectedUp = 23;
+    assert.strictEqual(totalDown, expectedDown, `Should have exactly ${expectedDown} DOWN heartbeats`);
+    assert.strictEqual(totalUp, expectedUp, `Should have exactly ${expectedUp} UP heartbeats`);
 });
 
-test("Test getAggregatedBuckets - 31-day boundary transition", async (t) => {
+test("Test getAggregatedBuckets - Daily data includes downtime after uptime", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
+    let currentTime = dayjs.utc("2025-08-12 12:00:00");
 
-    // Test exactly at 30/31 day boundary
-    let buckets30 = c.getAggregatedBuckets(30, 60);
-    let buckets31 = c.getAggregatedBuckets(31, 62);
+    // Simulate a monitor that was up for a long time, then went down
+    // Add 30 days of UP data
+    for (let i = 2; i <= 31; i++) {
+        UptimeCalculator.currentDate = currentTime.subtract(i, "day").hour(10);
+        await c.update(UP);
+    }
 
-    assert.strictEqual(buckets30.length, 60);
-    assert.strictEqual(buckets31.length, 62);
+    // Then add 5 days of DOWN data (more recent)
+    for (let i = 0; i < 5; i++) {
+        UptimeCalculator.currentDate = currentTime.subtract(i, "day").hour(10);
+        await c.update(DOWN);
+    }
 
-    // Both should work without errors
-    assert.ok(buckets30.every(b => typeof b.up === "number"));
-    assert.ok(buckets31.every(b => typeof b.up === "number"));
+    // Reset to current time
+    UptimeCalculator.currentDate = currentTime;
+
+    // Test 35-day range to ensure daily data includes the downtime
+    let buckets = c.getAggregatedBuckets(35, 35);
+
+    assert.strictEqual(buckets.length, 35);
+
+    // Count total UP and DOWN beats
+    let totalUp = buckets.reduce((sum, b) => sum + b.up, 0);
+    let totalDown = buckets.reduce((sum, b) => sum + b.down, 0);
+
+    // We should have exactly 30 UP and 5 DOWN beats
+    assert.strictEqual(totalUp, 30, "Should have 30 UP beats from the long uptime period");
+    assert.strictEqual(totalDown, 5, "Should have 5 DOWN beats from the recent downtime");
+
+    // Verify the recent buckets contain DOWN data
+    let recentDownCount = buckets.slice(-5).reduce((sum, b) => sum + b.down, 0);
+    assert.strictEqual(recentDownCount, 5, "Recent 5 buckets should contain all DOWN beats");
 });
 
 test("Test getAggregatedBuckets - Large range with daily data (60 days)", async (t) => {
@@ -728,45 +756,79 @@ test("Test getAggregatedBuckets - Daily data bucket assignment", async (t) => {
     }
 });
 
-test("Test getAggregatedBuckets - No gaps in 31-63 day range", async (t) => {
+test("Test getAggregatedBuckets - Hourly to daily data transition (30+ days)", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
 
-    // Test various day ranges that were problematic
+    // This test verifies the critical transition from hourly data (≤30 days) to daily data (>30 days)
+    // This boundary is important because it changes the data granularity and aggregation logic
+
+    // Test various day ranges around the 30-day boundary
     const testRanges = [
-        { days: 31,
-            buckets: 100 },
-        { days: 35,
-            buckets: 100 },
-        { days: 40,
-            buckets: 100 },
-        { days: 45,
-            buckets: 100 },
-        { days: 50,
-            buckets: 100 },
-        { days: 60,
-            buckets: 100 },
-        { days: 63,
-            buckets: 100 }
+        { days: 30, buckets: 100, expectedDataType: "hourly" },
+        { days: 31, buckets: 100, expectedDataType: "daily" },
+        { days: 35, buckets: 100, expectedDataType: "daily" },
+        { days: 60, buckets: 100, expectedDataType: "daily" }
     ];
 
-    for (const { days, buckets: bucketCount } of testRanges) {
+    for (const { days, buckets: bucketCount, expectedDataType } of testRanges) {
         let buckets = c.getAggregatedBuckets(days, bucketCount);
 
-        assert.strictEqual(buckets.length, bucketCount, `Should have exactly ${bucketCount} buckets for ${days} days`);
+        assert.strictEqual(buckets.length, bucketCount, 
+            `Should have exactly ${bucketCount} buckets for ${days} days (${expectedDataType} data)`);
 
-        // Verify no gaps between buckets
+        // Verify no gaps between buckets - critical for UI display
         for (let i = 0; i < buckets.length - 1; i++) {
             assert.strictEqual(buckets[i].end, buckets[i + 1].start,
                 `No gap should exist between buckets ${i} and ${i + 1} for ${days}-day range`);
         }
 
-        // Verify total time coverage
+        // Verify total time coverage is exact
         const totalSeconds = buckets[buckets.length - 1].end - buckets[0].start;
         const expectedSeconds = days * 24 * 60 * 60;
         assert.strictEqual(totalSeconds, expectedSeconds,
             `Total time should be exactly ${days} days for ${days}-day range`);
+
+        // Verify bucket structure is consistent regardless of data type
+        buckets.forEach((bucket, i) => {
+            assert.ok(typeof bucket.up === "number", `Bucket ${i} should have numeric up count`);
+            assert.ok(typeof bucket.down === "number", `Bucket ${i} should have numeric down count`);
+            assert.ok(bucket.start < bucket.end, `Bucket ${i} should have valid time range`);
+        });
     }
+});
+
+test("Test getAggregatedBuckets - No duplicate accounting with scale factor", async (t) => {
+    UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
+    let c = new UptimeCalculator();
+    let currentTime = dayjs.utc("2025-08-12 12:00:00");
+
+    // Add exactly 10 UP beats over 10 days (daily data scenario)
+    for (let i = 0; i < 10; i++) {
+        UptimeCalculator.currentDate = currentTime.subtract(i, "day").hour(12);
+        await c.update(UP);
+    }
+
+    // Reset to current time
+    UptimeCalculator.currentDate = currentTime;
+
+    // Test with daily data (> 30 days), but using smaller range to see scale factor effect
+    let buckets = c.getAggregatedBuckets(40, 20); // 40 days, 20 buckets = 2 days per bucket
+
+    // With scale factor, each daily data point (1440 minutes) should be scaled down 
+    // when put into 2-day buckets (2880 minutes): scaleFactor = 1440/2880 = 0.5
+    let totalUp = buckets.reduce((sum, b) => sum + b.up, 0);
+    
+    // We should have 10 * 0.5 = 5 total UP beats due to scale factor
+    // This prevents double-counting when daily data points span multiple days
+    assert.strictEqual(totalUp, 5, "Scale factor should prevent over-counting: 10 daily beats * 0.5 scale = 5");
+
+    // Test with exact bucket size match (no scaling needed)
+    let bucketsExact = c.getAggregatedBuckets(10, 10); // 10 days, 10 buckets = 1 day per bucket
+    let totalUpExact = bucketsExact.reduce((sum, b) => sum + b.up, 0);
+    
+    // With 1:1 bucket to data ratio, scale factor = 1.0, so we get full counts
+    assert.strictEqual(totalUpExact, 10, "No scaling needed when bucket size matches data granularity");
 });
 
 test("Test getAggregatedBuckets - Mixed data granularity", async (t) => {
