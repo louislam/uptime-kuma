@@ -95,13 +95,6 @@ export default {
             }
             return this.$root.datetime(this.content.time);
         },
-
-        message() {
-            if (!this.content || this.content === 0) {
-                return "";
-            }
-            return this.content.msg || "";
-        }
     }
 };
 </script>
