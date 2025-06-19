@@ -204,10 +204,10 @@ export default {
          */
         timeSinceFirstBeat() {
             // For configured days mode, show the configured range
-            if (this.normalizedHeartbeatBarDays > 0) {
-                return this.normalizedHeartbeatBarDays < 2 ?
-                    (this.normalizedHeartbeatBarDays * 24) + "h" :
-                    this.normalizedHeartbeatBarDays + "d";
+            if (this.normalizedHeartbeatBarDays >= 2) {
+                return this.normalizedHeartbeatBarDays + "d";
+            if (this.normalizedHeartbeatBarDays == 1) {
+                return this.normalizedHeartbeatBarDays * 24) + "h";
             }
 
             // For auto mode, calculate from actual data
