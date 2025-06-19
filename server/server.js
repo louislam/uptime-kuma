@@ -674,7 +674,7 @@ let needSetup = false;
 
                 let user = R.dispense("user");
                 user.username = username;
-                user.password = passwordHash.generate(password);
+                user.password = await passwordHash.generate(password);
                 await R.store(user);
 
                 needSetup = false;
@@ -792,6 +792,7 @@ let needSetup = false;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
+                bean.ipFamily = monitor.ipFamily;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
@@ -866,6 +867,7 @@ let needSetup = false;
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.remote_browser = monitor.remote_browser;
+                bean.smtpSecurity = monitor.smtpSecurity;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;
                 bean.jsonPathOperator = monitor.jsonPathOperator;
@@ -874,6 +876,12 @@ let needSetup = false;
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
+                bean.manual_status = monitor.manual_status;
+
+                // ping advanced options
+                bean.ping_numeric = monitor.ping_numeric;
+                bean.ping_count = monitor.ping_count;
+                bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
 
                 bean.validate();
 
