@@ -521,6 +521,8 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                 client.on("error", (err) => {
                     if (err.code === "ETIMEDOUT") {
                         err.message = `Connection to ${socketName} timed out`;
+                    } else if (err.code === "ECONNREFUSED") {
+                        err.message = `Connection to ${socketName} refused`;
                     }
                     reject(err);
                 });
@@ -638,7 +640,15 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     });
                     const req = client.request(headers);
                     req.on("error", (err) => {
-                        err.message = "HTTP/2: " + err.message;
+                        if (err.cause.code === "ETIMEDOUT") {
+                            err = err.cause;
+                            err.message = `Connection to ${socketName} timed out`;
+                        } else if (err.cause.code === "ECONNREFUSED") {
+                            err = err.cause;
+                            err.message = `Connection to ${socketName} refused`;
+                        } else {
+                            err.message = "HTTP/2: " + err.message;
+                        }
                         reject(err);
                     });
                     req.on("response", (resHeaders) => {
@@ -670,6 +680,11 @@ exports.dnsResolve = function (opts, resolverServer, resolverPort, transport) {
                     client.end();
                 }
                 client.on("error", (err) => {
+                    if (err.code === "ETIMEDOUT") {
+                        err.message = `Connection to ${socketName} timed out`;
+                    } else if (err.code === "ECONNREFUSED") {
+                        err.message = `Connection to ${socketName} refused`;
+                    }
                     reject(err);
                 });
                 client.on("close", () => {

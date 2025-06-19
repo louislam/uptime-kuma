@@ -371,38 +371,16 @@
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
                                     <label for="dns-resolve-server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns-resolve-server" ref="dns-resolve-server" v-model="monitor.dnsResolveServer" type="text" class="form-control" :pattern="dnsResolverRegex" required>
+                                    <input id="dns-resolve-server" ref="dns-resolve-server" v-model="monitor.dnsResolveServer" type="text" class="form-control" :pattern="dnsResolverRegex" required data-testid="resolve-server-input">
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
-                                    </div>
-                                </div>
-
-                                <!-- TODO center selected option text -->
-                                <div class="my-3">
-                                    <label for="dns-transport" class="form-label">{{ $t("Transport Method") }}</label>
-                                    <VueMultiselect
-                                        id="dns-transport"
-                                        v-model="monitor.dnsTransport"
-                                        :options="dnsTransportOptions"
-                                        :multiple="false"
-                                        :close-on-select="true"
-                                        :clear-on-select="false"
-                                        :preserve-search="false"
-                                        :placeholder="$t('Select the transport method...')"
-                                        :preselect-first="false"
-                                        :max-height="500"
-                                        :taggable="false"
-                                        data-testid="resolve-type-select"
-                                    ></VueMultiselect>
-                                    <div class="form-text">
-                                        {{ $t("dnsTransportDescription") }}
                                     </div>
                                 </div>
 
                                 <!-- Port -->
                                 <div class="my-3">
                                     <label for="port" class="form-label">{{ $t("Port") }}</label>
-                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1" data-testid="port-input">
                                     <div class="form-text">
                                         {{ $t("dnsPortDescription") }}
                                     </div>
@@ -412,7 +390,6 @@
                                     <label for="dns-resolve-type" class="form-label">{{ $t("Resource Record Type") }}</label>
 
                                     <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
-                                    <!-- TODO center selected option text -->
                                     <VueMultiselect
                                         id="dns-resolve-type"
                                         v-model="monitor.dnsResolveType"
@@ -430,6 +407,27 @@
 
                                     <div class="form-text">
                                         {{ $t("rrtypeDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="dns-transport" class="form-label">{{ $t("Transport Method") }}</label>
+                                    <VueMultiselect
+                                        id="dns-transport"
+                                        v-model="monitor.dnsTransport"
+                                        :options="dnsTransportOptions"
+                                        :multiple="false"
+                                        :close-on-select="true"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :placeholder="$t('Select the transport method...')"
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :taggable="false"
+                                        data-testid="transport-method-select"
+                                    ></VueMultiselect>
+                                    <div class="form-text">
+                                        {{ $t("dnsTransportDescription") }}
                                     </div>
                                 </div>
                             </template>
@@ -673,11 +671,11 @@
                                     <div class="d-flex">
                                         <div class="my-3 flex-column flex-fill">
                                             <div>
-                                                <label for="method" class="form-label">{{ $t("Method") }}</label>
+                                                <label for="doh-method" class="form-label">{{ $t("Method") }}</label>
                                             </div>
                                             <div class="d-flex flex-row">
                                                 <div class="d-inline-flex">
-                                                    <select id="method" v-model="monitor.method" class="form-select">
+                                                    <select id="doh-method" v-model="monitor.method" class="form-select" data-testid="method-select">
                                                         <option value="GET">
                                                             GET
                                                         </option>
@@ -703,7 +701,7 @@
                                         </div>
                                     </div>
                                     <div class="my-3 form-check">
-                                        <input id="force-http2" v-model="monitor.forceHttp2" class="form-check-input" type="checkbox">
+                                        <input id="force-http2" v-model="monitor.forceHttp2" class="form-check-input" type="checkbox" data-testid="http2-check">
                                         <label class="form-check-label" for="force-http2">
                                             {{ $t("Force HTTP2") }}
                                         </label>
@@ -1516,19 +1514,18 @@ message HealthCheckResponse {
         },
 
         conditionVariables() {
+            // For DNS monitor, the variables depend on rrtype. Conditions for
+            // all rrtypes are added to an array in the DnsMonitorType class in
+            // order to pass to Vue, then identified based on index.
             if (this.monitor.type === "dns") {
-                // When the monitor type is DNS, the conditions depend on
-                // record type. Condition variables are all added to a single
-                // array defined in server\monitor-types\dns.js in order to
-                // pass to Vue, then sliced below based on index.
                 const dnsConditionVariables = this.$root.monitorTypeList["dns"]?.conditionVariables;
                 switch (this.monitor.dnsResolveType) {
                     case "A":
                     case "AAAA":
                     case "TXT":
-                    case "PTR":
                     case "NS":
                         return dnsConditionVariables.slice(0, 1);
+                    case "PTR":
                     case "CNAME":
                         return dnsConditionVariables.slice(1, 2);
                     case "CAA":

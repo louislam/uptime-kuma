@@ -4,7 +4,11 @@ const dayjs = require("dayjs");
 const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
 const { ConditionVariable } = require("../monitor-conditions/variables");
-const { defaultStringOperators, defaultNumberOperators, defaultArrayOperators } = require("../monitor-conditions/operators");
+const {
+    defaultStringOperators,
+    defaultNumberOperators,
+    defaultArrayOperators
+} = require("../monitor-conditions/operators");
 const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
 const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
 
@@ -14,9 +18,9 @@ class DnsMonitorType extends MonitorType {
     supportsConditions = true;
 
     conditionVariables = [
-        // A, AAAA, TXT, PTR, NS
+        // A, AAAA, TXT, NS
         new ConditionVariable("records", defaultArrayOperators),
-        // CNAME
+        // PTR, CNAME
         new ConditionVariable("hostname", defaultStringOperators),
         // CAA
         new ConditionVariable("flags", defaultStringOperators),
@@ -43,10 +47,11 @@ class DnsMonitorType extends MonitorType {
             name: monitor.hostname,
             rrtype: monitor.dnsResolveType,
             dnssec: true, // Request DNSSEC information in the response
-            dnssecCheckingDisabled: monitor.skip_remote_dnssec,
+            dnssecCheckingDisabled: monitor.skipRemoteDnssec,
         };
         const transportData = {
             type: monitor.dnsTransport,
+            timeout: monitor.timeout,
             ignoreCertErrors: monitor.ignoreTls,
             dohQueryPath: monitor.dohQueryPath,
             dohUsePost: monitor.method === "POST",
@@ -62,32 +67,37 @@ class DnsMonitorType extends MonitorType {
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
         let conditionsResult = true;
         const handleConditions = (data) => conditions ? evaluateExpressionGroup(conditions, data) : true;
-
-        const records = dnsRes.answers.reduce((results, record) => {
+        const checkRecord = (results, record) => {
             // Omit records that are not the same as the requested rrtype
             if (record.type === monitor.dnsResolveType) {
+                // Add the record to the array
                 results.push(Buffer.isBuffer(record.data) ? record.data.toString() : record.data);
             }
             return results;
-        }, []);
+        };
+
+        const records = dnsRes.answers.reduce(checkRecord, []);
         // Return down status if no records are provided
         if (records.length === 0) {
-            rrtype = null;
-            dnsMessage = "No records found";
-            conditionsResult = false;
-
+            if (dnsRes.authorities.map(auth => auth.type).includes(monitor.dnsResolveType)) {
+                records.push(...dnsRes.authorities.reduce(checkRecord, []));
+            } else {
+                rrtype = null;
+                dnsMessage = "No records found";
+                conditionsResult = false;
+            }
         }
 
         switch (rrtype) {
             case "A":
             case "AAAA":
             case "TXT":
-            case "PTR":
             case "NS":
                 dnsMessage = records.join(" | ");
                 conditionsResult = handleConditions({ records: records });
                 break;
 
+            case "PTR":
             case "CNAME":
                 dnsMessage = records[0];
                 conditionsResult = handleConditions({ hostname: records[0].value });
@@ -134,7 +144,7 @@ class DnsMonitorType extends MonitorType {
                 break;
         }
 
-        if (monitor.dnsLastResult !== dnsMessage && dnsMessage !== undefined) {
+        if (monitor.dnsLastResult !== dnsMessage && dnsMessage !== undefined && monitor.id !== undefined) {
             await R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [ dnsMessage, monitor.id ]);
         }
 
