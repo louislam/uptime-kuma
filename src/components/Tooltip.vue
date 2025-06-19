@@ -1,7 +1,7 @@
 <template>
     <teleport to="body">
         <div
-            v-if="visible && content"
+            v-if="content"
             ref="tooltip"
             class="tooltip-wrapper"
             :style="tooltipStyle"
