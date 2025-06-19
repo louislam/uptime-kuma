@@ -820,15 +820,17 @@ test("Test getAggregatedBuckets - No duplicate accounting with scale factor", as
     // Reset to current time
     UptimeCalculator.currentDate = currentTime;
 
-    // Test with daily data (> 30 days), but using smaller range to see scale factor effect
-    let buckets = c.getAggregatedBuckets(40, 20); // 40 days, 20 buckets = 2 days per bucket
+    // Test with daily data where buckets are SMALLER than data points (to trigger scaling down)
+    let buckets = c.getAggregatedBuckets(40, 80); // 40 days, 80 buckets = 0.5 days (720 min) per bucket
 
-    // With scale factor, each daily data point (1440 minutes) should be scaled down
-    // when put into 2-day buckets (2880 minutes): scaleFactor = 1440/2880 = 0.5
+    // With scale factor calculation: bucketSizeMinutes / dataPointSizeMinutes
+    // bucketSizeMinutes = (40 days * 1440 min/day) / 80 buckets = 720 min/bucket
+    // dataPointSizeMinutes = 1440 (daily data)
+    // scaleFactor = min(1.0, 720/1440) = min(1.0, 0.5) = 0.5
     let totalUp = buckets.reduce((sum, b) => sum + b.up, 0);
 
     // We should have 10 * 0.5 = 5 total UP beats due to scale factor
-    // This prevents double-counting when daily data points span multiple days
+    // This prevents double-counting when daily data points span multiple buckets
     assert.strictEqual(totalUp, 5, "Scale factor should prevent over-counting: 10 daily beats * 0.5 scale = 5");
 
     // Test with exact bucket size match (no scaling needed)
