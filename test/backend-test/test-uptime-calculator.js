@@ -612,14 +612,14 @@ test("Test getAggregatedBuckets - 31-63 day edge case (daily data)", async (t) =
     // Reset to current time
     UptimeCalculator.currentDate = currentTime;
 
-    // Test 35-day range (should use daily data, not hourly)
-    let buckets = c.getAggregatedBuckets(35, 70); // 35 days with 70 buckets
+    // Test 35-day range with buckets that match data granularity (no scale factor)
+    let buckets = c.getAggregatedBuckets(35, 35); // 35 days with 35 buckets = 1 day per bucket
 
-    assert.strictEqual(buckets.length, 70);
+    assert.strictEqual(buckets.length, 35);
 
     // Count non-empty buckets - should have data distributed across buckets
     let nonEmptyBuckets = buckets.filter(b => b.up > 0 || b.down > 0).length;
-    assert.ok(nonEmptyBuckets > 20, `Expected more than 20 non-empty buckets, got ${nonEmptyBuckets}`);
+    assert.ok(nonEmptyBuckets > 30, `Expected more than 30 non-empty buckets, got ${nonEmptyBuckets}`);
 
     // Verify buckets cover the full time range without gaps
     for (let i = 0; i < buckets.length - 1; i++) {
