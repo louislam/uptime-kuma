@@ -189,18 +189,36 @@ export default {
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        width: 0;
-        height: 0;
-        border-left: 6px solid transparent;
-        border-right: 6px solid transparent;
-        border-bottom: 6px solid rgba(17, 24, 39, 0.95);
+        width: 12px;
+        height: 6px;
+        overflow: hidden;
         top: -6px;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%) translateY(-50%) rotate(45deg);
+            width: 8px;
+            height: 8px;
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+            border-bottom: none;
+            border-right: none;
+        }
 
         &.arrow-above {
             top: auto;
             bottom: -6px;
-            border-bottom: none;
-            border-top: 6px solid rgba(17, 24, 39, 0.95);
+
+            &::before {
+                top: 0%;
+                transform: translateX(-50%) translateY(-50%) rotate(225deg);
+                border: 1px solid rgba(75, 85, 99, 0.3);
+                border-bottom: none;
+                border-right: none;
+            }
         }
     }
 
@@ -229,10 +247,9 @@ export default {
     }
 
     .tooltip-arrow {
-        border-bottom-color: rgba(31, 41, 55, 0.95);
-
-        &.arrow-above {
-            border-top-color: rgba(31, 41, 55, 0.95);
+        &::before {
+            background: rgba(31, 41, 55, 0.95);
+            border-color: rgba(107, 114, 128, 0.3);
         }
     }
 }
