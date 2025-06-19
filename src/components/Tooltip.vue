@@ -129,6 +129,18 @@ export default {
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
         min-width: 120px;
         text-align: center;
+        position: relative;
+
+        &::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 2px;
+            background: rgba(17, 24, 39, 0.95);
+            top: -1px;
+        }
 
         .tooltip-status {
             font-size: 16px;
@@ -181,13 +193,10 @@ export default {
         height: 0;
         border-left: 6px solid transparent;
         border-right: 6px solid transparent;
-
-        // Default: tooltip below element, arrow points up
         border-bottom: 6px solid rgba(17, 24, 39, 0.95);
         top: -6px;
 
         &.arrow-above {
-            // Tooltip above element, arrow points down
             top: auto;
             bottom: -6px;
             border-bottom: none;
@@ -200,6 +209,11 @@ export default {
 
     &.tooltip-above {
         transform: translateX(-50%) translateY(-8px);
+
+        .tooltip-content::before {
+            top: auto;
+            bottom: -1px;
+        }
     }
 }
 
@@ -208,15 +222,17 @@ export default {
     .tooltip-content {
         background: rgba(31, 41, 55, 0.95);
         border-color: rgba(107, 114, 128, 0.3);
+
+        &::before {
+            background: rgba(31, 41, 55, 0.95);
+        }
     }
 
     .tooltip-arrow {
         border-bottom-color: rgba(31, 41, 55, 0.95);
-        top: -6px;
 
         &.arrow-above {
             border-top-color: rgba(31, 41, 55, 0.95);
-            bottom: -6px;
         }
     }
 }
