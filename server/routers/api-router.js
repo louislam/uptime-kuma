@@ -51,6 +51,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         let ping = parseFloat(request.query.ping) || null;
         let statusString = request.query.status || "up";
         const statusFromParam = (statusString === "up") ? UP : DOWN;
+        const important = request.query.important !== undefined;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
@@ -92,7 +93,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
         log.debug("router", "Current Status: " + bean.status);
 
-        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
+        bean.important = important || Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
 
         if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
             // Reset down count
