@@ -37,7 +37,7 @@ class DnsMonitorType extends MonitorType {
         new ConditionVariable("retry", defaultNumberOperators),
         new ConditionVariable("minimum", defaultNumberOperators),
         // SRV
-        new ConditionVariable("targets", defaultArrayOperators),
+        new ConditionVariable("servers", defaultArrayOperators),
     ];
 
     /**
@@ -140,15 +140,14 @@ class DnsMonitorType extends MonitorType {
             case "SRV":
                 dnsMessage = records.map((record) => {
                     return Object.entries({
-                        "Target": record.target,
-                        "Port": record.port,
+                        "Server": `${record.target}:${record.port}`,
                         "Priority": record.priority,
                         "Weight": record.weight,
                     }).map(([ name, value ]) => {
                         return `${name}: ${value}`;
                     }).join("; ");
                 }).join(" | ");
-                conditionsResult = handleConditions({ targets: records.map(record => record.target) });
+                conditionsResult = handleConditions({ servers: records.map(record => `${record.target}:${record.port}`) });
                 break;
         }
 
