@@ -23,6 +23,7 @@ const radiusClient = require("node-radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
+const { exists } = require("fs");
 
 const {
     dictionaries: {
@@ -1096,3 +1097,17 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
         }
     }
 };
+
+/**
+ * Async version of fs.existsSync
+ * @param {PathLike} path File path
+ * @returns {Promise<boolean>} True if file exists, false otherwise
+ */
+function fsExists(path) {
+    return new Promise(function (resolve, reject) {
+        exists(path, function (exists) {
+            resolve(exists);
+        });
+    });
+}
+module.exports.fsExists = fsExists;
