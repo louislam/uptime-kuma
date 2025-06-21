@@ -18,13 +18,14 @@ class DnsMonitorType extends MonitorType {
     supportsConditions = true;
 
     conditionVariables = [
-        // A, AAAA, TXT, NS
+        // A, AAAA, NS
         new ConditionVariable("records", defaultArrayOperators),
         // PTR, CNAME
         new ConditionVariable("hostname", defaultStringOperators),
         // CAA
         new ConditionVariable("flags", defaultStringOperators),
         new ConditionVariable("tag", defaultStringOperators),
+        // CAA, TXT
         new ConditionVariable("value", defaultStringOperators),
         // MX
         new ConditionVariable("hostnames", defaultArrayOperators),
@@ -70,8 +71,8 @@ class DnsMonitorType extends MonitorType {
         const checkRecord = (results, record) => {
             // Omit records that are not the same as the requested rrtype
             if (record.type === monitor.dnsResolveType) {
-                // Add the record to the array
-                results.push(Buffer.isBuffer(record.data) ? record.data.toString() : record.data);
+                // Concat TXT records with values larger than 255 characters
+                results.push(Array.isArray(record.data) ? record.data.join("") : record.data);
             }
             return results;
         };
@@ -79,6 +80,7 @@ class DnsMonitorType extends MonitorType {
         const records = dnsRes.answers.reduce(checkRecord, []);
         // Return down status if no records are provided
         if (records.length === 0) {
+            // Some DNS servers place SOA record in the authorities section
             if (dnsRes.authorities.map(auth => auth.type).includes(monitor.dnsResolveType)) {
                 records.push(...dnsRes.authorities.reduce(checkRecord, []));
             } else {
@@ -91,12 +93,18 @@ class DnsMonitorType extends MonitorType {
         switch (rrtype) {
             case "A":
             case "AAAA":
-            case "TXT":
             case "NS":
                 dnsMessage = records.join(" | ");
                 conditionsResult = handleConditions({ records: records });
                 break;
 
+            case "TXT":
+                dnsMessage = records.join(" | ");
+                // Combine records to enable string operators for conditions
+                conditionsResult = handleConditions({ value: records.join("|") });
+                break;
+
+            // While PTR can have multiple records in DNS, it's not recommended
             case "PTR":
             case "CNAME":
                 dnsMessage = records[0];
@@ -104,7 +112,7 @@ class DnsMonitorType extends MonitorType {
                 break;
 
             case "CAA":
-                dnsMessage = records.map(record => `${record.flags} ${record.tag} "${record.value}"`).join(" | ");
+                dnsMessage = `${records[0].flags} ${records[0].tag} "${records[0].value}"`;
                 conditionsResult = handleConditions(records[0]);
                 break;
 
