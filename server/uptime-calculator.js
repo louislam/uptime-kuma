@@ -845,6 +845,108 @@ class UptimeCalculator {
     setMigrationMode(value) {
         this.migrationMode = value;
     }
+
+    /**
+     * Get aggregated heartbeat buckets for a specific time range
+     * @param {number} days Number of days to aggregate
+     * @param {number} targetBuckets Number of buckets to create (default 100)
+     * @returns {Array} Array of aggregated bucket data
+     */
+    getAggregatedBuckets(days, targetBuckets = 100) {
+        const now = this.getCurrentDate();
+        const startTime = now.subtract(days, "day");
+        const totalMinutes = days * 60 * 24;
+        const bucketSizeMinutes = totalMinutes / targetBuckets;
+
+        // Get available data from UptimeCalculator for lookup
+        const availableData = {};
+        let rawDataPoints;
+
+        if (days <= 1) {
+            const exactMinutes = Math.ceil(days * 24 * 60);
+            rawDataPoints = this.getDataArray(exactMinutes, "minute");
+        } else if (days <= 30) {
+            // For 1-30 days, use hourly data (up to 720 hours)
+            const exactHours = Math.min(Math.ceil(days * 24), 720);
+            rawDataPoints = this.getDataArray(exactHours, "hour");
+        } else {
+            // For > 30 days, use daily data
+            const requestDays = Math.min(days, 365);
+            rawDataPoints = this.getDataArray(requestDays, "day");
+        }
+
+        // Create lookup map for available data
+        for (const point of rawDataPoints) {
+            if (point && point.timestamp) {
+                availableData[point.timestamp] = point;
+            }
+        }
+
+        // Create exactly targetBuckets buckets spanning the full requested time range
+        const buckets = [];
+        for (let i = 0; i < targetBuckets; i++) {
+            const bucketStart = startTime.add(i * bucketSizeMinutes, "minute");
+            const bucketEnd = startTime.add((i + 1) * bucketSizeMinutes, "minute");
+
+            buckets.push({
+                start: bucketStart.unix(),
+                end: bucketEnd.unix(),
+                up: 0,
+                down: 0,
+                maintenance: 0,
+                pending: 0
+            });
+        }
+
+        // Aggregate available data into buckets
+        // Since data is sorted, we can optimize by tracking current bucket index
+        let currentBucketIndex = 0;
+
+        // Calculate data point size in minutes based on the data type
+        let dataPointSizeMinutes;
+        if (days <= 1) {
+            dataPointSizeMinutes = 1; // Minutely data
+        } else if (days <= 30) {
+            dataPointSizeMinutes = 60; // Hourly data
+        } else {
+            dataPointSizeMinutes = 60 * 24; // Daily data
+        }
+
+        for (const [ timestamp, dataPoint ] of Object.entries(availableData)) {
+            const timestampNum = parseInt(timestamp);
+
+            // Move to the correct bucket (since data is sorted, we only need to move forward)
+            while (currentBucketIndex < buckets.length &&
+                   timestampNum >= buckets[currentBucketIndex].end) {
+                currentBucketIndex++;
+            }
+
+            // Check if we're within a valid bucket
+            if (currentBucketIndex < buckets.length) {
+                const bucket = buckets[currentBucketIndex];
+
+                if (timestampNum >= bucket.start && timestampNum < bucket.end) {
+                    // Calculate scale factor to prevent double-counting when data points span multiple buckets
+                    const scaleFactor = Math.min(1.0, bucketSizeMinutes / dataPointSizeMinutes);
+
+                    bucket.up += (dataPoint.up || 0) * scaleFactor;
+                    bucket.down += (dataPoint.down || 0) * scaleFactor;
+
+                    if (days > 30) {
+                        // Daily data includes maintenance and pending
+                        bucket.maintenance += (dataPoint.maintenance || 0) * scaleFactor;
+                        bucket.pending += (dataPoint.pending || 0) * scaleFactor;
+                    } else {
+                        // Minute/hourly data doesn't track maintenance/pending separately
+                        bucket.maintenance += 0;
+                        bucket.pending += 0;
+                    }
+                }
+            }
+        }
+
+        return buckets;
+    }
 }
 
 class UptimeDataResult {

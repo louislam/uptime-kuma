@@ -5,13 +5,13 @@
                 v-for="(beat, index) in shortBeatList"
                 :key="index"
                 class="beat-hover-area"
-                :class="{ 'empty': (beat === 0) }"
+                :class="{ 'empty': (!beat) }"
                 :style="beatHoverAreaStyle"
                 :title="getBeatTitle(beat)"
             >
                 <div
                     class="beat"
-                    :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
+                    :class="{ 'empty': (!beat), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
                     :style="beatStyle"
                 />
             </div>
@@ -46,6 +46,11 @@ export default {
         heartbeatList: {
             type: Array,
             default: null,
+        },
+        /** Heartbeat bar days */
+        heartbeatBarDays: {
+            type: Number,
+            default: 0
         }
     },
     data() {
@@ -59,6 +64,14 @@ export default {
         };
     },
     computed: {
+
+        /**
+         * Normalized heartbeatBarDays as a number
+         * @returns {number} Number of days for heartbeat bar
+         */
+        normalizedHeartbeatBarDays() {
+            return Math.max(0, Math.min(365, Math.floor(this.heartbeatBarDays || 0)));
+        },
 
         /**
          * If heartbeatList is null, get it from $root.heartbeatList
@@ -80,6 +93,12 @@ export default {
             if (!this.beatList) {
                 return 0;
             }
+
+            // For configured ranges, no padding needed since we show all beats
+            if (this.normalizedHeartbeatBarDays > 0) {
+                return 0;
+            }
+
             let num = this.beatList.length - this.maxBeat;
 
             if (this.move) {
@@ -98,7 +117,19 @@ export default {
                 return [];
             }
 
+            // If heartbeat days is configured (not auto), data is already aggregated from server
+            if (this.normalizedHeartbeatBarDays > 0 && this.beatList.length > 0) {
+                // Show all beats from server - they are already properly aggregated
+                return this.beatList;
+            }
+
+            // Original logic for auto mode (heartbeatBarDays = 0)
             let placeholders = [];
+
+            // Handle case where maxBeat is -1 (no limit)
+            if (this.maxBeat <= 0) {
+                return this.beatList;
+            }
 
             let start = this.beatList.length - this.maxBeat;
 
@@ -172,13 +203,17 @@ export default {
          * @returns {string} The time elapsed in minutes or hours.
          */
         timeSinceFirstBeat() {
+            // For configured days mode, show the configured range
+            if (this.normalizedHeartbeatBarDays >= 2) {
+                return this.normalizedHeartbeatBarDays + "d";
+            } else if (this.normalizedHeartbeatBarDays === 1) {
+                return (this.normalizedHeartbeatBarDays * 24) + "h";
+            }
+
+            // Need to calculate from actual data
             const firstValidBeat = this.shortBeatList.at(this.numPadding);
             const minutes = dayjs().diff(dayjs.utc(firstValidBeat?.time), "minutes");
-            if (minutes > 60) {
-                return (minutes / 60).toFixed(0) + "h";
-            } else {
-                return minutes + "m";
-            }
+            return minutes > 60 ? Math.floor(minutes / 60) + "h" : minutes + "m";
         },
 
         /**
@@ -205,7 +240,7 @@ export default {
     },
     watch: {
         beatList: {
-            handler(val, oldVal) {
+            handler() {
                 this.move = true;
 
                 setTimeout(() => {
@@ -256,7 +291,23 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
-                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+                const newMaxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+
+                // If maxBeat changed and we're in configured days mode, notify parent to reload data
+                if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
+                    this.maxBeat = newMaxBeat;
+
+                    // Find the closest parent with reloadHeartbeatData method (StatusPage)
+                    let parent = this.$parent;
+                    while (parent && !parent.reloadHeartbeatData) {
+                        parent = parent.$parent;
+                    }
+                    if (parent && parent.reloadHeartbeatData) {
+                        parent.reloadHeartbeatData(newMaxBeat);
+                    }
+                } else {
+                    this.maxBeat = newMaxBeat;
+                }
             }
         },
 
@@ -267,7 +318,12 @@ export default {
          * @returns {string} Beat title
          */
         getBeatTitle(beat) {
-            return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
+            if (!beat) {
+                return "";
+            }
+
+            // Show timestamp for all beats (both individual and aggregated)
+            return `${this.$root.datetime(beat.time)}${beat.msg ? ` - ${beat.msg}` : ""}`;
         },
 
     },
