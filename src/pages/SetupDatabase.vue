@@ -90,8 +90,12 @@
                         <input id="floatingInput" v-model="dbConfig.dbName" type="text" class="form-control" required>
                         <label for="floatingInput">{{ $t("dbName") }}</label>
                     </div>
-                </template>
 
+                    <div class="mb2 mt-3 short">
+                        <p class="mb-2">{{ $t("configureMariaCaFile") }}</p>
+                        <input id="ca-input" type="file" accept="application/x-pem-file, .pem" class="form-control" @change="onCaFileChange">
+                    </div>
+                </template>
                 <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
                     {{ $t("Next") }}
                 </button>
@@ -117,6 +121,7 @@ export default {
                 username: "",
                 password: "",
                 dbName: "kuma",
+                caFile: ""
             },
             info: {
                 needSetup: false,
@@ -178,6 +183,15 @@ export default {
             }
         },
 
+        onCaFileChange(e) {
+            const fileReader = new FileReader();
+            fileReader.onload = () => {
+                this.dbConfig.caFile = fileReader.result;
+                console.log(this.dbConfig.caFile);
+            };
+            fileReader.readAsDataURL(e.target.files[0]);
+        },
+
         test() {
             this.$root.toastError("not implemented");
         }
@@ -186,6 +200,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../assets/vars.scss";
+
+.dark {
+    #ca-input {
+        &::file-selector-button {
+            color: $primary;
+            background-color: $dark-bg;
+        }
+
+        &:hover:not(:disabled):not([readonly])::file-selector-button {
+            color: $dark-font-color2;
+            background-color: $primary;
+        }
+    }
+}
+
 .form-container {
     display: flex;
     align-items: center;
