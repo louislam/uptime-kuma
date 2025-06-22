@@ -3,7 +3,7 @@ name: 🛡️ Security Issue
 description: |
   Notify Louis Lam about a security concern. Please do NOT include any sensitive details in this issue.
 # title: "Security Issue"
-labels: ["security", "P1-high"]
+labels: ["security"]
 assignees: [louislam]
 body:
   - type: markdown
