@@ -19,11 +19,11 @@ jobs:
           with:
             script: |
                 const pr = context.payload.pull_request;
-                const message = `Hello @${pr.user.login}, thank you for your contribution! :tada:\n\n` +
+                const message = `Hello @${pr.user.login}, thank you for your contribution! :tada:\n` +
                     `The maintainers will review your PR soon.\n\n` +
                     `If anyone would like to help test this PR, you can use the command:\n` +
                     `\`\`\`bash\nnpx kuma-pr ${pr.user.login}:${pr.head.ref}\n\`\`\`\n\n` +
-                    `For advanced usage, please refer to our [wiki](https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests)`;
+                    `<sub> For advanced usage, please refer to our [wiki](https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests) </sub>`;
                 await github.rest.issues.createComment({
                     issue_number: pr.number,
                     owner: context.repo.owner,
