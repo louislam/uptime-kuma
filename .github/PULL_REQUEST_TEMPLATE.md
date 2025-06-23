@@ -1,9 +1,9 @@
-**⚠️ Please Note: We do not accept all types of pull requests, and we want to ensure we don’t waste your time. Before submitting, make sure you have read our pull request guidelines: [Pull Request Rules](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)**
-
 ## ❗ Important Announcement
 
 <details><summary>Click here for more details:</summary>
 </p>
+
+**⚠️ Please Note: We do not accept all types of pull requests, and we want to ensure we don’t waste your time. Before submitting, make sure you have read our pull request guidelines: [Pull Request Rules](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)**
 
 ### 🚧 Temporary Delay in Feature Requests and Pull Request Reviews
 
@@ -26,15 +26,21 @@ We appreciate your patience and understanding as we continue to improve Uptime K
 
 ## 📋 Overview
 
-Provide a clear summary of the purpose and scope of this pull request:
+<!-- Provide a clear summary of the purpose and scope of this pull request:-->
 
 - **What problem does this pull request address?**
-
   - Please provide a detailed explanation here.
-
 - **What features or functionality does this pull request introduce or enhance?**
-
   - Please provide a detailed explanation here.
+
+## 🔗 Related Issues
+
+<!--
+Please link any GitHub issues or tasks that this pull request addresses. Use the appropriate issue numbers or links.
+-->
+
+- Relates to #issue-number
+- Resolves #issue-number
 
 ## 🔄 Changes
 
@@ -52,19 +58,7 @@ Provide a clear summary of the purpose and scope of this pull request:
 - [ ] 🔧 Other (please specify):
   - Provide additional details here.
 
-## 🔗 Related Issues
-
-<!--
-Please link any GitHub issues or tasks that this pull request addresses. Use the appropriate issue numbers or links.
-
-**Note**: Include only issues directly related to this PR. Remove any irrelevant reference.
--->
-
-- Relates to #issue-number
-- Resolves #issue-number
-- Fixes #issue-number
-
-## 📄 Checklist *
+## 📄 Checklist
 
 <!-- Please select all options that apply -->
 
@@ -97,26 +91,3 @@ If not, remove this section.
 | `DOWN`             | ![Before](image-link) | ![After](image-link) |
 | Certificate-expiry | ![Before](image-link) | ![After](image-link) |
 | Testing            | ![Before](image-link) | ![After](image-link) |
-
-## ℹ️ Additional Context
-
-Provide any relevant details to assist reviewers in understanding the changes.
-
-<details><summary>Click here for more details:</summary>
-</p>
-
-**Key Considerations**:
-
-- **Design decisions** – Key choices or trade-offs made during development.
-- **Alternative solutions** – Approaches considered but not implemented, along with reasons.
-- **Relevant links** – Specifications, discussions, or resources that provide context.
-- **Dependencies** – Related pull requests or issues that must be resolved before merging.
-- **Additional context** – Any other details that may help reviewers understand the changes.
-
-Provide details here
-
-## 💬 Requested Feedback
-
-<!-- If a part of our docs is unclear, you are unsure how to do something/.. this is where we would appreciate your feedback -->
-
-- `Mention documents needing feedback here`
