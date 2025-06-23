@@ -4,7 +4,7 @@
 # The message:
 # - Say hello and thanks to the contributor
 # - Mention maintainers will review the PR soon
-# - To other people, show the testing pr command: npx kuma-pr <username/branch>
+# - To other people, show the testing pr command: npx kuma-pr <username:branch>
 # - Also show the advanced usage link: https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests
 name: Reply to PRs
 on:
