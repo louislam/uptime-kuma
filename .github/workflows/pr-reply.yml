@@ -1,6 +1,4 @@
-# Let's vibe coding haha🐻
-# Use actions/github-script@v7
-# Reply a message to all new PRs
+# Replys a message to all new PRs
 # The message:
 # - Say hello and thanks to the contributor
 # - Mention maintainers will review the PR soon
