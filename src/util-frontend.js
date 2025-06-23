@@ -109,20 +109,80 @@ export function getDevContainerServerHostname() {
 }
 
 /**
- * Regex pattern fr identifying hostnames and IP addresses
+ * Regex pattern for identifying hostnames and IP addresses
  * @param {boolean} mqtt whether or not the regex should take into
  * account the fact that it is an mqtt uri
+ * @param {boolean} ip whether the regex should match IP addresses
+ * @param {boolean} hostname whether the regex should match hostnames
  * @returns {RegExp} The requested regex
  */
-export function hostNameRegexPattern(mqtt = false) {
+export function hostNameRegexPattern(mqtt = false, ip = true, hostname = true) {
     // mqtt, mqtts, ws and wss schemes accepted by mqtt.js (https://github.com/mqttjs/MQTT.js/#connect)
-    const mqttSchemeRegexPattern = "((mqtt|ws)s?:\\/\\/)?";
+    const mqttSchemeRegexPattern = /((mqtt|ws)s?:\/\/)?/;
     // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
-    const ipRegexPattern = `((^${mqtt ? mqttSchemeRegexPattern : ""}((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))$)|(^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?$))`;
-    // Source: https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
-    const hostNameRegexPattern = `^${mqtt ? mqttSchemeRegexPattern : ""}([a-zA-Z0-9])?(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\\-_]*[a-zA-Z0-9_])\\.)*([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\\-_]*[A-Za-z0-9_])(\\.)?$`;
+    const ipv4RegexPattern = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
+    const ipv6RegexPattern = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+    // See this answer for detailed a explanation: https://stackoverflow.com/a/53875771/1854468
+    /* eslint-disable-next-line no-useless-escape */
+    const hostNameRegexPattern = /^[a-zA-Z][a-zA-Z0-9\-]{0,62}\.([a-zA-Z0-9][a-zA-Z0-9\-]{0,62}\.)*([a-zA-Z]{2,63}|[xX][nN]--[a-zA-Z0-9]{0,59})$/;
+    /* eslint-disable-next-line no-useless-escape */
+    const localNameRegexPattern = /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,127}$/;
 
-    return `${ipRegexPattern}|${hostNameRegexPattern}`;
+    let patterns = [];
+    if (ip) {
+        patterns.push(ipv4RegexPattern, ipv6RegexPattern);
+    }
+    if (hostname) {
+        patterns.push(hostNameRegexPattern, localNameRegexPattern);
+    }
+    if (mqtt) {
+        // all modified patterns must start with "^" for this to work
+        patterns = patterns.map(pattern => {
+            return new RegExp(`^${mqttSchemeRegexPattern.source}${pattern.source.slice(1)}`);
+        });
+    }
+
+    return new RegExp(patterns.map(pattern => `(${pattern.source})`).join("|"));
+}
+
+/**
+ * Regex pattern for DNS queries
+ * @returns {RegExp} The requested regex
+ */
+export function dnsNameRegexPattern() {
+    // This borrows ipRegexPattern from hostNameRegexPattern above
+    const ipRegexPattern = hostNameRegexPattern(false, true, false);
+    // Similar to hostNameRegexPattern, except the hostname pattern
+    // can also match root (.) and top-level domains (.com, .org),
+    // and may contain underscores (_)
+    const dnsNamePattern = /^(\.|(\.?[a-zA-Z0-9\-_]+)+)$/;
+
+    return new RegExp(`(${ipRegexPattern.source})|(${dnsNamePattern.source})`);
+}
+
+/**
+ * Regex patterns for validating URL paths
+ * @param {boolean} qstr True if the url should contain a query string
+ * @param {boolean} tmpl True if the url should contain templating, `{query}`
+ *   Takes precedence over qstr if both are true.
+ * @returns {RegExp} The requested regex
+ */
+export function urlPathRegexPattern(qstr = false, tmpl = false) {
+    // Matches any URL path, including empty string
+    const pathRegexPattern = /^\/?(([a-zA-Z0-9\-_%])+\/)*[a-zA-Z0-9\-_%]*(\?([a-zA-Z0-9\-_%]+=[a-zA-Z0-9\-_%]*&?)+)?$/;
+    // Ensures a URL path follows query string format
+    const queryRegexPattern = /^\/?(([a-zA-Z0-9\-_%])+\/)*[a-zA-Z0-9\-_%]*\?([a-zA-Z0-9\-_%]+=[a-zA-Z0-9\-_%]*&?)+$/;
+    // Only checks for valid URL path containing "{query}"
+    /* eslint-disable-next-line no-useless-escape */
+    const queryTemplateRegexPattern = /^[a-zA-Z0-9\-._~:\/?#\[\]@!$&'\(\)*+,;=]*\{query\}[a-zA-Z0-9\-._~:\/?#\[\]@!$&'\(\)*+,;=]*$/;
+
+    if (tmpl) {
+        return queryTemplateRegexPattern;
+    }
+    if (qstr) {
+        return queryRegexPattern;
+    }
+    return pathRegexPattern;
 }
 
 /**

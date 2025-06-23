@@ -629,6 +629,10 @@ $shadow-box-padding: 20px;
     }
 }
 
+#doh-method {
+    width: 90px;
+}
+
 @media (max-width: 770px) {
     .toast-container {
         margin-bottom: 100px !important;

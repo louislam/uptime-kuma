@@ -307,7 +307,11 @@
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
-                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
+                                    :pattern="`${
+                                        monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern.source :
+                                        monitor.type === 'dns' ? ipOrDnsNameRegexPattern.source :
+                                        ipOrHostnameRegexPattern.source
+                                    }`"
                                     required
                                     data-testid="hostname-input"
                                 >
@@ -396,8 +400,8 @@
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
-                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
+                                    <label for="dns-resolve-server" class="form-label">{{ $t("Resolver Server") }}</label>
+                                    <input id="dns-resolve-server" ref="dns-resolve-server" v-model="monitor.dnsResolveServer" type="text" class="form-control" :pattern="dnsResolverRegex" required data-testid="resolve-server-input">
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
                                     </div>
@@ -406,19 +410,19 @@
                                 <!-- Port -->
                                 <div class="my-3">
                                     <label for="port" class="form-label">{{ $t("Port") }}</label>
-                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
+                                    <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1" data-testid="port-input">
                                     <div class="form-text">
                                         {{ $t("dnsPortDescription") }}
                                     </div>
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
+                                    <label for="dns-resolve-type" class="form-label">{{ $t("Resource Record Type") }}</label>
 
                                     <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
                                     <VueMultiselect
-                                        id="dns_resolve_type"
-                                        v-model="monitor.dns_resolve_type"
+                                        id="dns-resolve-type"
+                                        v-model="monitor.dnsResolveType"
                                         :options="dnsresolvetypeOptions"
                                         :multiple="false"
                                         :close-on-select="true"
@@ -433,6 +437,27 @@
 
                                     <div class="form-text">
                                         {{ $t("rrtypeDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="dns-transport" class="form-label">{{ $t("Transport Method") }}</label>
+                                    <VueMultiselect
+                                        id="dns-transport"
+                                        v-model="monitor.dnsTransport"
+                                        :options="dnsTransportOptions"
+                                        :multiple="false"
+                                        :close-on-select="true"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :placeholder="$t('Select the transport method...')"
+                                        :preselect-first="false"
+                                        :max-height="500"
+                                        :taggable="false"
+                                        data-testid="transport-method-select"
+                                    ></VueMultiselect>
+                                    <div class="form-text">
+                                        {{ $t("dnsTransportDescription") }}
                                     </div>
                                 </div>
                             </template>
@@ -655,10 +680,10 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' " class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' || (monitor.type === 'dns' && isSecureDnsTransport)" class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
-                                    {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
+                                    {{ monitor.type === "redis" || monitor.type === "dns" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
                                 </label>
                             </div>
 
@@ -671,6 +696,63 @@
                                 </label>
                                 <div class="form-text">
                                     {{ $t("cacheBusterParamDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Advanced DNS monitor settings -->
+                            <div v-if="monitor.type === 'dns'" class="my-3">
+                                <div v-if="dohSelected">
+                                    <div class="d-flex">
+                                        <div class="my-3 flex-column flex-fill">
+                                            <div>
+                                                <label for="doh-method" class="form-label">{{ $t("Method") }}</label>
+                                            </div>
+                                            <div class="d-flex flex-row">
+                                                <div class="d-inline-flex">
+                                                    <select id="doh-method" v-model="monitor.method" class="form-select" data-testid="method-select">
+                                                        <option value="GET">
+                                                            GET
+                                                        </option>
+                                                        <option value="POST">
+                                                            POST
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="mx-3 flex-fill">
+                                                    <input :value="dohDisplayUrl" type="button" class="form-control text-center" @click="focusElement('dns-resolve-server')">
+                                                </div>
+                                            </div>
+                                            <div class="form-text">
+                                                {{ $t("dohHttpMethodDescription") }}
+                                            </div>
+                                        </div>
+                                        <div class="my-3 flex-column flex-fill">
+                                            <label for="doh-query-path" class="form-label">{{ $t("Query Path") }}</label>
+                                            <input id="doh-query-path" v-model="monitor.dohQueryPath" type="text" class="form-control" :pattern="urlQueryRegex" placeholder="dns-query">
+                                            <div class="form-text">
+                                                {{ $t("dohQueryPathDescription") }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="my-3 form-check">
+                                        <input id="force-http2" v-model="monitor.forceHttp2" class="form-check-input" type="checkbox" data-testid="http2-check">
+                                        <label class="form-check-label" for="force-http2">
+                                            {{ $t("Force HTTP2") }}
+                                        </label>
+                                        <div class="form-text">
+                                            {{ $t("forceHttp2") }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="my-3 form-check">
+                                    <input id="skip_remote_dnssec" v-model="monitor.skip_remote_dnssec" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="skip_remote_dnssec">
+                                        {{ $t("Skip Remote DNSSEC Verification") }}
+                                    </label>
+                                    <div class="form-text">
+                                        {{ $t("skipRemoteDnssecDescription") }}
+                                    </div>
                                 </div>
                             </div>
 
@@ -1144,7 +1226,11 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
-import { hostNameRegexPattern } from "../util-frontend";
+import {
+    hostNameRegexPattern,
+    dnsNameRegexPattern,
+    urlPathRegexPattern
+} from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -1169,8 +1255,12 @@ const monitorDefaults = {
     expiryNotification: false,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
-    dns_resolve_type: "A",
-    dns_resolve_server: "1.1.1.1",
+    dnsResolveType: "A",
+    dnsResolveServer: "1.1.1.1",
+    dnsTransport: "UDP",
+    dohQueryPath: "dns-query",
+    forceHttp2: false,
+    skip_remote_dnssec: false,
     docker_container: "",
     docker_host: null,
     proxyId: null,
@@ -1223,9 +1313,14 @@ export default {
             },
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
+            dnsTransportOptions: [],
             kafkaSaslMechanismOptions: [],
+            ipRegexPattern: hostNameRegexPattern(false, true, false),
+            hostnameRegexPattern: hostNameRegexPattern(false, false, true),
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
+            ipOrDnsNameRegexPattern: dnsNameRegexPattern(),
+            queryRegexPattern: urlPathRegexPattern(),
             gameList: null,
             connectionStringTemplates: {
                 "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
@@ -1286,7 +1381,43 @@ export default {
 
             // Allow to test with simple dns server with port (127.0.0.1:5300)
             if (! isDev) {
-                return this.ipRegexPattern;
+                return this.ipRegexPattern.source;
+            }
+            return null;
+        },
+
+        ipOrHostnameRegex() {
+
+            // Permit either IP address or hostname (127.0.0.1, dns.example.com)
+            if (! isDev) {
+                return this.ipOrHostnameRegexPattern.source;
+            }
+            return null;
+        },
+
+        dnsResolverRegex() {
+
+            // Permit IP address for TCP/UDP resolvers, hostname for DoH/DoT
+            if (! isDev) {
+                switch (this.monitor.dnsTransport) {
+                    case "UDP":
+                    case "TCP":
+                        return this.ipRegexPattern.source;
+                    case "DoH":
+                        return this.hostnameRegexPattern.source;
+                    case "DoT":
+                    case "DoQ":
+                        return this.ipOrHostnameRegexPattern.source;
+                }
+            }
+            return null;
+        },
+
+        urlQueryRegex() {
+
+            // Permit only URL paths with a query parameter ( {query} )
+            if (! isDev) {
+                return this.queryRegexPattern.source;
             }
             return null;
         },
@@ -1516,8 +1647,48 @@ message HealthCheckResponse {
         },
 
         conditionVariables() {
+            // For DNS monitor, the variables depend on rrtype. Conditions for
+            // all rrtypes are added to an array in the DnsMonitorType class in
+            // order to pass to Vue, then identified based on index.
+            if (this.monitor.type === "dns") {
+                const dnsConditionVariables = this.$root.monitorTypeList["dns"]?.conditionVariables;
+                switch (this.monitor.dnsResolveType) {
+                    case "A":
+                    case "AAAA":
+                    case "NS":
+                        return dnsConditionVariables.slice(0, 1);
+                    case "PTR":
+                    case "CNAME":
+                        return dnsConditionVariables.slice(1, 2);
+                    case "CAA":
+                        return dnsConditionVariables.slice(2, 5);
+                    case "TXT":
+                        return dnsConditionVariables.slice(4, 5);
+                    case "MX":
+                        return dnsConditionVariables.slice(5, 6);
+                    case "SOA":
+                        return dnsConditionVariables.slice(6, 12);
+                    case "SRV":
+                        return dnsConditionVariables.slice(12, 13);
+                }
+                return [];
+            }
             return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
         },
+
+        dohSelected() {
+            return this.monitor.dnsTransport === "DoH";
+        },
+
+        dohDisplayUrl() {
+            const port = (this.monitor.port !== 443) ? `:${this.monitor.port}` : "";
+            return `https://${this.monitor.dnsResolveServer}${port}/`;
+        },
+
+        isSecureDnsTransport() {
+            return [ "DoH", "DoT", "DoQ" ].includes(this.monitor.dnsTransport);
+        },
+
     },
     watch: {
         "$root.proxyList"() {
@@ -1686,6 +1857,13 @@ message HealthCheckResponse {
             "TXT",
         ];
 
+        let dnsTransportOptions = [
+            "UDP",
+            "TCP",
+            "DoH",
+            "DoT",
+        ];
+
         let kafkaSaslMechanismOptions = [
             "None",
             "plain",
@@ -1700,6 +1878,7 @@ message HealthCheckResponse {
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.dnsTransportOptions = dnsTransportOptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
@@ -2043,6 +2222,11 @@ message HealthCheckResponse {
                     this.monitor.timeout = clampedValue;
                 }
             }
+        },
+
+        focusElement(refId) {
+            // Focus the element that has a defined reference
+            this.$refs[refId].focus();
         },
 
     },
