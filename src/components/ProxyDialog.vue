@@ -199,10 +199,10 @@ export default {
                     }
                 }
             }
-            
+
             // Set id to null to indicate this is a new proxy (clone)
             this.id = null;
-            
+
             this.modal.show();
         },
 
