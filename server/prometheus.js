@@ -52,7 +52,7 @@ class Prometheus {
         };
         let sanitizedTags = this.sanitizeTags(tags);
         if (sanitizedTags.length) {
-            this.monitorLabelValues.monitor_tags = sanitizedTags
+            this.monitorLabelValues.monitor_tags = sanitizedTags;
         }
     }
 
