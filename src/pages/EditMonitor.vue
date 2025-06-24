@@ -1025,6 +1025,10 @@
                                                 <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
                                                 <input id="oauth_scopes" v-model="monitor.oauth_scopes" type="text" class="form-control" :placeholder="$t('Optional: Space separated list of scopes')">
                                             </div>
+                                            <div class="my-3">
+                                                <label for="oauth_audience" class="form-label">{{ $t("OAuth Audience") }}</label>
+                                                <input id="oauth_audience" v-model="monitor.oauth_audience" type="text" class="form-control" :placeholder="$t('Optional: The audience to request the JWT for')">
+                                            </div>
                                         </template>
                                     </template>
                                     <template v-else>

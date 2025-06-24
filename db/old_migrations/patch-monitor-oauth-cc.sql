@@ -14,6 +14,9 @@ ALTER TABLE monitor
     ADD oauth_scopes TEXT default null;
 
 ALTER TABLE monitor
+    ADD oauth_audience TEXT default null;
+
+ALTER TABLE monitor
     ADD oauth_auth_method TEXT default null;
 
 COMMIT;
