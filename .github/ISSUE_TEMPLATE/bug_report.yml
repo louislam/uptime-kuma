@@ -3,7 +3,7 @@ name: 🐛 Bug Report
 description: |
   Submit a bug report to help us improve
 #title: "[Bug]"
-labels: ["bug", "P2-medium"]
+labels: ["bug"]
 body:
   - type: markdown
     attributes:

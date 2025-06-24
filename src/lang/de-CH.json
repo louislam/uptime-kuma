@@ -1115,5 +1115,11 @@
     "wayToWriteWahaChatId": "Die Telefonnummer mit internationaler Vorwahl, ohne den anfänglichen Pluszeichen ({0}), die Kontakt-ID ({1}) oder die Gruppen-ID ({2}). Die Benachrichtigungen werden an diese Chat-ID von der WAHA-Sitzung gesendet.",
     "telegramServerUrl": "(Optional) Server URL",
     "telegramServerUrlDescription": "Um die Telegram-Bot-API-Beschränkungen aufzuheben oder in gesperrten Gebieten (China, Iran usw.) Zugriff zu erhalten. Weitere Informationen findest du unter {0}. Standard: {1}",
-    "Font Twemoji by Twitter licensed under": "Schriftart Twemoji von Twitter lizenziert unter"
+    "Font Twemoji by Twitter licensed under": "Schriftart Twemoji von Twitter lizenziert unter",
+    "smsplanetApiToken": "Token für die SMSPlanet API",
+    "smsplanetApiDocs": "Ausführliche Informationen zum Erhalt von API-Tokens findest du in {the_smsplanet_documentation}.",
+    "the smsplanet documentation": "die smsplanet Dokumentation",
+    "Phone numbers": "Telefonnummern",
+    "Sender name": "Absendername",
+    "smsplanetNeedToApproveName": "Muss im Kundenpanel genehmigt werden"
 }

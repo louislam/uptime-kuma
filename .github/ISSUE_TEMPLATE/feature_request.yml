@@ -3,7 +3,7 @@ name: 🚀 Feature Request
 description: |
   Submit a proposal for a new feature
 # title: "[Feature]"
-labels: ["feature-request", "P3-low"]
+labels: ["feature-request"]
 body:
   - type: markdown
     attributes:
