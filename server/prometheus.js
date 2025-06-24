@@ -41,20 +41,17 @@ class Prometheus {
      * @param {Array<{name:string,value:?string}>} tags Tags to add to the monitor
      */
     constructor(monitor, tags) {
-        let sanitizedTags = this.sanitizeTags(tags);
-
-        if (sanitizedTags.length <= 0) {
-            sanitizedTags = "null";
-        }
-
         this.monitorLabelValues = {
             monitor_name: monitor.name,
             monitor_type: monitor.type,
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port,
-            monitor_tags: sanitizedTags
         };
+        let sanitizedTags = this.sanitizeTags(tags);
+        if (sanitizedTags.length) {
+            this.monitorLabelValues.monitor_tags = sanitizedTags
+        }
     }
 
     /**
@@ -65,7 +62,7 @@ class Prometheus {
      */
     sanitizeTags(tags) {
         return tags.reduce((sanitizedTags, tag) => {
-            let tagText = tag.name;
+            let tagText = tag.value ? `${tag.name}_${tag.value}` : tag.name;
             tagText = tagText.replace(/[^a-zA-Z0-9_]/g, "");
             tagText = tagText.replace(/^[^a-zA-Z_]+/, "");
 
