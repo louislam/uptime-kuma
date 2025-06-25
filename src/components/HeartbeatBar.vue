@@ -66,14 +66,6 @@ export default {
     computed: {
 
         /**
-         * Normalized heartbeatBarDays as a number
-         * @returns {number} Number of days for heartbeat bar
-         */
-        normalizedHeartbeatBarDays() {
-            return Math.max(0, Math.min(365, Math.floor(this.heartbeatBarDays || 0)));
-        },
-
-        /**
          * If heartbeatList is null, get it from $root.heartbeatList
          * @returns {object} Heartbeat list
          */
@@ -95,7 +87,7 @@ export default {
             }
 
             // For configured ranges, no padding needed since we show all beats
-            if (this.normalizedHeartbeatBarDays > 0) {
+            if (this.heartbeatBarDays > 0) {
                 return 0;
             }
 
@@ -204,10 +196,10 @@ export default {
          */
         timeSinceFirstBeat() {
             // For configured days mode, show the configured range
-            if (this.normalizedHeartbeatBarDays >= 2) {
-                return this.normalizedHeartbeatBarDays + "d";
-            } else if (this.normalizedHeartbeatBarDays === 1) {
-                return (this.normalizedHeartbeatBarDays * 24) + "h";
+            if (this.heartbeatBarDays >= 2) {
+                return this.heartbeatBarDays + "d";
+            } else if (this.heartbeatBarDays === 1) {
+                return (this.heartbeatBarDays * 24) + "h";
             }
 
             // Need to calculate from actual data
