@@ -1,6 +1,6 @@
 exports.up = function (knex) {
     return knex.schema.alterTable("status_page", function (table) {
-        table.smallint("heartbeat_bar_days").notNullable().defaultTo(0).checkBetween([0, 365]);
+        table.smallint("heartbeat_bar_days").notNullable().defaultTo(0).checkBetween([ 0, 365 ]);
     });
 };
 
