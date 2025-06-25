@@ -922,6 +922,9 @@ class UptimeCalculator {
             }
 
             // Check if we're within a valid bucket
+            // currentBucketIndex can be >= buckets.length when we have data points
+            // that are newer than our last bucket's end time (e.g., very recent data
+            // that falls outside our calculated time range)
             if (currentBucketIndex < buckets.length) {
                 const bucket = buckets[currentBucketIndex];
 
