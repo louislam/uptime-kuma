@@ -45,6 +45,9 @@
                 </div>
             </div>
 
+            <!-- 🚨 Offline Devices Component -->
+            <OfflineList />
+
             <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
                 <table class="table table-borderless table-hover">
                     <thead>
@@ -57,9 +60,13 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
+                            <td class="name-column">
+                                <router-link :to="`/dashboard/${beat.monitorID}`">
+                                    {{ $root.monitorList[beat.monitorID]?.name }}
+                                </router-link>
+                            </td>
                             <td><Status :status="beat.status" /></td>
-                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
@@ -89,12 +96,14 @@
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
+import OfflineList from "../components/OfflineList.vue";
 
 export default {
     components: {
         Datetime,
         Status,
         Pagination,
+        OfflineList,
     },
     props: {
         calculatedHeight: {
@@ -140,16 +149,10 @@ export default {
 
     beforeUnmount() {
         this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
-
         window.removeEventListener("resize", this.updatePerPage);
     },
 
     methods: {
-        /**
-         * Updates the displayed records when a new important heartbeat arrives.
-         * @param {object} heartbeat - The heartbeat object received.
-         * @returns {void}
-         */
         onNewImportantHeartbeat(heartbeat) {
             if (this.page === 1) {
                 this.displayedRecords.unshift(heartbeat);
@@ -160,10 +163,6 @@ export default {
             }
         },
 
-        /**
-         * Retrieves the length of the important heartbeat list for all monitors.
-         * @returns {void}
-         */
         getImportantHeartbeatListLength() {
             this.$root.getSocket().emit("monitorImportantHeartbeatListCount", null, (res) => {
                 if (res.ok) {
@@ -173,10 +172,6 @@ export default {
             });
         },
 
-        /**
-         * Retrieves the important heartbeat list for the current page.
-         * @returns {void}
-         */
         getImportantHeartbeatListPaged() {
             const offset = (this.page - 1) * this.perPage;
             this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", null, offset, this.perPage, (res) => {
@@ -186,10 +181,6 @@ export default {
             });
         },
 
-        /**
-         * Updates the number of items shown per page based on the available height.
-         * @returns {void}
-         */
         updatePerPage() {
             const tableContainer = this.$refs.tableContainer;
             const tableContainerHeight = tableContainer.offsetHeight;
@@ -201,7 +192,6 @@ export default {
             } else {
                 this.perPage = this.initialPerPage;
             }
-
         },
     },
 };
