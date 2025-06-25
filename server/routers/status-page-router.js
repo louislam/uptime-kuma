@@ -87,7 +87,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
 
         // Get the status page to determine the heartbeat range
         let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
-        let heartbeatBarDays = statusPage.heartbeat_bar_days;
+        let heartbeatBarDays = statusPage ? (statusPage.heartbeat_bar_days || 0) : 0;
 
         // Get max beats parameter from query string (for client-side screen width constraints)
         const maxBeats = Math.min(parseInt(request.query.maxBeats) || 100, 100);

@@ -286,7 +286,7 @@ export default {
                 const newMaxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
 
                 // If maxBeat changed and we're in configured days mode, notify parent to reload data
-                if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
+                if (newMaxBeat !== this.maxBeat && this.heartbeatBarDays > 0) {
                     this.maxBeat = newMaxBeat;
 
                     // Find the closest parent with reloadHeartbeatData method (StatusPage)
