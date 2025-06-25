@@ -59,7 +59,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
+                        <tr v-for="(beat, index) in onlineHeartbeats" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
                             <td class="name-column">
                                 <router-link :to="`/dashboard/${beat.monitorID}`">
                                     {{ $root.monitorList[beat.monitorID]?.name }}
@@ -108,8 +108,8 @@ export default {
     props: {
         calculatedHeight: {
             type: Number,
-            default: 0
-        }
+            default: 0,
+        },
     },
     data() {
         return {
@@ -123,6 +123,11 @@ export default {
             importantHeartBeatListLength: 0,
             displayedRecords: [],
         };
+    },
+    computed: {
+        onlineHeartbeats() {
+            return this.displayedRecords.filter((beat) => beat.status !== 0);
+        },
     },
     watch: {
         perPage() {
