@@ -14,7 +14,7 @@ module.exports.databaseSocketHandler = (socket) => {
             await checkLogin(socket);
             callback({
                 ok: true,
-                size: Database.getSize(),
+                size: await Database.getSize(),
             });
         } catch (error) {
             callback({

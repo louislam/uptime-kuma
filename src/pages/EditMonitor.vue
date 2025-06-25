@@ -24,6 +24,9 @@
                                         <option value="ping">
                                             Ping
                                         </option>
+                                        <option value="smtp">
+                                            SMTP
+                                        </option>
                                         <option value="snmp">
                                             SNMP
                                         </option>
@@ -52,6 +55,9 @@
                                         <option value="push">
                                             Push
                                         </option>
+                                        <option value="manual">
+                                            {{ $t("Manual") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Specific Monitor Type')">
@@ -63,6 +69,9 @@
                                         </option>
                                         <option value="mqtt">
                                             MQTT
+                                        </option>
+                                        <option value="rabbitmq">
+                                            RabbitMQ
                                         </option>
                                         <option value="kafka-producer">
                                             Kafka Producer
@@ -90,6 +99,13 @@
                                         </option>
                                     </optgroup>
                                 </select>
+                                <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
+                                    <template #rabitmq_documentation>
+                                        <a href="https://www.rabbitmq.com/management" target="_blank" rel="noopener noreferrer">
+                                            RabbitMQ documentation
+                                        </a>
+                                    </template>
+                                </i18n-t>
                             </div>
 
                             <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
@@ -99,7 +115,19 @@
                             <!-- Friendly Name -->
                             <div class="my-3">
                                 <label for="name" class="form-label">{{ $t("Friendly Name") }}</label>
-                                <input id="name" v-model="monitor.name" type="text" class="form-control" required data-testid="friendly-name-input">
+                                <input id="name" v-model="monitor.name" type="text" class="form-control" data-testid="friendly-name-input" :placeholder="defaultFriendlyName">
+                            </div>
+
+                            <!-- Manual Status switcher -->
+                            <div v-if="monitor.type === 'manual'" class="mb-3">
+                                <div class="btn-group w-100 mb-3">
+                                    <button class="btn btn-success" @click="monitor.manual_status = 1">
+                                        <i class="fas fa-check"></i> {{ $t("Up") }}
+                                    </button>
+                                    <button class="btn btn-danger" @click="monitor.manual_status = 0">
+                                        <i class="fas fa-times"></i> {{ $t("Down") }}
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- URL -->
@@ -233,9 +261,46 @@
                                 </div>
                             </template>
 
+                            <template v-if="monitor.type === 'rabbitmq'">
+                                <!-- RabbitMQ Nodes List -->
+                                <div class="my-3">
+                                    <label for="rabbitmqNodes" class="form-label">{{ $t("RabbitMQ Nodes") }}</label>
+                                    <VueMultiselect
+                                        id="rabbitmqNodes"
+                                        v-model="monitor.rabbitmqNodes"
+                                        :required="true"
+                                        :multiple="true"
+                                        :options="[]"
+                                        :placeholder="$t('Enter the list of nodes')"
+                                        :tag-placeholder="$t('Press Enter to add node')"
+                                        :max-height="500"
+                                        :taggable="true"
+                                        :show-no-options="false"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="false"
+                                        :preselect-first="false"
+                                        @tag="addRabbitmqNode"
+                                    ></VueMultiselect>
+                                    <div class="form-text">
+                                        {{ $t("rabbitmqNodesDescription", ["https://node1.rabbitmq.com:15672"]) }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="rabbitmqUsername" class="form-label">RabbitMQ {{ $t("RabbitMQ Username") }}</label>
+                                    <input id="rabbitmqUsername" v-model="monitor.rabbitmqUsername" type="text" required class="form-control">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="rabbitmqPassword" class="form-label">{{ $t("RabbitMQ Password") }}</label>
+                                    <HiddenInput id="rabbitmqPassword" v-model="monitor.rabbitmqPassword" autocomplete="false" required="true"></HiddenInput>
+                                </div>
+                            </template>
+
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'snmp'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -250,7 +315,7 @@
 
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -280,6 +345,18 @@
                                         SNMPv2c
                                     </option>
                                 </select>
+                            </div>
+
+                            <div v-if="monitor.type === 'smtp'" class="my-3">
+                                <label for="smtp_security" class="form-label">{{ $t("SMTP Security") }}</label>
+                                <select id="smtp_security" v-model="monitor.smtpSecurity" class="form-select">
+                                    <option value="secure">SMTPS</option>
+                                    <option value="nostarttls">Ignore STARTTLS</option>
+                                    <option value="starttls">Use STARTTLS</option>
+                                </select>
+                                <div class="form-text">
+                                    {{ $t("smtpHelpText") }}
+                                </div>
                             </div>
 
                             <!-- Json Query -->
@@ -548,10 +625,14 @@
                                 <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
                             </div>
 
-                            <!-- Timeout: HTTP / Keyword / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
-                                <label for="timeout" class="form-label">{{ $t("Request Timeout") }} ({{ $t("timeoutAfter", [ monitor.timeout || clampTimeout(monitor.interval) ]) }})</label>
-                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" required min="0" step="0.1">
+                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
+                                <label for="timeout" class="form-label">
+                                    {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
+                                    <span v-if="monitor.type !== 'ping'">({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</span>
+                                </label>
+                                <input id="timeout" v-model="monitor.timeout" type="number" class="form-control" :min="timeoutMin" :max="timeoutMax" :step="timeoutStep" required>
+                                <div v-if="monitor.type === 'ping'" class="form-text">{{ $t("pingGlobalTimeoutDescription") }}</div>
                             </div>
 
                             <div class="my-3">
@@ -613,10 +694,39 @@
                                 </div>
                             </div>
 
-                            <!-- Ping packet size -->
+                            <!-- Max Packets / Count -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping-count" class="form-label">{{ $t("pingCountLabel") }}</label>
+                                <input id="ping-count" v-model="monitor.ping_count" type="number" class="form-control" required min="1" max="100" step="1">
+                                <div class="form-text">
+                                    {{ $t("pingCountDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Numeric Output -->
+                            <div v-if="monitor.type === 'ping'" class="my-3 form-check">
+                                <input id="ping_numeric" v-model="monitor.ping_numeric" type="checkbox" class="form-check-input" :checked="monitor.ping_numeric">
+                                <label class="form-check-label" for="ping_numeric">
+                                    {{ $t("pingNumericLabel") }}
+                                </label>
+                                <div class="form-text">
+                                    {{ $t("pingNumericDescription") }}
+                                </div>
+                            </div>
+
+                            <!-- Packet size -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
                                 <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
-                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" max="65500" step="1">
+                                <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" :max="65500" step="1">
+                            </div>
+
+                            <!-- per-request timeout -->
+                            <div v-if="monitor.type === 'ping'" class="my-3">
+                                <label for="ping_per_request_timeout" class="form-label">{{ $t("pingPerRequestTimeoutLabel") }}</label>
+                                <input id="ping_per_request_timeout" v-model="monitor.ping_per_request_timeout" type="number" class="form-control" required min="0" max="300" step="1">
+                                <div class="form-text">
+                                    {{ $t("pingPerRequestTimeoutDescription") }}
+                                </div>
                             </div>
 
                             <!-- HTTP / Keyword only -->
@@ -649,6 +759,20 @@
                                     <div class="form-text">
                                         {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ipFamily" class="form-label">{{ $t("Ip Family") }}</label>
+                                    <select id="ipFamily" v-model="monitor.ipFamily" class="form-select">
+                                        <option :value="null">{{ $t("auto-select") }}</option>
+                                        <option value="ipv4">IPv4</option>
+                                        <option value="ipv6">IPv6</option>
+                                    </select>
+                                    <i18n-t v-if="monitor.ipFamily == null" keypath="ipFamilyDescriptionAutoSelect" tag="div" class="form-text">
+                                        <template #happyEyeballs>
+                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">{{ $t("Happy Eyeballs algorithm") }}</a>
+                                        </template>
+                                    </i18n-t>
                                 </div>
                             </template>
 
@@ -982,22 +1106,12 @@
                     <div class="fixed-bottom-bar p-3">
                         <button
                             id="monitor-submit-btn"
-                            class="btn btn-primary me-2"
+                            class="btn btn-primary"
                             type="submit"
                             :disabled="processing"
                             data-testid="save-button"
                         >
                             {{ $t("Save") }}
-                        </button>
-                        <button
-                            v-if="monitor.type === 'http'"
-                            id="monitor-debug-btn"
-                            class="btn btn-outline-primary"
-                            type="button"
-                            :disabled="processing"
-                            @click.stop="modal.show()"
-                        >
-                            {{ $t("Debug") }}
                         </button>
                     </div>
                 </div>
@@ -1010,58 +1124,9 @@
             <RemoteBrowserDialog ref="remoteBrowserDialog" />
         </div>
     </transition>
-    <div ref="modal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <textarea id="curl-debug" v-model="curlCommand" class="form-control mb-3" readonly wrap="off"></textarea>
-                    <button id="debug-copy-btn" class="btn btn-outline-primary position-absolute top-0 end-0 mt-3 me-3 border-0" type="button" @click.stop="copyToClipboard">
-                        <font-awesome-icon icon="copy" />
-                    </button>
-                    <i18n-t keypath="CurlDebugInfo" tag="p" class="form-text">
-                        <template #newiline>
-                            <br>
-                        </template>
-                        <template #firewalls>
-                            <a href="https://xkcd.com/2259/" target="_blank">{{ $t('firewalls') }}</a>
-                        </template>
-                        <template #dns_resolvers>
-                            <a href="https://www.reddit.com/r/sysadmin/comments/rxho93/thank_you_for_the_running_its_always_dns_joke_its/" target="_blank">{{ $t('dns resolvers') }}</a>
-                        </template>
-                        <template #docker_networks>
-                            <a href="https://youtu.be/bKFMS5C4CG0" target="_blank">{{ $t('docker networks') }}</a>
-                        </template>
-                    </i18n-t>
-                    <div v-if="monitor.authMethod === 'oauth2-cc'" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
-                        <div role="img" aria-label="Warning:">⚠️</div>
-                        <i18n-t keypath="CurlDebugInfoOAuth2CCUnsupported" tag="div">
-                            <template #curl>
-                                <code>curl</code>
-                            </template>
-                            <template #newline>
-                                <br>
-                            </template>
-                            <template #oauth2_bearer>
-                                <code>--oauth2-bearer TOKEN</code>
-                            </template>
-                        </i18n-t>
-                    </div>
-                    <div v-if="monitor.proxyId" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
-                        <div role="img" aria-label="Warning:">⚠️</div>
-                        <i18n-t keypath="CurlDebugInfoProxiesUnsupported" tag="div">
-                            <template #curl>
-                                <code>curl</code>
-                            </template>
-                        </i18n-t>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </template>
 
 <script>
-import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
@@ -1072,12 +1137,16 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
+import {
+    genSecret,
+    isDev,
+    MAX_INTERVAL_SECOND,
+    MIN_INTERVAL_SECOND,
+    sleep,
+} from "../util.ts";
 import { hostNameRegexPattern } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
-import { version } from "../../package.json";
-const userAgent = `'Uptime-Kuma/${version}'`;
 
 const toast = useToast();
 
@@ -1089,6 +1158,7 @@ const monitorDefaults = {
     parent: null,
     url: "https://",
     method: "GET",
+    ipFamily: null,
     interval: 60,
     retryInterval: 60,
     resendInterval: 0,
@@ -1096,7 +1166,6 @@ const monitorDefaults = {
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
-    packetSize: 56,
     expiryNotification: false,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
@@ -1122,6 +1191,9 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     remote_browser: null,
+    rabbitmqNodes: [],
+    rabbitmqUsername: "",
+    rabbitmqPassword: "",
     conditions: []
 };
 
@@ -1142,7 +1214,6 @@ export default {
 
     data() {
         return {
-            modal: null,
             minInterval: MIN_INTERVAL_SECOND,
             maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
@@ -1169,52 +1240,46 @@ export default {
     },
 
     computed: {
+        timeoutStep() {
+            return this.monitor.type === "ping" ? 1 : 0.1;
+        },
 
-        curlCommand() {
-            const command = [ "curl", "--verbose", "--head", "--request", this.monitor.method, "\\\n", "--user-agent", userAgent, "\\\n" ];
-            if (this.monitor.ignoreTls) {
-                command.push("--insecure", "\\\n");
+        timeoutMin() {
+            return this.monitor.type === "ping" ? 1 : 0;
+        },
+
+        timeoutMax() {
+            return this.monitor.type === "ping" ? 60 : undefined;
+        },
+
+        timeoutLabel() {
+            return this.monitor.type === "ping" ? this.$t("pingTimeoutLabel") : this.$t("Request Timeout");
+        },
+
+        timeoutDescription() {
+            if (this.monitor.type === "ping") {
+                return this.$t("pingTimeoutDescription");
             }
-            if (this.monitor.headers) {
-                try {
-                    // trying to parse the supplied data as json to trim whitespace
-                    for (const [ key, value ] of Object.entries(JSON.parse(this.monitor.headers))) {
-                        command.push("--header", `'${key}: ${value}'`, "\\\n");
+            return "";
+        },
+
+        defaultFriendlyName() {
+            if (this.monitor.hostname) {
+                return this.monitor.hostname;
+            }
+            if (this.monitor.url) {
+                if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
+                    // Ensure monitor without a URL is not affected by invisible URL.
+                    try {
+                        const url = new URL(this.monitor.url);
+                        return url.hostname;
+                    } catch (e) {
+                        return this.monitor.url.replace(/https?:\/\//, "");
                     }
-                } catch (e) {
-                    command.push("--header", `'${this.monitor.headers}'`, "\\\n");
                 }
             }
-            if (this.monitor.authMethod === "basic") {
-                command.push("--user", `${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}`, "--basic", "\\\n");
-            } else if (this.monitor.authmethod === "mtls") {
-                command.push("--cacert", `'${this.monitor.tlsCa}'`, "\\\n", "--key", `'${this.monitor.tlsKey}'`, "\\\n", "--cert", `'${this.monitor.tlsCert}'`, "\\\n");
-            } else if (this.monitor.authMethod === "ntlm") {
-                command.push("--user", `'${this.monitor.authDomain ? `${this.monitor.authDomain}/` : ""}${this.monitor.basic_auth_user}:${this.monitor.basic_auth_pass}'`, "--ntlm", "\\\n");
-            }
-            if (this.monitor.body && this.monitor.httpBodyEncoding === "json") {
-                let json = "";
-                try {
-                    // trying to parse the supplied data as json to trim whitespace
-                    json = JSON.stringify(JSON.parse(this.monitor.body));
-                } catch (e) {
-                    json = this.monitor.body;
-                }
-                command.push("--header", "'Content-Type: application/json'", "\\\n", "--data", `'${json}'`, "\\\n");
-            } else if (this.monitor.body && this.monitor.httpBodyEncoding === "xml") {
-                command.push("--headers", "'Content-Type: application/xml'", "\\\n", "--data", `'${this.monitor.body}'`, "\\\n");
-            }
-            if (this.monitor.maxredirects) {
-                command.push("--location", "--max-redirs", this.monitor.maxredirects, "\\\n");
-            }
-            if (this.monitor.timeout) {
-                command.push("--max-time", this.monitor.timeout, "\\\n");
-            }
-            if (this.monitor.maxretries) {
-                command.push("--retry", this.monitor.maxretries, "\\\n");
-            }
-            command.push("--url", this.monitor.url);
-            return command.join(" ");
+            // Default placeholder if neither hostname nor URL is available
+            return this.$t("defaultFriendlyName");
         },
 
         ipRegex() {
@@ -1235,6 +1300,7 @@ export default {
             }
             return this.$t(name);
         },
+
         remoteBrowsersOptions() {
             return this.$root.remoteBrowserList.map(browser => {
                 return {
@@ -1243,6 +1309,7 @@ export default {
                 };
             });
         },
+
         remoteBrowsersToggle: {
             get() {
                 return this.remoteBrowsersEnabled || this.monitor.remote_browser != null;
@@ -1260,6 +1327,7 @@ export default {
                 }
             }
         },
+
         isAdd() {
             return this.$route.path === "/add";
         },
@@ -1310,6 +1378,7 @@ message HealthCheckResponse {
 }
             ` ]);
         },
+
         bodyPlaceholder() {
             if (this.monitor && this.monitor.httpBodyEncoding && this.monitor.httpBodyEncoding === "xml") {
                 return this.$t("Example:", [ `
@@ -1475,9 +1544,25 @@ message HealthCheckResponse {
         },
 
         "monitor.timeout"(value, oldValue) {
-            // keep timeout within 80% range
-            if (value && value !== oldValue) {
-                this.monitor.timeout = this.clampTimeout(value);
+            if (this.monitor.type === "ping") {
+                this.finishUpdateInterval();
+            } else {
+                // keep timeout within 80% range
+                if (value && value !== oldValue) {
+                    this.monitor.timeout = this.clampTimeout(value);
+                }
+            }
+        },
+
+        "monitor.ping_count"() {
+            if (this.monitor.type === "ping") {
+                this.finishUpdateInterval();
+            }
+        },
+
+        "monitor.ping_per_request_timeout"() {
+            if (this.monitor.type === "ping") {
+                this.finishUpdateInterval();
             }
         },
 
@@ -1503,11 +1588,16 @@ message HealthCheckResponse {
                 }
             }
 
-            if (this.monitor.type === "snmp") {
-                // snmp is not expected to be executed via the internet => we can choose a lower default timeout
-                this.monitor.timeout = 5;
-            } else {
-                this.monitor.timeout = 48;
+            // Set a default timeout if the monitor type has changed or if it's a new monitor
+            if (oldType || this.isAdd) {
+                if (this.monitor.type === "snmp") {
+                    // snmp is not expected to be executed via the internet => we can choose a lower default timeout
+                    this.monitor.timeout = 5;
+                } else if (this.monitor.type === "ping") {
+                    this.monitor.timeout = 10;
+                } else {
+                    this.monitor.timeout = 48;
+                }
             }
 
             // Set default SNMP version
@@ -1573,7 +1663,6 @@ message HealthCheckResponse {
         },
     },
     mounted() {
-        this.modal = new Modal(this.$refs.modal);
         this.init();
 
         let acceptedStatusCodeOptions = [
@@ -1614,14 +1703,6 @@ message HealthCheckResponse {
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
-        async copyToClipboard() {
-            try {
-                await navigator.clipboard.writeText(this.curlCommand);
-                toast.success(this.$t("CopyToClipboardSuccess"));
-            } catch (err) {
-                toast.error(this.$t("CopyToClipboardError", { error: err.message }));
-            }
-        },
         /**
          * Initialize the edit monitor form
          * @returns {void}
@@ -1630,7 +1711,11 @@ message HealthCheckResponse {
             if (this.isAdd) {
 
                 this.monitor = {
-                    ...monitorDefaults
+                    ...monitorDefaults,
+                    ping_count: 3,
+                    ping_numeric: true,
+                    packetSize: 56,
+                    ping_per_request_timeout: 2,
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -1693,7 +1778,12 @@ message HealthCheckResponse {
                         }
                         // Handling for monitors that are missing/zeroed timeout
                         if (!this.monitor.timeout) {
-                            this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
+                            if (this.monitor.type === "ping") {
+                                // set to default
+                                this.monitor.timeout = 10;
+                            } else {
+                                this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
+                            }
                         }
                     } else {
                         this.$root.toastError(res.msg);
@@ -1707,6 +1797,10 @@ message HealthCheckResponse {
 
         addKafkaProducerBroker(newBroker) {
             this.monitor.kafkaProducerBrokers.push(newBroker);
+        },
+
+        addRabbitmqNode(newNode) {
+            this.monitor.rabbitmqNodes.push(newNode);
         },
 
         /**
@@ -1736,6 +1830,17 @@ message HealthCheckResponse {
                     return false;
                 }
             }
+
+            if (this.monitor.type === "rabbitmq") {
+                if (this.monitor.rabbitmqNodes.length === 0) {
+                    toast.error(this.$t("rabbitmqNodesRequired"));
+                    return false;
+                }
+                if (!this.monitor.rabbitmqNodes.every(node => node.startsWith("http://") || node.startsWith("https://"))) {
+                    toast.error(this.$t("rabbitmqNodesInvalid"));
+                    return false;
+                }
+            }
             return true;
         },
 
@@ -1750,6 +1855,10 @@ message HealthCheckResponse {
         async submit() {
 
             this.processing = true;
+
+            if (!this.monitor.name) {
+                this.monitor.name = this.defaultFriendlyName;
+            }
 
             if (!this.isInputValid()) {
                 this.processing = false;
@@ -1891,11 +2000,48 @@ message HealthCheckResponse {
             return Number.isFinite(clamped) ? clamped : maxTimeout;
         },
 
+        calculatePingInterval() {
+            // If monitor.type is not "ping", simply return the configured interval
+            if (this.monitor.type !== "ping") {
+                return this.monitor.interval;
+            }
+
+            // Calculate the maximum theoretical time needed if every ping request times out
+            const theoreticalTotal = this.monitor.ping_count * this.monitor.ping_per_request_timeout;
+
+            // The global timeout (aka deadline) forces ping to terminate, so the effective limit
+            // is the smaller value between deadline and theoreticalTotal
+            const effectiveLimit = Math.min(this.monitor.timeout, theoreticalTotal);
+
+            // Add a 10% margin to the effective limit to ensure proper handling
+            const adjustedLimit = Math.ceil(effectiveLimit * 1.1);
+
+            // If the calculated limit is lower than the minimum allowed interval, use the minimum interval
+            if (adjustedLimit < this.minInterval) {
+                return this.minInterval;
+            }
+
+            return adjustedLimit;
+        },
+
         finishUpdateInterval() {
-            // Update timeout if it is greater than the clamp timeout
-            let clampedValue = this.clampTimeout(this.monitor.interval);
-            if (this.monitor.timeout > clampedValue) {
-                this.monitor.timeout = clampedValue;
+            if (this.monitor.type === "ping") {
+                // Calculate the minimum required interval based on ping configuration
+                const calculatedPingInterval = this.calculatePingInterval();
+
+                // If the configured interval is too small, adjust it to the minimum required value
+                if (this.monitor.interval < calculatedPingInterval) {
+                    this.monitor.interval = calculatedPingInterval;
+
+                    // Notify the user that the interval has been automatically adjusted
+                    toast.info(this.$t("pingIntervalAdjustedInfo"));
+                }
+            } else {
+                // Update timeout if it is greater than the clamp timeout
+                let clampedValue = this.clampTimeout(this.monitor.interval);
+                if (this.monitor.timeout > clampedValue) {
+                    this.monitor.timeout = clampedValue;
+                }
             }
         },
 
@@ -1908,10 +2054,5 @@ message HealthCheckResponse {
 
     textarea {
         min-height: 200px;
-    }
-
-    #curl-debug {
-        font-family: monospace;
-        overflow: auto;
     }
 </style>

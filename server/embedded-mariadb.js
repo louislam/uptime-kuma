@@ -14,9 +14,15 @@ class EmbeddedMariaDB {
 
     mariadbDataDir = "/app/data/mariadb";
 
-    runDir = "/app/data/run/mariadb";
+    runDir = "/app/data/run";
 
-    socketPath = this.runDir + "/mysqld.sock";
+    socketPath = this.runDir + "/mariadb.sock";
+
+    /**
+     * The username to connect to the MariaDB
+     * @type {string}
+     */
+    username = null;
 
     /**
      * @type {ChildProcessWithoutNullStreams}
@@ -46,15 +52,41 @@ class EmbeddedMariaDB {
 
     /**
      * Start the embedded MariaDB
+     * @throws {Error} If the current user is not "node" or "root"
      * @returns {Promise<void>|void} A promise that resolves when the MariaDB is started or void if it is already started
      */
     start() {
+        // Check if the current user is "node" or "root"
+        this.username = require("os").userInfo().username;
+        if (this.username !== "node" && this.username !== "root") {
+            throw new Error("Embedded Mariadb supports only 'node' or 'root' user, but the current user is: " + this.username);
+        }
+
+        this.initDB();
+
+        this.startChildProcess();
+
+        return new Promise((resolve) => {
+            let interval = setInterval(() => {
+                if (this.started) {
+                    clearInterval(interval);
+                    resolve();
+                } else {
+                    log.info("mariadb", "Waiting for Embedded MariaDB to start...");
+                }
+            }, 1000);
+        });
+    }
+
+    /**
+     * Start the child process
+     * @returns {void}
+     */
+    startChildProcess() {
         if (this.childProcess) {
             log.info("mariadb", "Already started");
             return;
         }
-
-        this.initDB();
 
         this.running = true;
         log.info("mariadb", "Starting Embedded MariaDB");
@@ -63,6 +95,8 @@ class EmbeddedMariaDB {
             "--datadir=" + this.mariadbDataDir,
             `--socket=${this.socketPath}`,
             `--pid-file=${this.runDir}/mysqld.pid`,
+            // Don't add the following option, the mariadb will not report message to the console, which affects initDBAfterStarted()
+            // "--log-error=" + `${this.mariadbDataDir}/mariadb-error.log`,
         ]);
 
         this.childProcess.on("close", (code) => {
@@ -72,8 +106,8 @@ class EmbeddedMariaDB {
             log.info("mariadb", "Stopped Embedded MariaDB: " + code);
 
             if (code !== 0) {
-                log.info("mariadb", "Try to restart Embedded MariaDB as it is not stopped by user");
-                this.start();
+                log.error("mariadb", "Try to restart Embedded MariaDB as it is not stopped by user");
+                this.startChildProcess();
             }
         });
 
@@ -86,7 +120,7 @@ class EmbeddedMariaDB {
         });
 
         let handler = (data) => {
-            log.debug("mariadb", data.toString("utf-8"));
+            log.info("mariadb", data.toString("utf-8"));
             if (data.toString("utf-8").includes("ready for connections")) {
                 this.initDBAfterStarted();
             }
@@ -94,17 +128,6 @@ class EmbeddedMariaDB {
 
         this.childProcess.stdout.on("data", handler);
         this.childProcess.stderr.on("data", handler);
-
-        return new Promise((resolve) => {
-            let interval = setInterval(() => {
-                if (this.started) {
-                    clearInterval(interval);
-                    resolve();
-                } else {
-                    log.info("mariadb", "Waiting for Embedded MariaDB to start...");
-                }
-            }, 1000);
-        });
     }
 
     /**
@@ -129,9 +152,11 @@ class EmbeddedMariaDB {
                 recursive: true,
             });
 
-            let result = childProcess.spawnSync("mysql_install_db", [
+            let result = childProcess.spawnSync("mariadb-install-db", [
                 "--user=node",
-                "--ldata=" + this.mariadbDataDir,
+                "--auth-root-socket-user=node",
+                "--datadir=" + this.mariadbDataDir,
+                "--auth-root-authentication-method=socket",
             ]);
 
             if (result.status !== 0) {
@@ -143,6 +168,17 @@ class EmbeddedMariaDB {
             }
         }
 
+        // Check the owner of the mariadb directory, and change it if necessary
+        let stat = fs.statSync(this.mariadbDataDir);
+        if (stat.uid !== 1000 || stat.gid !== 1000) {
+            fs.chownSync(this.mariadbDataDir, 1000, 1000);
+        }
+
+        // Check the permission of the mariadb directory, and change it if it is not 755
+        if (stat.mode !== 0o755) {
+            fs.chmodSync(this.mariadbDataDir, 0o755);
+        }
+
         if (!fs.existsSync(this.runDir)) {
             log.info("mariadb", `Embedded MariaDB: ${this.runDir} is not found, create one now.`);
             fs.mkdirSync(this.runDir, {
@@ -150,6 +186,13 @@ class EmbeddedMariaDB {
             });
         }
 
+        stat = fs.statSync(this.runDir);
+        if (stat.uid !== 1000 || stat.gid !== 1000) {
+            fs.chownSync(this.runDir, 1000, 1000);
+        }
+        if (stat.mode !== 0o755) {
+            fs.chmodSync(this.runDir, 0o755);
+        }
     }
 
     /**
@@ -159,7 +202,7 @@ class EmbeddedMariaDB {
     async initDBAfterStarted() {
         const connection = mysql.createConnection({
             socketPath: this.socketPath,
-            user: "node",
+            user: this.username,
         });
 
         let result = await connection.execute("CREATE DATABASE IF NOT EXISTS `kuma`");
