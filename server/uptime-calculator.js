@@ -902,16 +902,6 @@ class UptimeCalculator {
         // Since data is sorted, we can optimize by tracking current bucket index
         let currentBucketIndex = 0;
 
-        // Calculate data point size in minutes based on the data type
-        let dataPointSizeMinutes;
-        if (days <= 1) {
-            dataPointSizeMinutes = 1; // Minutely data
-        } else if (days <= 30) {
-            dataPointSizeMinutes = 60; // Hourly data
-        } else {
-            dataPointSizeMinutes = 60 * 24; // Daily data
-        }
-
         for (const [ timestamp, dataPoint ] of Object.entries(availableData)) {
             const timestampNum = parseInt(timestamp);
 
@@ -929,16 +919,20 @@ class UptimeCalculator {
                 const bucket = buckets[currentBucketIndex];
 
                 if (timestampNum >= bucket.start && timestampNum < bucket.end) {
-                    // Calculate scale factor to prevent double-counting when data points span multiple buckets
-                    const scaleFactor = Math.min(1.0, bucketSizeMinutes / dataPointSizeMinutes);
+                    // FIXME: This accounting is flawed when data points span multiple buckets.
+                    // The correct approach would be to:
+                    // 1. Add only the portion of the data point that fits within the current bucket
+                    // 2. Push the remainder to the next bucket (if it exists)
+                    // For now, we add the full data point to avoid complexity, which may cause
+                    // some overcounting when bucket size < data point size.
 
-                    bucket.up += (dataPoint.up || 0) * scaleFactor;
-                    bucket.down += (dataPoint.down || 0) * scaleFactor;
+                    bucket.up += (dataPoint.up || 0);
+                    bucket.down += (dataPoint.down || 0);
 
                     if (days > 30) {
                         // Daily data includes maintenance and pending
-                        bucket.maintenance += (dataPoint.maintenance || 0) * scaleFactor;
-                        bucket.pending += (dataPoint.pending || 0) * scaleFactor;
+                        bucket.maintenance += (dataPoint.maintenance || 0);
+                        bucket.pending += (dataPoint.pending || 0);
                     } else {
                         // Minute/hourly data doesn't track maintenance/pending separately
                         bucket.maintenance += 0;
