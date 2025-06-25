@@ -787,7 +787,7 @@ test("Test getAggregatedBuckets - Data granularity transitions", async (t) => {
     }
 });
 
-test("Test getAggregatedBuckets - Scale factor prevents over-counting", async (t) => {
+test("Test getAggregatedBuckets - Break statements prevent double-counting", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
     let currentTime = dayjs.utc("2025-08-12 12:00:00");
@@ -799,18 +799,18 @@ test("Test getAggregatedBuckets - Scale factor prevents over-counting", async (t
     }
     UptimeCalculator.currentDate = currentTime;
 
-    // Test: When buckets are smaller than data granularity, may cause overcounting
-    // FIXME: This test reflects the current flawed behavior where data points may be counted
-    // multiple times when they span multiple buckets. See the FIXME in getAggregatedBuckets.
-    let smallBuckets = c.getAggregatedBuckets(35, 70); // Creates small buckets relative to daily data
+    // Test: Each data point should only be counted in one bucket (using break statements)
+    // Use the same time range for both tests to ensure fair comparison
+    let smallBuckets = c.getAggregatedBuckets(4, 8); // Creates smaller buckets within same 4-day range
     let smallTotal = smallBuckets.reduce((sum, b) => sum + b.up, 0);
 
     // Test: When buckets match data granularity, each data point is counted once
     let normalBuckets = c.getAggregatedBuckets(4, 4); // 1 bucket per day
     let normalTotal = normalBuckets.reduce((sum, b) => sum + b.up, 0);
 
-    // Without proper scaling, all data points are counted in their respective buckets
-    assert.ok(smallTotal >= normalTotal, "Without scaling, counts should be at least equal");
+    // With proper break statements, each data point is counted exactly once regardless of bucket size
+    // when using the same time range
+    assert.strictEqual(smallTotal, normalTotal, "Data points should be counted exactly once regardless of bucket size within same time range");
     assert.ok(normalTotal >= 3, "Should capture most of the data points");
 });
 
