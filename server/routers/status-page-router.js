@@ -97,7 +97,6 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
 
             let heartbeats;
-            let uptime;
 
             if (heartbeatBarDays === 0) {
                 // Auto mode - use original LIMIT 100 logic
@@ -134,6 +133,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             }
 
             // Calculate uptime based on the range
+            let uptime;
             if (heartbeatBarDays <= 1) {
                 uptime = uptimeCalculator.get24Hour().uptime;
             } else {
