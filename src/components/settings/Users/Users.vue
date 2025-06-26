@@ -10,12 +10,13 @@
             <font-awesome-icon icon="spinner" size="2x" spin />
         </div>
 
-        <div v-else class="my-3">
+        <div v-else class="my-3" data-testid="users-list">
             <RouterLink
                 v-for="({ id, username, active }, index) in usersList"
                 :key="id"
                 class="d-flex align-items-center mx-0 mx-lg-4 py-1 text-decoration-none users-list-row"
                 :to="{ name: 'settings.users.edit', params: { id } }"
+                data-testid="user-item"
             >
                 <div class="col-10 col-sm-5 m-2 flex-shrink-1 fw-bold">
                     {{ username }}
@@ -31,6 +32,7 @@
                         :class="active ? 'btn-outline-danger' : 'btn-outline-success'"
                         :disabled="processing"
                         @click.prevent="active ? disableConfirm(usersList[index]) : toggleActiveUser(usersList[index])"
+                        :data-testid="`toggle-active-user-${username}`"
                     >
                         <font-awesome-icon class="" :icon="active ? 'user-slash' : 'user-check'" />
                     </button>

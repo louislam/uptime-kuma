@@ -14,7 +14,7 @@
                     :placeholder="$t('Username')"
                     required
                     :disabled="creating"
-                    data-cy="username-input"
+                    data-testid="username-input"
                 >
             </label>
         </div>
@@ -29,7 +29,7 @@
                     :placeholder="$t('Password')"
                     required
                     :disabled="creating"
-                    data-cy="password-input"
+                    data-testid="password-input"
                 >
             </label>
         </div>
@@ -44,12 +44,12 @@
                     :placeholder="$t('Repeat Password')"
                     required
                     :disabled="creating"
-                    data-cy="password-repeat-input"
+                    data-testid="password-repeat-input"
                 >
             </label>
         </div>
 
-        <button class="btn btn-primary" type="submit" :disabled="creating" data-cy="submit-create-admin-form">
+        <button class="btn btn-primary" type="submit" :disabled="creating" data-testid="submit-create-admin-form">
             <span v-show="creating" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
             {{ $t("Create") }}
         </button>

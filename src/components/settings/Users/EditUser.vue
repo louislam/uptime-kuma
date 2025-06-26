@@ -83,6 +83,7 @@
                     type="checkbox"
                     :disabled="saving"
                     @click="debounceCheckboxClick(() => { active = !active; save({ active }); })"
+                    data-testid="active-checkbox"
                 >
                 <div class="ps-2">{{ $t("Active") }}</div>
             </label>
