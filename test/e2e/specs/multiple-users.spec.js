@@ -44,6 +44,10 @@ test.describe("Multiple Users", () => {
         await page.reload();
         await expect(page.getByText("Log in")).toBeVisible();
 
+        // Try to log in as the admin user
+        await login(page, "admin", true); // Expect failure
+        await screenshot(testInfo, page);
+
         // Login as the new user
         await page.goto("./dashboard"); // Assuming the new user has ID 2
         await login(page, "newuser");
@@ -60,6 +64,8 @@ test.describe("Multiple Users", () => {
         await page.reload();
         await expect(page.getByText("Log in")).toBeVisible();
 
+        // Try to log in as the new user
+        await login(page, "newuser", true); // Expect failure
         await screenshot(testInfo, page);
     });
 });
