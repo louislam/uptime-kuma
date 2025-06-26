@@ -31,8 +31,8 @@
                         class="btn-ban-user btn ms-2 py-1"
                         :class="active ? 'btn-outline-danger' : 'btn-outline-success'"
                         :disabled="processing"
-                        @click.prevent="active ? disableConfirm(usersList[index]) : toggleActiveUser(usersList[index])"
                         :data-testid="`toggle-active-user-${username}`"
+                        @click.prevent="active ? disableConfirm(usersList[index]) : toggleActiveUser(usersList[index])"
                     >
                         <font-awesome-icon class="" :icon="active ? 'user-slash' : 'user-check'" />
                     </button>

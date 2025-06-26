@@ -82,8 +82,8 @@
                     style="scale: 1.4; cursor: pointer;"
                     type="checkbox"
                     :disabled="saving"
-                    @click="debounceCheckboxClick(() => { active = !active; save({ active }); })"
                     data-testid="active-checkbox"
+                    @click="debounceCheckboxClick(() => { active = !active; save({ active }); })"
                 >
                 <div class="ps-2">{{ $t("Active") }}</div>
             </label>
@@ -181,8 +181,8 @@ export default {
         /**
          * Save user changes
          * @param {object} user user to save
-         * @param {string} [user.username] username used as login identifier.
-         * @param {boolean} [user.active] is the user authorized to login?
+         * @param {string} user.username username used as login identifier.
+         * @param {boolean} user.active is the user authorized to login?
          * @returns {void}
          */
         save(user) {

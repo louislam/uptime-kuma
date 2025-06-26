@@ -19,7 +19,7 @@ export async function screenshot(testInfo, page) {
 
 /**
  * @param {Page} page Page
- * @param {string} [user="admin"] Username to log in with
+ * @param {string} user Username to log in with
  * @returns {Promise<void>}
  */
 export async function login(page, user = "admin") {

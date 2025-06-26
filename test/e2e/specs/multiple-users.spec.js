@@ -24,7 +24,7 @@ test.describe("Multiple Users", () => {
         await page.getByTestId("password-input").fill("newuser123");
         await page.getByTestId("password-repeat-input").fill("newuser123");
         await page.getByTestId("submit-create-admin-form").click();
-        
+
         // Ensure the new user is created and visible in the user list
         await page.waitForURL("./settings/users");
         await expect(page.getByTestId("users-list")).toContainText("newuser");
@@ -35,9 +35,12 @@ test.describe("Multiple Users", () => {
         // Disable the admin user
         await page.getByTestId("toggle-active-user-admin").click();
         // Click on the button containing Yes and having btn-danger class
-        await page.getByRole("button", { name: "Yes", exact: true}).click();
+        await page.getByRole("button", {
+            name: "Yes",
+            exact: true
+        }).click();
         await expect(page.getByText("You are not logged in.")).toBeVisible();
-        
+
         // Make sure we're back on the login page after refresh
         await page.reload();
         await expect(page.getByText("Log in")).toBeVisible();
