@@ -34,12 +34,11 @@ test.describe("Multiple Users", () => {
 
         // Disable the admin user
         await page.getByTestId("toggle-active-user-admin").click();
-        // Click on the button containing Yes and having btn-danger class
         await page.getByRole("button", {
             name: "Yes",
             exact: true
         }).click();
-        await expect(page.getByText("You are not logged in.")).toBeVisible();
+        await expect(page.getByTestId("lost-connection")).toBeVisible();
 
         // Make sure we're back on the login page after refresh
         await page.reload();
@@ -52,8 +51,8 @@ test.describe("Multiple Users", () => {
 
         // Disable self-user
         await page.goto("./settings/users/edit/2");
-        await expect(page.getByTestId("active-checkbox")).toBeVisible();
         await page.getByTestId("active-checkbox").uncheck();
+        await expect(page.getByTestId("lost-connection")).toBeVisible();
 
         await screenshot(testInfo, page);
 

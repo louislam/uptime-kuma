@@ -68,6 +68,12 @@ async function saveUser(socket, user) {
 
     io.to(socket.userID).emit("saveUser", bean);
 
+    // If user is deactivated, disconnect his sockets
+    if (!bean.active) {
+        const roomId = typeof id === "number" ? id : parseInt(id, 10);
+        io.in(roomId).disconnectSockets();
+    }
+
     timeLogger.print(`Save user ${user.id}`);
 }
 
