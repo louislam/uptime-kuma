@@ -108,6 +108,8 @@ const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
+const { Prometheus } = require("./prometheus");
+
 const hostname = config.hostname;
 
 if (hostname) {
@@ -191,6 +193,9 @@ let needSetup = false;
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
+
+    log.debug("server", "Initializing Prometheus");
+    await Prometheus.init();
 
     log.debug("server", "Adding route");
 

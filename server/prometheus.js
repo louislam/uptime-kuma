@@ -1,38 +1,11 @@
 const PrometheusClient = require("prom-client");
 const { log } = require("../src/util");
+const { R } = require("redbean-node");
 
-const commonLabels = [
-    "monitor_id",
-    "monitor_name",
-    "monitor_type",
-    "monitor_url",
-    "monitor_hostname",
-    "monitor_port",
-    "monitor_tags"
-];
-
-const monitorCertDaysRemaining = new PrometheusClient.Gauge({
-    name: "monitor_cert_days_remaining",
-    help: "The number of days remaining until the certificate expires",
-    labelNames: commonLabels
-});
-
-const monitorCertIsValid = new PrometheusClient.Gauge({
-    name: "monitor_cert_is_valid",
-    help: "Is the certificate still valid? (1 = Yes, 0= No)",
-    labelNames: commonLabels
-});
-const monitorResponseTime = new PrometheusClient.Gauge({
-    name: "monitor_response_time",
-    help: "Monitor Response Time (ms)",
-    labelNames: commonLabels
-});
-
-const monitorStatus = new PrometheusClient.Gauge({
-    name: "monitor_status",
-    help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
-    labelNames: commonLabels
-});
+let monitorCertDaysRemaining = null;
+let monitorCertIsValid = null;
+let monitorResponseTime = null;
+let monitorStatus = null;
 
 class Prometheus {
     monitorLabelValues = {};
@@ -49,31 +22,95 @@ class Prometheus {
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
             monitor_port: monitor.port,
+            ...this.mapTagsToLabels(tags)
         };
-        let sanitizedTags = this.sanitizeTags(tags);
-        if (sanitizedTags.length) {
-            this.monitorLabelValues.monitor_tags = sanitizedTags;
-        }
     }
 
     /**
-     * Sanitize tags to ensure they can be processed by Prometheus.
-     * See https://github.com/louislam/uptime-kuma/pull/4704#issuecomment-2366524692
-     * @param {Array<{name: string, value:?string}>} tags The tags to sanitize
-     * @returns {string[]} The sanitized tags
+     * Initialize Prometheus metrics, and add all available tags as possible labels.
+     * This should be called once at the start of the application.
+     * New tags will NOT be added dynamically, a restart is sadly required to add new tags to the metrics.
+     * Existing tags added to monitors will be updated automatically.
+     * @returns {Promise<void>}
      */
-    sanitizeTags(tags) {
-        return tags.reduce((sanitizedTags, tag) => {
-            let tagText = tag.value ? `${tag.name}_${tag.value}` : tag.name;
-            tagText = tagText.replace(/[^a-zA-Z0-9_]/g, "");
-            tagText = tagText.replace(/^[^a-zA-Z_]+/, "");
+    static async init() {
+        const tags = (await R.findAll("tag")).map((tag) => {
+            return Prometheus.sanitizeForPrometheus(tag.name);
+        }).filter((tagName) => {
+            return tagName !== "";
+        });
 
-            if (tagText !== "") {
-                sanitizedTags.push(tagText);
+        const commonLabels = [
+            "monitor_id",
+            "monitor_name",
+            "monitor_type",
+            "monitor_url",
+            "monitor_hostname",
+            "monitor_port",
+            ...tags // Add all available tags as possible labels
+        ];
+
+        monitorCertDaysRemaining = new PrometheusClient.Gauge({
+            name: "monitor_cert_days_remaining",
+            help: "The number of days remaining until the certificate expires",
+            labelNames: commonLabels
+        });
+
+        monitorCertIsValid = new PrometheusClient.Gauge({
+            name: "monitor_cert_is_valid",
+            help: "Is the certificate still valid? (1 = Yes, 0= No)",
+            labelNames: commonLabels
+        });
+
+        monitorResponseTime = new PrometheusClient.Gauge({
+            name: "monitor_response_time",
+            help: "Monitor Response Time (ms)",
+            labelNames: commonLabels
+        });
+
+        monitorStatus = new PrometheusClient.Gauge({
+            name: "monitor_status",
+            help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
+            labelNames: commonLabels
+        });
+    }
+
+    /**
+     * Sanitize a string to ensure it can be used as a Prometheus label or value.
+     * See https://github.com/louislam/uptime-kuma/pull/4704#issuecomment-2366524692
+     * @param {string} text The text to sanitize
+     * @returns {string} The sanitized text
+     */
+    static sanitizeForPrometheus(text) {
+        text = text.replace(/[^a-zA-Z0-9_]/g, "");
+        text = text.replace(/^[^a-zA-Z_]+/, "");
+        return text;
+    }
+
+    /**
+     * Map the tags value to valid labels used in Prometheus. Sanitize them in the process.
+     * @param {Array<{name: string, value:?string}>} tags The tags to map
+     * @returns {Array<string, string>} The mapped tags, usable as labels
+     */
+    mapTagsToLabels(tags) {
+        let mappedTags = {};
+        tags.forEach((tag) => {
+            let sanitizedTag = Prometheus.sanitizeForPrometheus(tag.name);
+            if (sanitizedTag === "") {
+                return; // Skip empty tag names
             }
 
-            return sanitizedTags;
-        }, []);
+            if (mappedTags[sanitizedTag] === undefined) {
+                mappedTags[sanitizedTag] = "null";
+            }
+
+            let tagValue = Prometheus.sanitizeForPrometheus(tag.value);
+            if (tagValue !== "") {
+                mappedTags[sanitizedTag] = mappedTags[sanitizedTag] !== "null" ? mappedTags[sanitizedTag] + `,${tagValue}` : tagValue;
+            }
+        });
+
+        return mappedTags;
     }
 
     /**
