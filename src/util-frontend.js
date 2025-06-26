@@ -224,7 +224,7 @@ export function Debounce() {
     /**
      * exec callback function after delay if no new call to function happens
      * @param {Function} callback function to execute after delay
-     * @param {number} [delay=100] delay before execute the callback if no new call to function happens
+     * @param {number} delay before execute the callback if no new call to function happens
      * @returns {void}
      */
     return function (callback, delay = 100) {
