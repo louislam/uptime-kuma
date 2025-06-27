@@ -561,5 +561,5 @@ const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
 const { ManualMonitorType } = require("./monitor-types/manual");
-const {RtspMonitorType}= require("./monitor-types/RtspMonitorType")
+const {RtspMonitorType}= require("./monitor-types/rtsp")
 const Monitor = require("./model/monitor");
