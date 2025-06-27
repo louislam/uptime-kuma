@@ -4,12 +4,24 @@ class RtspMonitorType {
   name = "rtsp";
 
   /**
-   * @param {Object} monitor - monitor config containing rtspUrl and timeout
+   * @param {Object} monitor - monitor config containing hostname, port, username, password, path, and timeout
    * @param {Object} heartbeat - object to update with status and message
    */
   async check(monitor, heartbeat) {
-    const url = monitor.rtspUrl;
-    const timeoutMs = (monitor.timeout || 10) * 1000;
+    const { rtsp_username, rtsp_password, hostname, port, rtsp_path, timeout } = monitor;
+    const timeoutMs = (timeout || 10) * 1000;
+    
+    // Construct the RTSP URL from individual components
+    let url = `rtsp://${hostname}:${port}${rtsp_path}`;
+
+    // If username and password are provided, inject them into the URL
+    if (rtsp_username && rtsp_password !== undefined) {
+      const auth = `${rtsp_username}:${rtsp_password}@`;
+      const urlPattern = /^rtsp:\/\//;
+
+      // Inject authentication details into URL (before host)
+      url = url.replace(urlPattern, `rtsp://${auth}`);
+    }
 
     heartbeat.status = DOWN;
     heartbeat.msg = "Starting RTSP stream check...";
