@@ -199,9 +199,7 @@ class Monitor extends BeanModel {
                 rabbitmqPassword: this.rabbitmqPassword,
                 rtspUsername: this.rtspUsername,
                 rtspPassword: this.rtspPassword,
-                rtspPath:this.rtspPath
-
-
+                rtspPath: this.rtspPath
 
             };
         }
