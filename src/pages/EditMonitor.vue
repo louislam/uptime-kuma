@@ -97,7 +97,7 @@
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
-                                        <option value="rtsp"> 
+                                        <option value="rtsp">
                                             RTSP
                                         </option>
                                     </optgroup>
@@ -518,8 +518,7 @@
                                 </div>
                             </template>
 
-
-                              <template v-if="monitor.type === 'rtsp'">
+                            <template v-if="monitor.type === 'rtsp'">
                                 <div class="my-3">
                                     <label for="rtspUsername" class="form-label">RTSP {{ $t("Username") }}</label>
                                     <input id="rtspUsername" v-model="monitor.rtspUsername" type="text" class="form-control">
@@ -1215,9 +1214,9 @@ const monitorDefaults = {
     rabbitmqUsername: "",
     rabbitmqPassword: "",
     conditions: [],
-    rtspUsername:"",
-    rtspPassword:"",
-    rtspPath:""
+    rtspUsername: "",
+    rtspPassword: "",
+    rtspPath: ""
 
 };
 
