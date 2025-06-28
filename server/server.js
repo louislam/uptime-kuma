@@ -879,7 +879,7 @@ let needSetup = false;
                 bean.manual_status = monitor.manual_status;
                 bean.rtspUsername = monitor.rtspUsername;
                 bean.rtspPassword = monitor.rtspPassword;
-                bean.rtspPath = monitor.path;
+                bean.rtspPath = monitor.rtspPath;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;

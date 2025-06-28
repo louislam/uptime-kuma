@@ -518,22 +518,6 @@
                                 </div>
                             </template>
 
-                            <template v-if="monitor.type === 'rtsp'">
-                                <div class="my-3">
-                                    <label for="rtspUsername" class="form-label">RTSP {{ $t("Username") }}</label>
-                                    <input id="rtspUsername" v-model="monitor.rtspUsername" type="text" class="form-control">
-                                </div>
-
-                                <div class="my-3">
-                                    <label for="rtspPassword" class="form-label">RTSP {{ $t("Password") }}</label>
-                                    <input id="rtspPassword" v-model="monitor.rtspPassword" type="password" class="form-control">
-                                </div>
-                                <div class="my-3">
-                                    <label for="rtspPath" class="form-label">RTSP {{ $t("path") }}</label>
-                                    <input id="rtspPath" v-model="monitor.rtspPath" type="text" class="form-control">
-                                </div>
-                            </template>
-
                             <template v-if="monitor.type === 'radius'">
                                 <div class="my-3">
                                     <label for="radius_username" class="form-label">Radius {{ $t("Username") }}</label>
@@ -1069,6 +1053,26 @@
                                         </template>
                                     </template>
                                 </template>
+                            </template>
+
+                            <template v-if="monitor.type === 'rtsp'">
+                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
+
+                                <div class="my-3">
+                                    <label for="rtspUsername" class="form-label">RTSP {{ $t("Username") }}</label>
+                                    <input
+                                        id="rtspUsername" v-model="monitor.rtspUsername" :placeholder="$t('Username')" type="text" class="form-control"
+                                    >
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="rtspPassword" class="form-label">RTSP {{ $t("Password") }}</label>
+                                    <input id="rtspPassword" v-model="monitor.rtspPassword" :placeholder="$t('Password')" type="password" class="form-control">
+                                </div>
+                                <div class="my-3">
+                                    <label for="rtspPath" class="form-label">RTSP {{ $t("path") }}</label>
+                                    <input id="rtspPath" v-model="monitor.rtspPath" :placeholder="$t('Path')" type="text" class="form-control">
+                                </div>
                             </template>
 
                             <!-- gRPC Options -->
