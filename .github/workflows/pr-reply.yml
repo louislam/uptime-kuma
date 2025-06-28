@@ -1,0 +1,36 @@
+# Replys a message to all new PRs
+# The message:
+# - Say hello and thanks to the contributor
+# - Mention maintainers will review the PR soon
+# - To other people, show the testing pr command: npx kuma-pr <username:branch>
+# - Also show the advanced usage link: https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests
+name: Reply to PRs
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+    issues: write
+    pull-requests: write
+    contents: read
+
+jobs:
+    reply:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Reply to PR
+          uses: actions/github-script@v7
+          with:
+            script: |
+                const pr = context.payload.pull_request;
+                const message = `Hello @${pr.user.login}, thank you for your contribution! :tada:\n` +
+                    `The maintainers will review your PR soon.\n\n` +
+                    `If anyone would like to help test this PR, you can use the command:\n` +
+                    `\`\`\`bash\nnpx kuma-pr ${pr.user.login}:${pr.head.ref}\n\`\`\`\n\n` +
+                    `<sub> For advanced usage, please refer to our [wiki](https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests) </sub>`;
+                await github.rest.issues.createComment({
+                    issue_number: pr.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    body: message
+                });
