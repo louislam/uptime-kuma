@@ -1,25 +1,13 @@
-## ❗ Important Announcement
+## ❗ Important Announcements
 
 <details><summary>Click here for more details:</summary>
 </p>
 
 **⚠️ Please Note: We do not accept all types of pull requests, and we want to ensure we don’t waste your time. Before submitting, make sure you have read our pull request guidelines: [Pull Request Rules](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)**
 
-### 🚧 Temporary Delay in Feature Requests and Pull Request Reviews
-
-**At this time, we may be slower to respond to new feature requests and review pull requests. Existing requests and PRs will remain in the backlog but may not be prioritized immediately.**
-
-- **Reason**: Our current focus is on addressing bugs, improving system performance, and implementing essential updates. This will help stabilize the project and ensure smoother management.
-- **Impact**: While no new feature requests or pull requests are being outright rejected, there may be significant delays in reviews. We encourage the community to help by reviewing PRs or assisting other users in the meantime.
-- **What You Can Do**: If you're interested in contributing, reviewing open PRs by following our [Review Guidelines](https://github.com/louislam/uptime-kuma/blob/master/.github/REVIEW_GUIDELINES.md) or offering support to other users is greatly appreciated. All feature requests and PRs will be revisited once the suspension period is lifted.
-
-We appreciate your patience and understanding as we continue to improve Uptime Kuma.
-
 ### 🚫 Please Avoid Unnecessary Pinging of Maintainers
 
-**We kindly ask you to refrain from pinging maintainers unless absolutely necessary. Pings are reserved for critical/urgent pull requests that require immediate attention.**
-
-**Why**: Reserving pings for urgent matters ensures maintainers can prioritize critical tasks effectively.
+We kindly ask you to refrain from pinging maintainers unless absolutely necessary. Pings are for critical/urgent pull requests that require immediate attention.
 
 </p>
 </details>
@@ -63,6 +51,7 @@ Please link any GitHub issues or tasks that this pull request addresses. Use the
 <!-- Please select all options that apply -->
 
 - [ ] 🔍 My code adheres to the style guidelines of this project.
+- [ ] 🦿 I have indicated where (if any) I used an LLM for the contributions
 - [ ] ✅ I ran ESLint and other code linters for modified files.
 - [ ] 🛠️ I have reviewed and tested my code.
 - [ ] 📝 I have commented my code, especially in hard-to-understand areas (e.g., using JSDoc for methods).
