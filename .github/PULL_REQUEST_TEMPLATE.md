@@ -21,18 +21,15 @@ We kindly ask you to refrain from pinging maintainers unless absolutely necessar
 - **What features or functionality does this pull request introduce or enhance?**
   - Please provide a detailed explanation here.
 
-## 🔗 Related Issues
-
 <!--
-Please link any GitHub issues or tasks that this pull request addresses. Use the appropriate issue numbers or links.
+Please link any GitHub issues or tasks that this pull request addresses.
+Use the appropriate issue numbers or links to enable auto-closing.
 -->
 
 - Relates to #issue-number
 - Resolves #issue-number
 
-## 🔄 Changes
-
-### 🛠️ Type of change
+## 🛠️ Type of change
 
 <!-- Please select all options that apply -->
 
@@ -65,10 +62,11 @@ Please link any GitHub issues or tasks that this pull request addresses. Use the
 ## 📷 Screenshots or Visual Changes
 
 <!--
-Please upload the image directly here by pasting it or dragging and dropping. Avoid using external image services as the image will be uploaded automatically.
-
 If this pull request introduces visual changes, please provide the following details.
 If not, remove this section.
+
+Please upload the image directly here by pasting it or dragging and dropping.
+Avoid using external image services as the image will be uploaded automatically.
 -->
 
 - **UI Modifications**: Highlight any changes made to the user interface.
