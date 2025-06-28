@@ -25,6 +25,9 @@ class RtspMonitorType extends MonitorType {
         }
 
         const client = new RTSPClient();
+        client.on("error", (err) => {
+            log.debug("monitor", `RTSP client emitted error: ${err.message}`);
+        });
 
         try {
             log.debug("monitor", `Connecting to RTSP URL: ${url}`);
@@ -46,11 +49,10 @@ class RtspMonitorType extends MonitorType {
                 heartbeat.status = DOWN;
                 heartbeat.msg = `${statusCode} - ${statusMessage}`;
             }
-
         } catch (error) {
+            log.debug("monitor", `[${monitor.name}] RTSP check failed: ${error.message}`);
             heartbeat.status = DOWN;
             heartbeat.msg = `RTSP check failed: ${error.message}`;
-            log.debug("monitor", `[${monitor.name}] RTSP check failed: ${JSON.stringify(error.message)}`);
         } finally {
             try {
                 await client.close();
