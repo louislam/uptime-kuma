@@ -32,7 +32,7 @@ class RtspMonitorType extends MonitorType {
 
             const res = await client.describe();
             log.debug("monitor", `RTSP DESCRIBE response: ${JSON.stringify(res)}`);
-            
+
             const statusCode = res?.statusCode;
             const statusMessage = res?.statusMessage || "Unknown";
 
