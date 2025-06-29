@@ -1068,5 +1068,6 @@
     "templateStatus": "وضعیت",
     "telegramUseTemplate": "استفاده از قالب پیام دلخواه",
     "telegramUseTemplateDescription": "در صورت فعال‌سازی، پیام با قالب دلخواه ارسال خواهد شد.",
-    "telegramTemplateFormatDescription": "در تلگرام امکان استفاده از زبان‌های نشانه‌گذاری مختلفی وجود دارد، برای جزئیات بیشتر {0} را ببینید."
+    "telegramTemplateFormatDescription": "در تلگرام امکان استفاده از زبان‌های نشانه‌گذاری مختلفی وجود دارد، برای جزئیات بیشتر {0} را ببینید.",
+    "defaultFriendlyName": "مانیتور جدید"
 }
