@@ -518,6 +518,13 @@
                                 </div>
                             </template>
 
+                            <template v-if="monitor.type === 'rtsp'">
+                                <div class="my-3">
+                                    <label for="rtspPath" class="form-label">RTSP {{ $t("path") }}</label>
+                                    <input id="rtspPath" v-model="monitor.rtspPath" :placeholder="$t('Path')" type="text" class="form-control">
+                                </div>
+                            </template>
+
                             <template v-if="monitor.type === 'radius'">
                                 <div class="my-3">
                                     <label for="radius_username" class="form-label">Radius {{ $t("Username") }}</label>
@@ -1068,10 +1075,6 @@
                                 <div class="my-3">
                                     <label for="rtspPassword" class="form-label">RTSP {{ $t("Password") }}</label>
                                     <input id="rtspPassword" v-model="monitor.rtspPassword" :placeholder="$t('Password')" type="password" class="form-control">
-                                </div>
-                                <div class="my-3">
-                                    <label for="rtspPath" class="form-label">RTSP {{ $t("path") }}</label>
-                                    <input id="rtspPath" v-model="monitor.rtspPath" :placeholder="$t('Path')" type="text" class="form-control">
                                 </div>
                             </template>
 
