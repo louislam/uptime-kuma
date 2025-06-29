@@ -110,6 +110,9 @@ export default {
                 security: {
                     title: this.$t("Security"),
                 },
+                "user-management": {    // New Menu Item
+                    title: this.$t("User Management"),
+                },
                 "api-keys": {
                     title: this.$t("API Keys")
                 },

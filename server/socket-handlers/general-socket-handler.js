@@ -1,7 +1,9 @@
 const { log } = require("../../src/util");
 const { Settings } = require("../settings");
 const { sendInfo } = require("../client");
-const { checkLogin } = require("../util-server");
+const { checkLogin, isAdmin } = require("../util-server"); // Added isAdmin
+const { R } = require("redbean-node"); // Added R for database operations
+const User = require("../model/user"); // Added User model
 const GameResolver = require("gamedig/lib/GameResolver");
 const { testChrome } = require("../monitor-types/real-browser-monitor-type");
 const fsAsync = require("fs").promises;
@@ -136,4 +138,77 @@ module.exports.generalSocketHandler = (socket, server) => {
             log.warn("disconnectAllSocketClients", e.message);
         }
     });
+
+    // User Management Socket Handlers
+    // Only admins should be able to manage users.
+
+    socket.on("getUsers", async (callback) => {
+        try {
+            checkLogin(socket);
+            await isAdmin(socket); // Ensure the user is an admin
+
+            const userList = await R.findAll("user", "ORDER BY username");
+            // Avoid sending password hashes to the client
+            const sanitizedUserList = userList.map(user => {
+                const { password, ...sanitizedUser } = user.export();
+                return sanitizedUser;
+            });
+
+            callback({
+                ok: true,
+                users: sanitizedUserList,
+            });
+        } catch (e) {
+            log.error("getUsers", e.message);
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
+
+    socket.on("updateUserType", async (userID, newUserType, callback) => {
+        try {
+            checkLogin(socket);
+            await isAdmin(socket); // Ensure the user is an admin
+
+            if (!userID || !newUserType) {
+                throw new Error("User ID and new user type are required.");
+            }
+
+            // Prevent admin from changing their own type if they are the only admin?
+            // Or prevent changing the type of the main admin user? (e.g., user with ID 1)
+            // For now, let's assume such checks are handled by higher-level logic or are not required.
+
+            const user = await R.findOne("user", "id = ?", [userID]);
+            if (!user) {
+                throw new Error("User not found.");
+            }
+
+            // Potentially validate newUserType against a list of allowed types
+            const allowedTypes = ["admin", "editor", "viewer"]; // Example types
+            if (!allowedTypes.includes(newUserType)) {
+                throw new Error(`Invalid user type: ${newUserType}. Allowed types are: ${allowedTypes.join(", ")}`);
+            }
+
+            user.user_type = newUserType;
+            await R.store(user);
+
+            // Optionally, emit an event to other admins that a user type has changed
+            // server.sendToAdmins("userTypeChanged", { userID, newUserType });
+
+            callback({
+                ok: true,
+                msg: `User type for user ID ${userID} updated to ${newUserType}.`,
+            });
+
+        } catch (e) {
+            log.error("updateUserType", e.message);
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+        }
+    });
+
 };

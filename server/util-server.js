@@ -799,6 +799,29 @@ exports.checkLogin = (socket) => {
 };
 
 /**
+ * Check if a user is an admin.
+ * Throws an error if the user is not logged in or not an admin.
+ * @param {Socket} socket Socket instance
+ * @returns {Promise<void>}
+ * @throws Error if not logged in or not an admin
+ */
+exports.isAdmin = async (socket) => {
+    exports.checkLogin(socket); // Ensure user is logged in first
+
+    const user = await R.findOne("user", "id = ? AND active = 1", [socket.userID]);
+
+    if (!user) {
+        // This case should ideally be caught by checkLogin or represent an anomaly
+        throw new Error("User not found or not active.");
+    }
+
+    if (user.user_type !== "admin") {
+        throw new Error("Administrator privileges required.");
+    }
+    // If we reach here, the user is an admin.
+};
+
+/**
  * For logged-in users, double-check the password
  * @param {Socket} socket Socket.io instance
  * @param {string} currentPassword Password to validate
