@@ -520,7 +520,7 @@
 
                             <template v-if="monitor.type === 'rtsp'">
                                 <div class="my-3">
-                                    <label for="rtspPath" class="form-label">RTSP {{ $t("path") }}</label>
+                                    <label for="rtspPath" class="form-label"> {{ $t("RTSP Path") }}</label>
                                     <input id="rtspPath" v-model="monitor.rtspPath" :placeholder="$t('Path')" type="text" class="form-control">
                                 </div>
                             </template>
@@ -1066,14 +1066,14 @@
                                 <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
 
                                 <div class="my-3">
-                                    <label for="rtspUsername" class="form-label">RTSP {{ $t("Username") }}</label>
+                                    <label for="rtspUsername" class="form-label">{{ $t("RTSP Username") }}</label>
                                     <input
                                         id="rtspUsername" v-model="monitor.rtspUsername" :placeholder="$t('Username')" type="text" class="form-control"
                                     >
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="rtspPassword" class="form-label">RTSP {{ $t("Password") }}</label>
+                                    <label for="rtspPassword" class="form-label">{{ $t("RTSP Password") }}</label>
                                     <input id="rtspPassword" v-model="monitor.rtspPassword" :placeholder="$t('Password')" type="password" class="form-control">
                                 </div>
                             </template>

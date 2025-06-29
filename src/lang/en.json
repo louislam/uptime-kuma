@@ -1123,5 +1123,9 @@
     "Staged Tags for Batch Add": "Staged Tags for Batch Add",
     "Clear Form": "Clear Form",
     "pause": "Pause",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "RTSP Username": "RTSP Username",
+    "RTSP Password": "RTSP Password",
+    "RTSP Path": "RTSP Path",
+    "Path": "Path"
 }
