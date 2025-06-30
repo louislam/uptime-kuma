@@ -43,6 +43,7 @@ class User extends BeanModel {
      */
     static createJWT(user, jwtSecret) {
         return jwt.sign({
+            userID: user.id,
             username: user.username,
             h: shake256(user.password, SHAKE256_LENGTH),
         }, jwtSecret);
