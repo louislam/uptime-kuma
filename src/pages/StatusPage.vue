@@ -765,17 +765,18 @@ export default {
         },
 
         /**
-         * Update the heartbeat list and update favicon if necessary
+         * Update the heartbeat list along with the favicon and certificate expiry if necessary
          * @returns {void}
          */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
                 axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList } = res.data;
+                    const { heartbeatList, uptimeList, certificateExpiryList } = res.data;
 
                     this.$root.heartbeatList = heartbeatList;
                     this.$root.uptimeList = uptimeList;
+                    this.$root.certificateExpiryList = certificateExpiryList;
 
                     const heartbeatIds = Object.keys(heartbeatList);
                     const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
