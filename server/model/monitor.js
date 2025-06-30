@@ -181,6 +181,7 @@ class Monitor extends BeanModel {
                 oauth_client_secret: this.oauth_client_secret,
                 oauth_token_url: this.oauth_token_url,
                 oauth_scopes: this.oauth_scopes,
+                oauth_audience: this.oauth_audience,
                 oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
@@ -1746,7 +1747,7 @@ class Monitor extends BeanModel {
      */
     async makeOidcTokenClientCredentialsRequest() {
         log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new token`);
-        const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+        const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_audience, this.oauth_auth_method);
         if (this.oauthAccessToken?.expires_at) {
             log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken?.expires_at * 1000)}`);
         } else {
