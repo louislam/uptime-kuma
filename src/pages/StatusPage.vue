@@ -806,7 +806,14 @@ export default {
             clearInterval(this.updateCountdown);
 
             this.updateCountdown = setInterval(() => {
-                const countdown = dayjs.duration(this.lastUpdateTime.add(Math.max(5, this.config.autoRefreshInterval), "seconds").diff(dayjs()));
+                const countdown = dayjs.duration(
+                    Math.round(
+                        this.lastUpdateTime
+                            .add(Math.max(5, this.config.autoRefreshInterval), "seconds")
+                            .diff(dayjs())
+                        / 1000
+                    ), "seconds");
+
                 if (countdown.as("seconds") < 0) {
                     clearInterval(this.updateCountdown);
                 } else {
