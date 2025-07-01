@@ -201,14 +201,25 @@
 
                             <!-- Game -->
                             <!-- GameDig only -->
-                            <div v-if="monitor.type === 'gamedig'" class="my-3">
-                                <label for="game" class="form-label"> {{ $t("Game") }} </label>
-                                <select id="game" v-model="monitor.game" class="form-select" required>
-                                    <option v-for="game in gameList" :key="game.keys[0]" :value="game.keys[0]">
-                                        {{ game.pretty }}
-                                    </option>
-                                </select>
-                            </div>
+                            <template v-if="monitor.type === 'gamedig'">
+                                <!-- GameDig Game list -->
+                                <div class="my-3">
+                                    <label for="game" class="form-label"> {{ $t("Game") }} </label>
+                                    <select id="game" v-model="monitor.game" class="form-select" required>
+                                        <option v-for="game in gameList" :key="game.keys[0]" :value="game.keys[0]">
+                                            {{ game.pretty }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- GameDig resolve Host to IP --> 
+                                <div class="my-3 form-check">
+                                    <input id="gamedigResolveHostToIP" v-model="monitor.gamedigResolveHostToIP" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="gamedigResolveHostToIP">
+                                        {{ $t("Resolve GameDig Host IP") }}
+                                    </label>
+                                </div>
+                            </template>
 
                             <template v-if="monitor.type === 'kafka-producer'">
                                 <!-- Kafka Brokers List -->
@@ -1186,6 +1197,7 @@ const monitorDefaults = {
     authMethod: null,
     oauth_auth_method: "client_secret_basic",
     httpBodyEncoding: "json",
+    gamedigResolveHostToIP: false,
     kafkaProducerBrokers: [],
     kafkaProducerSaslOptions: {
         mechanism: "None",

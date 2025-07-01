@@ -20,7 +20,6 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
-const Gamedig = require("gamedig");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -701,21 +700,6 @@ class Monitor extends BeanModel {
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");
-                    }
-                } else if (this.type === "gamedig") {
-                    try {
-                        const state = await Gamedig.query({
-                            type: this.game,
-                            host: this.hostname,
-                            port: this.port,
-                            givenPortOnly: this.getGameDigGivenPortOnly(),
-                        });
-
-                        bean.msg = state.name;
-                        bean.status = UP;
-                        bean.ping = state.ping;
-                    } catch (e) {
-                        throw new Error(e.message);
                     }
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
