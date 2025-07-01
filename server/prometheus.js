@@ -16,13 +16,13 @@ class Prometheus {
      */
     constructor(monitor, tags) {
         this.monitorLabelValues = {
+            ...this.mapTagsToLabels(tags),
             monitor_id: monitor.id,
             monitor_name: monitor.name,
             monitor_type: monitor.type,
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
-            monitor_port: monitor.port,
-            ...this.mapTagsToLabels(tags)
+            monitor_port: monitor.port
         };
     }
 
@@ -34,20 +34,22 @@ class Prometheus {
      * @returns {Promise<void>}
      */
     static async init() {
-        const tags = (await R.findAll("tag")).map((tag) => {
+        // Add all available tags as possible labels,
+        // and use Set to remove possible duplicates (for when multiple tags contain non-ascii characters, and thus are sanitized to the same label)
+        const tags = new Set((await R.findAll("tag")).map((tag) => {
             return Prometheus.sanitizeForPrometheus(tag.name);
         }).filter((tagName) => {
             return tagName !== "";
-        });
+        }));
 
         const commonLabels = [
+            ...tags,
             "monitor_id",
             "monitor_name",
             "monitor_type",
             "monitor_url",
             "monitor_hostname",
             "monitor_port",
-            ...tags // Add all available tags as possible labels
         ];
 
         monitorCertDaysRemaining = new PrometheusClient.Gauge({
@@ -84,13 +86,13 @@ class Prometheus {
     static sanitizeForPrometheus(text) {
         text = text.replace(/[^a-zA-Z0-9_]/g, "");
         text = text.replace(/^[^a-zA-Z_]+/, "");
-        return text;
+        return text.toLowerCase();
     }
 
     /**
      * Map the tags value to valid labels used in Prometheus. Sanitize them in the process.
      * @param {Array<{name: string, value:?string}>} tags The tags to map
-     * @returns {Array<string, string>} The mapped tags, usable as labels
+     * @returns {object} The mapped tags, usable as labels
      */
     mapTagsToLabels(tags) {
         let mappedTags = {};
@@ -101,16 +103,22 @@ class Prometheus {
             }
 
             if (mappedTags[sanitizedTag] === undefined) {
-                mappedTags[sanitizedTag] = "null";
+                mappedTags[sanitizedTag] = [];
             }
 
             let tagValue = Prometheus.sanitizeForPrometheus(tag.value);
             if (tagValue !== "") {
-                mappedTags[sanitizedTag] = mappedTags[sanitizedTag] !== "null" ? mappedTags[sanitizedTag] + `,${tagValue}` : tagValue;
+                mappedTags[sanitizedTag].push(tagValue);
             }
+
+            mappedTags[sanitizedTag] = mappedTags[sanitizedTag].sort();
         });
 
-        return mappedTags;
+        // Order the tags alphabetically
+        return Object.keys(mappedTags).sort().reduce((obj, key) => {
+            obj[key] = mappedTags[key];
+            return obj;
+        }, {});
     }
 
     /**
