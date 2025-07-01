@@ -1125,5 +1125,6 @@
     "Staged Tags for Batch Add": "Staged Tags for Batch Add",
     "Clear Form": "Clear Form",
     "pause": "Pause",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "Resolve GameDig Host IP": "Resolve domain to IP before request"
 }
