@@ -9,7 +9,7 @@ const { UP, PENDING } = require("../../src/util");
  * Runs an MQTT test with the
  * @param  {string} mqttSuccessMessage the message that the monitor expects
  * @param {null|"keyword"|"json-query"} mqttCheckType the type of check we perform
- * @param {string} receivedMessage what message is recieved from the mqtt channel
+ * @param {string} receivedMessage what message is received from the mqtt channel
  * @returns {Promise<Heartbeat>} the heartbeat produced by the check
  */
 async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage) {

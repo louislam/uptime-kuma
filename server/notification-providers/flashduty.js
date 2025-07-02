@@ -38,7 +38,7 @@ class FlashDuty extends NotificationProvider {
     }
 
     /**
-     * Generate a monitor url from the monitors infomation
+     * Generate a monitor url from the monitors information
      * @param {object} monitorInfo Monitor details
      * @returns {string|undefined} Monitor URL
      */
