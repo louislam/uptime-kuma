@@ -32,7 +32,7 @@
             </template>
         </i18n-t>
         <template v-else-if="$parent.notification.webhookContentType == 'custom'">
-            <TemplatedTextarea id="customBody" v-model="$parent.notification.webhookCustomBody" :required="true" :placeholder="customBodyPlaceholder"></TemplatedTextarea>
+            <TemplatedTextarea id="customBody" v-model="$parent.notification.webhookCustomBody" :placeholder="customBodyPlaceholder"></TemplatedTextarea>
         </template>
     </div>
 
