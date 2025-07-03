@@ -191,9 +191,9 @@ class Prometheus {
 
     /**
      * Sort the tags alphabetically, case-insensitive.
-     * @param a {string}
-     * @param b {string}
-     * @returns {number}
+     * @param {string} a The first tag to compare
+     * @param {string} b The second tag to compare
+     * @returns {number} The alphabetical order number
      */
     sortTags(a, b) {
         const aLowerCase = a.toLowerCase();
