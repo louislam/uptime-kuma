@@ -40,7 +40,7 @@ class Prometheus {
             return Prometheus.sanitizeForPrometheus(tag.name);
         }).filter((tagName) => {
             return tagName !== "";
-        }));
+        }).sort(this.sortTags));
 
         const commonLabels = [
             ...tags,
@@ -86,7 +86,7 @@ class Prometheus {
     static sanitizeForPrometheus(text) {
         text = text.replace(/[^a-zA-Z0-9_]/g, "");
         text = text.replace(/^[^a-zA-Z_]+/, "");
-        return text.toLowerCase();
+        return text;
     }
 
     /**
@@ -106,7 +106,7 @@ class Prometheus {
                 mappedTags[sanitizedTag] = [];
             }
 
-            let tagValue = Prometheus.sanitizeForPrometheus(tag.value);
+            let tagValue = Prometheus.sanitizeForPrometheus(tag.value || "");
             if (tagValue !== "") {
                 mappedTags[sanitizedTag].push(tagValue);
             }
@@ -115,7 +115,7 @@ class Prometheus {
         });
 
         // Order the tags alphabetically
-        return Object.keys(mappedTags).sort().reduce((obj, key) => {
+        return Object.keys(mappedTags).sort(this.sortTags).reduce((obj, key) => {
             obj[key] = mappedTags[key];
             return obj;
         }, {});
@@ -187,6 +187,27 @@ class Prometheus {
         } catch (e) {
             console.error(e);
         }
+    }
+
+    /**
+     * Sort the tags alphabetically, case-insensitive.
+     * @param a {string}
+     * @param b {string}
+     * @returns {number}
+     */
+    sortTags(a, b) {
+        const aLowerCase = a.toLowerCase();
+        const bLowerCase = b.toLowerCase();
+
+        if (aLowerCase < bLowerCase) {
+            return -1;
+        }
+
+        if (aLowerCase > bLowerCase) {
+            return 1;
+        }
+
+        return 0;
     }
 }
 
