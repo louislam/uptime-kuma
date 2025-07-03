@@ -806,6 +806,7 @@ export default {
             clearInterval(this.updateCountdown);
 
             this.updateCountdown = setInterval(() => {
+                // rounding here as otherwise we sometimes skip numbers in cases of time drift
                 const countdown = dayjs.duration(
                     Math.round(
                         this.lastUpdateTime
