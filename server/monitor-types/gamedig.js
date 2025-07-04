@@ -13,6 +13,7 @@ class GameDigMonitorType extends MonitorType {
     async check(monitor, heartbeat, server) {
         heartbeat.status = DOWN;
 
+        let host = monitor.hostname;
         if (net.isIP(host) === 0) {
             host = await this.resolveHostname(host);
         }
