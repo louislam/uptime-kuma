@@ -86,7 +86,7 @@ to review the appropriate one for your contribution.
   PR:
 
   - A text may not be currently localisable. In this case, **adding a new
-    language key** via `$t("languageKey")` might be nessesary
+    language key** via `$t("languageKey")` might be necessary
   - language keys need to be **added to `en.json`** to be visible in weblate. If
     this has not happened, a PR is appreciated.
   - **Adding a new language** requires a new file see

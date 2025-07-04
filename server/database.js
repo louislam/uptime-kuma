@@ -19,7 +19,7 @@ const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysq
 class Database {
 
     /**
-     * Boostrap database for SQLite
+     * Bootstrap database for SQLite
      * @type {string}
      */
     static templatePath = "./db/kuma.db";
