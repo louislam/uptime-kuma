@@ -2,7 +2,7 @@ const { MonitorType } = require("./monitor-type");
 const { UP, DOWN } = require("../../src/util");
 const Gamedig = require("gamedig");
 const dns = require("dns").promises;
-const net = require('net');
+const net = require("net");
 
 class GameDigMonitorType extends MonitorType {
     name = "gamedig";
@@ -19,7 +19,7 @@ class GameDigMonitorType extends MonitorType {
         }
 
         host = await this.resolveHostname(monitor.hostname);
-        
+
         try {
             const state = await Gamedig.query({
                 type: monitor.game,
@@ -38,7 +38,6 @@ class GameDigMonitorType extends MonitorType {
 
     /**
      * Resolves a domain name to its IPv4 address.
-     * 
      * @param {string} hostname - The domain name to resolve (e.g., "example.dyndns.org").
      * @returns {Promise<string>} - The resolved IP address.
      * @throws Will throw an error if the DNS resolution fails.
