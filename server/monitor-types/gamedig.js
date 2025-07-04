@@ -18,8 +18,6 @@ class GameDigMonitorType extends MonitorType {
             host = await this.resolveHostname(host);
         }
 
-        host = await this.resolveHostname(monitor.hostname);
-
         try {
             const state = await Gamedig.query({
                 type: monitor.game,
