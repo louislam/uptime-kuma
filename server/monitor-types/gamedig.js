@@ -2,6 +2,7 @@ const { MonitorType } = require("./monitor-type");
 const { UP, DOWN } = require("../../src/util");
 const Gamedig = require("gamedig");
 const dns = require("dns").promises;
+const net = require('net');
 
 class GameDigMonitorType extends MonitorType {
     name = "gamedig";
@@ -12,12 +13,12 @@ class GameDigMonitorType extends MonitorType {
     async check(monitor, heartbeat, server) {
         heartbeat.status = DOWN;
 
-        let host = monitor.hostname;
-
-        if (monitor.gamedigResolveHostToIP) {
-            host = await this.resolveHostname(monitor.hostname);
+        if (net.isIP(host) === 0) {
+            host = await this.resolveHostname(host);
         }
 
+        host = await this.resolveHostname(monitor.hostname);
+        
         try {
             const state = await Gamedig.query({
                 type: monitor.game,
