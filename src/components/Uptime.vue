@@ -30,10 +30,8 @@ export default {
                 return this.$t("statusMaintenance");
             }
 
-            let key = this.monitor.id + "_" + this.type;
-
-            if (this.$root.uptimeList[key] !== undefined) {
-                let result = Math.round(this.$root.uptimeList[key] * 10000) / 100;
+            if (this.$root.uptimeList[this.monitor.id] !== undefined) {
+                let result = Math.round(this.$root.uptimeList[this.monitor.id] * 10000) / 100;
                 // Only perform sanity check on status page. See louislam/uptime-kuma#2628
                 if (this.$route.path.startsWith("/status") && result > 100) {
                     return "100%";
@@ -89,6 +87,14 @@ export default {
             }
             if (this.type === "720") {
                 return `30${this.$t("-day")}`;
+            }
+            if (this.type === "24") {
+                return `24${this.$t("-hour")}`;
+            }
+            // Handle dynamic day formats (e.g., "7d", "14d", "30d")
+            const dayMatch = this.type.match(/^(\d+)d$/);
+            if (dayMatch) {
+                return `${dayMatch[1]}${this.$t("-day")}`;
             }
             return `24${this.$t("-hour")}`;
         }
