@@ -401,8 +401,8 @@
     "TemplateCode": "TemplateCode",
     "SignName": "SignName",
     "Sms template must contain parameters: ": "Sms şablonu parametreleri içermelidir: ",
-    "Bark Endpoint": "Bark Endpoint",
-    "Bark Group": "Bark Group",
+    "Bark Endpoint": "Bark Uç Noktası",
+    "Bark Group": "Bark Grubu",
     "Bark Sound": "Havlama Sesi",
     "WebHookUrl": "WebHookUrl",
     "SecretKey": "SecretKey",
@@ -656,7 +656,7 @@
     "Free Mobile API Key": "Ücretsiz Mobil API Anahtarı",
     "Enable TLS": "TLS'yi Etkinleştir",
     "Proto Service Name": "Proto Service İsmi",
-    "Proto Method": "Proto Method",
+    "Proto Method": "Proto Yöntemi",
     "Proto Content": "Proto İçeriği",
     "Economy": "Ekonomik",
     "Lowcost": "Düşük maliyetli",
@@ -1173,5 +1173,7 @@
     "tagAlreadyOnMonitor": "Bu etiket (isim ve değer) zaten monitörde veya eklenmeyi bekliyor.",
     "tagAlreadyStaged": "Bu etiket (isim ve değer) bu grup için zaten hazırlandı.",
     "tagNameExists": "Bu isimde bir sistem etiketi zaten var. Listeden seçin veya farklı bir isim kullanın.",
-    "Clear Form": "Formu Temizle"
+    "Clear Form": "Formu Temizle",
+    "Optional: The audience to request the JWT for": "İsteğe bağlı: JWT'nin talep edileceği kitle",
+    "OAuth Audience": "OAuth Kitlesi"
 }
