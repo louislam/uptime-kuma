@@ -56,6 +56,18 @@
                     <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
                 </div>
 
+                <div class="my-3 form-check form-switch">
+                    <input id="showLocaleSelector" v-model="config.showLocaleSelector" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="showLocaleSelector">{{ $t("Show Locale Selector") }}</label>
+                </div>
+
+                <div class="my-3">
+                    <label for="defaultLocale" class="form-label">{{ $t("Default Locale") }}</label>
+                    <select id="defaultLocale" v-model="config.defaultLocale" class="form-select">
+                        <option v-for="locale in $i18n.availableLocales" :key="locale" :value="locale" :text="$i18n.messages[locale].languageName"></option>
+                    </select>
+                </div>
+
                 <!-- Show Powered By -->
                 <div class="my-3 form-check form-switch">
                     <input id="show-powered-by" v-model="config.showPoweredBy" class="form-check-input" type="checkbox" data-testid="show-powered-by-checkbox">
@@ -128,7 +140,7 @@
 
         <!-- Main Status Page -->
         <div :class="{ edit: enableEditMode}" class="main">
-            <!-- Logo & Title -->
+            <!-- Logo, Title & Language -->
             <h1 class="mb-4 title-flex">
                 <!-- Logo -->
                 <span class="logo-wrapper" @click="showImageCropUploadMethod">
@@ -151,7 +163,14 @@
                 />
 
                 <!-- Title -->
-                <Editable v-model="config.title" tag="span" :contenteditable="editMode" :noNL="true" />
+                <Editable v-model="config.title" class="title" tag="span" :contenteditable="editMode" :noNL="true" />
+
+                <!-- Locale Selector -->
+                <span v-if="config.showLocaleSelector" class="language-selector">
+                    <select v-model="$root.language" class="form-select">
+                        <option v-for="locale in $i18n.availableLocales" :key="locale" :value="locale" :text="$i18n.messages[locale].languageName"></option>
+                    </select>
+                </span>
             </h1>
 
             <!-- Admin functions -->
@@ -723,6 +742,10 @@ export default {
             }, (this.config.autoRefreshInterval + 10) * 1000);
 
             this.updateUpdateTimer();
+
+            if (!localStorage.locale && this.config.defaultLocale) {
+                this.$root.changeCurrentPageLang(this.config.defaultLocale);
+            }
         }).catch( function (error) {
             if (error.response.status === 404) {
                 location.href = "/page-not-found";
@@ -1143,6 +1166,10 @@ footer {
     display: flex;
     align-items: center;
     gap: 10px;
+
+    .title {
+        flex-grow: 1;
+    }
 }
 
 .logo-wrapper {
