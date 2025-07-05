@@ -847,7 +847,7 @@
     "emailTemplateLimitedToUpDownNotification": "UP/DOWN 하트비트에만 사용 가능, 그렇지 않으면 null",
     "tagAlreadyOnMonitor": "이 태그 (이름 및 값)은 이미 모니터에 있거나 추가 보류 중입니다.",
     "tagNameExists": "이 이름을 가진 시스템 태그는 이미 존재합니다. 목록에서 선택하거나 다른 이름을 사용하세요.",
-    "Use HTML for custom E-mail body": "맞춤형 이메일 본문에 HTML을 사용하세요.",
+    "Use HTML for custom E-mail body": "맞춤형 이메일 본문에 HTML을 사용하세요",
     "jsonQueryDescription": "서버의 JSON 응답에서 JSON 쿼리를 사용하거나, JSON이 아닐 경우 원시 응답을 위해 \"$\"를 사용하여 특정 데이터를 파싱하고 추출합니다. 추출된 결과는 문자열로 기대값과 비교됩니다. 문서는 {0}을 참조하고, 쿼리 실험은 {1}을 사용하세요.",
     "Don't mention people": "사람들을 멘션하지 마세요",
     "Notify Channel": "알림 채널",
@@ -887,5 +887,9 @@
     "pushDeerServerDescription": "비워 두면 공식 서버를 사용함",
     "SpugPush Template Code": "템플릿 코드",
     "ntfyAuthenticationMethod": "인증 방법",
-    "ntfyPriorityHelptextAllEvents": "모든 이벤트는 최대 우선순위로 전송됨"
+    "ntfyPriorityHelptextAllEvents": "모든 이벤트는 최대 우선순위로 전송됨",
+    "twilioApiKey": "Api 키 (선택)",
+    "ntfyPriorityHelptextAllExceptDown": "우선 순위가 {1}인 {0}-이벤트를 제외한 모든 이벤트가 이 우선순위로 전송됩니다",
+    "ntfyUsernameAndPassword": "사용자명과 비밀번호",
+    "Show Clickable Link": "클릭 가능한 링크 표시"
 }
