@@ -989,5 +989,7 @@
     "Money": "เงิน",
     "Guitar": "กีตาร์",
     "successKeywordExplanation": "คีย์เวิร์ด MQTT ที่จะถูกพิจารณาว่าสำเร็จ",
-    "defaultFriendlyName": "มอนิเตอร์ใหม่"
+    "defaultFriendlyName": "มอนิเตอร์ใหม่",
+    "tagAlreadyOnMonitor": "แท็กที่ระบุ (ชื่อและค่า) มีอยู่ในระบบแล้ว หรืออยู่ในระหว่างรอการเพิ่ม",
+    "Add Tags": "เพิ่มแท็ก"
 }
