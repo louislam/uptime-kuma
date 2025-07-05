@@ -1126,7 +1126,7 @@
     "Disable URL in Notification": "Desativar URL na notificação",
     "ntfyPriorityHelptextPriorityHigherThanDown": "A prioridade regular deve ser maior que {0} prioridade. Prioridade {1} é maior que {0} prioridade {2}",
     "ntfyPriorityDown": "Prioridade para eventos DOWN",
-    "tagAlreadyOnMonitor": "Esta tag (nome e valor) já está no monitor ou na adição pendente",
+    "tagAlreadyOnMonitor": "Esta tag (nome e valor) já está no monitor ou na adição pendente.",
     "tagNameExists": "Uma tag de sistema com este nome já existe. Selecione-o na lista ou use um nome diferente.",
     "Add Tags": "Adicionar Tags",
     "tagAlreadyStaged": "Esta tag (nome e valor) já está adicionada para este lote.",
@@ -1137,7 +1137,7 @@
     "Happy Eyeballs algorithm": "Algoritmo Happy Eyeballs",
     "Manual": "Manual",
     "Ip Family": "Família IP",
-    "ipFamilyDescriptionAutoSelect": "Usa {happyEyeballs} para determinar a família IP",
+    "ipFamilyDescriptionAutoSelect": "Usa {happyEyeballs} para determinar a família IP.",
     "Optional: The audience to request the JWT for": "Opcional: O público deve solicitar o JWT para",
     "OAuth Audience": "Público OAuth"
 }
