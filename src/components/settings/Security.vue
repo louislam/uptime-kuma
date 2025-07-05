@@ -171,7 +171,7 @@ export default {
             } else {
                 this.$root
                     .getSocket()
-                    .emit("changePassword", this.password, (res) => {
+                    .emit("changePassword", this.$root.userID, this.password, (res) => {
                         this.$root.toastRes(res);
                         if (res.ok) {
                             this.password.currentPassword = "";
