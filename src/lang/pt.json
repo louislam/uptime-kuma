@@ -214,5 +214,8 @@
     "PasswordsDoNotMatch": "As senhas não coincidem.",
     "records": "registros",
     "Current User": "Usuário Atual",
-    "recent": "Recente"
+    "recent": "Recente",
+    "Add New below or Select...": "Adicionar ou selecione um novo abaixo…",
+    "Bottom": "inferior",
+    "Default enabled": "Padrão ativado"
 }
