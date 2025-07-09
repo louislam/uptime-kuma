@@ -206,6 +206,7 @@ export default {
     },
     mounted() {
         window.addEventListener("scroll", this.onScroll);
+        this.loadFilterState();
     },
     beforeUnmount() {
         window.removeEventListener("scroll", this.onScroll);
@@ -244,6 +245,7 @@ export default {
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
+            this.saveFilterState();
         },
         /**
          * Deselect a monitor
@@ -384,6 +386,41 @@ export default {
             }
 
             return m1.name.localeCompare(m2.name);
+        },
+        /**
+         * Save filter state to localStorage
+         * @returns {void}
+         */
+        saveFilterState() {
+            try {
+                const filterData = {
+                    status: this.filterState.status,
+                    active: this.filterState.active,
+                    tags: this.filterState.tags
+                };
+                localStorage.setItem("uptimeKumaFilters", JSON.stringify(filterData));
+            } catch (error) {
+                console.error("Failed to save filter state:", error);
+            }
+        },
+        /**
+         * Load filter state from localStorage
+         * @returns {void}
+         */
+        loadFilterState() {
+            try {
+                const savedFilters = localStorage.getItem("uptimeKumaFilters");
+                if (savedFilters) {
+                    const filterData = JSON.parse(savedFilters);
+                    this.filterState = {
+                        status: filterData.status || null,
+                        active: filterData.active || null,
+                        tags: filterData.tags || null
+                    };
+                }
+            } catch (error) {
+                console.error("Failed to load filter state:", error);
+            }
         }
     },
 };
