@@ -47,7 +47,7 @@ export default {
 @import "../assets/app.scss";
 
 @media only screen and (max-width: 600px) {
-    header-filter > div > .dropdown:last-of-type > filter-dropdown-menu{
+    .header-filter > div > .dropdown:last-of-type > .filter-dropdown-menu {
         left: auto;
         right: 0;
         max-width: 80vw;
