@@ -674,7 +674,7 @@ let needSetup = false;
 
                 let user = R.dispense("user");
                 user.username = username;
-                user.password = passwordHash.generate(password);
+                user.password = await passwordHash.generate(password);
                 await R.store(user);
 
                 needSetup = false;
@@ -802,6 +802,7 @@ let needSetup = false;
                 bean.oauth_auth_method = monitor.oauth_auth_method;
                 bean.oauth_token_url = monitor.oauth_token_url;
                 bean.oauth_scopes = monitor.oauth_scopes;
+                bean.oauth_audience = monitor.oauth_audience;
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;

@@ -1022,6 +1022,8 @@
     "Client ID": "Client ID",
     "Client Secret": "Client Secret",
     "OAuth Scope": "OAuth Scope",
+    "OAuth Audience": "OAuth Audience",
+    "Optional: The audience to request the JWT for": "Optional: The audience to request the JWT for",
     "Optional: Space separated list of scopes": "Optional: Space separated list of scopes",
     "Go back to home page.": "Go back to home page.",
     "No tags found.": "No tags found.",
