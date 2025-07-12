@@ -11,36 +11,45 @@ class LineNotify extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
-        const url = "https://notify-api.line.me/api/notify";
+        const url = "https://api.line.me/v2/bot/message/broadcast";
 
         try {
             let config = {
                 headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Content-Type": "application/json",
                     "Authorization": "Bearer " + notification.lineNotifyAccessToken
                 }
             };
             if (heartbeatJSON == null) {
                 let testMessage = {
-                    "message": msg,
+                      messages: [{
+                        type: "text",
+                        text: msg
+                    }]
                 };
-                await axios.post(url, qs.stringify(testMessage), config);
+                await axios.post(url, testMessage, config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
-                    "message": "\n[🔴 Down]\n" +
-                        "Name: " + monitorJSON["name"] + " \n" +
-                        heartbeatJSON["msg"] + "\n" +
-                        `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
+                    messages: [{
+                        type: "text",
+                        text: `🔴 [Down]\n` +
+                              `Name: ${monitorJSON["name"]}\n` +
+                              `${heartbeatJSON["msg"]}\n` +
+                              `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
+                    }]
                 };
-                await axios.post(url, qs.stringify(downMessage), config);
+                await axios.post(url, downMessage, config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
-                    "message": "\n[✅ Up]\n" +
-                        "Name: " + monitorJSON["name"] + " \n" +
-                        heartbeatJSON["msg"] + "\n" +
-                        `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
+                    messages: [{
+                        type: "text",
+                        text: `✅ [Up]\n` +
+                              `Name: ${monitorJSON["name"]}\n` +
+                              `${heartbeatJSON["msg"]}\n` +
+                              `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
+                    }]
                 };
-                await axios.post(url, qs.stringify(upMessage), config);
+                await axios.post(url, upMessage, config);
             }
             return okMsg;
         } catch (error) {
