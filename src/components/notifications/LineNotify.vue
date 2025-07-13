@@ -4,6 +4,6 @@
         <input id="line-notify-access-token" v-model="$parent.notification.lineNotifyAccessToken" type="text" class="form-control" :required="true">
     </div>
     <i18n-t tag="div" keypath="wayToGetLineNotifyToken" class="form-text" style="margin-top: 8px;">
-        <a href="https://notify-bot.line.me/" target="_blank">https://notify-bot.line.me/</a>
+        <a href="https://developers.line.biz/console/" target="_blank">{{ $t("Line Developers Console") }}</a>
     </i18n-t>
 </template>
