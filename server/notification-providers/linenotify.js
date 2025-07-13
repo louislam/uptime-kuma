@@ -1,6 +1,5 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const qs = require("qs");
 const { DOWN, UP } = require("../../src/util");
 
 class LineNotify extends NotificationProvider {
@@ -14,15 +13,16 @@ class LineNotify extends NotificationProvider {
         const url = "https://api.line.me/v2/bot/message/broadcast";
 
         try {
-            let config = {
+            const config = {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization:
                         "Bearer " + notification.lineNotifyAccessToken,
                 },
             };
-            if (heartbeatJSON == null) {
-                let testMessage = {
+
+            if (!heartbeatJSON) {
+                const testMessage = {
                     messages: [
                         {
                             type: "text",
@@ -32,12 +32,12 @@ class LineNotify extends NotificationProvider {
                 };
                 await axios.post(url, testMessage, config);
             } else if (heartbeatJSON["status"] === DOWN) {
-                let downMessage = {
+                const downMessage = {
                     messages: [
                         {
                             type: "text",
                             text:
-                                `🔴 [Down]\n` +
+                                "🔴 [Down]\n" +
                                 `Name: ${monitorJSON["name"]}\n` +
                                 `${heartbeatJSON["msg"]}\n` +
                                 `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
@@ -46,12 +46,12 @@ class LineNotify extends NotificationProvider {
                 };
                 await axios.post(url, downMessage, config);
             } else if (heartbeatJSON["status"] === UP) {
-                let upMessage = {
+                const upMessage = {
                     messages: [
                         {
                             type: "text",
                             text:
-                                `✅ [Up]\n` +
+                                "✅ [Up]\n" +
                                 `Name: ${monitorJSON["name"]}\n` +
                                 `${heartbeatJSON["msg"]}\n` +
                                 `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
