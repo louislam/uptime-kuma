@@ -17,37 +17,46 @@ class LineNotify extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + notification.lineNotifyAccessToken
-                }
+                    Authorization:
+                        "Bearer " + notification.lineNotifyAccessToken,
+                },
             };
             if (heartbeatJSON == null) {
                 let testMessage = {
-                      messages: [{
-                        type: "text",
-                        text: msg
-                    }]
+                    messages: [
+                        {
+                            type: "text",
+                            text: msg,
+                        },
+                    ],
                 };
                 await axios.post(url, testMessage, config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
-                    messages: [{
-                        type: "text",
-                        text: `🔴 [Down]\n` +
-                              `Name: ${monitorJSON["name"]}\n` +
-                              `${heartbeatJSON["msg"]}\n` +
-                              `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
-                    }]
+                    messages: [
+                        {
+                            type: "text",
+                            text:
+                                `🔴 [Down]\n` +
+                                `Name: ${monitorJSON["name"]}\n` +
+                                `${heartbeatJSON["msg"]}\n` +
+                                `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        },
+                    ],
                 };
                 await axios.post(url, downMessage, config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
-                    messages: [{
-                        type: "text",
-                        text: `✅ [Up]\n` +
-                              `Name: ${monitorJSON["name"]}\n` +
-                              `${heartbeatJSON["msg"]}\n` +
-                              `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
-                    }]
+                    messages: [
+                        {
+                            type: "text",
+                            text:
+                                `✅ [Up]\n` +
+                                `Name: ${monitorJSON["name"]}\n` +
+                                `${heartbeatJSON["msg"]}\n` +
+                                `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        },
+                    ],
                 };
                 await axios.post(url, upMessage, config);
             }
