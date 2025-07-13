@@ -46,6 +46,14 @@ export default {
 @import "../assets/vars.scss";
 @import "../assets/app.scss";
 
+@media only screen and (max-width: 600px) {
+    .header-filter > div > .dropdown:last-of-type > .filter-dropdown-menu {
+        left: auto;
+        right: 0;
+        max-width: 80vw;
+    }
+}
+
 .filter-dropdown-menu {
     z-index: 100;
     transition: all 0.2s;
@@ -63,6 +71,7 @@ export default {
     height: 0;
     opacity: 0;
     background: white;
+
 
     &.open {
         height: unset;
@@ -101,6 +110,9 @@ export default {
         }
     }
 }
+
+
+
 
 .filter-dropdown-status {
     @extend .btn-outline-normal;
