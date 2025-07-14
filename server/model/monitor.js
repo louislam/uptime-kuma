@@ -1314,7 +1314,7 @@ class Monitor extends BeanModel {
     /**
      * Send a notification about a monitor
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
-     * @param {Monitor} monitor The monitor to send a notificaton about
+     * @param {Monitor} monitor The monitor to send a notification about
      * @param {Bean} bean Status information about monitor
      * @returns {void}
      */
