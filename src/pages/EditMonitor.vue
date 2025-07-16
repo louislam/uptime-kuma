@@ -484,6 +484,14 @@
                                 </div>
 
                                 <div class="my-3">
+                                    <label for="mqttWebSocketPath" class="form-label">WebSocket {{ $t("Path") }}</label>
+                                    <input id="mqttWebSocketPath" v-model="monitor.mqttWebSocketPath" type="text" class="form-control" placeholder="/mqtt">
+                                    <div class="form-text">
+                                        {{ $t("mqttWebSocketPathExplanation") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
                                     <label for="mqttCheckType" class="form-label">MQTT {{ $t("Check Type") }}</label>
                                     <select id="mqttCheckType" v-model="monitor.mqttCheckType" class="form-select" required>
                                         <option value="keyword">{{ $t("Keyword") }}</option>
@@ -1181,6 +1189,7 @@ const monitorDefaults = {
     mqttUsername: "",
     mqttPassword: "",
     mqttTopic: "",
+    mqttWebSocketPath: "",
     mqttSuccessMessage: "",
     mqttCheckType: "keyword",
     authMethod: null,
