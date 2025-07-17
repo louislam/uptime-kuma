@@ -760,6 +760,8 @@
     "serwersmsAPIPassword": "API Password",
     "serwersmsPhoneNumber": "Phone number",
     "serwersmsSenderName": "SMS Sender Name (registered via customer portal)",
+    "serwersmsGroupId": "Group ID",
+    "serwersmsGroupIdHelp": "Optional. Instead of a phone number, you can send SMS to a contact group (group_id from SerwerSMS panel). Provide either phone number OR group ID.",
     "smseagleTo": "Phone number(s)",
     "smseagleGroup": "Phonebook group name(s)",
     "smseagleContact": "Phonebook contact name(s)",
