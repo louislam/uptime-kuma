@@ -699,7 +699,7 @@
     "Clone": "Клонировать",
     "cloneOf": "Копия {0}",
     "notificationRegional": "Региональный",
-    "Add New Tag": "Добавить тег",
+    "Add New Tag": "Добавить новый тег",
     "Body Encoding": "Тип содержимого запроса.(JSON or XML)",
     "Strategy": "Стратегия",
     "Free Mobile User Identifier": "Бесплатный мобильный идентификатор пользователя",
@@ -1132,5 +1132,7 @@
     "the smsplanet documentation": "документация SMSPlanet",
     "Phone numbers": "Номера телефонов",
     "Sender name": "Имя отправителя",
-    "smsplanetNeedToApproveName": "Требуется одобрение в панели клиента"
+    "smsplanetNeedToApproveName": "Требуется одобрение в панели клиента",
+    "Add Tags": "Добавить тег",
+    "tagNameExists": "Тег с таким именем уже существует. Выберите его из списка или используйте другое имя."
 }
