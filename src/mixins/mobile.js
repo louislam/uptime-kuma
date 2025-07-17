@@ -19,6 +19,16 @@ export default {
         onResize() {
             this.windowWidth = window.innerWidth;
             this.updateBody();
+
+            if (this.$router.currentRoute.value.path === "/dashboard"
+                || this.$router.currentRoute.value.path === "/list") {
+                this.$router.push({
+                    path: this.isMobile
+                        ? "/list"
+                        : "/dashboard",
+                    query: this.$router.currentRoute.value?.query,
+                });
+            }
         },
 
         /**
