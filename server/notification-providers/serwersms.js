@@ -17,13 +17,22 @@ class SerwerSMS extends NotificationProvider {
                     "Content-Type": "application/json",
                 }
             };
+
             let data = {
                 "username": notification.serwersmsUsername,
                 "password": notification.serwersmsPassword,
-                "phone": notification.serwersmsPhoneNumber,
-                "text": msg.replace(/[^\x00-\x7F]/g, ""),
+                "text": msg.replace(/[^\x00-\x7F]/g, ""), // SerwerSMS może nie obsługiwać znaków specjalnych bez utf
                 "sender": notification.serwersmsSenderName,
             };
+
+            // Obsługa numeru telefonu lub grupy
+            if (notification.serwersmsGroupId) {
+                data.group_id = notification.serwersmsGroupId;
+            } else if (notification.serwersmsPhoneNumber) {
+                data.phone = notification.serwersmsPhoneNumber;
+            } else {
+                throw new Error("SerwerSMS: Either phone number or group_id must be provided.");
+            }
 
             let resp = await axios.post(url, data, config);
 
