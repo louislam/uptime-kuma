@@ -105,7 +105,7 @@
     "disableauth.message2": "{intendThirdPartyAuth} prima di Uptime Kuma, come ad esempio Cloudflare Access.",
     "where you intend to implement third-party authentication": "Questa opzione è per chi possiede un sistema di autenticazione gestito da terze parti",
     "Please use this option carefully!": "Utilizzare con attenzione!",
-    "Logout": "Esci",
+    "Logout": "Disconnettiti",
     "Leave": "Annulla",
     "I understand, please disable": "Lo capisco, disabilitare l'autenticazione",
     "Confirm": "Conferma",
@@ -153,7 +153,7 @@
     "Setup 2FA": "Configura 2FA",
     "Enable 2FA": "Abilita 2FA",
     "Disable 2FA": "Disabilita 2FA",
-    "2FA Settings": "Gestisci l'autenticazione a due fattori",
+    "2FA Settings": "Gestisci 2FA",
     "Two Factor Authentication": "Autenticazione a due fattori (2FA)",
     "Active": "Attivata",
     "Inactive": "Disattivata",
@@ -779,5 +779,6 @@
     "Guild ID": "Guild ID",
     "Free Mobile API Key": "Chiave API mobile gratuita",
     "telegramUseTemplate": "Utilizza un template di messaggio personalizzato",
-    "telegramTemplateFormatDescription": "Telegram permette l'utilizzo di diversi linguaggi di markup, vedi Telegram {0} per maggiori dettagli."
+    "telegramTemplateFormatDescription": "Telegram permette l'utilizzo di diversi linguaggi di markup, vedi Telegram {0} per maggiori dettagli.",
+    "Add Tags": "Aggiungi Etichette"
 }
