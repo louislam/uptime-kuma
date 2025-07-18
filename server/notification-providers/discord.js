@@ -18,17 +18,28 @@ class Discord extends NotificationProvider {
                 webhookUrl.searchParams.append("thread_id", notification.threadId);
             }
 
+            // Check if the webhook has an avatar
+            let webhookHasAvatar = true;
+            try {
+                const webhookInfo = await axios.get(webhookUrl.toString());
+                webhookHasAvatar = !!webhookInfo.data.avatar;
+            } catch (e) {
+                // If we can't verify, we assume he has an avatar to avoid forcing the default avatar
+                webhookHasAvatar = true;
+            }
+
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
                 let discordtestdata = {
                     username: discordDisplayName,
                     content: msg,
                 };
-
+                if (!webhookHasAvatar) {
+                    discordtestdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
                 }
-
                 await axios.post(webhookUrl.toString(), discordtestdata);
                 return okMsg;
             }
@@ -61,6 +72,9 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 };
+                if (!webhookHasAvatar) {
+                    discorddowndata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
                 if (notification.discordChannelType === "createNewForumPost") {
                     discorddowndata.thread_name = notification.postName;
                 }
@@ -98,6 +112,9 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 };
+                if (!webhookHasAvatar) {
+                    discordupdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
 
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordupdata.thread_name = notification.postName;

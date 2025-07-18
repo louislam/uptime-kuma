@@ -89,6 +89,9 @@ function NtlmClient(credentials, AxiosConfig) {
             switch (_b.label) {
                 case 0:
                     error = err.response;
+                    // The header may look like this: `Negotiate, NTLM, Basic realm="itsahiddenrealm.example.net"`Add commentMore actions
+                    // so extract the 'NTLM' part first
+                    const ntlmheader = error.headers['www-authenticate'].split(',').find(_ => _.match(/ *NTLM/))?.trim() || '';
                     if (!(error && error.status === 401
                         && error.headers['www-authenticate']
                         && error.headers['www-authenticate'].includes('NTLM'))) return [3 /*break*/, 3];
@@ -96,12 +99,12 @@ function NtlmClient(credentials, AxiosConfig) {
                     // include the Negotiate option when responding with the T2 message
                     // There is nore we could do to ensure we are processing correctly,
                     // but this is the easiest option for now
-                    if (error.headers['www-authenticate'].length < 50) {
+                    if (ntlmheader.length < 50) {
                         t1Msg = ntlm.createType1Message(credentials.workstation, credentials.domain);
                         error.config.headers["Authorization"] = t1Msg;
                     }
                     else {
-                        t2Msg = ntlm.decodeType2Message((error.headers['www-authenticate'].match(/^NTLM\s+(.+?)(,|\s+|$)/) || [])[1]);
+                        t2Msg = ntlm.decodeType2Message((ntlmheader.match(/^NTLM\s+(.+?)(,|\s+|$)/) || [])[1]);
                         t3Msg = ntlm.createType3Message(t2Msg, credentials.username, credentials.password, credentials.workstation, credentials.domain);
                         error.config.headers["X-retry"] = "false";
                         error.config.headers["Authorization"] = t3Msg;

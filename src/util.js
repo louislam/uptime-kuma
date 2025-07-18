@@ -8,19 +8,15 @@
 // Backend uses the compiled file util.js
 // Frontend uses util.ts
 */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
-exports.evaluateJsonQuery = exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = void 0;
-exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = void 0;
-const dayjs_1 = __importDefault(require("dayjs"));
-const dayjs = require("dayjs");
+exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.PING_PER_REQUEST_TIMEOUT_DEFAULT = exports.PING_PER_REQUEST_TIMEOUT_MAX = exports.PING_PER_REQUEST_TIMEOUT_MIN = exports.PING_COUNT_DEFAULT = exports.PING_COUNT_MAX = exports.PING_COUNT_MIN = exports.PING_GLOBAL_TIMEOUT_DEFAULT = exports.PING_GLOBAL_TIMEOUT_MAX = exports.PING_GLOBAL_TIMEOUT_MIN = exports.PING_PACKET_SIZE_DEFAULT = exports.PING_PACKET_SIZE_MAX = exports.PING_PACKET_SIZE_MIN = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
+exports.evaluateJsonQuery = exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = void 0;
+const dayjs_1 = require("dayjs");
 const jsonata = require("jsonata");
 exports.isDev = process.env.NODE_ENV === "development";
 exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
+const dayjs = (exports.isNode) ? require("dayjs") : dayjs_1.default;
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
@@ -35,6 +31,18 @@ exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 exports.MAX_INTERVAL_SECOND = 2073600;
 exports.MIN_INTERVAL_SECOND = 20;
+exports.PING_PACKET_SIZE_MIN = 1;
+exports.PING_PACKET_SIZE_MAX = 65500;
+exports.PING_PACKET_SIZE_DEFAULT = 56;
+exports.PING_GLOBAL_TIMEOUT_MIN = 1;
+exports.PING_GLOBAL_TIMEOUT_MAX = 300;
+exports.PING_GLOBAL_TIMEOUT_DEFAULT = 10;
+exports.PING_COUNT_MIN = 1;
+exports.PING_COUNT_MAX = 100;
+exports.PING_COUNT_DEFAULT = 1;
+exports.PING_PER_REQUEST_TIMEOUT_MIN = 1;
+exports.PING_PER_REQUEST_TIMEOUT_MAX = 60;
+exports.PING_PER_REQUEST_TIMEOUT_DEFAULT = 2;
 exports.CONSOLE_STYLE_Reset = "\x1b[0m";
 exports.CONSOLE_STYLE_Bright = "\x1b[1m";
 exports.CONSOLE_STYLE_Dim = "\x1b[2m";
@@ -66,7 +74,6 @@ exports.CONSOLE_STYLE_BgMagenta = "\x1b[45m";
 exports.CONSOLE_STYLE_BgCyan = "\x1b[46m";
 exports.CONSOLE_STYLE_BgWhite = "\x1b[47m";
 exports.CONSOLE_STYLE_BgGray = "\x1b[100m";
-
 const consoleModuleColors = [
     exports.CONSOLE_STYLE_FgCyan,
     exports.CONSOLE_STYLE_FgGreen,
@@ -159,11 +166,11 @@ class Logger {
         module = module.toUpperCase();
         level = level.toUpperCase();
         let now;
-        if (dayjs_1.default.tz) {
-            now = dayjs_1.default.tz(new Date()).format();
+        if (dayjs.tz) {
+            now = dayjs.tz(new Date()).format();
         }
         else {
-            now = (0, dayjs_1.default)().format();
+            now = dayjs().format();
         }
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
@@ -264,11 +271,11 @@ function polyfill() {
 exports.polyfill = polyfill;
 class TimeLogger {
     constructor() {
-        this.startTime = (0, dayjs_1.default)().valueOf();
+        this.startTime = dayjs().valueOf();
     }
     print(name) {
         if (exports.isDev && process.env.TIMELOGGER === "1") {
-            console.log(name + ": " + ((0, dayjs_1.default)().valueOf() - this.startTime) + "ms");
+            console.log(name + ": " + (dayjs().valueOf() - this.startTime) + "ms");
         }
     }
 }
@@ -380,19 +387,19 @@ function parseTimeFromTimeObject(obj) {
 }
 exports.parseTimeFromTimeObject = parseTimeFromTimeObject;
 function isoToUTCDateTime(input) {
-    return (0, dayjs_1.default)(input).utc().format(exports.SQL_DATETIME_FORMAT);
+    return dayjs(input).utc().format(exports.SQL_DATETIME_FORMAT);
 }
 exports.isoToUTCDateTime = isoToUTCDateTime;
 function utcToISODateTime(input) {
-    return dayjs_1.default.utc(input).toISOString();
+    return dayjs.utc(input).toISOString();
 }
 exports.utcToISODateTime = utcToISODateTime;
 function utcToLocal(input, format = exports.SQL_DATETIME_FORMAT) {
-    return dayjs_1.default.utc(input).local().format(format);
+    return dayjs.utc(input).local().format(format);
 }
 exports.utcToLocal = utcToLocal;
 function localToUTC(input, format = exports.SQL_DATETIME_FORMAT) {
-    return (0, dayjs_1.default)(input).utc().format(format);
+    return dayjs(input).utc().format(format);
 }
 exports.localToUTC = localToUTC;
 function intHash(str, length = 10) {

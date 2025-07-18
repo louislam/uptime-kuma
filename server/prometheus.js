@@ -2,6 +2,7 @@ const PrometheusClient = require("prom-client");
 const { log } = require("../src/util");
 
 const commonLabels = [
+    "monitor_id",
     "monitor_name",
     "monitor_type",
     "monitor_url",
@@ -40,6 +41,7 @@ class Prometheus {
      */
     constructor(monitor) {
         this.monitorLabelValues = {
+            monitor_id: monitor.id,
             monitor_name: monitor.name,
             monitor_type: monitor.type,
             monitor_url: monitor.url,

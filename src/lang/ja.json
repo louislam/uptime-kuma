@@ -29,7 +29,7 @@
     "Add New Monitor": "監視の追加",
     "Quick Stats": "統計",
     "Up": "正常",
-    "Down": "停止",
+    "Down": "異常",
     "Pending": "待機中",
     "Unknown": "不明",
     "Pause": "一時停止",
@@ -1085,5 +1085,11 @@
     "telegramUseTemplate": "カスタムメッセージテンプレートを使用",
     "telegramUseTemplateDescription": "有効にすると、メッセージはカスタムテンプレートを使って送信されます。",
     "telegramTemplateFormatDescription": "Telegramではメッセージに異なるマークアップ言語を使用することができます。詳細はTelegram {0} を参照してください。",
-    "Font Twemoji by Twitter licensed under": "TwemojiフォントはTwitterライセンス下でライセンスされています"
+    "Font Twemoji by Twitter licensed under": "TwemojiフォントはTwitterライセンス下でライセンスされています",
+    "the smsplanet documentation": "smsplanetドキュメント",
+    "Phone numbers": "携帯電話番号",
+    "Sender name": "送信者名",
+    "smsplanetNeedToApproveName": "クライアントパネルでの承認が必要",
+    "smsplanetApiToken": "SMSPlanet APIのトークン",
+    "smsplanetApiDocs": "APIトークンの取得に関する詳細な情報は、{the_smsplanet_documentation}にあります。"
 }

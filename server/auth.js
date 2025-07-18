@@ -26,7 +26,7 @@ exports.login = async function (username, password) {
         // Upgrade the hash to bcrypt
         if (passwordHash.needRehash(user.password)) {
             await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-                passwordHash.generate(password),
+                await passwordHash.generate(password),
                 user.id,
             ]);
         }

@@ -1108,5 +1108,12 @@
     "templateStatus": "status",
     "telegramUseTemplate": "Gebruik aangepaste bericht sjabloon",
     "telegramTemplateFormatDescription": "Telegram staat het gebruik van verschillende opmaaktalen voor berichten toe, zie Telegram {0} voor specifieke details.",
-    "telegramUseTemplateDescription": "Indien ingeschakeld, wordt het bericht verzonden met een aangepaste sjabloon."
+    "telegramUseTemplateDescription": "Indien ingeschakeld, wordt het bericht verzonden met een aangepaste sjabloon.",
+    "Font Twemoji by Twitter licensed under": "Lettertype Twemoji van Twitter gelicentieerd onder",
+    "the smsplanet documentation": "de smsplanet documentatie",
+    "Phone numbers": "Telefoonnummers",
+    "Sender name": "Naam afzender",
+    "smsplanetNeedToApproveName": "Moet worden goedgekeurd in het clientpaneel",
+    "smsplanetApiToken": "Token voor de SMSPlanet API",
+    "smsplanetApiDocs": "Gedetailleerde informatie over het verkrijgen van API-tokens vindt u op {the_smsplanet_documentation}."
 }

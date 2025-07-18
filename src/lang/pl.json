@@ -1117,5 +1117,12 @@
     "templateStatus": "status",
     "telegramUseTemplate": "Użyj niestandardowego szablonu wiadomości",
     "telegramUseTemplateDescription": "Jeśli opcja ta jest włączona, wiadomość zostanie wysłana przy użyciu niestandardowego szablonu.",
-    "telegramTemplateFormatDescription": "Telegram pozwala na używanie różnych języków znaczników dla wiadomości, zobacz Telegram {0}, aby uzyskać szczegółowe informacje."
+    "telegramTemplateFormatDescription": "Telegram pozwala na używanie różnych języków znaczników dla wiadomości, zobacz Telegram {0}, aby uzyskać szczegółowe informacje.",
+    "Font Twemoji by Twitter licensed under": "Czcionka Twemoji autorstwa Twitter na licencji",
+    "smsplanetApiToken": "Token dla API SMSPlanet",
+    "smsplanetApiDocs": "Szczegółowe informacje na temat uzyskiwania tokenów API można znaleźć w {the_smsplanet_documentation}.",
+    "the smsplanet documentation": "dokumentacja smsplanet",
+    "Phone numbers": "Numery telefonów",
+    "Sender name": "Nazwa nadawcy",
+    "smsplanetNeedToApproveName": "Wymaga zatwierdzenia w panelu klienta"
 }

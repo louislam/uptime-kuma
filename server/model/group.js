@@ -33,7 +33,7 @@ class Group extends BeanModel {
      */
     async getMonitorList() {
         return R.convertToBeans("monitor", await R.getAll(`
-            SELECT monitor.*, monitor_group.send_url FROM monitor, monitor_group
+            SELECT monitor.*, monitor_group.send_url, monitor_group.custom_url FROM monitor, monitor_group
             WHERE monitor.id = monitor_group.monitor_id
             AND group_id = ?
             ORDER BY monitor_group.weight

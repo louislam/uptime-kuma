@@ -66,6 +66,7 @@
                                                     v-if="editMode"
                                                     :class="{'link-active': true, 'btn-link': true}"
                                                     icon="cog" class="action me-3"
+                                                    data-testid="monitor-settings"
                                                     @click="$refs.monitorSettingDialog.show(group, monitor)"
                                                 />
                                             </span>

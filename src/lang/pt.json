@@ -202,5 +202,20 @@
     "Confirm": "Confirmar",
     "pushOthers": "Outros",
     "time ago": "{0} atrás",
-    "Dark": "Escuro"
+    "Dark": "Escuro",
+    "defaultFriendlyName": "Novo Monitor",
+    "Normal": "Normal",
+    "Allow indexing": "Permitir indexação",
+    "Discourage search engines from indexing site": "Desencorajar os mecanismos de busca de indexar o site",
+    "One record": "Um registro",
+    "topic": "Tópico",
+    "successKeyword": "Palavra-chave de sucesso",
+    "Timezone": "Fuso horário",
+    "PasswordsDoNotMatch": "As senhas não coincidem.",
+    "records": "registros",
+    "Current User": "Usuário Atual",
+    "recent": "Recente",
+    "Add New below or Select...": "Adicionar ou selecione um novo abaixo…",
+    "Bottom": "inferior",
+    "Default enabled": "Padrão ativado"
 }

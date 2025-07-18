@@ -175,6 +175,38 @@ export default {
         },
 
         /**
+         * Show dialog to clone a proxy
+         * @param {number} proxyID ID of proxy to clone
+         * @returns {void}
+         */
+        showClone(proxyID) {
+            if (proxyID) {
+                for (let proxy of this.$root.proxyList) {
+                    if (proxy.id === proxyID) {
+                        // Create a clone of the proxy data
+                        this.proxy = {
+                            protocol: proxy.protocol,
+                            host: proxy.host,
+                            port: proxy.port,
+                            auth: proxy.auth,
+                            username: proxy.username,
+                            password: proxy.password,
+                            active: proxy.active,
+                            default: false, // Cloned proxy should not be default
+                            applyExisting: false,
+                        };
+                        break;
+                    }
+                }
+            }
+
+            // Set id to null to indicate this is a new proxy (clone)
+            this.id = null;
+
+            this.modal.show();
+        },
+
+        /**
          * Submit form data for saving
          * @returns {void}
          */

@@ -50,7 +50,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
         let msg = request.query.msg || "OK";
         let ping = parseFloat(request.query.ping) || null;
         let statusString = request.query.status || "up";
-        let status = (statusString === "up") ? UP : DOWN;
+        const statusFromParam = (statusString === "up") ? UP : DOWN;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [
             pushToken
@@ -80,7 +80,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
             msg = "Monitor under maintenance";
             bean.status = MAINTENANCE;
         } else {
-            determineStatus(status, previousHeartbeat, monitor.maxretries, monitor.isUpsideDown(), bean);
+            determineStatus(statusFromParam, previousHeartbeat, monitor.maxretries, monitor.isUpsideDown(), bean);
         }
 
         // Calculate uptime
@@ -92,21 +92,21 @@ router.all("/api/push/:pushToken", async (request, response) => {
         log.debug("router", "PreviousStatus: " + previousHeartbeat?.status);
         log.debug("router", "Current Status: " + bean.status);
 
-        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, status);
+        bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
 
-        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, status)) {
+        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
             // Reset down count
             bean.downCount = 0;
 
-            log.debug("monitor", `[${this.name}] sendNotification`);
+            log.debug("monitor", `[${monitor.name}] sendNotification`);
             await Monitor.sendNotification(isFirstBeat, monitor, bean);
         } else {
-            if (bean.status === DOWN && this.resendInterval > 0) {
+            if (bean.status === DOWN && monitor.resendInterval > 0) {
                 ++bean.downCount;
-                if (bean.downCount >= this.resendInterval) {
+                if (bean.downCount >= monitor.resendInterval) {
                     // Send notification again, because we are still DOWN
-                    log.debug("monitor", `[${this.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`);
-                    await Monitor.sendNotification(isFirstBeat, this, bean);
+                    log.debug("monitor", `[${monitor.name}] sendNotification again: Down Count: ${bean.downCount} | Resend Interval: ${monitor.resendInterval}`);
+                    await Monitor.sendNotification(isFirstBeat, monitor, bean);
 
                     // Reset down count
                     bean.downCount = 0;
