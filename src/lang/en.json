@@ -440,7 +440,7 @@
     "chatIDNotFound": "Chat ID is not found; please send a message to this bot first",
     "disableCloudflaredNoAuthMsg": "You are in No Auth mode, a password is not required.",
     "trustProxyDescription": "Trust 'X-Forwarded-*' headers. If you want to get the correct client IP and your Uptime Kuma is behind a proxy such as Nginx or Apache, you should enable this.",
-    "wayToGetLineNotifyToken": "You can get an access token from {0}",
+    "wayToGetLineNotifyToken": "First access the {0}, create a provider and channel (Messaging API), then you can get the channel access token",
     "Examples": "Examples",
     "Home Assistant URL": "Home Assistant URL",
     "Long-Lived Access Token": "Long-Lived Access Token",
