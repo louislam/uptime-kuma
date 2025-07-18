@@ -10,19 +10,31 @@
     </div>
 
     <div class="mb-3">
-        <label for="serwersms-phone-number" class="form-label">
-            {{ $t("serwersmsPhoneNumber") }} ({{ $t("optional") }})
-        </label>
-        <input id="serwersms-phone-number" v-model="$parent.notification.serwersmsPhoneNumber" type="text" class="form-control">
+        <label class="form-label">{{ $t("serwersmsDestinationType") }}</label><br> <div class="form-check form-check-inline">
+            <input class="form-check-input"type="radio" id="dest-phone" value="phone" v-model="$parent.notification.destinationType" required>
+            <label class="form-check-label" for="dest-phone">{{ $t("serwersmsPhoneNumber") }}</label>
+        </div>
+
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="dest-group" value="group" v-model="$parent.notification.destinationType">
+            <label class="form-check-label" for="dest-group">{{ $t("serwersmsGroupId") }}</label>
+        </div>
     </div>
 
     <div class="mb-3">
-        <label for="serwersms-group-id" class="form-label">
-            {{ $t("serwersmsGroupId") }} ({{ $t("optional") }})
+        <label for="serwersms-destination-value" class="form-label">
+            {{ $t($parent.notification.destinationType === 'group' ? 'serwersmsGroupId' : 'serwersmsPhoneNumber') }}
         </label>
-        <input id="serwersms-group-id" v-model="$parent.notification.serwersmsGroupId" type="text" class="form-control">
-        <div class="form-text">
+        <input id="serwersms-destination-value"
+               v-model="$parent.notification.destinationValue"
+               type="text"
+               class="form-control"
+               required>
+        <div v-if="$parent.notification.destinationType === 'group'" class="form-text">
             {{ $t("serwersmsGroupIdHelp") }}
+        </div>
+        <div v-else class="form-text">
+            {{ $t("serwersmsPhoneHelp") }}
         </div>
     </div>
 
