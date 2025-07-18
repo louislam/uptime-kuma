@@ -1,7 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="serwersms-username" class="form-label">{{ $t('serwersmsAPIUser') }}</label>
-        <input id="serwersms-username" v-model="$parent.notification.serwersmsUsername" type="text" class="form-control" required>
+        <input id="serwersms-username" type="text" v-model="$parent.notification.serwersmsUsername" class="form-control" required>
     </div>
 
     <div class="mb-3">
@@ -10,8 +10,9 @@
     </div>
 
     <div class="mb-3">
-        <label class="form-label">{{ $t("serwersmsDestinationType") }}</label><br> <div class="form-check form-check-inline">
-            <input class="form-check-input"type="radio" id="dest-phone" value="phone" v-model="$parent.notification.destinationType" required>
+        <label class="form-label">{{ $t("serwersmsDestinationType") }}</label><br>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="dest-phone" value="phone" v-model="$parent.notification.destinationType" required>
             <label class="form-check-label" for="dest-phone">{{ $t("serwersmsPhoneNumber") }}</label>
         </div>
 
@@ -25,22 +26,14 @@
         <label for="serwersms-destination-value" class="form-label">
             {{ $t($parent.notification.destinationType === 'group' ? 'serwersmsGroupId' : 'serwersmsPhoneNumber') }}
         </label>
-        <input id="serwersms-destination-value"
-               v-model="$parent.notification.destinationValue"
-               type="text"
-               class="form-control"
-               required>
-        <div v-if="$parent.notification.destinationType === 'group'" class="form-text">
-            {{ $t("serwersmsGroupIdHelp") }}
-        </div>
-        <div v-else class="form-text">
-            {{ $t("serwersmsPhoneHelp") }}
-        </div>
+        <input id="serwersms-destination-value" type="text" v-model="$parent.notification.destinationValue" class="form-control" required>
+        <div v-if="$parent.notification.destinationType === 'group'" class="form-text">{{ $t("serwersmsGroupIdHelp") }}</div>
+        <div v-else class="form-text">{{ $t("serwersmsPhoneHelp") }}</div>
     </div>
 
     <div class="mb-3">
         <label for="serwersms-sender-name" class="form-label">{{ $t("serwersmsSenderName") }}</label>
-        <input id="serwersms-sender-name" v-model="$parent.notification.serwersmsSenderName" type="text" minlength="3" maxlength="11" class="form-control">
+        <input id="serwersms-sender-name" type="text" v-model="$parent.notification.serwersmsSenderName" minlength="3" maxlength="11" class="form-control">
     </div>
 </template>
 
