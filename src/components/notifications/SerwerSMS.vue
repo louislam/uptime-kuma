@@ -12,12 +12,12 @@
     <div class="mb-3">
         <label class="form-label">{{ $t("serwersmsDestinationType") }}</label><br>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" v-model="$parent.notification.destinationType" type="radio" id="dest-phone" value="phone" required>
+            <input id="dest-phone" v-model="$parent.notification.destinationType" type="radio" class="form-check-input" value="phone" required>
             <label class="form-check-label" for="dest-phone">{{ $t("serwersmsPhoneNumber") }}</label>
         </div>
 
         <div class="form-check form-check-inline">
-            <input class="form-check-input" v-model="$parent.notification.destinationType" type="radio" id="dest-group" value="group">
+            <input id="dest-group" v-model="$parent.notification.destinationType" type="radio" class="form-check-input" value="group">
             <label class="form-check-label" for="dest-group">{{ $t("serwersmsGroupId") }}</label>
         </div>
     </div>
