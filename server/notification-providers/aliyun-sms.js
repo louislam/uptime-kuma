@@ -16,10 +16,11 @@ class AliyunSMS extends NotificationProvider {
         try {
             if (heartbeatJSON != null) {
                 let msgBody = JSON.stringify({
-                    name: monitorJSON["name"],
+                    name: notification.customName || monitorJSON["name"],
                     time: heartbeatJSON["localDateTime"],
-                    status: this.statusToString(heartbeatJSON["status"]),
-                    msg: heartbeatJSON["msg"],
+                    status: notification.customUpText && heartbeatJSON["status"] === UP ? notification.customUpText : 
+                          (notification.customDownText && heartbeatJSON["status"] === DOWN ? notification.customDownText : this.statusToString(heartbeatJSON["status"])),
+                    msg: notification.customMsg || heartbeatJSON["msg"],
                 });
                 if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
