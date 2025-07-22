@@ -15,7 +15,7 @@ class MqttMonitorType extends MonitorType {
             username: monitor.mqttUsername,
             password: monitor.mqttPassword,
             interval: monitor.interval,
-            webSocketPath: monitor.mqttWebSocketPath,
+            webSocketPath: monitor.mqttWebsocketPath,
         });
 
         if (monitor.mqttCheckType == null || monitor.mqttCheckType === "") {

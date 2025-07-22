@@ -267,7 +267,7 @@
     "Current User": "Current User",
     "topic": "Topic",
     "topicExplanation": "MQTT topic to monitor",
-    "mqttWebSocketPathExplanation": "WebSocket path for MQTT over WebSocket connections (e.g., /mqtt)",
+    "mqttWebsocketPathExplanation": "WebSocket path for MQTT over WebSocket connections (e.g., /mqtt)",
     "successKeyword": "Success Keyword",
     "successKeywordExplanation": "MQTT Keyword that will be considered as success",
     "recent": "Recent",
