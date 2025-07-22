@@ -311,6 +311,9 @@
                                     required
                                     data-testid="hostname-input"
                                 >
+                                <div v-if="monitor.type === 'mqtt'" class="form-text">
+                                    {{ $t("mqttHostnameTip") }}
+                                </div>
                             </div>
 
                             <!-- Port -->

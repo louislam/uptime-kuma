@@ -268,6 +268,7 @@
     "topic": "Topic",
     "topicExplanation": "MQTT topic to monitor",
     "mqttWebsocketPathExplanation": "WebSocket path for MQTT over WebSocket connections (e.g., /mqtt)",
+    "mqttHostnameTip": "For the hostname, please use this format [mqtt,ws,wss]://hostname",
     "successKeyword": "Success Keyword",
     "successKeywordExplanation": "MQTT Keyword that will be considered as success",
     "recent": "Recent",
