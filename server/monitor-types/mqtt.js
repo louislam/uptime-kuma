@@ -15,7 +15,7 @@ class MqttMonitorType extends MonitorType {
             username: monitor.mqttUsername,
             password: monitor.mqttPassword,
             interval: monitor.interval,
-            webSocketPath: monitor.mqttWebsocketPath,
+            websocketPath: monitor.mqttWebsocketPath,
         });
 
         if (monitor.mqttCheckType == null || monitor.mqttCheckType === "") {
@@ -53,12 +53,12 @@ class MqttMonitorType extends MonitorType {
      * @param {string} hostname Hostname / address of machine to test
      * @param {string} topic MQTT topic
      * @param {object} options MQTT options. Contains port, username,
-     * password, webSocketPath and interval (interval defaults to 20)
+     * password, websocketPath and interval (interval defaults to 20)
      * @returns {Promise<string>} Received MQTT message
      */
     mqttAsync(hostname, topic, options = {}) {
         return new Promise((resolve, reject) => {
-            const { port, username, password, webSocketPath, interval = 20 } = options;
+            const { port, username, password, websocketPath, interval = 20 } = options;
 
             // Adds MQTT protocol to the hostname if not already present
             if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
@@ -72,14 +72,14 @@ class MqttMonitorType extends MonitorType {
             }, interval * 1000 * 0.8);
 
             // Construct the URL based on protocol
-            let mqttUrl;
+            let mqttUrl = `${hostname}:${port}`
             if (hostname.startsWith("ws://") || hostname.startsWith("wss://")) {
-                // For WebSocket connections, include the path
-                const path = webSocketPath || "";
-                mqttUrl = `${hostname}:${port}${path}`;
-            } else {
-                // For regular MQTT connections
-                mqttUrl = `${hostname}:${port}`;
+                if (websocketPath && !websocketPath.startsWith("/")) {
+                    mqttUrl = `${hostname}:${port}/${websocketPath || ""}`;
+                }
+                else {
+                    mqttUrl = `${hostname}:${port}${websocketPath || ""}`;
+                }
             }
 
             log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
