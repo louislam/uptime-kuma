@@ -310,13 +310,13 @@
                                     :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
                                     required
                                     data-testid="hostname-input"
-                                >       
+                                >
                                 <div v-if="monitor.type === 'mqtt'" class="form-text">
                                     <i18n-t tag="p" keypath="mqttHostnameTip">
                                         <template #hostnameFormat>
-                                           <code>[mqtt,ws,wss]://hostname</code>
+                                            <code>[mqtt,ws,wss]://hostname</code>
                                         </template>
-                                    </i18n-t>   
+                                    </i18n-t>
                                 </div>
                             </div>
 
@@ -492,11 +492,13 @@
 
                                 <div class="my-3">
                                     <label for="mqttWebsocketPath" class="form-label">{{ $t("mqttWebSocketPath") }}</label>
-                                    <input v-if="/wss?:\/\/.+/.test(monitor.hostname)" 
-                                            id="mqttWebsocketPath" 
-                                            v-model="monitor.mqttWebsocketPath"
-                                            type="text" 
-                                            class="form-control">
+                                    <input
+                                        v-if="/wss?:\/\/.+/.test(monitor.hostname)"
+                                        id="mqttWebsocketPath"
+                                        v-model="monitor.mqttWebsocketPath"
+                                        type="text"
+                                        class="form-control"
+                                    >
                                     <input v-else type="text" class="form-control" disabled>
                                     <div class="form-text">
                                         {{ $t("mqttWebsocketPathExplanation") }}

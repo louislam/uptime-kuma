@@ -72,12 +72,11 @@ class MqttMonitorType extends MonitorType {
             }, interval * 1000 * 0.8);
 
             // Construct the URL based on protocol
-            let mqttUrl = `${hostname}:${port}`
+            let mqttUrl = `${hostname}:${port}`;
             if (hostname.startsWith("ws://") || hostname.startsWith("wss://")) {
                 if (websocketPath && !websocketPath.startsWith("/")) {
                     mqttUrl = `${hostname}:${port}/${websocketPath || ""}`;
-                }
-                else {
+                } else {
                     mqttUrl = `${hostname}:${port}${websocketPath || ""}`;
                 }
             }
