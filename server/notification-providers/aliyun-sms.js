@@ -15,12 +15,33 @@ class AliyunSMS extends NotificationProvider {
 
         try {
             if (heartbeatJSON != null) {
+                const liquid = require("liquidjs");
+                const engine = new liquid.Liquid();
+
+                let statusText = this.statusToString(heartbeatJSON["status"]);
+                let msgText = heartbeatJSON["msg"];
+
+                if (notification.enableCustomTemplate) {
+                    if (notification.statusTemplate) {
+                        statusText = await engine.parseAndRender(
+                            notification.statusTemplate,
+                            { status: this.statusToString(heartbeatJSON["status"]) }
+                        );
+                    }
+
+                    if (notification.msgTemplate) {
+                        msgText = await engine.parseAndRender(
+                            notification.msgTemplate,
+                            { status: this.statusToString(heartbeatJSON["status"]) }
+                        );
+                    }
+                }
+
                 let msgBody = JSON.stringify({
                     name: notification.customName || monitorJSON["name"],
                     time: heartbeatJSON["localDateTime"],
-                    status: notification.customUpText && heartbeatJSON["status"] === UP ? notification.customUpText :
-                        (notification.customDownText && heartbeatJSON["status"] === DOWN ? notification.customDownText : this.statusToString(heartbeatJSON["status"])),
-                    msg: notification.customMsg || heartbeatJSON["msg"],
+                    status: statusText,
+                    msg: msgText,
                 });
                 if (await this.sendSms(notification, msgBody)) {
                     return okMsg;

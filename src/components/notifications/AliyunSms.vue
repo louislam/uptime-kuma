@@ -16,22 +16,21 @@
         <input id="signName" v-model="$parent.notification.signName" type="text" class="form-control" required>
 
         <div class="form-check form-switch mb-3">
-            <input id="enableCustomVariables" v-model="$parent.notification.enableCustomVariables" class="form-check-input" type="checkbox">
-            <label for="enableCustomVariables" class="form-check-label">{{ $t("Enable Custom Variables") }}</label>
+            <input id="enableCustomTemplate" v-model="$parent.notification.enableCustomTemplate" class="form-check-input" type="checkbox">
+            <label for="enableCustomTemplate" class="form-check-label">{{ $t("Enable Custom Template") }}</label>
         </div>
 
-        <div v-if="$parent.notification.enableCustomVariables" class="mb-3">
+        <div v-if="$parent.notification.enableCustomTemplate" class="mb-3">
             <label for="customName" class="form-label">{{ $t("Custom Name") }}</label>
             <input id="customName" v-model="$parent.notification.customName" type="text" class="form-control">
+        </div>
 
-            <label for="customMsg" class="form-label">{{ $t("Custom Message") }}</label>
-            <input id="customMsg" v-model="$parent.notification.customMsg" type="text" class="form-control">
+        <div v-if="$parent.notification.enableCustomTemplate" class="mb-3">
+            <label for="statusTemplate" class="form-label">{{ $t("${status} Template") }}</label>
+            <textarea id="statusTemplate" v-model="$parent.notification.statusTemplate" class="form-control" rows="2" placeholder="{% if status == 'up' %}[在线]{% else %}[故障]{% endif %}"></textarea>
 
-            <label for="customUpText" class="form-label">{{ $t("Custom UP Text") }}</label>
-            <input id="customUpText" v-model="$parent.notification.customUpText" type="text" class="form-control">
-
-            <label for="customDownText" class="form-label">{{ $t("Custom DOWN Text") }}</label>
-            <input id="customDownText" v-model="$parent.notification.customDownText" type="text" class="form-control">
+            <label for="msgTemplate" class="form-label">{{ $t("${msg} Template") }}</label>
+            <textarea id="msgTemplate" v-model="$parent.notification.msgTemplate" class="form-control" rows="2" placeholder="{% if status == 'up' %}请查看钉钉{% else %}请及时处理{% endif %}"></textarea>
         </div>
 
         <div class="form-text">
