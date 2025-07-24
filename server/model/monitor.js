@@ -190,6 +190,7 @@ class Monitor extends BeanModel {
                 radiusSecret: this.radiusSecret,
                 mqttUsername: this.mqttUsername,
                 mqttPassword: this.mqttPassword,
+                mqttWebsocketPath: this.mqttWebsocketPath,
                 authWorkstation: this.authWorkstation,
                 authDomain: this.authDomain,
                 tlsCa: this.tlsCa,

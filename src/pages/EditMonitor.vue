@@ -311,6 +311,13 @@
                                     required
                                     data-testid="hostname-input"
                                 >
+                                <div v-if="monitor.type === 'mqtt'" class="form-text">
+                                    <i18n-t tag="p" keypath="mqttHostnameTip">
+                                        <template #hostnameFormat>
+                                            <code>[mqtt,ws,wss]://hostname</code>
+                                        </template>
+                                    </i18n-t>
+                                </div>
                             </div>
 
                             <!-- Port -->
@@ -480,6 +487,21 @@
                                     <input id="mqttTopic" v-model="monitor.mqttTopic" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("topicExplanation") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="mqttWebsocketPath" class="form-label">{{ $t("mqttWebSocketPath") }}</label>
+                                    <input
+                                        v-if="/wss?:\/\/.+/.test(monitor.hostname)"
+                                        id="mqttWebsocketPath"
+                                        v-model="monitor.mqttWebsocketPath"
+                                        type="text"
+                                        class="form-control"
+                                    >
+                                    <input v-else type="text" class="form-control" disabled>
+                                    <div class="form-text">
+                                        {{ $t("mqttWebsocketPathExplanation") }}
                                     </div>
                                 </div>
 
@@ -1181,6 +1203,7 @@ const monitorDefaults = {
     mqttUsername: "",
     mqttPassword: "",
     mqttTopic: "",
+    mqttWebsocketPath: "",
     mqttSuccessMessage: "",
     mqttCheckType: "keyword",
     authMethod: null,
@@ -1845,6 +1868,16 @@ message HealthCheckResponse {
                     return false;
                 }
             }
+
+            // Validate MQTT WebSocket Path pattern if present
+            if (this.monitor.type === "mqtt" && this.monitor.mqttWebsocketPath) {
+                const pattern = /^\/[A-Za-z0-9-_&()*+]*$/;
+                if (!pattern.test(this.monitor.mqttWebsocketPath)) {
+                    toast.error(this.$t("mqttWebsocketPathInvalid"));
+                    return false;
+                }
+            }
+
             return true;
         },
 

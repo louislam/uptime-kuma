@@ -837,6 +837,7 @@ let needSetup = false;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
                 bean.mqttCheckType = monitor.mqttCheckType;
+                bean.mqttWebsocketPath = monitor.mqttWebsocketPath;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
                 bean.databaseQuery = monitor.databaseQuery;
                 bean.authMethod = monitor.authMethod;
