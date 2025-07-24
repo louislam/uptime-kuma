@@ -27,10 +27,10 @@
 
         <div v-if="$parent.notification.enableCustomTemplate" class="mb-3">
             <label for="statusTemplate" class="form-label">{{ $t("${status} Template") }}</label>
-            <textarea id="statusTemplate" v-model="$parent.notification.statusTemplate" class="form-control" rows="2" placeholder="{% if status == 'up' %}[在线]{% else %}[故障]{% endif %}"></textarea>
+            <textarea id="statusTemplate" v-model="$parent.notification.statusTemplate" class="form-control" rows="2" placeholder="{% if status == 'UP' %}[在线]{% else %}[故障]{% endif %}"></textarea>
 
             <label for="msgTemplate" class="form-label">{{ $t("${msg} Template") }}</label>
-            <textarea id="msgTemplate" v-model="$parent.notification.msgTemplate" class="form-control" rows="2" placeholder="{% if status == 'up' %}请查看钉钉{% else %}请及时处理{% endif %}"></textarea>
+            <textarea id="msgTemplate" v-model="$parent.notification.msgTemplate" class="form-control" rows="2" placeholder="{% if status == 'UP' %}请查看钉钉{% else %}请及时处理{% endif %}"></textarea>
         </div>
 
         <div class="form-text">
