@@ -1,3 +1,5 @@
+import { expect } from "@playwright/test";
+
 const fs = require("fs");
 const path = require("path");
 const serverUrl = require("../../config/playwright.config.js").url;
@@ -19,17 +21,24 @@ export async function screenshot(testInfo, page) {
 
 /**
  * @param {Page} page Page
+ * @param {string} user Username to log in with
+ * @param {boolean} expectFail Whether to expect a failure (true) or success (false)
  * @returns {Promise<void>}
  */
-export async function login(page) {
+export async function login(page, user = "admin", expectFail = false) {
     // Login
     await page.getByPlaceholder("Username").click();
-    await page.getByPlaceholder("Username").fill("admin");
+    await page.getByPlaceholder("Username").fill(user);
     await page.getByPlaceholder("Username").press("Tab");
-    await page.getByPlaceholder("Password").fill("admin123");
+    await page.getByPlaceholder("Password").fill(user + "123");
     await page.getByLabel("Remember me").check();
     await page.getByRole("button", { name: "Log in" }).click();
-    await page.isVisible("text=Add New Monitor");
+
+    if (expectFail) {
+        await expect(page.getByRole("alert")).toBeVisible();
+    } else {
+        await page.isVisible("text=Add New Monitor");
+    }
 }
 
 /**

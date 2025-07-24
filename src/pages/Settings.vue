@@ -35,9 +35,20 @@
                     </a>
                 </div>
                 <div class="settings-content col-lg-9 col-md-7">
-                    <div v-if="currentPage" class="settings-content-header">
-                        {{ subMenus[currentPage].title }}
-                    </div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb settings-content-header">
+                            <li
+                                v-for="{ path, title, active } in breadcrumbs"
+                                :key="path"
+                                class="breadcrumb-item"
+                                v-bind="active ? { 'aria-current': 'page' } : {}"
+                                aria-current="page"
+                            >
+                                <template v-if="active">{{ title }}</template>
+                                <RouterLink v-else :to="path">{{ title }}</RouterLink>
+                            </li>
+                        </ol>
+                    </nav>
                     <div class="mx-3">
                         <router-view v-slot="{ Component }">
                             <transition name="slide-fade" appear>
@@ -53,6 +64,15 @@
 
 <script>
 import { useRoute } from "vue-router";
+
+/**
+ * Deduplicate an array of objects using the provided key
+ * @param {object[]} arr array of objects to deduplicate
+ * @param {string} key key used for uniqness
+ * @returns {object[]} the deduplicated array
+ */
+const uniqBy = (arr, key) =>
+    [ ...(new Map(arr.map(item => [ item[key], item ]))).values() ];
 
 export default {
     data() {
@@ -110,6 +130,13 @@ export default {
                 security: {
                     title: this.$t("Security"),
                 },
+                users: {
+                    title: this.$t("Users"),
+                    children: {
+                        add: { title: this.$t("Add") },
+                        edit: { title: this.$t("Edit") }
+                    },
+                },
                 "api-keys": {
                     title: this.$t("API Keys")
                 },
@@ -121,6 +148,44 @@ export default {
                 },
             };
         },
+
+        breadcrumbs: ({ $route, subMenus }) => {
+            // List of setting routes matching the current path
+            // for ex, with path "/settings/users/edit/1", we got:
+            // [
+            //    { path: "/settings/users", ...otherRoutesProps },
+            //    { path: "/settings/users/edit/:id", ...otherRoutesProps }
+            // ]
+            const settingRoutes = uniqBy(
+                $route.matched.filter(({ path }) => /^\/settings\//.test(path)),
+                "path"
+            );
+
+            /**
+             * Get leaf submenu for a given setting path
+             * @param {string} path setting path, ex: "/settings/users/edit/1"
+             * @returns {object} the leaf subMenu corresponding to the given path
+             */
+            const getLeafSubMenu = path => {
+                const pathParts = path.split("/").slice(2);
+
+                // walk through submenus and there children until reaching the corresponding leaf subMenu
+                // ex with "/settings/users/edit/1" we got { title: this.$t("Edit") }
+                // because this path match "users" > "children" > "edit" in subMenus
+                return pathParts.reduce(
+                    (acc, pathPart) =>
+                        acc[pathPart] || acc.children?.[pathPart] || acc,
+                    subMenus
+                );
+            };
+
+            // construct an array of setting routes path joined with submenus
+            return settingRoutes.map(({ path }, idx) => ({
+                path,
+                title: getLeafSubMenu(path).title,
+                active: !settingRoutes[idx + 1],
+            }));
+        }
     },
 
     watch: {
