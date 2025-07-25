@@ -1172,5 +1172,10 @@
     "pause": "Pause",
     "Staged Tags for Batch Add": "Bereitgestellte Tags für Batch-Hinzufügen",
     "OAuth Audience": "OAuth Zielgruppe",
-    "Optional: The audience to request the JWT for": "Optional: Die Zielgruppe, für die das JWT angefordert werden soll"
+    "Optional: The audience to request the JWT for": "Optional: Die Zielgruppe, für die das JWT angefordert werden soll",
+    "Path": "Pfad",
+    "mqttWebSocketPath": "MQTT WebSocket Pfad",
+    "mqttWebsocketPathExplanation": "WebSocket-Pfad für MQTT über WebSocket-Verbindungen (z. B. /mqtt)",
+    "mqttWebsocketPathInvalid": "Verwende ein gültiges WebSocket-Pfadformat",
+    "mqttHostnameTip": "Verwende dieses Format {hostnameFormat}"
 }
