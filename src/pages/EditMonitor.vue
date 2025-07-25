@@ -1166,7 +1166,6 @@ import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
 import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
-import { genSecret, isDev, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND, sleep } from "../util.ts";
 import {
     genSecret,
     isDev,
