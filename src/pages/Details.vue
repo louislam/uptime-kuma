@@ -178,7 +178,7 @@
                         <span
                             class="badge rounded-pill"
                             :class="'bg-' + status.color"
-                            style="font-size: 30px"
+                            style="font-size: 30px;"
                             data-testid="monitor-status"
                             >{{ status.text }}</span
                         >
@@ -371,7 +371,7 @@
                     <div class="col-md-6 zoom-cursor">
                         <img
                             :src="screenshotURL"
-                            style="width: 100%"
+                            style="width: 100%;"
                             alt="screenshot of the website"
                             @click="showScreenshotDialog"
                         />
@@ -426,7 +426,7 @@
                         <tr
                             v-for="(beat, index) in displayedRecords"
                             :key="index"
-                            style="padding: 10px"
+                            style="padding: 10px;"
                         >
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0': !beat.msg }">
