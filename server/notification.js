@@ -13,6 +13,7 @@ const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Elks = require("./notification-providers/46elks");
 const Feishu = require("./notification-providers/feishu");
+const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
@@ -30,6 +31,7 @@ const Mattermost = require("./notification-providers/mattermost");
 const Nostr = require("./notification-providers/nostr");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
+const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
@@ -74,6 +76,7 @@ const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
+const SpugPush = require("./notification-providers/spugpush");
 
 class Notification {
 
@@ -121,6 +124,7 @@ class Notification {
             new Nostr(),
             new Ntfy(),
             new Octopush(),
+            new OneChat(),
             new OneBot(),
             new Onesender(),
             new Opsgenie(),
@@ -165,6 +169,8 @@ class Notification {
             new SendGrid(),
             new YZJ(),
             new SMSPlanet(),
+            new SpugPush(),
+            new Notifery(),
         ];
         for (let item of list) {
             if (! item.name) {

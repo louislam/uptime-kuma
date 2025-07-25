@@ -2,7 +2,11 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT, evaluateJsonQuery
+    SQL_DATETIME_FORMAT, evaluateJsonQuery,
+    PING_PACKET_SIZE_MIN, PING_PACKET_SIZE_MAX, PING_PACKET_SIZE_DEFAULT,
+    PING_GLOBAL_TIMEOUT_MIN, PING_GLOBAL_TIMEOUT_MAX, PING_GLOBAL_TIMEOUT_DEFAULT,
+    PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
+    PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
     redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
@@ -53,7 +57,7 @@ class Monitor extends BeanModel {
         };
 
         if (this.sendUrl) {
-            obj.url = this.url;
+            obj.url = this.customUrl ?? this.url;
         }
 
         if (showTags) {
@@ -153,8 +157,15 @@ class Monitor extends BeanModel {
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
+            smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
+            ipFamily: this.ipFamily,
+
+            // ping advanced options
+            ping_numeric: this.isPingNumeric(),
+            ping_count: this.ping_count,
+            ping_per_request_timeout: this.ping_per_request_timeout,
         };
 
         if (includeSensitiveData) {
@@ -170,6 +181,7 @@ class Monitor extends BeanModel {
                 oauth_client_secret: this.oauth_client_secret,
                 oauth_token_url: this.oauth_token_url,
                 oauth_scopes: this.oauth_scopes,
+                oauth_audience: this.oauth_audience,
                 oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
@@ -178,6 +190,7 @@ class Monitor extends BeanModel {
                 radiusSecret: this.radiusSecret,
                 mqttUsername: this.mqttUsername,
                 mqttPassword: this.mqttPassword,
+                mqttWebsocketPath: this.mqttWebsocketPath,
                 authWorkstation: this.authWorkstation,
                 authDomain: this.authDomain,
                 tlsCa: this.tlsCa,
@@ -245,6 +258,14 @@ class Monitor extends BeanModel {
      */
     isEnabledExpiryNotification() {
         return Boolean(this.expiryNotification);
+    }
+
+    /**
+     * Check if ping should use numeric output only
+     * @returns {boolean} True if IP addresses will be output instead of symbolic hostnames
+     */
+    isPingNumeric() {
+        return Boolean(this.ping_numeric);
     }
 
     /**
@@ -408,10 +429,26 @@ class Monitor extends BeanModel {
                         }
                     }
 
+                    let agentFamily = undefined;
+                    if (this.ipFamily === "ipv4") {
+                        agentFamily = 4;
+                    }
+                    if (this.ipFamily === "ipv6") {
+                        agentFamily = 6;
+                    }
+
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
                         secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                        autoSelectFamily: true,
+                        ...(agentFamily ? { family: agentFamily } : {})
+                    };
+
+                    const httpAgentOptions = {
+                        maxCachedSessions: 0,
+                        autoSelectFamily: true,
+                        ...(agentFamily ? { family: agentFamily } : {})
                     };
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
@@ -473,12 +510,17 @@ class Monitor extends BeanModel {
                         if (proxy && proxy.active) {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
                                 httpsAgentOptions: httpsAgentOptions,
+                                httpAgentOptions: httpAgentOptions,
                             });
 
                             options.proxy = false;
                             options.httpAgent = httpAgent;
                             options.httpsAgent = httpsAgent;
                         }
+                    }
+
+                    if (!options.httpAgent) {
+                        options.httpAgent = new http.Agent(httpAgentOptions);
                     }
 
                     if (!options.httpsAgent) {
@@ -584,7 +626,7 @@ class Monitor extends BeanModel {
                     bean.status = UP;
 
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname, this.packetSize);
+                    bean.ping = await ping(this.hostname, this.ping_count, "", this.ping_numeric, this.packetSize, this.timeout, this.ping_per_request_timeout);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
@@ -656,7 +698,7 @@ class Monitor extends BeanModel {
                         bean.msg = res.data.response.servers[0].name;
 
                         try {
-                            bean.ping = await ping(this.hostname, this.packetSize);
+                            bean.ping = await ping(this.hostname, PING_COUNT_DEFAULT, "", true, this.packetSize, PING_GLOBAL_TIMEOUT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT);
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");
@@ -706,7 +748,7 @@ class Monitor extends BeanModel {
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
                         options.httpsAgent = new https.Agent(
-                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                            await DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
                         );
                     }
 
@@ -1273,7 +1315,7 @@ class Monitor extends BeanModel {
     /**
      * Send a notification about a monitor
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
-     * @param {Monitor} monitor The monitor to send a notificaton about
+     * @param {Monitor} monitor The monitor to send a notification about
      * @param {Bean} bean Status information about monitor
      * @returns {void}
      */
@@ -1294,7 +1336,8 @@ class Monitor extends BeanModel {
                 try {
                     const heartbeatJSON = bean.toJSON();
                     const monitorData = [{ id: monitor.id,
-                        active: monitor.active
+                        active: monitor.active,
+                        name: monitor.name
                     }];
                     const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
@@ -1466,6 +1509,31 @@ class Monitor extends BeanModel {
         }
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.type === "ping") {
+            // ping parameters validation
+            if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {
+                throw new Error(`Packet size must be between ${PING_PACKET_SIZE_MIN} and ${PING_PACKET_SIZE_MAX} (default: ${PING_PACKET_SIZE_DEFAULT})`);
+            }
+
+            if (this.ping_per_request_timeout && (this.ping_per_request_timeout < PING_PER_REQUEST_TIMEOUT_MIN || this.ping_per_request_timeout > PING_PER_REQUEST_TIMEOUT_MAX)) {
+                throw new Error(`Per-ping timeout must be between ${PING_PER_REQUEST_TIMEOUT_MIN} and ${PING_PER_REQUEST_TIMEOUT_MAX} seconds (default: ${PING_PER_REQUEST_TIMEOUT_DEFAULT})`);
+            }
+
+            if (this.ping_count && (this.ping_count < PING_COUNT_MIN || this.ping_count > PING_COUNT_MAX)) {
+                throw new Error(`Echo requests count must be between ${PING_COUNT_MIN} and ${PING_COUNT_MAX} (default: ${PING_COUNT_DEFAULT})`);
+            }
+
+            if (this.timeout) {
+                const pingGlobalTimeout = Math.round(Number(this.timeout));
+
+                if (pingGlobalTimeout < this.ping_per_request_timeout || pingGlobalTimeout < PING_GLOBAL_TIMEOUT_MIN || pingGlobalTimeout > PING_GLOBAL_TIMEOUT_MAX) {
+                    throw new Error(`Timeout must be between ${PING_GLOBAL_TIMEOUT_MIN} and ${PING_GLOBAL_TIMEOUT_MAX} seconds (default: ${PING_GLOBAL_TIMEOUT_DEFAULT})`);
+                }
+
+                this.timeout = pingGlobalTimeout;
+            }
         }
     }
 
@@ -1680,7 +1748,7 @@ class Monitor extends BeanModel {
      */
     async makeOidcTokenClientCredentialsRequest() {
         log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new token`);
-        const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+        const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_audience, this.oauth_auth_method);
         if (this.oauthAccessToken?.expires_at) {
             log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken?.expires_at * 1000)}`);
         } else {
