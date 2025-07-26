@@ -705,7 +705,7 @@ let needSetup = false;
 
                 let notificationIDList = monitor.notificationIDList;
                 delete monitor.notificationIDList;
-
+                
                 // Ensure status code ranges are strings
                 if (!monitor.accepted_statuscodes.every((code) => typeof code === "string")) {
                     throw new Error("Accepted status codes are not all strings");
@@ -719,6 +719,17 @@ let needSetup = false;
                 monitor.conditions = JSON.stringify(monitor.conditions);
 
                 monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
+
+                /* 
+                 * List of frontend-only properties that should not be saved to the database.
+                 * Should clean up before saving to the database.   
+                 */
+                const frontendOnlyProperties = ["humanReadableInterval"];
+                for (const prop of frontendOnlyProperties) {
+                    if (prop in monitor) {
+                        delete monitor[prop];
+                    }
+                }
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
