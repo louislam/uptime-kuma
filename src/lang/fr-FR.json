@@ -1175,5 +1175,10 @@
     "Ip Family": "Famille d'adresses IP",
     "ipFamilyDescriptionAutoSelect": "Utilise le {happyEyeballs} pour déterminer la famille d'adresses IP.",
     "OAuth Audience": "Audience OAuth",
-    "Optional: The audience to request the JWT for": "Optionnel : Le public pour lequel demander le JWT"
+    "Optional: The audience to request the JWT for": "Optionnel : Le public pour lequel demander le JWT",
+    "Path": "Chemin",
+    "mqttWebSocketPath": "Chemin WebSocket MQTT",
+    "mqttWebsocketPathExplanation": "Chemin WebSocket pour MQTT sur les connexions WebSocket (par exemple, /mqtt)",
+    "mqttWebsocketPathInvalid": "Veuillez utiliser un format de chemin WebSocket valide",
+    "mqttHostnameTip": "Veuillez utiliser ce format {hostnameFormat}"
 }

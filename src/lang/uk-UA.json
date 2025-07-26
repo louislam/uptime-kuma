@@ -1181,5 +1181,10 @@
     "Ip Family": "Сімейство IP",
     "ipFamilyDescriptionAutoSelect": "Використовує {happyEyeballs} для визначення сімейства IP.",
     "OAuth Audience": "Аудиторія OAuth",
-    "Optional: The audience to request the JWT for": "Необов'язково: Аудиторія, для якої необхідно подати запит на JWT"
+    "Optional: The audience to request the JWT for": "Необов'язково: Аудиторія, для якої необхідно подати запит на JWT",
+    "mqttWebsocketPathExplanation": "Шлях WebSocket для з'єднань MQTT через WebSocket (наприклад, /mqtt)",
+    "Path": "Шлях",
+    "mqttWebSocketPath": "Шлях до MQTT WebSocket",
+    "mqttWebsocketPathInvalid": "Будь ласка, використовуйте дійсний формат шляху WebSocket",
+    "mqttHostnameTip": "Будь ласка, використовуйте цей формат {hostnameFormat}"
 }
