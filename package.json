@@ -133,6 +133,7 @@
         "qs": "~6.10.4",
         "redbean-node": "~0.3.0",
         "redis": "~4.5.1",
+        "rtsp-client": "^1.4.5",
         "semver": "~7.5.4",
         "socket.io": "~4.8.0",
         "socket.io-client": "~4.8.0",

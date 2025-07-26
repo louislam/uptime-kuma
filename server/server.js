@@ -890,6 +890,9 @@ let needSetup = false;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
+                bean.rtspUsername = monitor.rtspUsername;
+                bean.rtspPassword = monitor.rtspPassword;
+                bean.rtspPath = monitor.rtspPath;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;

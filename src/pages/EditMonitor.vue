@@ -97,6 +97,9 @@
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
+                                        <option value="rtsp">
+                                            RTSP
+                                        </option>
                                     </optgroup>
                                 </select>
                                 <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
@@ -300,7 +303,7 @@
 
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type === 'rtsp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -322,7 +325,7 @@
 
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type === 'rtsp'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -534,6 +537,13 @@
 
                                     <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
                                     <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'rtsp'">
+                                <div class="my-3">
+                                    <label for="rtspPath" class="form-label"> {{ $t("RTSP Path") }}</label>
+                                    <input id="rtspPath" v-model="monitor.rtspPath" :placeholder="$t('Path')" type="text" class="form-control">
                                 </div>
                             </template>
 
@@ -1081,6 +1091,22 @@
                                 </template>
                             </template>
 
+                            <template v-if="monitor.type === 'rtsp'">
+                                <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
+
+                                <div class="my-3">
+                                    <label for="rtspUsername" class="form-label">{{ $t("RTSP Username") }}</label>
+                                    <input
+                                        id="rtspUsername" v-model="monitor.rtspUsername" :placeholder="$t('Username')" type="text" class="form-control"
+                                    >
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="rtspPassword" class="form-label">{{ $t("RTSP Password") }}</label>
+                                    <input id="rtspPassword" v-model="monitor.rtspPassword" :placeholder="$t('Password')" type="password" class="form-control">
+                                </div>
+                            </template>
+
                             <!-- gRPC Options -->
                             <template v-if="monitor.type === 'grpc-keyword' ">
                                 <!-- Proto service enable TLS -->
@@ -1225,7 +1251,11 @@ const monitorDefaults = {
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
-    conditions: []
+    conditions: [],
+    rtspUsername: "",
+    rtspPassword: "",
+    rtspPath: ""
+
 };
 
 export default {
