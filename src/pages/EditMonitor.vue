@@ -45,6 +45,9 @@
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
+                                        <option value="docker-service-availability">
+                                            {{ $t("Docker Service (Simple Availability)") }}
+                                        </option>
 
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
@@ -451,9 +454,16 @@
                                 <input id="docker_container" v-model="monitor.docker_container" type="text" class="form-control" required>
                             </div>
 
+                            <!-- Docker Service Name / ID -->
+                            <!-- For Docker Service Type -->
+                            <div v-if="monitor.type === 'docker-service-availability'" class="my-3">
+                                <label for="docker_service" class="form-label">{{ $t("Service Name / ID") }}</label>
+                                <input id="docker_service" v-model="monitor.docker_service" type="text" class="form-control" required>
+                            </div>
+
                             <!-- Docker Host -->
                             <!-- For Docker Type -->
-                            <div v-if="monitor.type === 'docker'" class="my-3">
+                            <div v-if="['docker', 'docker-service-availability'].includes(monitor.type)" class="my-3">
                                 <div class="mb-3">
                                     <label for="docker-host" class="form-label">{{ $t("Docker Host") }}</label>
                                     <ActionSelect
@@ -1202,6 +1212,7 @@ const monitorDefaults = {
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
     docker_container: "",
+    docker_service: "",
     docker_host: null,
     proxyId: null,
     mqttUsername: "",
@@ -1857,7 +1868,7 @@ message HealthCheckResponse {
                     return false;
                 }
             }
-            if (this.monitor.type === "docker") {
+            if ([ "docker", "docker-service-availability" ].includes(this.monitor.type)) {
                 if (this.monitor.docker_host == null) {
                     toast.error(this.$t("DockerHostRequired"));
                     return false;
