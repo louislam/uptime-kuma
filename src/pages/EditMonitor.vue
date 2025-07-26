@@ -311,6 +311,13 @@
                                     required
                                     data-testid="hostname-input"
                                 >
+                                <div v-if="monitor.type === 'mqtt'" class="form-text">
+                                    <i18n-t tag="p" keypath="mqttHostnameTip">
+                                        <template #hostnameFormat>
+                                            <code>[mqtt,ws,wss]://hostname</code>
+                                        </template>
+                                    </i18n-t>
+                                </div>
                             </div>
 
                             <!-- Port -->
@@ -484,6 +491,21 @@
                                 </div>
 
                                 <div class="my-3">
+                                    <label for="mqttWebsocketPath" class="form-label">{{ $t("mqttWebSocketPath") }}</label>
+                                    <input
+                                        v-if="/wss?:\/\/.+/.test(monitor.hostname)"
+                                        id="mqttWebsocketPath"
+                                        v-model="monitor.mqttWebsocketPath"
+                                        type="text"
+                                        class="form-control"
+                                    >
+                                    <input v-else type="text" class="form-control" disabled>
+                                    <div class="form-text">
+                                        {{ $t("mqttWebsocketPathExplanation") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
                                     <label for="mqttCheckType" class="form-label">MQTT {{ $t("Check Type") }}</label>
                                     <select id="mqttCheckType" v-model="monitor.mqttCheckType" class="form-select" required>
                                         <option value="keyword">{{ $t("Keyword") }}</option>
@@ -607,6 +629,9 @@
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
                                 <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
+                                <div class="form-text">
+                                    {{ monitor.humanReadableInterval }}
+                                </div>
                             </div>
 
                             <div class="my-3">
@@ -1148,7 +1173,7 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
-import { hostNameRegexPattern } from "../util-frontend";
+import { hostNameRegexPattern, relativeTimeFormatter } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -1164,6 +1189,7 @@ const monitorDefaults = {
     method: "GET",
     ipFamily: null,
     interval: 60,
+    humanReadableInterval: relativeTimeFormatter.secondsToHumanReadableFormat(60),
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
@@ -1181,6 +1207,7 @@ const monitorDefaults = {
     mqttUsername: "",
     mqttPassword: "",
     mqttTopic: "",
+    mqttWebsocketPath: "",
     mqttSuccessMessage: "",
     mqttCheckType: "keyword",
     authMethod: null,
@@ -1545,6 +1572,8 @@ message HealthCheckResponse {
             if (this.monitor.retryInterval === oldValue) {
                 this.monitor.retryInterval = value;
             }
+            // Converting monitor.interval to human readable format.
+            this.monitor.humanReadableInterval = relativeTimeFormatter.secondsToHumanReadableFormat(value);
         },
 
         "monitor.timeout"(value, oldValue) {
@@ -1845,6 +1874,16 @@ message HealthCheckResponse {
                     return false;
                 }
             }
+
+            // Validate MQTT WebSocket Path pattern if present
+            if (this.monitor.type === "mqtt" && this.monitor.mqttWebsocketPath) {
+                const pattern = /^\/[A-Za-z0-9-_&()*+]*$/;
+                if (!pattern.test(this.monitor.mqttWebsocketPath)) {
+                    toast.error(this.$t("mqttWebsocketPathInvalid"));
+                    return false;
+                }
+            }
+
             return true;
         },
 
