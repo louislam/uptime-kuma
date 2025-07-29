@@ -141,6 +141,11 @@
                         </div>
                     </div>
                 </li>
+                <li v-if="tagsList.length === 0">
+                    <div class="dropdown-item disabled px-3">
+                        {{ $t('No tags found.') }}
+                    </div>
+                </li>
             </template>
         </MonitorListFilterDropdown>
     </div>
@@ -257,6 +262,10 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.dropdown-item {
+    cursor: pointer;
+}
 
 .clear-filters-btn {
     font-size: 0.8em;

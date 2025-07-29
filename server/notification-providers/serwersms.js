@@ -2,11 +2,14 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class SerwerSMS extends NotificationProvider {
-
     name = "serwersms";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+        const url = "https://api2.serwersms.pl/messages/send_sms";
 
         try {
             let config = {
@@ -22,7 +25,7 @@ class SerwerSMS extends NotificationProvider {
                 "sender": notification.serwersmsSenderName,
             };
 
-            let resp = await axios.post("https://api2.serwersms.pl/messages/send_sms", data, config);
+            let resp = await axios.post(url, data, config);
 
             if (!resp.data.success) {
                 if (resp.data.error) {

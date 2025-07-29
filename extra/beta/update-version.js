@@ -5,7 +5,7 @@ const util = require("../../src/util");
 
 util.polyfill();
 
-const version = process.env.VERSION;
+const version = process.env.RELEASE_BETA_VERSION;
 
 console.log("Beta Version: " + version);
 
@@ -36,6 +36,8 @@ if (! exists) {
 /**
  * Commit updated files
  * @param {string} version Version to update to
+ * @returns {void}
+ * @throws Error committing files
  */
 function commit(version) {
     let msg = "Update to " + version;
@@ -55,6 +57,7 @@ function commit(version) {
 /**
  * Create a tag with the specified version
  * @param {string} version Tag to create
+ * @returns {void}
  */
 function tag(version) {
     let res = childProcess.spawnSync("git", [ "tag", version ]);
@@ -68,6 +71,7 @@ function tag(version) {
  * Check if a tag exists for the specified version
  * @param {string} version Version to check
  * @returns {boolean} Does the tag already exist
+ * @throws Version is not valid
  */
 function tagExists(version) {
     if (! version) {

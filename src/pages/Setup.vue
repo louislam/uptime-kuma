@@ -23,17 +23,17 @@
                 </div>
 
                 <div class="form-floating mt-3">
-                    <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username" required data-cy="username-input">
+                    <input id="floatingInput" v-model="username" type="text" class="form-control" :placeholder="$t('Username')" required data-cy="username-input">
                     <label for="floatingInput">{{ $t("Username") }}</label>
                 </div>
 
                 <div class="form-floating mt-3">
-                    <input id="floatingPassword" v-model="password" type="password" class="form-control" placeholder="Password" required data-cy="password-input">
+                    <input id="floatingPassword" v-model="password" type="password" class="form-control" :placeholder="$t('Password')" required data-cy="password-input">
                     <label for="floatingPassword">{{ $t("Password") }}</label>
                 </div>
 
                 <div class="form-floating mt-3">
-                    <input id="repeat" v-model="repeatPassword" type="password" class="form-control" placeholder="Repeat Password" required data-cy="password-repeat-input">
+                    <input id="repeat" v-model="repeatPassword" type="password" class="form-control" :placeholder="$t('Repeat Password')" required data-cy="password-repeat-input">
                     <label for="repeat">{{ $t("Repeat Password") }}</label>
                 </div>
 
@@ -46,9 +46,6 @@
 </template>
 
 <script>
-import { useToast } from "vue-toastification";
-const toast = useToast();
-
 export default {
     data() {
         return {
@@ -62,6 +59,8 @@ export default {
 
     },
     mounted() {
+        // TODO: Check if it is a database setup
+
         this.$root.getSocket().emit("needSetup", (needSetup) => {
             if (! needSetup) {
                 this.$router.push("/");
@@ -77,7 +76,7 @@ export default {
             this.processing = true;
 
             if (this.password !== this.repeatPassword) {
-                toast.error(this.$t("PasswordsDoNotMatch"));
+                this.$root.toastError("PasswordsDoNotMatch");
                 this.processing = false;
                 return;
             }

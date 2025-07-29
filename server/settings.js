@@ -96,7 +96,7 @@ class Settings {
     /**
      * Get settings based on type
      * @param {string} type The type of setting
-     * @returns {Promise<Bean>}
+     * @returns {Promise<Bean>} Settings
      */
     static async getSettings(type) {
         let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
@@ -119,7 +119,7 @@ class Settings {
     /**
      * Set settings based on type
      * @param {string} type Type of settings to set
-     * @param {Object} data Values of settings
+     * @param {object} data Values of settings
      * @returns {Promise<void>}
      */
     static async setSettings(type, data) {
@@ -150,8 +150,9 @@ class Settings {
     }
 
     /**
-     *
-     * @param {string[]} keyList
+     * Delete selected keys from settings cache
+     * @param {string[]} keyList Keys to remove
+     * @returns {void}
      */
     static deleteCache(keyList) {
         for (let key of keyList) {
@@ -159,6 +160,10 @@ class Settings {
         }
     }
 
+    /**
+     * Stop the cache cleaner if running
+     * @returns {void}
+     */
     static stopCacheCleaner() {
         if (Settings.cacheCleaner) {
             clearInterval(Settings.cacheCleaner);

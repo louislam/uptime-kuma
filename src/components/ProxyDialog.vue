@@ -125,13 +125,17 @@ export default {
             }
         };
     },
-
     mounted() {
         this.modal = new Modal(this.$refs.modal);
     },
-
+    beforeUnmount() {
+        this.cleanupModal();
+    },
     methods: {
-        /** Show dialog to confirm deletion */
+        /**
+         * Show dialog to confirm deletion
+         * @returns {void}
+         */
         deleteConfirm() {
             this.modal.hide();
             this.$refs.confirmDelete.show();
@@ -140,6 +144,7 @@ export default {
         /**
          * Show settings for specified proxy
          * @param {number} proxyID ID of proxy to show
+         * @returns {void}
          */
         show(proxyID) {
             if (proxyID) {
@@ -169,7 +174,42 @@ export default {
             this.modal.show();
         },
 
-        /** Submit form data for saving */
+        /**
+         * Show dialog to clone a proxy
+         * @param {number} proxyID ID of proxy to clone
+         * @returns {void}
+         */
+        showClone(proxyID) {
+            if (proxyID) {
+                for (let proxy of this.$root.proxyList) {
+                    if (proxy.id === proxyID) {
+                        // Create a clone of the proxy data
+                        this.proxy = {
+                            protocol: proxy.protocol,
+                            host: proxy.host,
+                            port: proxy.port,
+                            auth: proxy.auth,
+                            username: proxy.username,
+                            password: proxy.password,
+                            active: proxy.active,
+                            default: false, // Cloned proxy should not be default
+                            applyExisting: false,
+                        };
+                        break;
+                    }
+                }
+            }
+
+            // Set id to null to indicate this is a new proxy (clone)
+            this.id = null;
+
+            this.modal.show();
+        },
+
+        /**
+         * Submit form data for saving
+         * @returns {void}
+         */
         submit() {
             this.processing = true;
             this.$root.getSocket().emit("addProxy", this.proxy, this.id, (res) => {
@@ -187,7 +227,10 @@ export default {
             });
         },
 
-        /** Delete this proxy */
+        /**
+         * Delete this proxy
+         * @returns {void}
+         */
         deleteProxy() {
             this.processing = true;
             this.$root.getSocket().emit("deleteProxy", this.id, (res) => {
@@ -199,6 +242,20 @@ export default {
                 }
             });
         },
+
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
+        }
     },
 };
 </script>

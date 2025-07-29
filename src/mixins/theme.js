@@ -5,6 +5,7 @@ export default {
             system: (window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light",
             userTheme: localStorage.theme,
             userHeartbeatBar: localStorage.heartbeatBarTheme,
+            styleElapsedTime: localStorage.styleElapsedTime,
             statusPageTheme: "light",
             forceStatusPageTheme: false,
             path: "",
@@ -20,6 +21,11 @@ export default {
         // Default Heartbeat Bar
         if (!this.userHeartbeatBar) {
             this.userHeartbeatBar = "normal";
+        }
+
+        // Default Elapsed Time Style
+        if (!this.styleElapsedTime) {
+            this.styleElapsedTime = "no-line";
         }
 
         document.body.classList.add(this.theme);
@@ -68,6 +74,10 @@ export default {
             localStorage.theme = to;
         },
 
+        styleElapsedTime(to, from) {
+            localStorage.styleElapsedTime = to;
+        },
+
         theme(to, from) {
             document.body.classList.remove(from);
             document.body.classList.add(this.theme);
@@ -85,7 +95,10 @@ export default {
     },
 
     methods: {
-        /** Update the theme color meta tag */
+        /**
+         * Update the theme color meta tag
+         * @returns {void}
+         */
         updateThemeColorMeta() {
             if (this.theme === "dark") {
                 document.querySelector("#theme-color").setAttribute("content", "#161B22");

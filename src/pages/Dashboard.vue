@@ -8,9 +8,9 @@
                 <MonitorList :scrollbar="true" />
             </div>
 
-            <div class="col-12 col-md-7 col-xl-8 mb-3">
+            <div ref="container" class="col-12 col-md-7 col-xl-8 mb-3">
                 <!-- Add :key to disable vue router re-use the same component -->
-                <router-view :key="$route.fullPath" />
+                <router-view :key="$route.fullPath" :calculatedHeight="height" />
             </div>
         </div>
     </div>
@@ -25,7 +25,12 @@ export default {
         MonitorList,
     },
     data() {
-        return {};
+        return {
+            height: 0
+        };
+    },
+    mounted() {
+        this.height = this.$refs.container.offsetHeight;
     },
 };
 </script>

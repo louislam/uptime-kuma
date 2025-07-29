@@ -3,11 +3,14 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Mattermost extends NotificationProvider {
-
     name = "mattermost";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             const mattermostUserName = notification.mattermostusername || "Uptime Kuma";
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
@@ -75,12 +78,12 @@ class Mattermost extends NotificationProvider {
                     {
                         fallback:
                             "Your " +
-                            monitorJSON.name +
+                            monitorJSON.pathName +
                             " service went " +
                             statusText,
                         color: color,
                         title:
-                            monitorJSON.name +
+                            monitorJSON.pathName +
                             " service went " +
                             statusText,
                         title_link: monitorJSON.url,
@@ -95,10 +98,7 @@ class Mattermost extends NotificationProvider {
                     },
                 ],
             };
-            await axios.post(
-                notification.mattermostWebhookUrl,
-                mattermostdata
-            );
+            await axios.post(notification.mattermostWebhookUrl, mattermostdata);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

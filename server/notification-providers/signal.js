@@ -2,11 +2,13 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Signal extends NotificationProvider {
-
     name = "signal";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             let data = {

@@ -1,5 +1,5 @@
 <template>
-    <transition name="slide-fade" appear>
+    <transition ref="tableContainer" name="slide-fade" appear>
         <div v-if="$route.name === 'DashboardHome'">
             <h1 class="mb-3">
                 {{ $t("Quick Stats") }}
@@ -9,15 +9,30 @@
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <span class="num">{{ $root.stats.up }}</span>
+                        <span
+                            class="num"
+                            :class="$root.stats.up === 0 && 'text-secondary'"
+                        >
+                            {{ $root.stats.up }}
+                        </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <span class="num text-danger">{{ $root.stats.down }}</span>
+                        <span
+                            class="num"
+                            :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'"
+                        >
+                            {{ $root.stats.down }}
+                        </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
-                        <span class="num text-maintenance">{{ $root.stats.maintenance }}</span>
+                        <span
+                            class="num"
+                            :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'"
+                        >
+                            {{ $root.stats.maintenance }}
+                        </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
@@ -42,13 +57,13 @@
                     </thead>
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td><router-link :to="`/dashboard/${beat.monitorID}`">{{ beat.name }}</router-link></td>
+                            <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
-                        <tr v-if="importantHeartBeatList.length === 0">
+                        <tr v-if="importantHeartBeatListLength === 0">
                             <td colspan="4">
                                 {{ $t("No important events") }}
                             </td>
@@ -59,7 +74,7 @@
                 <div class="d-flex justify-content-center kuma_pagination">
                     <pagination
                         v-model="page"
-                        :records="importantHeartBeatList.length"
+                        :records="importantHeartBeatListLength"
                         :per-page="perPage"
                         :options="paginationConfig"
                     />
@@ -81,57 +96,112 @@ export default {
         Status,
         Pagination,
     },
+    props: {
+        calculatedHeight: {
+            type: Number,
+            default: 0
+        }
+    },
     data() {
         return {
             page: 1,
             perPage: 25,
-            heartBeatList: [],
+            initialPerPage: 25,
             paginationConfig: {
                 hideCount: true,
                 chunksNavigation: "scroll",
             },
+            importantHeartBeatListLength: 0,
+            displayedRecords: [],
         };
     },
-    computed: {
-
-        importantHeartBeatList() {
-            let result = [];
-
-            for (let monitorID in this.$root.importantHeartbeatList) {
-                let list = this.$root.importantHeartbeatList[monitorID];
-                result = result.concat(list);
-            }
-
-            for (let beat of result) {
-                let monitor = this.$root.monitorList[beat.monitorID];
-
-                if (monitor) {
-                    beat.name = monitor.name;
-                }
-            }
-
-            result.sort((a, b) => {
-                if (a.time > b.time) {
-                    return -1;
-                }
-
-                if (a.time < b.time) {
-                    return 1;
-                }
-
-                return 0;
+    watch: {
+        perPage() {
+            this.$nextTick(() => {
+                this.getImportantHeartbeatListPaged();
             });
-
-            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-            this.heartBeatList = result;
-
-            return result;
         },
 
-        displayedRecords() {
-            const startIndex = this.perPage * (this.page - 1);
-            const endIndex = startIndex + this.perPage;
-            return this.heartBeatList.slice(startIndex, endIndex);
+        page() {
+            this.getImportantHeartbeatListPaged();
+        },
+    },
+
+    mounted() {
+        this.getImportantHeartbeatListLength();
+
+        this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+
+        this.initialPerPage = this.perPage;
+
+        window.addEventListener("resize", this.updatePerPage);
+        this.updatePerPage();
+    },
+
+    beforeUnmount() {
+        this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+
+        window.removeEventListener("resize", this.updatePerPage);
+    },
+
+    methods: {
+        /**
+         * Updates the displayed records when a new important heartbeat arrives.
+         * @param {object} heartbeat - The heartbeat object received.
+         * @returns {void}
+         */
+        onNewImportantHeartbeat(heartbeat) {
+            if (this.page === 1) {
+                this.displayedRecords.unshift(heartbeat);
+                if (this.displayedRecords.length > this.perPage) {
+                    this.displayedRecords.pop();
+                }
+                this.importantHeartBeatListLength += 1;
+            }
+        },
+
+        /**
+         * Retrieves the length of the important heartbeat list for all monitors.
+         * @returns {void}
+         */
+        getImportantHeartbeatListLength() {
+            this.$root.getSocket().emit("monitorImportantHeartbeatListCount", null, (res) => {
+                if (res.ok) {
+                    this.importantHeartBeatListLength = res.count;
+                    this.getImportantHeartbeatListPaged();
+                }
+            });
+        },
+
+        /**
+         * Retrieves the important heartbeat list for the current page.
+         * @returns {void}
+         */
+        getImportantHeartbeatListPaged() {
+            const offset = (this.page - 1) * this.perPage;
+            this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", null, offset, this.perPage, (res) => {
+                if (res.ok) {
+                    this.displayedRecords = res.data;
+                }
+            });
+        },
+
+        /**
+         * Updates the number of items shown per page based on the available height.
+         * @returns {void}
+         */
+        updatePerPage() {
+            const tableContainer = this.$refs.tableContainer;
+            const tableContainerHeight = tableContainer.offsetHeight;
+            const availableHeight = window.innerHeight - tableContainerHeight;
+            const additionalPerPage = Math.floor(availableHeight / 58);
+
+            if (additionalPerPage > 0) {
+                this.perPage = Math.max(this.initialPerPage, this.perPage + additionalPerPage);
+            } else {
+                this.perPage = this.initialPerPage;
+            }
+
         },
     },
 };
@@ -161,6 +231,18 @@ table {
     @media (max-width: 550px) {
         table-layout: fixed;
         overflow-wrap: break-word;
+    }
+}
+
+@media screen and (max-width: 1280px) {
+    .name-column {
+        min-width: 150px;
+    }
+}
+
+@media screen and (min-aspect-ratio: 4/3) {
+    .name-column {
+        min-width: 200px;
     }
 }
 </style>

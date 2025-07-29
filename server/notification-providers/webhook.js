@@ -1,14 +1,15 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const FormData = require("form-data");
-const { Liquid } = require("liquidjs");
 
 class Webhook extends NotificationProvider {
-
     name = "webhook";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             let data = {
@@ -26,17 +27,7 @@ class Webhook extends NotificationProvider {
                 config.headers = formData.getHeaders();
                 data = formData;
             } else if (notification.webhookContentType === "custom") {
-                // Initialize LiquidJS and parse the custom Body Template
-                const engine = new Liquid();
-                const tpl = engine.parse(notification.webhookCustomBody);
-
-                // Insert templated values into Body
-                data = await engine.render(tpl,
-                    {
-                        msg,
-                        heartbeatJSON,
-                        monitorJSON
-                    });
+                data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
             }
 
             if (notification.webhookAdditionalHeaders) {

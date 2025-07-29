@@ -1,12 +1,14 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
-const { DOWN } = require("../../src/util");
 
 class SMTP extends NotificationProvider {
-
     name = "smtp";
 
+    /**
+     * @inheritdoc
+     */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+        const okMsg = "Sent Successfully.";
 
         const config = {
             host: notification.smtpHost,
@@ -36,75 +38,41 @@ class SMTP extends NotificationProvider {
                 pass: notification.smtpPassword,
             };
         }
-        // Lets start with default subject and empty string for custom one
+
+        // default values in case the user does not want to template
         let subject = msg;
-
-        // Change the subject if:
-        //     - The msg ends with "Testing" or
-        //     - Actual Up/Down Notification
-        if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
-            let customSubject = "";
-
-            // Our subject cannot end with whitespace it's often raise spam score
-            // Once I got "Cannot read property 'trim' of undefined", better be safe than sorry
-            if (notification.customSubject) {
-                customSubject = notification.customSubject.trim();
-            }
-
-            // If custom subject is not empty, change subject for notification
-            if (customSubject !== "") {
-
-                // Replace "MACROS" with corresponding variable
-                let replaceName = new RegExp("{{NAME}}", "g");
-                let replaceHostnameOrURL = new RegExp("{{HOSTNAME_OR_URL}}", "g");
-                let replaceStatus = new RegExp("{{STATUS}}", "g");
-
-                // Lets start with dummy values to simplify code
-                let monitorName = "Test";
-                let monitorHostnameOrURL = "testing.hostname";
-                let serviceStatus = "⚠️ Test";
-
-                if (monitorJSON !== null) {
-                    monitorName = monitorJSON["name"];
-
-                    if (monitorJSON["type"] === "http" || monitorJSON["type"] === "keyword" || monitorJSON["type"] === "json-query") {
-                        monitorHostnameOrURL = monitorJSON["url"];
-                    } else {
-                        monitorHostnameOrURL = monitorJSON["hostname"];
-                    }
-                }
-
-                if (heartbeatJSON !== null) {
-                    serviceStatus = (heartbeatJSON["status"] === DOWN) ? "🔴 Down" : "✅ Up";
-                }
-
-                // Break replace to one by line for better readability
-                customSubject = customSubject.replace(replaceStatus, serviceStatus);
-                customSubject = customSubject.replace(replaceName, monitorName);
-                customSubject = customSubject.replace(replaceHostnameOrURL, monitorHostnameOrURL);
-
-                subject = customSubject;
-            }
-        }
-
-        let transporter = nodemailer.createTransport(config);
-
-        let bodyTextContent = msg;
+        let body = msg;
+        let useHTMLBody = false;
         if (heartbeatJSON) {
-            bodyTextContent = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
+            body = `${msg}\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
+        }
+        // subject and body are templated
+        if ((monitorJSON && heartbeatJSON) || msg.endsWith("Testing")) {
+            // cannot end with whitespace as this often raises spam scores
+            const customSubject = notification.customSubject?.trim() || "";
+            const customBody = notification.customBody?.trim() || "";
+            if (customSubject !== "") {
+                subject = await this.renderTemplate(customSubject, msg, monitorJSON, heartbeatJSON);
+            }
+            if (customBody !== "") {
+                useHTMLBody = notification.htmlBody || false;
+                body = await this.renderTemplate(customBody, msg, monitorJSON, heartbeatJSON);
+            }
         }
 
         // send mail with defined transport object
+        let transporter = nodemailer.createTransport(config);
         await transporter.sendMail({
             from: notification.smtpFrom,
             cc: notification.smtpCC,
             bcc: notification.smtpBCC,
             to: notification.smtpTo,
             subject: subject,
-            text: bodyTextContent,
+            // If the email body is custom, and the user wants it, set the email body as HTML
+            [useHTMLBody ? "html" : "text"]: body
         });
 
-        return "Sent Successfully.";
+        return okMsg;
     }
 }
 

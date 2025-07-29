@@ -175,17 +175,26 @@ export default {
         this.$root.getSocket().emit(prefix + "leave");
     },
     methods: {
-        /** Start the Cloudflare tunnel */
+        /**
+         * Start the Cloudflare tunnel
+         * @returns {void}
+         */
         start() {
             this.$root.getSocket().emit(prefix + "start", this.cloudflareTunnelToken);
         },
-        /** Stop the Cloudflare tunnel */
+        /**
+         * Stop the Cloudflare tunnel
+         * @returns {void}
+         */
         stop() {
             this.$root.getSocket().emit(prefix + "stop", this.currentPassword, (res) => {
                 this.$root.toastRes(res);
             });
         },
-        /** Remove the token for the Cloudflare tunnel */
+        /**
+         * Remove the token for the Cloudflare tunnel
+         * @returns {void}
+         */
         removeToken() {
             this.$root.getSocket().emit(prefix + "removeToken");
             this.cloudflareTunnelToken = "";

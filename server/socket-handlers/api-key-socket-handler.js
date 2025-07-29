@@ -9,8 +9,9 @@ const { Settings } = require("../settings");
 const { sendAPIKeyList } = require("../client");
 
 /**
- * Handlers for Maintenance
+ * Handlers for API keys
  * @param {Socket} socket Socket.io instance
+ * @returns {void}
  */
 module.exports.apiKeySocketHandler = (socket) => {
     // Add a new api key
@@ -19,14 +20,14 @@ module.exports.apiKeySocketHandler = (socket) => {
             checkLogin(socket);
 
             let clearKey = nanoid(40);
-            let hashedKey = passwordHash.generate(clearKey);
+            let hashedKey = await passwordHash.generate(clearKey);
             key["key"] = hashedKey;
             let bean = await APIKey.save(key, socket.userID);
 
             log.debug("apikeys", "Added API Key");
             log.debug("apikeys", key);
 
-            // Append key ID and prefix to start of key seperated by _, used to get
+            // Append key ID and prefix to start of key separated by _, used to get
             // correct hash when validating key.
             let formattedKey = "uk" + bean.id + "_" + clearKey;
             await sendAPIKeyList(socket);
@@ -37,7 +38,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Added Successfully.",
+                msg: "successAdded",
+                msgi18n: true,
                 key: formattedKey,
                 keyID: bean.id,
             });
@@ -81,7 +83,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Deleted Successfully.",
+                msg: "successDeleted",
+                msgi18n: true,
             });
 
             await sendAPIKeyList(socket);
@@ -108,7 +111,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Disabled Successfully.",
+                msg: "successDisabled",
+                msgi18n: true,
             });
 
             await sendAPIKeyList(socket);
@@ -135,7 +139,8 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             callback({
                 ok: true,
-                msg: "Enabled Successfully",
+                msg: "successEnabled",
+                msgi18n: true,
             });
 
             await sendAPIKeyList(socket);

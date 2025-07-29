@@ -150,41 +150,38 @@
                 </div>
             </div>
 
-            <!-- DNS Cache -->
-            <div class="mb-4">
+            <!-- DNS Cache (nscd) -->
+            <div v-if="$root.info.isContainer" class="mb-4">
                 <label class="form-label">
-                    {{ $t("Enable DNS Cache") }}
-                    <div class="form-text">
-                        ⚠️ {{ $t("dnsCacheDescription") }}
-                    </div>
+                    {{ $t("enableNSCD") }}
                 </label>
 
                 <div class="form-check">
                     <input
-                        id="dnsCacheEnable"
-                        v-model="settings.dnsCache"
+                        id="nscdEnable"
+                        v-model="settings.nscd"
                         class="form-check-input"
                         type="radio"
-                        name="dnsCache"
+                        name="nscd"
                         :value="true"
                         required
                     />
-                    <label class="form-check-label" for="dnsCacheEnable">
+                    <label class="form-check-label" for="nscdEnable">
                         {{ $t("Enable") }}
                     </label>
                 </div>
 
                 <div class="form-check">
                     <input
-                        id="dnsCacheDisable"
-                        v-model="settings.dnsCache"
+                        id="nscdDisable"
+                        v-model="settings.nscd"
                         class="form-check-input"
                         type="radio"
-                        name="dnsCache"
+                        name="nscd"
                         :value="false"
                         required
                     />
-                    <label class="form-check-label" for="dnsCacheDisable">
+                    <label class="form-check-label" for="nscdDisable">
                         {{ $t("Disable") }}
                     </label>
                 </div>
@@ -256,16 +253,25 @@ export default {
     },
 
     methods: {
-        /** Save the settings */
+        /**
+         * Save the settings
+         * @returns {void}
+         */
         saveGeneral() {
             localStorage.timezone = this.$root.userTimezone;
             this.saveSettings();
         },
-        /** Get the base URL of the application */
+        /**
+         * Get the base URL of the application
+         * @returns {void}
+         */
         autoGetPrimaryBaseURL() {
             this.settings.primaryBaseURL = location.protocol + "//" + location.host;
         },
-
+        /**
+         * Test the chrome executable
+         * @returns {void}
+         */
         testChrome() {
             this.$root.getSocket().emit("testChrome", this.settings.chromeExecutable, (res) => {
                 this.$root.toastRes(res);
