@@ -1168,5 +1168,10 @@
     "smseagleTtsModel": "ID modelu převodu textu na řeč",
     "smseagleApiType": "Verze API",
     "smseagleApiv1": "APIv1 (pro stávající projekty a zpětnou kompatibilitu)",
-    "smseagleApiv2": "APIv2 (doporučeno pro nové integrace)"
+    "smseagleApiv2": "APIv2 (doporučeno pro nové integrace)",
+    "Path": "Cesta",
+    "mqttWebsocketPathInvalid": "Použijte, prosím platný formát WebSocket cesty",
+    "mqttHostnameTip": "Použijte, prosím tento formát {hostnameFormat}",
+    "mqttWebSocketPath": "MQTT WebSocket cesta",
+    "mqttWebsocketPathExplanation": "WebSocket cesta pro MQTT prostřednictvím WebSocket spojení (např. /mqtt)"
 }
