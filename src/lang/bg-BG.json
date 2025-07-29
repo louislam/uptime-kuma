@@ -1175,5 +1175,10 @@
     "ipFamilyDescriptionAutoSelect": "Използва {happyEyeballs} за определяне на IP семейството.",
     "Manual": "Ръковосдство",
     "OAuth Audience": "OAuth аудитория",
-    "Optional: The audience to request the JWT for": "По желание: Аудиторията, за която да се поиска JWT"
+    "Optional: The audience to request the JWT for": "По желание: Аудиторията, за която да се поиска JWT",
+    "mqttWebSocketPath": "MQTT Уеб сокет път",
+    "mqttWebsocketPathInvalid": "Моля, използвайте валиден формат на пътя за Уеб сокет",
+    "Path": "Път",
+    "mqttWebsocketPathExplanation": "Уеб сокет път за MQTT през Уеб сокет връзки (напр. /mqtt)",
+    "mqttHostnameTip": "Моля, използвайте този формат {hostnameFormat}"
 }
