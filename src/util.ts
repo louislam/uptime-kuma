@@ -9,16 +9,25 @@
 // Frontend uses util.ts
 */
 
-import * as dayjs from "dayjs";
+import dayjsFrontend from "dayjs";
 
-// For loading dayjs plugins, don't remove event though it is not used in this file
+// For dayjs plugins' type checking, don't remove event though it is not used in this file
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as timezone from "dayjs/plugin/timezone";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as utc from "dayjs/plugin/utc";
 
+import * as jsonata from "jsonata";
+
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
+
+/**
+ * Smarter dayjs import that supports both frontend and backend
+ * @returns {dayjs.Dayjs} dayjs instance
+ */
+const dayjs = (isNode) ? require("dayjs") : dayjsFrontend;
+
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
@@ -36,6 +45,26 @@ export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
 export const MIN_INTERVAL_SECOND = 20; // 20 seconds
+
+// Packet Size limits
+export const PING_PACKET_SIZE_MIN = 1;
+export const PING_PACKET_SIZE_MAX = 65500;
+export const PING_PACKET_SIZE_DEFAULT = 56;
+
+// Global timeout (aka deadline) limits in seconds
+export const PING_GLOBAL_TIMEOUT_MIN = 1;
+export const PING_GLOBAL_TIMEOUT_MAX = 300;
+export const PING_GLOBAL_TIMEOUT_DEFAULT = 10;
+
+// Ping count limits
+export const PING_COUNT_MIN = 1;
+export const PING_COUNT_MAX = 100;
+export const PING_COUNT_DEFAULT = 1;
+
+// per-request timeout (aka timeout) limits in seconds
+export const PING_PER_REQUEST_TIMEOUT_MIN = 1;
+export const PING_PER_REQUEST_TIMEOUT_MAX = 60;
+export const PING_PER_REQUEST_TIMEOUT_DEFAULT = 2;
 
 // Console colors
 // https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
@@ -118,7 +147,11 @@ export const badgeConstants = {
     defaultCertExpireDownDays: "7"
 };
 
-/** Flip the status of s */
+/**
+ * Flip the status of s between UP and DOWN if this is possible
+ * @param s {number} status
+ * @returns {number} flipped status
+ */
 export function flipStatus(s: number) {
     if (s === UP) {
         return DOWN;
@@ -643,3 +676,76 @@ export function intHash(str : string, length = 10) : number {
     return (hash % length + length) % length; // Ensure the result is non-negative
 }
 
+/**
+ * Evaluate a JSON query expression against the provided data.
+ * @param data The data to evaluate the JSON query against.
+ * @param jsonPath The JSON path or custom JSON query expression.
+ * @param jsonPathOperator The operator to use for comparison.
+ * @param expectedValue The expected value to compare against.
+ * @returns An object containing the status and the evaluation result.
+ * @throws Error if the evaluation returns undefined.
+ */
+export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOperator: string, expectedValue: any): Promise<{ status: boolean; response: any }> {
+    // Attempt to parse data as JSON; if unsuccessful, handle based on data type.
+    let response: any;
+    try {
+        response = JSON.parse(data);
+    } catch {
+        response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
+    }
+
+    try {
+        // If a JSON path is provided, pre-evaluate the data using it.
+        response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
+
+        if (response === null || response === undefined) {
+            throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+
+        if (typeof response === "object" || response instanceof Date || typeof response === "function") {
+            throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
+        }
+
+        // Perform the comparison logic using the chosen operator
+        let jsonQueryExpression;
+        switch (jsonPathOperator) {
+            case ">":
+            case ">=":
+            case "<":
+            case "<=":
+                jsonQueryExpression = `$number($.value) ${jsonPathOperator} $number($.expected)`;
+                break;
+            case "!=":
+                jsonQueryExpression = "$.value != $.expected";
+                break;
+            case "==":
+                jsonQueryExpression = "$.value = $.expected";
+                break;
+            case "contains":
+                jsonQueryExpression = "$contains($.value, $.expected)";
+                break;
+            default:
+                throw new Error(`Invalid condition ${jsonPathOperator}`);
+        }
+
+        // Evaluate the JSON Query Expression
+        const expression = jsonata(jsonQueryExpression);
+        const status = await expression.evaluate({
+            value: response.toString(),
+            expected: expectedValue.toString()
+        });
+
+        if (status === undefined) {
+            throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
+        }
+
+        return {
+            status,  // The evaluation of the json query
+            response // The response from the server or result from initial json-query evaluation
+        };
+    } catch (err: any) {
+        response = JSON.stringify(response); // Ensure the response is treated as a string for the console
+        response = (response && response.length > 50) ? `${response.substring(0, 100)}… (truncated)` : response;// Truncate long responses to the console
+        throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
+    }
+}
