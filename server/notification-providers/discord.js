@@ -11,6 +11,7 @@ class Discord extends NotificationProvider {
 
         try {
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+            const discordMinimalistNotification = notification.discordMinimalistNotification || false;
 
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
@@ -42,36 +43,44 @@ class Discord extends NotificationProvider {
                     break;
             }
 
-            // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
-                let discorddowndata = {
-                    username: discordDisplayName,
-                    embeds: [{
-                        title: "❌ Your service " + monitorJSON["name"] + " went down. ❌",
-                        color: 16711680,
-                        timestamp: heartbeatJSON["time"],
-                        fields: [
-                            {
-                                name: "Service Name",
-                                value: monitorJSON["name"],
-                            },
-                            {
-                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
-                            },
-                            {
-                                name: `Time (${heartbeatJSON["timezone"]})`,
-                                value: heartbeatJSON["localDateTime"],
-                            },
-                            {
-                                name: "Error",
-                                value: heartbeatJSON["msg"] == null ? "N/A" : heartbeatJSON["msg"],
-                            },
-                        ],
-                    }],
+                // Build embed dynamically based on minimalist setting
+                let embed = {
+                    color: 16711680,
                 };
 
-                if (notification.discordPrefixMessage) {
+                if (discordMinimalistNotification) {
+                    embed.title = `❌ ${monitorJSON["name"]}`;
+                } else {
+                    embed.title = `❌ Your service ${monitorJSON["name"]} went down. ❌`;
+                    embed.timestamp = heartbeatJSON["time"];
+                    embed.fields = [
+                        {
+                            name: "Service Name",
+                            value: monitorJSON["name"],
+                        },
+                        {
+                            name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                            value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
+                        },
+                        {
+                            name: `Time (${heartbeatJSON["timezone"]})`,
+                            value: heartbeatJSON["localDateTime"],
+                        },
+                        {
+                            name: "Error",
+                            value: heartbeatJSON["msg"] == null ? "N/A" : heartbeatJSON["msg"],
+                        },
+                    ];
+                }
+
+                let discorddowndata = {
+                    username: discordDisplayName,
+                    embeds: [embed],
+                };
+
+                // Only add prefix message if NOT minimalist
+                if (!discordMinimalistNotification && notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
@@ -79,34 +88,42 @@ class Discord extends NotificationProvider {
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
-                let discordupdata = {
-                    username: discordDisplayName,
-                    embeds: [{
-                        title: "✅ Your service " + monitorJSON["name"] + " is up! ✅",
-                        color: 65280,
-                        timestamp: heartbeatJSON["time"],
-                        fields: [
-                            {
-                                name: "Service Name",
-                                value: monitorJSON["name"],
-                            },
-                            {
-                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
-                            },
-                            {
-                                name: `Time (${heartbeatJSON["timezone"]})`,
-                                value: heartbeatJSON["localDateTime"],
-                            },
-                            {
-                                name: "Ping",
-                                value: heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms",
-                            },
-                        ],
-                    }],
+                let embed = {
+                    color: 65280,
                 };
 
-                if (notification.discordPrefixMessage) {
+                if (discordMinimalistNotification) {
+                    embed.title = `✅ ${monitorJSON["name"]}`;
+                } else {
+                    embed.title = `✅ Your service ${monitorJSON["name"]} is up! ✅`;
+                    embed.timestamp = heartbeatJSON["time"];
+                    embed.fields = [
+                        {
+                            name: "Service Name",
+                            value: monitorJSON["name"],
+                        },
+                        {
+                            name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                            value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
+                        },
+                        {
+                            name: `Time (${heartbeatJSON["timezone"]})`,
+                            value: heartbeatJSON["localDateTime"],
+                        },
+                        {
+                            name: "Ping",
+                            value: heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms",
+                        },
+                    ];
+                }
+
+                let discordupdata = {
+                    username: discordDisplayName,
+                    embeds: [embed],
+                };
+
+                // Only add prefix message if NOT minimalist
+                if (!discordMinimalistNotification && notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
