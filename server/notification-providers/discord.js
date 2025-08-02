@@ -76,7 +76,7 @@ class Discord extends NotificationProvider {
 
                 let discorddowndata = {
                     username: discordDisplayName,
-                    embeds: [embed],
+                    embeds: [ embed ],
                 };
 
                 // Only add prefix message if NOT minimalist
@@ -119,7 +119,7 @@ class Discord extends NotificationProvider {
 
                 let discordupdata = {
                     username: discordDisplayName,
-                    embeds: [embed],
+                    embeds: [ embed ],
                 };
 
                 // Only add prefix message if NOT minimalist

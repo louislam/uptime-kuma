@@ -22,11 +22,11 @@
         </div>
     </div>
 
-
-    <div class="mb-3" 
-        v-if="!$parent.notification.discordMinimalistNotification">
+    <div
+        v-if="!$parent.notification.discordMinimalistNotification"
+        class="mb-3"
+    >
         <label for="discord-prefix-message" class="form-label">{{ $t("Prefix Custom Message") }}</label>
         <input id="discord-prefix-message" v-model="$parent.notification.discordPrefixMessage" type="text" class="form-control" autocomplete="false" :placeholder="$t('Hello @everyone is...')">
     </div>
-
 </template>
