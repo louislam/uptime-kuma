@@ -100,4 +100,46 @@ describe("MqttMonitorType", {
             new Error("Message received but value is not equal to expected value, value was: [present]")
         );
     });
+
+    test('should match exact topic without wildcards', () => {
+        const regex = MqttMonitorType.mqttTopicRegex('sensor/temperature');
+        assert.ok(regex.test('sensor/temperature') === true);
+        assert.ok(regex.test('sensor/humidity') === false);
+    });
+
+    test('should match exact topic without wildcards but with special characters', () => {
+        const regex = MqttMonitorType.mqttTopicRegex('sensor.pomme/temperature');
+        assert.ok(regex.test('sensor.pomme/temperature') === true);
+        assert.ok(regex.test('sensor.pomme/humidity') === false);
+    });
+
+    test('should match + wildcard for single level', () => {
+        const regex = MqttMonitorType.mqttTopicRegex('sensor/+/temperature');
+        assert.ok(regex.test('sensor/room1/temperature') === true)
+        assert.ok(regex.test('sensor/room2/temperature') === true)
+        assert.ok(regex.test('sensor/room1/humidity') === false)
+        assert.ok(regex.test('sensor/temperature') === false)
+    });
+
+    test('should match # wildcard for multi-level', () => {
+        const regex = MqttMonitorType.mqttTopicRegex('sensor/#');
+        assert.ok(regex.test('sensor/room1') === true);
+        assert.ok(regex.test('sensor/room1/temperature') === true);
+        assert.ok(regex.test('sensor/') === true);
+        assert.ok(regex.test('actuator/room1') === false);
+    });
+
+    test('should combine + and # wildcards', () => {
+        const regex = MqttMonitorType.mqttTopicRegex('sensor/+/status/#');
+        assert.ok(regex.test('sensor/room1/status/online') === true);
+        assert.ok(regex.test('sensor/room2/status/offline/extra') === true);
+        assert.ok(regex.test('sensor/status') === false);
+        assert.ok(regex.test('sensor/room1') === false);
+    });
+
+    test('should escape special regex characters in topic', () => {
+        const regex = MqttMonitorType.mqttTopicRegex('some.topic/+/value$');
+        assert.ok(regex.test('some.topic/abc/value$') === true);
+        assert.ok(regex.test('some.topic/abc/value') === false);
+    });
 });
