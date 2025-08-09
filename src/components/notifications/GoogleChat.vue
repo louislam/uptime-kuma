@@ -19,7 +19,7 @@
                 <template #issuetackerURL>
                     <a href="https://issuetracker.google.com/issues/283746283" target="_blank">issuetracker.google.com/issues/283746283</a>
                 </template>
-            <i18n-t>
+            </i18n-t>
         </div>
     </div>
 
