@@ -182,7 +182,7 @@ export default {
             // eslint-disable-next-line eqeqeq
             if (newPeriod == "0") {
                 this.heartbeatList = null;
-                this.$root.storage().removeItem("chart-period");
+                this.$root.storage()["chart-period"] = newPeriod;
             } else {
                 this.loading = true;
 
