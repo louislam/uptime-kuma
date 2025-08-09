@@ -14,7 +14,7 @@
     <div class="mb-3">
         <div class="form-check form-switch">
             <input id="google-chat-use-template" v-model="$parent.notification.googleChatUseTemplate" type="checkbox" class="form-check-input">
-            <label for="google-chat-use-template" class="form-check-label"> {{ $t("Use plain text template instead of CardsV2") }} </label>
+            <label for="google-chat-use-template" class="form-check-label"> {{ $t("Template plain text instead of using cards") }} </label>
         </div>
     </div>
 
