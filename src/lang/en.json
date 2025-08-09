@@ -645,6 +645,8 @@
     "pushyToken": "Device token",
     "apprise": "Apprise (Support 50+ Notification services)",
     "GoogleChat": "Google Chat (Google Workspace only)",
+    "Template plain text instead of using cards": "Template plain text instead of using cards",
+    "issueWithGoogleChatOnAndroidHelptext": "This also allows to get around bugs upstream like {issuetackerURL}",
     "wayToGetKookBotToken": "Create application and get your bot token at {0}",
     "wayToGetKookGuildID": "Switch on 'Developer Mode' in Kook setting, and right click the guild to get its ID",
     "Guild ID": "Guild ID",
