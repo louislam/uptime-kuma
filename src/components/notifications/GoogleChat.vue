@@ -10,4 +10,35 @@
             </i18n-t>
         </div>
     </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input id="google-chat-use-template" v-model="$parent.notification.googleChatUseTemplate" type="checkbox" class="form-check-input">
+            <label for="google-chat-use-template" class="form-check-label"> {{ $t("Use plain text template instead of CardsV2") }} </label>
+        </div>
+    </div>
+
+    <template v-if="$parent.notification.googleChatUseTemplate">
+        <div class="mb-3">
+            <TemplatedTextarea id="google-chat-template" v-model="$parent.notification.googleChatTemplate" :required="true" :placeholder="googleChatTemplatePlaceholder" />
+        </div>
+    </template>
 </template>
+
+<script>
+import TemplatedTextarea from "../TemplatedTextarea.vue";
+
+export default {
+    name: "GoogleChat",
+    components: {
+        TemplatedTextarea,
+    },
+    computed: {
+        googleChatTemplatePlaceholder() {
+            return this.$t("Example:", [
+                `{{ name }} - {{ msg }}{% if hostnameOrURL %} ({{ hostnameOrURL }}){% endif %}`
+            ]);
+        }
+    },
+};
+</script>
