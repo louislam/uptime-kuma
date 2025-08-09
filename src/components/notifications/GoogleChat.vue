@@ -36,7 +36,7 @@ export default {
     computed: {
         googleChatTemplatePlaceholder() {
             return this.$t("Example:", [
-                `{{ name }} - {{ msg }}{% if hostnameOrURL %} ({{ hostnameOrURL }}){% endif %}`
+                "{{ name }} - {{ msg }}{% if hostnameOrURL %} ({{ hostnameOrURL }}){% endif %}"
             ]);
         }
     },
