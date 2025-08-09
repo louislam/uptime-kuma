@@ -216,7 +216,7 @@ export default {
     },
     created() {
         // Load chart period from storage if saved
-        let period = this.$root.storage()["chart-period-global"];
+        let period = this.$root.storage()["chart-period"];
         if (period != null) {
             // Has this ever been not a string?
             if (typeof period !== "string") {
