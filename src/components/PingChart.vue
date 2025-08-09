@@ -199,7 +199,7 @@ export default {
                         this.$root.toastError(res.msg);
                     } else {
                         this.chartRawData = res.data;
-                        this.$root.storage()["chart-period-global"] = newPeriod;
+                        this.$root.storage()["chart-period"] = newPeriod;
                     }
                     this.loading = false;
                 });
