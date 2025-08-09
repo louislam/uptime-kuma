@@ -182,7 +182,7 @@ export default {
             // eslint-disable-next-line eqeqeq
             if (newPeriod == "0") {
                 this.heartbeatList = null;
-                this.$root.storage().removeItem(`chart-period-${this.monitorId}`);
+                this.$root.storage().removeItem("chart-period-global");
             } else {
                 this.loading = true;
 
@@ -199,7 +199,7 @@ export default {
                         this.$root.toastError(res.msg);
                     } else {
                         this.chartRawData = res.data;
-                        this.$root.storage()[`chart-period-${this.monitorId}`] = newPeriod;
+                        this.$root.storage()["chart-period-global"] = newPeriod;
                     }
                     this.loading = false;
                 });
@@ -216,7 +216,7 @@ export default {
     },
     created() {
         // Load chart period from storage if saved
-        let period = this.$root.storage()[`chart-period-${this.monitorId}`];
+        let period = this.$root.storage()["chart-period-global"];
         if (period != null) {
             // Has this ever been not a string?
             if (typeof period !== "string") {
@@ -224,7 +224,7 @@ export default {
             }
             this.chartPeriodHrs = period;
         } else {
-            this.chartPeriodHrs = "24";
+            this.chartPeriodHrs = "0";
         }
     },
     beforeUnmount() {
