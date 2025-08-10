@@ -2,7 +2,6 @@ const { MonitorType } = require("./monitor-type");
 const { log, UP } = require("../../src/util");
 const mqtt = require("mqtt");
 const jsonata = require("jsonata");
-const { regex } = require("nostr-tools/nip30");
 
 class MqttMonitorType extends MonitorType {
     name = "mqtt";
@@ -52,14 +51,14 @@ class MqttMonitorType extends MonitorType {
     /**
      * This function checks if the actual MQTT topic matches the subscribed topic.
      * To handle MQTT wildcards, it converts the subscribed topic into a regex pattern.
-     * @param {string} subcribedTopic MQTT subscribed topic
+     * @param {string} subscribedTopic MQTT subscribed topic
      * @returns {RegExp} RegExp if the actual topic matches the subscribed topic
      */
-    static mqttTopicRegex(subcribedTopic) {
-        subcribedTopic = subcribedTopic.replace(/([$.|?*{}()\[\]\\])/g, '\\$1'); // Escape special regex chars except + and #
-        subcribedTopic = subcribedTopic.replace(/\+/g, '[^/]+'); // Replace + with regex for one or more characters except slash
-        subcribedTopic = subcribedTopic.replace(/#/g, '.*'); // Replace # with regex for zero or more characters until next slash
-        return new RegExp(`^${subcribedTopic}$`);;
+    static mqttTopicRegex(subscribedTopic) {
+        subscribedTopic = subscribedTopic.replace(/([$.|?*{}()\[\]\\])/g, '\\$1'); // Escape special regex chars except + and #
+        subscribedTopic = subscribedTopic.replace(/\+/g, '[^/]+'); // Replace + with regex for one or more characters except slash
+        subscribedTopic = subscribedTopic.replace(/#/g, '.*'); // Replace # with regex for zero or more levels (including slashes)
+        return new RegExp(`^${subscribedTopic}$`);
     }
 
     /**
