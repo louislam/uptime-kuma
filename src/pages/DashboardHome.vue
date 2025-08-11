@@ -49,8 +49,8 @@
                 <div class="mb-3 text-end">
                     <button
                         class="btn btn-danger"
-                        @click="clearAllEventsDialog"
                         :disabled="clearingAllEvents"
+                        @click="clearAllEventsDialog"
                     >
                         {{ $t("Clear All Events") }}
                     </button>
