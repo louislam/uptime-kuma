@@ -228,18 +228,20 @@ export default {
         clearAllEventsDialog() {
             this.$refs.confirmClearEvents.show();
         },
-        clearAllEvents() {
+clearAllEvents() {
             this.clearingAllEvents = true;
-            // Call for each monitor
             const monitorIDs = Object.keys(this.$root.monitorList);
             let done = 0;
             let failed = 0;
 
             if (monitorIDs.length === 0) {
                 this.clearingAllEvents = false;
-                this.$root.notyf.error(this.$t("No monitors found"));
+                this.$root.toastError(this.$t("No monitors found"));
                 return;
             }
+
+            let total = monitorIDs.length;
+            let responses = 0;
 
             monitorIDs.forEach((monitorID) => {
                 this.$root.getSocket().emit("clearEvents", monitorID, (res) => {
@@ -248,17 +250,24 @@ export default {
                     } else {
                         failed++;
                     }
+
+                    responses++;
+
+                    if (responses === total) {
+                        this.clearingAllEvents = false;
+                        this.page = 1;
+                        this.getImportantHeartbeatListLength();
+
+                        if (failed === 0) {
+                            this.$root.toastSuccess(this.$t("Events cleared successfully"));
+                            console.log("All events cleared successfully");
+                        } else {
+                            this.$root.toastError(this.$t("Some events could not be cleared"));
+                            console.error(`Could not clear ${failed}/${total} events`);
+                        }
+                    }
                 });
             });
-            this.clearingAllEvents = false;
-            this.page = 1;
-            this.getImportantHeartbeatListLength();
-            if (failed === 0) {
-                this.$root.notyf.success(this.$t("Events cleared successfully"));
-            } else {
-                this.$root.notyf.error(this.$t("Some events could not be cleared"));
-            }
-
         },
     },
 };
