@@ -248,18 +248,17 @@ export default {
                     } else {
                         failed++;
                     }
-                    if (done + failed === monitorIDs.length) {
-                        this.clearingAllEvents = false;
-                        this.page = 1;
-                        this.getImportantHeartbeatListLength();
-                        if (failed === 0) {
-                            this.$root.notyf.success(this.$t("Events cleared successfully"));
-                        } else {
-                            this.$root.notyf.error(this.$t("Some events could not be cleared"));
-                        }
-                    }
                 });
             });
+            this.clearingAllEvents = false;
+            this.page = 1;
+            this.getImportantHeartbeatListLength();
+            if (failed === 0) {
+                this.$root.notyf.success(this.$t("Events cleared successfully"));
+            } else {
+                this.$root.notyf.error(this.$t("Some events could not be cleared"));
+            }
+
         },
     },
 };
