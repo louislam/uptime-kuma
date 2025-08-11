@@ -48,7 +48,7 @@
             <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
                 <div class="mb-3 text-end">
                     <button
-                        class="btn btn-danger"
+                        class="btn btn-sm btn-outline-danger"
                         :disabled="clearingAllEvents"
                         @click="clearAllEventsDialog"
                     >
