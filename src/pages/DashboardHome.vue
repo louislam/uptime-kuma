@@ -228,7 +228,7 @@ export default {
         clearAllEventsDialog() {
             this.$refs.confirmClearEvents.show();
         },
-clearAllEvents() {
+        clearAllEvents() {
             this.clearingAllEvents = true;
             const monitorIDs = Object.keys(this.$root.monitorList);
             let failed = 0;
