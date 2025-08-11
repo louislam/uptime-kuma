@@ -98,7 +98,7 @@
         :no-text="$t('No')"
         @yes="clearAllEvents"
     >
-        {{ $t("clearEventsMsg") }}
+        {{ $t("clearAllEventsMsg") }}
     </Confirm>
     <router-view ref="child" />
 </template>
