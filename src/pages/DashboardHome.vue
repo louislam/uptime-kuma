@@ -46,6 +46,15 @@
             </div>
 
             <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
+                <div class="mb-3 text-end">
+                    <button
+                        class="btn btn-danger"
+                        @click="clearAllEventsDialog"
+                        :disabled="clearingAllEvents"
+                    >
+                        {{ $t("Clear All Events") }}
+                    </button>
+                </div>
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
@@ -82,6 +91,15 @@
             </div>
         </div>
     </transition>
+    <Confirm
+        ref="confirmClearEvents"
+        btn-style="btn-danger"
+        :yes-text="$t('Yes')"
+        :no-text="$t('No')"
+        @yes="clearAllEvents"
+    >
+        {{ $t("clearEventsMsg") }}
+    </Confirm>
     <router-view ref="child" />
 </template>
 
@@ -89,12 +107,14 @@
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
+import Confirm from "../components/Confirm.vue";
 
 export default {
     components: {
         Datetime,
         Status,
         Pagination,
+        Confirm,
     },
     props: {
         calculatedHeight: {
@@ -113,6 +133,7 @@ export default {
             },
             importantHeartBeatListLength: 0,
             displayedRecords: [],
+            clearingAllEvents: false,
         };
     },
     watch: {
@@ -203,6 +224,43 @@ export default {
             }
 
         },
+
+        clearAllEventsDialog() {
+            this.$refs.confirmClearEvents.show();
+        },
+        clearAllEvents() {
+            this.clearingAllEvents = true;
+            // Call for each monitor
+            const monitorIDs = Object.keys(this.$root.monitorList);
+            let done = 0;
+            let failed = 0;
+
+            if (monitorIDs.length === 0) {
+                this.clearingAllEvents = false;
+                this.$root.notyf.error(this.$t("No monitors found"));
+                return;
+            }
+
+            monitorIDs.forEach((monitorID) => {
+                this.$root.getSocket().emit("clearEvents", monitorID, (res) => {
+                    if (res && res.ok) {
+                        done++;
+                    } else {
+                        failed++;
+                    }
+                    if (done + failed === monitorIDs.length) {
+                        this.clearingAllEvents = false;
+                        this.page = 1;
+                        this.getImportantHeartbeatListLength();
+                        if (failed === 0) {
+                            this.$root.notyf.success(this.$t("Events cleared successfully"));
+                        } else {
+                            this.$root.notyf.error(this.$t("Some events could not be cleared"));
+                        }
+                    }
+                });
+            });
+        },
     },
 };
 </script>
@@ -246,3 +304,4 @@ table {
     }
 }
 </style>
+
