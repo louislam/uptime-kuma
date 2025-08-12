@@ -819,7 +819,7 @@
     "statusMaintenance": "Održavanje",
     "General Monitor Type": "Općeniti tip Monitora",
     "Maintenance": "Održavanje",
-    "Specific Monitor Type": "Određeni tip Monitora",
+    "Specific Monitor Type": "Posebni tip Monitora",
     "Monitor": "Monitor | Monitori",
     "Invert Keyword": "Obrni ključnu riječ",
     "filterActive": "Aktivnost",
@@ -1169,5 +1169,12 @@
     "Disable URL in Notification": "Onemogući URL u obavijesti",
     "Manual": "Ručno",
     "OAuth Audience": "OAuth publika",
-    "Optional: The audience to request the JWT for": "Neobavezno: Publika za koju se traži JWT"
+    "Optional: The audience to request the JWT for": "Neobavezno: Publika za koju se traži JWT",
+    "mqttWebSocketPath": "Putanja MQTT WebSocketa",
+    "mqttHostnameTip": "Koristiti ovaj format {hostnameFormat}",
+    "Path": "Putanja",
+    "mqttWebsocketPathExplanation": "Putanja WebSocketa za MQTT preko WebSocket veza (npr. /mqtt)",
+    "mqttWebsocketPathInvalid": "Koristiti valjani format putanje WebSocketa",
+    "Template plain text instead of using cards": "Predložak običnim tekstom umjesto korištenja kartica",
+    "issueWithGoogleChatOnAndroidHelptext": "Ovo omogućuje izbjegavanje grešaka poput {issuetackerURL}"
 }
