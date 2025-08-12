@@ -1144,5 +1144,7 @@
     "mqttWebsocketPathExplanation": "Caminho do WebSocket para conexões MQTT sobre WebSocket (por exemplo, /mqtt)",
     "Path": "Caminho",
     "mqttWebsocketPathInvalid": "Use um formato de caminho WebSocket válido",
-    "mqttHostnameTip": "Por favor, use este formato {hostnameFormat}"
+    "mqttHostnameTip": "Por favor, use este formato {hostnameFormat}",
+    "issueWithGoogleChatOnAndroidHelptext": "Isso também permite contornar bugs no upstream, como {issuetackerURL}",
+    "Template plain text instead of using cards": "Modelo de texto simples em vez de usar cartões"
 }
