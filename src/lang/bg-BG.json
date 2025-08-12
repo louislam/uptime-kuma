@@ -1180,5 +1180,7 @@
     "mqttWebsocketPathInvalid": "Моля, използвайте валиден формат на пътя за Уеб сокет",
     "Path": "Път",
     "mqttWebsocketPathExplanation": "Уеб сокет път за MQTT през Уеб сокет връзки (напр. /mqtt)",
-    "mqttHostnameTip": "Моля, използвайте този формат {hostnameFormat}"
+    "mqttHostnameTip": "Моля, използвайте този формат {hostnameFormat}",
+    "issueWithGoogleChatOnAndroidHelptext": "Това позволява да се заобиколят грешки, като например {issuetackerURL}",
+    "Template plain text instead of using cards": "Шаблон с обикновен текст вместо използване на карти"
 }
