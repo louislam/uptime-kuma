@@ -1180,5 +1180,7 @@
     "Path": "Pfad",
     "mqttWebSocketPath": "MQTT WebSocket Pfad",
     "mqttWebsocketPathExplanation": "WebSocket-Pfad für MQTT über WebSocket-Verbindungen (z. B. /mqtt)",
-    "mqttHostnameTip": "Verwende dieses Format {hostnameFormat}"
+    "mqttHostnameTip": "Verwende dieses Format {hostnameFormat}",
+    "Template plain text instead of using cards": "Textvorlage anstelle von Karten",
+    "issueWithGoogleChatOnAndroidHelptext": "Dies ermöglicht auch die Umgehung von Fehlern im Vorfeld wie {issuetackerURL}"
 }
