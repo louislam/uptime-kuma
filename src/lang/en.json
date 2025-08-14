@@ -595,7 +595,6 @@
     "Clear All Events": "Clear All Events",
     "clearAllEventsMsg": "Are you sure want to delete all events?",
     "Events cleared successfully": "Events cleared successfully.",
-    "Some events could not be cleared": "Some events could not be cleared.",
     "No monitors found": "No monitors found.",
     "clearEventsMsg": "Are you sure want to delete all events for this monitor?",
     "clearHeartbeatsMsg": "Are you sure want to delete all heartbeats for this monitor?",

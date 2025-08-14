@@ -232,25 +232,21 @@ export default {
             this.clearingAllEvents = true;
             const monitorIDs = Object.keys(this.$root.monitorList);
             let failed = 0;
+            let responses = 0;
+            const total = monitorIDs.length;
 
-            if (monitorIDs.length === 0) {
+            if (total === 0) {
                 this.clearingAllEvents = false;
                 this.$root.toastError(this.$t("No monitors found"));
                 return;
             }
 
-            let total = monitorIDs.length;
-            let responses = 0;
-
             monitorIDs.forEach((monitorID) => {
                 this.$root.getSocket().emit("clearEvents", monitorID, (res) => {
-                    if (res && res.ok) {
-                        done++;
-                    } else {
+                    responses++;
+                    if (!res || !res.ok) {
                         failed++;
                     }
-
-                    responses++;
 
                     if (responses === total) {
                         this.clearingAllEvents = false;
@@ -259,10 +255,13 @@ export default {
 
                         if (failed === 0) {
                             this.$root.toastSuccess(this.$t("Events cleared successfully"));
-                            console.log("All events cleared successfully");
                         } else {
-                            this.$root.toastError(this.$t("Some events could not be cleared"));
-                            console.error(`Could not clear ${failed}/${total} events`);
+                            this.$root.toastError(
+                                this.$t("Could not clear {failed}/{total} events", {
+                                    failed,
+                                    total
+                                })
+                            );
                         }
                     }
                 });
