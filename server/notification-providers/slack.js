@@ -2,6 +2,7 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { setSettings, setting } = require("../util-server");
 const { getMonitorRelativeURL, UP, log } = require("../../src/util");
+const isUrl = require("is-url");
 
 class Slack extends NotificationProvider {
     name = "slack";
@@ -49,7 +50,7 @@ class Slack extends NotificationProvider {
         }
 
         const address = this.extractAddress(monitorJSON);
-        if (address) {
+        if (isUrl(address)) {
             try {
                 actions.push({
                     "type": "button",
