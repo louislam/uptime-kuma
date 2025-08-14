@@ -58,7 +58,7 @@ class Monitor extends BeanModel {
         };
 
         if (this.sendUrl) {
-            obj.url = this.customUrl;
+            obj.url = this.customUrl ?? this.url;
         }
 
         if (showTags) {
