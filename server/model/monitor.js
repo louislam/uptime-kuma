@@ -28,6 +28,9 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const { createCookieAgent } = require("http-cookie-agent/http");
+const { HardenedHttpsAgent, useNodeDefaultCaBundle } = require("hardened-https-agent");
+const { kumaBindableLogSink } = require("../utils/kuma-bindable-log-sink");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -437,6 +440,12 @@ class Monitor extends BeanModel {
                         agentFamily = 6;
                     }
 
+                    const httpAgentOptions = {
+                        maxCachedSessions: 0,
+                        autoSelectFamily: true,
+                        ...(agentFamily ? { family: agentFamily } : {})
+                    };
+
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
@@ -445,10 +454,20 @@ class Monitor extends BeanModel {
                         ...(agentFamily ? { family: agentFamily } : {})
                     };
 
-                    const httpAgentOptions = {
-                        maxCachedSessions: 0,
-                        autoSelectFamily: true,
-                        ...(agentFamily ? { family: agentFamily } : {})
+                    const hardenedHttpsValidationKitOptions = {
+                        ocspPolicy: {
+                            mode: "mixed",
+                            failHard: false,
+                        },
+                        loggerOptions: {
+                            level: "debug",
+                            template: "{message}",
+                            sink: kumaBindableLogSink,
+                        }
+                    };
+                    const hardenedHttpsAgentOptions = {
+                        ca: useNodeDefaultCaBundle(),
+                        ...hardenedHttpsValidationKitOptions,
                     };
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
@@ -511,6 +530,7 @@ class Monitor extends BeanModel {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
                                 httpsAgentOptions: httpsAgentOptions,
                                 httpAgentOptions: httpAgentOptions,
+                                hardenedHttpsValidationKitOptions: hardenedHttpsValidationKitOptions,
                             });
 
                             options.proxy = false;
@@ -529,7 +549,15 @@ class Monitor extends BeanModel {
                             ...httpsAgentOptions,
                             cookies: { jar }
                         };
-                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
+
+                        // Use hardened agent for HTTPS when TLS errors are not ignored
+                        if (!this.getIgnoreTls()) {
+                            const HardenedCookieAgent = createCookieAgent(HardenedHttpsAgent);
+                            options.httpsAgent = new HardenedCookieAgent({ ...httpsCookieAgentOptions,
+                                ...hardenedHttpsAgentOptions });
+                        } else {
+                            options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
+                        }
                     }
 
                     if (this.auth_method === "mtls") {
