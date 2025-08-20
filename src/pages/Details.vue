@@ -410,8 +410,8 @@
                                 <button
                                     v-if="beat.status === 0 && lastHeartBeat.status !== 0"
                                     class="btn btn-sm btn-outline-warning"
-                                    @click="markHeartbeatAsMaintenance(beat)"
                                     :title="$t('Mark as Maintenance')"
+                                    @click="markHeartbeatAsMaintenance(beat)"
                                 >
                                     <font-awesome-icon icon="wrench" />
                                 </button>

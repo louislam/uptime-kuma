@@ -1605,8 +1605,7 @@ let needSetup = false;
                 let lastHeartbeat = await R.findOne("heartbeat", `
                     monitor_id = ?
                     ORDER BY time DESC
-                `, [monitorID]);
-                
+                `, [ monitorID ]);
                 if (lastHeartbeat && lastHeartbeat.status === 0) {
                     throw new Error("Cannot mark maintenance while monitor is currently DOWN. Please wait for the monitor to recover first.");
                 }
