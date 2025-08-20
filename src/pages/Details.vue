@@ -150,22 +150,24 @@
             </div>
 
             <div class="shadow-box table-shadow-box">
-                <div class="dropdown dropdown-clear-data">
-                    <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <font-awesome-icon icon="trash" /> {{ $t("Clear Data") }}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <button type="button" class="dropdown-item" @click="clearEventsDialog">
-                                {{ $t("Events") }}
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
-                                {{ $t("Heartbeats") }}
-                            </button>
-                        </li>
-                    </ul>
+                <div class="d-flex justify-content-end gap-2 mb-2">
+                    <div class="dropdown dropdown-clear-data">
+                        <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <font-awesome-icon icon="trash" /> {{ $t("Clear Data") }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button type="button" class="dropdown-item" @click="clearEventsDialog">
+                                    {{ $t("Events") }}
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
+                                    {{ $t("Heartbeats") }}
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 <table class="table table-borderless table-hover">
                     <thead>
@@ -173,6 +175,7 @@
                             <th>{{ $t("Status") }}</th>
                             <th>{{ $t("DateTime") }}</th>
                             <th>{{ $t("Message") }}</th>
+                            <th width="120">{{ $t("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -180,10 +183,15 @@
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0">
+                                <button v-if="beat.status === 0 && lastHeartBeat.status !== 0" class="btn btn-sm btn-outline-warning" @click="markHeartbeatAsMaintenance(beat)" title="Mark as Maintenance">
+                                    <font-awesome-icon icon="wrench" />
+                                </button>
+                            </td>
                         </tr>
 
                         <tr v-if="importantHeartBeatList.length === 0">
-                            <td colspan="3">
+                            <td colspan="4">
                                 {{ $t("No important events") }}
                             </td>
                         </tr>
@@ -215,6 +223,11 @@
             <Confirm ref="confirmClearHeartbeats" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="clearHeartbeats">
                 {{ $t("clearHeartbeatsMsg") }}
             </Confirm>
+
+            <Confirm ref="confirmMarkHeartbeatMaintenance" btn-style="btn-warning" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="confirmMarkHeartbeatAsMaintenance">
+                {{ $t("Are you sure you want to mark this downtime period as maintenance?") }}
+            </Confirm>
+
         </div>
     </transition>
 </template>
@@ -262,6 +275,7 @@ export default {
                 chunksNavigation: "scroll",
             },
             cacheTime: Date.now(),
+            selectedBeat: null,
         };
     },
     computed: {
@@ -399,6 +413,7 @@ export default {
             this.$refs.confirmClearHeartbeats.show();
         },
 
+
         /** Request that this monitor is deleted */
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
@@ -425,6 +440,33 @@ export default {
             this.$root.clearHeartbeats(this.monitor.id, (res) => {
                 if (! res.ok) {
                     toast.error(res.msg);
+                }
+            });
+        },
+
+
+        /** Show confirmation dialog for marking heartbeat as maintenance */
+        markHeartbeatAsMaintenance(beat) {
+            // Store the beat data for later use in confirmation
+            this.selectedBeat = beat;
+            this.$refs.confirmMarkHeartbeatMaintenance.show();
+        },
+
+        /** Actually mark the heartbeat as maintenance after confirmation */
+        confirmMarkHeartbeatAsMaintenance() {
+            const beat = this.selectedBeat;
+            if (!beat) return;
+            
+            // Convert Vue proxy to plain object and extract values
+            const plainBeat = JSON.parse(JSON.stringify(beat));
+            const timestamp = String(plainBeat.time);
+            const monitorId = Number(this.monitor.id);
+            
+            this.$root.getSocket().emit("markHeartbeatAsMaintenance", monitorId, timestamp, (res) => {
+                if (res && res.ok) {
+                    toast.success("Downtime period marked as maintenance");
+                } else {
+                    toast.error(res?.msg || "Failed to mark as maintenance");
                 }
             });
         },
@@ -493,6 +535,26 @@ export default {
 
     .dropdown-clear-data {
         margin-bottom: 10px;
+    }
+
+    .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+    
+    table {
+        table-layout: fixed;
+        overflow-wrap: break-word;
+    }
+    
+    .table th:last-child,
+    .table td:last-child {
+        width: 60px !important;
+        text-align: center;
+    }
+    
+    .table th:last-child {
+        font-size: 12px;
     }
 }
 
