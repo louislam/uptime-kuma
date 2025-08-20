@@ -184,7 +184,7 @@
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
                             <td class="border-0">
-                                <button v-if="beat.status === 0 && lastHeartBeat.status !== 0" class="btn btn-sm btn-outline-warning" @click="markHeartbeatAsMaintenance(beat)" title="Mark as Maintenance">
+                                <button v-if="beat.status === 0 && lastHeartBeat.status !== 0" title="Mark as Maintenance" class="btn btn-sm btn-outline-warning" @click="markHeartbeatAsMaintenance(beat)">
                                     <font-awesome-icon icon="wrench" />
                                 </button>
                             </td>
@@ -227,7 +227,6 @@
             <Confirm ref="confirmMarkHeartbeatMaintenance" btn-style="btn-warning" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="confirmMarkHeartbeatAsMaintenance">
                 {{ $t("Are you sure you want to mark this downtime period as maintenance?") }}
             </Confirm>
-
         </div>
     </transition>
 </template>
@@ -413,7 +412,6 @@ export default {
             this.$refs.confirmClearHeartbeats.show();
         },
 
-
         /** Request that this monitor is deleted */
         deleteMonitor() {
             this.$root.deleteMonitor(this.monitor.id, (res) => {
@@ -444,7 +442,6 @@ export default {
             });
         },
 
-
         /** Show confirmation dialog for marking heartbeat as maintenance */
         markHeartbeatAsMaintenance(beat) {
             // Store the beat data for later use in confirmation
@@ -455,13 +452,13 @@ export default {
         /** Actually mark the heartbeat as maintenance after confirmation */
         confirmMarkHeartbeatAsMaintenance() {
             const beat = this.selectedBeat;
-            if (!beat) return;
-            
+            if (!beat) {
+                return;
+            }
             // Convert Vue proxy to plain object and extract values
             const plainBeat = JSON.parse(JSON.stringify(beat));
             const timestamp = String(plainBeat.time);
             const monitorId = Number(this.monitor.id);
-            
             this.$root.getSocket().emit("markHeartbeatAsMaintenance", monitorId, timestamp, (res) => {
                 if (res && res.ok) {
                     toast.success("Downtime period marked as maintenance");
@@ -541,18 +538,18 @@ export default {
         flex-direction: column;
         gap: 0.5rem !important;
     }
-    
+
     table {
         table-layout: fixed;
         overflow-wrap: break-word;
     }
-    
+
     .table th:last-child,
     .table td:last-child {
         width: 60px !important;
         text-align: center;
     }
-    
+
     .table th:last-child {
         font-size: 12px;
     }

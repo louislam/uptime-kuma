@@ -1582,7 +1582,6 @@ let needSetup = false;
             }
         });
 
-
         socket.on("markHeartbeatAsMaintenance", async (monitorID, heartbeatTime, callback) => {
             try {
                 checkLogin(socket);
@@ -1590,8 +1589,7 @@ let needSetup = false;
                 log.info("manage", `Mark Downtime Range as Maintenance Monitor: ${monitorID} Time: ${heartbeatTime} User ID: ${socket.userID}`);
 
                 // Check if monitor is currently DOWN (prevent marking active outages as maintenance)
-                const latestHeartbeat = await R.getRow("SELECT * FROM heartbeat WHERE monitor_id = ? ORDER BY time DESC LIMIT 1", [monitorID]);
-                
+                const latestHeartbeat = await R.getRow("SELECT * FROM heartbeat WHERE monitor_id = ? ORDER BY time DESC LIMIT 1", [ monitorID ]);
                 if (latestHeartbeat && latestHeartbeat.status === 0) {
                     callback({
                         ok: false,
@@ -1619,41 +1617,40 @@ let needSetup = false;
                     SELECT * FROM heartbeat 
                     WHERE monitor_id = ? AND time < ? AND status = 1
                     ORDER BY time DESC LIMIT 1
-                `, [monitorID, heartbeatTime]);
+                `, [ monitorID, heartbeatTime ]);
 
                 // Find the end of this downtime period (first UP after the clicked heartbeat)
                 const firstUpAfter = await R.getRow(`
                     SELECT * FROM heartbeat 
                     WHERE monitor_id = ? AND time > ? AND status = 1
                     ORDER BY time ASC LIMIT 1
-                `, [monitorID, heartbeatTime]);
+                `, [ monitorID, heartbeatTime ]);
 
                 // Determine the range to update
                 let startTime = lastUpBefore ? lastUpBefore.time : null;
                 let endTime = firstUpAfter ? firstUpAfter.time : null;
 
-                log.info("manage", `Updating heartbeats from ${startTime || 'beginning'} to ${endTime || 'end'} ${endTime ? '(exclusive)' : ''}`);
+                log.info("manage", `Updating heartbeats from ${startTime || "beginning"} to ${endTime || "end"} ${endTime ? "(exclusive)" : ""}`);
 
                 // Update all DOWN heartbeats in this downtime period
                 let updateQuery;
                 let updateParams;
-                
                 if (startTime && endTime) {
                     // Update between last UP and next UP
                     updateQuery = "UPDATE heartbeat SET status = ? WHERE monitor_id = ? AND time > ? AND time < ? AND status = 0";
-                    updateParams = [3, monitorID, startTime, endTime];
+                    updateParams = [ 3, monitorID, startTime, endTime ];
                 } else if (startTime) {
                     // Update from after last UP to end
                     updateQuery = "UPDATE heartbeat SET status = ? WHERE monitor_id = ? AND time > ? AND status = 0";
-                    updateParams = [3, monitorID, startTime];
+                    updateParams = [ 3, monitorID, startTime ];
                 } else if (endTime) {
                     // Update from beginning to before next UP
                     updateQuery = "UPDATE heartbeat SET status = ? WHERE monitor_id = ? AND time < ? AND status = 0";
-                    updateParams = [3, monitorID, endTime];
+                    updateParams = [ 3, monitorID, endTime ];
                 } else {
                     // Update all DOWN heartbeats for this monitor
                     updateQuery = "UPDATE heartbeat SET status = ? WHERE monitor_id = ? AND status = 0";
-                    updateParams = [3, monitorID];
+                    updateParams = [ 3, monitorID ];
                 }
 
                 try {
