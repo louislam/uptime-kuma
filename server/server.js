@@ -1585,6 +1585,98 @@ let needSetup = false;
             }
         });
 
+        socket.on("markHeartbeatAsMaintenance", async (monitorID, heartbeatTime, callback) => {
+            try {
+                checkLogin(socket);
+
+                log.info("manage", `Mark Heartbeat as Maintenance: Monitor ${monitorID}, Time: ${heartbeatTime}, User ID: ${socket.userID}`);
+
+                // Check if user owns this monitor
+                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+                    monitorID,
+                    socket.userID,
+                ]);
+
+                if (!monitor) {
+                    throw new Error("Permission denied.");
+                }
+
+                // Check if monitor is currently DOWN (prevent marking active outages)
+                let lastHeartbeat = await R.findOne("heartbeat", `
+                    monitor_id = ?
+                    ORDER BY time DESC
+                `, [monitorID]);
+                
+                if (lastHeartbeat && lastHeartbeat.status === 0) {
+                    throw new Error("Cannot mark maintenance while monitor is currently DOWN. Please wait for the monitor to recover first.");
+                }
+
+                // Find the clicked heartbeat
+                let clickedHeartbeat = await R.findOne("heartbeat", " monitor_id = ? AND time = ? ", [
+                    monitorID,
+                    heartbeatTime,
+                ]);
+
+                if (!clickedHeartbeat || clickedHeartbeat.status !== 0) {
+                    throw new Error("Invalid heartbeat or heartbeat is not DOWN.");
+                }
+
+                // Find the last UP heartbeat before this DOWN period
+                let lastUpBefore = await R.findOne("heartbeat", `
+                    monitor_id = ? AND time < ? AND status = 1
+                    ORDER BY time DESC
+                `, [
+                    monitorID,
+                    heartbeatTime,
+                ]);
+
+                // Find the first UP heartbeat after this DOWN period
+                let firstUpAfter = await R.findOne("heartbeat", `
+                    monitor_id = ? AND time > ? AND status = 1
+                    ORDER BY time ASC
+                `, [
+                    monitorID,
+                    heartbeatTime,
+                ]);
+
+                // Determine the range to update
+                let startTime = lastUpBefore ? lastUpBefore.time : "1970-01-01 00:00:00";
+                let endTime = firstUpAfter ? firstUpAfter.time : "2099-12-31 23:59:59";
+
+                // Update all DOWN heartbeats in this range to MAINTENANCE (status = 3)
+                await R.exec(`
+                    UPDATE heartbeat 
+                    SET status = 3 
+                    WHERE monitor_id = ? 
+                    AND time > ? 
+                    AND time < ? 
+                    AND status = 0
+                `, [
+                    monitorID,
+                    startTime,
+                    endTime,
+                ]);
+
+                log.info("manage", `Updated heartbeats to maintenance status for monitor ${monitorID}`);
+
+                // Send updated heartbeat lists to all clients
+                await sendHeartbeatList(socket, monitorID, true, true);
+
+                callback({
+                    ok: true,
+                    msg: "Downtime period marked as maintenance successfully.",
+                    msgi18n: false,
+                });
+
+            } catch (e) {
+                log.error("manage", `Error marking heartbeat as maintenance: ${e.message}`);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
         cloudflaredSocketHandler(socket);

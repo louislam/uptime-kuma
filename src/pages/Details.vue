@@ -392,6 +392,7 @@
                             <th>{{ $t("Status") }}</th>
                             <th>{{ $t("DateTime") }}</th>
                             <th>{{ $t("Message") }}</th>
+                            <th>{{ $t("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -405,10 +406,20 @@
                                 <Datetime :value="beat.time" />
                             </td>
                             <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0">
+                                <button
+                                    v-if="beat.status === 0 && lastHeartBeat.status !== 0"
+                                    class="btn btn-sm btn-outline-warning"
+                                    @click="markHeartbeatAsMaintenance(beat)"
+                                    :title="$t('Mark as Maintenance')"
+                                >
+                                    <font-awesome-icon icon="wrench" />
+                                </button>
+                            </td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
-                            <td colspan="3">
+                            <td colspan="4">
                                 {{ $t("No important events") }}
                             </td>
                         </tr>
@@ -462,6 +473,16 @@
                 @yes="clearHeartbeats"
             >
                 {{ $t("clearHeartbeatsMsg") }}
+            </Confirm>
+
+            <Confirm
+                ref="confirmMarkHeartbeatMaintenance"
+                btn-style="btn-warning"
+                :yes-text="$t('Yes')"
+                :no-text="$t('No')"
+                @yes="confirmMarkHeartbeatAsMaintenance"
+            >
+                {{ $t("Are you sure you want to mark this downtime period as maintenance?") }}
             </Confirm>
         </div>
     </transition>
@@ -530,6 +551,7 @@ export default {
                 currentExample: "javascript-fetch",
                 code: "",
             },
+            selectedBeat: null,
         };
     },
     computed: {
@@ -929,6 +951,42 @@ export default {
 
         secondsToHumanReadableFormat(seconds) {
             return relativeTimeFormatter.secondsToHumanReadableFormat(seconds);
+        },
+
+        /**
+         * Show confirmation dialog for marking heartbeat as maintenance
+         * @param {object} beat - The heartbeat to mark as maintenance
+         * @returns {void}
+         */
+        markHeartbeatAsMaintenance(beat) {
+            this.selectedBeat = beat;
+            this.$refs.confirmMarkHeartbeatMaintenance.show();
+        },
+
+        /**
+         * Confirm and execute marking heartbeat as maintenance
+         * @returns {void}
+         */
+        confirmMarkHeartbeatAsMaintenance() {
+            if (!this.selectedBeat) {
+                return;
+            }
+
+            this.$root
+                .getSocket()
+                .emit(
+                    "markHeartbeatAsMaintenance",
+                    this.monitor.id,
+                    this.selectedBeat.time,
+                    (res) => {
+                        this.$root.toastRes(res);
+                        if (res.ok) {
+                            // Refresh the heartbeat list to show updated statuses
+                            this.getImportantHeartbeatListPaged();
+                        }
+                        this.selectedBeat = null;
+                    }
+                );
         },
     },
 };
