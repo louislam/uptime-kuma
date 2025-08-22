@@ -15,6 +15,7 @@ class MqttMonitorType extends MonitorType {
             username: monitor.mqttUsername,
             password: monitor.mqttPassword,
             interval: monitor.interval,
+            websocketPath: monitor.mqttWebsocketPath,
         });
 
         if (monitor.mqttCheckType == null || monitor.mqttCheckType === "") {
@@ -52,12 +53,12 @@ class MqttMonitorType extends MonitorType {
      * @param {string} hostname Hostname / address of machine to test
      * @param {string} topic MQTT topic
      * @param {object} options MQTT options. Contains port, username,
-     * password and interval (interval defaults to 20)
+     * password, websocketPath and interval (interval defaults to 20)
      * @returns {Promise<string>} Received MQTT message
      */
     mqttAsync(hostname, topic, options = {}) {
         return new Promise((resolve, reject) => {
-            const { port, username, password, interval = 20 } = options;
+            const { port, username, password, websocketPath, interval = 20 } = options;
 
             // Adds MQTT protocol to the hostname if not already present
             if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
@@ -70,7 +71,15 @@ class MqttMonitorType extends MonitorType {
                 reject(new Error("Timeout, Message not received"));
             }, interval * 1000 * 0.8);
 
-            const mqttUrl = `${hostname}:${port}`;
+            // Construct the URL based on protocol
+            let mqttUrl = `${hostname}:${port}`;
+            if (hostname.startsWith("ws://") || hostname.startsWith("wss://")) {
+                if (websocketPath && !websocketPath.startsWith("/")) {
+                    mqttUrl = `${hostname}:${port}/${websocketPath || ""}`;
+                } else {
+                    mqttUrl = `${hostname}:${port}${websocketPath || ""}`;
+                }
+            }
 
             log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
 

@@ -9,7 +9,7 @@ const { UP, PENDING } = require("../../src/util");
  * Runs an MQTT test with the
  * @param  {string} mqttSuccessMessage the message that the monitor expects
  * @param {null|"keyword"|"json-query"} mqttCheckType the type of check we perform
- * @param {string} receivedMessage what message is recieved from the mqtt channel
+ * @param {string} receivedMessage what message is received from the mqtt channel
  * @returns {Promise<Heartbeat>} the heartbeat produced by the check
  */
 async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage) {
@@ -23,6 +23,7 @@ async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage) {
         port: connectionString.split(":")[2],
         mqttUsername: null,
         mqttPassword: null,
+        mqttWebsocketPath: null, // for WebSocket connections
         interval: 20, // controls the timeout
         mqttSuccessMessage: mqttSuccessMessage, // for keywords
         expectedValue: mqttSuccessMessage, // for json-query

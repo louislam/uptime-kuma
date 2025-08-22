@@ -14,6 +14,18 @@ class GoogleChat extends NotificationProvider {
 
         try {
             // Google Chat message formatting: https://developers.google.com/chat/api/guides/message-formats/basic
+            if (notification.googleChatUseTemplate && notification.googleChatTemplate) {
+                // Send message using template
+                const renderedText = await this.renderTemplate(
+                    notification.googleChatTemplate,
+                    msg,
+                    monitorJSON,
+                    heartbeatJSON
+                );
+                const data = { "text": renderedText };
+                await axios.post(notification.googleChatWebhookURL, data);
+                return okMsg;
+            }
 
             let chatHeader = {
                 title: "Uptime Kuma Alert",
@@ -88,7 +100,6 @@ class GoogleChat extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 

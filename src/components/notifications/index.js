@@ -4,6 +4,7 @@ import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
 import Bark from "./Bark.vue";
 import Bitrix24 from "./Bitrix24.vue";
+import Notifery from "./Notifery.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
@@ -64,6 +65,7 @@ import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
+import SpugPush from "./SpugPush.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import WAHA from "./WAHA.vue";
@@ -140,6 +142,7 @@ const NotificationFormList = {
     "threema": Threema,
     "twilio": Twilio,
     "Splunk": Splunk,
+    "SpugPush": SpugPush,
     "webhook": Webhook,
     "WeCom": WeCom,
     "GoAlert": GoAlert,
@@ -147,6 +150,7 @@ const NotificationFormList = {
     "ZohoCliq": ZohoCliq,
     "SevenIO": SevenIO,
     "whapi": Whapi,
+    "notifery": Notifery,
     "waha": WAHA,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
