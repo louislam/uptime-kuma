@@ -80,7 +80,7 @@ export default {
         deleteStatusPage() {
             this.$root.getSocket().emit("deleteStatusPage", this.$data.selectedStatusSlug, (res) => {
                 if (res.ok) {
-                    this.$root.toastSuccess(this.$t("Status page deleted"));
+                    this.$root.toastSuccess(this.$t("successDeleted"));
                     location.href = "/manage-status-page";
                 } else {
                     this.$root.toastError(res.msg);
