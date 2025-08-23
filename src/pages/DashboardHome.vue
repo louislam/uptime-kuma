@@ -57,7 +57,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box table-shadow-box" style="overflow-x: hidden">
+            <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
@@ -79,10 +79,11 @@
                                     :title="
                                         $root.monitorList[beat.monitorID]?.name
                                     "
-                                    >{{
-                                        $root.monitorList[beat.monitorID]?.name
-                                    }}</router-link
                                 >
+                                    {{
+                                        $root.monitorList[beat.monitorID]?.name
+                                    }}
+                                </router-link>
                             </td>
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0': !beat.msg }">

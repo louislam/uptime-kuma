@@ -117,8 +117,8 @@
                                             <div
                                                 v-if="
                                                     showCertificateExpiry &&
-                                                    monitor.element
-                                                        .certExpiryDaysRemaining
+                                                        monitor.element
+                                                            .certExpiryDaysRemaining
                                                 "
                                             >
                                                 <Tag
