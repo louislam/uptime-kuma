@@ -20,7 +20,11 @@
                         <h3>{{ $t("Down") }}</h3>
                         <span
                             class="num"
-                            :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'"
+                            :class="
+                                $root.stats.down > 0
+                                    ? 'text-danger'
+                                    : 'text-secondary'
+                            "
                         >
                             {{ $root.stats.down }}
                         </span>
@@ -29,23 +33,31 @@
                         <h3>{{ $t("Maintenance") }}</h3>
                         <span
                             class="num"
-                            :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'"
+                            :class="
+                                $root.stats.maintenance > 0
+                                    ? 'text-maintenance'
+                                    : 'text-secondary'
+                            "
                         >
                             {{ $root.stats.maintenance }}
                         </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Unknown") }}</h3>
-                        <span class="num text-secondary">{{ $root.stats.unknown }}</span>
+                        <span class="num text-secondary">{{
+                            $root.stats.unknown
+                        }}</span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("pauseDashboardHome") }}</h3>
-                        <span class="num text-secondary">{{ $root.stats.pause }}</span>
+                        <span class="num text-secondary">{{
+                            $root.stats.pause
+                        }}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
+            <div class="shadow-box table-shadow-box" style="overflow-x: hidden">
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
@@ -56,10 +68,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
+                        <tr
+                            v-for="(beat, index) in displayedRecords"
+                            :key="index"
+                            :class="{ 'shadow-box': $root.windowWidth <= 550 }"
+                        >
+                            <td class="name-column">
+                                <router-link
+                                    :to="`/dashboard/${beat.monitorID}`"
+                                    :title="
+                                        $root.monitorList[beat.monitorID]?.name
+                                    "
+                                    >{{
+                                        $root.monitorList[beat.monitorID]?.name
+                                    }}</router-link
+                                >
+                            </td>
                             <td><Status :status="beat.status" /></td>
-                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td :class="{ 'border-0': !beat.msg }">
+                                <Datetime :value="beat.time" />
+                            </td>
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
@@ -99,8 +127,8 @@ export default {
     props: {
         calculatedHeight: {
             type: Number,
-            default: 0
-        }
+            default: 0,
+        },
     },
     data() {
         return {
@@ -130,7 +158,10 @@ export default {
     mounted() {
         this.getImportantHeartbeatListLength();
 
-        this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
+        this.$root.emitter.on(
+            "newImportantHeartbeat",
+            this.onNewImportantHeartbeat
+        );
 
         this.initialPerPage = this.perPage;
 
@@ -139,7 +170,10 @@ export default {
     },
 
     beforeUnmount() {
-        this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
+        this.$root.emitter.off(
+            "newImportantHeartbeat",
+            this.onNewImportantHeartbeat
+        );
 
         window.removeEventListener("resize", this.updatePerPage);
     },
@@ -165,12 +199,14 @@ export default {
          * @returns {void}
          */
         getImportantHeartbeatListLength() {
-            this.$root.getSocket().emit("monitorImportantHeartbeatListCount", null, (res) => {
-                if (res.ok) {
-                    this.importantHeartBeatListLength = res.count;
-                    this.getImportantHeartbeatListPaged();
-                }
-            });
+            this.$root
+                .getSocket()
+                .emit("monitorImportantHeartbeatListCount", null, (res) => {
+                    if (res.ok) {
+                        this.importantHeartBeatListLength = res.count;
+                        this.getImportantHeartbeatListPaged();
+                    }
+                });
         },
 
         /**
@@ -179,11 +215,19 @@ export default {
          */
         getImportantHeartbeatListPaged() {
             const offset = (this.page - 1) * this.perPage;
-            this.$root.getSocket().emit("monitorImportantHeartbeatListPaged", null, offset, this.perPage, (res) => {
-                if (res.ok) {
-                    this.displayedRecords = res.data;
-                }
-            });
+            this.$root
+                .getSocket()
+                .emit(
+                    "monitorImportantHeartbeatListPaged",
+                    null,
+                    offset,
+                    this.perPage,
+                    (res) => {
+                        if (res.ok) {
+                            this.displayedRecords = res.data;
+                        }
+                    }
+                );
         },
 
         /**
@@ -197,11 +241,13 @@ export default {
             const additionalPerPage = Math.floor(availableHeight / 58);
 
             if (additionalPerPage > 0) {
-                this.perPage = Math.max(this.initialPerPage, this.perPage + additionalPerPage);
+                this.perPage = Math.max(
+                    this.initialPerPage,
+                    this.perPage + additionalPerPage
+                );
             } else {
                 this.perPage = this.initialPerPage;
             }
-
         },
     },
 };
@@ -237,12 +283,34 @@ table {
 @media screen and (max-width: 1280px) {
     .name-column {
         min-width: 150px;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }
 
 @media screen and (min-aspect-ratio: 4/3) {
     .name-column {
         min-width: 200px;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+// Add general text overflow handling for monitor names in tables
+.name-column {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    a {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 }
 </style>
