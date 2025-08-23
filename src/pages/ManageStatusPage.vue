@@ -22,6 +22,12 @@
                             <div class="title">{{ statusPage.title }}</div>
                             <div class="slug">/status/{{ statusPage.slug }}</div>
                         </div>
+                        <div class="actions">
+                            <button class="btn btn-danger me-2 d-flex align-items-center gap-1 delete-status-page" @click.stop.prevent="deleteDialog(statusPage.slug)">
+                                <font-awesome-icon icon="trash" />
+                                {{ $t("Delete") }}
+                            </button>
+                        </div>
                     </a>
                 </template>
                 <div v-else class="d-flex align-items-center justify-content-center my-3 spinner">
@@ -30,18 +36,22 @@
             </div>
         </div>
     </transition>
+    <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteStatusPage">
+        {{ $t("deleteStatusPageMsg") }}
+    </Confirm>
 </template>
 
 <script>
-
+import Confirm from "../components/Confirm.vue";
 import { getResBaseURL } from "../util-frontend";
 
 export default {
     components: {
-
+        Confirm
     },
     data() {
         return {
+            selectedStatusSlug: ''
         };
     },
     computed: {
@@ -62,6 +72,20 @@ export default {
             } else {
                 return getResBaseURL() + icon;
             }
+        },
+        deleteDialog(slug) {
+            this.$data.selectedStatusSlug = slug;
+            this.$refs.confirmDelete.show();
+        },
+        deleteStatusPage() {
+            this.$root.getSocket().emit("deleteStatusPage", this.$data.selectedStatusSlug, (res) => {
+                if (res.ok) {
+                    this.$root.toastSuccess(this.$t("Status page deleted"));
+                    location.href = "/manage-status-page";
+                } else {
+                    this.$root.toastError(res.msg);
+                }
+            });
         }
     },
 };
@@ -81,6 +105,10 @@ export default {
 
         &:hover {
             background-color: $highlight-white;
+
+            & .actions {
+                visibility: visible;
+            }
         }
 
         &.active {
@@ -98,6 +126,7 @@ export default {
         }
 
         .info {
+            flex: 1 1 auto;
             .title {
                 font-weight: bold;
                 font-size: 20px;
@@ -105,6 +134,16 @@ export default {
 
             .slug {
                 font-size: 14px;
+            }
+        }
+
+        .actions {
+            visibility: hidden;
+            display: flex;
+            align-items: center;
+
+            .delete-status-page {
+                flex: 1 1 auto;
             }
         }
     }
@@ -117,6 +156,14 @@ export default {
 
             &.active {
                 background-color: $dark-bg2;
+            }
+        }
+    }
+
+    @media (max-width: 770px) {
+        .item {
+            .actions {
+                visibility: visible;
             }
         }
     }
