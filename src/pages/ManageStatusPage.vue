@@ -51,7 +51,7 @@ export default {
     },
     data() {
         return {
-            selectedStatusSlug: ''
+            selectedStatusSlug: ""
         };
     },
     computed: {
@@ -127,6 +127,7 @@ export default {
 
         .info {
             flex: 1 1 auto;
+
             .title {
                 font-weight: bold;
                 font-size: 20px;
