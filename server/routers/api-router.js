@@ -18,6 +18,7 @@ const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { apiAuth } = require("../auth");
 
 let router = express.Router();
 
@@ -628,4 +629,483 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
     }
 }
 
+// ---------------------------------------------------------------------------
+// Maintenance REST API (manual strategy only) under /api/*
+// Auth exactly like other API routes: apiAuth validates the header.
+// IMPORTANT: apiAuth does NOT set req.userID => we read the API-Key from the
+// Basic-Auth-Header and map it to user_id. ONLY API-Key is allowed.
+// ---------------------------------------------------------------------------
+
+const { Settings } = require("../settings");
+
+// Constants
+const MAINTENANCE_STRATEGY_MANUAL = "manual";
+const API_KEY_PREFIX = "uk";
+const API_KEY_CACHE_TTL = 60 * 1000; // 1 minute
+const HTTP_STATUS = {
+    OK: 200,
+    UNAUTHORIZED: 401,
+    NOT_FOUND: 404,
+    BAD_REQUEST: 400,
+    INTERNAL_ERROR: 500
+};
+
+// Rate limiting for maintenance endpoints - using existing apiRateLimiter pattern
+const { apiRateLimiter } = require("../rate-limiter");
+
+// Maintenance-spezifische Rate Limiting Middleware
+async function maintenanceRateLimit(req, res, next) {
+    try {
+        const pass = await apiRateLimiter.pass(null, 0);
+        if (pass) {
+            apiRateLimiter.removeTokens(1);
+            next();
+        } else {
+            return res.status(429).json({
+                ok: false,
+                msg: "Too many maintenance API requests",
+                code: "RATE_LIMIT_EXCEEDED"
+            });
+        }
+    } catch (e) {
+        return res.status(500).json({
+            ok: false,
+            msg: "Rate limiting error",
+            code: "RATE_LIMIT_ERROR"
+        });
+    }
+}
+
+const SQL_MAINT = {
+    listManualForUser: `
+        SELECT
+            id,
+            title,
+            active,
+            strategy,
+            description AS msg
+        FROM maintenance
+        WHERE user_id = ? AND strategy = ?
+        ORDER BY id ASC
+    `,
+    getByIDForUser: `
+        SELECT
+            id,
+            title,
+            active,
+            strategy,
+            description AS msg,
+            user_id
+        FROM maintenance
+        WHERE id = ? AND user_id = ?
+        LIMIT 1
+    `,
+    setActive: `UPDATE maintenance SET active = 1 WHERE id = ?`,
+    setInactive: `UPDATE maintenance SET active = 0 WHERE id = ?`,
+
+    // IMPORTANT: `key` is a reserved word → keep backticks
+    getAPIKeyRowByID: `
+        SELECT id, user_id, \`key\`, active, expires
+        FROM api_key
+        WHERE id = ?
+        LIMIT 1
+    `,
+};
+
+/** Read Basic-Auth password (= API-Key) from Authorization header */
+function readBasicPassword(req) {
+    const h = req.headers.authorization || "";
+    if (!h.startsWith("Basic ")) return null;
+    try {
+        const decoded = Buffer.from(h.slice(6), "base64").toString("utf8");
+        const idx = decoded.indexOf(":");
+        if (idx < 0) return null;
+        return decoded.slice(idx + 1);
+    } catch {
+        return null;
+    }
+}
+
+/** Split API-Key string into { id, clear } (Format: uk<ID>_<CLEAR>) */
+function splitAPIKey(apiKeyStr) {
+    if (typeof apiKeyStr !== "string") return null;
+    const us = apiKeyStr.indexOf("_");
+    if (!apiKeyStr.startsWith(API_KEY_PREFIX) || us < 0) return null;
+    const idPart = apiKeyStr.substring(API_KEY_PREFIX.length, us);
+    const clear = apiKeyStr.substring(us + 1);
+    const id = parseInt(idPart, 10);
+    if (!Number.isFinite(id) || !clear) return null;
+    return { id, clear };
+}
+
+/** Extract User-ID from already authenticated request */
+async function extractMaintenanceUserID(req, res, next) {
+    try {
+        // API Keys must be enabled (already checked by apiAuth)
+        const provided = readBasicPassword(req);
+        if (!provided) {
+            return next(); // apiAuth has already handled this
+        }
+
+        const parts = splitAPIKey(provided);
+        if (!parts) {
+            return next(); // apiAuth has already handled this
+        }
+
+        // Get User-ID from DB (key was already validated by apiAuth)
+        const row = await R.getRow(SQL_MAINT.getAPIKeyRowByID, [parts.id]);
+        if (row) {
+            req.maintenanceUserID = row.user_id;
+        }
+
+        next();
+    } catch (e) {
+        // On errors just continue - apiAuth will catch it
+        next();
+    }
+}
+
+/** Maintenance-specific error handling */
+function handleMaintenanceError(res, error, defaultMessage = "Internal error") {
+    if (error.statusCode) {
+        return res.status(error.statusCode).json({
+            ok: false,
+            msg: error.error || defaultMessage,
+            code: error.errorCode || "UNKNOWN_ERROR"
+        });
+    }
+    
+    return res.status(HTTP_STATUS.INTERNAL_ERROR).json({
+        ok: false,
+        msg: error.message || defaultMessage,
+        code: "INTERNAL_ERROR"
+    });
+}
+
+/** Maintenance-specific authorization middleware */
+async function authorizeMaintenance(req, res, next) {
+    // Check if User-ID was already set by apiAuth
+    if (!req.maintenanceUserID) {
+        return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+            ok: false,
+            msg: "User ID not found",
+            code: "NO_USER_ID"
+        });
+    }
+    next();
+}
+
+/** DTO for Maintenance response */
+function maintenanceDTO(row) {
+    return {
+        id: row.id,
+        title: row.title,
+        strategy: row.strategy,
+        active: !!row.active,
+        msg: row.msg ?? null,
+    };
+}
+
+/** Validiert Maintenance-ID Parameter mit erweiterten Checks */
+function validateMaintenanceID(idParam) {
+    const id = Number(idParam);
+    
+    // Basic validation
+    if (!Number.isFinite(id)) {
+        return {
+            error: "Invalid maintenance ID - not a number",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "INVALID_ID_FORMAT"
+        };
+    }
+    
+    // Negative IDs
+    if (id <= 0) {
+        return {
+            error: "Invalid maintenance ID - must be positive",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "INVALID_ID_NEGATIVE"
+        };
+    }
+    
+    // Too large IDs (JavaScript Number.MAX_SAFE_INTEGER)
+    if (id > Number.MAX_SAFE_INTEGER) {
+        return {
+            error: "Invalid maintenance ID - too large",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "INVALID_ID_TOO_LARGE"
+        };
+    }
+    
+    // Decimal numbers
+    if (!Number.isInteger(id)) {
+        return {
+            error: "Invalid maintenance ID - must be integer",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "INVALID_ID_DECIMAL"
+        };
+    }
+    
+    // Practical upper limit for database IDs
+    if (id > 2147483647) { // MySQL INT max value
+        return {
+            error: "Invalid maintenance ID - exceeds database limits",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "INVALID_ID_DATABASE_LIMIT"
+        };
+    }
+    
+    return { id };
+}
+
+/** Validate and retrieve Maintenance record */
+async function getAuthorizedMaintenance(id, userID) {
+    const row = await R.getRow(SQL_MAINT.getByIDForUser, [id, userID]);
+    if (!row) {
+        return {
+            error: "Maintenance not found",
+            statusCode: HTTP_STATUS.NOT_FOUND,
+            errorCode: "MAINTENANCE_NOT_FOUND"
+        };
+    }
+    
+    if (row.strategy !== MAINTENANCE_STRATEGY_MANUAL) {
+        return {
+            error: "Only manual strategy allowed",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "INVALID_STRATEGY"
+        };
+    }
+    
+    return { maintenance: row };
+}
+
+/** Transactional Update for Maintenance State with Race Condition Protection */
+async function updateMaintenanceStateTransactional(id, userID, newActiveState) {
+    let transaction;
+    try {
+        // Start transaction for atomic operation
+        transaction = await R.begin();
+        
+        // 1. Check current state in DB (with row-level lock)
+        const currentRow = await R.getRow(`
+            SELECT id, active, strategy, user_id 
+            FROM maintenance 
+            WHERE id = ? AND user_id = ? 
+            FOR UPDATE
+        `, [id, userID]);
+        
+        if (!currentRow) {
+            await R.rollback();
+            return {
+                error: "Maintenance not found or access denied",
+                statusCode: HTTP_STATUS.NOT_FOUND,
+                errorCode: "MAINTENANCE_NOT_FOUND"
+            };
+        }
+        
+        // 2. Check if state change is necessary
+        if (currentRow.active === newActiveState) {
+            await R.rollback();
+            return {
+                error: `Maintenance already ${newActiveState ? 'active' : 'inactive'}`,
+                statusCode: HTTP_STATUS.CONFLICT,
+                errorCode: "STATE_ALREADY_SET"
+            };
+        }
+        
+        // 3. Update in DB
+        const sql = newActiveState ? SQL_MAINT.setActive : SQL_MAINT.setInactive;
+        await R.exec(sql, [id]);
+        
+        // 4. Commit transaction
+        await R.commit();
+        
+        // 5. Update in-memory state (after successful DB update)
+        await updateMaintenanceState(id, userID);
+        
+        return { success: true, maintenance: currentRow };
+        
+    } catch (error) {
+        // Rollback on errors
+        if (transaction) {
+            await R.rollback();
+        }
+        throw error;
+    }
+}
+
+// List (manual maintenance only)
+router.get("/api/maintenances", apiAuth, maintenanceRateLimit, extractMaintenanceUserID, authorizeMaintenance, async (req, res) => {
+    try {
+        const rows = await R.getAll(SQL_MAINT.listManualForUser, [req.maintenanceUserID, MAINTENANCE_STRATEGY_MANUAL]);
+        res.json({ ok: true, data: rows.map(maintenanceDTO) });
+    } catch (e) {
+        handleMaintenanceError(res, e, "Failed to fetch maintenances");
+    }
+});
+
+// Status
+router.get("/api/maintenances/:id/status", apiAuth, maintenanceRateLimit, extractMaintenanceUserID, authorizeMaintenance, async (req, res) => {
+    try {
+        // Extended request validation
+        const requestValidation = validateMaintenanceRequest(req);
+        if (requestValidation.error) {
+            return handleMaintenanceError(res, requestValidation);
+        }
+        
+        const idValidation = validateMaintenanceID(req.params.id);
+        if (idValidation.error) {
+            return handleMaintenanceError(res, idValidation);
+        }
+
+        const maintenanceResult = await getAuthorizedMaintenance(idValidation.id, req.maintenanceUserID);
+        if (maintenanceResult.error) {
+            return handleMaintenanceError(res, maintenanceResult);
+        }
+
+        res.json({ ok: true, data: maintenanceDTO(maintenanceResult.maintenance) });
+    } catch (e) {
+        log.error("maintenance", `Failed to get maintenance status ${req.params.id}: ${e.message}`);
+        handleMaintenanceError(res, e, "Failed to get maintenance status");
+    }
+});
+
+/** Aktualisiert In-Memory Maintenance State (non-transactional helper) */
+async function updateMaintenanceState(id, userID) {
+    const maintenanceObj = server.getMaintenance(id);
+    if (maintenanceObj) {
+        // Reload from DB to get current state
+        const updated = await R.getRow(SQL_MAINT.getByIDForUser, [id, userID]);
+        if (updated) {
+            maintenanceObj.active = updated.active;
+        }
+        await server.sendMaintenanceListByUserID(userID);
+    } else {
+        await server.loadMaintenanceList();
+        await server.sendMaintenanceListByUserID(userID);
+    }
+}
+
+/** Input validation for Maintenance requests */
+function validateMaintenanceRequest(req) {
+    // Validate URL parameters
+    if (!req.params || typeof req.params.id !== 'string') {
+        return {
+            error: "Missing or invalid maintenance ID in URL",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "MISSING_ID_PARAM"
+        };
+    }
+    
+    // ID parameter length check (prevents extremely long strings)
+    if (req.params.id.length > 20) {
+        return {
+            error: "Maintenance ID parameter too long",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "ID_PARAM_TOO_LONG"
+        };
+    }
+    
+    // Check for dangerous characters
+    if (!/^[0-9]+$/.test(req.params.id)) {
+        return {
+            error: "Maintenance ID must contain only numbers",
+            statusCode: HTTP_STATUS.BAD_REQUEST,
+            errorCode: "ID_PARAM_INVALID_CHARS"
+        };
+    }
+    
+    return { valid: true };
+}
+
+// Start
+router.post("/api/maintenances/:id/start", apiAuth, maintenanceRateLimit, extractMaintenanceUserID, authorizeMaintenance, async (req, res) => {
+    try {
+        // Erweiterte Request-Validierung
+        const requestValidation = validateMaintenanceRequest(req);
+        if (requestValidation.error) {
+            return handleMaintenanceError(res, requestValidation);
+        }
+        
+        const idValidation = validateMaintenanceID(req.params.id);
+        if (idValidation.error) {
+            return handleMaintenanceError(res, idValidation);
+        }
+
+        const maintenanceResult = await getAuthorizedMaintenance(idValidation.id, req.maintenanceUserID);
+        if (maintenanceResult.error) {
+            return handleMaintenanceError(res, maintenanceResult);
+        }
+
+        // Transactional Update with Race Condition Protection
+        const updateResult = await updateMaintenanceStateTransactional(
+            idValidation.id, 
+            req.maintenanceUserID, 
+            true // newActiveState = true for start
+        );
+        
+        if (updateResult.error) {
+            return handleMaintenanceError(res, updateResult);
+        }
+        
+        // Log for audit trail
+        log.info("maintenance", `Started maintenance ${idValidation.id} by user ${req.maintenanceUserID}`);
+        
+        apicache.clear();
+        res.json({ 
+            ok: true, 
+            msg: "successStarted", 
+            data: { ...maintenanceDTO(maintenanceResult.maintenance), active: true } 
+        });
+    } catch (e) {
+        log.error("maintenance", `Failed to start maintenance ${req.params.id}: ${e.message}`);
+        handleMaintenanceError(res, e, "Failed to start maintenance");
+    }
+});
+
+// Stop
+router.post("/api/maintenances/:id/stop", apiAuth, maintenanceRateLimit, extractMaintenanceUserID, authorizeMaintenance, async (req, res) => {
+    try {
+        // Erweiterte Request-Validierung
+        const requestValidation = validateMaintenanceRequest(req);
+        if (requestValidation.error) {
+            return handleMaintenanceError(res, requestValidation);
+        }
+        
+        const idValidation = validateMaintenanceID(req.params.id);
+        if (idValidation.error) {
+            return handleMaintenanceError(res, idValidation);
+        }
+
+        const maintenanceResult = await getAuthorizedMaintenance(idValidation.id, req.maintenanceUserID);
+        if (maintenanceResult.error) {
+            return handleMaintenanceError(res, maintenanceResult);
+        }
+
+        // Transactional Update with Race Condition Protection
+        const updateResult = await updateMaintenanceStateTransactional(
+            idValidation.id, 
+            req.maintenanceUserID, 
+            false // newActiveState = false for stop
+        );
+        
+        if (updateResult.error) {
+            return handleMaintenanceError(res, updateResult);
+        }
+        
+        // Log for audit trail
+        log.info("maintenance", `Stopped maintenance ${idValidation.id} by user ${req.maintenanceUserID}`);
+        
+        apicache.clear();
+        res.json({ 
+            ok: true, 
+            msg: "successStopped", 
+            data: { ...maintenanceDTO(maintenanceResult.maintenance), active: false } 
+        });
+    } catch (e) {
+        log.error("maintenance", `Failed to stop maintenance ${req.params.id}: ${e.message}`);
+        handleMaintenanceError(res, e, "Failed to stop maintenance");
+    }
+});
 module.exports = router;
