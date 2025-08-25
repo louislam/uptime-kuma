@@ -17,7 +17,7 @@
             >
                 <div
                     class="beat"
-                    :class="{ 'empty': (beat === 0 || beat === null || beat.status === null), 'down': (beat.status === DOWN), 'pending': (beat.status === PENDING), 'maintenance': (beat.status === MAINTENANCE) }"
+                    :class="getBeatClasses(beat)"
                     :style="beatStyle"
                 />
             </div>
@@ -259,9 +259,9 @@ export default {
             if (seconds < tolerance) {
                 return this.$t("now");
             } else if (seconds < 60 * 60) {
-                return this.$t("time ago", [ (seconds / 60).toFixed(0) + "m" ]);
+                return this.$t("time ago", [ (seconds / 60).toFixed(0) + "m" ] );
             } else {
-                return this.$t("time ago", [ (seconds / 60 / 60).toFixed(0) + "h" ]);
+                return this.$t("time ago", [ (seconds / 60 / 60).toFixed(0) + "h" ] );
             }
         }
     },
@@ -355,6 +355,25 @@ export default {
 
             // Show timestamp for all beats (both individual and aggregated)
             return `${this.$root.datetime(beat.time)}${beat.msg ? ` - ${beat.msg}` : ""}`;
+        },
+
+        /**
+         * Get CSS classes for a beat element based on its status
+         * @param {object} beat - Beat object containing status information
+         * @returns {object} Object with CSS class names as keys and boolean values
+         */
+        getBeatClasses(beat) {
+            if (beat === 0 || beat === null || beat?.status === null) {
+                return { empty: true };
+            }
+
+            const status = Number(beat.status);
+
+            return {
+                down: status === DOWN,
+                pending: status === PENDING,
+                maintenance: status === MAINTENANCE
+            };
         },
 
         /**
