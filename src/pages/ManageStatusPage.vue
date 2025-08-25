@@ -23,9 +23,9 @@
                             <div class="slug">/status/{{ statusPage.slug }}</div>
                         </div>
                         <div class="actions">
-                            <button class="btn btn-danger me-2 d-flex align-items-center gap-1 delete-status-page" @click.stop.prevent="deleteDialog(statusPage.slug)">
+                            <button class="btn btn-danger delete-status-page" @click.stop.prevent="deleteDialog(statusPage.slug)">
                                 <font-awesome-icon icon="trash" />
-                                {{ $t("Delete") }}
+                                <span>{{ $t("Delete") }}</span>
                             </button>
                         </div>
                     </a>
@@ -145,6 +145,9 @@ export default {
 
             .delete-status-page {
                 flex: 1 1 auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
             }
         }
     }
@@ -165,6 +168,14 @@ export default {
         .item {
             .actions {
                 visibility: visible;
+
+                .btn {
+                    padding: 10px;
+                }
+
+                span {
+                    display: none;
+                }
             }
         }
     }
