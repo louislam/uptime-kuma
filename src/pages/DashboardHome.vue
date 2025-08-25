@@ -232,7 +232,6 @@ export default {
             this.clearingAllEvents = true;
             const monitorIDs = Object.keys(this.$root.monitorList);
             let failed = 0;
-            let responses = 0;
             const total = monitorIDs.length;
 
             if (total === 0) {
@@ -243,7 +242,6 @@ export default {
 
             monitorIDs.forEach((monitorID) => {
                 this.$root.getSocket().emit("clearEvents", monitorID, (res) => {
-                    responses++;
                     if (!res || !res.ok) {
                         failed++;
                     }
