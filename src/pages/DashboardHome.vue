@@ -247,25 +247,21 @@ export default {
                     if (!res || !res.ok) {
                         failed++;
                     }
-
-                    if (responses === total) {
-                        this.clearingAllEvents = false;
-                        this.page = 1;
-                        this.getImportantHeartbeatListLength();
-
-                        if (failed === 0) {
-                            this.$root.toastSuccess(this.$t("Events cleared successfully"));
-                        } else {
-                            this.$root.toastError(
-                                this.$t("Could not clear {failed}/{total} events", {
-                                    failed,
-                                    total
-                                })
-                            );
-                        }
-                    }
                 });
             });
+            this.clearingAllEvents = false;
+            this.page = 1;
+            this.getImportantHeartbeatListLength();
+            if (failed === 0) {
+                this.$root.toastSuccess(this.$t("Events cleared successfully"));
+            } else {
+                this.$root.toastError(
+                    this.$t("Could not clear {failed}/{total} events", {
+                        failed,
+                        total
+                    })
+                );
+            }
         },
     },
 };
