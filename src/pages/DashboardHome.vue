@@ -254,7 +254,10 @@ export default {
                 this.$root.toastSuccess(this.$t("Events cleared successfully"));
             } else {
                 this.$root.toastError(
-                    this.$t("Could not clear events", { failed, total })
+                    this.$t("Could not clear events", { 
+                       failed,
+                       total,
+                    })
                 );
             }
         },
