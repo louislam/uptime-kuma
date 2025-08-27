@@ -256,8 +256,8 @@ class Database {
                 }
             };
         } else if (dbConfig.type === "mariadb") {
-            if (!/^\w+$/.test(dbConfig.dbName)) {
-                throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
+            if (!/^[\w-]+$/.test(dbConfig.dbName)) {
+                throw Error("Invalid database name. A database name can only consist of letters, numbers, underscores, and hyphens");
             }
 
             const connection = await mysql.createConnection({
@@ -267,7 +267,8 @@ class Database {
                 password: dbConfig.password,
             });
 
-            await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
+            const safeDbName = dbConfig.dbName.replace(/`/g, "``");
+            await connection.execute(`CREATE DATABASE IF NOT EXISTS \`${safeDbName}\` CHARACTER SET utf8mb4`);
             connection.end();
 
             config = {
