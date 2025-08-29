@@ -1118,5 +1118,8 @@
     "smsplanetApiDocs": "Gedetailleerde informatie over het verkrijgen van API-tokens vindt u op {the_smsplanet_documentation}.",
     "defaultFriendlyName": "Nieuwe monitor",
     "Add Tags": "Labels toevoegen",
-    "tagAlreadyOnMonitor": "Dit label (naam en waarde) is al op de monitor gekoppeld of in afwachting van koppelen."
+    "tagAlreadyOnMonitor": "Dit label (naam en waarde) is al op de monitor gekoppeld of in afwachting van koppelen.",
+    "mqttWebsocketPathExplanation": "WebSocket pad voor MQTT via WebSocket verbindingen (bijv., /mqtt)",
+    "mqttWebsocketPathInvalid": "Gebruik een geldig WebSocket pad formaat alsjeblieft",
+    "mqttHostnameTip": "Gebruik dit formaat alsjeblieft {hostnaamFormat}"
 }
