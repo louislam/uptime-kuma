@@ -1180,5 +1180,12 @@
     "Path": "Pfad",
     "mqttWebSocketPath": "MQTT WebSocket Pfad",
     "mqttWebsocketPathExplanation": "WebSocket-Pfad für MQTT über WebSocket-Verbindungen (z. B. /mqtt)",
-    "mqttHostnameTip": "Verwende dieses Format {hostnameFormat}"
+    "mqttHostnameTip": "Verwende dieses Format {hostnameFormat}",
+    "Template plain text instead of using cards": "Textvorlage anstelle von Karten",
+    "issueWithGoogleChatOnAndroidHelptext": "Dies ermöglicht auch die Umgehung von Fehlern im Vorfeld wie {issuetackerURL}",
+    "clearAllEventsMsg": "Möchtest du wirklich alle Ereignisse löschen?",
+    "Events cleared successfully": "Ereignisse erfolgreich gelöscht.",
+    "No monitors found": "Keine Monitore gefunden.",
+    "Could not clear events": "{failed}/{total} Ereignisse konnten nicht gelöscht werden",
+    "Clear All Events": "Alle Ereignisse löschen"
 }
