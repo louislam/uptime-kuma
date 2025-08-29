@@ -1180,5 +1180,12 @@
     "mqttWebSocketPath": "Chemin WebSocket MQTT",
     "mqttWebsocketPathExplanation": "Chemin WebSocket pour MQTT sur les connexions WebSocket (par exemple, /mqtt)",
     "mqttWebsocketPathInvalid": "Veuillez utiliser un format de chemin WebSocket valide",
-    "mqttHostnameTip": "Veuillez utiliser ce format {hostnameFormat}"
+    "mqttHostnameTip": "Veuillez utiliser ce format {hostnameFormat}",
+    "Template plain text instead of using cards": "Modèle en texte brut au lieu d'utiliser des cartes",
+    "issueWithGoogleChatOnAndroidHelptext": "Cela permet également de contourner les bugs en amont comme {issuetackerURL}",
+    "clearAllEventsMsg": "Êtes-vous sûr de vouloir supprimer tous les événements ?",
+    "Clear All Events": "Effacer tous les événements",
+    "Events cleared successfully": "Événements effacés avec succès.",
+    "No monitors found": "Aucun sonde trouvé.",
+    "Could not clear events": "Impossible d’effacer {failed}/{total} événements"
 }
