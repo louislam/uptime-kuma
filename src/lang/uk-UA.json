@@ -1186,5 +1186,12 @@
     "Path": "Шлях",
     "mqttWebSocketPath": "Шлях до MQTT WebSocket",
     "mqttWebsocketPathInvalid": "Будь ласка, використовуйте дійсний формат шляху WebSocket",
-    "mqttHostnameTip": "Будь ласка, використовуйте цей формат {hostnameFormat}"
+    "mqttHostnameTip": "Будь ласка, використовуйте цей формат {hostnameFormat}",
+    "Template plain text instead of using cards": "Шаблон простого тексту замість використання карток",
+    "issueWithGoogleChatOnAndroidHelptext": "Це також дозволяє обійти помилки на кшталт {issuetackerURL}",
+    "Clear All Events": "Очистити всі події",
+    "Events cleared successfully": "Події успішно очищено.",
+    "No monitors found": "Моніторів не знайдено.",
+    "Could not clear events": "Не вдалося очистити події {failed}/{total}",
+    "clearAllEventsMsg": "Ви дійсно хочете видалити всі події?"
 }
