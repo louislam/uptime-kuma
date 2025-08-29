@@ -1158,5 +1158,12 @@
     "Happy Eyeballs algorithm": "Algoritmo Happy Eyeballs",
     "Path": "Ruta",
     "mqttWebSocketPath": "Ruta de MQTT WebSocket",
-    "smseagleMsgRing": "Llamada"
+    "smseagleMsgRing": "Llamada",
+    "Clear All Events": "Limpiar todos los eventos",
+    "clearAllEventsMsg": "Seguro deseas eliminar todos los eventos?",
+    "Events cleared successfully": "Eventos limpiados exitosamente.",
+    "No monitors found": "No se encontraron monitores.",
+    "Could not clear events": "No se pudieron limpiar {failed}/{total} eventos",
+    "smseagleGroupV2": "ID(s) de grupo(s) de Guía Telefónica",
+    "mqttWebsocketPathExplanation": "Ruta del WebSocker para MQTT sobre conexion WebSocker (ejemplo, /mqtt)"
 }
