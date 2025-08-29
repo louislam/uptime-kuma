@@ -65,16 +65,16 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
-if (certExpiry &&
-    (
-        (this.type === "http" || this.type === "keyword" || this.type === "json-query") && this.getURLProtocol() === "https:"
-    ) ||
-    (this.type === "smtp" && this.smtpSecurity)   //  NEW: SMTP SSL or STARTTLS
-) {
-    const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
-    obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
-    obj.validCert = validCert;
-}
+        if (certExpiry &&
+            (
+                (this.type === "http" || this.type === "keyword" || this.type === "json-query") && this.getURLProtocol() === "https:"
+            ) ||
+            (this.type === "smtp" && this.smtpSecurity)   //  NEW: SMTP SSL or STARTTLS
+        ) {
+            const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
+            obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
+            obj.validCert = validCert;
+        }
 
 
         return obj;
@@ -219,7 +219,7 @@ if (certExpiry &&
      * monitor
      */
     async getTags() {
-        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
+        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [this.id]);
     }
 
     /**
@@ -362,7 +362,7 @@ if (certExpiry &&
 
             let beatInterval = this.interval;
 
-            if (! beatInterval) {
+            if (!beatInterval) {
                 beatInterval = 1;
             }
 
@@ -626,119 +626,118 @@ if (certExpiry &&
                         }
 
                     }
-                    } else if (this.type === "smtp") {
-    const startTime = dayjs().valueOf();
-    let smtpTlsInfo = {};
+                } else if (this.type === "smtp") {
+                    // SMTP monitor: supports SMTPS (secure), STARTTLS, and plain SMTP.
+                    // Checks TLS certificates and sets status, message, and ping time.
+                    const startTime = dayjs().valueOf();
+                    let smtpTlsInfo = {};
 
-    try {
-        // --- SMTPS (secure) ---
-        if (this.smtpSecurity === "secure") {
-            const tlsSocket = tls.connect({
-                host: this.hostname,
-                port: this.port || 465,
-                servername: this.hostname,
-                rejectUnauthorized: !this.getIgnoreTls(),
-            });
-
-            await new Promise((resolve, reject) => {
-                tlsSocket.on("secureConnect", async () => {
                     try {
-                        tlsSocket.write("EHLO uptime-kuma\r\n");
-
-                        smtpTlsInfo = checkCertificate(tlsSocket);
-                        smtpTlsInfo.valid = tlsSocket.authorized || false;
-                        await this.handleTlsInfo(smtpTlsInfo);
-
-                        tlsSocket.end();
-                        bean.msg = "SMTPS connection established";
-                        bean.status = UP;
-                        resolve();
-                    } catch (err) {
-                        tlsSocket.destroy();
-                        reject(err);
-                    }
-                });
-
-                tlsSocket.on("error", (err) => {
-                    tlsSocket.destroy();
-                    reject(err);
-                });
-            });
-
-        // --- STARTTLS ---
-        } else if (this.smtpSecurity === "starttls") {
-            const socket = net.connect({ host: this.hostname, port: this.port || 587 }, () => {
-                socket.write("EHLO uptime-kuma\r\n");
-            });
-
-            await new Promise((resolve, reject) => {
-                let buffer = "";
-
-                socket.on("data", async (data) => {
-                    buffer += data.toString();
-
-                    // Process complete lines only
-                    let lines = buffer.split("\r\n");
-                    buffer = lines.pop() || ""; // Keep incomplete line in buffer
-
-                    for (const line of lines) {
-                        if (line.includes("STARTTLS")) {
-                            socket.write("STARTTLS\r\n");
-                        }
-
-                        if (line.startsWith("220") && line.toLowerCase().includes("start tls")) {
+                        if (this.smtpSecurity === "secure") {
                             const tlsSocket = tls.connect({
-                                socket,
+                                host: this.hostname,
+                                port: this.port || 465,
                                 servername: this.hostname,
                                 rejectUnauthorized: !this.getIgnoreTls(),
                             });
 
-                            tlsSocket.on("secureConnect", async () => {
-                                try {
-                                    tlsSocket.write("EHLO uptime-kuma\r\n");
+                            await new Promise((resolve, reject) => {
+                                tlsSocket.on("secureConnect", async () => {
+                                    try {
+                                        tlsSocket.write("EHLO uptime-kuma\r\n");
 
-                                    smtpTlsInfo = checkCertificate(tlsSocket);
-                                    smtpTlsInfo.valid = tlsSocket.authorized || false;
-                                    await this.handleTlsInfo(smtpTlsInfo);
+                                        smtpTlsInfo = checkCertificate(tlsSocket);
+                                        smtpTlsInfo.valid = tlsSocket.authorized || false;
+                                        await this.handleTlsInfo(smtpTlsInfo);
 
-                                    tlsSocket.end();
-                                    bean.msg = "SMTP STARTTLS connection established";
-                                    bean.status = UP;
-                                    resolve();
-                                } catch (err) {
+                                        tlsSocket.end();
+                                        bean.msg = "SMTPS connection established";
+                                        bean.status = UP;
+                                        resolve();
+                                    } catch (err) {
+                                        tlsSocket.destroy();
+                                        reject(err);
+                                    }
+                                });
+
+                                tlsSocket.on("error", (err) => {
                                     tlsSocket.destroy();
                                     reject(err);
-                                }
+                                });
                             });
 
-                            tlsSocket.on("error", (err) => {
-                                tlsSocket.destroy();
-                                reject(err);
+                        } else if (this.smtpSecurity === "starttls") {
+                            const socket = net.connect({ host: this.hostname, port: this.port || 587 }, () => {
+                                socket.write("EHLO uptime-kuma\r\n");
                             });
+
+                            await new Promise((resolve, reject) => {
+                                let buffer = "";
+
+                                socket.on("data", async (data) => {
+                                    buffer += data.toString();
+                                    let lines = buffer.split("\r\n");
+                                    buffer = lines.pop() || "";
+
+                                    for (const line of lines) {
+                                        if (line.includes("STARTTLS")) {
+                                            socket.write("STARTTLS\r\n");
+                                        }
+
+                                        if (line.startsWith("220") && line.toLowerCase().includes("start tls")) {
+                                            const tlsSocket = tls.connect({
+                                                socket,
+                                                servername: this.hostname,
+                                                rejectUnauthorized: !this.getIgnoreTls(),
+                                            });
+
+                                            tlsSocket.on("secureConnect", async () => {
+                                                try {
+                                                    tlsSocket.write("EHLO uptime-kuma\r\n");
+
+                                                    smtpTlsInfo = checkCertificate(tlsSocket);
+                                                    smtpTlsInfo.valid = tlsSocket.authorized || false;
+                                                    await this.handleTlsInfo(smtpTlsInfo);
+
+                                                    tlsSocket.end();
+                                                    bean.msg = "SMTP STARTTLS connection established";
+                                                    bean.status = UP;
+                                                    resolve();
+                                                } catch (err) {
+                                                    tlsSocket.destroy();
+                                                    reject(err);
+                                                }
+                                            });
+
+                                            tlsSocket.on("error", (err) => {
+                                                tlsSocket.destroy();
+                                                reject(err);
+                                            });
+                                        }
+                                    }
+                                });
+
+                                socket.on("error", reject);
+                            });
+
+                        } else {
+                            bean.msg = "SMTP connection established (no TLS)";
+                            bean.status = UP;
                         }
+
+                        bean.ping = dayjs().valueOf() - startTime;
+
+                    } catch (e) {
+                        bean.msg = "SMTP check failed: " + e.message;
+                        bean.status = DOWN;
                     }
-                });
 
-                socket.on("error", reject);
-            });
 
-        // --- Plain SMTP ---
-        } else {
-            bean.msg = "SMTP connection established (no TLS)";
-            bean.status = UP;
-        }
 
-        bean.ping = dayjs().valueOf() - startTime;
-
-    } catch (e) {
-        bean.msg = "SMTP check failed: " + e.message;
-        bean.stantus = DOWN;
-    }
-
-} else if (this.type === "port") {
-    bean.ping = await tcping(this.hostname, this.port);
-    bean.msg = "";
-    bean.status = UP;
+                } else if (this.type === "port") {
+                    bean.ping = await tcping(this.hostname, this.port);
+                    bean.msg = "";
+                    bean.status = UP;
 
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
@@ -1113,7 +1112,7 @@ if (certExpiry &&
 
             previousBeat = bean;
 
-            if (! this.isStop) {
+            if (!this.isStop) {
                 log.debug("monitor", `[${this.name}] SetTimeout for next check.`);
 
                 let intervalRemainingMs = Math.max(
@@ -1142,7 +1141,7 @@ if (certExpiry &&
                 UptimeKumaServer.errorLog(e, false);
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
-                if (! this.isStop) {
+                if (!this.isStop) {
                     log.info("monitor", "Try to restart the monitor");
                     this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
                 }
@@ -1194,7 +1193,8 @@ if (certExpiry &&
                 let oauth2AuthHeader = {
                     "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
                 };
-                options.headers = { ...(options.headers),
+                options.headers = {
+                    ...(options.headers),
                     ...(oauth2AuthHeader)
                 };
 
@@ -1455,7 +1455,8 @@ if (certExpiry &&
             for (let notification of notificationList) {
                 try {
                     const heartbeatJSON = bean.toJSON();
-                    const monitorData = [{ id: monitor.id,
+                    const monitorData = [{
+                        id: monitor.id,
                         active: monitor.active,
                         name: monitor.name
                     }];
@@ -1500,7 +1501,7 @@ if (certExpiry &&
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
 
-            if (! notificationList.length > 0) {
+            if (!notificationList.length > 0) {
                 // fail fast. If no notification is set, all the following checks can be skipped.
                 log.debug("monitor", "No notification, no need to send cert notification");
                 return;
@@ -1509,8 +1510,8 @@ if (certExpiry &&
             let notifyDays = await setting("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
                 // Reset Default
-                await setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
-                notifyDays = [ 7, 14, 21 ];
+                await setSetting("tlsExpiryNotifyDays", [7, 14, 21], "general");
+                notifyDays = [7, 14, 21];
             }
 
             if (Array.isArray(notifyDays)) {
@@ -1601,7 +1602,7 @@ if (certExpiry &&
         const maintenanceIDList = await R.getCol(`
             SELECT maintenance_id FROM monitor_maintenance
             WHERE monitor_id = ?
-        `, [ monitorID ]);
+        `, [monitorID]);
 
         for (const maintenanceID of maintenanceIDList) {
             const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
@@ -1798,7 +1799,7 @@ if (certExpiry &&
      * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
     static async getAllPath(monitorID, name) {
-        const path = [ name ];
+        const path = [name];
 
         if (this.parent === null) {
             return path;
