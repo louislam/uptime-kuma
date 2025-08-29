@@ -990,5 +990,13 @@
     "OID (Object Identifier)": "OID (Objektsidentifierare)",
     "Please enter a valid OID.": "Ange ett giltigt OID.",
     "Group ID": "GruppID",
-    "Add Remote Browser": "Lägg till fjärrbläddrare"
+    "Add Remote Browser": "Lägg till fjärrbläddrare",
+    "Path": "Sökväg",
+    "mqttHostnameTip": "Vänligen använd detta format {hostnameFormat}",
+    "templateServiceName": "tjänstnamn",
+    "templateHostnameOrURL": "värdnamn eller URL",
+    "templateStatus": "status",
+    "defaultFriendlyName": "Ny övervakare",
+    "Add Tags": "Lägg till taggar",
+    "tagAlreadyOnMonitor": "Denna tagg (namn och värde) finns redan på övervakaren eller är köad för tillägg."
 }
