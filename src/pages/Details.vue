@@ -307,10 +307,6 @@
                     </div>
                 </div>
             </div>
-<div v-if="monitor.tlsInfo">
-  <p>Certificate Valid: {{ monitor.tlsInfo.certInfo.validCert }}</p>
-  <p>Days Remaining: {{ monitor.tlsInfo.certInfo.daysRemaining }}</p>
-</div>
 
             <!-- Cert Info Box -->
             <transition name="slide-fade" appear>

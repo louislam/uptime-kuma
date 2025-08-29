@@ -21,6 +21,8 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
+const net = require("net");
+const tls = require("tls");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -63,22 +65,18 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
+if (certExpiry &&
+    (
+        (this.type === "http" || this.type === "keyword" || this.type === "json-query") && this.getURLProtocol() === "https:"
+    ) ||
+    (this.type === "smtp" && this.smtpSecurity)   //  NEW: SMTP SSL or STARTTLS
+) {
+    const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
+    obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
+    obj.validCert = validCert;
+}
 
-        if (certExpiry) {
-        // HTTPS monitors
-        if ((this.type === "http" || this.type === "keyword" || this.type === "json-query") && this.getURLProtocol() === "https:") {
-            const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
-            obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
-            obj.validCert = validCert;
-        }
 
-        // SMTP monitors
-        if (this.type === "smtp") {
-            obj.certExpiryDaysRemaining = this.certExpiryDaysRemaining ?? "";
-            obj.validCert = this.validCert ?? false;
-        }
-    }
-      
         return obj;
     }
 
@@ -628,6 +626,119 @@ class Monitor extends BeanModel {
                         }
 
                     }
+                    } else if (this.type === "smtp") {
+    const startTime = dayjs().valueOf();
+    let smtpTlsInfo = {};
+
+    try {
+        // --- SMTPS (secure) ---
+        if (this.smtpSecurity === "secure") {
+            const tlsSocket = tls.connect({
+                host: this.hostname,
+                port: this.port || 465,
+                servername: this.hostname,
+                rejectUnauthorized: !this.getIgnoreTls(),
+            });
+
+            await new Promise((resolve, reject) => {
+                tlsSocket.on("secureConnect", async () => {
+                    try {
+                        tlsSocket.write("EHLO uptime-kuma\r\n");
+
+                        smtpTlsInfo = checkCertificate(tlsSocket);
+                        smtpTlsInfo.valid = tlsSocket.authorized || false;
+                        await this.handleTlsInfo(smtpTlsInfo);
+
+                        tlsSocket.end();
+                        bean.msg = "SMTPS connection established";
+                        bean.status = UP;
+                        resolve();
+                    } catch (err) {
+                        tlsSocket.destroy();
+                        reject(err);
+                    }
+                });
+
+                tlsSocket.on("error", (err) => {
+                    tlsSocket.destroy();
+                    reject(err);
+                });
+            });
+
+        // --- STARTTLS ---
+        } else if (this.smtpSecurity === "starttls") {
+            const socket = net.connect({ host: this.hostname, port: this.port || 587 }, () => {
+                socket.write("EHLO uptime-kuma\r\n");
+            });
+
+            await new Promise((resolve, reject) => {
+                let buffer = "";
+
+                socket.on("data", async (data) => {
+                    buffer += data.toString();
+
+                    // Process complete lines only
+                    let lines = buffer.split("\r\n");
+                    buffer = lines.pop() || ""; // Keep incomplete line in buffer
+
+                    for (const line of lines) {
+                        if (line.includes("STARTTLS")) {
+                            socket.write("STARTTLS\r\n");
+                        }
+
+                        if (line.startsWith("220") && line.toLowerCase().includes("start tls")) {
+                            const tlsSocket = tls.connect({
+                                socket,
+                                servername: this.hostname,
+                                rejectUnauthorized: !this.getIgnoreTls(),
+                            });
+
+                            tlsSocket.on("secureConnect", async () => {
+                                try {
+                                    tlsSocket.write("EHLO uptime-kuma\r\n");
+
+                                    smtpTlsInfo = checkCertificate(tlsSocket);
+                                    smtpTlsInfo.valid = tlsSocket.authorized || false;
+                                    await this.handleTlsInfo(smtpTlsInfo);
+
+                                    tlsSocket.end();
+                                    bean.msg = "SMTP STARTTLS connection established";
+                                    bean.status = UP;
+                                    resolve();
+                                } catch (err) {
+                                    tlsSocket.destroy();
+                                    reject(err);
+                                }
+                            });
+
+                            tlsSocket.on("error", (err) => {
+                                tlsSocket.destroy();
+                                reject(err);
+                            });
+                        }
+                    }
+                });
+
+                socket.on("error", reject);
+            });
+
+        // --- Plain SMTP ---
+        } else {
+            bean.msg = "SMTP connection established (no TLS)";
+            bean.status = UP;
+        }
+
+        bean.ping = dayjs().valueOf() - startTime;
+
+    } catch (e) {
+        bean.msg = "SMTP check failed: " + e.message;
+        bean.stantus = DOWN;
+    }
+
+} else if (this.type === "port") {
+    bean.ping = await tcping(this.hostname, this.port);
+    bean.msg = "";
+    bean.status = UP;
 
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
