@@ -75,8 +75,6 @@ class Monitor extends BeanModel {
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
         }
-
-
         return obj;
     }
 
@@ -219,7 +217,7 @@ class Monitor extends BeanModel {
      * monitor
      */
     async getTags() {
-        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [this.id]);
+        return await R.getAll("SELECT mt.*, tag.name, tag.color FROM monitor_tag mt JOIN tag ON mt.tag_id = tag.id WHERE mt.monitor_id = ? ORDER BY tag.name", [ this.id ]);
     }
 
     /**
@@ -667,7 +665,8 @@ class Monitor extends BeanModel {
                             });
 
                         } else if (this.smtpSecurity === "starttls") {
-                            const socket = net.connect({ host: this.hostname, port: this.port || 587 }, () => {
+                            const socket = net.connect({ host: this.hostname,
+                                port: this.port || 587 }, () => {
                                 socket.write("EHLO uptime-kuma\r\n");
                             });
 
@@ -731,13 +730,6 @@ class Monitor extends BeanModel {
                         bean.msg = "SMTP check failed: " + e.message;
                         bean.status = DOWN;
                     }
-
-
-
-                } else if (this.type === "port") {
-                    bean.ping = await tcping(this.hostname, this.port);
-                    bean.msg = "";
-                    bean.status = UP;
 
                 } else if (this.type === "port") {
                     bean.ping = await tcping(this.hostname, this.port);
@@ -1510,8 +1502,8 @@ class Monitor extends BeanModel {
             let notifyDays = await setting("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
                 // Reset Default
-                await setSetting("tlsExpiryNotifyDays", [7, 14, 21], "general");
-                notifyDays = [7, 14, 21];
+                await setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+                notifyDays = [ 7, 14, 21 ];
             }
 
             if (Array.isArray(notifyDays)) {
@@ -1602,7 +1594,7 @@ class Monitor extends BeanModel {
         const maintenanceIDList = await R.getCol(`
             SELECT maintenance_id FROM monitor_maintenance
             WHERE monitor_id = ?
-        `, [monitorID]);
+        `, [ monitorID ]);
 
         for (const maintenanceID of maintenanceIDList) {
             const maintenance = await UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
@@ -1799,7 +1791,7 @@ class Monitor extends BeanModel {
      * @returns {Promise<string[]>} Full path (includes groups and the name) of the monitor
      */
     static async getAllPath(monitorID, name) {
-        const path = [name];
+        const path = [ name ];
 
         if (this.parent === null) {
             return path;
