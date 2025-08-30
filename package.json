@@ -138,6 +138,7 @@
         "socket.io": "~4.8.0",
         "socket.io-client": "~4.8.0",
         "socks-proxy-agent": "~8.0.5",
+        "sqlstring": "~2.3.3",
         "tar": "~6.2.1",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2",
