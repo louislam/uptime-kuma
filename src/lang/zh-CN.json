@@ -1177,5 +1177,10 @@
     "smseagleMsgRing": "响铃呼叫",
     "smseagleMsgSms": "SMS 短信（默认值）",
     "smseagleContactV2": "联系人 ID",
-    "smseagleGroupV2": "群组 ID"
+    "smseagleGroupV2": "群组 ID",
+    "mqttWebsocketPathExplanation": "MQTT 通过 WebSocket 连接时所使用的 WebSocket 路径（例如 /mqtt）",
+    "Path": "路径",
+    "mqttHostnameTip": "请使用此格式：{hostnameFormat}",
+    "mqttWebsocketPathInvalid": "请使用合法的 WebSocket 路径格式",
+    "mqttWebSocketPath": "MQTT WebSocket 路径"
 }
