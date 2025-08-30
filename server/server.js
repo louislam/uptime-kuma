@@ -720,6 +720,17 @@ let needSetup = false;
 
                 monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
 
+                /*
+                 * List of frontend-only properties that should not be saved to the database.
+                 * Should clean up before saving to the database.
+                 */
+                const frontendOnlyProperties = [ "humanReadableInterval" ];
+                for (const prop of frontendOnlyProperties) {
+                    if (prop in monitor) {
+                        delete monitor[prop];
+                    }
+                }
+
                 bean.import(monitor);
                 bean.user_id = socket.userID;
 
@@ -837,6 +848,7 @@ let needSetup = false;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
                 bean.mqttCheckType = monitor.mqttCheckType;
+                bean.mqttWebsocketPath = monitor.mqttWebsocketPath;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
                 bean.databaseQuery = monitor.databaseQuery;
                 bean.authMethod = monitor.authMethod;

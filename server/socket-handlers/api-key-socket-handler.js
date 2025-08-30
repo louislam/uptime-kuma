@@ -27,7 +27,7 @@ module.exports.apiKeySocketHandler = (socket) => {
             log.debug("apikeys", "Added API Key");
             log.debug("apikeys", key);
 
-            // Append key ID and prefix to start of key seperated by _, used to get
+            // Append key ID and prefix to start of key separated by _, used to get
             // correct hash when validating key.
             let formattedKey = "uk" + bean.id + "_" + clearKey;
             await sendAPIKeyList(socket);

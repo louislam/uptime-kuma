@@ -23,6 +23,7 @@ async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage) {
         port: connectionString.split(":")[2],
         mqttUsername: null,
         mqttPassword: null,
+        mqttWebsocketPath: null, // for WebSocket connections
         interval: 20, // controls the timeout
         mqttSuccessMessage: mqttSuccessMessage, // for keywords
         expectedValue: mqttSuccessMessage, // for json-query
