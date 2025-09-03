@@ -260,20 +260,13 @@ class RealBrowserMonitorType extends MonitorType {
                 let textContent = await page.textContent("body");
 
                 if (textContent) {
-                    // Basic text preprocessing - remove extra whitespace
                     textContent = textContent.replace(/\s+/g, " ").trim();
-
-                    // Check if keyword is found
                     let keywordFound = textContent.includes(monitor.keyword);
-
-                    // Apply invert keyword logic (similar to existing keyword monitors)
                     const invertKeyword = monitor.invertKeyword === true || monitor.invertKeyword === 1;
 
                     if (keywordFound === !invertKeyword) {
-                        // Keyword check passed
                         log.debug("monitor", `Keyword check passed. Keyword "${monitor.keyword}" ${keywordFound ? "found" : "not found"} on page (invert: ${invertKeyword})`);
                     } else {
-                        // Keyword check failed - prepare error message
                         let errorText = textContent;
                         if (errorText.length > 50) {
                             errorText = errorText.substring(0, 47) + "...";
