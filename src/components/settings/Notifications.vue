@@ -75,7 +75,6 @@
             </div>
         </div>
 
-
         <div class="my-4 pt-4">
             <h5 class="my-4 settings-subheading">{{ $t("settingsDomainExpiry") }}</h5>
             <p>{{ $t("domainExpiryDescription") }}</p>

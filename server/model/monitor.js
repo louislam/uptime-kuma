@@ -414,7 +414,6 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
-
                     // Early check to support upside down monitoring
                     if (this.isEnabledDomainExpiryNotification()) {
                         this.checkDomainExpiryNotifications(getDomain(this.url));
@@ -1275,17 +1274,15 @@ class Monitor extends BeanModel {
      * @returns {void}
      */
     static async sendDomainInfo(io, monitorID, userID) {
-        const monitor = await R.findOne("monitor", "id = ?", [monitorID]);
+        const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
         const domain = getDomain(monitor.url);
 
-        const domainInfo = await R.findOne("domain_expiry_info", "domain = ?", [domain]);
+        const domainInfo = await R.findOne("domain_expiry_info", "domain = ?", [ domain ]);
         if (domainInfo != null) {
             const daysRemaining = getDaysRemaining(new Date(), new Date(domainInfo.expiry));
             io.to(userID).emit("domainInfo", monitorID, daysRemaining, new Date(domainInfo.expiry));
         }
     }
-
-    
 
     /**
      * Has status of monitor changed since last beat?
@@ -1535,10 +1532,12 @@ class Monitor extends BeanModel {
             expiryDate = new Date(domainInfoBean.expiry);
         }
 
-        if (expiryDate === null) return;
+        if (expiryDate === null) {
+            return;
+        }
 
         const daysRemaining = getDaysRemaining(new Date(), expiryDate);
-        log.debug('domain', `${domain} expires in ${daysRemaining} days`);
+        log.debug("domain", `${domain} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
         if (notifyDays == null || !Array.isArray(notifyDays)) {
@@ -1561,7 +1560,7 @@ class Monitor extends BeanModel {
 
     /**
      * Send a certificate notification when domain expires in less than target days
-     * @param {String} domain  Domain we monitor
+     * @param {string} domain  Domain we monitor
      * @param {number} daysRemaining Number of days remaining on certificate
      * @param {number} targetDays Number of days to alert after
      * @param {LooseObject<any>[]} notificationList List of notification providers
@@ -1600,7 +1599,6 @@ class Monitor extends BeanModel {
             ]);
         }
     }
-
 
     /**
      * Get the status of the previous heartbeat

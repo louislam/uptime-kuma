@@ -252,7 +252,8 @@ export default {
             });
 
             socket.on("domainInfo", (monitorID, daysRemaining, expiresOn) => {
-                this.domainInfoList[monitorID] = {daysRemaining: daysRemaining, expiresOn: expiresOn};
+                this.domainInfoList[monitorID] = { daysRemaining: daysRemaining,
+                    expiresOn: expiresOn };
             });
 
             socket.on("connect_error", (err) => {
