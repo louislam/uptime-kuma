@@ -179,6 +179,10 @@ export default {
                     this.settings.tlsExpiryNotifyDays = [ 7, 14, 21 ];
                 }
 
+                if (this.settings.domainExpiryNotifyDays === undefined) {
+                    this.settings.domainExpiryNotifyDays = [ 7, 14, 21 ];
+                }
+
                 if (this.settings.trustProxy === undefined) {
                     this.settings.trustProxy = false;
                 }
