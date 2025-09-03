@@ -9,7 +9,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, getDaysRemaining, getDaysBetween, getDomain, getDomainExpiryDate
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -115,6 +115,7 @@ class Monitor extends BeanModel {
             keyword: this.keyword,
             invertKeyword: this.isInvertKeyword(),
             expiryNotification: this.isEnabledExpiryNotification(),
+            domainExpiryNotification: this.isEnabledDomainExpiryNotification(),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             packetSize: this.packetSize,
@@ -261,6 +262,14 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Is the domain expiry notification enabled?
+     * @returns {boolean} Enabled?
+     */
+    isEnabledDomainExpiryNotification() {
+        return Boolean(this.domainExpiryNotification);
+    }
+
+    /**
      * Check if ping should use numeric output only
      * @returns {boolean} True if IP addresses will be output instead of symbolic hostnames
      */
@@ -404,6 +413,12 @@ class Monitor extends BeanModel {
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
+
+
+                    // Early check to support upside down monitoring
+                    if (this.isEnabledDomainExpiryNotification()) {
+                        this.checkDomainExpiryNotifications(getDomain(this.url));
+                    }
 
                     // HTTP basic auth
                     let basicAuthHeader = {};
@@ -1228,6 +1243,9 @@ class Monitor extends BeanModel {
 
             // Send Cert Info
             await Monitor.sendCertInfo(io, monitorID, userID);
+
+            // Send domain info
+            await Monitor.sendDomainInfo(io, monitorID, userID);
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
         }
@@ -1248,6 +1266,26 @@ class Monitor extends BeanModel {
             io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
         }
     }
+
+    /**
+     * Send domain name information to client
+     * @param {Server} io Socket server instance
+     * @param {number} monitorID ID of monitor to send
+     * @param {number} userID ID of user to send to
+     * @returns {void}
+     */
+    static async sendDomainInfo(io, monitorID, userID) {
+        const monitor = await R.findOne("monitor", "id = ?", [monitorID]);
+        const domain = getDomain(monitor.url);
+
+        const domainInfo = await R.findOne("domain_expiry_info", "domain = ?", [domain]);
+        if (domainInfo != null) {
+            const daysRemaining = getDaysRemaining(new Date(), new Date(domainInfo.expiry));
+            io.to(userID).emit("domainInfo", monitorID, daysRemaining, new Date(domainInfo.expiry));
+        }
+    }
+
+    
 
     /**
      * Has status of monitor changed since last beat?
@@ -1459,6 +1497,46 @@ class Monitor extends BeanModel {
                 targetDays,
             ]);
         }
+    }
+
+    /**
+     * Check expiry date based on RDAP
+     * @param {string} domain Domain to lookup
+     * @returns {void}
+     */
+    async checkDomainExpiryNotifications(domain) {
+        const notificationList = await Monitor.getNotificationList(this);
+        if (! notificationList.length > 0) {
+            // fail fast. If no notification is set, all the following checks can be skipped.
+            log.debug("monitor", "No notification, no need to send domain notification");
+            return;
+        }
+
+        let domainInfoBean = await R.findOne("domain_expiry_info", "domain = ?", [ domain ]);
+
+        if (domainInfoBean && getDaysBetween(new Date(domainInfoBean.lastCheck), new Date()) < 1) {
+            log.debug("domain", `Domain expiry already checked recently for ${domain}, won't re-check.`);
+            return;
+        } else if (domainInfoBean === null) {
+            domainInfoBean = R.dispense("domain_expiry_info");
+            domainInfoBean.domain = domain;
+        }
+
+        const expiryDate = await getDomainExpiryDate(domain);
+        if (expiryDate !== null) {
+            log.debug('domain', `${domain} expires in ${getDaysRemaining(new Date(), expiryDate)} days`);
+        }
+        domainInfoBean.expiry = expiryDate;
+        domainInfoBean.lastCheck = new Date();
+        R.store(domainInfoBean);
+
+        let notifyDays = await setting("domainExpiryNotifyDays");
+        if (notifyDays == null || !Array.isArray(notifyDays)) {
+            // Reset Default
+            await setSetting("domainExpiryNotifyDays", [ 7, 14, 21 ], "general");
+            notifyDays = [ 7, 14, 21 ];
+        }
+        
     }
 
     /**
