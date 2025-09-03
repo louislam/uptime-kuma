@@ -7,6 +7,7 @@ const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { UP, DOWN, MAINTENANCE } = require("../../src/util");
 
 let router = express.Router();
 
@@ -75,6 +76,12 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         slug = slug.toLowerCase();
         let statusPageID = await StatusPage.slugToID(slug);
 
+        // Optional aggregation parameters
+        const daysParam = parseInt(request.query.days || "0");
+        const pointsParam = parseInt(request.query.points || "0");
+        const aggregateDays = Number.isFinite(daysParam) && daysParam > 0 ? Math.min(30, daysParam) : 0; // cap to 30 days
+        const maxPoints = Number.isFinite(pointsParam) && pointsParam > 0 ? pointsParam : 0;
+
         let monitorIDList = await R.getCol(`
             SELECT monitor_group.monitor_id FROM monitor_group, \`group\`
             WHERE monitor_group.group_id = \`group\`.id
@@ -85,20 +92,68 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         ]);
 
         for (let monitorID of monitorIDList) {
-            let list = await R.getAll(`
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT 100
-            `, [
-                monitorID,
-            ]);
+            if (aggregateDays > 0) {
+                // Use hourly aggregated data up to 30 days
+                const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+                const hours = aggregateDays * 24;
+                let data = uptimeCalculator.getDataArray(hours, "hour");
 
-            list = R.convertToBeans("heartbeat", list);
-            heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+                // Downsample to maxPoints if requested
+                if (maxPoints > 0 && data.length > maxPoints) {
+                    const step = Math.ceil(data.length / maxPoints);
+                    let downsampled = [];
+                    for (let i = 0; i < data.length; i += step) {
+                        // Merge a window: if any down/maintenance -> mark as down; otherwise up
+                        const window = data.slice(i, i + step);
+                        let merged = { timestamp: window[0].timestamp, up: 0, down: 0, maintenance: 0 };
+                        for (const d of window) {
+                            merged.up += d.up || 0;
+                            merged.down += d.down || 0;
+                            merged.maintenance += d.maintenance || 0;
+                        }
+                        downsampled.push(merged);
+                    }
+                    data = downsampled;
+                }
 
-            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
-            uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+                // Convert to simplified beat list understood by HeartbeatBar (time + status)
+                heartbeatList[monitorID] = data.map(d => {
+                    let status;
+                    if ((d.maintenance || 0) > 0) {
+                        status = MAINTENANCE;
+                    } else if ((d.down || 0) > 0) {
+                        status = DOWN;
+                    } else if ((d.up || 0) > 0) {
+                        status = UP;
+                    } else {
+                        status = null;
+                    }
+                    return {
+                        status,
+                        time: new Date((d.timestamp || 0) * 1000).toISOString(),
+                        msg: null,
+                    };
+                });
+
+                // Also include 24h uptime as before
+                uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+            } else {
+                // Original behavior: return latest 100 heartbeats
+                let list = await R.getAll(`
+                        SELECT * FROM heartbeat
+                        WHERE monitor_id = ?
+                        ORDER BY time DESC
+                        LIMIT 100
+                `, [
+                    monitorID,
+                ]);
+
+                list = R.convertToBeans("heartbeat", list);
+                heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+
+                const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+                uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+            }
         }
 
         response.json({

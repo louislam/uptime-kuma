@@ -401,6 +401,9 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
+                } else if (await Monitor.shouldPauseOnWeekend(this.id)) {
+                    bean.msg = "Weekend pause enabled";
+                    bean.status = MAINTENANCE;
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -1496,6 +1499,34 @@ class Monitor extends BeanModel {
         }
 
         return false;
+    }
+
+    /**
+     * Check if monitoring should be paused due to weekend restrictions
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<boolean>} Should monitoring be paused
+     */
+    static async shouldPauseOnWeekend(monitorID) {
+        try {
+            // Get weekend pause setting from global settings
+            const weekendPauseEnabled = await R.findOne("setting", " key = ? ", ["weekendPauseEnabled"]);
+            
+            if (!weekendPauseEnabled || !weekendPauseEnabled.value || weekendPauseEnabled.value !== "1") {
+                return false;
+            }
+
+            // Check if current day is weekend (Saturday = 6, Sunday = 0)
+            const currentDay = new Date().getDay();
+            if (currentDay === 0 || currentDay === 6) {
+                log.debug("monitor", `Monitor ${monitorID}: Weekend pause enabled, current day: ${currentDay}`);
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            log.error("monitor", `Error checking weekend pause for monitor ${monitorID}: ${error.message}`);
+            return false;
+        }
     }
 
     /**

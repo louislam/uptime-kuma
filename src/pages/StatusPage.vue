@@ -328,7 +328,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :heartbeat-bar-days="heartbeatBarDays" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -451,6 +451,8 @@ export default {
             updateCountdown: null,
             updateCountdownText: null,
             loading: true,
+            heartbeatBarDays: 30,
+            lastRequestedPoints: 0,
         };
     },
     computed: {
@@ -771,7 +773,11 @@ export default {
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
-                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
+                // If we are showing aggregated 30d data, request with parameters
+                const params = this.heartbeatBarDays > 0 && this.lastRequestedPoints > 0
+                    ? `?days=${this.heartbeatBarDays}&points=${this.lastRequestedPoints}`
+                    : "";
+                axios.get("/api/status-page/heartbeat/" + this.slug + params).then((res) => {
                     const { heartbeatList, uptimeList } = res.data;
 
                     this.$root.heartbeatList = heartbeatList;
@@ -796,6 +802,16 @@ export default {
                     this.updateUpdateTimer();
                 });
             }
+        },
+
+        /**
+         * Called by child heartbeat bars when width changes to fetch appropriate points
+         * @param {number} maxPoints number of beats to show
+         * @returns {void}
+         */
+        reloadHeartbeatData(maxPoints) {
+            this.lastRequestedPoints = maxPoints || 0;
+            this.updateHeartbeatList();
         },
 
         /**

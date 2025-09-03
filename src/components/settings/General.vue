@@ -132,6 +132,29 @@
                 <div class="form-text"></div>
             </div>
 
+            <!-- Weekend Pause -->
+            <div class="mb-4">
+                <label class="form-label">
+                    {{ $t("Weekend Monitoring") }}
+                </label>
+
+                <div class="form-check">
+                    <input
+                        id="weekendPauseEnabled"
+                        v-model="settings.weekendPauseEnabled"
+                        class="form-check-input"
+                        type="checkbox"
+                        name="weekendPauseEnabled"
+                    />
+                    <label class="form-check-label" for="weekendPauseEnabled">
+                        {{ $t("Pause monitoring on weekends (Saturday and Sunday)") }}
+                    </label>
+                </div>
+                <div class="form-text">
+                    {{ $t("weekendPauseDescription") }}
+                </div>
+            </div>
+
             <!-- Steam API Key -->
             <div class="mb-4">
                 <label class="form-label" for="steamAPIKey">
