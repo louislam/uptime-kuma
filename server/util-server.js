@@ -612,6 +612,7 @@ exports.setSettings = async function (type, data) {
  */
 const getDaysBetween = (validFrom, validTo) =>
     Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
+exports.getDaysBetween = getDaysBetween;
 
 /**
  * Get days remaining from a time range
@@ -626,6 +627,74 @@ const getDaysRemaining = (validFrom, validTo) => {
     }
     return daysRemaining;
 };
+exports.getDaysRemaining = getDaysRemaining;
+
+/**
+ * Get domain name from an URL
+ * @param {String} url Url to get the domain from
+ * @returns {String} Domain name
+ */
+exports.getDomain = (url) => {
+    const parsedUrl = new URL(url);
+    const domainParts = parsedUrl.hostname.split('.');
+    const tld = domainParts.pop();
+    return `${domainParts.pop()}.${tld}`;
+}
+
+/**
+ * Find the RDAP server for a given TLD
+ * @param {String} tld TLD
+ * @returns {String} First RDAP server found
+ */
+async function getRdapServer(tld) {
+    let rdapList;
+    try {
+        const res = await fetch("https://data.iana.org/rdap/dns.json");
+        rdapList = await res.json();
+    } catch (error) {
+        log.debug("monitor", error);
+        return null;
+    }
+
+    for (const service of rdapList['services']) {
+        const [tlds, urls] = service;
+        if (tlds.includes(tld)) {
+            return urls[0];
+        }
+    }
+    return null;
+}
+
+/**
+ * Request RDAP server to retrieve the expiry date of a domain
+ * @param {String} domain Domain to retrieve the expiry date from
+ * @returns {String} First RDAP server found
+ */
+exports.getDomainExpiryDate = async function (domain) {
+    const tld = domain.split('.').pop();
+    const rdapServer = await getRdapServer(tld);
+    if (rdapServer === null) {
+        log.warn("domain", `No RDAP server found, TLD ${tld} not supported.`);
+        return null;
+    }
+    const url = `${rdapServer}domain/${domain}`;
+
+    let rdapInfos;
+    try {
+        const res = await fetch(url);
+        if (res.status !== 200) return null
+        rdapInfos = await res.json();
+    } catch (error) {
+        log.warn("domain", "Not able to get expiry date from RDAP");
+        return null;
+    }
+
+    if (rdapInfos['events'] === undefined) return null;
+    for (const event of rdapInfos['events']) {
+        if (event['eventAction'] === 'expiration') return new Date(event['eventDate'])
+    }
+    return null;
+}
 
 /**
  * Fix certificate info for display
