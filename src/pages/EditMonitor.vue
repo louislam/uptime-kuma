@@ -156,16 +156,27 @@
                             </div>
 
                             <!-- Keyword -->
-                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3">
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword' || monitor.type === 'real-browser'" class="my-3">
                                 <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
-                                <input id="keyword" v-model="monitor.keyword" type="text" class="form-control" required>
+                                <input
+                                    id="keyword"
+                                    v-model="monitor.keyword"
+                                    type="text"
+                                    class="form-control"
+                                    :required="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'"
+                                >
                                 <div class="form-text">
-                                    {{ $t("keywordDescription") }}
+                                    <span v-if="monitor.type === 'real-browser'">
+                                        {{ $t("keywordDescription") }} {{ $t("Optional") }}.
+                                    </span>
+                                    <span v-else>
+                                        {{ $t("keywordDescription") }}
+                                    </span>
                                 </div>
                             </div>
 
                             <!-- Invert keyword -->
-                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'" class="my-3 form-check">
+                            <div v-if="monitor.type === 'keyword' || monitor.type === 'grpc-keyword' || monitor.type === 'real-browser'" class="my-3 form-check">
                                 <input id="invert-keyword" v-model="monitor.invertKeyword" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="invert-keyword">
                                     {{ $t("Invert Keyword") }}

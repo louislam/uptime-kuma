@@ -253,6 +253,47 @@ class RealBrowserMonitorType extends MonitorType {
             timeout: monitor.interval * 1000 * 0.8,
         });
 
+        // Check for keyword if configured
+        if (monitor.keyword && monitor.keyword.trim()) {
+            try {
+                // Extract all visible text content from the page
+                let textContent = await page.textContent("body");
+
+                if (textContent) {
+                    // Basic text preprocessing - remove extra whitespace
+                    textContent = textContent.replace(/\s+/g, " ").trim();
+
+                    // Check if keyword is found
+                    let keywordFound = textContent.includes(monitor.keyword);
+
+                    // Apply invert keyword logic (similar to existing keyword monitors)
+                    const invertKeyword = monitor.invertKeyword === true || monitor.invertKeyword === 1;
+
+                    if (keywordFound === !invertKeyword) {
+                        // Keyword check passed
+                        log.debug("monitor", `Keyword check passed. Keyword "${monitor.keyword}" ${keywordFound ? "found" : "not found"} on page (invert: ${invertKeyword})`);
+                    } else {
+                        // Keyword check failed - prepare error message
+                        let errorText = textContent;
+                        if (errorText.length > 50) {
+                            errorText = errorText.substring(0, 47) + "...";
+                        }
+
+                        throw new Error(
+                            `Keyword check failed. Keyword "${monitor.keyword}" ${keywordFound ? "found" : "not found"} on page. ` +
+                            `Expected: ${invertKeyword ? "not found" : "found"}. Page content: [${errorText}]`
+                        );
+                    }
+                } else {
+                    throw new Error("Could not extract text content from page for keyword checking");
+                }
+            } catch (keywordError) {
+                // Close context before throwing error
+                await context.close();
+                throw keywordError;
+            }
+        }
+
         let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
 
         await page.screenshot({
@@ -263,7 +304,15 @@ class RealBrowserMonitorType extends MonitorType {
 
         if (res.status() >= 200 && res.status() < 400) {
             heartbeat.status = UP;
-            heartbeat.msg = res.status();
+            let statusMsg = res.status().toString();
+
+            // Add keyword info to message if keyword checking was performed
+            if (monitor.keyword && monitor.keyword.trim()) {
+                const invertKeyword = monitor.invertKeyword === true || monitor.invertKeyword === 1;
+                statusMsg += `, keyword "${monitor.keyword}" ${invertKeyword ? "not found" : "found"}`;
+            }
+
+            heartbeat.msg = statusMsg;
 
             const timing = res.request().timing();
             heartbeat.ping = timing.responseEnd;
