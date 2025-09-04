@@ -8,6 +8,7 @@ const ignoreList = [
     "louislam",
     "UptimeKumaBot",
     "weblate",
+    "Copilot"
 ];
 
 const mergeList = [
