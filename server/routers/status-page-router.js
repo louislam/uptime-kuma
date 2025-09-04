@@ -16,13 +16,6 @@ const server = UptimeKumaServer.getInstance();
 router.get("/status/:slug", cache("5 minutes"), async (request, response) => {
     let slug = request.params.slug;
     slug = slug.toLowerCase();
-    // Check if status page exists
-    let statusPage = await R.findOne("status_page", " slug = ? ", [ slug ]);
-
-    if (!statusPage) {
-        return sendHttpError(response, "Status Page Not Found", 404);
-    }
-
     await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
 });
 

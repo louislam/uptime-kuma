@@ -342,6 +342,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 await R.exec("DELETE FROM status_page WHERE id = ? ", [
                     statusPageID
                 ]);
+                apicache.clear();
 
             } else {
                 throw new Error("Status Page is not found");
