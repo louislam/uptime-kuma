@@ -1537,7 +1537,7 @@ class Monitor extends BeanModel {
         }
 
         const daysRemaining = getDaysRemaining(new Date(), expiryDate);
-        log.debug("domain", `${domain} expires in ${daysRemaining} days`);
+        log.warn("domain", `${domain} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
         if (notifyDays == null || !Array.isArray(notifyDays)) {
