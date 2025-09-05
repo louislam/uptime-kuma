@@ -249,3 +249,16 @@ export function execSync(cmd) {
         console.info(`[DRY RUN] ${cmd}`);
     }
 }
+
+/**
+ * Check if the current branch is "release"
+ * @returns {void}
+ */
+export function checkReleaseBranch() {
+    const res = childProcess.spawnSync("git", [ "rev-parse", "--abbrev-ref", "HEAD" ]);
+    const branch = res.stdout.toString().trim();
+    if (branch !== "release") {
+        console.error(`Current branch is ${branch}, please switch to "release" branch`);
+        process.exit(1);
+    }
+}
