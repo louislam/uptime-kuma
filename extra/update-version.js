@@ -30,7 +30,10 @@ if (! exists) {
     childProcess.spawnSync(npm, [ "install" ]);
 
     commit(newVersion);
-    tag(newVersion);
+
+    // As the master branch is protected now, we do not create tags here
+    // Instead, we create the tag manually along with the GitHub release
+    // tag(version);
 
 } else {
     console.log("version exists");
