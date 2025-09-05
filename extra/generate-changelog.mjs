@@ -6,6 +6,7 @@ import * as childProcess from "child_process";
 
 const ignoreList = [
     "louislam",
+    "CommanderStorm",
     "UptimeKumaBot",
     "weblate",
     "Copilot"
