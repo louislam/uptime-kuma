@@ -68,6 +68,12 @@
                     <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
                 </div>
 
+                <!-- Show last heartbeat -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-last-heartbeat" v-model="config.showLastHeartbeat" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-last-heartbeat">{{ $t("showLastHeartbeat") }}</label>
+                </div>
+
                 <div v-if="false" class="my-3">
                     <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
@@ -328,7 +334,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :show-last-heartbeat="config.showLastHeartbeat" />
             </div>
 
             <footer class="mt-5 mb-4">
