@@ -49,6 +49,21 @@ class MqttMonitorType extends MonitorType {
     }
 
     /**
+     * This function checks if the actual MQTT topic matches the subscribed topic.
+     * To handle MQTT wildcards, it converts the subscribed topic into a regex pattern.
+     * @param {string} subscribedTopic MQTT subscribed topic
+     * @returns {RegExp} RegExp if the actual topic matches the subscribed topic
+     */
+    static mqttTopicRegex(subscribedTopic) {
+        //eslint-disable-next-line
+        subscribedTopic = subscribedTopic.replace("/([$.|?*{}()\[\]\\])/g", "\\$1"); // Escape special regex chars except + and #
+        //eslint-disable-next-line
+        subscribedTopic = subscribedTopic.replace("/+/g", "[^/]+"); // Replace + with regex for one or more characters except slash
+        subscribedTopic = subscribedTopic.replace("/#/g", ".*"); // Replace # with regex for zero or more levels (including slashes)
+        return new RegExp(`^${subscribedTopic}$`);
+    }
+
+    /**
      * Connect to MQTT Broker, subscribe to topic and receive message as String
      * @param {string} hostname Hostname / address of machine to test
      * @param {string} topic MQTT topic
@@ -89,12 +104,15 @@ class MqttMonitorType extends MonitorType {
                 clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8)
             });
 
+            let regexTopic;
+
             client.on("connect", () => {
                 log.debug("mqtt", "MQTT connected");
 
                 try {
                     client.subscribe(topic, () => {
                         log.debug("mqtt", "MQTT subscribed to topic");
+                        regexTopic = MqttMonitorType.mqttTopicRegex(topic);
                     });
                 } catch (e) {
                     client.end();
@@ -110,7 +128,7 @@ class MqttMonitorType extends MonitorType {
             });
 
             client.on("message", (messageTopic, message) => {
-                if (messageTopic === topic) {
+                if (regexTopic.test(messageTopic)) {
                     client.end();
                     clearTimeout(timeoutID);
                     resolve(message.toString("utf8"));
