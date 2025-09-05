@@ -7,7 +7,7 @@ import {
     checkTagExists,
     checkVersionFormat,
     getRepoNames,
-    pressAnyKey, execSync, uploadArtifacts
+    pressAnyKey, execSync, uploadArtifacts, checkReleaseBranch
 } from "./lib.mjs";
 
 const repoNames = getRepoNames();
@@ -20,6 +20,9 @@ if (!githubToken) {
     console.error("GITHUB_TOKEN is required");
     process.exit(1);
 }
+
+// Check if the current branch is "release"
+checkReleaseBranch();
 
 // Check if the version is a valid semver
 checkVersionFormat(version);
