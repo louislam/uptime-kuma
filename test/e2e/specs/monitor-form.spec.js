@@ -105,4 +105,88 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
     });
+
+    test("real-browser monitor with keyword functionality", async ({ page }, testInfo) => {
+        await page.goto("./add");
+        await login(page);
+        await screenshot(testInfo, page);
+
+        // Select real-browser monitor type
+        await selectMonitorType(page, "real-browser");
+
+        const friendlyName = "Test Real Browser with Keyword";
+        await page.getByTestId("friendly-name-input").fill(friendlyName);
+        await page.getByTestId("url-input").fill("https://httpbin.org/html");
+
+        // Check that keyword field is visible for real-browser monitors
+        const keywordInput = page.locator("#keyword");
+        await expect(keywordInput).toBeVisible();
+
+        // Check that invert keyword checkbox is visible
+        const invertKeywordCheckbox = page.locator("#invert-keyword");
+        await expect(invertKeywordCheckbox).toBeVisible();
+
+        // Fill in keyword (should be optional)
+        await keywordInput.fill("Herman Melville");
+
+        await screenshot(testInfo, page);
+
+        // Save the monitor
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        await screenshot(testInfo, page);
+    });
+
+    test("real-browser monitor with invert keyword", async ({ page }, testInfo) => {
+        await page.goto("./add");
+        await login(page);
+
+        // Select real-browser monitor type
+        await selectMonitorType(page, "real-browser");
+
+        const friendlyName = "Test Real Browser with Invert Keyword";
+        await page.getByTestId("friendly-name-input").fill(friendlyName);
+        await page.getByTestId("url-input").fill("https://httpbin.org/html");
+
+        // Fill in keyword that should NOT be found
+        const keywordInput = page.locator("#keyword");
+        await keywordInput.fill("NonExistentText123");
+
+        // Check invert keyword checkbox
+        const invertKeywordCheckbox = page.locator("#invert-keyword");
+        await invertKeywordCheckbox.check();
+
+        await screenshot(testInfo, page);
+
+        // Save the monitor
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        await screenshot(testInfo, page);
+    });
+
+    test("real-browser monitor without keyword (backward compatibility)", async ({ page }, testInfo) => {
+        await page.goto("./add");
+        await login(page);
+
+        // Select real-browser monitor type
+        await selectMonitorType(page, "real-browser");
+
+        const friendlyName = "Test Real Browser No Keyword";
+        await page.getByTestId("friendly-name-input").fill(friendlyName);
+        await page.getByTestId("url-input").fill("https://httpbin.org/html");
+
+        // Don't fill keyword field - should still work
+        const keywordInput = page.locator("#keyword");
+        await expect(keywordInput).toBeVisible();
+
+        await screenshot(testInfo, page);
+
+        // Save the monitor - should work without keyword
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        await screenshot(testInfo, page);
+    });
 });
