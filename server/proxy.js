@@ -6,7 +6,6 @@ const { debug } = require("../src/util");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const { CookieJar } = require("tough-cookie");
 const { createCookieAgent } = require("http-cookie-agent/http");
-const { HardenedHttpsValidationKit } = require("hardened-https-agent");
 
 class Proxy {
 
@@ -88,16 +87,15 @@ class Proxy {
     /**
      * Create HTTP and HTTPS agents related with given proxy bean object
      * @param {object} proxy proxy bean object
-     * @param {object} options http and https agent options with hardened https validation kit options
+     * @param {object} options http and https agent options
      * @returns {{httpAgent: Agent, httpsAgent: Agent}} New HTTP and HTTPS agents
      * @throws Proxy protocol is unsupported
      */
     static createAgents(proxy, options) {
-        const { httpAgentOptions, httpsAgentOptions, hardenedHttpsValidationKitOptions } = options || {};
+        const { httpAgentOptions, httpsAgentOptions } = options || {};
         let agent;
         let httpAgent;
         let httpsAgent;
-        let validationKit = hardenedHttpsValidationKitOptions ? new HardenedHttpsValidationKit(hardenedHttpsValidationKitOptions) : null;
 
         let jar = new CookieJar();
 
@@ -115,50 +113,42 @@ class Proxy {
         debug(`Proxy URL: ${proxyUrl.toString()}`);
         debug(`HTTP Agent Options: ${JSON.stringify(httpAgentOptions)}`);
         debug(`HTTPS Agent Options: ${JSON.stringify(httpsAgentOptions)}`);
-        if (validationKit) {
-            debug(`Hardened HTTPS ValidationKit Options: ${JSON.stringify(hardenedHttpsValidationKitOptions)}`);
-        }
 
         switch (proxy.protocol) {
             case "http":
-            case "https": {
+            case "https":
                 // eslint-disable-next-line no-case-declarations
                 const HttpCookieProxyAgent = createCookieAgent(HttpProxyAgent);
+                // eslint-disable-next-line no-case-declarations
+                const HttpsCookieProxyAgent = createCookieAgent(HttpsProxyAgent);
+
                 httpAgent = new HttpCookieProxyAgent(proxyUrl.toString(), {
                     ...(httpAgentOptions || {}),
                     ...proxyOptions,
                 });
-
-                // eslint-disable-next-line no-case-declarations
-                const HttpsCookieProxyAgent = createCookieAgent(HttpsProxyAgent);
-                let httpsProxyAgentOptions = {
+                httpsAgent = new HttpsCookieProxyAgent(proxyUrl.toString(), {
                     ...(httpsAgentOptions || {}),
                     ...proxyOptions,
-                };
-                httpsAgent = new HttpsCookieProxyAgent(proxyUrl.toString(), !validationKit ? httpsProxyAgentOptions : validationKit.applyBeforeConnect(httpsProxyAgentOptions));
-                validationKit?.attachToAgent(httpsAgent);
+                });
+
                 break;
-            }
             case "socks":
             case "socks5":
             case "socks5h":
-            case "socks4": {
+            case "socks4":
                 // eslint-disable-next-line no-case-declarations
                 const SocksCookieProxyAgent = createCookieAgent(SocksProxyAgent);
-                let socksProxyAgentOptions = {
+                agent = new SocksCookieProxyAgent(proxyUrl.toString(), {
                     ...httpAgentOptions,
                     ...httpsAgentOptions,
                     tls: {
                         rejectUnauthorized: httpsAgentOptions.rejectUnauthorized,
                     },
-                };
-                agent = new SocksCookieProxyAgent(proxyUrl.toString(), !validationKit ? socksProxyAgentOptions : validationKit.applyBeforeConnect(socksProxyAgentOptions));
-                validationKit?.attachToAgent(agent);
+                });
 
                 httpAgent = agent;
                 httpsAgent = agent;
                 break;
-            }
 
             default: throw new Error(`Unsupported proxy protocol provided. ${proxy.protocol}`);
         }

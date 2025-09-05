@@ -530,7 +530,6 @@ class Monitor extends BeanModel {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
                                 httpsAgentOptions: httpsAgentOptions,
                                 httpAgentOptions: httpAgentOptions,
-                                hardenedHttpsValidationKitOptions: hardenedHttpsValidationKitOptions,
                             });
 
                             options.proxy = false;
