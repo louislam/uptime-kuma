@@ -166,10 +166,7 @@
                                     :required="monitor.type === 'keyword' || monitor.type === 'grpc-keyword'"
                                 >
                                 <div class="form-text">
-                                    <span v-if="monitor.type === 'real-browser'">
-                                        {{ $t("keywordDescription") }} {{ $t("Optional") }}.
-                                    </span>
-                                    <span v-else>
+                                    <span>
                                         {{ $t("keywordDescription") }}
                                     </span>
                                 </div>
