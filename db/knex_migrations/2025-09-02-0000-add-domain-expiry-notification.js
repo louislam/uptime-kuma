@@ -1,7 +1,7 @@
 exports.up = function (knex) {
     return knex.schema
         .alterTable("monitor", function (table) {
-            table.boolean("domain_expiry_notification").defaultTo(0);
+            table.boolean("domain_expiry_notification").defaultTo(1);
         })
         .createTable("domain_expiry_info", (table) => {
             table.increments("id");
