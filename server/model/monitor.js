@@ -414,7 +414,8 @@ class Monitor extends BeanModel {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
-                    // Early check to support upside down monitoring
+                    // If the monitored url doesn't resolve (no DNS record, etc...), the http request throw an error and exit the block.
+                    // By checking domain expiry early, we allow to monitor domain without record entry.
                     if (this.isEnabledDomainExpiryNotification()) {
                         this.checkDomainExpiryNotifications(getDomain(this.url));
                     }
