@@ -622,7 +622,7 @@ exports.getDaysBetween = getDaysBetween;
  */
 const getDaysRemaining = (validFrom, validTo) => {
     const daysRemaining = getDaysBetween(validFrom, validTo);
-    if (new Date(validTo).getTime() < new Date().getTime()) {
+    if (new Date(validTo).getTime() < new Date(validFrom).getTime()) {
         return -daysRemaining;
     }
     return daysRemaining;
