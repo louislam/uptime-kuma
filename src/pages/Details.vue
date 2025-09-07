@@ -961,6 +961,7 @@ export default {
 
     .btn-group {
         width: 100%;
+        
         .btn, a.btn {
             display: inline-flex;
             flex-direction: column;
