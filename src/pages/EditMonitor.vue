@@ -681,7 +681,7 @@
                             </div>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
-                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox">
+                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox" :disabled="!urlIsDomain">
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("Domain Name Expiry Notification") }}
                                 </label>
@@ -1206,6 +1206,7 @@ const monitorDefaults = {
     ignoreTls: false,
     upsideDown: false,
     expiryNotification: false,
+    domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
     dns_resolve_type: "A",
@@ -1558,6 +1559,20 @@ message HealthCheckResponse {
         conditionVariables() {
             return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
         },
+
+        urlIsDomain() {
+            if (!this.monitor.url) {
+                return false;
+            }
+            try {
+                const url = new URL(this.monitor.url);
+                const tld = url.hostname.split(".").pop();
+                // Very simple check : if the tld contains a letter, it is a domain, if not, it is an IP
+                return /[a-zA-Z]/.test(tld);
+            } catch {
+                return false;
+            }
+        }
     },
     watch: {
         "$root.proxyList"() {
@@ -1937,6 +1952,10 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (this.monitor.domainExpiryNotification) {
+                this.monitor.domainExpiryNotification = this.urlIsDomain;
             }
 
             let createdNewParent = false;
