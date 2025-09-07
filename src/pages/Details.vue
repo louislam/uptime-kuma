@@ -954,19 +954,21 @@ export default {
 }
 
 @media (max-width: 450px) {
-    .btn-group {
-        width: 100%;
-    }
-
-    .btn, a.btn {
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
+    .btn {
         padding-top: 10px;
         font-size: 0.9em;
-        padding-left: 10px;
-        padding-right: 10px;
+    }
+
+    .btn-group {
+        width: 100%;
+        .btn, a.btn {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
     }
 }
 
