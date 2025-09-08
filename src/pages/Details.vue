@@ -208,6 +208,8 @@
                 </transition>
             </div>
 
+
+
             <!-- Stats -->
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
@@ -269,16 +271,24 @@
                         </span>
                     </div>
 
-                    <!-- Uptime (1-year) -->
+                    <!-- Uptime (Custom Range) -->
                     <div
-                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
+                        class="col-12 col-sm col row d-flex align-items-center d-sm-block uptime-custom-range"
                     >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (1{{ $t("-year") }})
-                        </p>
+                        <div class="col-4 col-sm-12 mb-0 mb-sm-2 time-range-container">
+                            <TimeRangeSelector v-model="selectedTimeRange" @update:modelValue="onTimeRangeChange" />
+                        </div>
                         <span class="col-4 col-sm-12 num">
-                            <Uptime :monitor="monitor" type="1y" />
+                            <span v-if="customRangeUptime !== null" :class="uptimeColorClass">
+                                {{ formatUptime(customRangeUptime.uptime) }}
+                            </span>
+                            <span v-else-if="loadingCustomUptime">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                            </span>
+                            <span v-else>
+                                {{ $t("notAvailableShort") }}
+                            </span>
                         </span>
                     </div>
 
@@ -483,6 +493,7 @@ const PingChart = defineAsyncComponent(() =>
 );
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
+import TimeRangeSelector from "../components/TimeRangeSelector.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 import DOMPurify from "dompurify";
@@ -510,6 +521,7 @@ export default {
         CertificateInfo,
         PrismEditor,
         ScreenshotDialog,
+        TimeRangeSelector,
     },
     data() {
         return {
@@ -530,6 +542,9 @@ export default {
                 currentExample: "javascript-fetch",
                 code: "",
             },
+            selectedTimeRange: { type: "30d" },
+            customRangeUptime: null,
+            loadingCustomUptime: false,
         };
     },
     computed: {
@@ -629,6 +644,32 @@ export default {
                 return "";
             }
         },
+
+        uptimeColorClass() {
+            if (!this.customRangeUptime) return "";
+            const uptime = this.customRangeUptime.uptime;
+            if (uptime >= 0.95) return "text-success";
+            if (uptime >= 0.8) return "text-warning";
+            return "text-danger";
+        },
+
+        customRangeLabel() {
+            if (!this.selectedTimeRange) return this.$t("Custom Range");
+            
+            const ranges = {
+                "5min": this.$t("Last 5 minutes"),
+                "1h": this.$t("Last 1 hour"),
+                "24h": this.$t("Last 24 hours"),
+                "7d": this.$t("Last 7 days"),
+                "30d": this.$t("Last 30 days")
+            };
+            
+            if (this.selectedTimeRange.type === "custom") {
+                return this.$t("Custom Range");
+            }
+            
+            return ranges[this.selectedTimeRange.type] || this.$t("Custom Range");
+        },
     },
 
     watch: {
@@ -638,6 +679,9 @@ export default {
 
         monitor(to) {
             this.getImportantHeartbeatListLength();
+            if (to) {
+                this.fetchCustomRangeUptime();
+            }
         },
         "monitor.type"() {
             if (this.monitor && this.monitor.type === "push") {
@@ -646,6 +690,15 @@ export default {
         },
         "pushMonitor.currentExample"() {
             this.loadPushExample();
+        },
+        
+        selectedTimeRange: {
+            handler(newRange) {
+                if (newRange && this.monitor) {
+                    this.fetchCustomRangeUptime();
+                }
+            },
+            deep: true
         },
     },
 
@@ -662,6 +715,11 @@ export default {
                 this.pushMonitor.showPushExamples = true;
             }
             this.loadPushExample();
+        }
+        
+        // Initialize custom range uptime
+        if (this.monitor) {
+            this.fetchCustomRangeUptime();
         }
     },
 
@@ -930,6 +988,59 @@ export default {
         secondsToHumanReadableFormat(seconds) {
             return relativeTimeFormatter.secondsToHumanReadableFormat(seconds);
         },
+
+        onTimeRangeChange(newRange) {
+            this.selectedTimeRange = newRange;
+        },
+
+        formatUptime(uptime) {
+            if (uptime === null || uptime === undefined) {
+                return this.$t("notAvailableShort");
+            }
+            return Math.round(uptime * 10000) / 100 + "%";
+        },
+
+        async fetchCustomRangeUptime() {
+            if (!this.monitor || !this.selectedTimeRange) {
+                return;
+            }
+
+            this.loadingCustomUptime = true;
+            this.customRangeUptime = null;
+
+            try {
+                const socket = this.$root.getSocket();
+                
+                await new Promise((resolve, reject) => {
+                    socket.emit(
+                        "getCustomRangeUptime",
+                        this.monitor.id,
+                        this.selectedTimeRange.from,
+                        this.selectedTimeRange.to,
+                        (response) => {
+                            if (response.ok) {
+                                this.customRangeUptime = response;
+                                resolve(response);
+                            } else {
+                                console.error("Failed to fetch custom range uptime:", response.msg);
+                                reject(new Error(response.msg));
+                            }
+                        }
+                    );
+                });
+            } catch (error) {
+                console.error("Error fetching custom range uptime:", error);
+                this.customRangeUptime = {
+                    uptime: 0,
+                    avgPing: null,
+                    totalChecks: 0,
+                    upCount: 0,
+                    downCount: 0
+                };
+            } finally {
+                this.loadingCustomUptime = false;
+            }
+        },
     },
 };
 </script>
@@ -1094,6 +1205,67 @@ table {
 
     .dark & {
         opacity: 0.7;
+    }
+}
+
+.uptime-custom-range {
+    .time-range-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+        @media (max-width: 576px) {
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+    }
+}
+
+.custom-uptime-display {
+    .uptime-percentage {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0.5rem 0;
+    }
+    
+    .ping-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0.5rem 0;
+        color: $primary;
+    }
+    
+    .checks-count {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0.5rem 0;
+        color: $secondary-text;
+    }
+    
+    h6 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: $secondary-text;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+}
+
+.dark {
+    .custom-uptime-display {
+        .ping-value {
+            color: $primary;
+        }
+        
+        .checks-count {
+            color: $dark-font-color;
+        }
+        
+        h6 {
+            color: $dark-font-color;
+            opacity: 0.8;
+        }
     }
 }
 </style>
