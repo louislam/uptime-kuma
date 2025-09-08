@@ -1582,6 +1582,109 @@ let needSetup = false;
             }
         });
 
+        socket.on("getCustomRangeUptime", async (monitorID, fromTime, toTime, callback) => {
+            try {
+                checkLogin(socket);
+
+                console.log("SERVER: Received getCustomRangeUptime request:", {
+                    monitorID,
+                    fromTime,
+                    toTime,
+                    fromType: typeof fromTime,
+                    toType: typeof toTime
+                });
+
+                log.debug("server", `Calculating custom range uptime for monitor ${monitorID} from ${fromTime} to ${toTime}`);
+
+                // Convert client timestamps to UTC (database uses UTC)
+                const startTimeUTC = new Date(fromTime).toISOString().slice(0, 19).replace('T', ' ');
+                const endTimeUTC = new Date(toTime).toISOString().slice(0, 19).replace('T', ' ');
+                
+                console.log("SERVER: UTC conversion:", { 
+                    clientFrom: fromTime, 
+                    clientTo: toTime,
+                    serverStartUTC: startTimeUTC,
+                    serverEndUTC: endTimeUTC 
+                });
+                
+                // Debug: Check what heartbeats exist in the time range
+                let debugResult = await R.getAll(`
+                    SELECT id, time, status, duration 
+                    FROM heartbeat 
+                    WHERE time >= ? AND time <= ? AND monitor_id = ?
+                    ORDER BY time
+                `, [startTimeUTC, endTimeUTC, monitorID]);
+                
+                console.log("SERVER: Heartbeats in range:", debugResult.length, "beats");
+                if (debugResult.length > 10) {
+                    console.log("SERVER: First 5 beats:", debugResult.slice(0, 5));
+                    console.log("SERVER: Last 5 beats:", debugResult.slice(-5));
+                } else {
+                    console.log("SERVER: All beats:", debugResult);
+                }
+
+                // Use duration-based calculation for all ranges (same as 24h/30d)
+                let result = await R.getRow(`
+                    SELECT
+                       -- SUM all duration, also trim off the beat out of time window
+                        SUM(
+                            CASE
+                                WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
+                                THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
+                                ELSE duration
+                            END
+                        ) AS total_duration,
+
+                       -- SUM all uptime duration, also trim off the beat out of time window
+                        SUM(
+                            CASE
+                                WHEN (status = 1 OR status = 3)
+                                THEN
+                                    CASE
+                                        WHEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400 < duration
+                                            THEN (JULIANDAY(\`time\`) - JULIANDAY(?)) * 86400
+                                        ELSE duration
+                                    END
+                                END
+                        ) AS uptime_duration
+                    FROM heartbeat
+                    WHERE time >= ? AND time <= ?
+                    AND monitor_id = ?
+                `, [
+                    startTimeUTC, startTimeUTC, startTimeUTC, startTimeUTC, startTimeUTC, endTimeUTC,
+                    monitorID,
+                ]);
+
+                let totalDuration = result.total_duration;
+                let uptimeDuration = result.uptime_duration;
+                let uptime = 0;
+
+                console.log("SERVER: Duration calculation result:", { totalDuration, uptimeDuration });
+
+                if (totalDuration > 0) {
+                    uptime = uptimeDuration / totalDuration;
+                    if (uptime < 0) {
+                        uptime = 0;
+                    }
+                }
+
+                console.log("SERVER: Final uptime calculation:", { uptime });
+                log.debug("server", `Custom range uptime calculated: ${uptime * 100}%`);
+
+                callback({
+                    ok: true,
+                    uptime: uptime
+                });
+
+            } catch (e) {
+                log.error("server", `Error calculating custom range uptime: ${e.message}`);
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("clearStatistics", async (callback) => {
             try {
                 checkLogin(socket);

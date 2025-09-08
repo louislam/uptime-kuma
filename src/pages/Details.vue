@@ -110,6 +110,16 @@
                         </span>
                     </div>
 
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
+                        <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
+                            <TimeRangeSelector @range-changed="onTimeRangeChanged" />
+                        </p>
+                        <span class="col-4 col-sm-12 num">
+                            {{ timeRangeUptime }}%
+                        </span>
+                    </div>
+
                     <div v-if="tlsInfo" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Cert Exp.") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">(<Datetime :value="tlsInfo.certInfo.validTo" date-only />)</p>
@@ -150,22 +160,6 @@
             </div>
 
             <div class="shadow-box table-shadow-box">
-                <div class="dropdown dropdown-clear-data">
-                    <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <font-awesome-icon icon="trash" /> {{ $t("Clear Data") }}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <button type="button" class="dropdown-item" @click="clearEventsDialog">
-                                {{ $t("Events") }}
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
-                                {{ $t("Heartbeats") }}
-                            </button>
-                        </li>
-                    </ul>
                 </div>
                 <table class="table table-borderless table-hover">
                     <thead>
@@ -229,6 +223,7 @@ import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
+import TimeRangeSelector from "../components/TimeRangeSelector.vue";
 import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
@@ -243,6 +238,7 @@ export default {
         CountUp,
         Datetime,
         HeartbeatBar,
+        TimeRangeSelector,
         Confirm,
         Status,
         Pagination,
@@ -262,6 +258,16 @@ export default {
                 chunksNavigation: "scroll",
             },
             cacheTime: Date.now(),
+            timeRange: {
+                from: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                to: new Date(),
+                range: "24h",
+                label: "Last 24 hours"
+            },
+            showMaintenanceConfirm: false,
+            selectedHeartbeat: null,
+            customRangeUptime: null,
+            loadingCustomUptime: false,
         };
     },
     computed: {
@@ -302,11 +308,10 @@ export default {
 
         importantHeartBeatList() {
             if (this.$root.importantHeartbeatList[this.monitor.id]) {
-                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-                this.heartBeatList = this.$root.importantHeartbeatList[this.monitor.id];
+                // Return all heartbeats without time range filtering
+                // Time range should only affect uptime calculation, not the status table
                 return this.$root.importantHeartbeatList[this.monitor.id];
             }
-
             return [];
         },
 
@@ -334,9 +339,47 @@ export default {
         },
 
         displayedRecords() {
-            const startIndex = this.perPage * (this.page - 1);
+            const startIndex = (this.page - 1) * this.perPage;
             const endIndex = startIndex + this.perPage;
-            return this.heartBeatList.slice(startIndex, endIndex);
+            return this.importantHeartBeatList.slice(startIndex, endIndex);
+        },
+
+        timeRangeUptime() {
+            // Use pre-calculated server data for standard ranges
+            if (this.timeRange.range === "24h") {
+                const key = this.monitor.id + "_24";
+                if (this.$root.uptimeList[key] !== undefined) {
+                    return Math.round(this.$root.uptimeList[key] * 100 * 100) / 100;
+                }
+            }
+            
+            if (this.timeRange.range === "30d") {
+                const key = this.monitor.id + "_720";
+                if (this.$root.uptimeList[key] !== undefined) {
+                    return Math.round(this.$root.uptimeList[key] * 100 * 100) / 100;
+                }
+            }
+
+            // For custom ranges and short ranges, use server-calculated uptime
+            if (this.customRangeUptime !== null) {
+                return Math.round(this.customRangeUptime * 100 * 100) / 100;
+            }
+
+            // Loading state
+            if (this.loadingCustomUptime) {
+                return "...";
+            }
+
+            // Fallback to current status
+            if (this.lastHeartBeat && this.lastHeartBeat.status !== undefined) {
+                if (this.lastHeartBeat.status === 1 || this.lastHeartBeat.status === 3) {
+                    return 100.0;
+                } else {
+                    return 0.0;
+                }
+            }
+            
+            return "N/A";
         },
 
         group() {
@@ -427,6 +470,63 @@ export default {
                     toast.error(res.msg);
                 }
             });
+        },
+
+        /** Handle time range selection change */
+        onTimeRangeChanged(timeRange) {
+            this.timeRange = timeRange;
+            
+            // For non-standard ranges, request server-side calculation
+            if (timeRange.range !== "24h" && timeRange.range !== "30d") {
+                this.requestCustomRangeUptime(timeRange);
+            } else {
+                // Clear custom uptime for standard ranges
+                this.customRangeUptime = null;
+                this.loadingCustomUptime = false;
+            }
+        },
+
+        /** Request server-side uptime calculation for custom/short ranges */
+        requestCustomRangeUptime(timeRange) {
+            this.loadingCustomUptime = true;
+            this.customRangeUptime = null;
+            
+            this.$root.getSocket().emit("getCustomRangeUptime", this.monitor.id, timeRange.from, timeRange.to, (res) => {
+                this.loadingCustomUptime = false;
+                
+                if (res.ok) {
+                    this.customRangeUptime = res.uptime;
+                } else {
+                    this.customRangeUptime = null;
+                }
+            });
+        },
+
+        /** Format custom range display for UI */
+        formatCustomRangeDisplay(from, to) {
+            const formatDate = (date) => {
+                const options = { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false
+                };
+                
+                // If same day, show only time for 'to' date
+                if (from.toDateString() === to.toDateString()) {
+                    if (date === from) {
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + 
+                               ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    } else {
+                        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    }
+                }
+                
+                return date.toLocaleDateString('en-US', options);
+            };
+            
+            return `${formatDate(from)} - ${formatDate(to)}`;
         },
 
         /**
