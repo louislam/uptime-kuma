@@ -160,6 +160,22 @@
             </div>
 
             <div class="shadow-box table-shadow-box">
+                <div class="dropdown dropdown-clear-data">
+                    <button class="btn btn-sm btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <font-awesome-icon icon="trash" /> {{ $t("Clear Data") }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button type="button" class="dropdown-item" @click="clearEventsDialog">
+                                {{ $t("Events") }}
+                            </button>
+                        </li>
+                        <li>
+                            <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
+                                {{ $t("Heartbeats") }}
+                            </button>
+                        </li>
+                    </ul>
                 </div>
                 <table class="table table-borderless table-hover">
                     <thead>
