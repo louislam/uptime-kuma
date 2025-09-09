@@ -275,7 +275,7 @@
                     >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <div class="col-4 col-sm-12 mb-0 mb-sm-2 time-range-container">
-                            <TimeRangeSelector v-model="selectedTimeRange" @update:model-Value="onTimeRangeChange" />
+                            <TimeRangeSelector v-model="selectedTimeRange" @update:model-value="onTimeRangeChange" />
                         </div>
                         <span class="col-4 col-sm-12 num">
                             <span v-if="customRangeUptime !== null" :class="uptimeColorClass">
@@ -644,15 +644,23 @@ export default {
         },
 
         uptimeColorClass() {
-            if (!this.customRangeUptime) return "";
+            if (!this.customRangeUptime) {
+                return "";
+            }
             const uptime = this.customRangeUptime.uptime;
-            if (uptime >= 0.95) return "text-success";
-            if (uptime >= 0.8) return "text-warning";
+            if (uptime >= 0.95) {
+                return "text-success";
+            }
+            if (uptime >= 0.8) {
+                return "text-warning";
+            }
             return "text-danger";
         },
 
         customRangeLabel() {
-            if (!this.selectedTimeRange) return this.$t("Custom Range");       
+            if (!this.selectedTimeRange) {
+                return this.$t("Custom Range");
+            }
             const ranges = {
                 "5min": this.$t("Last 5 minutes"),
                 "1h": this.$t("Last 1 hour"),
@@ -686,7 +694,7 @@ export default {
         "pushMonitor.currentExample"() {
             this.loadPushExample();
         },
-        
+
         selectedTimeRange: {
             handler(newRange) {
                 if (newRange && this.monitor) {
@@ -711,7 +719,7 @@ export default {
             }
             this.loadPushExample();
         }
-        
+
         // Initialize custom range uptime
         if (this.monitor) {
             this.fetchCustomRangeUptime();
@@ -1005,7 +1013,6 @@ export default {
 
             try {
                 const socket = this.$root.getSocket();
-                
                 await new Promise((resolve, reject) => {
                     socket.emit(
                         "getCustomRangeUptime",
@@ -1208,7 +1215,7 @@ table {
         display: flex;
         justify-content: center;
         align-items: center;
-        
+
         @media (max-width: 576px) {
             justify-content: center;
             margin-bottom: 0.5rem;
@@ -1222,21 +1229,21 @@ table {
         font-weight: bold;
         margin: 0.5rem 0;
     }
-    
+
     .ping-value {
         font-size: 1.5rem;
         font-weight: 600;
         margin: 0.5rem 0;
         color: $primary;
     }
-    
+
     .checks-count {
         font-size: 1.5rem;
         font-weight: 600;
         margin: 0.5rem 0;
         color: $secondary-text;
     }
-    
+
     h6 {
         font-size: 0.875rem;
         font-weight: 600;
@@ -1252,11 +1259,11 @@ table {
         .ping-value {
             color: $primary;
         }
-        
+
         .checks-count {
             color: $dark-font-color;
         }
-        
+
         h6 {
             color: $dark-font-color;
             opacity: 0.8;

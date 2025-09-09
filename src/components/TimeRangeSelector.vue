@@ -449,7 +449,7 @@ export default {
             display: inline-block;
 
             &::after {
-                content: '';
+                content: "";
                 position: absolute;
                 bottom: 0;
                 left: 0;
