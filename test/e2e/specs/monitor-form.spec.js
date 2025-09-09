@@ -166,7 +166,7 @@ test.describe("Monitor Form", () => {
         await screenshot(testInfo, page);
     });
 
-    test("real-browser monitor without keyword (backward compatibility)", async ({ page }, testInfo) => {
+    test("real-browser monitor without keyword", async ({ page }, testInfo) => {
         await page.goto("./add");
         await login(page);
 
