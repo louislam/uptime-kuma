@@ -1183,6 +1183,21 @@ table {
             }
         }
     }
+
+    .custom-uptime-display {
+        .ping-value {
+            color: $primary;
+        }
+
+        .checks-count {
+            color: $dark-font-color;
+        }
+
+        h6 {
+            color: $dark-font-color;
+            opacity: 0.8;
+        }
+    }
 }
 
 .tags {
@@ -1254,20 +1269,4 @@ table {
     }
 }
 
-.dark {
-    .custom-uptime-display {
-        .ping-value {
-            color: $primary;
-        }
-
-        .checks-count {
-            color: $dark-font-color;
-        }
-
-        h6 {
-            color: $dark-font-color;
-            opacity: 0.8;
-        }
-    }
-}
 </style>
