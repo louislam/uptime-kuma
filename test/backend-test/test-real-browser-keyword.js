@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert");
-const { RealBrowserTestHelper, UP, DOWN, PENDING } = require("./real-browser-test-helper");
+const { RealBrowserTestHelper, UP } = require("./real-browser-test-helper");
 
 // Initialize the test helper
 const helper = new RealBrowserTestHelper();
