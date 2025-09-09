@@ -208,8 +208,6 @@
                 </transition>
             </div>
 
-
-
             <!-- Stats -->
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
@@ -277,7 +275,7 @@
                     >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <div class="col-4 col-sm-12 mb-0 mb-sm-2 time-range-container">
-                            <TimeRangeSelector v-model="selectedTimeRange" @update:modelValue="onTimeRangeChange" />
+                            <TimeRangeSelector v-model="selectedTimeRange" @update:model-value="onTimeRangeChange" />
                         </div>
                         <span class="col-4 col-sm-12 num">
                             <span v-if="customRangeUptime !== null" :class="uptimeColorClass">
@@ -646,16 +644,20 @@ export default {
         },
 
         uptimeColorClass() {
-            if (!this.customRangeUptime) return "";
-            const uptime = this.customRangeUptime.uptime;
-            if (uptime >= 0.95) return "text-success";
-            if (uptime >= 0.8) return "text-warning";
-            return "text-danger";
+            if (this.monitor.type === "group") {
+                return "";
+            }
+            if (this.customRangeUptime && this.customRangeUptime.uptime !== null) {
+                return this.customRangeUptime.uptime >= 0.95 ? "text-primary" : "text-danger";
+            }
+            return "text-secondary";
         },
 
         customRangeLabel() {
-            if (!this.selectedTimeRange) return this.$t("Custom Range");
-            
+            if (!this.selectedTimeRange) {
+                return this.$t("Custom Range");
+            }
+
             const ranges = {
                 "5min": this.$t("Last 5 minutes"),
                 "1h": this.$t("Last 1 hour"),
@@ -663,11 +665,11 @@ export default {
                 "7d": this.$t("Last 7 days"),
                 "30d": this.$t("Last 30 days")
             };
-            
+
             if (this.selectedTimeRange.type === "custom") {
                 return this.$t("Custom Range");
             }
-            
+
             return ranges[this.selectedTimeRange.type] || this.$t("Custom Range");
         },
     },
@@ -691,7 +693,7 @@ export default {
         "pushMonitor.currentExample"() {
             this.loadPushExample();
         },
-        
+
         selectedTimeRange: {
             handler(newRange) {
                 if (newRange && this.monitor) {
@@ -716,7 +718,7 @@ export default {
             }
             this.loadPushExample();
         }
-        
+
         // Initialize custom range uptime
         if (this.monitor) {
             this.fetchCustomRangeUptime();
@@ -802,7 +804,15 @@ export default {
          * @returns {void}
          */
         clearHeartbeatsDialog() {
-            this.$refs.confirmClearHeartbeats.show();
+            this.clearHeartbeatsDialogOpened = true;
+        },
+
+        /**
+         * Show dialog to confirm clearing statistics
+         * @returns {void}
+         */
+        clearStatisticsDialog() {
+            this.clearStatisticsDialogOpened = true;
         },
 
         /**
@@ -822,11 +832,9 @@ export default {
          * Request that this monitors events are cleared
          * @returns {void}
          */
-        clearEvents() {
+        confirmClearEvents() {
             this.$root.clearEvents(this.monitor.id, (res) => {
-                if (res.ok) {
-                    this.getImportantHeartbeatListLength();
-                } else {
+                if (!res.ok) {
                     toast.error(res.msg);
                 }
             });
@@ -836,7 +844,19 @@ export default {
          * Request that this monitors heartbeats are cleared
          * @returns {void}
          */
-        clearHeartbeats() {
+        confirmClearHeartbeats() {
+            this.$root.clearHeartbeats(this.monitor.id, (res) => {
+                if (!res.ok) {
+                    toast.error(res.msg);
+                }
+            });
+        },
+
+        /**
+         * Request that this monitors statistics are cleared
+         * @returns {void}
+         */
+        confirmClearStatistics() {
             this.$root.clearHeartbeats(this.monitor.id, (res) => {
                 if (!res.ok) {
                     toast.error(res.msg);
@@ -1008,40 +1028,22 @@ export default {
             this.loadingCustomUptime = true;
             this.customRangeUptime = null;
 
-            try {
-                const socket = this.$root.getSocket();
-                
-                await new Promise((resolve, reject) => {
-                    socket.emit(
-                        "getCustomRangeUptime",
-                        this.monitor.id,
-                        this.selectedTimeRange.from,
-                        this.selectedTimeRange.to,
-                        (response) => {
-                            if (response.ok) {
-                                this.customRangeUptime = response;
-                                resolve(response);
-                            } else {
-                                console.error("Failed to fetch custom range uptime:", response.msg);
-                                reject(new Error(response.msg));
-                            }
-                        }
-                    );
-                });
-            } catch (error) {
-                console.error("Error fetching custom range uptime:", error);
-                this.customRangeUptime = {
-                    uptime: 0,
-                    avgPing: null,
-                    totalChecks: 0,
-                    upCount: 0,
-                    downCount: 0
-                };
-            } finally {
+            this.$root.getSocket().emit("getCustomRangeUptime", this.monitor.id, this.selectedTimeRange.from, this.selectedTimeRange.to, (res) => {
+                if (res.ok) {
+                    this.customRangeUptime = res;
+                } else {
+                    this.customRangeUptime = {
+                        uptime: null,
+                        avgPing: null,
+                        totalChecks: 0,
+                        upCount: 0,
+                        downCount: 0
+                    };
+                }
                 this.loadingCustomUptime = false;
-            }
-        },
-    },
+            });
+        }
+    }
 };
 </script>
 
@@ -1213,7 +1215,7 @@ table {
         display: flex;
         justify-content: center;
         align-items: center;
-        
+
         @media (max-width: 576px) {
             justify-content: center;
             margin-bottom: 0.5rem;
@@ -1227,21 +1229,21 @@ table {
         font-weight: bold;
         margin: 0.5rem 0;
     }
-    
+
     .ping-value {
         font-size: 1.5rem;
         font-weight: 600;
         margin: 0.5rem 0;
         color: $primary;
     }
-    
+
     .checks-count {
         font-size: 1.5rem;
         font-weight: 600;
         margin: 0.5rem 0;
         color: $secondary-text;
     }
-    
+
     h6 {
         font-size: 0.875rem;
         font-weight: 600;
@@ -1257,11 +1259,11 @@ table {
         .ping-value {
             color: $primary;
         }
-        
+
         .checks-count {
             color: $dark-font-color;
         }
-        
+
         h6 {
             color: $dark-font-color;
             opacity: 0.8;
