@@ -69,11 +69,8 @@ module.exports.chartSocketHandler = (socket) => {
                 // For ranges <= 24 hours, use minute-level data
                 const diffMinutes = Math.ceil(diffHours * 60);
                 uptimeData = uptimeCalculator.getData(diffMinutes, "minute");
-            } else if (diffHours <= 720) { // 30 days
-                // For ranges <= 30 days, use hour-level data
-                uptimeData = uptimeCalculator.getData(Math.ceil(diffHours), "hour");
             } else {
-                // For longer ranges, use day-level data
+                // For ranges > 24 hours, use day-level data to match built-in calculations
                 const diffDays = Math.ceil(diffHours / 24);
                 uptimeData = uptimeCalculator.getData(diffDays, "day");
             }
@@ -106,7 +103,7 @@ module.exports.chartSocketHandler = (socket) => {
             const avgPing = pingCount > 0 ? (totalPing / pingCount) : uptimeData.avgPing;
             // Use uptime from calculator if available, otherwise fallback to heartbeat calculation
             let uptime = uptimeData.uptime;
-            if (uptime === 0 && totalChecks > 0) {
+            if ((uptime === null || uptime === undefined) && totalChecks > 0) {
                 uptime = upCount / totalChecks;
             }
 
