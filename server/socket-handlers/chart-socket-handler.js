@@ -60,8 +60,7 @@ module.exports.chartSocketHandler = (socket) => {
             }
 
             // Calculate the time difference in hours
-            const diffHours = to.diff(from, 'hour', true);
-            
+            const diffHours = to.diff(from, "hour", true);
             // Get the uptime calculator for this monitor
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
             let uptimeData;
@@ -80,9 +79,9 @@ module.exports.chartSocketHandler = (socket) => {
             }
 
             // Calculate total checks from heartbeat data for accuracy
-            const heartbeats = await R.find("heartbeat", 
+            const heartbeats = await R.find("heartbeat",
                 "monitor_id = ? AND time >= ? AND time <= ? ORDER BY time ASC",
-                [monitorID, from.toISOString(), to.toISOString()]
+                [ monitorID, from.toISOString(), to.toISOString() ]
             );
 
             let totalPing = 0;
@@ -105,7 +104,6 @@ module.exports.chartSocketHandler = (socket) => {
 
             const totalChecks = upCount + downCount;
             const avgPing = pingCount > 0 ? (totalPing / pingCount) : uptimeData.avgPing;
-            
             // Use uptime from calculator if available, otherwise fallback to heartbeat calculation
             let uptime = uptimeData.uptime;
             if (uptime === 0 && totalChecks > 0) {

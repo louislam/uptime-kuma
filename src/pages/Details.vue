@@ -208,8 +208,6 @@
                 </transition>
             </div>
 
-
-
             <!-- Stats -->
             <div class="shadow-box big-padding text-center stats">
                 <div class="row">
@@ -277,7 +275,7 @@
                     >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <div class="col-4 col-sm-12 mb-0 mb-sm-2 time-range-container">
-                            <TimeRangeSelector v-model="selectedTimeRange" @update:modelValue="onTimeRangeChange" />
+                            <TimeRangeSelector v-model="selectedTimeRange" @update:model-Value="onTimeRangeChange" />
                         </div>
                         <span class="col-4 col-sm-12 num">
                             <span v-if="customRangeUptime !== null" :class="uptimeColorClass">
@@ -654,8 +652,7 @@ export default {
         },
 
         customRangeLabel() {
-            if (!this.selectedTimeRange) return this.$t("Custom Range");
-            
+            if (!this.selectedTimeRange) return this.$t("Custom Range");       
             const ranges = {
                 "5min": this.$t("Last 5 minutes"),
                 "1h": this.$t("Last 1 hour"),
@@ -663,11 +660,9 @@ export default {
                 "7d": this.$t("Last 7 days"),
                 "30d": this.$t("Last 30 days")
             };
-            
             if (this.selectedTimeRange.type === "custom") {
                 return this.$t("Custom Range");
             }
-            
             return ranges[this.selectedTimeRange.type] || this.$t("Custom Range");
         },
     },
