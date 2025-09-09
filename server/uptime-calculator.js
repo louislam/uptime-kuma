@@ -306,7 +306,14 @@ class UptimeCalculator {
                 dailyStatBean.extras = JSON.stringify(extras);
             }
         }
-        await R.store(dailyStatBean);
+        try {
+            await this.upsertStat("stat_daily", this.monitorID, dailyKey,
+                dailyData.up, dailyData.down, dailyData.avgPing,
+                dailyData.minPing, dailyData.maxPing);
+        } catch (error) {
+            log.warn("uptime-calc", `Upsert failed for daily stat, falling back to R.store(): ${error.message}`);
+            await R.store(dailyStatBean);
+        }
 
         let currentDate = this.getCurrentDate();
 
@@ -326,7 +333,14 @@ class UptimeCalculator {
                     hourlyStatBean.extras = JSON.stringify(extras);
                 }
             }
-            await R.store(hourlyStatBean);
+            try {
+                await this.upsertStat("stat_hourly", this.monitorID, hourlyKey,
+                    hourlyData.up, hourlyData.down, hourlyData.avgPing,
+                    hourlyData.minPing, hourlyData.maxPing);
+            } catch (error) {
+                log.warn("uptime-calc", `Upsert failed for hourly stat, falling back to R.store(): ${error.message}`);
+                await R.store(hourlyStatBean);
+            }
         }
 
         // For migration mode, we don't need to store old hourly and minutely data, but we need 24-hour's minutely data
@@ -345,7 +359,14 @@ class UptimeCalculator {
                     minutelyStatBean.extras = JSON.stringify(extras);
                 }
             }
-            await R.store(minutelyStatBean);
+            try {
+                await this.upsertStat("stat_minutely", this.monitorID, divisionKey,
+                    minutelyData.up, minutelyData.down, minutelyData.avgPing,
+                    minutelyData.minPing, minutelyData.maxPing);
+            } catch (error) {
+                log.warn("uptime-calc", `Upsert failed for minutely stat, falling back to R.store(): ${error.message}`);
+                await R.store(minutelyStatBean);
+            }
         }
 
         // No need to remove old data in migration mode
@@ -386,6 +407,11 @@ class UptimeCalculator {
             bean = R.dispense("stat_daily");
             bean.monitor_id = this.monitorID;
             bean.timestamp = timestamp;
+            bean.up = 0;
+            bean.down = 0;
+            bean.ping = 0;
+            bean.pingMin = 0;
+            bean.pingMax = 0;
         }
 
         this.lastDailyStatBean = bean;
@@ -411,6 +437,11 @@ class UptimeCalculator {
             bean = R.dispense("stat_hourly");
             bean.monitor_id = this.monitorID;
             bean.timestamp = timestamp;
+            bean.up = 0;
+            bean.down = 0;
+            bean.ping = 0;
+            bean.pingMin = 0;
+            bean.pingMax = 0;
         }
 
         this.lastHourlyStatBean = bean;
@@ -436,6 +467,11 @@ class UptimeCalculator {
             bean = R.dispense("stat_minutely");
             bean.monitor_id = this.monitorID;
             bean.timestamp = timestamp;
+            bean.up = 0;
+            bean.down = 0;
+            bean.ping = 0;
+            bean.pingMin = 0;
+            bean.pingMax = 0;
         }
 
         this.lastMinutelyStatBean = bean;
@@ -514,6 +550,65 @@ class UptimeCalculator {
         }
 
         return dailyKey;
+    }
+
+    /**
+     * Upsert stat data using database-specific logic to handle concurrent insertions
+     * @param {string} table The stat table name (stat_daily, stat_hourly, stat_minutely)
+     * @param {number} monitorId The monitor ID
+     * @param {number} timestamp The timestamp key
+     * @param {number} up Up count
+     * @param {number} down Down count
+     * @param {number} ping Average ping
+     * @param {number} pingMin Minimum ping
+     * @param {number} pingMax Maximum ping
+     * @returns {Promise<void>}
+     */
+    async upsertStat(table, monitorId, timestamp, up, down, ping, pingMin, pingMax) {
+        // Import Database locally to avoid circular dependency
+        const Database = require("./database");
+
+        // Check if database is initialized - dbConfig.type must exist and not be empty
+        if (!Database.dbConfig || !Database.dbConfig.type) {
+            log.warn("uptime-calc", `Database not initialized yet for ${table}, falling back to R.store()`);
+            throw new Error("Database not initialized");
+        }
+
+        const dbType = Database.dbConfig.type;
+
+        try {
+            if (dbType === "sqlite") {
+                await R.exec(`
+                    INSERT INTO ${table} (monitor_id, timestamp, up, down, ping, ping_min, ping_max)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(monitor_id, timestamp) DO UPDATE SET
+                        up = ?,
+                        down = ?,
+                        ping = ?,
+                        ping_min = ?,
+                        ping_max = ?
+                `, [
+                    monitorId, timestamp, up, down, ping, pingMin, pingMax,
+                    up, down, ping, pingMin, pingMax
+                ]);
+            } else if (dbType.endsWith("mariadb")) {
+                await R.exec(`
+                    INSERT INTO ${table} (monitor_id, timestamp, up, down, ping, ping_min, ping_max)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                        up = VALUES(up),
+                        down = VALUES(down),
+                        ping = VALUES(ping),
+                        ping_min = VALUES(ping_min),
+                        ping_max = VALUES(ping_max)
+                `, [ monitorId, timestamp, up, down, ping, pingMin, pingMax ]);
+            } else {
+                throw new Error(`Unsupported database type: ${dbType}`);
+            }
+        } catch (error) {
+            log.debug("uptime-calc", `Failed to upsert ${table} for monitor ${monitorId}: ${error.message}`);
+            throw error;
+        }
     }
 
     /**
