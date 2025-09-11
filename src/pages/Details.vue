@@ -944,10 +944,6 @@ export default {
 }
 
 @media (max-width: 550px) {
-    .functions {
-        text-align: center;
-    }
-
     .ping-chart-wrapper {
         padding: 10px !important;
     }
@@ -957,20 +953,27 @@ export default {
     }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 450px) {
     .btn {
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
         padding-top: 10px;
         font-size: 0.9em;
     }
 
-    a.btn {
-        padding-left: 25px;
-        padding-right: 25px;
-    }
+    .btn-group {
+        width: 100%;
 
+        .btn, a.btn {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    }
+}
+
+@media (max-width: 400px) {
     .dropdown-clear-data {
         button {
             display: block;

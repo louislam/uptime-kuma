@@ -798,5 +798,9 @@
     "Host URL": "Host URL",
     "Request Timeout": "Anmod Timeout",
     "Cannot connect to the socket server": "Kan ikke oprette forbindelse til socket serveren",
-    "pushViewCode": "Hvordan bruger man Push Monitor? (Se kode)"
+    "pushViewCode": "Hvordan bruger man Push Monitor? (Se kode)",
+    "Path": "Sti",
+    "Add Tags": "Tilføj Tags",
+    "tagAlreadyOnMonitor": "Dette tag (navn og værdi) er allerde tilføjet til denne overvågning, eller afventer tilføjelse.",
+    "defaultFriendlyName": "Ny Overvågning"
 }

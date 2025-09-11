@@ -1173,5 +1173,7 @@
     "mqttWebsocketPathInvalid": "Použijte, prosím platný formát WebSocket cesty",
     "mqttHostnameTip": "Použijte, prosím tento formát {hostnameFormat}",
     "mqttWebSocketPath": "MQTT WebSocket cesta",
-    "mqttWebsocketPathExplanation": "WebSocket cesta pro MQTT prostřednictvím WebSocket spojení (např. /mqtt)"
+    "mqttWebsocketPathExplanation": "WebSocket cesta pro MQTT prostřednictvím WebSocket spojení (např. /mqtt)",
+    "Template plain text instead of using cards": "Šablona prostého textu namísto použití karet",
+    "issueWithGoogleChatOnAndroidHelptext": "Tím se můžete rovněž vyhnout chybám v upstreamu jako je {issuetackerURL}"
 }
