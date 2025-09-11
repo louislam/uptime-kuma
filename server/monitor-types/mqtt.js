@@ -54,7 +54,7 @@ class MqttMonitorType extends MonitorType {
      * @param {string} subscribedTopic MQTT subscribed topic
      * @returns {RegExp} RegExp if the actual topic matches the subscribed topic
      */
-    static mqttTopicRegex(subscribedTopic) {       
+    static mqttTopicRegex(subscribedTopic) {
         //eslint-disable-next-line
         subscribedTopic = subscribedTopic.replace(/([$.|?*{}()\[\]\\])/g, "\\$1"); // Escape special regex chars except + and #
         //eslint-disable-next-line
