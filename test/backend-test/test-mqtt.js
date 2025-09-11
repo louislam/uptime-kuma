@@ -113,6 +113,18 @@ describe("MqttMonitorType", {
         assert.ok(regex.test("sensor.pomme/humidity") === false);
     });
 
+    test("should check specifically for the escaping of '?' regex char", () => {
+        const regex = MqttMonitorType.mqttTopicRegex("sensor.pomme/tempera?ture");
+        assert.ok(regex.test("sensor.pomme/tempera?ture") === true);
+        assert.ok(regex.test("sensor.pomme/humi?dity") === false);
+    });
+
+    test("should check specifically for the escaping of '*' regex char", () => {
+        const regex = MqttMonitorType.mqttTopicRegex("sensor.pomme/tempera*ture");
+        assert.ok(regex.test("sensor.pomme/tempera*ture") === true);
+        assert.ok(regex.test("sensor.pomme/humi*dity") === false);
+    });
+
     test("should match + wildcard for single level", () => {
         const regex = MqttMonitorType.mqttTopicRegex("sensor/+/temperature");
         assert.ok(regex.test("sensor/room1/temperature") === true);
