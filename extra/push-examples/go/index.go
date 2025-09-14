@@ -7,14 +7,16 @@ import (
 )
 
 func main() {
-	const PushURL = "https://example.com/api/push/key?status=up&msg=OK&ping="
-	const Interval = 60
+	const pushURL = "https://example.com/api/push/key?status=up&msg=OK&ping="
+	const interval = 60
 
-	for {
-		_, err := http.Get(PushURL)
+	ticker := time.NewTicker(interval * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		_, err := http.Get(pushURL)
 		if err == nil {
 			fmt.Println("Pushed!")
 		}
-		time.Sleep(Interval * time.Second)
 	}
 }
