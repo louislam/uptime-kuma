@@ -47,6 +47,7 @@ const languageList = {
     "ge": "ქართული",
     "uz": "O'zbek tili",
     "ga": "Gaeilge",
+    "sk": "Slovenčina",
 };
 
 let messages = {
