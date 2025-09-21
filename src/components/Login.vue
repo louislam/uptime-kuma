@@ -16,7 +16,7 @@
 
                 <div v-if="tokenRequired">
                     <div class="form-floating mt-3">
-                        <input id="otp" v-model="token" type="text" maxlength="6" class="form-control" placeholder="123456" autocomplete="one-time-code" required ref="otpInput">
+                        <input id="otp" v-model="token" type="text" maxlength="6" class="form-control" placeholder="123456" autocomplete="one-time-code" ref="otpInput" required>
                         <label for="otp">{{ $t("Token") }}</label>
                     </div>
                 </div>
@@ -59,10 +59,6 @@ export default {
         document.title += " - Login";
     },
 
-    unmounted() {
-        document.title = document.title.replace(" - Login", "");
-    },
-
     watch: {
         tokenRequired(newVal) {
             if (newVal) {
@@ -72,6 +68,12 @@ export default {
             }
         }
     },
+    
+    unmounted() {
+        document.title = document.title.replace(" - Login", "");
+    },
+
+
 
     methods: {
         /**
