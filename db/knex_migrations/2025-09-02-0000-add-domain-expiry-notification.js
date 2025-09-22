@@ -8,11 +8,7 @@ exports.up = function (knex) {
             table.datetime("last_check");
             table.text("domain").unique();
             table.datetime("expiry");
-        })
-        .createTable("domain_expiry_notification_sent_history", (table) => {
-            table.increments("id");
-            table.text("domain");
-            table.integer("days");
+            table.integer("last_expiry_notification_sent").defaultTo(null);
         });
 };
 

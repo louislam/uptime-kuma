@@ -1520,14 +1520,12 @@ class Monitor extends BeanModel {
                 domainInfoBean = R.dispense("domain_expiry_info");
                 domainInfoBean.domain = domain;
             } else if (new Date(expiryDate) > new Date(domainInfoBean.expiry)) {
-                await R.exec("DELETE FROM domain_expiry_notification_sent_history WHERE domain = ?", [
-                    domain
-                ]);
+                domainInfoBean.lastExpiryNotificationSent = null;
             }
 
             domainInfoBean.expiry = expiryDate;
             domainInfoBean.lastCheck = new Date();
-            R.store(domainInfoBean);
+            await R.store(domainInfoBean);
         } else {
             log.debug("domain", `Domain expiry already checked recently for ${domain}, won't re-check.`);
             expiryDate = new Date(domainInfoBean.expiry);
@@ -1547,13 +1545,20 @@ class Monitor extends BeanModel {
             notifyDays = [ 7, 14, 21 ];
         }
         if (Array.isArray(notifyDays)) {
+            // Asc sort to avoid sending multiple notifications if daysRemaining is below multiple targetDays 
+            notifyDays.sort((a, b) => a - b);
             for (const targetDays of notifyDays) {
                 if (daysRemaining > targetDays) {
                     log.debug("monitor", `No need to send domain notification for ${domain} (${daysRemaining} days valid) on ${targetDays} deadline.`);
                     continue;
-                } else {
-                    log.debug("monitor", `call sendDomainNotificationByTargetDays for ${targetDays} deadline on domain ${domain}.`);
-                    await this.sendDomainNotificationByTargetDays(domain, daysRemaining, targetDays, notificationList);
+                } else if (domainInfoBean.lastExpiryNotificationSent <= targetDays) {
+                    log.debug("monitor", `Notification for ${domain} on ${targetDays} deadline sent already, no need to send again.`);
+                    continue;
+                }
+                const sent = await this.sendDomainNotificationByTargetDays(domain, daysRemaining, targetDays, notificationList);
+                if (sent) {
+                    domainInfoBean.lastExpiryNotificationSent = targetDays;
+                    await R.store(domainInfoBean);
                 }
             }
         }
@@ -1561,26 +1566,15 @@ class Monitor extends BeanModel {
 
     /**
      * Send a certificate notification when domain expires in less than target days
-     * @param {string} domain  Domain we monitor
+     * @param {string} domain Domain we monitor
      * @param {number} daysRemaining Number of days remaining on certificate
      * @param {number} targetDays Number of days to alert after
      * @param {LooseObject<any>[]} notificationList List of notification providers
      * @returns {Promise<void>}
      */
     async sendDomainNotificationByTargetDays(domain, daysRemaining, targetDays, notificationList) {
-        let row = await R.getRow("SELECT * FROM domain_expiry_notification_sent_history WHERE domain = ? AND days <= ?", [
-            domain,
-            targetDays,
-        ]);
-
-        // Sent already, no need to send again
-        if (row) {
-            log.debug("monitor", "Sent already, no need to send again");
-            return;
-        }
-
         let sent = false;
-        log.debug("monitor", "Send certificate notification");
+        log.debug("monitor", `Send domain expiry notification for ${targetDays} deadline.`);
 
         for (let notification of notificationList) {
             try {
@@ -1588,17 +1582,12 @@ class Monitor extends BeanModel {
                 await Notification.send(JSON.parse(notification.config), `Domain name ${domain} will expire in ${daysRemaining} days`);
                 sent = true;
             } catch (e) {
-                log.error("monitor", "Cannot send cert notification to " + notification.name);
+                log.error("monitor", "Cannot send comain notification to " + notification.name);
                 log.error("monitor", e);
             }
         }
 
-        if (sent) {
-            await R.exec("INSERT INTO domain_expiry_notification_sent_history (domain, days) VALUES(?, ?)", [
-                domain,
-                targetDays,
-            ]);
-        }
+        return sent;
     }
 
     /**
