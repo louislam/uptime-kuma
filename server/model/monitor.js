@@ -1545,7 +1545,7 @@ class Monitor extends BeanModel {
             notifyDays = [ 7, 14, 21 ];
         }
         if (Array.isArray(notifyDays)) {
-            // Asc sort to avoid sending multiple notifications if daysRemaining is below multiple targetDays 
+            // Asc sort to avoid sending multiple notifications if daysRemaining is below multiple targetDays
             notifyDays.sort((a, b) => a - b);
             for (const targetDays of notifyDays) {
                 if (daysRemaining > targetDays) {
