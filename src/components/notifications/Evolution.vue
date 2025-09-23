@@ -1,5 +1,4 @@
 <template>
-
     <div class="mb-3">
         <label for="evolution-instance-name" class="form-label">{{ $t("evolutionInstanceName") }}</label>
         <input id="evolution-instance-name" v-model="$parent.notification.evolutionInstanceName" type="text" class="form-control" required>
@@ -28,6 +27,7 @@
         <a href="https:/evoapicloud.com/" target="_blank">https://evoapicloud.com/</a>
     </i18n-t>
 </template>
+
 <script>
 import HiddenInput from "../HiddenInput.vue";
 
