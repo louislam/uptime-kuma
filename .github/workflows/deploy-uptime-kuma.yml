@@ -51,99 +51,90 @@ jobs:
       - name: Deploy on EC2 (pull and restart)
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT != '' && secrets.EC2_PORT || '22' }}
-          debug: true
-          script_stop: true
-          script: |
-            set -eox pipefail
-            APP_DIR="${{ secrets.APP_DIR }}"
-            if [ -z "$APP_DIR" ]; then
-              echo "APP_DIR secret is not set. Please configure secrets.APP_DIR"
-              exit 1
-            fi
-            echo "Running as: $(whoami)"
-            id || true
-            ls -ld "$APP_DIR" || true
-            if ! mkdir -p "$APP_DIR"; then
-              echo "mkdir failed, retrying with sudo and fixing ownership"
-              if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
-              $SUDO mkdir -p "$APP_DIR"
-              $SUDO chown -R "${{ secrets.EC2_USER }}":"${{ secrets.EC2_USER }}" "$APP_DIR" || true
-            fi
-            cd "$APP_DIR"
-
-            # Ensure a data directory exists to persist the DB
-            mkdir -p data
-
-            # Pick docker compose command (plugin or standalone) without tripping set -e wrappers
-            COMPOSE=""
-            # Temporarily disable set -e for docker compose detection
-            set +e
-            # Check for docker compose plugin
-            docker compose version >/dev/null 2>&1
-            PLUGIN_STATUS=$?
-            # Check for standalone docker-compose
-            DOCKER_COMPOSE_PATH="$(command -v docker-compose 2>/dev/null || echo '')"
-            # Re-enable set -e
-            set -e
-            
-            if [ "$PLUGIN_STATUS" -eq 0 ]; then
-              COMPOSE="docker compose"
-            elif [ -n "$DOCKER_COMPOSE_PATH" ]; then
-              COMPOSE="$DOCKER_COMPOSE_PATH"
-            else
-              echo "Installing docker-compose (standalone binary) ..."
-              if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
-              INSTALL_PATH="/usr/local/bin/docker-compose"
-              if ! $SUDO sh -c "touch $INSTALL_PATH >/dev/null 2>&1"; then
-                echo "/usr/local/bin not writable. Installing to user bin..."
-                mkdir -p "$HOME/.local/bin"
-                INSTALL_PATH="$HOME/.local/bin/docker-compose"
-                echo "Adding $HOME/.local/bin to PATH for this session"
-                export PATH="$HOME/.local/bin:$PATH"
-              fi
-              curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m)" -o "$INSTALL_PATH"
-              $SUDO chmod +x "$INSTALL_PATH" || chmod +x "$INSTALL_PATH" || true
-              COMPOSE="$INSTALL_PATH"
-            fi
-
-            # Pull latest image and restart container with minimal downtime
-            if [ ! -f compose.yaml ]; then
-              echo "compose.yaml not found in $APP_DIR. Ensure SCP step uploaded it to the same APP_DIR."
-              ls -la
-              exit 1
-            fi
-            # Choose docker command (with sudo if needed) without tripping set -e wrappers
-            DOCKER_CMD="docker"
-            if ! docker info >/dev/null 2>&1; then
-              if command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then
-                DOCKER_CMD="sudo docker"
-                if [ "$COMPOSE" = "docker compose" ]; then
-                  COMPOSE="sudo docker compose"
-                fi
-              else
-                echo "Docker daemon is not available for the current or sudo user."
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: ${{ secrets.EC2_PORT != '' && secrets.EC2_PORT || '22' }}
+            debug: true
+            script_stop: true
+            script: |
+              set -o pipefail
+              APP_DIR="${{ secrets.APP_DIR }}"
+              if [ -z "$APP_DIR" ]; then
+                echo "APP_DIR secret is not set. Please configure secrets.APP_DIR"
                 exit 1
               fi
-            fi
-            $COMPOSE -f compose.yaml pull
-            $COMPOSE -f compose.yaml up -d
-
-            # Optional: prune old images to reclaim space
-            $DOCKER_CMD image prune -f || true
-
-            # Health check (wait up to ~30s)
-            for i in $(seq 1 30); do
-              if curl -fsS http://localhost:3001/ >/dev/null 2>&1; then
-                echo "Uptime Kuma is responding on port 3001"
-                exit 0
+  
+              echo "Running as: $(whoami)"
+              id || true
+              ls -ld "$APP_DIR" || true
+  
+              if ! mkdir -p "$APP_DIR"; then
+                echo "mkdir failed, retrying with sudo and fixing ownership"
+                if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
+                $SUDO mkdir -p "$APP_DIR"
+                $SUDO chown -R "${{ secrets.EC2_USER }}":"${{ secrets.EC2_USER }}" "$APP_DIR" || true
               fi
-              sleep 1
-            done
-            echo "Warning: Health check did not succeed within 30s, but deployment command completed."
-            exit 0
-
-
+              cd "$APP_DIR"
+  
+              # Ensure a data directory exists to persist the DB
+              mkdir -p data
+  
+              # Pick docker compose command (plugin or standalone)
+              COMPOSE=""
+              if docker compose version >/dev/null 2>&1; then
+                COMPOSE="docker compose"
+              elif command -v docker-compose >/dev/null 2>&1; then
+                COMPOSE="sudo docker-compose"
+              else
+                echo "Installing docker-compose (standalone binary)..."
+                if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
+                INSTALL_PATH="/usr/local/bin/docker-compose"
+                if ! $SUDO sh -c "touch $INSTALL_PATH >/dev/null 2>&1"; then
+                  echo "/usr/local/bin not writable. Installing to user bin..."
+                  mkdir -p "$HOME/.local/bin"
+                  INSTALL_PATH="$HOME/.local/bin/docker-compose"
+                  export PATH="$HOME/.local/bin:$PATH"
+                fi
+                curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m)" -o "$INSTALL_PATH"
+                $SUDO chmod +x "$INSTALL_PATH" || chmod +x "$INSTALL_PATH" || true
+                COMPOSE="$INSTALL_PATH"
+              fi
+  
+              # Choose docker command (with sudo if needed)
+              DOCKER_CMD="docker"
+              if ! docker info >/dev/null 2>&1; then
+                if command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then
+                  DOCKER_CMD="sudo docker"
+                  if [ "$COMPOSE" = "docker compose" ]; then
+                    COMPOSE="sudo docker compose"
+                  fi
+                else
+                  echo "Docker daemon is not available for the current or sudo user."
+                  exit 1
+                fi
+              fi
+  
+              # Pull latest image and restart container
+              if [ ! -f compose.yaml ]; then
+                echo "compose.yaml not found in $APP_DIR. Ensure SCP step uploaded it to the same APP_DIR."
+                ls -la
+                exit 1
+              fi
+              $COMPOSE -f compose.yaml pull
+              $COMPOSE -f compose.yaml up -d
+  
+              # Optional: prune old images to reclaim space
+              $DOCKER_CMD image prune -f || true
+  
+              # Health check (wait up to ~30s)
+              for i in $(seq 1 30); do
+                if curl -fsS http://localhost:3001/ >/dev/null 2>&1; then
+                  echo "Uptime Kuma is responding on port 3001"
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "Warning: Health check did not succeed within 30s, but deployment command completed."
+              exit 0
+  
