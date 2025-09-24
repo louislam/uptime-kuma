@@ -1,5 +1,4 @@
 name: Deploy Uptime Kuma to EC2
-
 on:
   push:
     branches: [ "deploy-test" ]
