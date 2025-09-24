@@ -731,6 +731,10 @@ async function createMonitorFromData(monitorData, userId) {
     if (monitorData.notificationIDList && typeof monitorData.notificationIDList === 'object') {
         await processNotifications(bean.id, monitorData.notificationIDList, userId);
     }
+
+    if (monitorData.statusPageSlug && monitorData.groupName) {
+        await processStatusPageGroup(bean.id, monitorData.statusPageSlug, monitorData.groupName);
+    }
 }
 
 async function updateMonitorFromData(existingBean, monitorData, userId) {
@@ -747,6 +751,10 @@ async function updateMonitorFromData(existingBean, monitorData, userId) {
 
     if (monitorData.notificationIDList && typeof monitorData.notificationIDList === 'object') {
         await processNotifications(existingBean.id, monitorData.notificationIDList, userId);
+    }
+
+    if (monitorData.statusPageSlug && monitorData.groupName) {
+        await processStatusPageGroup(existingBean.id, monitorData.statusPageSlug, monitorData.groupName);
     }
 }
 
@@ -1009,9 +1017,75 @@ function validateMonitorData(monitorData) {
         errors.push("Notification list must be an object");
     }
 
+    if (monitorData.statusPageSlug && typeof monitorData.statusPageSlug !== 'string') {
+        errors.push("Status page slug must be a string");
+    }
+
+    if (monitorData.groupName && typeof monitorData.groupName !== 'string') {
+        errors.push("Group name must be a string");
+    }
+
     return {
         isValid: errors.length === 0,
         errors: errors
+    }
+}
+
+async function processStatusPageGroup(monitorId, statusPageSlug, groupName) {
+    try {
+        // Find status page by slug
+        const statusPage = await R.findOne("status_page", "slug = ?", [statusPageSlug]);
+
+        if (!statusPage) {
+            log.warn("api", `Status page with slug '${statusPageSlug}' not found`);
+            return;
+        }
+
+        // Check if group exists for this status page
+        let group = await R.findOne("group", "name = ? AND status_page_id = ?", [
+            groupName,
+            statusPage.id
+        ]);
+
+        // Create group if it doesn't exist
+        if (!group) {
+            group = R.dispense("group");
+            group.name = groupName;
+            group.status_page_id = statusPage.id;
+            group.public = true;  // Make group public by default
+            group.active = true;
+            group.weight = 1000;  // Default weight
+
+            await R.store(group);
+            log.info("api", `Created new group '${groupName}' (id: ${group.id}) for status page '${statusPageSlug}'`);
+        } else {
+            log.info("api", `Using existing group '${groupName}' (id: ${group.id}) for status page '${statusPageSlug}'`);
+        }
+
+        // Check if monitor is already in this group
+        const existingRelation = await R.findOne("monitor_group", "monitor_id = ? AND group_id = ?", [
+            monitorId,
+            group.id
+        ]);
+
+        log.debug("api", `Checking relationship: monitor_id=${monitorId}, group_id=${group.id}, existing=${!!existingRelation}`);
+
+        if (!existingRelation) {
+            // Create monitor-group relationship
+            const monitorGroup = R.dispense("monitor_group");
+            monitorGroup.monitor_id = monitorId;
+            monitorGroup.group_id = group.id;
+            monitorGroup.weight = 1000;  // Default weight
+            monitorGroup.send_url = false;
+
+            await R.store(monitorGroup);
+            log.info("api", `Added monitor ${monitorId} to group '${groupName}' (group_id: ${group.id}) in status page '${statusPageSlug}'`);
+        } else {
+            log.warn("api", `Monitor ${monitorId} already exists in group '${groupName}' (group_id: ${group.id}) - existing relation id: ${existingRelation.id}`);
+        }
+
+    } catch (error) {
+        log.error("api", `Error processing status page group: ${error.message}`);
     };
 }
 
