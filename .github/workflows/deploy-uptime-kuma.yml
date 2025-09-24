@@ -81,12 +81,20 @@ jobs:
 
             # Pick docker compose command (plugin or standalone) without tripping set -e wrappers
             COMPOSE=""
+            # Temporarily disable set -e for docker compose detection
+            set +e
             # Check for docker compose plugin
-            if docker compose version >/dev/null 2>&1; then
-              COMPOSE="docker compose"
+            docker compose version >/dev/null 2>&1
+            PLUGIN_STATUS=$?
             # Check for standalone docker-compose
-            elif command -v docker-compose >/dev/null 2>&1; then
-              COMPOSE="docker-compose"
+            DOCKER_COMPOSE_PATH="$(command -v docker-compose 2>/dev/null || echo '')"
+            # Re-enable set -e
+            set -e
+            
+            if [ "$PLUGIN_STATUS" -eq 0 ]; then
+              COMPOSE="docker compose"
+            elif [ -n "$DOCKER_COMPOSE_PATH" ]; then
+              COMPOSE="$DOCKER_COMPOSE_PATH"
             else
               echo "Installing docker-compose (standalone binary) ..."
               if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
