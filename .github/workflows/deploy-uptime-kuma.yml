@@ -59,13 +59,21 @@ jobs:
           debug: true
           script_stop: true
           script: |
-            set -eo pipefail
+            set -eox pipefail
             APP_DIR="${{ secrets.APP_DIR }}"
             if [ -z "$APP_DIR" ]; then
               echo "APP_DIR secret is not set. Please configure secrets.APP_DIR"
               exit 1
             fi
-            mkdir -p "$APP_DIR"
+            echo "Running as: $(whoami)"
+            id || true
+            ls -ld "$APP_DIR" || true
+            if ! mkdir -p "$APP_DIR"; then
+              echo "mkdir failed, retrying with sudo and fixing ownership"
+              if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
+              $SUDO mkdir -p "$APP_DIR"
+              $SUDO chown -R "${{ secrets.EC2_USER }}":"${{ secrets.EC2_USER }}" "$APP_DIR" || true
+            fi
             cd "$APP_DIR"
 
             # Ensure a data directory exists to persist the DB
@@ -79,17 +87,41 @@ jobs:
             else
               echo "Installing docker-compose (standalone binary) ..."
               if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
-              $SUDO curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              $SUDO chmod +x /usr/local/bin/docker-compose
-              COMPOSE="docker-compose"
+              INSTALL_PATH="/usr/local/bin/docker-compose"
+              if ! $SUDO sh -c "touch $INSTALL_PATH >/dev/null 2>&1"; then
+                echo "/usr/local/bin not writable. Installing to user bin..."
+                mkdir -p "$HOME/.local/bin"
+                INSTALL_PATH="$HOME/.local/bin/docker-compose"
+                echo "Adding $HOME/.local/bin to PATH for this session"
+                export PATH="$HOME/.local/bin:$PATH"
+              fi
+              curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m)" -o "$INSTALL_PATH"
+              $SUDO chmod +x "$INSTALL_PATH" || chmod +x "$INSTALL_PATH" || true
+              COMPOSE="$INSTALL_PATH"
             fi
 
             # Pull latest image and restart container with minimal downtime
+            if [ ! -f compose.yaml ]; then
+              echo "compose.yaml not found in $APP_DIR. Ensure SCP step uploaded it to the same APP_DIR."
+              ls -la
+              exit 1
+            fi
+            # Choose docker command (with sudo if needed)
+            DOCKER_CMD="docker"
+            if ! docker info >/dev/null 2>&1; then
+              if command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then
+                DOCKER_CMD="sudo docker"
+                # If COMPOSE is the plugin form, prefer plugin via DOCKER_CMD
+                if [ "$COMPOSE" = "docker compose" ]; then
+                  COMPOSE="sudo docker compose"
+                fi
+              fi
+            fi
             $COMPOSE -f compose.yaml pull
             $COMPOSE -f compose.yaml up -d
 
             # Optional: prune old images to reclaim space
-            docker image prune -f || true
+            $DOCKER_CMD image prune -f || true
 
             # Health check (wait up to ~30s)
             for i in $(seq 1 30); do
