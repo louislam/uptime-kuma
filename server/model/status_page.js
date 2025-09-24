@@ -283,8 +283,13 @@ class StatusPage extends BeanModel {
         ]);
 
         for (let groupBean of list) {
-            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
+            let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry, config?.prioritizeFailedMonitors);
             publicGroupList.push(monitorGroup);
+        }
+
+        // Apply group prioritization if enabled
+        if (config?.prioritizeFailedGroups) {
+            await StatusPage.prioritizeFailedGroups(publicGroupList);
         }
 
         // Response
@@ -294,6 +299,41 @@ class StatusPage extends BeanModel {
             publicGroupList,
             maintenanceList,
         };
+    }
+
+    /**
+     * Prioritize groups that contain failed monitors
+     * @param {Array} publicGroupList List of groups to prioritize
+     * @returns {Promise<void>}
+     */
+    static async prioritizeFailedGroups(publicGroupList) {
+        // Calculate group status based on monitors
+        for (let group of publicGroupList) {
+            let hasFailedMonitors = false;
+
+            for (let monitor of group.monitorList) {
+                // Get latest heartbeat for this monitor
+                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [monitor.id]);
+                if (heartbeat && (heartbeat.status === DOWN || heartbeat.status === 2)) { // DOWN or PENDING
+                    hasFailedMonitors = true;
+                    break;
+                }
+            }
+
+            group.hasFailedMonitors = hasFailedMonitors;
+        }
+
+        // Sort groups: failed groups first, then by original weight
+        publicGroupList.sort((a, b) => {
+            if (a.hasFailedMonitors && !b.hasFailedMonitors) return -1;
+            if (!a.hasFailedMonitors && b.hasFailedMonitors) return 1;
+            return a.weight - b.weight; // Maintain original order for same status
+        });
+
+        // Clean up temporary property
+        for (let group of publicGroupList) {
+            delete group.hasFailedMonitors;
+        }
     }
 
     /**
@@ -409,6 +449,8 @@ class StatusPage extends BeanModel {
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            prioritizeFailedMonitors: !!this.prioritize_failed_monitors,
+            prioritizeFailedGroups: !!this.prioritize_failed_groups,
         };
     }
 
@@ -432,6 +474,8 @@ class StatusPage extends BeanModel {
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            prioritizeFailedMonitors: !!this.prioritize_failed_monitors,
+            prioritizeFailedGroups: !!this.prioritize_failed_groups,
         };
     }
 
