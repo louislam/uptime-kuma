@@ -116,9 +116,17 @@ jobs:
               fi
   
               # Pull latest image and restart container
-              if [ ! -f compose.yaml ]; then
+              echo "Looking for compose.yaml in: $(pwd)"
+              echo "Contents of current directory:"
+              ls -la
+              echo "Checking if compose.yaml exists:"
+              if [ -f compose.yaml ]; then
+                echo "compose.yaml found!"
+                ls -la compose.yaml
+              else
                 echo "compose.yaml not found in $APP_DIR. Ensure SCP step uploaded it to the same APP_DIR."
-                ls -la
+                echo "Searching for compose.yaml in parent directories:"
+                find / -name "compose.yaml" 2>/dev/null | head -10 || echo "No compose.yaml found anywhere"
                 exit 1
               fi
               $COMPOSE -f compose.yaml pull
