@@ -1141,5 +1141,7 @@
     "Staged Tags for Batch Add": "Staged Tags for Batch Add",
     "Clear Form": "Clear Form",
     "pause": "Pause",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "settingsDomainExpiry": "Domain Certificate Expiry",
+    "domainExpiryDescription": "HTTPS Monitors trigger notification when domain names expires in:"
 }
