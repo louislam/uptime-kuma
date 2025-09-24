@@ -38,6 +38,7 @@ jobs:
           source: "compose.yaml"
           target: ${{ secrets.APP_DIR }}
           overwrite: true
+          tar_exec: "tar --no-same-owner"
 
       - name: Deploy on EC2 (pull and restart)
         uses: appleboy/ssh-action@v1.2.0
