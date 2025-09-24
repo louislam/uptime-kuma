@@ -479,5 +479,9 @@
     "templateLimitedToUpDownNotifications": "apenas disponível para notificações UP/DOWN",
     "-year": "-ano",
     "Json Query Expression": "Expressão Json Query",
-    "ignoredTLSError": "Erros TLS/SSL foram ignorados"
+    "ignoredTLSError": "Erros TLS/SSL foram ignorados",
+    "Prioritize Failed Monitors": "Priorizar Monitores com Falha",
+    "Move monitors with DOWN or PENDING status to the top of each group": "Move monitores com estado DOWN ou PENDING para o topo de cada grupo",
+    "Prioritize Failed Groups": "Priorizar Grupos com Falha",
+    "Move groups that contain failed monitors to the top of the status page": "Move grupos que contêm monitores com falha para o topo da página de estado"
 }

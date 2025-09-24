@@ -68,6 +68,20 @@
                     <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
                 </div>
 
+                <!-- Prioritize Failed Monitors -->
+                <div class="my-3 form-check form-switch">
+                    <input id="prioritize-failed-monitors" v-model="config.prioritizeFailedMonitors" class="form-check-input" type="checkbox" data-testid="prioritize-failed-monitors-checkbox">
+                    <label class="form-check-label" for="prioritize-failed-monitors">{{ $t("Prioritize Failed Monitors") }}</label>
+                    <div class="form-text">{{ $t("Move monitors with DOWN or PENDING status to the top of each group") }}</div>
+                </div>
+
+                <!-- Prioritize Failed Groups -->
+                <div class="my-3 form-check form-switch">
+                    <input id="prioritize-failed-groups" v-model="config.prioritizeFailedGroups" class="form-check-input" type="checkbox" data-testid="prioritize-failed-groups-checkbox">
+                    <label class="form-check-label" for="prioritize-failed-groups">{{ $t("Prioritize Failed Groups") }}</label>
+                    <div class="form-text">{{ $t("Move groups that contain failed monitors to the top of the status page") }}</div>
+                </div>
+
                 <div v-if="false" class="my-3">
                     <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
@@ -705,6 +719,14 @@ export default {
 
             if (!this.config.domainNameList) {
                 this.config.domainNameList = [];
+            }
+
+            // Initialize prioritization settings if not present
+            if (this.config.prioritizeFailedMonitors === undefined) {
+                this.config.prioritizeFailedMonitors = false;
+            }
+            if (this.config.prioritizeFailedGroups === undefined) {
+                this.config.prioritizeFailedGroups = false;
             }
 
             if (this.config.icon) {
