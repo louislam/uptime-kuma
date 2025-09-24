@@ -23,7 +23,6 @@ import HeiiOnCall from "./HeiiOnCall.vue";
 import Keep from "./Keep.vue";
 import Kook from "./Kook.vue";
 import Line from "./Line.vue";
-import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
@@ -105,7 +104,6 @@ const NotificationFormList = {
     "Keep": Keep,
     "Kook": Kook,
     "line": Line,
-    "LineNotify": LineNotify,
     "lunasea": LunaSea,
     "matrix": Matrix,
     "mattermost": Mattermost,
