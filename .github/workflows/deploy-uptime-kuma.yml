@@ -7,6 +7,7 @@ on:
       - ".github/workflows/deploy-uptime-kuma.yml"
   workflow_dispatch:
 
+    
 jobs:
   deploy:
     runs-on: ubuntu-latest
