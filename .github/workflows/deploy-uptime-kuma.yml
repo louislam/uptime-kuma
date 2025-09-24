@@ -80,15 +80,13 @@ jobs:
             mkdir -p data
 
             # Pick docker compose command (plugin or standalone) without tripping set -e wrappers
-            set +e
-            docker compose version >/dev/null 2>&1
-            PLUGIN_STATUS=$?
-            DOCKER_COMPOSE_PATH="$(command -v docker-compose 2>/dev/null || true)"
-            set -e
-            if [ "$PLUGIN_STATUS" -eq 0 ]; then
+            COMPOSE=""
+            # Check for docker compose plugin
+            if docker compose version >/dev/null 2>&1; then
               COMPOSE="docker compose"
-            elif [ -n "$DOCKER_COMPOSE_PATH" ]; then
-              COMPOSE="$DOCKER_COMPOSE_PATH"
+            # Check for standalone docker-compose
+            elif command -v docker-compose >/dev/null 2>&1; then
+              COMPOSE="docker-compose"
             else
               echo "Installing docker-compose (standalone binary) ..."
               if command -v sudo >/dev/null 2>&1; then SUDO="sudo"; else SUDO=""; fi
@@ -113,27 +111,14 @@ jobs:
             fi
             # Choose docker command (with sudo if needed) without tripping set -e wrappers
             DOCKER_CMD="docker"
-            set +e
-            docker info >/dev/null 2>&1
-            DOCKER_OK=$?
-            set -e
-            if [ "$DOCKER_OK" -ne 0 ]; then
-              if command -v sudo >/dev/null 2>&1; then
-                set +e
-                sudo docker info >/dev/null 2>&1
-                SUDO_DOCKER_OK=$?
-                set -e
-                if [ "$SUDO_DOCKER_OK" -eq 0 ]; then
-                  DOCKER_CMD="sudo docker"
-                  if [ "$COMPOSE" = "docker compose" ]; then
-                    COMPOSE="sudo docker compose"
-                  fi
-                else
-                  echo "Docker daemon is not available for the current or sudo user."
-                  exit 1
+            if ! docker info >/dev/null 2>&1; then
+              if command -v sudo >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then
+                DOCKER_CMD="sudo docker"
+                if [ "$COMPOSE" = "docker compose" ]; then
+                  COMPOSE="sudo docker compose"
                 fi
               else
-                echo "Docker daemon is not available and sudo is not installed."
+                echo "Docker daemon is not available for the current or sudo user."
                 exit 1
               fi
             fi
