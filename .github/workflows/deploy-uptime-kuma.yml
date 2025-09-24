@@ -27,6 +27,8 @@ jobs:
             APP_DIR="${{ secrets.APP_DIR }}"
             sudo mkdir -p "$APP_DIR"
             sudo chown -R "${{ secrets.EC2_USER }}":"${{ secrets.EC2_USER }}" "$APP_DIR"
+            # Ensure no root-owned compose file blocks overwrite
+            sudo rm -f "$APP_DIR/compose.yaml" || true
 
       - name: Upload compose file to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -38,7 +40,6 @@ jobs:
           source: "compose.yaml"
           target: ${{ secrets.APP_DIR }}
           overwrite: true
-          tar_exec: "tar --no-same-owner"
 
       - name: Deploy on EC2 (pull and restart)
         uses: appleboy/ssh-action@v1.2.0
