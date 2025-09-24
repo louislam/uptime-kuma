@@ -1,0 +1,76 @@
+name: Deploy Uptime Kuma to EC2
+
+on:
+  push:
+    branches: [ "main", "master" ]
+    paths:
+      - "uptime-kuma/**"
+      - "uptime-kuma/.github/workflows/deploy-uptime-kuma.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload compose file to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          source: "uptime-kuma/compose.yaml"
+          target: ${{ secrets.APP_DIR }}
+          overwrite: true
+
+      - name: Deploy on EC2 (pull and restart)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.APP_DIR }}"
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            # Ensure a data directory exists to persist the DB
+            mkdir -p data
+
+            # Pick docker compose command (plugin or standalone)
+            if docker compose version >/dev/null 2>&1; then
+              COMPOSE="docker compose"
+            elif command -v docker-compose >/dev/null 2>&1; then
+              COMPOSE="docker-compose"
+            else
+              echo "Installing docker-compose (standalone binary) ..."
+              sudo curl -L "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+              COMPOSE="docker-compose"
+            fi
+
+            # Pull latest image and restart container with minimal downtime
+            $COMPOSE -f compose.yaml pull
+            $COMPOSE -f compose.yaml up -d
+
+            # Optional: prune old images to reclaim space
+            docker image prune -f || true
+
+            # Health check (wait up to ~30s)
+            for i in $(seq 1 30); do
+              if curl -fsS http://localhost:3001/ >/dev/null 2>&1; then
+                echo "Uptime Kuma is responding on port 3001"
+                exit 0
+              fi
+              sleep 1
+            done
+            echo "Warning: Health check did not succeed within 30s, but deployment command completed."
+            exit 0
+
+
