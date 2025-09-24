@@ -15,6 +15,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare app directory on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.APP_DIR }}"
+            sudo mkdir -p "$APP_DIR"
+            sudo chown -R "${{ secrets.EC2_USER }}":"${{ secrets.EC2_USER }}" "$APP_DIR"
+
       - name: Upload compose file to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
