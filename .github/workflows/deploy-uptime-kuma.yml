@@ -43,20 +43,7 @@ jobs:
           echo "Current directory contents:"
           ls -la
 
-      - name: Upload compose file to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          port: ${{ secrets.EC2_PORT != '' && secrets.EC2_PORT || '22' }}
-          debug: true
-          source: "compose.yaml"
-          target: ${{ secrets.APP_DIR }}
-          overwrite: true
-          strip_components: 0
-
-      - name: Verify upload on EC2
+      - name: Create compose.yaml on EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -65,14 +52,22 @@ jobs:
           port: ${{ secrets.EC2_PORT != '' && secrets.EC2_PORT || '22' }}
           debug: true
           script: |
-            echo "Verifying compose.yaml upload:"
-            ls -la ${{ secrets.APP_DIR }}
-            if [ -f "${{ secrets.APP_DIR }}/compose.yaml" ]; then
-              echo "compose.yaml found after upload!"
-              ls -la "${{ secrets.APP_DIR }}/compose.yaml"
-            else
-              echo "compose.yaml still not found after upload"
-            fi
+            APP_DIR="${{ secrets.APP_DIR }}"
+            cd "$APP_DIR"
+            cat > compose.yaml << 'EOF'
+            services:
+              uptime-kuma:
+                image: louislam/uptime-kuma:1
+                volumes:
+                  - ./data:/app/data
+                ports:
+                  # <Host Port>:<Container Port>
+                  - 3001:3001
+                restart: unless-stopped
+            EOF
+            echo "Created compose.yaml:"
+            ls -la compose.yaml
+            cat compose.yaml
 
       - name: Deploy on EC2 (pull and restart)
         uses: appleboy/ssh-action@v1.2.0
