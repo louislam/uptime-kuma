@@ -728,7 +728,7 @@ async function createMonitorFromData(monitorData, userId) {
         await processTags(bean.id, monitorData.tags);
     }
 
-    if (monitorData.notificationIDList && typeof monitorData.notificationIDList === 'object') {
+    if (monitorData.notificationIDList) {
         await processNotifications(bean.id, monitorData.notificationIDList, userId);
     }
 
@@ -749,7 +749,7 @@ async function updateMonitorFromData(existingBean, monitorData, userId) {
         await processTags(existingBean.id, monitorData.tags);
     }
 
-    if (monitorData.notificationIDList && typeof monitorData.notificationIDList === 'object') {
+    if (monitorData.notificationIDList) {
         await processNotifications(existingBean.id, monitorData.notificationIDList, userId);
     }
 
@@ -890,30 +890,65 @@ async function processTags(monitorId, tags) {
     }
 }
 
-async function processNotifications(monitorId, notificationIDList, userId) {
-    for (const [notificationId, enabled] of Object.entries(notificationIDList)) {
-        try {
-            if (enabled === true) {
-                // Check if notification exists and belongs to the user
-                const notification = await R.findOne("notification", "id = ? AND user_id = ?", [
-                    parseInt(notificationId),
-                    userId
-                ]);
+async function processNotifications(monitorId, notificationList, userId) {
+    if (Array.isArray(notificationList)) {
+        log.info("api", `Processing notifications by names for monitor ${monitorId}: [${notificationList.map(n => `"${n}"`).join(", ")}]`);
 
-                if (notification) {
-                    // Create monitor_notification relationship
-                    const monitorNotification = R.dispense("monitor_notification");
-                    monitorNotification.monitor_id = monitorId;
-                    monitorNotification.notification_id = notification.id;
+        for (const notificationName of notificationList) {
+            try {
+                if (typeof notificationName === 'string' && notificationName.trim()) {
+                    // Find notification by name
+                    const notification = await R.findOne("notification", "name = ? AND user_id = ?", [
+                        notificationName.trim(),
+                        userId
+                    ]);
 
-                    await R.store(monitorNotification);
-                } else {
-                    log.warn("api", `Notification ID ${notificationId} not found or doesn't belong to user ${userId}`);
+                    if (notification) {
+                        // Create monitor_notification relationship
+                        const monitorNotification = R.dispense("monitor_notification");
+                        monitorNotification.monitor_id = monitorId;
+                        monitorNotification.notification_id = notification.id;
+
+                        await R.store(monitorNotification);
+                        log.info("api", `? Associated notification "${notificationName}" (ID: ${notification.id}) with monitor ${monitorId}`);
+                    } else {
+                        log.warn("api", `? Notification with name "${notificationName}" not found for user ${userId}`);
+                    }
                 }
+            } catch (error) {
+                log.error("api", `Error processing notification "${notificationName}": ${error.message}`);
             }
-        } catch (error) {
-            log.error("api", `Error processing notification ${notificationId}: ${error.message}`);
         }
+    } else if (notificationList && typeof notificationList === 'object') {
+        log.info("api", `Processing notifications by IDs for monitor ${monitorId} (legacy format)`);
+
+        for (const [notificationId, enabled] of Object.entries(notificationList)) {
+            try {
+                if (enabled === true) {
+                    // Check if notification exists and belongs to the user
+                    const notification = await R.findOne("notification", "id = ? AND user_id = ?", [
+                        parseInt(notificationId),
+                        userId
+                    ]);
+
+                    if (notification) {
+                        // Create monitor_notification relationship
+                        const monitorNotification = R.dispense("monitor_notification");
+                        monitorNotification.monitor_id = monitorId;
+                        monitorNotification.notification_id = notification.id;
+
+                        await R.store(monitorNotification);
+                        log.info("api", `? Associated notification ID ${notificationId} with monitor ${monitorId}`);
+                    } else {
+                        log.warn("api", `? Notification ID ${notificationId} not found or doesn't belong to user ${userId}`);
+                    }
+                }
+            } catch (error) {
+                log.error("api", `Error processing notification ${notificationId}: ${error.message}`);
+            }
+        }
+    } else {
+        log.warn("api", `Invalid notification list format for monitor ${monitorId}. Expected array of names or object with ID:boolean pairs.`);
     }
 }
 
