@@ -36,6 +36,13 @@ jobs:
             # Ensure no root-owned compose file blocks overwrite
             $SUDO rm -f "$APP_DIR/compose.yaml" || true
 
+      - name: Check compose.yaml exists
+        run: |
+          echo "Checking if compose.yaml exists in GitHub Actions runner:"
+          ls -la compose.yaml || echo "compose.yaml not found in runner"
+          echo "Current directory contents:"
+          ls -la
+
       - name: Upload compose file to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
