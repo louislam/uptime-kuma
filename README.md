@@ -94,7 +94,7 @@ More useful PM2 Commands
 pm2 monit
 
 # If you want to add it to startup
-pm2 save && pm2 startup
+pm2 startup && pm2 save
 ```
 
 ### Advanced Installation
