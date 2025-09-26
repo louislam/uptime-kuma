@@ -1187,5 +1187,9 @@
     "No monitors found": "Не са намерени монитори.",
     "Clear All Events": "Изчисти всички събития",
     "clearAllEventsMsg": "Сигурни ли сте, че желатет да изчистите всички събития?",
-    "Could not clear events": "Неуспешен опит за изчистване на {failed}/{total} събития"
+    "Could not clear events": "Неуспешен опит за изчистване на {failed}/{total} събития",
+    "wayToWriteEvolutionRecipient": "Телефонният номер с международен префикс, но без знака плюс в началото ({0}), ID на контакта ({1}) или ID на на групата ({2}).",
+    "wayToGetEvolutionUrlAndToken": "Можете да получите API URL адреса, като влезете в желания от вас канал от {0}",
+    "evolutionRecipient": "Телефонен номер / ID на контакт / ID на група",
+    "evolutionInstanceName": "Име на инстанция"
 }

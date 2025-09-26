@@ -1176,5 +1176,14 @@
     "mqttWebsocketPathExplanation": "Putanja WebSocketa za MQTT preko WebSocket veza (npr. /mqtt)",
     "mqttWebsocketPathInvalid": "Koristiti valjani format putanje WebSocketa",
     "Template plain text instead of using cards": "Predložak običnim tekstom umjesto korištenja kartica",
-    "issueWithGoogleChatOnAndroidHelptext": "Ovo omogućuje izbjegavanje grešaka poput {issuetackerURL}"
+    "issueWithGoogleChatOnAndroidHelptext": "Ovo omogućuje izbjegavanje grešaka poput {issuetackerURL}",
+    "clearAllEventsMsg": "Jeste li sigurni da želite obrisati sve događaje?",
+    "No monitors found": "Nema pronađenih monitora.",
+    "Could not clear events": "Nije bilo moguće obrisati {failed} od {total} događaja",
+    "Clear All Events": "Očisti sve događaje",
+    "Events cleared successfully": "Događaji su uspješno obrisani.",
+    "wayToWriteEvolutionRecipient": "Telefonski broj s međunarodnim prefiksom, ali bez znaka plusa na početku ({0}), identifikator kontakta ({1}) ili identifikator grupe ({2}).",
+    "wayToGetEvolutionUrlAndToken": "URL za API te token možete dobiti tako da otvorite željeni kanal preko {0}",
+    "evolutionRecipient": "Telefonski broj / identifikator kontakta / identifikator grupe",
+    "evolutionInstanceName": "Naziv instance"
 }

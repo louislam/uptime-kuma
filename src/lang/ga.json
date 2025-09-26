@@ -1130,5 +1130,17 @@
     "FlashDuty Push URL Placeholder": "Cóipeáil ón leathanach comhtháthaithe foláirimh",
     "pingNumericLabel": "Aschur Uimhriúil",
     "templateServiceName": "ainm na seirbhíse",
-    "templateHostnameOrURL": "ainm óstach nó URL"
+    "templateHostnameOrURL": "ainm óstach nó URL",
+    "Events cleared successfully": "Glanadh na himeachtaí go rathúil.",
+    "No monitors found": "Níor aimsíodh aon mhonatóirí.",
+    "Could not clear events": "Níorbh fhéidir {failed}/{total} imeachtaí a ghlanadh",
+    "Path": "Cosán",
+    "mqttWebsocketPathExplanation": "Cosán WebSocket le haghaidh MQTT thar naisc WebSocket (m.sh., /mqtt)",
+    "mqttHostnameTip": "Bain úsáid as an bhformáid seo {hostnameFormat} le do thoil",
+    "mqttWebSocketPath": "Cosán Soicéad Gréasáin MQTT",
+    "mqttWebsocketPathInvalid": "Úsáid formáid bhailí Cosáin WebSocket le do thoil",
+    "Clear All Events": "Glan Gach Imeacht",
+    "clearAllEventsMsg": "An bhfuil tú cinnte gur mian leat gach imeacht a scriosadh?",
+    "Template plain text instead of using cards": "Téacs simplí teimpléid in ionad cártaí a úsáid",
+    "issueWithGoogleChatOnAndroidHelptext": "Ligeann sé seo freisin dul timpeall ar fhabhtanna suas an sruth cosúil le {issuetackerURL}"
 }

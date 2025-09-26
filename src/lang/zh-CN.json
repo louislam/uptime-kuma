@@ -1182,5 +1182,12 @@
     "Path": "路径",
     "mqttHostnameTip": "请使用此格式：{hostnameFormat}",
     "mqttWebsocketPathInvalid": "请使用合法的 WebSocket 路径格式",
-    "mqttWebSocketPath": "MQTT WebSocket 路径"
+    "mqttWebSocketPath": "MQTT WebSocket 路径",
+    "Could not clear events": "在 {total} 个事件里有 {failed} 个未能清除",
+    "No monitors found": "未找到监控项。",
+    "clearAllEventsMsg": "您确定要删除所有事件吗？",
+    "Clear All Events": "清除所有事件",
+    "Events cleared successfully": "事件已成功清除。",
+    "issueWithGoogleChatOnAndroidHelptext": "这也能规避上游的类似 {issuetackerURL} 的 bug",
+    "Template plain text instead of using cards": "使用纯文本模板而非卡片"
 }

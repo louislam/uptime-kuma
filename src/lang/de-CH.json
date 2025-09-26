@@ -438,7 +438,7 @@
     "Backup": "Sicherung",
     "About": "Über",
     "wayToGetCloudflaredURL": "(Lade Cloudflare von {0} herunter)",
-    "cloudflareWebsite": "Cloudflare Website",
+    "cloudflareWebsite": "Cloudflare Webseite",
     "Message:": "Nachricht:",
     "Don't know how to get the token? Please read the guide:": "Du weisst nicht, wie man den Token bekommt? Lies die Anleitung dazu:",
     "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "Die aktuelle Verbindung kann unterbrochen werden, wenn du aktuell über Cloudflare Tunnel verbunden bist. Bist du sicher, dass du es stoppen willst? Gib zur Bestätigung dein aktuelles Passwort ein.",
@@ -1184,5 +1184,9 @@
     "clearAllEventsMsg": "Möchtest du wirklich alle Ereignisse löschen?",
     "Events cleared successfully": "Ereignisse erfolgreich gelöscht.",
     "No monitors found": "Keine Monitore gefunden.",
-    "Could not clear events": "{failed}/{total} Ereignisse konnten nicht gelöscht werden"
+    "Could not clear events": "{failed}/{total} Ereignisse konnten nicht gelöscht werden",
+    "wayToWriteEvolutionRecipient": "Die Telefonnummer mit der internationalen Vorwahl, jedoch ohne das Pluszeichen am Anfang ({0}), die Kontakt-ID ({1}) oder die Gruppen-ID ({2}).",
+    "wayToGetEvolutionUrlAndToken": "Du kannst die API-URL und das Token erhalten, indem du den gewünschten Kanal unter {0} abrufst.",
+    "evolutionRecipient": "Telefonnummer / Kontakt-ID / Gruppen-ID",
+    "evolutionInstanceName": "Instanzname"
 }

@@ -802,5 +802,16 @@
     "Path": "Sti",
     "Add Tags": "Tilføj Tags",
     "tagAlreadyOnMonitor": "Dette tag (navn og værdi) er allerde tilføjet til denne overvågning, eller afventer tilføjelse.",
-    "defaultFriendlyName": "Ny Overvågning"
+    "defaultFriendlyName": "Ny Overvågning",
+    "Events cleared successfully": "Begivenheder blev ryddet.",
+    "mqttHostnameTip": "Brug venligst dette format {hostnameFormat}",
+    "mqttWebSocketPath": "MQTT WebSocket Sti",
+    "telegramUseTemplateDescription": "Hvis aktiveret vil beskeden blive sendt med en brugerdefineret skabelon.",
+    "Add a domain": "Tilføj et domæne",
+    "mqttWebsocketPathExplanation": "WebSocket sti for MQTT over WebSocket forbindelser (f.eks. /mqtt)",
+    "telegramUseTemplate": "Brug brugerdefineret besked-skabelon",
+    "telegramServerUrl": "(Valgfrit) Server URL",
+    "Clear All Events": "Ryd alle begivenheder",
+    "clearAllEventsMsg": "Er du sikker på du vil slette alle begivenheder?",
+    "Remove domain": "Fjern domæne '{0}'"
 }

@@ -1187,5 +1187,9 @@
     "Clear All Events": "Effacer tous les événements",
     "Events cleared successfully": "Événements effacés avec succès.",
     "No monitors found": "Aucun sonde trouvé.",
-    "Could not clear events": "Impossible d’effacer {failed}/{total} événements"
+    "Could not clear events": "Impossible d’effacer {failed}/{total} événements",
+    "wayToWriteEvolutionRecipient": "Le numéro de téléphone avec l’indicatif international, mais sans le signe plus au début ({0}), l’ID de contact ({1}) ou l’ID de groupe ({2}).",
+    "wayToGetEvolutionUrlAndToken": "Vous pouvez obtenir l’URL de l’API et le jeton en accédant à votre canal souhaité depuis {0}",
+    "evolutionRecipient": "Numéro de téléphone / ID de contact / ID de groupe",
+    "evolutionInstanceName": "Nom de l’instance"
 }
