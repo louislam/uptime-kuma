@@ -1131,8 +1131,8 @@
     "senderSevenIO": "Odosielanie čísla alebo mena",
     "pingIntervalAdjustedInfo": "Interval upravený na základe počtu paketov, globálneho časového limitu a časového limitu pre jednotlivý ping",
     "FlashDuty Severity": "Závažnosť",
-    "nostrRelays": "Nostr relaye",
-    "nostrRelaysHelp": "Jedna URL relaya na riadok",
+    "nostrRelays": "Nostr relé",
+    "nostrRelaysHelp": "Jedna URL adresa relé na riadok",
     "cacheBusterParamDescription": "Náhodne vygenerovaný parameter na obídenie cache.",
     "gamedigGuessPort": "Gamedig: Odhadnúť port",
     "smtpDkimheaderFieldNames": "Hlavičkové kľúče na podpísanie (voliteľné)",
@@ -1143,5 +1143,9 @@
     "Originator": "Odosielateľ",
     "cellsyntOriginator": "Viditeľné na mobilnom telefóne príjemcu ako odosielateľ správy. Povolené hodnoty a funkcia závisia od parametra \"originatortype\".",
     "Arcade": "Arkáda",
-    "record": "záznam"
+    "record": "záznam",
+    "wayToWriteEvolutionRecipient": "Telefónne číslo s medzinárodnou predvoľbou, ale bez znamienka plus na začiatku ({0}), ID kontaktu ({1}) alebo ID skupiny ({2}).",
+    "wayToGetEvolutionUrlAndToken": "API URL adresa a token sa nachádzajú vo vašom požadovanom kanáli z {0}",
+    "evolutionRecipient": "Telefónne číslo / ID kontaktu / ID skupiny",
+    "evolutionInstanceName": "Názov inštancie"
 }
