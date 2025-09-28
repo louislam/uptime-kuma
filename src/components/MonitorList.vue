@@ -282,7 +282,12 @@ export default {
          * @returns {void}
          */
         pauseDialog() {
-            this.$refs.confirmPause.show();
+            // Check if pause confirmation is disabled in settings
+            if (this.$root.info && this.$root.info.skipPauseConfirm) {
+                this.pauseSelected();
+            } else {
+                this.$refs.confirmPause.show();
+            }
         },
         /**
          * Pause each selected monitor

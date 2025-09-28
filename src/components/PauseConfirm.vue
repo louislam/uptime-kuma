@@ -54,11 +54,6 @@ export default {
         noText: {
             type: String,
             default: "No",
-        },
-        /** Title to show on modal. Defaults to translated version of "Confirm" */
-        title: {
-            type: String,
-            default: null,
         }
     },
     emits: [ "yes", "no" ],
@@ -86,7 +81,17 @@ export default {
          */
         yes() {
             if (this.doNotShowAgain) {
-                localStorage.setItem("uptime-kuma-pause-confirm-disabled", "true");
+                // Update the setting via socket
+                this.$root.getSocket().emit("setSettings", { 
+                    skipPauseConfirm: true 
+                }, "", (res) => {
+                    if (res.ok) {
+                        // Update local info
+                        if (this.$root.info) {
+                            this.$root.info.skipPauseConfirm = true;
+                        }
+                    }
+                });
             }
             this.$emit("yes");
         },
