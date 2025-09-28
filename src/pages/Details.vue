@@ -425,14 +425,14 @@
                 </div>
             </div>
 
-            <Confirm
+            <PauseConfirm
                 ref="confirmPause"
                 :yes-text="$t('Yes')"
                 :no-text="$t('No')"
                 @yes="pauseMonitor"
             >
                 {{ $t("pauseMonitorMsg") }}
-            </Confirm>
+            </PauseConfirm>
 
             <Confirm
                 ref="confirmDelete"
@@ -472,6 +472,7 @@ import { defineAsyncComponent } from "vue";
 import { useToast } from "vue-toastification";
 const toast = useToast();
 import Confirm from "../components/Confirm.vue";
+import PauseConfirm from "../components/PauseConfirm.vue";
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
@@ -503,6 +504,7 @@ export default {
         Datetime,
         HeartbeatBar,
         Confirm,
+        PauseConfirm,
         Status,
         Pagination,
         PingChart,
