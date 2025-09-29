@@ -22,7 +22,8 @@ class Ntfy extends NotificationProvider {
                     "Authorization": "Bearer " + notification.ntfyaccesstoken,
                 };
             }
-            let config = this.getAxiosConfigWithProxy({ headers: headers });
+            let config = { headers };
+            config = this.getAxiosConfigWithProxy(config);
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
             if (heartbeatJSON == null) {
                 let ntfyTestData = {
