@@ -21,22 +21,6 @@ class Brevo extends NotificationProvider {
 
             let to = [{ email: notification.brevoToEmail }];
 
-            // Add CC recipients if provided
-            let cc = undefined;
-            if (notification.brevoCcEmail) {
-                cc = notification.brevoCcEmail
-                    .split(",")
-                    .map((email) => ({ email: email.trim() }));
-            }
-
-            // Add BCC recipients if provided
-            let bcc = undefined;
-            if (notification.brevoBccEmail) {
-                bcc = notification.brevoBccEmail
-                    .split(",")
-                    .map((email) => ({ email: email.trim() }));
-            }
-
             let data = {
                 sender: {
                     email: notification.brevoFromEmail.trim(),
@@ -47,14 +31,16 @@ class Brevo extends NotificationProvider {
                 htmlContent: `<html><head></head><body><p>${msg.replace(/\n/g, "<br>")}</p></body></html>`
             };
 
-            // Add CC if provided
-            if (cc) {
-                data.cc = cc;
+            if (notification.brevoCcEmail) {
+                data.cc = notification.brevoCcEmail
+                    .split(",")
+                    .map((email) => ({ email: email.trim() }));
             }
 
-            // Add BCC if provided
-            if (bcc) {
-                data.bcc = bcc;
+            if (notification.brevoBccEmail) {
+                data.bcc = notification.brevoBccEmail
+                    .split(",")
+                    .map((email) => ({ email: email.trim() }));
             }
 
             let result = await axios.post(
