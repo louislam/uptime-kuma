@@ -132,6 +132,7 @@
         "prometheus-api-metrics": "~3.2.1",
         "promisify-child-process": "~4.1.2",
         "protobufjs": "~7.2.4",
+        "proxy-agent": "^5.0.0",
         "qs": "~6.10.4",
         "redbean-node": "~0.3.0",
         "redis": "~4.5.1",
