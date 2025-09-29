@@ -12,6 +12,7 @@ class Feishu extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON == null) {
                 let testdata = {
                     msg_type: "text",
@@ -19,7 +20,7 @@ class Feishu extends NotificationProvider {
                         text: msg,
                     },
                 };
-                await axios.post(notification.feishuWebHookUrl, testdata);
+                await axios.post(notification.feishuWebHookUrl, testdata, config);
                 return okMsg;
             }
 
@@ -49,7 +50,7 @@ class Feishu extends NotificationProvider {
                         ]
                     }
                 };
-                await axios.post(notification.feishuWebHookUrl, downdata);
+                await axios.post(notification.feishuWebHookUrl, downdata, config);
                 return okMsg;
             }
 
@@ -79,7 +80,7 @@ class Feishu extends NotificationProvider {
                         ]
                     }
                 };
-                await axios.post(notification.feishuWebHookUrl, updata);
+                await axios.post(notification.feishuWebHookUrl, updata, config);
                 return okMsg;
             }
         } catch (error) {

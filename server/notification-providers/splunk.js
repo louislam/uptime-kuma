@@ -82,7 +82,7 @@ class Splunk extends NotificationProvider {
             eventAction = notification.splunkSeverity;
         }
 
-        const options = {
+        let options = {
             method: "POST",
             url: notification.splunkRestURL,
             headers: { "Content-Type": "application/json" },
@@ -101,6 +101,7 @@ class Splunk extends NotificationProvider {
             options.client_url = baseURL + getMonitorRelativeURL(monitorInfo.id);
         }
 
+        options = this.getAxiosConfigWithProxy(options);
         let result = await axios.request(options);
         this.checkResult(result);
         if (result.statusText != null) {

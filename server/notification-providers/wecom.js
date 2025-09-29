@@ -17,6 +17,7 @@ class WeCom extends NotificationProvider {
                     "Content-Type": "application/json"
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             let body = this.composeMessage(heartbeatJSON, msg);
             await axios.post(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${notification.weComBotKey}`, body, config);
             return okMsg;

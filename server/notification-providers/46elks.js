@@ -17,11 +17,13 @@ class Elks extends NotificationProvider {
             data.append("to", notification.elksToNumber );
             data.append("message", msg);
 
-            const config = {
+            let config = {
                 headers: {
                     "Authorization": "Basic " + Buffer.from(`${notification.elksUsername}:${notification.elksAuthToken}`).toString("base64")
                 }
             };
+
+            config = this.getAxiosConfigWithProxy(config);
 
             await axios.post(url, data, config);
 

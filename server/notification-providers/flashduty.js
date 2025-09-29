@@ -71,7 +71,7 @@ class FlashDuty extends NotificationProvider {
                 labels[tag.name] = tag.value;
             }
         }
-        const options = {
+        let options = {
             method: "POST",
             url: notification.flashdutyIntegrationKey.startsWith("http") ? notification.flashdutyIntegrationKey : "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
             headers: { "Content-Type": "application/json" },
@@ -90,6 +90,7 @@ class FlashDuty extends NotificationProvider {
             options.client_url = baseURL + getMonitorRelativeURL(monitorInfo.id);
         }
 
+        options = this.getAxiosConfigWithProxy(options);
         let result = await axios.request(options);
         if (result.status == null) {
             throw new Error("FlashDuty notification failed with invalid response!");

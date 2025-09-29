@@ -32,7 +32,7 @@ class Gorush extends NotificationProvider {
                 ]
             };
             let config = {};
-
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(`${notification.gorushServerURL}/api/push`, data, config);
             return okMsg;
         } catch (error) {

@@ -27,6 +27,7 @@ class PromoSMS extends NotificationProvider {
                     "Accept": "text/json",
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             let data = {
                 "recipients": [ notification.promosmsPhoneNumber ],
                 //Trim message to maximum length of 1 SMS or 4 if we allowed long messages

@@ -60,7 +60,7 @@ class PagerTree extends NotificationProvider {
             return "No action required";
         }
 
-        const options = {
+        let options = {
             method: "POST",
             url: notification.pagertreeIntegrationUrl,
             headers: { "Content-Type": "application/json" },
@@ -80,6 +80,7 @@ class PagerTree extends NotificationProvider {
             options.client_url = baseURL + getMonitorRelativeURL(monitorJSON.id);
         }
 
+        options = this.getAxiosConfigWithProxy(options);
         let result = await axios.request(options);
         this.checkResult(result);
         if (result.statusText != null) {

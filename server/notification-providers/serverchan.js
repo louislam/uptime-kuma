@@ -18,10 +18,11 @@ class ServerChan extends NotificationProvider {
             : `https://sctapi.ftqq.com/${notification.serverChanSendKey}.send`;
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             await axios.post(url, {
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),
                 "desp": msg,
-            });
+            }, config);
 
             return okMsg;
 

@@ -30,9 +30,9 @@ class Telegram extends NotificationProvider {
                 }
             }
 
-            let axiosConfig = this.getAxiosConfigWithProxy({ params });
+            let config = this.getAxiosConfigWithProxy({ params });
 
-            await axios.get(`${url}/bot${notification.telegramBotToken}/sendMessage`, axiosConfig);
+            await axios.get(`${url}/bot${notification.telegramBotToken}/sendMessage`, config);
             return okMsg;
 
         } catch (error) {

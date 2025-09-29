@@ -123,8 +123,8 @@ class NotificationProvider {
      * @returns {object} Axios config
      */
     getAxiosConfigWithProxy(axiosConfig = {}) {
-        const proxyEnv = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
-        if (proxyEnv) {
+        if (process.env.NOTIFICATION_PROXY === "true") {
+            const proxyEnv = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
             const agent = new ProxyAgent(proxyEnv);
             axiosConfig.httpsAgent = agent;
             axiosConfig.httpAgent = agent;

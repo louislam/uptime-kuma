@@ -45,6 +45,7 @@ class Squadcast extends NotificationProvider {
                     }
                 });
             }
+            config = this.getAxiosConfigWithProxy(config);
 
             await axios.post(notification.squadcastWebhookURL, data, config);
             return okMsg;
