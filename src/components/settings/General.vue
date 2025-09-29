@@ -108,24 +108,6 @@
                 </div>
             </div>
 
-            <!-- Skip Pause Confirmation -->
-            <div class="mb-4">
-                <div class="form-check">
-                    <input
-                        id="skipPauseConfirm"
-                        v-model="settings.skipPauseConfirm"
-                        class="form-check-input"
-                        type="checkbox"
-                    />
-                    <label class="form-check-label" for="skipPauseConfirm">
-                        {{ $t("Skip pause confirmation") }}
-                    </label>
-                </div>
-                <div class="form-text">
-                    {{ $t("skipPauseConfirmHelp") }}
-                </div>
-            </div>
-
             <!-- Primary Base URL -->
             <div class="mb-4">
                 <label class="form-label" for="primaryBaseURL">

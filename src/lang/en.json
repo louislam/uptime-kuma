@@ -593,8 +593,6 @@
     "pauseMonitorMsg": "Are you sure want to pause?",
     "Do not show this again": "Do not show this again",
     "Pause Monitors": "Pause Monitors",
-    "Skip pause confirmation": "Skip pause confirmation",
-    "skipPauseConfirmHelp": "When enabled, monitors will be paused without showing a confirmation dialog",
     "enableDefaultNotificationDescription": "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",
     "Clear All Events": "Clear All Events",
     "clearAllEventsMsg": "Are you sure want to delete all events?",

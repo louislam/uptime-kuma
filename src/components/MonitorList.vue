@@ -64,7 +64,7 @@
         </div>
     </div>
 
-    <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
+    <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" :show-checkbox="true" @yes="pauseSelected">
         {{ $t("pauseMonitorMsg") }}
     </Confirm>
 </template>
@@ -282,18 +282,25 @@ export default {
          * @returns {void}
          */
         pauseDialog() {
-            // Check if pause confirmation is disabled in settings
-            if (this.$root.info && this.$root.info.skipPauseConfirm) {
-                this.pauseSelected();
-            } else {
-                this.$refs.confirmPause.show();
-            }
+            this.$refs.confirmPause.show();
         },
         /**
          * Pause each selected monitor
+         * @param {boolean} doNotShowAgain Whether user checked "do not show again"
          * @returns {void}
          */
-        pauseSelected() {
+        pauseSelected(doNotShowAgain = false) {
+            // If user checked "do not show again", save the setting
+            if (doNotShowAgain) {
+                this.$root.getSocket().emit("setSettings", {
+                    skipPauseConfirm: true
+                }, "", (res) => {
+                    if (res.ok && this.$root.info) {
+                        this.$root.info.skipPauseConfirm = true;
+                    }
+                });
+            }
+
             Object.keys(this.selectedMonitors)
                 .filter(id => this.$root.monitorList[id].active)
                 .forEach(id => this.$root.getSocket().emit("pauseMonitor", id, () => {}));

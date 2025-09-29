@@ -425,14 +425,15 @@
                 </div>
             </div>
 
-            <PauseConfirm
+            <Confirm
                 ref="confirmPause"
                 :yes-text="$t('Yes')"
                 :no-text="$t('No')"
+                :show-checkbox="true"
                 @yes="pauseMonitor"
             >
                 {{ $t("pauseMonitorMsg") }}
-            </PauseConfirm>
+            </Confirm>
 
             <Confirm
                 ref="confirmDelete"
@@ -472,7 +473,6 @@ import { defineAsyncComponent } from "vue";
 import { useToast } from "vue-toastification";
 const toast = useToast();
 import Confirm from "../components/Confirm.vue";
-import PauseConfirm from "../components/PauseConfirm.vue";
 import HeartbeatBar from "../components/HeartbeatBar.vue";
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
@@ -504,7 +504,6 @@ export default {
         Datetime,
         HeartbeatBar,
         Confirm,
-        PauseConfirm,
         Status,
         Pagination,
         PingChart,
@@ -707,9 +706,21 @@ export default {
 
         /**
          * Request that this monitor is paused
+         * @param {boolean} doNotShowAgain Whether user checked "do not show again"
          * @returns {void}
          */
-        pauseMonitor() {
+        pauseMonitor(doNotShowAgain = false) {
+            // If user checked "do not show again", save the setting
+            if (doNotShowAgain) {
+                this.$root.getSocket().emit("setSettings", {
+                    skipPauseConfirm: true
+                }, "", (res) => {
+                    if (res.ok && this.$root.info) {
+                        this.$root.info.skipPauseConfirm = true;
+                    }
+                });
+            }
+
             this.$root
                 .getSocket()
                 .emit("pauseMonitor", this.monitor.id, (res) => {

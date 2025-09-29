@@ -10,6 +10,17 @@
                 </div>
                 <div class="modal-body">
                     <slot />
+                    <div v-if="showCheckbox" class="form-check mt-3">
+                        <input
+                            id="doNotShowAgain"
+                            v-model="doNotShowAgain"
+                            class="form-check-input"
+                            type="checkbox"
+                        />
+                        <label class="form-check-label" for="doNotShowAgain">
+                            {{ $t("Do not show this again") }}
+                        </label>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn" :class="btnStyle" data-bs-dismiss="modal" @click="yes">
@@ -48,11 +59,17 @@ export default {
         title: {
             type: String,
             default: null,
+        },
+        /** Show "Do not show again" checkbox */
+        showCheckbox: {
+            type: Boolean,
+            default: false,
         }
     },
     emits: [ "yes", "no" ],
     data: () => ({
         modal: null,
+        doNotShowAgain: false,
     }),
     mounted() {
         this.modal = new Modal(this.$refs.modal);
@@ -63,6 +80,7 @@ export default {
          * @returns {void}
          */
         show() {
+            this.doNotShowAgain = false;
             this.modal.show();
         },
         /**
@@ -70,7 +88,7 @@ export default {
          * @returns {void}
          */
         yes() {
-            this.$emit("yes");
+            this.$emit("yes", this.doNotShowAgain);
         },
         /**
          * @fires string "no" Notify the parent when No is pressed
