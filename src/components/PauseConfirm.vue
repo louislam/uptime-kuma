@@ -11,12 +11,7 @@
                 <div class="modal-body">
                     <slot />
                     <div class="form-check mt-3">
-                        <input
-                            id="doNotShowAgain"
-                            v-model="doNotShowAgain"
-                            class="form-check-input"
-                            type="checkbox"
-                        />
+                        <input id="doNotShowAgain" v-model="doNotShowAgain" class="form-check-input" type="checkbox" />
                         <label class="form-check-label" for="doNotShowAgain">
                             {{ $t("Do not show this again") }}
                         </label>
@@ -56,7 +51,7 @@ export default {
             default: "No",
         }
     },
-    emits: [ "yes", "no" ],
+    emits: ["yes", "no"],
     data() {
         return {
             modal: null,
@@ -82,8 +77,8 @@ export default {
         yes() {
             if (this.doNotShowAgain) {
                 // Update the setting via socket
-                this.$root.getSocket().emit("setSettings", { 
-                    skipPauseConfirm: true 
+                this.$root.getSocket().emit("setSettings", {
+                    skipPauseConfirm: true
                 }, "", (res) => {
                     if (res.ok) {
                         // Update local info
