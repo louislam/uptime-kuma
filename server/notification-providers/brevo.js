@@ -18,6 +18,7 @@ class Brevo extends NotificationProvider {
                     "api-key": notification.brevoApiKey,
                 },
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let to = [{ email: notification.brevoToEmail }];
 
