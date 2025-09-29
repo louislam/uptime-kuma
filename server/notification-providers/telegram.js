@@ -1,6 +1,5 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const ProxyAgent = require("proxy-agent");
 
 class Telegram extends NotificationProvider {
     name = "telegram";
@@ -31,16 +30,7 @@ class Telegram extends NotificationProvider {
                 }
             }
 
-            // Proxy support
-            let axiosConfig = { params };
-            const proxyEnv = process.env.https_proxy || process.env.HTTPS_PROXY || process.env.http_proxy || process.env.HTTP_PROXY;
-            if (proxyEnv) {
-                // Use proxy-agent to support both http and https proxies
-                const agent = new ProxyAgent(proxyEnv);
-                axiosConfig.httpsAgent = agent;
-                axiosConfig.httpAgent = agent;
-                axiosConfig.proxy = false; // Disable axios's default proxy handling
-            }
+            let axiosConfig = this.getAxiosConfigWithProxy({params});
 
             await axios.get(`${url}/bot${notification.telegramBotToken}/sendMessage`, axiosConfig);
             return okMsg;
