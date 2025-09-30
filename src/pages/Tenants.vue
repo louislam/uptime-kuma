@@ -239,7 +239,9 @@ export default {
                 const res = await axios.get(`/api/v1/tenants/${this.currentTenantId}/users`, {
                     headers: this.authHeaders(),
                 });
-                this.tenantUsers = res.data || [];
+                // Hide global admin from tenant user list just in case server-side filter is bypassed
+                const list = Array.isArray(res.data) ? res.data : [];
+                this.tenantUsers = list.filter(u => Number(u.id) !== 1 && String(u.username).toLowerCase() !== "admin");
             } catch (e) {
                 this.error = e?.response?.data?.error || e.message || this.$t("loadingError");
             }

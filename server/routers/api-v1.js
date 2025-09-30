@@ -221,8 +221,9 @@ router.get("/tenants/:id/users", async (req, res) => {
         const userID = req.auth?.user || req.user?.id;
         const isAdmin = Number(userID) === 1 || await isTenantAdmin(userID, tenantID);
         if (!isAdmin) return res.status(403).json({ error: "Forbidden" });
+        // Do not show the global admin (id = 1) in the tenant user list
         const rows = await R.getAll(
-            "SELECT u.id, u.username, tu.role FROM tenant_user tu INNER JOIN `user` u ON u.id = tu.user_id WHERE tu.tenant_id = ? ORDER BY u.username ASC",
+            "SELECT u.id, u.username, tu.role FROM tenant_user tu INNER JOIN `user` u ON u.id = tu.user_id WHERE tu.tenant_id = ? AND u.id != 1 ORDER BY u.username ASC",
             [ tenantID ]
         );
         res.json(rows);
@@ -249,6 +250,10 @@ router.post("/tenants/:id/users", async (req, res) => {
             targetUser = await R.findOne("user", " username = ? AND active = 1 ", [ username ]);
         }
         if (!targetUser) return res.status(404).json({ error: "User not found" });
+        // Do not allow adding the global admin (id = 1) to tenant user lists
+        if (Number(targetUser.id) === 1) {
+            return res.status(400).json({ error: "Cannot add global admin to a tenant" });
+        }
 
         let rel = await R.findOne("tenant_user", " tenant_id = ? AND user_id = ? ", [ tenantID, targetUser.id ]);
         if (!rel) {
