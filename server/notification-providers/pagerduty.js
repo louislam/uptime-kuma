@@ -79,7 +79,7 @@ class PagerDuty extends NotificationProvider {
             monitorUrl = monitorInfo.url;
         }
 
-        let options = {
+        const options = {
             method: "POST",
             url: notification.pagerdutyIntegrationUrl,
             headers: { "Content-Type": "application/json" },
@@ -101,7 +101,6 @@ class PagerDuty extends NotificationProvider {
             options.client_url = baseURL + getMonitorRelativeURL(monitorInfo.id);
         }
 
-        options = this.getAxiosConfigWithProxy(options);
         let result = await axios.request(options);
         this.checkResult(result);
         if (result.statusText != null) {
