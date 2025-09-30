@@ -285,7 +285,25 @@ router.delete("/tenants/:id/users/:userId", async (req, res) => {
         }
 
         await R.trash(rel);
-        res.json({ ok: true });
+
+        // If the user is no longer a member of any tenant, deactivate their account
+        // to prevent further logins. Do not deactivate the built-in global admin (id=1).
+        let deactivated = false;
+        try {
+            const remaining = await R.getCell("SELECT COUNT(1) AS c FROM tenant_user WHERE user_id = ?", [ targetUserID ]);
+            if (Number(targetUserID) !== 1 && Number(remaining || 0) === 0) {
+                await R.exec("UPDATE `user` SET active = 0 WHERE id = ?", [ targetUserID ]);
+                // Revoke any API keys owned by this user as a safety measure
+                try {
+                    await R.exec("UPDATE api_key SET active = 0 WHERE user_id = ?", [ targetUserID ]);
+                } catch (_) { /* ignore if api_key table not present */ }
+                deactivated = true;
+            }
+        } catch (_) {
+            // ignore tenant table absence or errors, keep normal response
+        }
+
+        res.json({ ok: true, deactivated });
     } catch (err) {
         sendHttpError(res, err);
     }

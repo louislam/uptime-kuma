@@ -240,15 +240,38 @@ class UptimeKumaServer {
      */
     async getMonitorJSONList(userID, monitorID = null) {
 
-        let query = " user_id = ? ";
-        let queryParams = [ userID ];
+        // Multi-tenant: Show monitors owned by the user OR any monitor within a tenant the user is a member of.
+        // Fallback to legacy behavior if tenant tables are not available.
+        let monitorList;
+        try {
+            const tenantRows = await R.getAll("SELECT tenant_id FROM tenant_user WHERE user_id = ?", [ userID ]);
+            const tenantIDs = tenantRows.map(r => r.tenant_id).filter(id => id != null);
 
-        if (monitorID) {
-            query += "AND id = ? ";
-            queryParams.push(monitorID);
+            let where = " user_id = ? ";
+            let params = [ userID ];
+
+            if (tenantIDs.length > 0) {
+                const placeholders = tenantIDs.map(() => "?").join(",");
+                where = ` (user_id = ? OR tenant_id IN (${placeholders})) `;
+                params = [ userID, ...tenantIDs ];
+            }
+
+            if (monitorID) {
+                where += "AND id = ? ";
+                params.push(monitorID);
+            }
+
+            monitorList = await R.find("monitor", where + "ORDER BY weight DESC, name", params);
+        } catch (e) {
+            // Legacy fallback: user-owned only
+            let query = " user_id = ? ";
+            let queryParams = [ userID ];
+            if (monitorID) {
+                query += "AND id = ? ";
+                queryParams.push(monitorID);
+            }
+            monitorList = await R.find("monitor", query + "ORDER BY weight DESC, name", queryParams);
         }
-
-        let monitorList = await R.find("monitor", query + "ORDER BY weight DESC, name", queryParams);
 
         const monitorData = monitorList.map(monitor => ({
             id: monitor.id,
