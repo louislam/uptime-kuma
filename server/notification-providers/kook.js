@@ -22,6 +22,7 @@ class Kook extends NotificationProvider {
             },
         };
         try {
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(url, data, config);
             return okMsg;
 

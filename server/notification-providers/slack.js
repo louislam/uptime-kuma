@@ -131,6 +131,7 @@ class Slack extends NotificationProvider {
         }
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON == null) {
                 let data = {
                     "text": msg,
@@ -138,7 +139,7 @@ class Slack extends NotificationProvider {
                     "username": notification.slackusername,
                     "icon_emoji": notification.slackiconemo,
                 };
-                await axios.post(notification.slackwebhookURL, data);
+                await axios.post(notification.slackwebhookURL, data, config);
                 return okMsg;
             }
 
@@ -168,7 +169,7 @@ class Slack extends NotificationProvider {
                 await Slack.deprecateURL(notification.slackbutton);
             }
 
-            await axios.post(notification.slackwebhookURL, data);
+            await axios.post(notification.slackwebhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

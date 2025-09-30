@@ -25,7 +25,8 @@ class TechulusPush extends NotificationProvider {
         }
 
         try {
-            await axios.post(`https://push.techulus.com/api/v1/notify/${notification.pushAPIKey}`, data);
+            let config = this.getAxiosConfigWithProxy({});
+            await axios.post(`https://push.techulus.com/api/v1/notify/${notification.pushAPIKey}`, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
