@@ -99,6 +99,7 @@ Notification.init();
 
 log.debug("server", "Importing Database");
 const Database = require("./database");
+const { isTenantAdmin } = require("./middleware/tenant");
 
 log.debug("server", "Importing Background Jobs");
 const { initBackgroundJobs, stopBackgroundJobs } = require("./jobs");
@@ -768,6 +769,14 @@ let needSetup = false;
                     }
                 }
 
+                // Permission: only tenant admins (owner role) or global admin can add monitors within the tenant
+                if (bean.tenant_id) {
+                    const canAdd = await isTenantAdmin(socket.userID, bean.tenant_id);
+                    if (!canAdd) {
+                        throw new Error("Permission denied.");
+                    }
+                }
+
                 bean.validate();
 
                 await R.store(bean);
@@ -808,7 +817,9 @@ let needSetup = false;
 
                 let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
 
-                if (bean.user_id !== socket.userID) {
+                // Only tenant admins (owner role) or global admin can edit monitors within the tenant
+                const canEdit = await isTenantAdmin(socket.userID, bean.tenant_id);
+                if (!canEdit) {
                     throw new Error("Permission denied.");
                 }
 
@@ -1087,6 +1098,20 @@ let needSetup = false;
 
                 log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
 
+                // Fetch monitor to determine tenant and permissions
+                const bean = await R.findOne("monitor", " id = ? ", [ monitorID ]);
+                if (!bean) {
+                    throw new Error("Monitor not found");
+                }
+
+                // Permission: only tenant admins (owner role) or global admin can delete monitors within the tenant
+                if (bean.tenant_id) {
+                    const canDelete = await isTenantAdmin(socket.userID, bean.tenant_id);
+                    if (!canDelete) {
+                        throw new Error("Permission denied.");
+                    }
+                }
+
                 if (monitorID in server.monitorList) {
                     await server.monitorList[monitorID].stop();
                     delete server.monitorList[monitorID];
@@ -1094,10 +1119,18 @@ let needSetup = false;
 
                 const startTime = Date.now();
 
-                await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
-                    monitorID,
-                    socket.userID,
-                ]);
+                if (bean.tenant_id) {
+                    // Tenant admin can delete regardless of owner
+                    await R.exec("DELETE FROM monitor WHERE id = ? ", [
+                        monitorID,
+                    ]);
+                } else {
+                    // Legacy/standalone: keep owner-only deletion
+                    await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
+                        monitorID,
+                        socket.userID,
+                    ]);
+                }
 
                 // Fix #2880
                 apicache.clear();
