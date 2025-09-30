@@ -31,7 +31,7 @@
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
-                <li v-if="$root.loggedIn" class="nav-item me-2">
+                <li v-if="$root.loggedIn && $root.isGlobalAdmin" class="nav-item me-2">
                     <router-link to="/tenants" class="nav-link">
                         <font-awesome-icon icon="cog" /> {{ $t("Tenants") }}
                     </router-link>
@@ -62,7 +62,7 @@
                                 </router-link>
                             </li>
 
-                            <li>
+                            <li v-if="$root.isGlobalAdmin">
                                 <router-link to="/tenants" class="dropdown-item" :class="{ active: $route.path.includes('tenants') }">
                                     <font-awesome-icon icon="cog" /> {{ $t("Tenants") }}
                                 </router-link>

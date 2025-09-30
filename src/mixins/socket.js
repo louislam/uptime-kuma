@@ -714,6 +714,21 @@ export default {
 
     computed: {
 
+        isGlobalAdmin() {
+            try {
+                const token = this.socket?.token || this.storage()?.token;
+                if (token && token !== "autoLogin") {
+                    const payload = jwtDecode(token);
+                    const uid = payload?.uid;
+                    // Global admin heuristic: user id === 1
+                    return Number(uid) === 1;
+                }
+                return false;
+            } catch (_) {
+                return false;
+            }
+        },
+
         usernameFirstChar() {
             if (typeof this.username == "string" && this.username.length >= 1) {
                 return this.username.charAt(0).toUpperCase();

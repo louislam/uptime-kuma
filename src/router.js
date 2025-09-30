@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import jwtDecode from "jwt-decode";
 
 import EmptyLayout from "./layouts/EmptyLayout.vue";
 import Layout from "./layouts/Layout.vue";
@@ -88,6 +89,19 @@ const routes = [
                     {
                         path: "/tenants",
                         component: Tenants,
+                        beforeEnter: (to, from, next) => {
+                            try {
+                                // Prefer localStorage unless remember is disabled
+                                const token = localStorage.token || sessionStorage.token;
+                                if (token && token !== "autoLogin") {
+                                    const payload = jwtDecode(token);
+                                    if (Number(payload?.uid) === 1) {
+                                        return next();
+                                    }
+                                }
+                            } catch (_) { /* ignore */ }
+                            return next("/dashboard");
+                        }
                     },
                     {
                         path: "/settings",

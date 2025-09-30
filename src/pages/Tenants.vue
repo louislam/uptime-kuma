@@ -182,6 +182,14 @@ export default {
                 const res = await axios.get("/api/v1/tenants", { headers: this.authHeaders() });
                 this.tenants = res.data || [];
             } catch (e) {
+                if (e?.response?.status === 403 || e?.response?.status === 401) {
+                    // Not allowed to access tenants, redirect to dashboard
+                    try {
+                        this.$router.push("/dashboard");
+                    } catch (_) {
+                        /* ignore */
+                    }
+                }
                 this.error = e?.response?.data?.error || e.message || this.$t("loadingError");
             } finally {
                 this.loading = false;
@@ -258,11 +266,20 @@ export default {
             }
         },
         async addExistingUser() {
-            if (!this.currentTenantId || !this.addExisting.username) return;
+            if (!this.currentTenantId || !this.addExisting.username) {
+                return;
+            }
             this.loading = true;
             this.error = "";
             try {
-                const res = await axios.post(`/api/v1/tenants/${this.currentTenantId}/users`, { username: this.addExisting.username, role: this.addExisting.role }, { headers: this.authHeaders() });
+                const res = await axios.post(
+                    `/api/v1/tenants/${this.currentTenantId}/users`,
+                    {
+                        username: this.addExisting.username,
+                        role: this.addExisting.role,
+                    },
+                    { headers: this.authHeaders() }
+                );
                 const idx = this.tenantUsers.findIndex(u => u.id === res.data.id);
                 if (idx === -1) {
                     this.tenantUsers.push(res.data);
@@ -278,7 +295,9 @@ export default {
             }
         },
         async createTenantUser() {
-            if (!this.currentTenantId) return;
+            if (!this.currentTenantId) {
+                return;
+            }
             if (!this.createUser.username || !this.createUser.password || this.createUser.password !== this.createUser.repeat) {
                 this.error = this.$t("passwordNotMatchMsg");
                 return;
@@ -286,7 +305,15 @@ export default {
             this.loading = true;
             this.error = "";
             try {
-                const res = await axios.post(`/api/v1/tenants/${this.currentTenantId}/users/create`, { username: this.createUser.username, password: this.createUser.password, role: this.createUser.role }, { headers: this.authHeaders() });
+                const res = await axios.post(
+                    `/api/v1/tenants/${this.currentTenantId}/users/create`,
+                    {
+                        username: this.createUser.username,
+                        password: this.createUser.password,
+                        role: this.createUser.role,
+                    },
+                    { headers: this.authHeaders() }
+                );
                 this.tenantUsers.push(res.data);
                 this.createUser.username = "";
                 this.createUser.password = "";
@@ -299,8 +326,12 @@ export default {
             }
         },
         async removeTenantUser(u) {
-            if (!this.currentTenantId || !u) return;
-            if (!confirm(this.$t("removeUserFromTenantMsg", [ u.username ]))) return;
+            if (!this.currentTenantId || !u) {
+                return;
+            }
+            if (!confirm(this.$t("removeUserFromTenantMsg", [ u.username ]))) {
+                return;
+            }
             this.loading = true;
             this.error = "";
             try {
