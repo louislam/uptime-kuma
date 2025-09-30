@@ -10,17 +10,6 @@
                 </div>
                 <div class="modal-body">
                     <slot />
-                    <div v-if="showCheckbox" class="form-check mt-3">
-                        <input
-                            id="doNotShowAgain"
-                            v-model="doNotShowAgain"
-                            class="form-check-input"
-                            type="checkbox"
-                        />
-                        <label class="form-check-label" for="doNotShowAgain">
-                            {{ $t("Do not show this again") }}
-                        </label>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn" :class="btnStyle" data-bs-dismiss="modal" @click="yes">
