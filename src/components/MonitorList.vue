@@ -64,20 +64,26 @@
         </div>
     </div>
 
-    <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" :show-checkbox="true" @yes="pauseSelected">
+    <ConfirmWithDoNotShowAgain
+        ref="confirmPause"
+        :settings-key="'skipPauseConfirm'"
+        :yes-text="$t('Yes')"
+        :no-text="$t('No')"
+        @yes="pauseSelected"
+    >
         {{ $t("pauseMonitorMsg") }}
-    </Confirm>
+    </ConfirmWithDoNotShowAgain>
 </template>
 
 <script>
-import Confirm from "../components/Confirm.vue";
+import ConfirmWithDoNotShowAgain from "../components/ConfirmWithDoNotShowAgain.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
     components: {
-        Confirm,
+        ConfirmWithDoNotShowAgain,
         MonitorListItem,
         MonitorListFilter,
     },
@@ -290,17 +296,6 @@ export default {
          * @returns {void}
          */
         pauseSelected(doNotShowAgain = false) {
-            // If user checked "do not show again", save the setting
-            if (doNotShowAgain) {
-                this.$root.getSocket().emit("setSettings", {
-                    skipPauseConfirm: true
-                }, "", (res) => {
-                    if (res.ok && this.$root.info) {
-                        this.$root.info.skipPauseConfirm = true;
-                    }
-                });
-            }
-
             Object.keys(this.selectedMonitors)
                 .filter(id => this.$root.monitorList[id].active)
                 .forEach(id => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
