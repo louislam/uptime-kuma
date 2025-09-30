@@ -1152,5 +1152,10 @@
     "Staged Tags for Batch Add": "Staged Tags for Batch Add",
     "Clear Form": "Clear Form",
     "pause": "Pause",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "Tenants": "Tenants",
+    "Create Tenant": "Create Tenant",
+    "Tenant Name": "Tenant Name",
+    "No tenants found": "No tenants found.",
+    "deleteTenantMsg": "Are you sure want to delete this tenant?"
 }

@@ -194,3 +194,38 @@ Feel free to correct the grammar in the documentation or code.
 My mother language is not English and my grammar is not that great.
 
 
+
+
+## Multi-Tenancy (Experimental)
+
+This fork introduces experimental multi-tenant support with a new REST API namespace.
+
+- Each tenant (organization) has isolated monitors, heartbeats, status pages, notifications, and API keys.
+- A new tenants table and a tenant_user mapping are added via Knex migrations.
+- A default tenant (slug: "default") is created automatically during migration to preserve backward compatibility.
+
+API Endpoints (under /api/v1):
+- GET /api/v1/tenants — List tenants accessible to the authenticated user
+- POST /api/v1/tenants — Create a new tenant (global admin only; user id=1)
+- GET /api/v1/tenants/:id — Get a tenant by id (must be a member/owner or global admin)
+- PUT /api/v1/tenants/:id — Update a tenant (owner/global admin)
+- DELETE /api/v1/tenants/:id — Delete a tenant (owner/global admin)
+- GET /api/v1/openapi.json — Minimal OpenAPI document for these endpoints
+
+Authentication:
+- Uses existing API authentication (basic auth or API keys) controlled by Settings.
+
+Tenant Selection:
+- Use header X-Tenant-Slug: <slug> (preferred)
+- Or header X-Tenant-Id: <id>
+- Or query string ?tenantSlug=<slug>
+
+Environment variables:
+- DEFAULT_TENANT_SLUG (optional; default is "default")
+
+Upgrade Notes:
+- Existing installs are migrated to a single default tenant and all existing users are mapped to it. The first user (id=1) becomes the tenant owner.
+
+Security:
+- Only tenant owners or the global admin (user id=1) can create/update/delete tenants.
+- All core tables now include a tenant_id column for isolation.

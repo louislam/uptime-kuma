@@ -31,6 +31,11 @@
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
+                <li v-if="$root.loggedIn" class="nav-item me-2">
+                    <router-link to="/tenants" class="nav-link">
+                        <font-awesome-icon icon="cog" /> {{ $t("Tenants") }}
+                    </router-link>
+                </li>
                 <li v-if="$root.loggedIn" class="nav-item">
                     <div class="dropdown dropdown-profile-pic">
                         <div class="nav-link" data-bs-toggle="dropdown">
@@ -54,6 +59,12 @@
                             <li>
                                 <router-link to="/maintenance" class="dropdown-item" :class="{ active: $route.path.includes('manage-maintenance') }">
                                     <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
+                                </router-link>
+                            </li>
+
+                            <li>
+                                <router-link to="/tenants" class="dropdown-item" :class="{ active: $route.path.includes('tenants') }">
+                                    <font-awesome-icon icon="cog" /> {{ $t("Tenants") }}
                                 </router-link>
                             </li>
 

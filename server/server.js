@@ -153,6 +153,26 @@ const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler")
 
 app.use(express.json());
 
+// Development CORS preflight handler for cross-origin requests from Vite dev server
+if (process.env.NODE_ENV === "development") {
+    app.use((req, res, next) => {
+        // Always set permissive CORS headers in development
+        allowDevAllOrigin(res);
+
+        if (req.method === "OPTIONS") {
+            // Allow common headers including Authorization and custom tokens
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Uptime-Kuma-Token");
+            // Support Chrome Private Network Access preflight when applicable
+            if (req.headers["access-control-request-private-network"] === "true") {
+                res.header("Access-Control-Allow-Private-Network", "true");
+            }
+            res.header("Access-Control-Max-Age", "600");
+            return res.sendStatus(204);
+        }
+        next();
+    });
+}
+
 // Global Middleware
 app.use(function (req, res, next) {
     if (!disableFrameSameOrigin) {
@@ -308,6 +328,12 @@ let needSetup = false;
     // API Router
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
+
+    // REST API v1 Router (Tenants CRUD)
+    // Require the new /api/v1 router that exposes tenant management endpoints
+    const apiV1Router = require("./routers/api-v1");
+    // Mount it under /api/v1 path prefix
+    app.use("/api/v1", apiV1Router);
 
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");
@@ -733,6 +759,14 @@ let needSetup = false;
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
+
+                // Multi-tenant: ensure tenant_id is set to avoid NOT NULL constraint failures
+                if (!bean.tenant_id) {
+                    const resolvedTenantId = await resolveTenantIdForUser(socket.userID);
+                    if (resolvedTenantId) {
+                        bean.tenant_id = resolvedTenantId;
+                    }
+                }
 
                 bean.validate();
 
@@ -1722,6 +1756,48 @@ async function afterLogin(socket, user) {
     if (! await Settings.get("initServerTimezone")) {
         log.debug("server", "emit initServerTimezone");
         socket.emit("initServerTimezone");
+    }
+}
+
+// Tenant helper: resolve default tenant id (cached)
+let defaultTenantIdCache = null;
+async function getDefaultTenantId() {
+    try {
+        if (defaultTenantIdCache) {
+            return defaultTenantIdCache;
+        }
+        const tenant = await R.findOne("tenant", " slug = ? ", [ "default" ]);
+        defaultTenantIdCache = tenant ? tenant.id : null;
+        return defaultTenantIdCache;
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Resolve a tenant id to assign to new records for a given user.
+ * Priority:
+ *  1. Default tenant if the user is a member.
+ *  2. First tenant the user is a member of.
+ *  3. Default tenant id (even if not a member), if exists.
+ *  4. null if none found.
+ */
+async function resolveTenantIdForUser(userID) {
+    try {
+        const defaultTenantId = await getDefaultTenantId();
+        if (defaultTenantId) {
+            const rel = await R.findOne("tenant_user", " user_id = ? AND tenant_id = ? ", [ userID, defaultTenantId ]);
+            if (rel) {
+                return defaultTenantId;
+            }
+        }
+        const anyRel = await R.findOne("tenant_user", " user_id = ? ORDER BY id ASC ", [ userID ]);
+        if (anyRel) {
+            return anyRel.tenant_id;
+        }
+        return defaultTenantId || null;
+    } catch (e) {
+        return await getDefaultTenantId();
     }
 }
 

@@ -4,6 +4,7 @@ import EmptyLayout from "./layouts/EmptyLayout.vue";
 import Layout from "./layouts/Layout.vue";
 import Dashboard from "./pages/Dashboard.vue";
 import DashboardHome from "./pages/DashboardHome.vue";
+import Tenants from "./pages/Tenants.vue";
 import Details from "./pages/Details.vue";
 import EditMonitor from "./pages/EditMonitor.vue";
 import EditMaintenance from "./pages/EditMaintenance.vue";
@@ -83,6 +84,10 @@ const routes = [
                     {
                         path: "/list",
                         component: List,
+                    },
+                    {
+                        path: "/tenants",
+                        component: Tenants,
                     },
                     {
                         path: "/settings",

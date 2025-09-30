@@ -383,6 +383,8 @@ class Monitor extends BeanModel {
 
             let bean = R.dispense("heartbeat");
             bean.monitor_id = this.id;
+            // Multi-tenant: carry over tenant_id from monitor to heartbeat
+            bean.tenant_id = this.tenant_id;
             bean.time = R.isoDateTimeMillis(dayjs.utc());
             bean.status = DOWN;
             bean.downCount = previousBeat?.downCount || 0;
