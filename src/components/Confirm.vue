@@ -48,17 +48,11 @@ export default {
         title: {
             type: String,
             default: null,
-        },
-        /** Show "Do not show again" checkbox */
-        showCheckbox: {
-            type: Boolean,
-            default: false,
         }
     },
     emits: [ "yes", "no" ],
     data: () => ({
         modal: null,
-        doNotShowAgain: false,
     }),
     mounted() {
         this.modal = new Modal(this.$refs.modal);
@@ -69,7 +63,6 @@ export default {
          * @returns {void}
          */
         show() {
-            this.doNotShowAgain = false;
             this.modal.show();
         },
         /**
@@ -77,7 +70,7 @@ export default {
          * @returns {void}
          */
         yes() {
-            this.$emit("yes", this.doNotShowAgain);
+            this.$emit("yes");
         },
         /**
          * @fires string "no" Notify the parent when No is pressed
