@@ -244,16 +244,41 @@ class UptimeKumaServer {
         // Fallback to legacy behavior if tenant tables are not available.
         let monitorList;
         try {
-            const tenantRows = await R.getAll("SELECT tenant_id FROM tenant_user WHERE user_id = ?", [ userID ]);
-            const tenantIDs = tenantRows.map(r => r.tenant_id).filter(id => id != null);
+            // Resolve a single active tenant for non-admin users to ensure per-tenant dashboard separation
+            let activeTenantId = null;
+
+            // Global admin can see all monitors; non-admins are limited to a single tenant context
+            const isAdmin = Number(userID) === 1;
+
+            if (!isAdmin) {
+                // 1) Prefer default tenant if user is a member
+                const defaultTenant = await R.findOne("tenant", " slug = ? ", [ "default" ]);
+                if (defaultTenant) {
+                    const defaultRel = await R.findOne("tenant_user", " user_id = ? AND tenant_id = ? ", [ userID, defaultTenant.id ]);
+                    if (defaultRel) {
+                        activeTenantId = defaultTenant.id;
+                    }
+                }
+                // 2) Otherwise, pick the first tenant membership
+                if (!activeTenantId) {
+                    const anyRel = await R.findOne("tenant_user", " user_id = ? ORDER BY id ASC ", [ userID ]);
+                    if (anyRel) {
+                        activeTenantId = anyRel.tenant_id;
+                    }
+                }
+            }
 
             let where = " user_id = ? ";
             let params = [ userID ];
 
-            if (tenantIDs.length > 0) {
-                const placeholders = tenantIDs.map(() => "?").join(",");
-                where = ` (user_id = ? OR tenant_id IN (${placeholders})) `;
-                params = [ userID, ...tenantIDs ];
+            if (!isAdmin && activeTenantId) {
+                where = " (user_id = ? OR tenant_id = ?) ";
+                params = [ userID, activeTenantId ];
+            }
+
+            // Hide monitors created by global admin (user_id = 1) from non-admin users
+            if (!isAdmin) {
+                where += "AND user_id <> 1 ";
             }
 
             if (monitorID) {
@@ -266,6 +291,9 @@ class UptimeKumaServer {
             // Legacy fallback: user-owned only
             let query = " user_id = ? ";
             let queryParams = [ userID ];
+            if (Number(userID) !== 1) {
+                query += "AND user_id <> 1 ";
+            }
             if (monitorID) {
                 query += "AND id = ? ";
                 queryParams.push(monitorID);

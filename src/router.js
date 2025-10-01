@@ -90,17 +90,8 @@ const routes = [
                         path: "/tenants",
                         component: Tenants,
                         beforeEnter: (to, from, next) => {
-                            try {
-                                // Prefer localStorage unless remember is disabled
-                                const token = localStorage.token || sessionStorage.token;
-                                if (token && token !== "autoLogin") {
-                                    const payload = jwtDecode(token);
-                                    if (Number(payload?.uid) === 1) {
-                                        return next();
-                                    }
-                                }
-                            } catch (_) { /* ignore */ }
-                            return next("/dashboard");
+                            // Allow navigation; permissions are enforced server-side and Tenants.vue will handle unauthorized redirects
+                            return next();
                         }
                     },
                     {

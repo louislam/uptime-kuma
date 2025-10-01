@@ -31,7 +31,7 @@
                         <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
                     </router-link>
                 </li>
-                <li v-if="$root.loggedIn && $root.isGlobalAdmin" class="nav-item me-2">
+                <li v-if="$root.loggedIn && ($root.isGlobalAdmin || canManageTenants)" class="nav-item me-2">
                     <router-link to="/tenants" class="nav-link">
                         <font-awesome-icon icon="cog" /> {{ $t("Tenants") }}
                     </router-link>
@@ -62,7 +62,7 @@
                                 </router-link>
                             </li>
 
-                            <li v-if="$root.isGlobalAdmin">
+                            <li v-if="$root.isGlobalAdmin || canManageTenants">
                                 <router-link to="/tenants" class="dropdown-item" :class="{ active: $route.path.includes('tenants') }">
                                     <font-awesome-icon icon="cog" /> {{ $t("Tenants") }}
                                 </router-link>
@@ -143,6 +143,7 @@
 <script>
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
+import axios from "axios";
 import { useToast } from "vue-toastification";
 const toast = useToast();
 
@@ -157,6 +158,7 @@ export default {
             toastContainer: null,
             numActiveToasts: 0,
             toastContainerObserver: null,
+            canManageTenants: false,
         };
     },
 
@@ -181,7 +183,13 @@ export default {
     },
 
     watch: {
-
+        "$root.loggedIn"(val) {
+            if (val) {
+                this.refreshTenantsAccess();
+            } else {
+                this.canManageTenants = false;
+            }
+        }
     },
 
     mounted() {
@@ -199,6 +207,7 @@ export default {
         if (this.toastContainer != null) {
             this.toastContainerObserver.observe(this.toastContainer, { childList: true });
         }
+        this.refreshTenantsAccess();
     },
 
     beforeUnmount() {
@@ -206,6 +215,31 @@ export default {
     },
 
     methods: {
+        authHeaders() {
+            try {
+                const token = this.$root?.storage()?.token;
+                if (token && token !== "autoLogin") {
+                    return { Authorization: `Bearer ${token}` };
+                }
+            } catch (e) { /* ignore */ }
+            return {};
+        },
+        async refreshTenantsAccess() {
+            if (!this.$root.loggedIn) {
+                this.canManageTenants = false;
+                return;
+            }
+            if (this.$root.isGlobalAdmin) {
+                this.canManageTenants = true;
+                return;
+            }
+            try {
+                const res = await axios.get("/api/v1/tenants/capabilities", { headers: this.authHeaders() });
+                this.canManageTenants = !!res?.data?.canManageTenants;
+            } catch (e) {
+                this.canManageTenants = false;
+            }
+        },
         /**
          * Clear all toast notifications.
          * @returns {void}

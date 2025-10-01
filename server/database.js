@@ -61,6 +61,13 @@ class Database {
     static patched = false;
 
     /**
+     * Indicates migrations were already applied during early ensureSchemaOrMigrate()
+     * to avoid running them twice in the same startup
+     * @type {boolean}
+     */
+    static _autoMigrated = false;
+
+    /**
      * SQLite only
      * Add patch filename in key
      * Values:
@@ -344,6 +351,9 @@ class Database {
         } else if (dbConfig.type.endsWith("mariadb")) {
             await this.initMariaDB();
         }
+
+        // Ensure schema integrity early: if any critical tables are missing, trigger migrations now
+        await this.ensureSchemaOrMigrate();
     }
 
     /**
@@ -393,12 +403,87 @@ class Database {
     }
 
     /**
+     * Ensure critical tables exist; if any are missing, automatically run knex migrations
+     * This provides self-healing when the data folder is recreated or the schema is partially initialized
+     * @returns {Promise<void>}
+     */
+    static async ensureSchemaOrMigrate() {
+        try {
+            // Check a small set of critical tables. If any are missing, we will run migrations.
+            const criticalTables = [
+                "user",           // always expected
+                "monitor",        // always expected
+                "heartbeat",      // always expected
+                "tenant",         // new multi-tenant feature
+                "tenant_user",    // new multi-tenant feature
+            ];
+
+            const missing = [];
+            for (const t of criticalTables) {
+                try {
+                    const exists = await R.hasTable(t);
+                    if (!exists) missing.push(t);
+                } catch (e) {
+                    // If the check itself fails, assume missing
+                    missing.push(t);
+                }
+            }
+
+            if (missing.length > 0) {
+                log.warn("db", `Detected missing tables: ${missing.join(", ")}. Running database migrations to reconcile schema...`);
+
+                // Disable foreign key checks for SQLite during migration
+                const isSQLite = Database.dbConfig.type === "sqlite";
+                if (isSQLite) {
+                    await R.exec("PRAGMA foreign_keys = OFF");
+                }
+
+                // For SQLite, ensure old patch-based schema (including status_page) exists before knex migrations
+                if (isSQLite) {
+                    try {
+                        await this.patchSqlite();
+                    } catch (e) {
+                        // Log and continue; some environments may already have base schema
+                        log.warn("db", "patchSqlite() during auto-migration encountered an issue: " + e.message);
+                    }
+                }
+
+                await R.knex.migrate.latest({
+                    directory: Database.knexMigrationsPath,
+                });
+
+                // Re-enable foreign key checks for SQLite
+                if (isSQLite) {
+                    await R.exec("PRAGMA foreign_keys = ON");
+                }
+
+                // Mark that we already applied migrations at startup
+                Database._autoMigrated = true;
+
+                log.info("db", "Database migrations completed due to missing tables detection.");
+            } else {
+                log.debug("db", "Schema check passed: all critical tables are present.");
+            }
+        } catch (e) {
+            log.error("db", "Auto-migration check failed: " + e.message);
+            throw e;
+        }
+    }
+
+    /**
      * Patch the database
      * @param {number} port Start the migration server for aggregate tables on this port if provided
      * @param {string} hostname Start the migration server for aggregate tables on this hostname if provided
      * @returns {Promise<void>}
      */
     static async patch(port = undefined, hostname = undefined) {
+        // If migrations already applied during early auto-migration, skip re-running them
+        if (Database._autoMigrated) {
+            log.debug("db", "Skipping patch(): migrations already applied during startup pre-check.");
+            await this.migrateAggregateTable(port, hostname);
+            return;
+        }
+
         // Still need to keep this for old versions of Uptime Kuma
         if (Database.dbConfig.type === "sqlite") {
             await this.patchSqlite();

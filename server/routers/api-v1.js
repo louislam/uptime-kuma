@@ -134,6 +134,23 @@ router.post("/tenants", async (req, res) => {
 });
 
 // List tenants the user can access; if global admin, list all
+// Capability: whether current user can manage tenants (global admin or owner of any tenant)
+router.get("/tenants/capabilities", async (req, res) => {
+    try {
+        const userID = req.auth?.user || req.user?.id;
+        if (!userID) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        if (Number(userID) === 1) {
+            return res.json({ canManageTenants: true });
+        }
+        const rel = await R.findOne("tenant_user", " user_id = ? AND role = 'owner' ", [ userID ]);
+        return res.json({ canManageTenants: !!rel });
+    } catch (err) {
+        sendHttpError(res, err);
+    }
+});
+
 router.get("/tenants", async (req, res) => {
     try {
         const userID = req.auth?.user || req.user?.id;
