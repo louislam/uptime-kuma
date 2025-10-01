@@ -1152,5 +1152,19 @@
     "Staged Tags for Batch Add": "Staged Tags for Batch Add",
     "Clear Form": "Clear Form",
     "pause": "Pause",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "Custom Range": "Custom Range",
+    "Yesterday": "Yesterday",
+    "This Week": "This Week",
+    "Last Week": "Last Week",
+    "Duration": "Duration",
+    "Quick Ranges": "Quick Ranges",
+    "Last 5 minutes": "Last 5 minutes",
+    "Last 1 hour": "Last 1 hour",
+    "Last 24 hours": "Last 24 hours",
+    "Last 7 days": "Last 7 days",
+    "Last 30 days": "Last 30 days",
+    "Total Checks": "Total Checks",
+    "Uptime Statistics": "Uptime Statistics",
+    "Loading": "Loading"
 }
