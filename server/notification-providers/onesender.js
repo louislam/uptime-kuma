@@ -33,6 +33,7 @@ class Onesender extends NotificationProvider {
                     "Authorization": "Bearer " + notification.onesenderToken,
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(notification.onesenderURL, data, config);
             return okMsg;
 

@@ -18,6 +18,7 @@ class SMSC extends NotificationProvider {
                     "Accept": "text/json",
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let getArray = [
                 "fmt=3",

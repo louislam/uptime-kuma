@@ -69,10 +69,12 @@ import SpugPush from "./SpugPush.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
 import WAHA from "./WAHA.vue";
+import Evolution from "./Evolution.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
+import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 
@@ -150,12 +152,14 @@ const NotificationFormList = {
     "ZohoCliq": ZohoCliq,
     "SevenIO": SevenIO,
     "whapi": Whapi,
+    "evolution": Evolution,
     "notifery": Notifery,
     "waha": WAHA,
     "gtxmessaging": GtxMessaging,
     "Cellsynt": Cellsynt,
     "WPush": WPush,
     "SendGrid": SendGrid,
+    "Brevo": Brevo,
     "YZJ": YZJ,
     "SMSPlanet": SMSPlanet,
 };

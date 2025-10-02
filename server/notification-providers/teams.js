@@ -185,7 +185,8 @@ class Teams extends NotificationProvider {
      * @returns {Promise<void>}
      */
     _sendNotification = async (webhookUrl, payload) => {
-        await axios.post(webhookUrl, payload);
+        let config = this.getAxiosConfigWithProxy({});
+        await axios.post(webhookUrl, payload, config);
     };
 
     /**

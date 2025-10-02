@@ -21,11 +21,12 @@ class SIGNL4 extends NotificationProvider {
                 monitorUrl: this.extractAddress(monitorJSON),
             };
 
-            const config = {
+            let config = {
                 headers: {
                     "Content-Type": "application/json"
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             if (heartbeatJSON == null) {
                 // Test alert

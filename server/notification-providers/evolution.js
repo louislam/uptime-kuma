@@ -1,8 +1,8 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
-class WAHA extends NotificationProvider {
-    name = "waha";
+class Evolution extends NotificationProvider {
+    name = "evolution";
 
     /**
      * @inheritdoc
@@ -15,18 +15,17 @@ class WAHA extends NotificationProvider {
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
-                    "X-Api-Key": notification.wahaApiKey,
+                    "apikey": notification.evolutionAuthToken,
                 }
             };
             config = this.getAxiosConfigWithProxy(config);
 
             let data = {
-                "session": notification.wahaSession,
-                "chatId": notification.wahaChatId,
+                "number": notification.evolutionRecipient,
                 "text": msg,
             };
 
-            let url = notification.wahaApiUrl.replace(/([^/])\/+$/, "$1") + "/api/sendText";
+            let url = (notification.evolutionApiUrl || "https://evolapicloud.com/").replace(/([^/])\/+$/, "$1") + "/message/sendText/" + encodeURIComponent(notification.evolutionInstanceName);
 
             await axios.post(url, data, config);
 
@@ -38,4 +37,4 @@ class WAHA extends NotificationProvider {
 
 }
 
-module.exports = WAHA;
+module.exports = Evolution;
