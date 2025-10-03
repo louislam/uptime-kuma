@@ -339,7 +339,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :heartbeat-bar-days="config.heartbeatBarDays" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :heartbeat-bar-days="config.heartbeatBarDays || 0" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -447,7 +447,9 @@ export default {
             enableEditMode: false,
             enableEditIncidentMode: false,
             hasToken: false,
-            config: {},
+            config: {
+                heartbeatBarDays: 0
+            },
             selectedMonitor: null,
             incident: null,
             previousIncident: null,
