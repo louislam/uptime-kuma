@@ -344,6 +344,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                     statusPageID
                 ]);
 
+                apicache.clear();
+
             } else {
                 throw new Error("Status Page is not found");
             }

@@ -2,6 +2,7 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { setSettings, setting } = require("../util-server");
 const { getMonitorRelativeURL, UP, log } = require("../../src/util");
+const isUrl = require("is-url");
 
 class Slack extends NotificationProvider {
     name = "slack";
@@ -49,7 +50,7 @@ class Slack extends NotificationProvider {
         }
 
         const address = this.extractAddress(monitorJSON);
-        if (address) {
+        if (isUrl(address)) {
             try {
                 actions.push({
                     "type": "button",
@@ -130,6 +131,7 @@ class Slack extends NotificationProvider {
         }
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON == null) {
                 let data = {
                     "text": msg,
@@ -137,7 +139,7 @@ class Slack extends NotificationProvider {
                     "username": notification.slackusername,
                     "icon_emoji": notification.slackiconemo,
                 };
-                await axios.post(notification.slackwebhookURL, data);
+                await axios.post(notification.slackwebhookURL, data, config);
                 return okMsg;
             }
 
@@ -167,7 +169,7 @@ class Slack extends NotificationProvider {
                 await Slack.deprecateURL(notification.slackbutton);
             }
 
-            await axios.post(notification.slackwebhookURL, data);
+            await axios.post(notification.slackwebhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

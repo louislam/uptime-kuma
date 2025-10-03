@@ -41,6 +41,7 @@ class Webhook extends NotificationProvider {
                 }
             }
 
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(notification.webhookURL, data, config);
             return okMsg;
 

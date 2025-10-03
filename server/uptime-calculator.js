@@ -582,7 +582,7 @@ class UptimeCalculator {
         let totalPing = 0;
         let endTimestamp;
 
-        // Get the eariest timestamp of the required period based on the type
+        // Get the earliest timestamp of the required period based on the type
         switch (type) {
             case "day":
                 endTimestamp = key - 86400 * (num - 1);
@@ -710,7 +710,7 @@ class UptimeCalculator {
 
         let endTimestamp;
 
-        // Get the eariest timestamp of the required period based on the type
+        // Get the earliest timestamp of the required period based on the type
         switch (type) {
             case "day":
                 endTimestamp = key - 86400 * (num - 1);

@@ -22,6 +22,8 @@ class Ntfy extends NotificationProvider {
                     "Authorization": "Bearer " + notification.ntfyaccesstoken,
                 };
             }
+            let config = { headers };
+            config = this.getAxiosConfigWithProxy(config);
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
             if (heartbeatJSON == null) {
                 let ntfyTestData = {
@@ -31,7 +33,7 @@ class Ntfy extends NotificationProvider {
                     "priority": notification.ntfyPriority,
                     "tags": [ "test_tube" ],
                 };
-                await axios.post(notification.ntfyserverurl, ntfyTestData, { headers: headers });
+                await axios.post(notification.ntfyserverurl, ntfyTestData, config);
                 return okMsg;
             }
             let tags = [];
@@ -70,7 +72,7 @@ class Ntfy extends NotificationProvider {
                 data.icon = notification.ntfyIcon;
             }
 
-            await axios.post(notification.ntfyserverurl, data, { headers: headers });
+            await axios.post(notification.ntfyserverurl, data, config);
 
             return okMsg;
 

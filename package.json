@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "2.0.0-beta.3",
+    "version": "2.0.0-beta.4",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -57,14 +57,15 @@
         "release-nightly": "node ./extra/release/nightly.mjs",
         "git-remove-tag": "git tag -d",
         "build-dist-and-restart": "npm run build && npm run start-server-dev",
-        "start-pr-test": "node extra/checkout-pr.js && npm install && npm run dev",
+        "start-pr-test": "node extra/checkout-pr.mjs && npm install && npm run dev",
         "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go",
         "deploy-demo-server": "node extra/deploy-demo-server.js",
         "sort-contributors": "node extra/sort-contributors.js",
         "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly2",
         "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
         "rebase-pr-to-1.23.X": "node extra/rebase-pr.js 1.23.X",
-        "reset-migrate-aggregate-table-state": "node extra/reset-migrate-aggregate-table-state.js"
+        "reset-migrate-aggregate-table-state": "node extra/reset-migrate-aggregate-table-state.js",
+        "generate-changelog": "node ./extra/generate-changelog.mjs"
     },
     "dependencies": {
         "@grpc/grpc-js": "~1.8.22",
@@ -99,6 +100,7 @@
         "http-proxy-agent": "~7.0.2",
         "https-proxy-agent": "~7.0.6",
         "iconv-lite": "~0.6.3",
+        "is-url": "^1.2.4",
         "isomorphic-ws": "^5.0.0",
         "jsesc": "~3.0.2",
         "jsonata": "^2.0.3",
@@ -137,6 +139,7 @@
         "socket.io": "~4.8.0",
         "socket.io-client": "~4.8.0",
         "socks-proxy-agent": "~8.0.5",
+        "sqlstring": "~2.3.3",
         "tar": "~6.2.1",
         "tcp-ping": "~0.1.1",
         "thirty-two": "~1.0.2",
