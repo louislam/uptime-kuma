@@ -591,6 +591,8 @@
     "resolverserverDescription": "Cloudflare is the default server. You can change the resolver server anytime.",
     "rrtypeDescription": "Select the RR type you want to monitor",
     "pauseMonitorMsg": "Are you sure want to pause?",
+    "Do not show this again": "Do not show this again",
+    "Pause Monitors": "Pause Monitors",
     "enableDefaultNotificationDescription": "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",
     "Clear All Events": "Clear All Events",
     "clearAllEventsMsg": "Are you sure want to delete all events?",
