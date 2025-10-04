@@ -1165,5 +1165,8 @@
     "No monitors found": "No se encontraron monitores.",
     "Could not clear events": "No se pudieron limpiar {failed}/{total} eventos",
     "smseagleGroupV2": "ID(s) de grupo(s) de Guía Telefónica",
-    "mqttWebsocketPathExplanation": "Ruta del WebSocker para MQTT sobre conexion WebSocker (ejemplo, /mqtt)"
+    "mqttWebsocketPathExplanation": "Ruta del WebSocker para MQTT sobre conexion WebSocker (ejemplo, /mqtt)",
+    "OAuth Audience": "Audiencia OAuth",
+    "Template plain text instead of using cards": "Plantilla de texto plano en vez de utilizar tarjetas",
+    "issueWithGoogleChatOnAndroidHelptext": "Esto también permite evitar errores anteriores como {issuetackerURL}"
 }
