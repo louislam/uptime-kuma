@@ -649,39 +649,21 @@ $shadow-box-padding: 20px;
 // Localization
 
 @import "localization.scss";
-/* Fix mobile overflow issue (#5978) */
+/* Fix mobile overflow issue (#5977) */
 @media (max-width: 480px) {
   .btn {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.9rem;
-    max-width: 100%;
-    white-space: normal;
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.85rem !important;
+    max-width: 100% !important;
+    white-space: normal !important;
     box-sizing: border-box;
   }
 
-  .monitor-actions,
+  .button-container,
   .btn-group,
-  .button-container {
+  .monitor-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-}
-/* Fix mobile overflow issue (#5978) */
-@media (max-width: 480px) {
-  .btn {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.9rem;
-    max-width: 100%;
-    white-space: normal;
-    box-sizing: border-box;
-  }
-
-  .monitor-actions,
-  .btn-group,
-  .button-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 }
