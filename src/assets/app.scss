@@ -649,7 +649,6 @@ $shadow-box-padding: 20px;
 // Localization
 
 @import "localization.scss";
-/* Fix mobile overflow issue (#5977) */
 @media (max-width: 480px) {
   .btn {
     padding: 0.4rem 0.8rem !important;
