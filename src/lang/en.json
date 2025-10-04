@@ -1152,5 +1152,11 @@
     "Staged Tags for Batch Add": "Staged Tags for Batch Add",
     "Clear Form": "Clear Form",
     "pause": "Pause",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "Nextcloud host": "Nextcloud host",
+    "Conversation token": "Conversation token",
+    "Bot secret": "Bot secret",
+    "Send UP silently": "Send UP silently",
+    "Send DOWN silently": "Send DOWN silently",
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Installing a Nextcloud Talk bot requires administrative access to the server."
 }
