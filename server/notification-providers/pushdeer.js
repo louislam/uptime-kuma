@@ -33,7 +33,8 @@ class PushDeer extends NotificationProvider {
         };
 
         try {
-            let res = await axios.post(url, data);
+            let config = this.getAxiosConfigWithProxy({});
+            let res = await axios.post(url, data, config);
 
             if ("error" in res.data) {
                 let error = res.data.error;

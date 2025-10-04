@@ -42,7 +42,8 @@ class Notifery extends NotificationProvider {
                 "x-api-key": notification.notiferyApiKey,
             };
 
-            await axios.post(url, data, { headers });
+            let config = this.getAxiosConfigWithProxy({ headers });
+            await axios.post(url, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

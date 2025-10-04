@@ -11,13 +11,14 @@ class Evolution extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            const config = {
+            let config = {
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                     "apikey": notification.evolutionAuthToken,
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let data = {
                 "number": notification.evolutionRecipient,
