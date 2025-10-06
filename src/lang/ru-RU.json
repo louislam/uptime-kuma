@@ -43,7 +43,7 @@
     "Delete": "Удалить",
     "Current": "Текущий",
     "Uptime": "Время безотказной работы",
-    "Cert Exp.": "Срок SSL",
+    "Cert Exp.": "Окончание сертификата",
     "day": "день | дней",
     "-day": "-дней",
     "hour": "час",
@@ -1195,5 +1195,9 @@
     "OAuth Audience": "Аудитория OAuth",
     "ntfyPriorityHelptextPriorityHigherThanDown": "Обычный приоритет должен быть выше, чем приоритет {0}. Приоритет {1} выше, чем приоритет {0} {2}",
     "ipFamilyDescriptionAutoSelect": "Использует {happyEyeballs} для определения семейства IP-адресов.",
-    "Optional: The audience to request the JWT for": "Опционально: аудитория, для которой запрашивается JWT"
+    "Optional: The audience to request the JWT for": "Опционально: аудитория, для которой запрашивается JWT",
+    "wayToWriteEvolutionRecipient": "Телефонный номер с международным префиксом, без знака плюс в начале ({0}), ИД Контакта ({1}) или ИД Группы ({2}).",
+    "wayToGetEvolutionUrlAndToken": "Вы можете получить API URL и токен перейдя в желанный канал через {0}",
+    "evolutionRecipient": "Телефонный номер / ИД Контакта / ИД Группы",
+    "evolutionInstanceName": "Имя Экземпляра"
 }
