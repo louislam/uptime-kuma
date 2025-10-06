@@ -348,7 +348,8 @@ router.get("/auth/oidc/callback", async (req, res) => {
         }
 
         const server = UptimeKumaServer.getInstance();
-        const token = User.createJWT(user, server.jwtSecret);
+    // Mark the JWT as originating from OIDC so UI can adapt (e.g., hide password / 2FA settings)
+    const token = User.createJWT(user, server.jwtSecret, { oidc: true });
 
         const redirectParams = new URLSearchParams();
         redirectParams.set("token", token);

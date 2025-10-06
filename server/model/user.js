@@ -41,10 +41,11 @@ class User extends BeanModel {
      * @param {string} jwtSecret The key used to sign the JsonWebToken
      * @returns {string} the JsonWebToken as a string
      */
-    static createJWT(user, jwtSecret) {
+    static createJWT(user, jwtSecret, extraClaims = {}) {
         return jwt.sign({
             username: user.username,
             h: shake256(user.password, SHAKE256_LENGTH),
+            ...extraClaims,
         }, jwtSecret);
     }
 
