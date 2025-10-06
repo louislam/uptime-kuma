@@ -438,7 +438,7 @@
     "Backup": "Sicherung",
     "About": "Über",
     "wayToGetCloudflaredURL": "(Lade cloudflared von {0} herunter)",
-    "cloudflareWebsite": "Cloudflare Website",
+    "cloudflareWebsite": "Cloudflare Webseite",
     "Message:": "Nachricht:",
     "Don't know how to get the token? Please read the guide:": "Du weißt nicht, wie man den Token bekommt? Lies die Anleitung dazu:",
     "The current connection may be lost if you are currently connecting via Cloudflare Tunnel. Are you sure want to stop it? Type your current password to confirm it.": "Die aktuelle Verbindung kann unterbrochen werden, wenn du aktuell über Cloudflare Tunnel verbunden bist. Bist du sicher, dass du es stoppen willst? Gib zur Bestätigung dein aktuelles Passwort ein.",
