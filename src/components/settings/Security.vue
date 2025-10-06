@@ -80,6 +80,137 @@
             </div>
 
             <div class="my-4">
+                <h5 class="my-4 settings-subheading">
+                    {{ $t("OIDC Single Sign-On") }}
+                </h5>
+
+                <form class="mb-3" @submit.prevent="saveOIDC">
+                    <div class="form-check form-switch mb-3">
+                        <input id="oidc-enabled" v-model="settings.oidcEnabled" class="form-check-input" type="checkbox">
+                        <label class="form-check-label" for="oidc-enabled">{{ $t("Enable OIDC") }}</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-issuer">{{ $t("OIDC Issuer URL") }}</label>
+                        <input
+                            id="oidc-issuer"
+                            v-model="settings.oidcIssuerURL"
+                            class="form-control"
+                            :required="settings.oidcEnabled"
+                            type="url"
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-client-id">{{ $t("OIDC Client ID") }}</label>
+                        <input
+                            id="oidc-client-id"
+                            v-model="settings.oidcClientID"
+                            class="form-control"
+                            :required="settings.oidcEnabled"
+                            type="text"
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-client-secret">{{ $t("OIDC Client Secret") }}</label>
+                        <input
+                            id="oidc-client-secret"
+                            v-model="settings.oidcClientSecret"
+                            class="form-control"
+                            type="password"
+                            autocomplete="new-password"
+                        />
+                        <div class="form-text">{{ $t("oidcClientSecretHint") }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-discovery">{{ $t("OIDC Discovery URL") }}</label>
+                        <input
+                            id="oidc-discovery"
+                            v-model="settings.oidcDiscoveryURL"
+                            class="form-control"
+                            type="url"
+                            autocomplete="off"
+                        />
+                        <div class="form-text">{{ $t("oidcDiscoveryURLHint") }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-scope">{{ $t("OIDC Scope") }}</label>
+                        <input
+                            id="oidc-scope"
+                            v-model="settings.oidcScope"
+                            class="form-control"
+                            type="text"
+                            autocomplete="off"
+                            :required="settings.oidcEnabled"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-redirect">{{ $t("OIDC Redirect URI") }}</label>
+                        <input
+                            id="oidc-redirect"
+                            v-model="settings.oidcRedirectURI"
+                            class="form-control"
+                            type="url"
+                            autocomplete="off"
+                        />
+                        <div class="form-text">
+                            {{ $t("oidcRedirectURINote", [ defaultOIDCRedirectURI ]) }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-username-claim">{{ $t("OIDC Username Claim") }}</label>
+                        <input
+                            id="oidc-username-claim"
+                            v-model="settings.oidcUsernameClaim"
+                            class="form-control"
+                            type="text"
+                            autocomplete="off"
+                        />
+                        <div class="form-text">{{ $t("oidcUsernameClaimHint") }}</div>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input id="oidc-auto-create" v-model="settings.oidcAutoCreateUser" class="form-check-input" type="checkbox">
+                        <label class="form-check-label" for="oidc-auto-create">{{ $t("oidcAutoCreateUser") }}</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-button-label">{{ $t("OIDC Button Label") }}</label>
+                        <input
+                            id="oidc-button-label"
+                            v-model="settings.oidcButtonLabel"
+                            class="form-control"
+                            type="text"
+                            autocomplete="off"
+                            :placeholder="$t('Sign in with OIDC')"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="oidc-token-method">{{ $t("OIDC Token Endpoint Auth Method") }}</label>
+                        <select id="oidc-token-method" v-model="settings.oidcTokenEndpointAuthMethod" class="form-select">
+                            <option value="auto">{{ $t("oidcTokenAuthAuto") }}</option>
+                            <option value="client_secret_basic">{{ $t("oidcTokenAuthClientSecretBasic") }}</option>
+                            <option value="client_secret_post">{{ $t("oidcTokenAuthClientSecretPost") }}</option>
+                            <option value="none">{{ $t("oidcTokenAuthNone") }}</option>
+                        </select>
+                        <div class="form-text">{{ $t("oidcTokenEndpointAuthHint") }}</div>
+                    </div>
+
+                    <div>
+                        <button class="btn btn-primary" type="submit">{{ $t("Save") }}</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="my-4">
                 <!-- Advanced -->
                 <h5 class="my-4 settings-subheading">{{ $t("Advanced") }}</h5>
 
@@ -151,6 +282,13 @@ export default {
         },
         settingsLoaded() {
             return this.$parent.$parent.$parent.settingsLoaded;
+        },
+        defaultOIDCRedirectURI() {
+            const baseURL = this.$root.info?.primaryBaseURL;
+            if (baseURL && typeof baseURL === "string" && baseURL.length > 0) {
+                return baseURL.replace(/\/$/, "") + "/auth/oidc/callback";
+            }
+            return `${location.origin}/auth/oidc/callback`;
         }
     },
 
@@ -221,6 +359,10 @@ export default {
          */
         confirmDisableAuth() {
             this.$refs.confirmDisableAuth.show();
+        },
+
+        saveOIDC() {
+            this.saveSettings();
         },
 
     },

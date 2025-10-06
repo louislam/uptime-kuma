@@ -421,9 +421,10 @@ export default {
         /**
          * Log in using a token
          * @param {string} token Token to log in with
+         * @param {?Function} callback Optional callback to receive the socket response
          * @returns {void}
          */
-        loginByToken(token) {
+        loginByToken(token, callback) {
             socket.emit("loginByToken", token, (res) => {
                 this.allowLoginDialog = true;
 
@@ -432,6 +433,10 @@ export default {
                 } else {
                     this.loggedIn = true;
                     this.username = this.getJWTPayload()?.username;
+                }
+
+                if (typeof callback === "function") {
+                    callback(res);
                 }
             });
         },
