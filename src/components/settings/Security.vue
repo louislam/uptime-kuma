@@ -2,7 +2,7 @@
     <div>
         <div v-if="settingsLoaded" class="my-4">
             <!-- Change Password -->
-            <template v-if="!settings.disableAuth">
+            <template v-if="!settings.disableAuth && !isOIDCUser">
                 <p>
                     {{ $t("Current User") }}: <strong>{{ $root.username }}</strong>
                     <button v-if="! settings.disableAuth" id="logout-btn" class="btn btn-danger ms-4 me-2 mb-2" @click="$root.logout">{{ $t("Logout") }}</button>
@@ -64,7 +64,7 @@
                 </form>
             </template>
 
-            <div v-if="! settings.disableAuth" class="mt-5 mb-3">
+            <div v-if="!settings.disableAuth && !isOIDCUser" class="mt-5 mb-3">
                 <h5 class="my-4 settings-subheading">
                     {{ $t("Two Factor Authentication") }}
                 </h5>
@@ -255,6 +255,7 @@
 <script>
 import Confirm from "../../components/Confirm.vue";
 import TwoFADialog from "../../components/TwoFADialog.vue";
+import jwtDecode from "jwt-decode";
 
 export default {
     components: {
@@ -289,6 +290,19 @@ export default {
                 return baseURL.replace(/\/$/, "") + "/auth/oidc/callback";
             }
             return `${location.origin}/auth/oidc/callback`;
+        },
+        // Determine if current user authenticated via OIDC (JWT contains oidc: true)
+        isOIDCUser() {
+            try {
+                const token = this.$root.storage().token;
+                if (!token) {
+                    return false;
+                }
+                const decoded = jwtDecode(token);
+                return !!decoded.oidc;
+            } catch (e) {
+                return false;
+            }
         }
     },
 
