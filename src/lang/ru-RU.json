@@ -1199,5 +1199,22 @@
     "wayToWriteEvolutionRecipient": "Телефонный номер с международным префиксом, без знака плюс в начале ({0}), ИД Контакта ({1}) или ИД Группы ({2}).",
     "wayToGetEvolutionUrlAndToken": "Вы можете получить API URL и токен перейдя в желанный канал через {0}",
     "evolutionRecipient": "Телефонный номер / ИД Контакта / ИД Группы",
-    "evolutionInstanceName": "Имя Экземпляра"
+    "evolutionInstanceName": "Имя Экземпляра",
+    "brevoApiKey": "Ключ API Brevo",
+    "brevoApiHelp": "Создайте ключ API здесь: {0}",
+    "brevoFromName": "Имя отправителя",
+    "brevoFromEmail": "Почта отправителя",
+    "brevoLeaveBlankForDefaultName": "оставьте пустым для имени по умолчанию",
+    "brevoToEmail": "Почта получателя",
+    "brevoBccEmail": "Почта для скрытой копии",
+    "brevoCcEmail": "Почта для копии",
+    "brevoSeparateMultipleEmails": "Разделяйте несколько адресов электронной почты запятыми",
+    "brevoSubject": "Тема",
+    "Bot secret": "Секрет бота",
+    "Send UP silently": "Отправлять Доступен тихо",
+    "Send DOWN silently": "Отправлять Недоступен тихо",
+    "brevoLeaveBlankForDefaultSubject": "оставьте пустым для темы по умолчанию",
+    "Nextcloud host": "Хост Nextcloud",
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Для установки бота Nextcloud Talk требуется административный доступ к серверу.",
+    "Conversation token": "Токен разговора"
 }
