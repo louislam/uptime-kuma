@@ -51,6 +51,11 @@
                                         </option>
                                     </optgroup>
 
+                                    <optgroup label="Globalping">
+                                        <option value="globalping-ping">Ping</option>
+                                        <option value="globalping-http">HTTP(s)</option>
+                                    </optgroup>
+
                                     <optgroup :label="$t('Passive Monitor Type')">
                                         <option value="push">
                                             Push
@@ -300,7 +305,7 @@
 
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type==='globalping-http'|| monitor.type==='globalping-ping'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -318,11 +323,48 @@
                                         </template>
                                     </i18n-t>
                                 </div>
+                                <div v-if="monitor.type === 'globalping-ping' || monitor.type === 'globalping-http'" class="form-text">
+                                    {{ $t("GlobalpingHostname") }}
+                                </div>
                             </div>
+
+                            <!-- Globalping -->
+                            <template v-if="monitor.type === 'globalping-http' || monitor.type === 'globalping-ping'">
+                                <div class="my-3">
+                                    <label for="location" class="form-label">{{ $t("Location") }}</label>
+                                    <input id="location" v-model="monitor.location" type="text" class="form-control" required>
+                                    <div class="form-text">{{ $t("GlobalpingLocation") }} <a href="https://globalping.com/docs/locations" target="_blank">{{ $t("GlobalpingLocationDocs") }}</a></div>
+                                </div>
+
+                                <div v-if="monitor.type === 'globalping-ping'" class="my-3">
+                                    <label for="protocol" class="form-label">{{ $t("Protocol") }}</label>
+                                    <select id="protocol" v-model="monitor.protocol" class="form-select">
+                                        <option value="ICMP">
+                                            ICMP
+                                        </option>
+                                        <option value="TCP">
+                                            TCP
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="ipVersion" class="form-label">{{ $t("IPVersion") }}</label>
+                                    <select id="ipVersion" v-model="monitor.ipVersion" class="form-select">
+                                        <option></option>
+                                        <option value="4">
+                                            4
+                                        </option>
+                                        <option value="6">
+                                            6
+                                        </option>
+                                    </select>
+                                </div>
+                            </template>
 
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type === 'globalping-http' || (monitor.type === 'globalping-ping' && monitor.protocol === 'TCP')" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -1616,6 +1658,8 @@ message HealthCheckResponse {
                     this.monitor.port = "1812";
                 } else if (this.monitor.type === "snmp") {
                     this.monitor.port = "161";
+                } else if (this.monitor.type === "globalping-ping") {
+                    this.monitor.port = "80";
                 } else {
                     this.monitor.port = undefined;
                 }
@@ -1679,6 +1723,14 @@ message HealthCheckResponse {
             // Reset conditions since condition variables likely change:
             if (oldType && newType !== oldType) {
                 this.monitor.conditions = [];
+            }
+
+            if (!this.monitor.protocol) {
+                if (this.monitor.type === "globalping-ping") {
+                    this.monitor.protocol = "ICMP";
+                } else if (this.monitor.type === "globalping-http") {
+                    this.monitor.protocol = "HTTPS";
+                }
             }
         },
 

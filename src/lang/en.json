@@ -1152,5 +1152,11 @@
     "Staged Tags for Batch Add": "Staged Tags for Batch Add",
     "Clear Form": "Clear Form",
     "pause": "Pause",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "Globalping API Token": "Globalping API Token",
+    "globalpingApiTokenDescription": "Get your Globalping API Token here: ",
+    "GlobalpingHostname": "A publicly reachable measurement target. Typically a hostname, an IPv4 address, or IPv6 address, depending on the measurement type",
+    "GlobalpingLocation": "The location option can accept continents, countries, regions, cities, ASNs, ISPs and cloud region names. You can additionally pinpoint a location by combining filters using the + operator. For example, amazon+germany or comcast+california.",
+    "GlobalpingLocationDocs": "Full location input documentation",
+    "IpVersion": "IP Version"
 }

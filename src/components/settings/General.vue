@@ -150,6 +150,24 @@
                 </div>
             </div>
 
+            <!-- Globalping API Token -->
+            <div class="mb-4">
+                <label class="form-label" for="globalpingApiToken">
+                    {{ $t("Globalping API Token") }}
+                </label>
+                <HiddenInput
+                    id="globalpingApiToken"
+                    v-model="settings.globalpingApiToken"
+                    autocomplete="new-password"
+                />
+                <div class="form-text">
+                    {{ $t("globalpingApiTokenDescription") }}
+                    <a href="https://dash.globalping.io" target="_blank">
+                        https://dash.globalping.io
+                    </a>
+                </div>
+            </div>
+
             <!-- DNS Cache (nscd) -->
             <div v-if="$root.info.isContainer" class="mb-4">
                 <label class="form-label">
