@@ -58,6 +58,7 @@ optgroup {
     color: #b1b1b1;
     option {
         color: #212529;
+
     }
 }
 
@@ -647,8 +648,8 @@ $shadow-box-padding: 20px;
 }
 
 // Localization
-
 @import "localization.scss";
+
 @media (max-width: 480px) {
   .btn {
     padding: 0.4rem 0.8rem !important;
