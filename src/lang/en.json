@@ -1158,5 +1158,11 @@
     "GlobalpingHostname": "A publicly reachable measurement target. Typically a hostname, an IPv4 address, or IPv6 address, depending on the measurement type",
     "GlobalpingLocation": "The location option can accept continents, countries, regions, cities, ASNs, ISPs and cloud region names. You can additionally pinpoint a location by combining filters using the + operator. For example, amazon+germany or comcast+california.",
     "GlobalpingLocationDocs": "Full location input documentation",
-    "IpVersion": "IP Version"
+    "IpVersion": "IP Version",
+    "Nextcloud host": "Nextcloud host",
+    "Conversation token": "Conversation token",
+    "Bot secret": "Bot secret",
+    "Send UP silently": "Send UP silently",
+    "Send DOWN silently": "Send DOWN silently",
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Installing a Nextcloud Talk bot requires administrative access to the server."
 }
