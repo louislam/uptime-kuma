@@ -105,7 +105,6 @@ class Monitor extends BeanModel {
             port: this.port,
             location: this.location,
             protocol: this.protocol,
-            ipVersion: this.ipVersion,
             maxretries: this.maxretries,
             weight: this.weight,
             active: preloadData.activeStatus.get(this.id),

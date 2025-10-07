@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
 const { Settings } = require("../settings");
-const { UP, DOWN } = require("../../src/util");
+const { log, UP, DOWN } = require("../../src/util");
 
 class GlobalpingMonitorType extends MonitorType {
     name = "globalping";
@@ -25,53 +25,65 @@ class GlobalpingMonitorType extends MonitorType {
             agent: this.agent,
         });
 
-        if (monitor.type === "globalping-ping") {
-            const opts = {
-                type: "ping",
-                target: monitor.hostname,
-                inProgressUpdates: false,
-                limit: 1,
-                locations: [{ magic: monitor.location }],
-                measurementOptions: {
-                    protocol: monitor.protocol,
-                },
-            };
+        switch (monitor.type ) {
+            case "globalping-ping":
+                await this.ping(client, monitor, heartbeat)
+                break;
+        }
+    }
 
-            if (monitor.protocol === "TCP" && monitor.port) {
-                opts.measurementOptions.port = monitor.port;
-            }
+    /**
+     * @inheritdoc
+     */
+    async ping(client, monitor, heartbeat) {
+        const opts = {
+            type: "ping",
+            target: monitor.hostname,
+            inProgressUpdates: false,
+            limit: 1,
+            locations: [{ magic: monitor.location }],
+            measurementOptions: {
+                packets: monitor.ping_count,
+                protocol: monitor.protocol,
+            },
+        };
 
-            if (monitor.ipVersion === 4) {
-                opts.measurementOptions.ipVersion = IpVersion[4];
-            } else if (monitor.ipVersion === 6) {
-                opts.measurementOptions.ipVersion = IpVersion[6];
-            }
+        if (monitor.protocol === "TCP" && monitor.port) {
+            opts.measurementOptions.port = monitor.port;
+        }
 
-            const res = await client.createMeasurement(opts);
+        if (monitor.ipFamily === "ipv4") {
+            opts.measurementOptions.ipVersion = IpVersion[4];
+        } else if (monitor.ipFamily === "ipv6") {
+            opts.measurementOptions.ipVersion = IpVersion[6];
+        }
 
-            if (!res.ok) {
-                throw new Error(
-                    `Failed to create measurement: ${this.formatApiError(res.data.error)}`,
-                );
-            }
+        log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
+        const res = await client.createMeasurement(opts);
 
-            const measurement = await client.awaitMeasurement(res.data.id);
+        if (!res.ok) {
+            throw new Error(
+                `Failed to create measurement: ${this.formatApiError(res.data.error)}`,
+            );
+        }
 
-            if (!measurement.ok) {
-                throw new Error(
-                    `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`,
-                );
-            }
+        const measurement = await client.awaitMeasurement(res.data.id);
 
-            const result = measurement.data.results[0].result;
-            heartbeat.ping = result.stats?.avg || 0;
-            if (!result.timings?.length) {
-                heartbeat.msg = `Failed: ${result.rawOutput}`;
-                heartbeat.status = DOWN;
-            } else {
-                heartbeat.msg = "";
-                heartbeat.status = UP;
-            }
+        if (!measurement.ok) {
+            throw new Error(
+                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`,
+            );
+        }
+
+        log.debug("monitor", `Globalping measurement data: ${JSON.stringify(measurement.data)}`);
+        const result = measurement.data.results[0].result;
+        heartbeat.ping = result.stats?.avg || 0;
+        if (!result.timings?.length) {
+            heartbeat.msg = `Failed: ${result.rawOutput}`;
+            heartbeat.status = DOWN;
+        } else {
+            heartbeat.msg = "";
+            heartbeat.status = UP;
         }
     }
 

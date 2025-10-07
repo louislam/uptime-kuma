@@ -826,11 +826,6 @@ let needSetup = false;
                 bean.port = parseInt(monitor.port);
                 bean.location = monitor.location;
                 bean.protocol = monitor.protocol;
-                bean.ipVersion = parseInt(monitor.ipVersion)
-                
-                if (isNaN(bean.ipVersion)) {
-                    bean.ipVersion = null;
-                }
 
                 if (isNaN(bean.port)) {
                     bean.port = null;

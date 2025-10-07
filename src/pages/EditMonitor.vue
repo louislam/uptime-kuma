@@ -349,17 +349,27 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="ipVersion" class="form-label">{{ $t("IPVersion") }}</label>
-                                    <select id="ipVersion" v-model="monitor.ipVersion" class="form-select">
-                                        <option></option>
-                                        <option value="4">
-                                            4
-                                        </option>
-                                        <option value="6">
-                                            6
-                                        </option>
+                                    <label for="ipFamily" class="form-label">{{ $t("Ip Family") }}</label>
+                                    <select id="ipFamily" v-model="monitor.ipFamily" class="form-select">
+                                        <option :value="null">{{ $t("auto-select") }}</option>
+                                        <option value="ipv4">IPv4</option>
+                                        <option value="ipv6">IPv6</option>
                                     </select>
+                                    <i18n-t v-if="monitor.ipFamily == null" keypath="ipFamilyDescriptionAutoSelect" tag="div" class="form-text">
+                                        <template #happyEyeballs>
+                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">{{ $t("Happy Eyeballs algorithm") }}</a>
+                                        </template>
+                                    </i18n-t>
                                 </div>
+
+                                <div v-if="monitor.type === 'globalping-ping'" class="my-3">
+                                    <label for="ping-count" class="form-label">{{ $t("pingCountLabel") }}</label>
+                                    <input id="ping-count" v-model="monitor.ping_count" type="number" class="form-control" required min="1" max="16" step="1">
+                                    <div class="form-text">
+                                        {{ $t("pingCountDescription") }}
+                                    </div>
+                                </div>
+
                             </template>
 
                             <!-- Port -->
