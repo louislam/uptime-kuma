@@ -5,6 +5,12 @@ ARG TARGETPLATFORM
 
 WORKDIR /app
 
+## Switch to archive.debian.org
+RUN sed -i '/^deb/s/^/#/' /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian buster main contrib non-free" | tee -a /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian-security buster/updates main contrib non-free" | tee -a /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian buster-updates main contrib non-free" | tee -a /etc/apt/sources.list
+
 # Specify --no-install-recommends to skip unused dependencies, make the base much smaller!
 # python3* = apprise's dependencies
 # sqlite3 = for debugging
