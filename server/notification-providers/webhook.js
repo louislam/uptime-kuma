@@ -27,7 +27,11 @@ class Webhook extends NotificationProvider {
                 data = formData;
             } else if (notification.webhookContentType === "custom") {
                 // Initialize LiquidJS and parse the custom Body Template
-                const engine = new Liquid();
+                const engine = new Liquid({
+                    root: "./no-such-directory-uptime-kuma",
+                    relativeReference: false,
+                    dynamicPartials: false,
+                });
                 const tpl = engine.parse(notification.webhookCustomBody);
 
                 // Insert templated values into Body
