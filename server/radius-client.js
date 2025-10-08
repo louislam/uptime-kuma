@@ -21,7 +21,7 @@ class RadiusClient {
      * @param {number} options.hostPort RADIUS server port (default: 1812)
      * @param {number} options.timeout Request timeout in milliseconds (default: 2500)
      * @param {number} options.retries Number of retry attempts (default: 1)
-     * @param {array} options.dictionaries RADIUS dictionaries for attribute encoding
+     * @param {Array} options.dictionaries RADIUS dictionaries for attribute encoding
      */
     constructor(options) {
         this.host = options.host;
@@ -35,7 +35,7 @@ class RadiusClient {
      * Send RADIUS Access-Request
      * @param {object} params Request parameters
      * @param {string} params.secret RADIUS shared secret
-     * @param {array} params.attributes Array of [attribute, value] pairs
+     * @param {Array} params.attributes Array of [attribute, value] pairs
      * @returns {Promise<object>} RADIUS response
      */
     accessRequest(params) {
@@ -70,6 +70,7 @@ class RadiusClient {
 
             /**
              * Send RADIUS request with retry logic
+             * @returns {void}
              */
             const sendRequest = () => {
                 attempts++;
@@ -109,7 +110,8 @@ class RadiusClient {
 
                 let response;
                 try {
-                    response = radius.decode({ packet: msg, secret: secret });
+                    response = radius.decode({ packet: msg,
+                        secret: secret });
                 } catch (error) {
                     socket.close();
                     return reject(new Error(`RADIUS response decoding failed: ${error.message}`));
@@ -121,7 +123,8 @@ class RadiusClient {
                 const responseCode = response.code;
 
                 if (responseCode === "Access-Accept") {
-                    resolve({ code: "Access-Accept", ...response });
+                    resolve({ code: "Access-Accept",
+                        ...response });
                 } else if (responseCode === "Access-Reject") {
                     // Reject as error to match original behavior
                     const error = new Error("Access-Reject");
@@ -133,7 +136,8 @@ class RadiusClient {
                     error.response = { code: "Access-Challenge" };
                     reject(error);
                 } else {
-                    resolve({ code: responseCode, ...response });
+                    resolve({ code: responseCode,
+                        ...response });
                 }
             });
 
