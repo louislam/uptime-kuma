@@ -55,37 +55,6 @@ Uptime Kuma is now running on <http://0.0.0.0:3001>.
 > docker run -d --restart=always -p 127.0.0.1:3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 > ```
 
-#### 🔒 Security-Hardened Wolfi Image
-
-For security-conscious deployments, a hardened image based on [Chainguard's Wolfi](https://www.chainguard.dev/unchained/introducing-wolfi-the-first-linux-un-distro) is available. This image provides significant security improvements with minimal vulnerabilities.
-
-**When to use:**
-
-- Production environments requiring enhanced security
-- Compliance-sensitive deployments
-- Environments with strict vulnerability policies
-
-**Build the Wolfi image:**
-
-If you want to use docker-compose, with the hardened image, you will need to edit the commpose file to replace the Dockerfile name with the Wolfi one.
-
-```bash
-docker build -f Dockerfile.wolfi --target rootless -t uptime-kuma:wolfi .
-```
-
-**Run the Wolfi image:**
-
-```bash
-docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma uptime-kuma:wolfi
-```
-
-**Key improvements:**
-
-- Hardened base image with minimal attack surface
-- Built from source security-critical components
-- Custom RADIUS client implementation for vulnerability mitigation
-- Regular security updates from Chainguard's Wolfi repository
-
 ### 💪🏻 Non-Docker
 
 Requirements:
