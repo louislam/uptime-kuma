@@ -160,12 +160,11 @@
                     v-model="settings.globalpingApiToken"
                     autocomplete="new-password"
                 />
-                <div class="form-text">
-                    {{ $t("globalpingApiTokenDescription") }}
+                <i18n-t key="globalpingApiTokenDescription" tag="div" class="form-text">
                     <a href="https://dash.globalping.io" target="_blank">
                         https://dash.globalping.io
                     </a>
-                </div>
+                </i18n-t>
             </div>
 
             <!-- DNS Cache (nscd) -->
@@ -298,4 +297,3 @@ export default {
     },
 };
 </script>
-

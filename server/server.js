@@ -800,6 +800,7 @@ let needSetup = false;
                 bean.description = monitor.description;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
+                bean.subtype = monitor.subtype;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
                 bean.body = monitor.body;

@@ -1160,8 +1160,10 @@
     "Send DOWN silently": "Send DOWN silently",
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "Installing a Nextcloud Talk bot requires administrative access to the server.",
     "Globalping API Token": "Globalping API Token",
-    "globalpingApiTokenDescription": "Get your Globalping API Token here: ",
-    "GlobalpingHostname": "A publicly reachable measurement target. Typically a hostname, an IPv4 address, or IPv6 address, depending on the measurement type",
-    "GlobalpingLocation": "The location option can accept continents, countries, regions, cities, ASNs, ISPs and cloud region names. You can additionally pinpoint a location by combining filters using the + operator. For example, amazon+germany or comcast+california.",
-    "GlobalpingLocationDocs": "Full location input documentation"
+    "globalpingApiTokenDescription": "Get your Globalping API Token at {0}",
+    "GlobalpingHostname": "A publicly reachable measurement target. Typically a hostname or IPv4/IPv6 address, depending on the measurement type",
+    "GlobalpingLocation": "The location field accepts continents, countries, regions, cities, ASNs, ISPs, or cloud regions. You can combine filters with {plus} (e.g {amazonPlusGermany} or {comcastPlusCalifornia}). {fullDocs}",
+    "GlobalpingLocationDocs": "Full location input documentation",
+    "Location": "Location",
+    "Monitor Subtype": "Monitor Subtype"
 }

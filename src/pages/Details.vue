@@ -30,14 +30,20 @@
                             monitor.type === 'keyword' ||
                             monitor.type === 'json-query' ||
                             monitor.type === 'mp-health' ||
-                            monitor.type === 'real-browser'
+                            monitor.type === 'real-browser' ||
+                            (monitor.type === 'globalping' && monitor.subtype === 'http')
                     "
                     :href="monitor.url"
                     target="_blank"
                     rel="noopener noreferrer"
                 >{{ filterPassword(monitor.url) }}</a>
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
-                <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
+                <span v-if="monitor.type === 'ping' || (monitor.type === 'globalping' && monitor.subtype === 'ping')">Ping: {{ monitor.hostname }}</span>
+                <span v-if="monitor.type === 'globalping'">
+                    <br />
+                    <span>{{ $t("Location") }}: </span>
+                    <span class="keyword">{{ monitor.location }}</span>
+                </span>
                 <span v-if="monitor.type === 'keyword'">
                     <br />
                     <span>{{ $t("Keyword") }}: </span>

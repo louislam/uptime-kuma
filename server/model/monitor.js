@@ -9,7 +9,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
 const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, encodeBase64
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -110,6 +110,7 @@ class Monitor extends BeanModel {
             active: preloadData.activeStatus.get(this.id),
             forceInactive: preloadData.forceInactive.get(this.id),
             type: this.type,
+            subtype: this.subtype,
             timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
@@ -241,17 +242,6 @@ class Monitor extends BeanModel {
             certExpiryDaysRemaining: "",
             validCert: false
         };
-    }
-
-    /**
-     * Encode user and password to Base64 encoding
-     * for HTTP "basic" auth, as per RFC-7617
-     * @param {string|null} user - The username (nullable if not changed by a user)
-     * @param {string|null} pass - The password (nullable if not changed by a user)
-     * @returns {string} Encoded Base64 string
-     */
-    encodeBase64(user, pass) {
-        return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
     }
 
     /**
@@ -411,7 +401,7 @@ class Monitor extends BeanModel {
                     let basicAuthHeader = {};
                     if (this.auth_method === "basic") {
                         basicAuthHeader = {
-                            "Authorization": "Basic " + this.encodeBase64(this.basic_auth_user, this.basic_auth_pass),
+                            "Authorization": "Basic " + encodeBase64(this.basic_auth_user, this.basic_auth_pass),
                         };
                     }
 

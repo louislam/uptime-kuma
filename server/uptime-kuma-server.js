@@ -119,13 +119,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
         UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
-
-        // Globalping
-        const globalpingMonitor = new GlobalpingMonitorType(
-            this.getUserAgent(),
-        );
-        UptimeKumaServer.monitorTypeList["globalping-ping"] = globalpingMonitor;
-        UptimeKumaServer.monitorTypeList["globalping-http"] = globalpingMonitor;
+        UptimeKumaServer.monitorTypeList["globalping"] = new GlobalpingMonitorType(this.getUserAgent());
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -248,7 +242,7 @@ class UptimeKumaServer {
     async getMonitorJSONList(userID, monitorID = null) {
 
         let query = " user_id = ? ";
-        let queryParams = [userID];
+        let queryParams = [ userID ];
 
         if (monitorID) {
             query += "AND id = ? ";

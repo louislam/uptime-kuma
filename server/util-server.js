@@ -1116,3 +1116,15 @@ function fsExists(path) {
     });
 }
 module.exports.fsExists = fsExists;
+
+/**
+ * Encode user and password to Base64 encoding
+ * for HTTP "basic" auth, as per RFC-7617
+ * @param {string|null} user - The username (nullable if not changed by a user)
+ * @param {string|null} pass - The password (nullable if not changed by a user)
+ * @returns {string} Encoded Base64 string
+ */
+function encodeBase64(user, pass) {
+    return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
+}
+module.exports.encodeBase64 = encodeBase64;
