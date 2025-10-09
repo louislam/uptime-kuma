@@ -2,7 +2,7 @@
  * Custom RADIUS Client Implementation
  *
  * This is a lightweight RADIUS client implementation using the base `radius` package
- * to avoid CVE-2020-36604 in the hoek dependency of node-radius-client.
+ * Due to lack of maintenance in node-radius-client this was forked
  *
  * Implements RADIUS Access-Request functionality compatible with the original
  * node-radius-client API used in Uptime Kuma.
