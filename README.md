@@ -17,7 +17,7 @@ Uptime Kuma is an easy-to-use self-hosted monitoring tool.
 
 Try it!
 
-Demo Server (Location: Frankfurt - Germany): https://demo.kuma.pet/start-demo
+Demo Server (Location: Frankfurt - Germany): <https://demo.kuma.pet/start-demo>
 
 It is a temporary live demo, all data will be deleted after 10 minutes. Sponsored by [Uptime Kuma Sponsors](https://github.com/louislam/uptime-kuma#%EF%B8%8F-sponsors).
 
@@ -50,7 +50,7 @@ Uptime Kuma is now running on <http://0.0.0.0:3001>.
 
 > [!NOTE]
 > If you want to limit exposure to localhost (without exposing port for other users or to use a [reverse proxy](https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy)), you can expose the port like this:
-> 
+>
 > ```bash
 > docker run -d --restart=always -p 127.0.0.1:3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 > ```
@@ -85,7 +85,7 @@ npm install pm2 -g && pm2 install pm2-logrotate
 pm2 start server/server.js --name uptime-kuma
 ```
 
-Uptime Kuma is now running on http://localhost:3001
+Uptime Kuma is now running on <http://localhost:3001>
 
 More useful PM2 Commands
 
@@ -101,19 +101,19 @@ pm2 save && pm2 startup
 
 If you need more options or need to browse via a reverse proxy, please read:
 
-https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install
+<https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install>
 
 ## 🆙 How to Update
 
 Please read:
 
-https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update
+<https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update>
 
 ## 🆕 What's Next?
 
 I will assign requests/issues to the next milestone.
 
-https://github.com/louislam/uptime-kuma/milestones
+<https://github.com/louislam/uptime-kuma/milestones>
 
 ## ❤️ Sponsors
 
@@ -174,11 +174,11 @@ We DO NOT accept all types of pull requests and do not want to waste your time. 
 There are a lot of pull requests right now, but I don't have time to test them all.
 
 If you want to help, you can check this:
-https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests
+<https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests>
 
 ### Test Beta Version
 
-Check out the latest beta release here: https://github.com/louislam/uptime-kuma/releases
+Check out the latest beta release here: <https://github.com/louislam/uptime-kuma/releases>
 
 ### Bug Reports / Feature Requests
 
@@ -192,5 +192,3 @@ If you want to translate Uptime Kuma into your language, please visit [Weblate R
 
 Feel free to correct the grammar in the documentation or code.
 My mother language is not English and my grammar is not that great.
-
-
