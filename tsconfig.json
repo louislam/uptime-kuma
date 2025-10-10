@@ -16,6 +16,6 @@
         "esModuleInterop": true
     },
     "files": [
-        "./src/util.ts"
+
     ]
 }

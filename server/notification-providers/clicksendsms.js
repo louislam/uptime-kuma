@@ -29,6 +29,7 @@ class ClickSendSMS extends NotificationProvider {
                     }
                 ]
             };
+            config = this.getAxiosConfigWithProxy(config);
             let resp = await axios.post(url, data, config);
             if (resp.data.data.messages[0].status !== "SUCCESS") {
                 let error = "Something gone wrong. Api returned " + resp.data.data.messages[0].status + ".";

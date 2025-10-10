@@ -5,6 +5,7 @@ import Apprise from "./Apprise.vue";
 import Bale from "./Bale.vue";
 import Bark from "./Bark.vue";
 import Bitrix24 from "./Bitrix24.vue";
+import Notifery from "./Notifery.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import CallMeBot from "./CallMeBot.vue";
 import SMSC from "./SMSC.vue";
@@ -27,9 +28,11 @@ import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
+import NextcloudTalk from "./NextcloudTalk.vue";
 import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
+import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
@@ -37,9 +40,11 @@ import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
 import PagerTree from "./PagerTree.vue";
 import PromoSMS from "./PromoSMS.vue";
+import Pumble from "./Pumble.vue";
 import Pushbullet from "./Pushbullet.vue";
 import PushDeer from "./PushDeer.vue";
 import Pushover from "./Pushover.vue";
+import PushPlus from "./PushPlus.vue";
 import Pushy from "./Pushy.vue";
 import RocketChat from "./RocketChat.vue";
 import ServerChan from "./ServerChan.vue";
@@ -62,88 +67,105 @@ import WeCom from "./WeCom.vue";
 import GoAlert from "./GoAlert.vue";
 import ZohoCliq from "./ZohoCliq.vue";
 import Splunk from "./Splunk.vue";
+import SpugPush from "./SpugPush.vue";
 import SevenIO from "./SevenIO.vue";
 import Whapi from "./Whapi.vue";
+import WAHA from "./WAHA.vue";
+import Evolution from "./Evolution.vue";
 import Cellsynt from "./Cellsynt.vue";
 import WPush from "./WPush.vue";
 import SIGNL4 from "./SIGNL4.vue";
 import SendGrid from "./SendGrid.vue";
+import Brevo from "./Brevo.vue";
+import YZJ from "./YZJ.vue";
+import SMSPlanet from "./SMSPlanet.vue";
 
 /**
  * Manage all notification form.
  * @type { Record<string, any> }
  */
 const NotificationFormList = {
-    alerta: Alerta,
-    AlertNow: AlertNow,
-    AliyunSMS: AliyunSMS,
-    apprise: Apprise,
+    "alerta": Alerta,
+    "AlertNow": AlertNow,
+    "AliyunSMS": AliyunSMS,
+    "apprise": Apprise,
     bale: Bale,
-    Bark: Bark,
-    Bitrix24: Bitrix24,
-    clicksendsms: ClickSendSMS,
-    CallMeBot: CallMeBot,
-    smsc: SMSC,
-    DingDing: DingDing,
-    discord: Discord,
-    Elks: Elks,
-    Feishu: Feishu,
-    FreeMobile: FreeMobile,
-    GoogleChat: GoogleChat,
-    gorush: Gorush,
-    gotify: Gotify,
-    GrafanaOncall: GrafanaOncall,
-    HomeAssistant: HomeAssistant,
-    HeiiOnCall: HeiiOnCall,
-    Keep: Keep,
-    Kook: Kook,
-    line: Line,
-    LineNotify: LineNotify,
-    lunasea: LunaSea,
-    matrix: Matrix,
-    mattermost: Mattermost,
-    nostr: Nostr,
-    ntfy: Ntfy,
-    octopush: Octopush,
-    OneBot: OneBot,
-    Onesender: Onesender,
-    Opsgenie: Opsgenie,
-    PagerDuty: PagerDuty,
-    FlashDuty: FlashDuty,
-    PagerTree: PagerTree,
-    promosms: PromoSMS,
-    pushbullet: Pushbullet,
-    PushByTechulus: TechulusPush,
-    PushDeer: PushDeer,
-    pushover: Pushover,
-    pushy: Pushy,
+    "Bark": Bark,
+    "Bitrix24": Bitrix24,
+    "clicksendsms": ClickSendSMS,
+    "CallMeBot": CallMeBot,
+    "smsc": SMSC,
+    "DingDing": DingDing,
+    "discord": Discord,
+    "Elks": Elks,
+    "Feishu": Feishu,
+    "FreeMobile": FreeMobile,
+    "GoogleChat": GoogleChat,
+    "gorush": Gorush,
+    "gotify": Gotify,
+    "GrafanaOncall": GrafanaOncall,
+    "HomeAssistant": HomeAssistant,
+    "HeiiOnCall": HeiiOnCall,
+    "Keep": Keep,
+    "Kook": Kook,
+    "line": Line,
+    "LineNotify": LineNotify,
+    "lunasea": LunaSea,
+    "matrix": Matrix,
+    "mattermost": Mattermost,
+    "nextcloudtalk": NextcloudTalk,
+    "nostr": Nostr,
+    "ntfy": Ntfy,
+    "octopush": Octopush,
+    "OneChat": OneChat,
+    "OneBot": OneBot,
+    "Onesender": Onesender,
+    "Opsgenie": Opsgenie,
+    "PagerDuty": PagerDuty,
+    "FlashDuty": FlashDuty,
+    "PagerTree": PagerTree,
+    "promosms": PromoSMS,
+    "pumble": Pumble,
+    "pushbullet": Pushbullet,
+    "PushByTechulus": TechulusPush,
+    "PushDeer": PushDeer,
+    "pushover": Pushover,
+    "PushPlus": PushPlus,
+    "pushy": Pushy,
     "rocket.chat": RocketChat,
-    serwersms: SerwerSMS,
-    signal: Signal,
-    SIGNL4: SIGNL4,
-    SMSManager: SMSManager,
-    SMSPartner: SMSPartner,
-    slack: Slack,
-    squadcast: Squadcast,
-    SMSEagle: SMSEagle,
-    smtp: STMP,
-    stackfield: Stackfield,
-    teams: Teams,
-    telegram: Telegram,
-    threema: Threema,
-    twilio: Twilio,
-    Splunk: Splunk,
-    webhook: Webhook,
-    WeCom: WeCom,
-    GoAlert: GoAlert,
-    ServerChan: ServerChan,
-    ZohoCliq: ZohoCliq,
-    SevenIO: SevenIO,
-    whapi: Whapi,
-    gtxmessaging: GtxMessaging,
-    Cellsynt: Cellsynt,
-    WPush: WPush,
-    SendGrid: SendGrid,
+    "serwersms": SerwerSMS,
+    "signal": Signal,
+    "SIGNL4": SIGNL4,
+    "SMSManager": SMSManager,
+    "SMSPartner": SMSPartner,
+    "slack": Slack,
+    "squadcast": Squadcast,
+    "SMSEagle": SMSEagle,
+    "smtp": STMP,
+    "stackfield": Stackfield,
+    "teams": Teams,
+    "telegram": Telegram,
+    "threema": Threema,
+    "twilio": Twilio,
+    "Splunk": Splunk,
+    "SpugPush": SpugPush,
+    "webhook": Webhook,
+    "WeCom": WeCom,
+    "GoAlert": GoAlert,
+    "ServerChan": ServerChan,
+    "ZohoCliq": ZohoCliq,
+    "SevenIO": SevenIO,
+    "whapi": Whapi,
+    "evolution": Evolution,
+    "notifery": Notifery,
+    "waha": WAHA,
+    "gtxmessaging": GtxMessaging,
+    "Cellsynt": Cellsynt,
+    "WPush": WPush,
+    "SendGrid": SendGrid,
+    "Brevo": Brevo,
+    "YZJ": YZJ,
+    "SMSPlanet": SMSPlanet,
 };
 
 export default NotificationFormList;

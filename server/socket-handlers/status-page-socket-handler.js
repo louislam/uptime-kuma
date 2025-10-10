@@ -211,6 +211,10 @@ module.exports.statusPageSocketHandler = (socket) => {
                         relationBean.send_url = monitor.sendUrl;
                     }
 
+                    if (monitor.url !== undefined) {
+                        relationBean.custom_url = monitor.url;
+                    }
+
                     await R.store(relationBean);
                 }
 
@@ -338,6 +342,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 await R.exec("DELETE FROM status_page WHERE id = ? ", [
                     statusPageID
                 ]);
+
+                apicache.clear();
 
             } else {
                 throw new Error("Status Page is not found");

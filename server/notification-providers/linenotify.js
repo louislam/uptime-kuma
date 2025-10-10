@@ -20,6 +20,7 @@ class LineNotify extends NotificationProvider {
                     "Authorization": "Bearer " + notification.lineNotifyAccessToken
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             if (heartbeatJSON == null) {
                 let testMessage = {
                     "message": msg,
