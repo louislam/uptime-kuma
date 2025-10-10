@@ -1164,6 +1164,8 @@
     "GlobalpingHostname": "A publicly reachable measurement target. Typically a hostname or IPv4/IPv6 address, depending on the measurement type",
     "GlobalpingLocation": "The location field accepts continents, countries, regions, cities, ASNs, ISPs, or cloud regions. You can combine filters with {plus} (e.g {amazonPlusGermany} or {comcastPlusCalifornia}). {fullDocs}",
     "GlobalpingLocationDocs": "Full location input documentation",
+    "GlobalpingIpFamilyInfo": "The IP version to use. Only allowed if the target is a hostname",
+    "GlobalpingResolverInfo": "IPv4/IPv6 address or a fully Qualified Domain Name (FQDN). Defaults to the probe system resolver",
     "Location": "Location",
     "Monitor Subtype": "Monitor Subtype"
 }

@@ -122,6 +122,9 @@
                                     <option value="http">
                                         HTTP(s)
                                     </option>
+                                    <option value="dns">
+                                        DNS
+                                    </option>
                                 </select>
                             </div>
 
@@ -144,7 +147,7 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' || monitor.subtype === 'http'" class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser'" class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
                                 <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
                             </div>
@@ -313,7 +316,7 @@
 
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.subtype==='ping'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -331,18 +334,40 @@
                                         </template>
                                     </i18n-t>
                                 </div>
-                                <div v-if="monitor.subtype === 'ping'" class="form-text">
-                                    {{ $t("GlobalpingHostname") }}
-                                </div>
                             </div>
 
                             <!-- Globalping -->
                             <template v-if="monitor.type === 'globalping'">
+                                <!-- Hostname -->
+                                <div v-if="monitor.subtype ==='ping' || monitor.subtype === 'dns'" class="my-3">
+                                    <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
+                                    <input
+                                        id="hostname"
+                                        v-model="monitor.hostname"
+                                        type="text"
+                                        class="form-control"
+                                        :pattern="ipOrHostnameRegexPattern"
+                                        required
+                                        data-testid="hostname-input"
+                                    >
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingHostname") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="monitor.subtype === 'http'" class="my-3">
+                                    <label for="url" class="form-label">{{ $t("URL") }}</label>
+                                    <input id="url" v-model="monitor.url" type="url" class="form-control" required data-testid="url-input">
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingHostname") }}
+                                    </div>
+                                </div>
+
                                 <!-- Location -->
                                 <div class="my-3">
                                     <label for="location" class="form-label">{{ $t("Location") }}</label>
                                     <input id="location" v-model="monitor.location" type="text" class="form-control" required>
-                                    <i18n-t key="GlobalpingLocation" tag="div" class="form-text">
+                                    <i18n-t keypath="GlobalpingLocation" tag="div" class="form-text">
                                         <template #plus>
                                             <code>+</code>
                                         </template>
@@ -361,7 +386,7 @@
                                 <!-- Protocol -->
                                 <div class="my-3">
                                     <label for="protocol" class="form-label">{{ $t("Protocol") }}</label>
-                                    <select id="protocol" v-model="monitor.protocol" class="form-select">
+                                    <select id="protocol" v-model="monitor.protocol" class="form-select" required>
                                         <template v-if="monitor.subtype === 'ping'">
                                             <option value="ICMP">ICMP</option>
                                             <option value="TCP">TCP</option>
@@ -369,6 +394,10 @@
                                         <template v-else-if="monitor.subtype === 'http'">
                                             <option :value="null">{{ $t("auto-select") }}</option>
                                             <option value="HTTP2">HTTP2</option>
+                                        </template>
+                                        <template v-else-if="monitor.subtype === 'dns'">
+                                            <option value="UDP">UDP</option>
+                                            <option value="TCP">TCP</option>
                                         </template>
                                     </select>
                                 </div>
@@ -381,11 +410,9 @@
                                         <option value="ipv4">IPv4</option>
                                         <option value="ipv6">IPv6</option>
                                     </select>
-                                    <i18n-t v-if="monitor.ipFamily == null" keypath="ipFamilyDescriptionAutoSelect" tag="div" class="form-text">
-                                        <template #happyEyeballs>
-                                            <a href="https://en.wikipedia.org/wiki/Happy_Eyeballs" target="_blank">{{ $t("Happy Eyeballs algorithm") }}</a>
-                                        </template>
-                                    </i18n-t>
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingIpFamilyInfo") }}
+                                    </div>
                                 </div>
 
                                 <!-- Ping count -->
@@ -419,6 +446,50 @@
                                         {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
                                 </div>
+
+                                <div v-if="monitor.subtype === 'http' || monitor.subtype === 'dns'" class="my-3">
+                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control">
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingResolverInfo") }}
+                                    </div>
+                                </div>
+
+                                <!-- DNS -->
+                                <template v-if="monitor.subtype === 'dns'">
+                                    <!-- Port -->
+                                    <div class="my-3">
+                                        <label for="port" class="form-label">{{ $t("Port") }}</label>
+                                        <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1" value="53">
+                                        <div class="form-text">
+                                            {{ $t("dnsPortDescription") }}
+                                        </div>
+                                    </div>
+
+                                    <div class="my-3">
+                                        <label for="dns_resolve_type" class="form-label">{{ $t("Resource Record Type") }}</label>
+
+                                        <!-- :allow-empty="false" is not working, set a default value instead https://github.com/shentao/vue-multiselect/issues/336   -->
+                                        <VueMultiselect
+                                            id="dns_resolve_type"
+                                            v-model="monitor.dns_resolve_type"
+                                            :options="globalpingDNSResolveTypeOptions"
+                                            :multiple="false"
+                                            :close-on-select="true"
+                                            :clear-on-select="false"
+                                            :preserve-search="false"
+                                            :placeholder="$t('Pick a RR-Type...')"
+                                            :preselect-first="false"
+                                            :max-height="500"
+                                            :taggable="false"
+                                            data-testid="resolve-type-select"
+                                        ></VueMultiselect>
+
+                                        <div class="form-text">
+                                            {{ $t("rrtypeDescription") }}
+                                        </div>
+                                    </div>
+                                </template>
                             </template>
 
                             <!-- Port -->
@@ -527,7 +598,7 @@
                                     <VueMultiselect
                                         id="dns_resolve_type"
                                         v-model="monitor.dns_resolve_type"
-                                        :options="dnsresolvetypeOptions"
+                                        :options="dnsResolveTypeOptions"
                                         :multiple="false"
                                         :close-on-select="true"
                                         :clear-on-select="false"
@@ -752,7 +823,7 @@
                             </div>
 
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp' || monitor.subtype === 'ping' || monitor.subtype === 'http'" class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp' || monitor.type === 'globalping'" class="my-3">
                                 <label for="timeout" class="form-label">
                                     {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
                                     <span v-if="monitor.type !== 'ping'">({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</span>
@@ -1183,7 +1254,7 @@
                             </template>
 
                             <!-- Globalping HTTP Options -->
-                            <template v-if="monitor.subtype === 'http'">
+                            <template v-if="monitor.type === 'globalping' && monitor.subtype === 'http'">
                                 <h2 class="mt-5 mb-2">{{ $t("HTTP Options") }}</h2>
 
                                 <!-- Method -->
@@ -1394,7 +1465,7 @@ const monitorDefaults = {
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
     dns_resolve_type: "A",
-    dns_resolve_server: "1.1.1.1",
+    dns_resolve_server: "",
     docker_container: "",
     docker_host: null,
     proxyId: null,
@@ -1447,7 +1518,8 @@ export default {
                 // Do not add default value here, please check init() method
             },
             acceptedStatusCodeOptions: [],
-            dnsresolvetypeOptions: [],
+            dnsResolveTypeOptions: [],
+            globalpingDNSResolveTypeOptions: [],
             kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
@@ -1794,8 +1866,12 @@ message HealthCheckResponse {
         },
 
         "monitor.type"(newType, oldType) {
-            if (this.monitor.type === "globalping" && !this.monitor.subtype) {
+            if (newType === "globalping" && !this.monitor.subtype) {
                 this.monitor.subtype = "ping";
+            }
+
+            if (newType === "dns" && !this.monitor.dns_resolve_server) {
+                this.monitor.dns_resolve_server = "1.1.1.1";
             }
 
             if (this.monitor.type === "push") {
@@ -1880,10 +1956,28 @@ message HealthCheckResponse {
             if (oldType && newType !== oldType) {
                 this.monitor.conditions = [];
             }
+        },
 
-            if (!this.monitor.protocol) {
-                if (this.monitor.subtype === "ping") {
+        "monitor.subtype"(newSubtype, oldSubtype) {
+            if (!oldSubtype && !this.monitor.protocol) {
+                if (newSubtype === "ping") {
                     this.monitor.protocol = "ICMP";
+                } else if (newSubtype === "dns") {
+                    this.monitor.protocol = "UDP";
+                }
+            }
+            if (!oldSubtype && this.monitor.port === undefined) {
+                if (newSubtype === "dns") {
+                    this.monitor.port = "53";
+                }
+            }
+            if (newSubtype !== oldSubtype) {
+                if (newSubtype === "ping") {
+                    this.monitor.protocol = "ICMP";
+                    this.monitor.port = "80";
+                } else if (newSubtype === "dns") {
+                    this.monitor.protocol = "UDP";
+                    this.monitor.port = "53";
                 }
             }
         },
@@ -1912,7 +2006,7 @@ message HealthCheckResponse {
             "500-599",
         ];
 
-        let dnsresolvetypeOptions = [
+        const dnsResolveTypeOptions = [
             "A",
             "AAAA",
             "CAA",
@@ -1922,6 +2016,24 @@ message HealthCheckResponse {
             "PTR",
             "SOA",
             "SRV",
+            "TXT",
+        ];
+        const globalpingDNSResolveTypeOptions = [
+            "A",
+            "AAAA",
+            "ANY",
+            "CNAME",
+            "DNSKEY",
+            "DS",
+            "HTTPS",
+            "MX",
+            "NS",
+            "NSEC",
+            "PTR",
+            "RRSIG",
+            "SOA",
+            "SRV",
+            "SVCB",
             "TXT",
         ];
 
@@ -1938,7 +2050,8 @@ message HealthCheckResponse {
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
-        this.dnsresolvetypeOptions = dnsresolvetypeOptions;
+        this.dnsResolveTypeOptions = dnsResolveTypeOptions;
+        this.globalpingDNSResolveTypeOptions = globalpingDNSResolveTypeOptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
