@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
 const { Settings } = require("../settings");
-const { log, UP, DOWN } = require("../../src/util");
+const { log, UP, DOWN, evaluateJsonQuery } = require("../../src/util");
 const { checkStatusCode, getOidcTokenClientCredentials, encodeBase64 } = require("../util-server");
 const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators } = require("../monitor-conditions/operators");
@@ -194,16 +194,51 @@ class GlobalpingMonitorType extends MonitorType {
             return;
         }
 
+        heartbeat.ping = result.timings.total || 0;
+
         if (!checkStatusCode(result.statusCode, JSON.parse(monitor.accepted_statuscodes_json))) {
             heartbeat.msg = `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`;
             heartbeat.status = DOWN;
             return;
         }
 
-        // TODO: implement keyword, JSON query and tls notification
-
-        heartbeat.ping = result.timings.total || 0;
         heartbeat.msg = `${result.statusCode} - ${result.statusCodeName}`;
+
+        // keyword
+        if (monitor.keyword) {
+            let data = result.rawOutput;
+            let keywordFound = data.includes(monitor.keyword);
+
+            if (keywordFound !== !Boolean(monitor.invertKeyword)) {
+                data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
+                if (data.length > 50) {
+                    data = data.substring(0, 47) + "...";
+                }
+                throw new Error(heartbeat.msg + ", but keyword is " +
+                    (keywordFound ? "present" : "not") + " in [" + data + "]");
+
+            }
+
+            heartbeat.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
+            heartbeat.status = UP;
+            return;
+        }
+
+        // json-query
+        if (monitor.expectedValue) {
+            const { status, response } = await evaluateJsonQuery(result.rawOutput, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
+
+            if (!status) {
+                throw new Error(`JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`);
+            }
+
+            heartbeat.msg = `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`;
+            heartbeat.status = UP;
+            return;
+        }
+
+        // TODO: add tls notification
+
         heartbeat.status = UP;
     }
 

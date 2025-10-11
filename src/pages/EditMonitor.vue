@@ -424,6 +424,14 @@
                                     </div>
                                 </div>
 
+                                <div v-if="monitor.subtype === 'http' || monitor.subtype === 'dns'" class="my-3">
+                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control">
+                                    <div class="form-text">
+                                        {{ $t("GlobalpingResolverInfo") }}
+                                    </div>
+                                </div>
+
                                 <!-- Accepted Status Codes -->
                                 <div v-if="monitor.subtype === 'http'" class="my-3">
                                     <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
@@ -447,14 +455,6 @@
                                     </div>
                                 </div>
 
-                                <div v-if="monitor.subtype === 'http' || monitor.subtype === 'dns'" class="my-3">
-                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control">
-                                    <div class="form-text">
-                                        {{ $t("GlobalpingResolverInfo") }}
-                                    </div>
-                                </div>
-
                                 <!-- DNS -->
                                 <template v-if="monitor.subtype === 'dns'">
                                     <!-- Port -->
@@ -473,7 +473,7 @@
                                         <VueMultiselect
                                             id="dns_resolve_type"
                                             v-model="monitor.dns_resolve_type"
-                                            :options="globalpingDNSResolveTypeOptions"
+                                            :options="globalpingdnsresolvetypeoptions"
                                             :multiple="false"
                                             :close-on-select="true"
                                             :clear-on-select="false"
@@ -598,7 +598,7 @@
                                     <VueMultiselect
                                         id="dns_resolve_type"
                                         v-model="monitor.dns_resolve_type"
-                                        :options="dnsResolveTypeOptions"
+                                        :options="dnsresolvetypeoptions"
                                         :multiple="false"
                                         :close-on-select="true"
                                         :clear-on-select="false"
@@ -1344,6 +1344,79 @@
                                         </div>
                                     </template>
                                 </template>
+
+                                <!-- Response -->
+                                <h2 class="mt-5 mb-2">{{ $t("Response") }}</h2>
+                                <div class="my-3">
+                                    <label for="checkfor" class="form-label">{{ $t("Check for") }}</label>
+                                    <select id="checkfor" v-model="monitor.responsecheck" class="form-select">
+                                        <option :value="null">
+                                            {{ $t("None") }}
+                                        </option>
+                                        <option value="keyword">
+                                            {{ $t("Keyword") }}
+                                        </option>
+                                        <option value="json-query">
+                                            {{ $t("Json Query Expression") }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Keyword -->
+                                <template v-if="monitor.responsecheck === 'keyword'">
+                                    <div class="my-3">
+                                        <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
+                                        <input id="keyword" ref="" v-model="monitor.keyword" type="text" class="form-control">
+                                        <div class="form-text">
+                                            {{ $t("keywordDescription") }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Invert keyword -->
+                                    <div class="my-3 form-check">
+                                        <input id="invert-keyword" v-model="monitor.invertKeyword" class="form-check-input" type="checkbox">
+                                        <label class="form-check-label" for="invert-keyword">
+                                            {{ $t("Invert Keyword") }}
+                                        </label>
+                                        <div class="form-text">
+                                            {{ $t("invertKeywordDescription") }}
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- Json Query -->
+                                <template v-if="monitor.responsecheck === 'json-query'">
+                                    <div class="my-3">
+                                        <div class="my-2">
+                                            <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
+                                            <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
+                                                <a href="https://jsonata.org/">jsonata.org</a>
+                                                <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
+                                            </i18n-t>
+                                            <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
+                                        </div>
+
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-2">
+                                                <label for="json_path_operator" class="form-label">{{ $t("Condition") }}</label>
+                                                <select id="json_path_operator" v-model="monitor.jsonPathOperator" class="form-select me-3" required>
+                                                    <option value=">">&gt;</option>
+                                                    <option value=">=">&gt;=</option>
+                                                    <option value="<">&lt;</option>
+                                                    <option value="<=">&lt;=</option>
+                                                    <option value="!=">&#33;=</option>
+                                                    <option value="==">==</option>
+                                                    <option value="contains">contains</option>
+                                                </select>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                                <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '==' && monitor.jsonPathOperator !== '!='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
+                                                <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
                             </template>
 
                             <!-- gRPC Options -->
@@ -1452,6 +1525,7 @@ const monitorDefaults = {
     parent: null,
     url: "https://",
     method: "GET",
+    protocol: null,
     ipFamily: null,
     interval: 60,
     humanReadableInterval: relativeTimeFormatter.secondsToHumanReadableFormat(60),
@@ -1518,8 +1592,8 @@ export default {
                 // Do not add default value here, please check init() method
             },
             acceptedStatusCodeOptions: [],
-            dnsResolveTypeOptions: [],
-            globalpingDNSResolveTypeOptions: [],
+            dnsresolvetypeoptions: [],
+            globalpingdnsresolvetypeoptions: [],
             kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
@@ -1809,6 +1883,9 @@ message HealthCheckResponse {
         },
 
         supportsConditions() {
+            if (this.monitor.type === "globalping" && this.monitor.subtype !== "dns") {
+                return false;
+            }
             return this.$root.monitorTypeList[this.monitor.type]?.supportsConditions || false;
         },
 
@@ -1964,6 +2041,8 @@ message HealthCheckResponse {
                     this.monitor.protocol = "ICMP";
                 } else if (newSubtype === "dns") {
                     this.monitor.protocol = "UDP";
+                } else if (newSubtype === "http") {
+                    this.monitor.protocol = null;
                 }
             }
             if (!oldSubtype && this.monitor.port === undefined) {
@@ -1978,7 +2057,28 @@ message HealthCheckResponse {
                 } else if (newSubtype === "dns") {
                     this.monitor.protocol = "UDP";
                     this.monitor.port = "53";
+                } else if (newSubtype === "http") {
+                    this.monitor.protocol = null;
                 }
+            }
+
+            if (newSubtype === "http") {
+                if (this.monitor.keyword) {
+                    this.monitor.responsecheck = "keyword";
+                } else if (this.monitor.expectedValue) {
+                    this.monitor.responsecheck = "json-query";
+                } else {
+                    this.monitor.responsecheck = null;
+                }
+            }
+        },
+
+        "monitor.responsecheck"(newSubtype) {
+            if (newSubtype !== "keyword") {
+                this.monitor.keyword = null;
+            }
+            if (newSubtype !== "json-query") {
+                this.monitor.expectedValue = null;
             }
         },
 
@@ -2006,7 +2106,7 @@ message HealthCheckResponse {
             "500-599",
         ];
 
-        const dnsResolveTypeOptions = [
+        const dnsresolvetypeoptions = [
             "A",
             "AAAA",
             "CAA",
@@ -2018,7 +2118,7 @@ message HealthCheckResponse {
             "SRV",
             "TXT",
         ];
-        const globalpingDNSResolveTypeOptions = [
+        const globalpingdnsresolvetypeoptions = [
             "A",
             "AAAA",
             "ANY",
@@ -2050,8 +2150,8 @@ message HealthCheckResponse {
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
-        this.dnsResolveTypeOptions = dnsResolveTypeOptions;
-        this.globalpingDNSResolveTypeOptions = globalpingDNSResolveTypeOptions;
+        this.dnsresolvetypeoptions = dnsresolvetypeoptions;
+        this.globalpingdnsresolvetypeoptions = globalpingdnsresolvetypeoptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
     methods: {
@@ -2122,6 +2222,16 @@ message HealthCheckResponse {
                                 };
                             });
                             this.monitor.tags = undefined;
+                        }
+
+                        if (this.monitor.type === "globalping" && this.monitor.subtype === "http") {
+                            if (this.monitor.keyword) {
+                                this.monitor.responsecheck = "keyword";
+                            } else if (this.monitor.expectedValue) {
+                                this.monitor.responsecheck = "json-query";
+                            } else {
+                                this.monitor.responsecheck = null;
+                            }
                         }
 
                         // Handling for monitors that are created before 1.7.0

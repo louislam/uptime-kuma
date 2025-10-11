@@ -1167,5 +1167,6 @@
     "GlobalpingIpFamilyInfo": "The IP version to use. Only allowed if the target is a hostname",
     "GlobalpingResolverInfo": "IPv4/IPv6 address or a fully Qualified Domain Name (FQDN). Defaults to the probe system resolver",
     "Location": "Location",
-    "Monitor Subtype": "Monitor Subtype"
+    "Monitor Subtype": "Monitor Subtype",
+    "Check for": "Check for"
 }
