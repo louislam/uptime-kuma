@@ -19,7 +19,7 @@ const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
-const radiusClient = require("node-radius-client");
+const RadiusClient = require("./radius-client");
 const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
@@ -498,7 +498,7 @@ exports.radius = function (
     port = 1812,
     timeout = 2500,
 ) {
-    const client = new radiusClient({
+    const client = new RadiusClient({
         host: hostname,
         hostPort: port,
         timeout: timeout,

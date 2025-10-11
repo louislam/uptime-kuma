@@ -15,8 +15,11 @@
 </template>
 
 <script>
+
 export default {
-    components: {},
+    components: {
+
+    },
     props: {
         filterActive: {
             type: Boolean,
@@ -130,29 +133,5 @@ export default {
 
 .filter-active {
     color: $highlight;
-}
-
-/* =========================
-   Mobile Responsive Styles
-========================= */
-@media (max-width: 450px) {
-    .filter-dropdown-menu {
-        width: 100%;
-        left: 0;
-        overflow-x: hidden;
-    }
-
-    .filter-dropdown-menu button {
-        font-size: 12px;
-        padding: 4px 6px;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-    }
-
-    .dropdown-content {
-        max-width: 100%;
-        box-sizing: border-box;
-    }
 }
 </style>

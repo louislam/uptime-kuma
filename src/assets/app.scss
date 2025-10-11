@@ -482,7 +482,6 @@ optgroup {
         .info {
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         &:hover {
@@ -649,20 +648,3 @@ $shadow-box-padding: 20px;
 // Localization
 
 @import "localization.scss";
-@media (max-width: 480px) {
-  .btn {
-    padding: 0.4rem 0.8rem !important;
-    font-size: 0.85rem !important;
-    max-width: 100% !important;
-    white-space: normal !important;
-    box-sizing: border-box;
-  }
-
-  .button-container,
-  .btn-group,
-  .monitor-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-}
