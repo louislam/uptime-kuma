@@ -598,7 +598,7 @@
                                     <VueMultiselect
                                         id="dns_resolve_type"
                                         v-model="monitor.dns_resolve_type"
-                                        :options="dnsresolvetypeoptions"
+                                        :options="dnsresolvetypeOptions"
                                         :multiple="false"
                                         :close-on-select="true"
                                         :clear-on-select="false"
@@ -1592,7 +1592,7 @@ export default {
                 // Do not add default value here, please check init() method
             },
             acceptedStatusCodeOptions: [],
-            dnsresolvetypeoptions: [],
+            dnsresolvetypeOptions: [],
             globalpingdnsresolvetypeoptions: [],
             kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
@@ -2106,7 +2106,7 @@ message HealthCheckResponse {
             "500-599",
         ];
 
-        const dnsresolvetypeoptions = [
+        const dnsresolvetypeOptions = [
             "A",
             "AAAA",
             "CAA",
@@ -2150,7 +2150,7 @@ message HealthCheckResponse {
         }
 
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
-        this.dnsresolvetypeoptions = dnsresolvetypeoptions;
+        this.dnsresolvetypeOptions = dnsresolvetypeOptions;
         this.globalpingdnsresolvetypeoptions = globalpingdnsresolvetypeoptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
     },
