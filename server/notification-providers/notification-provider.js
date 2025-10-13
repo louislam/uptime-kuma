@@ -1,5 +1,7 @@
 const { Liquid } = require("liquidjs");
 const { DOWN } = require("../../src/util");
+const { HttpProxyAgent } = require("http-proxy-agent");
+const { HttpsProxyAgent } = require("https-proxy-agent");
 
 class NotificationProvider {
 
@@ -114,6 +116,30 @@ class NotificationProvider {
         }
 
         throw new Error(msg);
+    }
+
+    /**
+     * Returns axios config with proxy agent if proxy env is set.
+     * @param {object} axiosConfig - Axios config containing params
+     * @returns {object} Axios config
+     */
+    getAxiosConfigWithProxy(axiosConfig = {}) {
+        const proxyEnv = process.env.notification_proxy || process.env.NOTIFICATION_PROXY;
+        if (proxyEnv) {
+            const proxyUrl = new URL(proxyEnv);
+
+            if (proxyUrl.protocol === "http:") {
+                axiosConfig.httpAgent = new HttpProxyAgent(proxyEnv);
+                axiosConfig.httpsAgent = new HttpsProxyAgent(proxyEnv);
+            } else if (proxyUrl.protocol === "https:") {
+                const agent = new HttpsProxyAgent(proxyEnv);
+                axiosConfig.httpAgent = agent;
+                axiosConfig.httpsAgent = agent;
+            }
+
+            axiosConfig.proxy = false;
+        }
+        return axiosConfig;
     }
 }
 

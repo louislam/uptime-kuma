@@ -132,6 +132,7 @@ export default {
                 "lunasea": "LunaSea",
                 "matrix": "Matrix",
                 "mattermost": "Mattermost",
+                "nextcloudtalk": "Nextcloud Talk",
                 "nostr": "Nostr",
                 "ntfy": "Ntfy",
                 "octopush": "Octopush",
@@ -165,10 +166,12 @@ export default {
                 "ZohoCliq": "ZohoCliq",
                 "SevenIO": "SevenIO",
                 "whapi": "WhatsApp (Whapi)",
+                "evolution": "WhatsApp (Evolution)",
                 "waha": "WhatsApp (WAHA)",
                 "gtxmessaging": "GtxMessaging",
                 "Cellsynt": "Cellsynt",
                 "SendGrid": "SendGrid",
+                "Brevo": "Brevo",
                 "notifery": "Notifery"
             };
 

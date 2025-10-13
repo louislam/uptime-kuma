@@ -13,12 +13,13 @@ class OneChat extends NotificationProvider {
         const url = "https://chat-api.one.th/message/api/v1/push_message";
 
         try {
-            const config = {
+            let config = {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + notification.accessToken,
                 },
             };
+            config = this.getAxiosConfigWithProxy(config);
             if (heartbeatJSON == null) {
                 const testMessage = {
                     to: notification.recieverId,
