@@ -357,7 +357,7 @@
 
                                 <div v-if="monitor.subtype === 'http'" class="my-3">
                                     <label for="url" class="form-label">{{ $t("URL") }}</label>
-                                    <input id="url" v-model="monitor.url" type="url" class="form-control" required data-testid="url-input">
+                                    <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
                                     <div class="form-text">
                                         {{ $t("GlobalpingHostname") }}
                                     </div>

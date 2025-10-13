@@ -8,8 +8,8 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
-const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, encodeBase64
+const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, httpNtlm, radius, grpcQuery,
+    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, encodeBase64, checkCertExpiryNotifications
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -341,6 +341,7 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
+        this.rootCertificates = rootCertificates;
         this.prometheus = new Prometheus(this);
 
         const beat = async () => {
@@ -1364,49 +1365,6 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * checks certificate chain for expiring certificates
-     * @param {object} tlsInfoObject Information about certificate
-     * @returns {void}
-     */
-    async checkCertExpiryNotifications(tlsInfoObject) {
-        if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
-            const notificationList = await Monitor.getNotificationList(this);
-
-            if (! notificationList.length > 0) {
-                // fail fast. If no notification is set, all the following checks can be skipped.
-                log.debug("monitor", "No notification, no need to send cert notification");
-                return;
-            }
-
-            let notifyDays = await setting("tlsExpiryNotifyDays");
-            if (notifyDays == null || !Array.isArray(notifyDays)) {
-                // Reset Default
-                await setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
-                notifyDays = [ 7, 14, 21 ];
-            }
-
-            if (Array.isArray(notifyDays)) {
-                for (const targetDays of notifyDays) {
-                    let certInfo = tlsInfoObject.certInfo;
-                    while (certInfo) {
-                        let subjectCN = certInfo.subject["CN"];
-                        if (rootCertificates.has(certInfo.fingerprint256)) {
-                            log.debug("monitor", `Known root cert: ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
-                            break;
-                        } else if (certInfo.daysRemaining > targetDays) {
-                            log.debug("monitor", `No need to send cert notification for ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
-                        } else {
-                            log.debug("monitor", `call sendCertNotificationByTargetDays for ${targetDays} deadline on certificate ${subjectCN}.`);
-                            await this.sendCertNotificationByTargetDays(subjectCN, certInfo.certType, certInfo.daysRemaining, targetDays, notificationList);
-                        }
-                        certInfo = certInfo.issuerCertificate;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * Send a certificate notification when certificate expires in less
      * than target days
      * @param {string} certCN  Common Name attribute from the certificate subject
@@ -1761,7 +1719,7 @@ class Monitor extends BeanModel {
 
         if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
-            await this.checkCertExpiryNotifications(tlsInfo);
+            await checkCertExpiryNotifications(this, tlsInfo);
         }
     }
 }

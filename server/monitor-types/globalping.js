@@ -2,7 +2,7 @@ const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
 const { Settings } = require("../settings");
 const { log, UP, DOWN, evaluateJsonQuery } = require("../../src/util");
-const { checkStatusCode, getOidcTokenClientCredentials, encodeBase64 } = require("../util-server");
+const { checkStatusCode, getOidcTokenClientCredentials, encodeBase64, getDaysRemaining, checkCertExpiryNotifications } = require("../util-server");
 const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators } = require("../monitor-conditions/operators");
 const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
@@ -237,7 +237,7 @@ class GlobalpingMonitorType extends MonitorType {
             return;
         }
 
-        // TODO: add tls notification
+        await this.handleTLSInfo(monitor, protocol, result.tls);
 
         heartbeat.status = UP;
     }
@@ -388,6 +388,64 @@ class GlobalpingMonitorType extends MonitorType {
         return {
             "Authorization": "Basic " + encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass),
         };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async handleTLSInfo(monitor, protocol, tlsInfo) {
+        if (!tlsInfo) {
+            return;
+        }
+
+        if (!monitor.ignoreTls && protocol === "HTTPS" && !tlsInfo.authorized) {
+            throw new Error(`TLS certificate is not authorized: ${tlsInfo.error}`);
+        }
+
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
+            monitor.id,
+        ]);
+
+        if (tlsInfoBean == null) {
+            tlsInfoBean = R.dispense("monitor_tls_info");
+            tlsInfoBean.monitor_id = monitor.id;
+        } else {
+            try {
+                let oldCertInfo = JSON.parse(tlsInfoBean.info_json);
+
+                if (oldCertInfo && oldCertInfo.certInfo && oldCertInfo.certInfo.fingerprint256 !== tlsInfo.fingerprint256) {
+                    log.debug("monitor", "Resetting sent_history");
+                    await R.exec("DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?", [
+                        monitor.id
+                    ]);
+                }
+            } catch (e) {}
+        }
+
+        const validTo = new Date(tlsInfo.expiresAt);
+        const certResult = {
+            valid: tlsInfo.authorized,
+            certInfo: {
+                subject: tlsInfo.subject,
+                issuer: tlsInfo.issuer,
+                validTo: validTo,
+                daysRemaining: getDaysRemaining(new Date(), validTo),
+                fingerprint: tlsInfo.fingerprint256,
+                fingerprint256: tlsInfo.fingerprint256,
+                certType: "",
+            }
+        };
+
+        tlsInfoBean.info_json = JSON.stringify(certResult);
+        await R.store(tlsInfoBean);
+
+        if (monitor.prometheus) {
+            monitor.prometheus.update(null, certResult);
+        }
+
+        if (!monitor.ignoreTls && monitor.expiryNotification) {
+            await checkCertExpiryNotifications(monitor, certResult);
+        }
     }
 }
 
