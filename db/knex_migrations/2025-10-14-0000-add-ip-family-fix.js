@@ -2,7 +2,8 @@ exports.up = function (knex) {
     return knex.schema
         .alterTable("monitor", function (table) {
             // Fix ip_family, change to varchar instead of boolean
-            table.string("ip_family", 20).defaultTo(null).alter();
+            // possible values are "ipv4" and "ipv6"
+            table.string("ip_family", 4).defaultTo(null).alter();
         });
 };
 
