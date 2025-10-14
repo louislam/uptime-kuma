@@ -342,7 +342,7 @@ class GlobalpingMonitorType extends MonitorType {
         let conditionsResult = true;
         const handleConditions = (data) => conditions ? evaluateExpressionGroup(conditions, data) : true;
 
-        const dnsMessage = (result.answers || []).map(answer => answer.value).join(" | ");
+        let dnsMessage = (result.answers || []).map(answer => answer.value).join(" | ");
         const values = (result.answers || []).map(answer => answer.value);
 
         switch (monitor.dns_resolve_type) {
@@ -372,7 +372,7 @@ class GlobalpingMonitorType extends MonitorType {
 
         heartbeat.ping = result.timings.total || 0;
         if (!dnsMessage) {
-            this.dnsMessage = "no records found";
+            dnsMessage = `No records found. ${result.statusCodeName}`;
         }
         heartbeat.msg = this.formatResponse(probe, dnsMessage);
         heartbeat.status = conditionsResult ? UP : DOWN;

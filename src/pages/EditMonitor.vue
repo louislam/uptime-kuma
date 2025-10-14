@@ -1523,6 +1523,7 @@ const monitorDefaults = {
     url: "https://",
     method: "GET",
     protocol: null,
+    location: "world",
     ipFamily: null,
     interval: 60,
     humanReadableInterval: relativeTimeFormatter.secondsToHumanReadableFormat(60),
