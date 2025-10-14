@@ -123,6 +123,26 @@ describe("MqttMonitorType", {
         const regex = MqttMonitorType.mqttTopicRegex("sensor.pomme/tempera*ture");
         assert.ok(regex.test("sensor.pomme/tempera*ture") === true);
         assert.ok(regex.test("sensor.pomme/humi*dity") === false);
+        assert.ok(regex.test(String.raw`sensor.pomme\*`) === false);
+        assert.ok(regex.test(String.raw`sensor.pomme\#`) === false);
+    });
+
+    test("should check specifically for backslashed + #", () => {
+        const regexSharp = MqttMonitorType.mqttTopicRegex(String.raw`sensor.pomme\#`);
+        assert.ok(regexSharp.test(String.raw`sensor.pomme\hello`) === true);
+        assert.ok(regexSharp.test(String.raw`sensor.pomme\#`) === true);
+        assert.ok(regexSharp.test("sensor.pomme") === false);
+
+        const regexPlus = MqttMonitorType.mqttTopicRegex(String.raw`sensor.pomme\+\terre`);
+        assert.ok(regexPlus.test(String.raw`sensor.pomme\hello\terre`) === true);
+        assert.ok(regexPlus.test(String.raw`sensor.pomme\#\terre`) === true);
+        assert.ok(regexPlus.test(String.raw`sensor.pomme\\a`) === false);
+    });
+
+    test("should check specifically for the escaping of single quotes ' regex char", () => {
+        const regex = MqttMonitorType.mqttTopicRegex("sensor.pomme/tempera'ture");
+        assert.ok(regex.test("sensor.pomme/tempera'ture") === true);
+        assert.ok(regex.test("sensor.pomme/humi''dity") === false);
     });
 
     test("should match + wildcard for single level", () => {
