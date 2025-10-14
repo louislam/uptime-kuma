@@ -8,6 +8,12 @@
                         <div class="col-md-6">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
 
+                            <i18n-t v-if="monitor.type === 'globalping'" keypath="GlobalpingDescription" tag="p" class="form-text">
+                                <template #accountSettings>
+                                    <router-link to="/settings/general">{{ $t("account settings") }}</router-link>
+                                </template>
+                            </i18n-t>
+
                             <div class="my-3">
                                 <label for="type" class="form-label">{{ $t("Monitor Type") }}</label>
                                 <select id="type" v-model="monitor.type" class="form-select" data-testid="monitor-type-select">
@@ -61,7 +67,7 @@
                                     </optgroup>
 
                                     <optgroup :label="$t('Specific Monitor Type')">
-                                        <option value="globalping">Globalping</option>
+                                        <option value="globalping">Globalping - Access global monitoring probes</option>
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
                                         </option>
@@ -378,28 +384,9 @@
                                             <code>comcast+california</code>
                                         </template>
                                         <template #fullDocs>
-                                            <a href="https://globalping.com/docs/locations" target="_blank">{{ $t("GlobalpingLocationDocs") }}</a>
+                                            <a href="https://github.com/jsdelivr/globalping?tab=readme-ov-file#basic-location-targeting-" target="_blank">{{ $t("GlobalpingLocationDocs") }}</a>
                                         </template>
                                     </i18n-t>
-                                </div>
-
-                                <!-- Protocol -->
-                                <div class="my-3">
-                                    <label for="protocol" class="form-label">{{ $t("Protocol") }}</label>
-                                    <select id="protocol" v-model="monitor.protocol" class="form-select" required>
-                                        <template v-if="monitor.subtype === 'ping'">
-                                            <option value="ICMP">ICMP</option>
-                                            <option value="TCP">TCP</option>
-                                        </template>
-                                        <template v-else-if="monitor.subtype === 'http'">
-                                            <option :value="null">{{ $t("auto-select") }}</option>
-                                            <option value="HTTP2">HTTP2</option>
-                                        </template>
-                                        <template v-else-if="monitor.subtype === 'dns'">
-                                            <option value="UDP">UDP</option>
-                                            <option value="TCP">TCP</option>
-                                        </template>
-                                    </select>
                                 </div>
 
                                 <!-- IP Family -->
@@ -415,43 +402,11 @@
                                     </div>
                                 </div>
 
-                                <!-- Ping count -->
-                                <div v-if="monitor.subtype === 'ping'" class="my-3">
-                                    <label for="ping-count" class="form-label">{{ $t("pingCountLabel") }}</label>
-                                    <input id="ping-count" v-model="monitor.ping_count" type="number" class="form-control" required min="1" max="16" step="1">
-                                    <div class="form-text">
-                                        {{ $t("pingCountDescription") }}
-                                    </div>
-                                </div>
-
                                 <div v-if="monitor.subtype === 'http' || monitor.subtype === 'dns'" class="my-3">
                                     <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
                                     <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control">
                                     <div class="form-text">
                                         {{ $t("GlobalpingResolverInfo") }}
-                                    </div>
-                                </div>
-
-                                <!-- Accepted Status Codes -->
-                                <div v-if="monitor.subtype === 'http'" class="my-3">
-                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
-
-                                    <VueMultiselect
-                                        id="acceptedStatusCodes"
-                                        v-model="monitor.accepted_statuscodes"
-                                        :options="acceptedStatusCodeOptions"
-                                        :multiple="true"
-                                        :close-on-select="false"
-                                        :clear-on-select="false"
-                                        :preserve-search="true"
-                                        :placeholder="$t('Pick Accepted Status Codes...')"
-                                        :preselect-first="false"
-                                        :max-height="600"
-                                        :taggable="true"
-                                    ></VueMultiselect>
-
-                                    <div class="form-text">
-                                        {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
                                 </div>
 
@@ -490,6 +445,25 @@
                                         </div>
                                     </div>
                                 </template>
+
+                                <!-- Protocol -->
+                                <div class="my-3">
+                                    <label for="protocol" class="form-label">{{ $t("Protocol") }}</label>
+                                    <select id="protocol" v-model="monitor.protocol" class="form-select" required>
+                                        <template v-if="monitor.subtype === 'ping'">
+                                            <option value="ICMP">ICMP</option>
+                                            <option value="TCP">TCP</option>
+                                        </template>
+                                        <template v-else-if="monitor.subtype === 'http'">
+                                            <option :value="null">{{ $t("auto-select") }}</option>
+                                            <option value="HTTP2">HTTP2</option>
+                                        </template>
+                                        <template v-else-if="monitor.subtype === 'dns'">
+                                            <option value="UDP">UDP</option>
+                                            <option value="TCP">TCP</option>
+                                        </template>
+                                    </select>
+                                </div>
                             </template>
 
                             <!-- Port -->
@@ -823,7 +797,7 @@
                             </div>
 
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp' || monitor.type === 'globalping'" class="my-3">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
                                 <label for="timeout" class="form-label">
                                     {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
                                     <span v-if="monitor.type !== 'ping'">({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</span>
@@ -892,7 +866,7 @@
                             </div>
 
                             <!-- Max Packets / Count -->
-                            <div v-if="monitor.type === 'ping'" class="my-3">
+                            <div v-if="monitor.type === 'ping' || (monitor.type === 'globalping' && monitor.subtype === 'ping')" class="my-3">
                                 <label for="ping-count" class="form-label">{{ $t("pingCountLabel") }}</label>
                                 <input id="ping-count" v-model="monitor.ping_count" type="number" class="form-control" required min="1" max="100" step="1">
                                 <div class="form-text">
@@ -972,6 +946,29 @@
                                     </i18n-t>
                                 </div>
                             </template>
+
+                            <!-- Globalping Accepted Status Codes -->
+                            <div v-if="monitor.type === 'globalping' && monitor.subtype === 'http'" class="my-3">
+                                <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
+
+                                <VueMultiselect
+                                    id="acceptedStatusCodes"
+                                    v-model="monitor.accepted_statuscodes"
+                                    :options="acceptedStatusCodeOptions"
+                                    :multiple="true"
+                                    :close-on-select="false"
+                                    :clear-on-select="false"
+                                    :preserve-search="true"
+                                    :placeholder="$t('Pick Accepted Status Codes...')"
+                                    :preselect-first="false"
+                                    :max-height="600"
+                                    :taggable="true"
+                                ></VueMultiselect>
+
+                                <div class="form-text">
+                                    {{ $t("acceptedStatusCodesDescription") }}
+                                </div>
+                            </div>
 
                             <!-- Parent Monitor -->
                             <div class="my-3">

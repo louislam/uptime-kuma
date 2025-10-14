@@ -11,7 +11,11 @@ const { R } = require("redbean-node");
 
 class GlobalpingMonitorType extends MonitorType {
     name = "globalping";
+
     agent = "";
+    hasAPIToken = false;
+    creditsHelpLink = "https://dash.globalping.io?view=add-credits";
+
     supportsConditions = true;
     conditionVariables = [
         new ConditionVariable("record", defaultStringOperators ),
@@ -30,10 +34,10 @@ class GlobalpingMonitorType extends MonitorType {
      */
     async check(monitor, heartbeat, _server) {
         const apiKey = await Settings.get("globalpingApiToken");
+        this.hasAPIToken = !!apiKey;
         const client = new Globalping({
             auth: apiKey,
             agent: this.agent,
-            timeout: monitor.timeout * 1000,
         });
 
         switch (monitor.subtype ) {
@@ -76,39 +80,51 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
-        const res = await client.createMeasurement(opts);
+        let res = await client.createMeasurement(opts);
 
         if (!res.ok) {
-            throw new Error(
-                `Failed to create measurement: ${this.formatApiError(res.data.error)}`,
-            );
+            // retry
+            res = await client.createMeasurement(opts);
+            if (!res.ok) {
+                if (Globalping.isHttpStatus(429, res)) {
+                    throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError()}`);
+                }
+                throw new Error(
+                    `Failed to create measurement: ${this.formatApiError(res.data.error)}`
+                );
+            }
         }
 
-        const measurement = await client.awaitMeasurement(res.data.id);
+        log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
+        let measurement = await client.awaitMeasurement(res.data.id);
 
         if (!measurement.ok) {
-            throw new Error(
-                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`,
-            );
+            // retry
+            measurement = await client.awaitMeasurement(res.data.id);
+            if (!measurement.ok) {
+                throw new Error(
+                    `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
+                );
+            }
         }
 
-        log.debug("monitor", `Globalping measurement data: ${JSON.stringify(measurement.data)}`);
+        const probe = measurement.data.results[0].probe;
         const result = measurement.data.results[0].result;
 
         if (result.status === "failed") {
-            heartbeat.msg = `Failed: ${result.rawOutput}`;
+            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
             heartbeat.status = DOWN;
             return;
         }
 
         if (!result.timings?.length) {
-            heartbeat.msg = `Failed: ${result.rawOutput}`;
+            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
             heartbeat.status = DOWN;
             return;
         }
 
         heartbeat.ping = result.stats.avg || 0;
-        heartbeat.msg = "";
+        heartbeat.msg = this.formatResponse(probe, "OK");
         heartbeat.status = UP;
     }
 
@@ -169,27 +185,39 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
-        const res = await client.createMeasurement(opts);
+        let res = await client.createMeasurement(opts);
 
         if (!res.ok) {
-            throw new Error(
-                `Failed to create measurement: ${this.formatApiError(res.data.error)}`,
-            );
+            // retry
+            res = await client.createMeasurement(opts);
+            if (!res.ok) {
+                if (Globalping.isHttpStatus(429, res)) {
+                    throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError()}`);
+                }
+                throw new Error(
+                    `Failed to create measurement: ${this.formatApiError(res.data.error)}`
+                );
+            }
         }
 
-        const measurement = await client.awaitMeasurement(res.data.id);
+        log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
+        let measurement = await client.awaitMeasurement(res.data.id);
 
         if (!measurement.ok) {
-            throw new Error(
-                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`,
-            );
+            // retry
+            measurement = await client.awaitMeasurement(res.data.id);
+            if (!measurement.ok) {
+                throw new Error(
+                    `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
+                );
+            }
         }
 
-        log.debug("monitor", `Globalping measurement data: ${JSON.stringify(measurement.data)}`);
+        const probe = measurement.data.results[0].probe;
         const result = measurement.data.results[0].result;
 
         if (result.status === "failed") {
-            heartbeat.msg = `Failed: ${result.rawOutput}`;
+            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
             heartbeat.status = DOWN;
             return;
         }
@@ -197,12 +225,12 @@ class GlobalpingMonitorType extends MonitorType {
         heartbeat.ping = result.timings.total || 0;
 
         if (!checkStatusCode(result.statusCode, JSON.parse(monitor.accepted_statuscodes_json))) {
-            heartbeat.msg = `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`;
+            heartbeat.msg = this.formatResponse(probe, `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`);
             heartbeat.status = DOWN;
             return;
         }
 
-        heartbeat.msg = `${result.statusCode} - ${result.statusCodeName}`;
+        heartbeat.msg = this.formatResponse(probe, `${result.statusCode} - ${result.statusCodeName}`);
 
         // keyword
         if (monitor.keyword) {
@@ -219,7 +247,7 @@ class GlobalpingMonitorType extends MonitorType {
 
             }
 
-            heartbeat.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
+            heartbeat.msg += this.formatResponse(probe, ", keyword " + (keywordFound ? "is" : "not") + " found");
             heartbeat.status = UP;
             return;
         }
@@ -229,16 +257,17 @@ class GlobalpingMonitorType extends MonitorType {
             const { status, response } = await evaluateJsonQuery(result.rawOutput, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
 
             if (!status) {
-                throw new Error(`JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`);
+                throw new Error(this.formatResponse(probe, `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`));
             }
 
-            heartbeat.msg = `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`;
+            heartbeat.msg = this.formatResponse(probe, `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`);
             heartbeat.status = UP;
             return;
         }
 
         await this.handleTLSInfo(monitor, protocol, result.tls);
 
+        heartbeat.msg = this.formatResponse(probe, "OK");
         heartbeat.status = UP;
     }
 
@@ -272,27 +301,39 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
-        const res = await client.createMeasurement(opts);
-
+        let res = await client.createMeasurement(opts);
+        log.debug("monitor", `Globalping ${JSON.stringify(res)}`);
         if (!res.ok) {
-            throw new Error(
-                `Failed to create measurement: ${this.formatApiError(res.data.error)}`,
-            );
+            // retry
+            res = await client.createMeasurement(opts);
+            if (!res.ok) {
+                if (Globalping.isHttpStatus(429, res)) {
+                    throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError()}`);
+                }
+                throw new Error(
+                    `Failed to create measurement: ${this.formatApiError(res.data.error)}`
+                );
+            }
         }
 
-        const measurement = await client.awaitMeasurement(res.data.id);
+        log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
+        let measurement = await client.awaitMeasurement(res.data.id);
 
         if (!measurement.ok) {
-            throw new Error(
-                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`,
-            );
+            // retry
+            measurement = await client.awaitMeasurement(res.data.id);
+            if (!measurement.ok) {
+                throw new Error(
+                    `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
+                );
+            }
         }
 
-        log.debug("monitor", `Globalping measurement data: ${JSON.stringify(measurement.data)}`);
+        const probe = measurement.data.results[0].probe;
         const result = measurement.data.results[0].result;
 
         if (result.status === "failed") {
-            heartbeat.msg = `Failed: ${result.rawOutput}`;
+            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
             heartbeat.status = DOWN;
             return;
         }
@@ -330,14 +371,12 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         heartbeat.ping = result.timings.total || 0;
-        heartbeat.msg = dnsMessage;
+        heartbeat.msg = this.formatResponse(probe, dnsMessage);
         heartbeat.status = conditionsResult ? UP : DOWN;
     }
 
     /**
-     * Format an API error message.
-     * @param {object} error - The error object.
-     * @returns {string} The formatted error message.
+     * @inheritdoc
      */
     formatApiError(error) {
         let str = `${error.type} ${error.message}.`;
@@ -347,6 +386,40 @@ class GlobalpingMonitorType extends MonitorType {
             }
         }
         return str;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    formatTooManyRequestsError() {
+        if (this.hasAPIToken) {
+            return `You have run out of credits. Get higher limits by sponsoring us or hosting probes. Learn more at ${this.creditsHelpLink}.`;
+        }
+        return `You have run out of credits. Get higher limits by creating an account. Sign up at ${this.creditsHelpLink}.`;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    formatProbeLocation(probe) {
+        let tag = "";
+
+        for (const t of probe.tags) {
+            if (Number.isInteger(Number(t.slice(-1)))) {
+                tag = t;
+                break;
+            }
+        }
+        return `${probe.city}${probe.state ? ` (${probe.state})` : ""
+             }, ${probe.country}, ${probe.continent}, ${probe.network
+             } (AS${probe.asn})${tag ? `, (${tag})` : ""}`;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    formatResponse(probe, text) {
+        return `${this.formatProbeLocation(probe)} : ${text}`;
     }
 
     /**
@@ -399,7 +472,7 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         if (!monitor.ignoreTls && protocol === "HTTPS" && !tlsInfo.authorized) {
-            throw new Error(`TLS certificate is not authorized: ${tlsInfo.error}`);
+            throw new Error(this.formatResponse(`TLS certificate is not authorized: ${tlsInfo.error}`));
         }
 
         let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
