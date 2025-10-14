@@ -854,7 +854,7 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
                     const monitorType = UptimeKumaServer.monitorTypeList[this.type];
                     await monitorType.check(this, bean, UptimeKumaServer.getInstance());
-                    if (!bean.ping) {
+                    if (bean.ping === undefined || bean.ping === null) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }
 
