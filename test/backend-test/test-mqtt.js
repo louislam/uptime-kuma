@@ -151,6 +151,11 @@ describe("MqttMonitorType", {
         assert.ok(regex.test("sensor/room2/temperature") === true);
         assert.ok(regex.test("sensor/room1/humidity") === false);
         assert.ok(regex.test("sensor/temperature") === false);
+
+        const regexStartPlus = MqttMonitorType.mqttTopicRegex("+/temperature");
+        assert.ok(regexStartPlus.test("sensor/temperature") === true);
+        assert.ok(regexStartPlus.test("sorsen/temperature") === true);
+        assert.ok(regexStartPlus.test("sorsen/sensor") === false);
     });
 
     test("should match # wildcard for multi-level", () => {
