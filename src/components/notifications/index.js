@@ -2,6 +2,7 @@ import Alerta from "./Alerta.vue";
 import AlertNow from "./AlertNow.vue";
 import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
+import Bale from "./Bale.vue";
 import Bark from "./Bark.vue";
 import Bitrix24 from "./Bitrix24.vue";
 import Notifery from "./Notifery.vue";
@@ -88,6 +89,7 @@ const NotificationFormList = {
     "AlertNow": AlertNow,
     "AliyunSMS": AliyunSMS,
     "apprise": Apprise,
+    bale: Bale,
     "Bark": Bark,
     "Bitrix24": Bitrix24,
     "clicksendsms": ClickSendSMS,
