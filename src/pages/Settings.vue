@@ -183,6 +183,55 @@ export default {
                     this.settings.trustProxy = false;
                 }
 
+                if (this.settings.oidcEnabled === undefined) {
+                    this.settings.oidcEnabled = false;
+                }
+
+                if (this.settings.oidcIssuerURL === undefined) {
+                    this.settings.oidcIssuerURL = "";
+                }
+
+                if (this.settings.oidcClientID === undefined) {
+                    this.settings.oidcClientID = "";
+                }
+
+                if (this.settings.oidcClientSecret === undefined) {
+                    this.settings.oidcClientSecret = "";
+                }
+
+                if (this.settings.oidcScope === undefined) {
+                    this.settings.oidcScope = "openid profile email";
+                }
+
+                if (this.settings.oidcRedirectURI === undefined) {
+                    this.settings.oidcRedirectURI = "";
+                }
+
+                if (this.settings.oidcUsernameClaim === undefined) {
+                    this.settings.oidcUsernameClaim = "preferred_username";
+                }
+
+                if (this.settings.oidcAutoCreateUser === undefined) {
+                    this.settings.oidcAutoCreateUser = false;
+                }
+
+                if (this.settings.oidcButtonLabel === undefined) {
+                    this.settings.oidcButtonLabel = "";
+                }
+
+                if (this.settings.oidcDiscoveryURL === undefined) {
+                    this.settings.oidcDiscoveryURL = "";
+                }
+
+                if (this.settings.oidcTokenEndpointAuthMethod === undefined) {
+                    this.settings.oidcTokenEndpointAuthMethod = "auto";
+                } else {
+                    const allowedAuthMethods = [ "auto", "client_secret_basic", "client_secret_post", "none" ];
+                    if (!allowedAuthMethods.includes(this.settings.oidcTokenEndpointAuthMethod)) {
+                        this.settings.oidcTokenEndpointAuthMethod = "auto";
+                    }
+                }
+
                 this.settingsLoaded = true;
             });
         },
@@ -226,6 +275,36 @@ export default {
                     success: false,
                     msg: this.$t("dataRetentionTimeError"),
                 };
+            }
+
+            if (this.settings.oidcEnabled) {
+                if (!this.settings.oidcIssuerURL) {
+                    return {
+                        success: false,
+                        msg: this.$t("oidcIssuerRequired"),
+                    };
+                }
+
+                if (!this.settings.oidcClientID) {
+                    return {
+                        success: false,
+                        msg: this.$t("oidcClientIdRequired"),
+                    };
+                }
+
+                if (!this.settings.oidcScope || !this.settings.oidcScope.toLowerCase().split(/\s+/).includes("openid")) {
+                    return {
+                        success: false,
+                        msg: this.$t("oidcScopeMissingOpenID"),
+                    };
+                }
+
+                if ((this.settings.oidcTokenEndpointAuthMethod === "client_secret_basic" || this.settings.oidcTokenEndpointAuthMethod === "client_secret_post") && !this.settings.oidcClientSecret) {
+                    return {
+                        success: false,
+                        msg: this.$t("oidcClientSecretRequired"),
+                    };
+                }
             }
             return {
                 success: true,
