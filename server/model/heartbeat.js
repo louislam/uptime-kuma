@@ -40,6 +40,14 @@ class Heartbeat extends BeanModel {
         };
     }
 
+    /**
+     * TODO: Find the msg from the `msg` table and get the msg_id
+     * @param value
+     */
+    set msg(value) {
+        throw new Error("Not implemented yet")
+    }
+
 }
 
 module.exports = Heartbeat;
