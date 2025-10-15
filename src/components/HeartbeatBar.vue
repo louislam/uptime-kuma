@@ -144,20 +144,15 @@ export default {
                 return [];
             }
 
-            // If heartbeat days is configured (not auto), data is already aggregated from server
-            if (this.normalizedHeartbeatBarDays > 0 && this.beatList.length > 0) {
-                // Show all beats from server - they are already properly aggregated
-                return this.beatList;
-            }
-
-            // Original logic for auto mode (heartbeatBarDays = 0)
-            let placeholders = [];
-
             // Handle case where maxBeat is -1 (no limit)
             if (this.maxBeat <= 0) {
                 return this.beatList;
             }
 
+            // For both configured days and auto mode, show only what fits on screen
+            // The server provides consistent data (300 buckets for configured days, 100 beats for auto)
+            // We slice to show only what fits in the current container width
+            let placeholders = [];
             let start = this.beatList.length - this.maxBeat;
 
             if (this.move) {
@@ -323,22 +318,7 @@ export default {
         resize() {
             if (this.$refs.wrap) {
                 const newMaxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
-
-                // If maxBeat changed and we're in configured days mode, notify parent to reload data
-                if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
-                    this.maxBeat = newMaxBeat;
-
-                    // Find the closest parent with reloadHeartbeatData method (StatusPage)
-                    let parent = this.$parent;
-                    while (parent && !parent.reloadHeartbeatData) {
-                        parent = parent.$parent;
-                    }
-                    if (parent && parent.reloadHeartbeatData) {
-                        parent.reloadHeartbeatData(newMaxBeat);
-                    }
-                } else {
-                    this.maxBeat = newMaxBeat;
-                }
+                this.maxBeat = newMaxBeat;
             }
         },
 
