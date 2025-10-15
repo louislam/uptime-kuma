@@ -12,6 +12,21 @@
     </div>
 
     <div class="mb-3">
+        <label for="webhook-http-method" class="form-label">{{ $t("HTTP Method") }}</label>
+        <select
+            id="webhook-http-method"
+            v-model="$parent.notification.httpMethod"
+            class="form-select"
+        >
+            <option value="post">POST</option>
+            <option value="get">GET</option>
+        </select>
+        <div class="form-text">
+            {{ httpMethodDescription }}
+        </div>
+    </div>
+
+    <div v-if="httpMethod !== 'get'" class="mb-3">
         <label for="webhook-request-body" class="form-label">{{ $t("Request Body") }}</label>
         <select
             id="webhook-request-body"
@@ -66,6 +81,16 @@ export default {
         };
     },
     computed: {
+        httpMethod() {
+            // Default to 'post' for backward compatibility
+            return this.$parent.notification.httpMethod || "post";
+        },
+        httpMethodDescription() {
+            if (this.httpMethod === "get") {
+                return this.$t("webhookGetMethodDesc");
+            }
+            return this.$t("webhookPostMethodDesc");
+        },
         headersPlaceholder() {
             return this.$t("Example:", [
 `{
@@ -80,6 +105,12 @@ export default {
     "Body": "{{ msg }}"
 }`
             ]);
+        }
+    },
+    mounted() {
+        // Set default HTTP method to 'post' for backward compatibility
+        if (typeof this.$parent.notification.httpMethod === "undefined") {
+            this.$parent.notification.httpMethod = "post";
         }
     },
 };
