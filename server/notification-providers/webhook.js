@@ -12,9 +12,8 @@ class Webhook extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            // Default to POST for backward compatibility
             const httpMethod = notification.httpMethod || "post";
-
+            
             let data = {
                 heartbeat: heartbeatJSON,
                 monitor: monitorJSON,
@@ -24,41 +23,19 @@ class Webhook extends NotificationProvider {
                 headers: {}
             };
 
-            // For GET requests, we'll send data as query parameters
             if (httpMethod.toLowerCase() === "get") {
-                // Prepare query parameters
                 config.params = {
                     msg: msg
                 };
 
-                // Add heartbeat data if available
                 if (heartbeatJSON) {
                     config.params.heartbeat = JSON.stringify(heartbeatJSON);
                 }
 
-                // Add monitor data if available
                 if (monitorJSON) {
                     config.params.monitor = JSON.stringify(monitorJSON);
                 }
-
-                // Additional headers can still be added for GET requests
-                if (notification.webhookAdditionalHeaders) {
-                    try {
-                        config.headers = {
-                            ...config.headers,
-                            ...JSON.parse(notification.webhookAdditionalHeaders)
-                        };
-                    } catch (err) {
-                        throw "Additional Headers is not a valid JSON";
-                    }
-                }
-
-                config = this.getAxiosConfigWithProxy(config);
-                await axios.get(notification.webhookURL, config);
-                return okMsg;
-
             } else {
-                // POST request logic (original behavior)
                 if (notification.webhookContentType === "form-data") {
                     const formData = new FormData();
                     formData.append("data", JSON.stringify(data));
@@ -67,22 +44,28 @@ class Webhook extends NotificationProvider {
                 } else if (notification.webhookContentType === "custom") {
                     data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
                 }
-
-                if (notification.webhookAdditionalHeaders) {
-                    try {
-                        config.headers = {
-                            ...config.headers,
-                            ...JSON.parse(notification.webhookAdditionalHeaders)
-                        };
-                    } catch (err) {
-                        throw "Additional Headers is not a valid JSON";
-                    }
-                }
-
-                config = this.getAxiosConfigWithProxy(config);
-                await axios.post(notification.webhookURL, data, config);
-                return okMsg;
             }
+
+            if (notification.webhookAdditionalHeaders) {
+                try {
+                    config.headers = {
+                        ...config.headers,
+                        ...JSON.parse(notification.webhookAdditionalHeaders)
+                    };
+                } catch (err) {
+                    throw "Additional Headers is not a valid JSON";
+                }
+            }
+
+            config = this.getAxiosConfigWithProxy(config);
+            
+            if (httpMethod.toLowerCase() === "get") {
+                await axios.get(notification.webhookURL, config);
+            } else {
+                await axios.post(notification.webhookURL, data, config);
+            }
+            
+            return okMsg;
 
         } catch (error) {
             this.throwGeneralAxiosError(error);

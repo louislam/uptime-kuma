@@ -82,7 +82,6 @@ export default {
     },
     computed: {
         httpMethod() {
-            // Default to 'post' for backward compatibility
             return this.$parent.notification.httpMethod || "post";
         },
         httpMethodDescription() {
@@ -108,7 +107,6 @@ export default {
         }
     },
     mounted() {
-        // Set default HTTP method to 'post' for backward compatibility
         if (typeof this.$parent.notification.httpMethod === "undefined") {
             this.$parent.notification.httpMethod = "post";
         }
