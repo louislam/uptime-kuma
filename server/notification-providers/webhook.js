@@ -13,7 +13,7 @@ class Webhook extends NotificationProvider {
 
         try {
             const httpMethod = notification.httpMethod || "post";
-            
+
             let data = {
                 heartbeat: heartbeatJSON,
                 monitor: monitorJSON,
@@ -58,13 +58,13 @@ class Webhook extends NotificationProvider {
             }
 
             config = this.getAxiosConfigWithProxy(config);
-            
+
             if (httpMethod.toLowerCase() === "get") {
                 await axios.get(notification.webhookURL, config);
             } else {
                 await axios.post(notification.webhookURL, data, config);
             }
-            
+
             return okMsg;
 
         } catch (error) {
