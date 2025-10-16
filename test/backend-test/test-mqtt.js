@@ -70,6 +70,12 @@ describe("MqttMonitorType", {
         assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
     });
 
+    test("valid nested topic (with special chars)", async () => {
+        const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/'/$/./*/%", "a/'/$/./*/%");
+        assert.strictEqual(heartbeat.status, UP);
+        assert.strictEqual(heartbeat.msg, "Topic: a/'/$/./*/%; Message: -> KEYWORD <-");
+    });
+
     test("valid wildcard topic (with #)", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/#", "a/b/c");
         assert.strictEqual(heartbeat.status, UP);
@@ -80,6 +86,12 @@ describe("MqttMonitorType", {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/+/c", "a/b/c");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
+    });
+
+    test("valid wildcard topic (with + and #)", async () => {
+        const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/+/c/#", "a/b/c/d/e");
+        assert.strictEqual(heartbeat.status, UP);
+        assert.strictEqual(heartbeat.msg, "Topic: a/b/c/d/e; Message: -> KEYWORD <-");
     });
 
     test("invalid topic", async () => {
