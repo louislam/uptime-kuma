@@ -12,6 +12,8 @@ class Webhook extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            const httpMethod = notification.httpMethod || "post";
+
             let data = {
                 heartbeat: heartbeatJSON,
                 monitor: monitorJSON,
@@ -21,13 +23,27 @@ class Webhook extends NotificationProvider {
                 headers: {}
             };
 
-            if (notification.webhookContentType === "form-data") {
-                const formData = new FormData();
-                formData.append("data", JSON.stringify(data));
-                config.headers = formData.getHeaders();
-                data = formData;
-            } else if (notification.webhookContentType === "custom") {
-                data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
+            if (httpMethod.toLowerCase() === "get") {
+                config.params = {
+                    msg: msg
+                };
+
+                if (heartbeatJSON) {
+                    config.params.heartbeat = JSON.stringify(heartbeatJSON);
+                }
+
+                if (monitorJSON) {
+                    config.params.monitor = JSON.stringify(monitorJSON);
+                }
+            } else {
+                if (notification.webhookContentType === "form-data") {
+                    const formData = new FormData();
+                    formData.append("data", JSON.stringify(data));
+                    config.headers = formData.getHeaders();
+                    data = formData;
+                } else if (notification.webhookContentType === "custom") {
+                    data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
+                }
             }
 
             if (notification.webhookAdditionalHeaders) {
@@ -42,7 +58,13 @@ class Webhook extends NotificationProvider {
             }
 
             config = this.getAxiosConfigWithProxy(config);
-            await axios.post(notification.webhookURL, data, config);
+
+            if (httpMethod.toLowerCase() === "get") {
+                await axios.get(notification.webhookURL, config);
+            } else {
+                await axios.post(notification.webhookURL, data, config);
+            }
+
             return okMsg;
 
         } catch (error) {
