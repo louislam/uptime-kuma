@@ -1208,5 +1208,6 @@
     "Nextcloud host": "Hôte Nextcloud",
     "Conversation token": "Jeton de conversation",
     "Send UP silently": "Envoyer un UP silencieusement",
-    "Installing a Nextcloud Talk bot requires administrative access to the server.": "L’installation d’un bot Nextcloud Talk nécessite un accès administratif au serveur."
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "L’installation d’un bot Nextcloud Talk nécessite un accès administratif au serveur.",
+    "auto-select": "Sélection automatique"
 }
