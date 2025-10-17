@@ -1187,5 +1187,6 @@
     "Send DOWN silently": "Invia GIU' silenziosamente",
     "Nextcloud host": "Sistema Nextcloud",
     "Conversation token": "Token di conversazione",
-    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Per installare un bot Nextcloud Talk è necessario disporre dell'accesso amministrativo al server."
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Per installare un bot Nextcloud Talk è necessario disporre dell'accesso amministrativo al server.",
+    "auto-select": "Selezione automatica"
 }
