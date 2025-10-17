@@ -1162,7 +1162,7 @@
     "OneChatBotId": "OneChat Bot-ID",
     "Ip Family": "IP-Familie",
     "Happy Eyeballs algorithm": "Happy Eyeballs Algorithmus",
-    "ipFamilyDescriptionAutoSelect": "Verwendet die {happyEyeballs} zur Bestimmung der IP-Familie.",
+    "ipFamilyDescriptionAutoSelect": "Verwendet den {happyEyeballs} zur Bestimmung der IP-Familie.",
     "Manual": "Manuell",
     "ntfyPriorityHelptextPriorityHigherThanDown": "Die reguläre Priorität sollte höher sein als die Priorität {0}. Priorität {1} ist höher als {0} Priorität {2}",
     "ntfyPriorityDown": "Priorität für DOWN-Ereignisse",
@@ -1208,5 +1208,6 @@
     "Send DOWN silently": "DOWN still senden",
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "Die Installation eines Nextcloud Talk-Bots erfordert Administratorrechte für den Server.",
     "Nextcloud host": "Nextcloud Host",
-    "Send UP silently": "UP still senden"
+    "Send UP silently": "UP still senden",
+    "auto-select": "Automatische Auswahl"
 }
