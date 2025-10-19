@@ -10,7 +10,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="my-3 form-check">
-                        <input id="show-clickable-link" v-model="monitor.isClickable" class="form-check-input" type="checkbox" data-testid="show-clickable-link" @click="toggleLink(monitor.group_index, monitor.monitor_index)" />
+                        <input id="show-clickable-link" v-model="monitor.isClickAble" class="form-check-input" type="checkbox" data-testid="show-clickable-link" @click="toggleLink(monitor.group_index, monitor.monitor_index)" />
                         <label class="form-check-label" for="show-clickable-link">
                             {{ $t("Show Clickable Link") }}
                         </label>
@@ -66,7 +66,7 @@ export default {
                 name: null,
                 monitor_index: null,
                 group_index: null,
-                isClickable: null,
+                isClickAble: null,
             },
         };
     },
@@ -90,7 +90,7 @@ export default {
                 name: monitor.element.name,
                 monitor_index: monitor.index,
                 group_index: group.index,
-                isClickable: this.showLink(monitor),
+                isClickAble: this.showLink(monitor),
                 url: monitor.element.url,
             };
 
