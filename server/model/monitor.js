@@ -56,10 +56,9 @@ class Monitor extends BeanModel {
             type: this.type,
         };
 
-         if (this.sendUrl) {
+        if (this.sendUrl) {
             obj.url = this.customUrl ?? this.url;
         }
-
 
         if (showTags) {
             obj.tags = await this.getTags();
