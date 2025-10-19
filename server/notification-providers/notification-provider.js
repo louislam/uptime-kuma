@@ -63,7 +63,11 @@ class NotificationProvider {
      * @returns {Promise<string>} rendered template
      */
     async renderTemplate(template, msg, monitorJSON, heartbeatJSON) {
-        const engine = new Liquid();
+        const engine = new Liquid({
+            root: "./no-such-directory-uptime-kuma",
+            relativeReference: false,
+            dynamicPartials: false,
+        });
         const parsedTpl = engine.parse(template);
 
         // Let's start with dummy values to simplify code
