@@ -14,6 +14,7 @@ class GtxMessaging extends NotificationProvider {
         const text = msg.replaceAll("🔴 ", "").replaceAll("✅ ", "");
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             const data = new URLSearchParams();
             data.append("from", notification.gtxMessagingFrom.trim());
             data.append("to", notification.gtxMessagingTo.trim());
@@ -21,7 +22,7 @@ class GtxMessaging extends NotificationProvider {
 
             const url = `https://rest.gtx-messaging.net/smsc/sendsms/${notification.gtxMessagingApiKey}/json`;
 
-            await axios.post(url, data);
+            await axios.post(url, data, config);
 
             return okMsg;
         } catch (error) {

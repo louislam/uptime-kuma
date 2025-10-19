@@ -12,7 +12,8 @@ class CallMeBot extends NotificationProvider {
         try {
             const url = new URL(notification.callMeBotEndpoint);
             url.searchParams.set("text", msg);
-            await axios.get(url.toString());
+            let config = this.getAxiosConfigWithProxy({});
+            await axios.get(url.toString(), config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

@@ -19,7 +19,8 @@ class Bitrix24 extends NotificationProvider {
                 "ATTACH[BLOCKS][0][MESSAGE]": msg
             };
 
-            await axios.get(`${notification.bitrix24WebhookURL}/im.notify.system.add.json`, { params });
+            let config = this.getAxiosConfigWithProxy({ params });
+            await axios.get(`${notification.bitrix24WebhookURL}/im.notify.system.add.json`, config);
             return okMsg;
 
         } catch (error) {

@@ -13,6 +13,7 @@ class GoogleChat extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             // Google Chat message formatting: https://developers.google.com/chat/api/guides/message-formats/basic
             if (notification.googleChatUseTemplate && notification.googleChatTemplate) {
                 // Send message using template
@@ -23,7 +24,7 @@ class GoogleChat extends NotificationProvider {
                     heartbeatJSON
                 );
                 const data = { "text": renderedText };
-                await axios.post(notification.googleChatWebhookURL, data);
+                await axios.post(notification.googleChatWebhookURL, data, config);
                 return okMsg;
             }
 
@@ -95,7 +96,7 @@ class GoogleChat extends NotificationProvider {
                 ],
             };
 
-            await axios.post(notification.googleChatWebhookURL, data);
+            await axios.post(notification.googleChatWebhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

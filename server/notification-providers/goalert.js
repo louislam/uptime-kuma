@@ -24,6 +24,7 @@ class GoAlert extends NotificationProvider {
             let config = {
                 headers: headers
             };
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(`${notification.goAlertBaseURL}/api/v2/generic/incoming?token=${notification.goAlertToken}`, data, config);
             return okMsg;
         } catch (error) {
