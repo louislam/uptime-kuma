@@ -64,9 +64,6 @@ export default {
             monitor: {
                 id: null,
                 name: null,
-                monitor_index: null,
-                group_index: null,
-                isClickAble: null,
             },
         };
     },
@@ -112,9 +109,16 @@ export default {
          * Attempts to guess if a link should be shown based upon if
          * sendUrl is set and if the URL is default or not.
          * @param {object} monitor Monitor to check
+         * @param {boolean} ignoreSendUrl Should the presence of the sendUrl
+         * property be ignored. This will only work in edit mode.
          * @returns {boolean} Should the link be shown?
          */
-        showLink(monitor) {
+        showLink(monitor, ignoreSendUrl = false) {
+            // We must check if there are any elements in monitorList to
+            // prevent undefined errors if it hasn't been loaded yet
+            if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
+                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
+            }
             return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
         },
 
