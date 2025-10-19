@@ -1210,5 +1210,6 @@
     "Send UP silently": "静默发送恢复正常事件",
     "Bot secret": "机器人密钥",
     "Conversation token": "会话令牌",
-    "Nextcloud host": "Nextcloud 主机"
+    "Nextcloud host": "Nextcloud 主机",
+    "auto-select": "自动选择"
 }

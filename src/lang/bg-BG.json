@@ -1208,5 +1208,6 @@
     "Bot secret": "Bot таен код",
     "Send UP silently": "Безшумно известяване за Достъпен",
     "Send DOWN silently": "Безшумно известяване за Недостъпен",
-    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Инсталирането на Nextcloud Talk бот изисква администраторски достъп до сървъра."
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Инсталирането на Nextcloud Talk бот изисква администраторски достъп до сървъра.",
+    "auto-select": "Автоматичен избор"
 }
