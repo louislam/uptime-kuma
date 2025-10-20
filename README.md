@@ -63,7 +63,7 @@ Uptime Kuma is now running on <http://0.0.0.0:3001>.
 > If you want to limit exposure to localhost (without exposing port for other users or to use a [reverse proxy](https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy)), you can expose the port like this:
 >
 > ```bash
-> docker run -d --restart=always -p 127.0.0.1:3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+> docker run -d --restart=always -p 127.0.0.1:3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:2
 > ```
 
 ### 💪🏻 Non-Docker
@@ -75,7 +75,7 @@ Requirements:
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
   - ❌ FreeBSD / OpenBSD / NetBSD
   - ❌ Replit / Heroku
-- [Node.js](https://nodejs.org/en/download/) >= 18 or >= 20.4
+- [Node.js](https://nodejs.org/en/download/) >= 20.4
 - [Git](https://git-scm.com/downloads)
 - [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
 
