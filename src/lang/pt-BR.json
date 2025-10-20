@@ -1172,5 +1172,6 @@
     "Bot secret": "Segredo do bot",
     "Send UP silently": "Enviar UP silenciosamente",
     "Send DOWN silently": "Envie DOWN silenciosamente",
-    "Installing a Nextcloud Talk bot requires administrative access to the server.": "A instalação de um bot Nextcloud Talk requer acesso administrativo ao servidor."
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "A instalação de um bot Nextcloud Talk requer acesso administrativo ao servidor.",
+    "auto-select": "Seleção automática"
 }
