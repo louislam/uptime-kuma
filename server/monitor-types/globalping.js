@@ -13,8 +13,6 @@ class GlobalpingMonitorType extends MonitorType {
     name = "globalping";
 
     agent = "";
-    hasAPIToken = false;
-    creditsHelpLink = "https://dash.globalping.io?view=add-credits";
 
     supportsConditions = true;
     conditionVariables = [
@@ -34,21 +32,21 @@ class GlobalpingMonitorType extends MonitorType {
      */
     async check(monitor, heartbeat, _server) {
         const apiKey = await Settings.get("globalpingApiToken");
-        this.hasAPIToken = !!apiKey;
         const client = new Globalping({
             auth: apiKey,
             agent: this.agent,
         });
 
+        const hasAPIToken = !!apiKey;
         switch (monitor.subtype ) {
             case "ping":
-                await this.ping(client, monitor, heartbeat);
+                await this.ping(client, monitor, heartbeat, hasAPIToken);
                 break;
             case "http":
-                await this.http(client, monitor, heartbeat);
+                await this.http(client, monitor, heartbeat, hasAPIToken);
                 break;
             case "dns":
-                await this.dns(client, monitor, heartbeat);
+                await this.dns(client, monitor, heartbeat, hasAPIToken);
                 break;
         }
     }
@@ -56,7 +54,7 @@ class GlobalpingMonitorType extends MonitorType {
     /**
      * @inheritdoc
      */
-    async ping(client, monitor, heartbeat) {
+    async ping(client, monitor, heartbeat, hasAPIToken) {
         const opts = {
             type: "ping",
             target: monitor.hostname,
@@ -83,29 +81,21 @@ class GlobalpingMonitorType extends MonitorType {
         let res = await client.createMeasurement(opts);
 
         if (!res.ok) {
-            // retry
-            res = await client.createMeasurement(opts);
-            if (!res.ok) {
-                if (Globalping.isHttpStatus(429, res)) {
-                    throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError()}`);
-                }
-                throw new Error(
-                    `Failed to create measurement: ${this.formatApiError(res.data.error)}`
-                );
+            if (Globalping.isHttpStatus(429, res)) {
+                throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
             }
+            throw new Error(
+                `Failed to create measurement: ${this.formatApiError(res.data.error)}`
+            );
         }
 
         log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
         let measurement = await client.awaitMeasurement(res.data.id);
 
         if (!measurement.ok) {
-            // retry
-            measurement = await client.awaitMeasurement(res.data.id);
-            if (!measurement.ok) {
-                throw new Error(
-                    `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
-                );
-            }
+            throw new Error(
+                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
+            );
         }
 
         const probe = measurement.data.results[0].probe;
@@ -131,7 +121,7 @@ class GlobalpingMonitorType extends MonitorType {
     /**
      * @inheritdoc
      */
-    async http(client, monitor, heartbeat) {
+    async http(client, monitor, heartbeat, hasAPIToken) {
         const url = new URL(monitor.url);
 
         let protocol = url.protocol.replace(":", "").toUpperCase();
@@ -188,29 +178,21 @@ class GlobalpingMonitorType extends MonitorType {
         let res = await client.createMeasurement(opts);
 
         if (!res.ok) {
-            // retry
-            res = await client.createMeasurement(opts);
-            if (!res.ok) {
-                if (Globalping.isHttpStatus(429, res)) {
-                    throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError()}`);
-                }
-                throw new Error(
-                    `Failed to create measurement: ${this.formatApiError(res.data.error)}`
-                );
+            if (Globalping.isHttpStatus(429, res)) {
+                throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
             }
+            throw new Error(
+                `Failed to create measurement: ${this.formatApiError(res.data.error)}`
+            );
         }
 
         log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
         let measurement = await client.awaitMeasurement(res.data.id);
 
         if (!measurement.ok) {
-            // retry
-            measurement = await client.awaitMeasurement(res.data.id);
-            if (!measurement.ok) {
-                throw new Error(
-                    `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
-                );
-            }
+            throw new Error(
+                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
+            );
         }
 
         const probe = measurement.data.results[0].probe;
@@ -274,7 +256,7 @@ class GlobalpingMonitorType extends MonitorType {
     /**
      * @inheritdoc
      */
-    async dns(client, monitor, heartbeat) {
+    async dns(client, monitor, heartbeat, hasAPIToken) {
         const opts = {
             type: "dns",
             target: monitor.hostname,
@@ -304,29 +286,21 @@ class GlobalpingMonitorType extends MonitorType {
         let res = await client.createMeasurement(opts);
         log.debug("monitor", `Globalping ${JSON.stringify(res)}`);
         if (!res.ok) {
-            // retry
-            res = await client.createMeasurement(opts);
-            if (!res.ok) {
-                if (Globalping.isHttpStatus(429, res)) {
-                    throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError()}`);
-                }
-                throw new Error(
-                    `Failed to create measurement: ${this.formatApiError(res.data.error)}`
-                );
+            if (Globalping.isHttpStatus(429, res)) {
+                throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
             }
+            throw new Error(
+                `Failed to create measurement: ${this.formatApiError(res.data.error)}`
+            );
         }
 
         log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
         let measurement = await client.awaitMeasurement(res.data.id);
 
         if (!measurement.ok) {
-            // retry
-            measurement = await client.awaitMeasurement(res.data.id);
-            if (!measurement.ok) {
-                throw new Error(
-                    `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
-                );
-            }
+            throw new Error(
+                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
+            );
         }
 
         const probe = measurement.data.results[0].probe;
@@ -394,20 +368,24 @@ class GlobalpingMonitorType extends MonitorType {
     /**
      * @inheritdoc
      */
-    formatTooManyRequestsError() {
-        if (this.hasAPIToken) {
-            return `You have run out of credits. Get higher limits by sponsoring us or hosting probes. Learn more at ${this.creditsHelpLink}.`;
+    formatTooManyRequestsError(hasAPIToken) {
+        const creditsHelpLink = "https://dash.globalping.io?view=add-credits";
+        if (hasAPIToken) {
+            return `You have run out of credits. Get higher limits by sponsoring us or hosting probes. Learn more at ${creditsHelpLink}.`;
         }
-        return `You have run out of credits. Get higher limits by creating an account. Sign up at ${this.creditsHelpLink}.`;
+        return `You have run out of credits. Get higher limits by creating an account. Sign up at ${creditsHelpLink}.`;
     }
 
     /**
-     * @inheritdoc
+     * Returns the formatted probe location string. e.g "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1)"
+     * @param {object} probe - The probe object containing location information.
+     * @returns {string} The formatted probe location string.
      */
     formatProbeLocation(probe) {
         let tag = "";
 
         for (const t of probe.tags) {
+            // If tag ends in a number, it's likely a region code and should be displayed
             if (Number.isInteger(Number(t.slice(-1)))) {
                 tag = t;
                 break;
