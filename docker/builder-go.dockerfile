@@ -7,6 +7,12 @@ WORKDIR /app
 ARG TARGETPLATFORM
 COPY ./extra/ ./extra/
 
+## Switch to archive.debian.org
+RUN sed -i '/^deb/s/^/#/' /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian buster main contrib non-free" | tee -a /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian-security buster/updates main contrib non-free" | tee -a /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian buster-updates main contrib non-free" | tee -a /etc/apt/sources.list
+
 # Compile healthcheck.go
 RUN apt update && \
     apt --yes --no-install-recommends install curl && \
