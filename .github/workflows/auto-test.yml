@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest, ARM64]
+        os: [macos-latest, ubuntu-22.04, windows-latest, ARM64]
         node: [ 18, 20 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
@@ -78,7 +78,7 @@ jobs:
 
   e2e-test:
     needs: [ ]
-    runs-on: ARM64
+    runs-on: ubuntu-24.04-arm
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4

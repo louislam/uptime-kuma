@@ -674,7 +674,7 @@ let needSetup = false;
 
                 let user = R.dispense("user");
                 user.username = username;
-                user.password = passwordHash.generate(password);
+                user.password = await passwordHash.generate(password);
                 await R.store(user);
 
                 needSetup = false;
@@ -719,6 +719,17 @@ let needSetup = false;
                 monitor.conditions = JSON.stringify(monitor.conditions);
 
                 monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
+
+                /*
+                 * List of frontend-only properties that should not be saved to the database.
+                 * Should clean up before saving to the database.
+                 */
+                const frontendOnlyProperties = [ "humanReadableInterval" ];
+                for (const prop of frontendOnlyProperties) {
+                    if (prop in monitor) {
+                        delete monitor[prop];
+                    }
+                }
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
@@ -792,6 +803,7 @@ let needSetup = false;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
+                bean.ipFamily = monitor.ipFamily;
                 bean.headers = monitor.headers;
                 bean.basic_auth_user = monitor.basic_auth_user;
                 bean.basic_auth_pass = monitor.basic_auth_pass;
@@ -801,6 +813,7 @@ let needSetup = false;
                 bean.oauth_auth_method = monitor.oauth_auth_method;
                 bean.oauth_token_url = monitor.oauth_token_url;
                 bean.oauth_scopes = monitor.oauth_scopes;
+                bean.oauth_audience = monitor.oauth_audience;
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;
@@ -835,6 +848,7 @@ let needSetup = false;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
                 bean.mqttCheckType = monitor.mqttCheckType;
+                bean.mqttWebsocketPath = monitor.mqttWebsocketPath;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
                 bean.databaseQuery = monitor.databaseQuery;
                 bean.authMethod = monitor.authMethod;
@@ -866,6 +880,7 @@ let needSetup = false;
                     monitor.kafkaProducerAllowAutoTopicCreation;
                 bean.gamedigGivenPortOnly = monitor.gamedigGivenPortOnly;
                 bean.remote_browser = monitor.remote_browser;
+                bean.smtpSecurity = monitor.smtpSecurity;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;
                 bean.jsonPathOperator = monitor.jsonPathOperator;
@@ -874,6 +889,12 @@ let needSetup = false;
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
+                bean.manual_status = monitor.manual_status;
+
+                // ping advanced options
+                bean.ping_numeric = monitor.ping_numeric;
+                bean.ping_count = monitor.ping_count;
+                bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
 
                 bean.validate();
 

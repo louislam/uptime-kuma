@@ -1,0 +1,45 @@
+---
+name: 🛡️ Security Issue
+description: |
+  Notify Louis Lam about a security concern. Please do NOT include any sensitive details in this issue.
+# title: "Security Issue"
+labels: ["security"]
+assignees: [louislam]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ❗ IMPORTANT: DO NOT SHARE VULNERABILITY DETAILS HERE
+
+        ### ⚠️ Report a Security Vulnerability
+
+        **If you have discovered a security vulnerability, please report it securely using the GitHub Security Advisory.**
+
+        **Note**: This issue is only for notifying the maintainers of the repository, as the GitHub Security Advisory does not automatically send notifications.
+
+        - **Confidentiality**: The information you provide in the GitHub Security Advisory will initially remain confidential. However, once the vulnerability is addressed, the advisory will be publicly disclosed on GitHub.
+        - **Access and Visibility**: Until the advisory is published, it will only be visible to the maintainers of the repository and invited collaborators.
+        - **Credit**: You will be automatically credited as a contributor for identifying and reporting the vulnerability. Your contribution will be reflected in the MITRE Credit System.
+        - **Important Reminder**: **Do not include any sensitive or detailed vulnerability information in this issue.** This issue is only for sharing the advisory URL to notify the maintainers of the repository, not for discussing the vulnerability itself.
+
+        **Thank you for helping us keep Uptime Kuma secure!**
+
+        ## **Step 1: Submit a GitHub Security Advisory**
+
+        Right-click the link below and select `Open link in new tab` to access the page. This will keep the security issue open, allowing you to easily return and paste the Advisory URL here later.
+
+        ➡️ [Create a New Security Advisory](https://github.com/louislam/uptime-kuma/security/advisories/new)
+
+        ## **Step 2: Share the Advisory URL**
+
+        Once you've created your advisory, please share the URL below. This will notify Louis Lam and enable them to take the appropriate action.
+
+  - type: textarea
+    id: github-advisory-url
+    validations:
+      required: true
+    attributes:
+      label: GitHub Advisory URL for @louislam
+      placeholder: |
+        Please paste the GitHub Advisory URL here. Only the URL is required.
+        Example: https://github.com/louislam/uptime-kuma/security/advisories/GHSA-8h5r-7t6l-q3kz

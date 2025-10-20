@@ -1,5 +1,6 @@
 const { getMonitorRelativeURL } = require("../../src/util");
 const { setting } = require("../util-server");
+const { UP } = require("../../src/util");
 
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
@@ -40,18 +41,24 @@ class Pushover extends NotificationProvider {
         }
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON == null) {
-                await axios.post(url, data);
-                return okMsg;
-            } else {
-                data.message += `\n<b>Time (${heartbeatJSON["timezone"]})</b>:${heartbeatJSON["localDateTime"]}`;
-                await axios.post(url, data);
+                await axios.post(url, data, config);
                 return okMsg;
             }
+
+            if (heartbeatJSON.status === UP && notification.pushoversounds_up) {
+                // default = DOWN => DOWN-sound is also played for non-UP/DOWN notiifcations
+                data.sound = notification.pushoversounds_up;
+            }
+
+            data.message += `\n<b>Time (${heartbeatJSON["timezone"]})</b>: ${heartbeatJSON["localDateTime"]}`;
+            await axios.post(url, data, config);
+            return okMsg;
+
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 
