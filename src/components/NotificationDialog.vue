@@ -113,6 +113,7 @@ export default {
                 "alerta": "Alerta",
                 "AlertNow": "AlertNow",
                 "apprise": this.$t("apprise"),
+                "bale": "Bale",
                 "Bark": "Bark",
                 "Bitrix24": "Bitrix24",
                 "clicksendsms": "ClickSend SMS",
