@@ -259,19 +259,30 @@ class RealBrowserMonitorType extends MonitorType {
             // Handle data: URLs which don't return a proper Response object
             const isDataUrl = url.protocol === "data:";
 
+            // Normalize keyword early for reuse in checking and status messages
+            // This ensures consistent matching and reporting
+            let normalizedKeyword = null;
+            
             // Check for keyword if configured
             if (monitor.keyword && monitor.keyword.trim()) {
+                // Normalize keyword the same way as page content to ensure consistent matching
+                // This prevents false negatives when users accidentally enter extra spaces in keywords
+                // For example, "Hello  World" (double space) will match "Hello World" (single space) on page
+                normalizedKeyword = monitor.keyword.replace(/\s+/g, " ").trim();
+                
                 // Extract all visible text content from the page
                 let textContent = await page.textContent("body");
 
                 if (textContent) {
-                    // replace white spaces with a single space
+                    // Normalize page content: replace duplicate white spaces with a single space
+                    // This handles inconsistent spacing in HTML (tabs, newlines, multiple spaces, etc.)
                     textContent = textContent.replace(/\s+/g, " ").trim();
-                    let keywordFound = textContent.includes(monitor.keyword);
+                    
+                    let keywordFound = textContent.includes(normalizedKeyword);
                     const invertKeyword = monitor.invertKeyword === true || monitor.invertKeyword === 1;
 
                     if (keywordFound === !invertKeyword) {
-                        log.debug("monitor", `Keyword check passed. Keyword "${monitor.keyword}" ${keywordFound ? "found" : "not found"} on page (invert: ${invertKeyword})`);
+                        log.debug("monitor", `Keyword check passed. Keyword "${normalizedKeyword}" ${keywordFound ? "found" : "not found"} on page (invert: ${invertKeyword})`);
                     } else {
                         let errorText = textContent;
                         if (errorText.length > 50) {
@@ -279,7 +290,7 @@ class RealBrowserMonitorType extends MonitorType {
                         }
 
                         throw new Error(
-                            `Keyword check failed. Keyword "${monitor.keyword}" ${keywordFound ? "found" : "not found"} on page. ` +
+                            `Keyword check failed. Keyword "${normalizedKeyword}" ${keywordFound ? "found" : "not found"} on page. ` +
                             `Expected: ${invertKeyword ? "not found" : "found"}. Page content: [${errorText}]`
                         );
                     }
@@ -300,9 +311,9 @@ class RealBrowserMonitorType extends MonitorType {
                 let statusMsg = isDataUrl ? "200" : res.status().toString();
 
                 // Add keyword info to message if keyword checking was performed
-                if (monitor.keyword && monitor.keyword.trim()) {
+                if (normalizedKeyword) {
                     const invertKeyword = monitor.invertKeyword === true || monitor.invertKeyword === 1;
-                    statusMsg += `, keyword "${monitor.keyword}" ${invertKeyword ? "not found" : "found"}`;
+                    statusMsg += `, keyword "${normalizedKeyword}" ${invertKeyword ? "not found" : "found"}`;
                 }
 
                 heartbeat.msg = statusMsg;
