@@ -60,6 +60,7 @@ class DingDing extends NotificationProvider {
             url: `${notification.webHookUrl}&timestamp=${timestamp}&sign=${encodeURIComponent(this.sign(timestamp, notification.secretKey))}`,
             data: JSON.stringify(params),
         };
+        config = this.getAxiosConfigWithProxy(config);
 
         let result = await axios(config);
         if (result.data.errmsg === "ok") {
