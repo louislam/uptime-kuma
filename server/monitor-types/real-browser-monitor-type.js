@@ -262,14 +262,14 @@ class RealBrowserMonitorType extends MonitorType {
             // Normalize keyword early for reuse in checking and status messages
             // This ensures consistent matching and reporting
             let normalizedKeyword = null;
-            
+
             // Check for keyword if configured
             if (monitor.keyword && monitor.keyword.trim()) {
                 // Normalize keyword the same way as page content to ensure consistent matching
                 // This prevents false negatives when users accidentally enter extra spaces in keywords
                 // For example, "Hello  World" (double space) will match "Hello World" (single space) on page
                 normalizedKeyword = monitor.keyword.replace(/\s+/g, " ").trim();
-                
+
                 // Extract all visible text content from the page
                 let textContent = await page.textContent("body");
 
@@ -277,7 +277,7 @@ class RealBrowserMonitorType extends MonitorType {
                     // Normalize page content: replace duplicate white spaces with a single space
                     // This handles inconsistent spacing in HTML (tabs, newlines, multiple spaces, etc.)
                     textContent = textContent.replace(/\s+/g, " ").trim();
-                    
+
                     let keywordFound = textContent.includes(normalizedKeyword);
                     const invertKeyword = monitor.invertKeyword === true || monitor.invertKeyword === 1;
 
