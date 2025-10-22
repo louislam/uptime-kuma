@@ -107,86 +107,72 @@ test.describe("Monitor Form", () => {
     });
 
     test("real-browser monitor with keyword functionality", async ({ page }, testInfo) => {
+        // Create a real-browser monitor that searches for specific text on a page
         await page.goto("./add");
         await login(page);
         await screenshot(testInfo, page);
-
-        // Select real-browser monitor type
         await selectMonitorType(page, "real-browser");
 
-        const friendlyName = "Test Real Browser with Keyword";
-        await page.getByTestId("friendly-name-input").fill(friendlyName);
+        // Configure monitor to visit httpbin.org/html (contains Moby Dick excerpt)
+        await page.getByTestId("friendly-name-input").fill("Test Real Browser with Keyword");
         await page.getByTestId("url-input").fill("https://httpbin.org/html");
 
-        // Check that keyword field is visible for real-browser monitors
+        // Verify keyword controls are available for real-browser monitor type
         const keywordInput = page.locator("#keyword");
         await expect(keywordInput).toBeVisible();
-
-        // Check that invert keyword checkbox is visible
         const invertKeywordCheckbox = page.locator("#invert-keyword");
         await expect(invertKeywordCheckbox).toBeVisible();
 
-        // Fill in keyword (should be optional)
+        // Search for "Herman Melville" - this text exists on the test page
         await keywordInput.fill("Herman Melville");
 
         await screenshot(testInfo, page);
-
-        // Save the monitor
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*");
-
         await screenshot(testInfo, page);
     });
 
     test("real-browser monitor with invert keyword", async ({ page }, testInfo) => {
+        // Create a real-browser monitor with inverted keyword logic (pass if NOT found)
         await page.goto("./add");
         await login(page);
-
-        // Select real-browser monitor type
         await selectMonitorType(page, "real-browser");
 
-        const friendlyName = "Test Real Browser with Invert Keyword";
-        await page.getByTestId("friendly-name-input").fill(friendlyName);
+        // Configure monitor to ensure specific text is NOT present on the page
+        await page.getByTestId("friendly-name-input").fill("Test Real Browser with Invert Keyword");
         await page.getByTestId("url-input").fill("https://httpbin.org/html");
 
-        // Fill in keyword that should NOT be found
+        // Search for text that doesn't exist on the page
         const keywordInput = page.locator("#keyword");
         await keywordInput.fill("NonExistentText123");
 
-        // Check invert keyword checkbox
+        // Enable invert - monitor passes if keyword is NOT found
         const invertKeywordCheckbox = page.locator("#invert-keyword");
         await invertKeywordCheckbox.check();
 
         await screenshot(testInfo, page);
-
-        // Save the monitor
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*");
-
         await screenshot(testInfo, page);
     });
 
     test("real-browser monitor without keyword", async ({ page }, testInfo) => {
+        // Create a real-browser monitor without keyword validation (just check page loads)
         await page.goto("./add");
         await login(page);
-
-        // Select real-browser monitor type
         await selectMonitorType(page, "real-browser");
 
-        const friendlyName = "Test Real Browser No Keyword";
-        await page.getByTestId("friendly-name-input").fill(friendlyName);
+        // Configure monitor without keyword - just verify page loads successfully
+        await page.getByTestId("friendly-name-input").fill("Test Real Browser No Keyword");
         await page.getByTestId("url-input").fill("https://httpbin.org/html");
 
-        // Don't fill keyword field - should still work
+        // Keyword field is visible but not required - leave it empty
         const keywordInput = page.locator("#keyword");
         await expect(keywordInput).toBeVisible();
 
         await screenshot(testInfo, page);
-
-        // Save the monitor - should work without keyword
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*");
-
         await screenshot(testInfo, page);
     });
 });

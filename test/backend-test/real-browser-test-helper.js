@@ -72,33 +72,6 @@ class RealBrowserTestHelper {
     }
 
     /**
-     * Create a data URL test server with given content
-     * @param {string} content - The HTML content to serve
-     * @returns {string} Data URL containing the test page
-     */
-    createTestServer(content) {
-        return `data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>Test</title></head><body>${content}</body></html>`;
-    }
-
-    /**
-     * Create a monitor configuration object
-     * @param {number} id - The monitor ID
-     * @param {string} url - The URL to monitor
-     * @param {string} keyword - The keyword to search for
-     * @param {boolean} invertKeyword - Whether to invert keyword matching
-     * @returns {object} Monitor configuration object
-     */
-    createMonitor(id, url, keyword, invertKeyword = false) {
-        return {
-            id,
-            type: "real-browser",
-            url,
-            keyword,
-            invertKeyword
-        };
-    }
-
-    /**
      * Run a monitor test and return the heartbeat result
      * @param {object} monitor - The monitor configuration
      * @returns {Promise<object>} The heartbeat object with test results
