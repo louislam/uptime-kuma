@@ -49,7 +49,6 @@ class NotificationProvider {
             case "globalping":
                 switch (monitorJSON["subtype"]) {
                     case "ping":
-                    case "dns":
                         return monitorJSON["hostname"];
                     case "http":
                         return monitorJSON["url"];

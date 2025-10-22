@@ -3,21 +3,12 @@ const { Globalping, IpVersion } = require("globalping");
 const { Settings } = require("../settings");
 const { log, UP, DOWN, evaluateJsonQuery } = require("../../src/util");
 const { checkStatusCode, getOidcTokenClientCredentials, encodeBase64, getDaysRemaining, checkCertExpiryNotifications } = require("../util-server");
-const { ConditionVariable } = require("../monitor-conditions/variables");
-const { defaultStringOperators } = require("../monitor-conditions/operators");
-const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
-const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
 const { R } = require("redbean-node");
 
 class GlobalpingMonitorType extends MonitorType {
     name = "globalping";
 
     agent = "";
-
-    supportsConditions = true;
-    conditionVariables = [
-        new ConditionVariable("record", defaultStringOperators ),
-    ];
 
     /**
      * @inheritdoc
@@ -44,9 +35,6 @@ class GlobalpingMonitorType extends MonitorType {
                 break;
             case "http":
                 await this.http(client, monitor, heartbeat, hasAPIToken);
-                break;
-            case "dns":
-                await this.dns(client, monitor, heartbeat, hasAPIToken);
                 break;
         }
     }
@@ -251,105 +239,6 @@ class GlobalpingMonitorType extends MonitorType {
 
         heartbeat.msg = this.formatResponse(probe, "OK");
         heartbeat.status = UP;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async dns(client, monitor, heartbeat, hasAPIToken) {
-        const opts = {
-            type: "dns",
-            target: monitor.hostname,
-            inProgressUpdates: false,
-            limit: 1,
-            locations: [{ magic: monitor.location }],
-            measurementOptions: {
-                query: {
-                    type: monitor.dns_resolve_type
-                },
-                port: monitor.port,
-                protocol: monitor.protocol,
-            },
-        };
-
-        if (monitor.ipFamily === "ipv4") {
-            opts.measurementOptions.ipVersion = IpVersion[4];
-        } else if (monitor.ipFamily === "ipv6") {
-            opts.measurementOptions.ipVersion = IpVersion[6];
-        }
-
-        if (monitor.dns_resolve_server) {
-            opts.measurementOptions.resolver = monitor.dns_resolve_server;
-        }
-
-        log.debug("monitor", `Globalping create measurement: ${JSON.stringify(opts)}`);
-        let res = await client.createMeasurement(opts);
-        log.debug("monitor", `Globalping ${JSON.stringify(res)}`);
-        if (!res.ok) {
-            if (Globalping.isHttpStatus(429, res)) {
-                throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
-            }
-            throw new Error(
-                `Failed to create measurement: ${this.formatApiError(res.data.error)}`
-            );
-        }
-
-        log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
-        let measurement = await client.awaitMeasurement(res.data.id);
-
-        if (!measurement.ok) {
-            throw new Error(
-                `Failed to fetch measurement (${res.data.id}): ${this.formatApiError(measurement.data.error)}`
-            );
-        }
-
-        const probe = measurement.data.results[0].probe;
-        const result = measurement.data.results[0].result;
-
-        if (result.status === "failed") {
-            heartbeat.msg = this.formatResponse(probe, `Failed: ${result.rawOutput}`);
-            heartbeat.status = DOWN;
-            return;
-        }
-
-        const conditions = ConditionExpressionGroup.fromMonitor(monitor);
-        let conditionsResult = true;
-        const handleConditions = (data) => conditions ? evaluateExpressionGroup(conditions, data) : true;
-
-        let dnsMessage = (result.answers || []).map(answer => answer.value).join(" | ");
-        const values = (result.answers || []).map(answer => answer.value);
-
-        switch (monitor.dns_resolve_type) {
-            case "A":
-            case "AAAA":
-            case "ANY":
-            case "CNAME":
-            case "DNSKEY":
-            case "DS":
-            case "HTTPS":
-            case "MX":
-            case "NS":
-            case "NSEC":
-            case "PTR":
-            case "RRSIG":
-            case "SOA":
-            case "SRV":
-            case "SVCB":
-            case "TXT":
-                conditionsResult = values.some(record => handleConditions({ record }));
-                break;
-        }
-
-        if (monitor.dns_last_result !== dnsMessage && dnsMessage !== undefined) {
-            await R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [ dnsMessage, monitor.id ]);
-        }
-
-        heartbeat.ping = result.timings.total || 0;
-        if (!dnsMessage) {
-            dnsMessage = `No records found. ${result.statusCodeName}`;
-        }
-        heartbeat.msg = this.formatResponse(probe, dnsMessage);
-        heartbeat.status = conditionsResult ? UP : DOWN;
     }
 
     /**
