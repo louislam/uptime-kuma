@@ -109,7 +109,7 @@ test("Real Browser Monitor Integration Tests", async (t) => {
 
     await t.test("should handle text extraction with html tags and whitespace correctly", async () => {
         // Given: A page with extra whitespace "Hello    World!\n\n   This is a    test page."
-        const pageUrl = "data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>Test</title></head><body><span>Hello</span>    World!\n\n   This is a    test page.</body></html>";
+        const pageUrl = "data:text/html;charset=utf-8,<!DOCTYPE html><html><head><title>Test</title></head><body><span>Hello</span> &nbsp;   World!\n\n   This is a    test page.</body></html>";
         const monitor = {
             id: 6,
             type: "real-browser",
