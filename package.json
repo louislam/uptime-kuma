@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -41,7 +41,7 @@
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test2 --target pr-test2 . --push",
         "upload-artifacts": "node extra/release/upload-artifacts.mjs",
         "upload-artifacts-beta": "node extra/release/upload-artifacts-beta.mjs",
-        "setup": "git checkout 2.0.1 && npm ci --omit dev && npm run download-dist",
+        "setup": "git checkout 2.0.2 && npm ci --omit dev && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
