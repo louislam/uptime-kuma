@@ -49,7 +49,7 @@ jobs:
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 20, 24 ]
+        node: [ 20, 22 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
