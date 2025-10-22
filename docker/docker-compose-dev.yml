@@ -2,6 +2,8 @@ version: '3.8'
 
 services:
   uptime-kuma:
+    security_opt:
+      - no-new-privileges:true
     container_name: uptime-kuma-dev
     image: louislam/uptime-kuma:nightly2
     volumes:
