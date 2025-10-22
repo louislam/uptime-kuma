@@ -37,6 +37,18 @@ class SimpleMigrationServer {
         this.server = http.createServer(this.app);
 
         this.app.get("/", (req, res) => {
+            res.set("Content-Type", "text/html");
+
+            // HTML meta tag redirect to /status
+            res.end(`
+                <html lang="en">
+                <head><meta http-equiv="refresh" content="0; URL=/migrate-status" /></head>
+                <body>Migration server is running.</body>
+                </html>
+            `);
+        });
+
+        this.app.get("/migrate-status", (req, res) => {
             res.set("Content-Type", "text/plain");
             res.write("Migration is in progress, listening message...\n");
             if (this.response) {

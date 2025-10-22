@@ -1121,5 +1121,7 @@
     "tagAlreadyOnMonitor": "Dit label (naam en waarde) is al op de monitor gekoppeld of in afwachting van koppelen.",
     "mqttWebsocketPathExplanation": "WebSocket pad voor MQTT via WebSocket verbindingen (bijv., /mqtt)",
     "mqttWebsocketPathInvalid": "Gebruik een geldig WebSocket pad formaat alsjeblieft",
-    "mqttHostnameTip": "Gebruik dit formaat alsjeblieft {hostnaamFormat}"
+    "mqttHostnameTip": "Gebruik dit formaat alsjeblieft {hostnaamFormat}",
+    "Path": "Pad",
+    "tagNameExists": "Een systeemtag met de deze naam bestaat al. Selecteer er een van de lijst of gebruik een andere naam."
 }
