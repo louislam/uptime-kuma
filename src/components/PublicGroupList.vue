@@ -37,7 +37,14 @@
                                         <div class="info">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
-
+                                            <font-awesome-icon
+                                                v-if="editMode"
+                                                icon="cog"
+                                                class="action me-3 ms-0"
+                                                :class="{'link-active': true, 'btn-link': true}"
+                                                data-testid="monitor-settings"
+                                                @click="$refs.monitorSettingDialog.show(group, monitor)"
+                                            />
                                             <Uptime :monitor="monitor.element" type="24" :pill="true" />
                                             <a
                                                 v-if="showLink(monitor)"
@@ -50,18 +57,6 @@
                                                 {{ monitor.element.name }}
                                             </a>
                                             <p v-else class="item-name" data-testid="monitor-name"> {{ monitor.element.name }} </p>
-
-                                            <span
-                                                title="Setting"
-                                            >
-                                                <font-awesome-icon
-                                                    v-if="editMode"
-                                                    :class="{'link-active': true, 'btn-link': true}"
-                                                    icon="cog" class="action me-3"
-                                                    data-testid="monitor-settings"
-                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
-                                                />
-                                            </span>
                                         </div>
                                         <div class="extra-info">
                                             <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
