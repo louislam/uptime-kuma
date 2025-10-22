@@ -31,6 +31,8 @@ All versions are upgradable to the latest version.
 | --------------- | ------------------------------------------------------------------------------------- |
 | 2               | :white_check_mark:                                                                    |
 | 2-slim          | :white_check_mark:                                                                    |
+| next            | :white_check_mark:                                                                    |
+| next-slim       | :white_check_mark:                                                                    |
 | 2-rootless      | :white_check_mark:                                                                    |
 | 2-slim-rootless | :white_check_mark:                                                                    |
 | 1               | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
