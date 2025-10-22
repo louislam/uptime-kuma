@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-22.04, windows-latest, ARM64]
-        node: [ 18, 20 ]
+        node: [ 20, 24 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -49,7 +49,7 @@ jobs:
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 18, 20 ]
+        node: [ 20, 24 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
