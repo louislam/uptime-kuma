@@ -40,7 +40,7 @@ class Webhook extends NotificationProvider {
                 formData.append("data", JSON.stringify(data));
                 config.headers = formData.getHeaders();
                 data = formData;
-            } if (notification.webhookContentType === "custom") {
+            } else if (notification.webhookContentType === "custom") {
                 data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
             }
 
