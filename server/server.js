@@ -724,7 +724,7 @@ let needSetup = false;
                  * List of frontend-only properties that should not be saved to the database.
                  * Should clean up before saving to the database.
                  */
-                const frontendOnlyProperties = [ "humanReadableInterval" ];
+                const frontendOnlyProperties = [ "humanReadableInterval", "responsecheck" ];
                 for (const prop of frontendOnlyProperties) {
                     if (prop in monitor) {
                         delete monitor[prop];
@@ -800,6 +800,7 @@ let needSetup = false;
                 bean.description = monitor.description;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
+                bean.subtype = monitor.subtype;
                 bean.url = monitor.url;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
@@ -824,6 +825,8 @@ let needSetup = false;
                 bean.game = monitor.game;
                 bean.maxretries = monitor.maxretries;
                 bean.port = parseInt(monitor.port);
+                bean.location = monitor.location;
+                bean.protocol = monitor.protocol;
 
                 if (isNaN(bean.port)) {
                     bean.port = null;
