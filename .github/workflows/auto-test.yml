@@ -34,7 +34,7 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
-    - run: npx playwright install
+    - run: npx playwright install chromium
     - run: npm run build
     - run: npm run test-backend
       env:
@@ -89,6 +89,6 @@ jobs:
       with:
         node-version: 20
     - run: npm install
-    - run: npx playwright install
+    - run: npx playwright install chromium
     - run: npm run build
     - run: npm run test-e2e
