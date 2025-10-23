@@ -22,7 +22,7 @@
             <option value="get">GET</option>
         </select>
         <div class="form-text">
-            {{ httpMethodDescription }}
+            {{ $parent.notification.httpMethod === 'get' ? $t("webhookGetMethodDesc") : $t("webhookPostMethodDesc") }}
         </div>
     </div>
 
