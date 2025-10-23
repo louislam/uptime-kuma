@@ -39,7 +39,7 @@
                     <div class="divider mb-3">
                         <span class="divider-text">{{ $t("or continue with") }}</span>
                     </div>
-                    
+
                     <div class="sso-buttons">
                         <button
                             v-for="provider in oidcProviders"
@@ -81,7 +81,7 @@
 import oidcMixin from "../mixins/oidc.js";
 
 export default {
-    mixins: [oidcMixin],
+    mixins: [ oidcMixin ],
     data() {
         return {
             processing: false,
@@ -105,12 +105,12 @@ export default {
 
     async mounted() {
         document.title += " - Login";
-        
+
         // Load OIDC providers on component mount
         try {
             await this.fetchOidcProviders();
         } catch (error) {
-            console.warn('Failed to load OIDC providers:', error);
+            console.warn("Failed to load OIDC providers:", error);
             // Don't show error to user, just silently fail to show SSO buttons
         }
     },
@@ -172,7 +172,7 @@ export default {
     .divider {
         position: relative;
         text-align: center;
-        
+
         &::before {
             content: "";
             position: absolute;
@@ -182,7 +182,7 @@ export default {
             height: 1px;
             background: #dee2e6;
         }
-        
+
         .divider-text {
             background: white;
             padding: 0 1rem;
@@ -192,7 +192,7 @@ export default {
             z-index: 1;
         }
     }
-    
+
     .sso-buttons {
         display: flex;
         flex-direction: column;
@@ -210,12 +210,12 @@ export default {
     font-weight: 500;
     transition: all 0.2s;
     border: 1px solid #dee2e6;
-    
+
     &:hover:not(:disabled) {
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    
+
     &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
@@ -226,7 +226,7 @@ export default {
     background-color: #fff;
     border-color: #0066cc;
     color: #0066cc;
-    
+
     &:hover:not(:disabled) {
         background-color: #0066cc;
         color: #fff;

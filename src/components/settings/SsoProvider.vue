@@ -252,18 +252,19 @@ export default {
     methods: {
         /**
          * Load the current OIDC provider (if any)
+         * @returns {Promise<void>}
          */
         async loadProvider() {
             this.loading = true;
             try {
-                const response = await fetch('/oidc/admin/providers', {
-                    credentials: 'include'
+                const response = await fetch("/oidc/admin/providers", {
+                    credentials: "include"
                 });
 
                 if (response.ok) {
                     const data = await response.json();
                     const providers = data.providers || [];
-                    
+
                     if (providers.length > 0) {
                         // Load the first (and should be only) provider
                         this.currentProvider = providers[0];
@@ -290,6 +291,8 @@ export default {
 
         /**
          * Load provider data into the form
+         * @param {object} provider - Provider configuration object
+         * @returns {void}
          */
         loadProviderIntoForm(provider) {
             this.providerForm = {
@@ -302,42 +305,44 @@ export default {
                 userinfo_endpoint: provider.userinfo_endpoint || "",
                 client_id: provider.client_id || "",
                 client_secret: "", // Never populate secret field
-                scopes: Array.isArray(provider.scopes) ? provider.scopes.join(' ') : (provider.scopes || "openid profile email"),
+                scopes: Array.isArray(provider.scopes) ? provider.scopes.join(" ") : (provider.scopes || "openid profile email"),
                 enabled: provider.enabled !== undefined ? provider.enabled : true,
             };
         },
 
         /**
          * Save provider (create new or update existing)
+         * @returns {Promise<void>}
          */
         async saveProvider() {
             this.saving = true;
             try {
-                let url, method;
-                
+                let url;
+                let method;
+
                 if (this.hasProvider) {
                     // Update existing provider
                     url = `/oidc/admin/providers/${this.currentProvider.id}`;
-                    method = 'PUT';
+                    method = "PUT";
                 } else {
                     // Create new provider (but first delete any existing ones for single provider approach)
                     await this.deleteExistingProviders();
-                    url = '/oidc/admin/providers';
-                    method = 'POST';
+                    url = "/oidc/admin/providers";
+                    method = "POST";
                 }
-                
+
                 // Prepare data - convert scopes string to array
                 const providerData = {
                     ...this.providerForm,
-                    scopes: this.providerForm.scopes ? this.providerForm.scopes.split(' ').filter(s => s.trim()) : ["openid", "profile", "email"]
+                    scopes: this.providerForm.scopes ? this.providerForm.scopes.split(" ").filter(s => s.trim()) : [ "openid", "profile", "email" ]
                 };
-                
+
                 const response = await fetch(url, {
                     method: method,
                     headers: {
-                        'Content-Type': 'application/json',
+                        "Content-Type": "application/json",
                     },
-                    credentials: 'include',
+                    credentials: "include",
                     body: JSON.stringify(providerData)
                 });
 
@@ -345,18 +350,18 @@ export default {
 
                 if (response.ok) {
                     this.$root.toastSuccess(
-                        this.hasProvider 
+                        this.hasProvider
                             ? this.$t("Provider updated successfully")
                             : this.$t("Provider saved successfully")
                     );
-                    
+
                     // Reload provider data
                     await this.loadProvider();
                 } else {
                     this.$root.toastError(data.message || this.$t("Failed to save provider"));
                 }
             } catch (error) {
-                console.error('Error saving provider:', error);
+                console.error("Error saving provider:", error);
                 this.$root.toastError(this.$t("Failed to save provider"));
             } finally {
                 this.saving = false;
@@ -365,33 +370,35 @@ export default {
 
         /**
          * Delete existing providers to maintain single provider approach
+         * @returns {Promise<void>}
          */
         async deleteExistingProviders() {
             try {
-                const response = await fetch('/oidc/admin/providers', {
-                    credentials: 'include'
+                const response = await fetch("/oidc/admin/providers", {
+                    credentials: "include"
                 });
 
                 if (response.ok) {
                     const data = await response.json();
                     const providers = data.providers || [];
-                    
+
                     // Delete all existing providers
                     for (const provider of providers) {
                         await fetch(`/oidc/admin/providers/${provider.id}`, {
-                            method: 'DELETE',
-                            credentials: 'include'
+                            method: "DELETE",
+                            credentials: "include"
                         });
                     }
                 }
             } catch (error) {
-                console.error('Error deleting existing providers:', error);
+                console.error("Error deleting existing providers:", error);
                 // Continue anyway - not critical for the save operation
             }
         },
 
         /**
          * Reset the provider form to empty state
+         * @returns {void}
          */
         resetForm() {
             this.providerForm = {
