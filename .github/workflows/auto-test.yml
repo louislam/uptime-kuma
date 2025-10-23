@@ -34,6 +34,7 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
+    - run: npx playwright install
     - run: npm run build
     - run: npm run test-backend
       env:
