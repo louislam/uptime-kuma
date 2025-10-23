@@ -23,7 +23,7 @@ class Webhook extends NotificationProvider {
                 headers: {}
             };
 
-            if (httpMethod.toLowerCase() === "get") {
+            if (httpMethod === "get") {
                 config.params = {
                     msg: msg
                 };
