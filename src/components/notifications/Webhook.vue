@@ -81,15 +81,6 @@ export default {
         };
     },
     computed: {
-        httpMethod() {
-            return this.$parent.notification.httpMethod || "post";
-        },
-        httpMethodDescription() {
-            if (this.httpMethod === "get") {
-                return this.$t("webhookGetMethodDesc");
-            }
-            return this.$t("webhookPostMethodDesc");
-        },
         headersPlaceholder() {
             return this.$t("Example:", [
 `{
