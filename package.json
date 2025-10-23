@@ -90,6 +90,7 @@
         "dotenv": "~16.0.3",
         "express": "~4.21.0",
         "express-basic-auth": "~1.2.1",
+        "express-session": "~1.17.3",
         "express-static-gzip": "~2.1.7",
         "feed": "^4.2.2",
         "form-data": "~4.0.0",

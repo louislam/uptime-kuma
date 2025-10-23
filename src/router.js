@@ -32,6 +32,7 @@ const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
 import About from "./components/settings/About.vue";
 import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
+import SsoProvider from "./components/settings/SsoProvider.vue";
 
 const routes = [
     {
@@ -123,6 +124,10 @@ const routes = [
                             {
                                 path: "security",
                                 component: Security,
+                            },
+                            {
+                                path: "sso-provider",
+                                component: SsoProvider,
                             },
                             {
                                 path: "api-keys",

@@ -110,6 +110,9 @@ export default {
                 security: {
                     title: this.$t("Security"),
                 },
+                "sso-provider": {
+                    title: this.$t("SSO Provider"),
+                },
                 "api-keys": {
                     title: this.$t("API Keys")
                 },

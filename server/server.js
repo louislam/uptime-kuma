@@ -66,6 +66,7 @@ log.info("server", "Loading modules");
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
+const session = require("express-session");
 log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
 log.debug("server", "Importing jsonwebtoken");
@@ -152,6 +153,21 @@ const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
 
 app.use(express.json());
+
+// Session middleware for OIDC state management
+app.use(session({
+    secret: process.env.UPTIME_KUMA_SESSION_SECRET || server.jwtSecret || "uptime-kuma-session-fallback",
+    resave: false,
+    saveUninitialized: false,
+    name: "uptime-kuma-oidc-session",
+    cookie: {
+        // Only secure in production with HTTPS - allow HTTP for development/localhost
+        secure: process.env.NODE_ENV === "production" && process.env.UPTIME_KUMA_ENABLE_HTTPS === "true",
+        httpOnly: true,
+        maxAge: 10 * 60 * 1000, // 10 minutes - short session for OIDC flow
+        sameSite: "lax"
+    }
+}));
 
 // Global Middleware
 app.use(function (req, res, next) {
@@ -308,6 +324,14 @@ let needSetup = false;
     // API Router
     const apiRouter = require("./routers/api-router");
     app.use(apiRouter);
+
+    // OIDC Authentication Router
+    const oidcAuthRouter = require("./routers/oidc-auth-router");
+    app.use(oidcAuthRouter);
+
+    // OIDC Admin Router
+    const oidcAdminRouter = require("./routers/oidc-admin-router");
+    app.use("/oidc/admin", oidcAdminRouter);
 
     // Status Page Router
     const statusPageRouter = require("./routers/status-page-router");

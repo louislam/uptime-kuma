@@ -34,6 +34,7 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 - Certificate info
 - Proxy support
 - 2FA support
+- SSO/OIDC authentication (OpenID Connect) - Support for PingFederate, Google, Microsoft, Auth0, Okta, and Generic OIDC providers
 
 ## 🔧 How to Install
 
