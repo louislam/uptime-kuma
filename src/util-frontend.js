@@ -219,7 +219,7 @@ class RelativeTimeFormatter {
      * Default locale and options for Relative Time Formatter
      */
     constructor() {
-        this.options = { numeric: "auto" };
+        this.options = { numeric: "always" };
         this.instance = new Intl.RelativeTimeFormat(currentLocale(), this.options);
     }
 
@@ -267,7 +267,7 @@ class RelativeTimeFormatter {
         };
 
         if (days > 0) {
-            toFormattedPart(days, "days");
+            toFormattedPart(days, "day");
         }
         if (hours > 0) {
             toFormattedPart(hours, "hour");
