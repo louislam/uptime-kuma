@@ -57,7 +57,7 @@ class Webhook extends NotificationProvider {
 
             config = this.getAxiosConfigWithProxy(config);
 
-            if (httpMethod.toLowerCase() === "get") {
+            if (httpMethod === "get") {
                 await axios.get(notification.webhookURL, config);
             } else {
                 await axios.post(notification.webhookURL, data, config);
