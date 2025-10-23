@@ -313,6 +313,7 @@
     "Services": "Services",
     "Discard": "Discard",
     "Cancel": "Cancel",
+    "auto-select": "Auto Select",
     "Select": "Select",
     "selectedMonitorCount": "Selected: {0}",
     "Check/Uncheck": "Check/Uncheck",

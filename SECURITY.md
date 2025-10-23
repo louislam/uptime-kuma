@@ -22,17 +22,21 @@ Advisories only. I will ignore all 3rd-party bug bounty platforms emails.
 
 ### Uptime Kuma Versions
 
-You should use or upgrade to the latest version of Uptime Kuma. All `1.X.X`
-versions are upgradable to the latest version.
+You should use or upgrade to the latest version of Uptime Kuma.
+All versions are upgradable to the latest version.
 
 ### Upgradable Docker Tags
 
-| Tag            | Supported          |
-| -------------- | ------------------ |
-| 1              | :white_check_mark: |
-| 1-debian       | :white_check_mark: |
-| latest         | :white_check_mark: |
-| debian         | :white_check_mark: |
-| 1-alpine       | ⚠️ Deprecated      |
-| alpine         | ⚠️ Deprecated      |
-| All other tags | ❌                 |
+| Tag             | Supported                                                                             |
+| --------------- | ------------------------------------------------------------------------------------- |
+| 2               | :white_check_mark:                                                                    |
+| 2-slim          | :white_check_mark:                                                                    |
+| next            | :white_check_mark:                                                                    |
+| next-slim       | :white_check_mark:                                                                    |
+| 2-rootless      | :white_check_mark:                                                                    |
+| 2-slim-rootless | :white_check_mark:                                                                    |
+| 1               | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
+| 1-debian        | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
+| latest          | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
+| debian          | [⚠️ Deprecated](https://github.com/louislam/uptime-kuma/wiki/Migration-From-v1-To-v2) |
+| All other tags  | ❌                                                                                    |
