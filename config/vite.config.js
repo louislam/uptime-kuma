@@ -13,6 +13,20 @@ const viteCompressionFilter = /\.(js|mjs|json|css|html|svg)$/i;
 export default defineConfig({
     server: {
         port: 3000,
+        // Dev proxy: forward backend API & auth routes to Express (default port 3001)
+        proxy: {
+            "/auth": {
+                target: `http://localhost:${process.env.UPTIME_KUMA_PORT || process.env.PORT || 3001}`,
+                // Keep original host (3000) so redirect_uri uses frontend origin during dev
+                changeOrigin: false,
+                secure: false,
+            },
+            "/api": {
+                target: `http://localhost:${process.env.UPTIME_KUMA_PORT || process.env.PORT || 3001}`,
+                changeOrigin: true,
+                secure: false,
+            },
+        },
     },
     define: {
         "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),

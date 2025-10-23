@@ -307,6 +307,8 @@ let needSetup = false;
 
     // API Router
     const apiRouter = require("./routers/api-router");
+    const oidcRouter = require("./routers/oidc-router");
+    app.use(oidcRouter);
     app.use(apiRouter);
 
     // Status Page Router
