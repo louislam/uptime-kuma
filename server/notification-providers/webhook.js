@@ -35,15 +35,13 @@ class Webhook extends NotificationProvider {
                 if (monitorJSON) {
                     config.params.monitor = JSON.stringify(monitorJSON);
                 }
-            } else {
-                if (notification.webhookContentType === "form-data") {
-                    const formData = new FormData();
-                    formData.append("data", JSON.stringify(data));
-                    config.headers = formData.getHeaders();
-                    data = formData;
-                } else if (notification.webhookContentType === "custom") {
-                    data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
-                }
+            } else if (notification.webhookContentType === "form-data") {
+                const formData = new FormData();
+                formData.append("data", JSON.stringify(data));
+                config.headers = formData.getHeaders();
+                data = formData;
+            } if (notification.webhookContentType === "custom") {
+                data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
             }
 
             if (notification.webhookAdditionalHeaders) {
