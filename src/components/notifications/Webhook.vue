@@ -26,7 +26,7 @@
         </div>
     </div>
 
-    <div v-if="httpMethod !== 'get'" class="mb-3">
+    <div v-if="$parent.notification.httpMethod === 'post'" class="mb-3">
         <label for="webhook-request-body" class="form-label">{{ $t("Request Body") }}</label>
         <select
             id="webhook-request-body"
