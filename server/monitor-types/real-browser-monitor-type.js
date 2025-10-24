@@ -238,37 +238,104 @@ class RealBrowserMonitorType extends MonitorType {
     async check(monitor, heartbeat, server) {
         const browser = monitor.remote_browser ? await getRemoteBrowser(monitor.remote_browser, monitor.user_id) : await getBrowser();
         const context = await browser.newContext();
-        const page = await context.newPage();
+        let page;
 
-        // Prevent Local File Inclusion
-        // Accept only http:// and https://
-        // https://github.com/louislam/uptime-kuma/security/advisories/GHSA-2qgm-m29m-cj2h
-        let url = new URL(monitor.url);
-        if (url.protocol !== "http:" && url.protocol !== "https:") {
-            throw new Error("Invalid url protocol, only http and https are allowed.");
-        }
+        try {
+            page = await context.newPage();
 
-        const res = await page.goto(monitor.url, {
-            waitUntil: "networkidle",
-            timeout: monitor.interval * 1000 * 0.8,
-        });
+            // Prevent Local File Inclusion
+            // Accept only http://, https://, and data:// (for testing)
+            // https://github.com/louislam/uptime-kuma/security/advisories/GHSA-2qgm-m29m-cj2h
+            let url = new URL(monitor.url);
+            if (url.protocol !== "http:" && url.protocol !== "https:" && url.protocol !== "data:") {
+                throw new Error("Invalid url protocol, only http, https and data are allowed.");
+            }
 
-        let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
+            const res = await page.goto(monitor.url, {
+                waitUntil: "networkidle",
+                timeout: monitor.interval * 1000 * 0.8,
+            });
 
-        await page.screenshot({
-            path: path.join(Database.screenshotDir, filename),
-        });
+            // Handle data: URLs which don't return a proper Response object
+            const isDataUrl = url.protocol === "data:";
 
-        await context.close();
+            // Normalize keyword early for reuse in checking and status messages
+            // This ensures consistent matching and reporting
+            let normalizedKeyword = null;
 
-        if (res.status() >= 200 && res.status() < 400) {
-            heartbeat.status = UP;
-            heartbeat.msg = res.status();
+            // Check for keyword if configured
+            if (monitor.keyword && monitor.keyword.trim()) {
+                // Normalize keyword the same way as page content to ensure consistent matching
+                // This prevents false negatives when users accidentally enter extra spaces in keywords
+                // For example, "Hello  World" (double space) will match "Hello World" (single space) on page
+                normalizedKeyword = monitor.keyword.replace(/\s+/g, " ").trim();
 
-            const timing = res.request().timing();
-            heartbeat.ping = timing.responseEnd;
-        } else {
-            throw new Error(res.status() + "");
+                // Extract all visible text content from the page
+                let textContent = await page.textContent("body");
+
+                if (textContent) {
+                    // Normalize page content: replace duplicate white spaces with a single space
+                    // This handles inconsistent spacing in HTML (tabs, newlines, multiple spaces, etc.)
+                    textContent = textContent.replace(/\s+/g, " ").trim();
+
+                    let keywordFound = textContent.includes(normalizedKeyword);
+                    const invertKeyword = monitor.invertKeyword === true || monitor.invertKeyword === 1;
+
+                    if (keywordFound === !invertKeyword) {
+                        log.debug("monitor", `Keyword check passed. Keyword "${normalizedKeyword}" ${keywordFound ? "found" : "not found"} on page (invert: ${invertKeyword})`);
+                    } else {
+                        let errorText = textContent;
+                        if (errorText.length > 50) {
+                            errorText = errorText.substring(0, 47) + "...";
+                        }
+
+                        throw new Error(
+                            `Keyword check failed. Keyword "${normalizedKeyword}" ${keywordFound ? "found" : "not found"} on page. ` +
+                            `Expected: ${invertKeyword ? "not found" : "found"}. Page content: [${errorText}]`
+                        );
+                    }
+                } else {
+                    throw new Error("Could not extract text content from page for keyword checking");
+                }
+            }
+
+            let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
+
+            await page.screenshot({
+                path: path.join(Database.screenshotDir, filename),
+            });
+
+            // Handle data: URLs vs HTTP/HTTPS URLs differently
+            if (isDataUrl || (res && res.status() >= 200 && res.status() < 400)) {
+                heartbeat.status = UP;
+                let statusMsg = isDataUrl ? "200" : res.status().toString();
+
+                // Add keyword info to message if keyword checking was performed
+                if (normalizedKeyword) {
+                    const invertKeyword = monitor.invertKeyword === true || monitor.invertKeyword === 1;
+                    statusMsg += `, keyword "${normalizedKeyword}" ${invertKeyword ? "not found" : "found"}`;
+                }
+
+                heartbeat.msg = statusMsg;
+
+                if (res && res.request()) {
+                    const timing = res.request().timing();
+                    heartbeat.ping = timing.responseEnd;
+                } else {
+                    heartbeat.ping = 1; // Fallback timing
+                }
+            } else {
+                throw new Error(res ? res.status() + "" : "Network error");
+            }
+        } finally {
+            // Always close page and context, even if there was an error
+            // Close page first for proper cleanup order
+            if (page) {
+                await page.close();
+            }
+            if (context) {
+                await context.close();
+            }
         }
     }
 }
