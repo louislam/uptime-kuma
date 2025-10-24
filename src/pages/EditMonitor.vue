@@ -765,6 +765,26 @@
                                 </div>
 
                                 <div class="my-3">
+                                    <div class="form-check">
+                                        <input id="saveResponse" v-model="monitor.saveResponse" class="form-check-input" type="checkbox">
+                                        <label class="form-check-label" for="saveResponse">
+                                            {{ $t("saveResponseForNotifications") }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        {{ $t("saveResponseDescription") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="monitor.saveResponse" class="my-3">
+                                    <label for="responseMaxLength" class="form-label">{{ $t("responseMaxLength") }}</label>
+                                    <input id="responseMaxLength" v-model="monitor.responseMaxLength" type="number" class="form-control" required min="0" step="1">
+                                    <div class="form-text">
+                                        {{ $t("responseMaxLengthDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
                                     <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
 
                                     <VueMultiselect
@@ -1199,6 +1219,8 @@ const monitorDefaults = {
     expiryNotification: false,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
+    saveResponse: false,
+    responseMaxLength: 10240,
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
     docker_container: "",
