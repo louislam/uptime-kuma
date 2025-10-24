@@ -33,6 +33,7 @@ if (! exists) {
         console.error("error update package-lock!");
         process.exit(1);
     }
+    commit(newVersion);
 
 } else {
     console.log("version exists");
