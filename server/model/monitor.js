@@ -21,6 +21,8 @@ const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
 const Gamedig = require("gamedig");
+const net = require("net");
+const tls = require("tls");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -63,13 +65,16 @@ class Monitor extends BeanModel {
         if (showTags) {
             obj.tags = await this.getTags();
         }
-
-        if (certExpiry && (this.type === "http" || this.type === "keyword" || this.type === "json-query") && this.getURLProtocol() === "https:") {
+        if (certExpiry &&
+            (
+                (this.type === "http" || this.type === "keyword" || this.type === "json-query") && this.getURLProtocol() === "https:"
+            ) ||
+            (this.type === "smtp" && this.smtpSecurity)   //  NEW: SMTP SSL or STARTTLS
+        ) {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
         }
-
         return obj;
     }
 
@@ -355,7 +360,7 @@ class Monitor extends BeanModel {
 
             let beatInterval = this.interval;
 
-            if (! beatInterval) {
+            if (!beatInterval) {
                 beatInterval = 1;
             }
 
@@ -618,6 +623,112 @@ class Monitor extends BeanModel {
                             throw new Error(`JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`);
                         }
 
+                    }
+                } else if (this.type === "smtp") {
+                    // SMTP monitor: supports SMTPS (secure), STARTTLS, and plain SMTP.
+                    // Checks TLS certificates and sets status, message, and ping time.
+                    const startTime = dayjs().valueOf();
+                    let smtpTlsInfo = {};
+
+                    try {
+                        if (this.smtpSecurity === "secure") {
+                            const tlsSocket = tls.connect({
+                                host: this.hostname,
+                                port: this.port || 465,
+                                servername: this.hostname,
+                                rejectUnauthorized: !this.getIgnoreTls(),
+                            });
+
+                            await new Promise((resolve, reject) => {
+                                tlsSocket.on("secureConnect", async () => {
+                                    try {
+                                        tlsSocket.write("EHLO uptime-kuma\r\n");
+
+                                        smtpTlsInfo = checkCertificate(tlsSocket);
+                                        smtpTlsInfo.valid = tlsSocket.authorized || false;
+                                        await this.handleTlsInfo(smtpTlsInfo);
+
+                                        tlsSocket.end();
+                                        bean.msg = "SMTPS connection established";
+                                        bean.status = UP;
+                                        resolve();
+                                    } catch (err) {
+                                        tlsSocket.destroy();
+                                        reject(err);
+                                    }
+                                });
+
+                                tlsSocket.on("error", (err) => {
+                                    tlsSocket.destroy();
+                                    reject(err);
+                                });
+                            });
+
+                        } else if (this.smtpSecurity === "starttls") {
+                            const socket = net.connect({ host: this.hostname,
+                                port: this.port || 587 }, () => {
+                                socket.write("EHLO uptime-kuma\r\n");
+                            });
+
+                            await new Promise((resolve, reject) => {
+                                let buffer = "";
+
+                                socket.on("data", async (data) => {
+                                    buffer += data.toString();
+                                    let lines = buffer.split("\r\n");
+                                    buffer = lines.pop() || "";
+
+                                    for (const line of lines) {
+                                        if (line.includes("STARTTLS")) {
+                                            socket.write("STARTTLS\r\n");
+                                        }
+
+                                        if (line.startsWith("220") && line.toLowerCase().includes("start tls")) {
+                                            const tlsSocket = tls.connect({
+                                                socket,
+                                                servername: this.hostname,
+                                                rejectUnauthorized: !this.getIgnoreTls(),
+                                            });
+
+                                            tlsSocket.on("secureConnect", async () => {
+                                                try {
+                                                    tlsSocket.write("EHLO uptime-kuma\r\n");
+
+                                                    smtpTlsInfo = checkCertificate(tlsSocket);
+                                                    smtpTlsInfo.valid = tlsSocket.authorized || false;
+                                                    await this.handleTlsInfo(smtpTlsInfo);
+
+                                                    tlsSocket.end();
+                                                    bean.msg = "SMTP STARTTLS connection established";
+                                                    bean.status = UP;
+                                                    resolve();
+                                                } catch (err) {
+                                                    tlsSocket.destroy();
+                                                    reject(err);
+                                                }
+                                            });
+
+                                            tlsSocket.on("error", (err) => {
+                                                tlsSocket.destroy();
+                                                reject(err);
+                                            });
+                                        }
+                                    }
+                                });
+
+                                socket.on("error", reject);
+                            });
+
+                        } else {
+                            bean.msg = "SMTP connection established (no TLS)";
+                            bean.status = UP;
+                        }
+
+                        bean.ping = dayjs().valueOf() - startTime;
+
+                    } catch (e) {
+                        bean.msg = "SMTP check failed: " + e.message;
+                        bean.status = DOWN;
                     }
 
                 } else if (this.type === "port") {
@@ -993,7 +1104,7 @@ class Monitor extends BeanModel {
 
             previousBeat = bean;
 
-            if (! this.isStop) {
+            if (!this.isStop) {
                 log.debug("monitor", `[${this.name}] SetTimeout for next check.`);
 
                 let intervalRemainingMs = Math.max(
@@ -1022,7 +1133,7 @@ class Monitor extends BeanModel {
                 UptimeKumaServer.errorLog(e, false);
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
-                if (! this.isStop) {
+                if (!this.isStop) {
                     log.info("monitor", "Try to restart the monitor");
                     this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
                 }
@@ -1074,7 +1185,8 @@ class Monitor extends BeanModel {
                 let oauth2AuthHeader = {
                     "Authorization": this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
                 };
-                options.headers = { ...(options.headers),
+                options.headers = {
+                    ...(options.headers),
                     ...(oauth2AuthHeader)
                 };
 
@@ -1335,7 +1447,8 @@ class Monitor extends BeanModel {
             for (let notification of notificationList) {
                 try {
                     const heartbeatJSON = bean.toJSON();
-                    const monitorData = [{ id: monitor.id,
+                    const monitorData = [{
+                        id: monitor.id,
                         active: monitor.active,
                         name: monitor.name
                     }];
@@ -1380,7 +1493,7 @@ class Monitor extends BeanModel {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
             const notificationList = await Monitor.getNotificationList(this);
 
-            if (! notificationList.length > 0) {
+            if (!notificationList.length > 0) {
                 // fail fast. If no notification is set, all the following checks can be skipped.
                 log.debug("monitor", "No notification, no need to send cert notification");
                 return;
