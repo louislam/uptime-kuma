@@ -22,7 +22,7 @@
     <div class="mb-3">
         <label for="pagerduty-resolve" class="form-label">{{ $t("Auto resolve or acknowledged") }}</label>
         <select id="pagerduty-resolve" v-model="$parent.notification.pagerdutyAutoResolve" class="form-select">
-            <option value="" selected="selected">{{ $t("do nothing") }}</option>
+            <option value="0" selected="selected">{{ $t("do nothing") }}</option>
             <option value="acknowledge">{{ $t("auto acknowledged") }}</option>
             <option value="resolve">{{ $t("auto resolve") }}</option>
         </select>
