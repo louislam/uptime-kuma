@@ -1,14 +1,14 @@
 name: prevent-file-change
 
 on:
-  pull_request:
+  pull_request_target:
 
 jobs:
   check-file-changes:
     runs-on: ubuntu-latest
     steps:
       - name: Prevent file change
-        uses: xalvarez/prevent-file-change-action@v1
+        uses: xalvarez/prevent-file-change-action@1cbb6c2722f61b87abb3396e918f27f31f0c6198 # Pinning to v1.9.0
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           # Regex, /src/lang/*.json is not allowed to be changed, except for /src/lang/en.json
