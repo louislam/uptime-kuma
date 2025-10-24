@@ -56,7 +56,7 @@ export default {
     mounted() {
         // Initialize default if needed
         if (!this.$parent.notification.googleChatMaxRetries) {
-            this.$parent.notification.googleChatMaxRetries ||= 3;
+            this.$parent.notification.googleChatMaxRetries ||= 1;
         }
     },
 };
