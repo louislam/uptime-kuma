@@ -27,8 +27,13 @@ if (! exists) {
 
     // Also update package-lock.json
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    childProcess.spawnSync(npm, [ "install" ]);
-    commit(newVersion);
+    const result = childProcess.spawnSync(npm, [ "install" ], { shell: true});
+    if(result.error)
+    {
+        console.error(result.error)
+        console.error("error update package-lock!");
+        process.exit(1);
+    }
 
 } else {
     console.log("version exists");
