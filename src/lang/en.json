@@ -1170,5 +1170,7 @@
     "Bot secret": "Bot secret",
     "Send UP silently": "Send UP silently",
     "Send DOWN silently": "Send DOWN silently",
-    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Installing a Nextcloud Talk bot requires administrative access to the server."
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Installing a Nextcloud Talk bot requires administrative access to the server.",
+    "Number of retry attempts if webhook fails": "Number of retry attempts (every 60-180 seconds) if the webhook fails.",
+    "Maximum Retries": "Maximum Retries"
 }
