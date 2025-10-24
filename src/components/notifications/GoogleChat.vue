@@ -15,7 +15,7 @@
         <label for="google-chat-max-retries" class="form-label">{{ $t("Maximum Retries") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="google-chat-max-retries" v-model.number="$parent.notification.googleChatMaxRetries" type="number" class="form-control" min="1" max="10" step="1" required>
         <div class="form-text">
-            {{ $t("Number of retry attempts if webhook fails (1-10). Retries are delayed by 60-180 seconds.") }}
+            {{ $t("Number of retry attempts if webhook fails") }}
         </div>
     </div>
 
