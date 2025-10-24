@@ -306,6 +306,7 @@
     "Show Tags": "Show Tags",
     "Hide Tags": "Hide Tags",
     "Description": "Description",
+    "descriptionHelpText": "Please remove leading spaces in HTML to avoid formatting issues",
     "No monitors available.": "No monitors available.",
     "Add one": "Add one",
     "No Monitors": "No Monitors",

@@ -817,7 +817,32 @@
 
                             <!-- Description -->
                             <div class="my-3">
-                                <label for="description" class="form-label">{{ $t("Description") }}</label>
+                                <label for="description" class="form-label">
+                                    {{ $t("Description") }}
+                                    <span
+                                        class="position-relative ms-2"
+                                        @mouseenter="showDescriptionTooltip = true"
+                                        @mouseleave="showDescriptionTooltip = false"
+                                    >
+                                        <font-awesome-icon
+                                            icon="info-circle"
+                                            class="text-muted"
+                                            style="cursor: help;"
+                                        />
+                                        <!-- Simple Bootstrap Tooltip -->
+                                        <div
+                                            v-if="showDescriptionTooltip"
+                                            class="tooltip bs-tooltip-end show"
+                                            role="tooltip"
+                                            style="position: absolute; top: 50%; left: 100%; transform: translateY(-50%) translateX(8px); z-index: 9999;"
+                                        >
+                                            <div class="tooltip-arrow"></div>
+                                            <div class="tooltip-inner" style="max-width: 500px; white-space: nowrap; background-color: rgba(17, 24, 39, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(75, 85, 99, 0.3); color: #f3f4f6; border-radius: 8px;">
+                                                {{ $t("descriptionHelpText") }}
+                                            </div>
+                                        </div>
+                                    </span>
+                                </label>
                                 <input id="description" v-model="monitor.description" type="text" class="form-control">
                             </div>
 
@@ -1267,6 +1292,7 @@ export default {
             },
             draftGroupName: null,
             remoteBrowsersEnabled: false,
+            showDescriptionTooltip: false,
         };
     },
 
