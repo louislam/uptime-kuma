@@ -740,7 +740,7 @@ let needSetup = false;
 
                 await updateMonitorNotification(bean.id, notificationIDList);
 
-                await server.sendUpdateMonitorIntoList(socket, bean.id);
+                await server.sendUpdateMonitorsIntoList(socket, bean.id);
 
                 if (monitor.active !== false) {
                     await startMonitor(socket.userID, bean.id);
@@ -910,7 +910,7 @@ let needSetup = false;
                     await restartMonitor(socket.userID, bean.id);
                 }
 
-                await server.sendUpdateMonitorIntoList(socket, bean.id);
+                await server.sendUpdateMonitorsIntoList(socket, bean.id);
 
                 callback({
                     ok: true,
@@ -1011,7 +1011,9 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await startMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                await server.sendUpdateMonitorsIntoList(socket, [ monitorID, ...childrenIDs ]);
 
                 callback({
                     ok: true,
@@ -1031,7 +1033,9 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
-                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                await server.sendUpdateMonitorsIntoList(socket, [ monitorID, ...childrenIDs ]);
 
                 callback({
                     ok: true,
@@ -1776,16 +1780,19 @@ async function startMonitor(userID, monitorID) {
         userID,
     ]);
 
-    let monitor = await R.findOne("monitor", " id = ? ", [
-        monitorID,
-    ]);
+    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID, true);
+    const monitorIDs = [ monitorID, ...childrenIDs ];
 
-    if (monitor.id in server.monitorList) {
-        await server.monitorList[monitor.id].stop();
-    }
+    let monitors = await R.find("monitor", ` id IN (${monitorIDs.map((_) => "?").join(",")})`, monitorIDs);
 
-    server.monitorList[monitor.id] = monitor;
-    await monitor.start(io);
+    await Promise.all(monitors.map(async (monitor) => {
+        if (monitor.id in server.monitorList) {
+            await server.monitorList[monitor.id].stop();
+        }
+
+        server.monitorList[monitor.id] = monitor;
+        await monitor.start(io);
+    }));
 }
 
 /**
@@ -1814,10 +1821,16 @@ async function pauseMonitor(userID, monitorID) {
         userID,
     ]);
 
-    if (monitorID in server.monitorList) {
-        await server.monitorList[monitorID].stop();
-        server.monitorList[monitorID].active = 0;
-    }
+    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+    const monitorIDs = [ monitorID, ...childrenIDs ];
+
+    await Promise.all(monitorIDs.map(async (currentMonitorID) => {
+        if (currentMonitorID in server.monitorList) {
+            await server.monitorList[currentMonitorID].stop();
+        }
+    }));
+
+    server.monitorList[monitorID].active = 0;
 }
 
 /**
@@ -1825,7 +1838,7 @@ async function pauseMonitor(userID, monitorID) {
  * @returns {Promise<void>}
  */
 async function startMonitors() {
-    let list = await R.find("monitor", " active = 1 ");
+    let list = await Monitor.getAllActiveMonitors();
 
     for (let monitor of list) {
         server.monitorList[monitor.id] = monitor;
