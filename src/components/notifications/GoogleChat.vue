@@ -55,7 +55,7 @@ export default {
     },
     mounted() {
         // Initialize default if needed
-        if (!this.$parent.notification.hasOwnProperty.call(this.$parent.notification, "googleChatMaxRetries")) {
+        if (!this.$parent.notification.googleChatMaxRetries) {
             this.$parent.notification.googleChatMaxRetries ||= 3;
         }
     },
