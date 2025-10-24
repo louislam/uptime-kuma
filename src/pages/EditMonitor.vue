@@ -837,7 +837,15 @@
                                             style="position: absolute; top: 50%; left: 100%; transform: translateY(-50%) translateX(8px); z-index: 9999;"
                                         >
                                             <div class="tooltip-arrow"></div>
-                                            <div class="tooltip-inner" style="max-width: 500px; white-space: nowrap; background-color: rgba(17, 24, 39, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(75, 85, 99, 0.3); color: #f3f4f6; border-radius: 8px;">
+                                            <div
+                                                class="tooltip-inner"
+                                                style="max-width: 500px; white-space: nowrap;
+                                                    background-color: rgba(17, 24, 39, 0.95);
+                                                    backdrop-filter: blur(8px);
+                                                    border: 1px solid rgba(75, 85, 99, 0.3);
+                                                    color: #f3f4f6;
+                                                    border-radius: 8px;"
+                                            >
                                                 {{ $t("descriptionHelpText") }}
                                             </div>
                                         </div>
