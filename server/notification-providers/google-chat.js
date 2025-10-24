@@ -12,6 +12,28 @@ class GoogleChat extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
+        // If Google Chat Webhook rate limit is reached, retry up to 10 times, delay between 60-180 seconds
+        const post = async (url, data, config) => {
+            let retries = 10;
+            while (retries > 0) {
+                try {
+                    await axios.post(url, data, config);
+                    return;
+                } catch (error) {
+                    if (error.response && error.response.status === 429) {
+                        retries--;
+                        if (retries === 0) {
+                            throw error;
+                        }
+                        const delay = 60000 + Math.random() * 120000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+        };
+
         try {
             let config = this.getAxiosConfigWithProxy({});
             // Google Chat message formatting: https://developers.google.com/chat/api/guides/message-formats/basic
@@ -24,7 +46,7 @@ class GoogleChat extends NotificationProvider {
                     heartbeatJSON
                 );
                 const data = { "text": renderedText };
-                await axios.post(notification.googleChatWebhookURL, data, config);
+                await post(notification.googleChatWebhookURL, data, config);
                 return okMsg;
             }
 
@@ -96,7 +118,7 @@ class GoogleChat extends NotificationProvider {
                 ],
             };
 
-            await axios.post(notification.googleChatWebhookURL, data, config);
+            await post(notification.googleChatWebhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
