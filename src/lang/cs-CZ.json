@@ -1201,5 +1201,19 @@
     "Bot secret": "Bot secret",
     "Send UP silently": "UP odeslat tiše",
     "Send DOWN silently": "DOWN odeslat tiše",
-    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Instalace Nextcloud Talk bota vyžaduje administrátorský přístup k serveru."
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Instalace Nextcloud Talk bota vyžaduje administrátorský přístup k serveru.",
+    "Maximum Retries": "Max. počet pokusů",
+    "Number of retry attempts if webhook fails": "Počet pokusů o opakování (každých 60–180 sekund), pokud se webhook nepodaří odeslat.",
+    "wayToGetBaleToken": "Token můžete získat na adrese {0}.",
+    "wayToGetBaleChatID": "ID chatu získáte zasláním zprávy robotovi a přejdete na tuto URL adresu, na které se zobrazí chat_id:",
+    "supportBaleChatID": "Podpora přímého chatu / skupiny / ID chatu kanálu",
+    "Dingtalk Mobile List": "Seznam telefonních čísel",
+    "Dingtalk User List": "Seznam ID uživatelů",
+    "Mention Mobile List": "Seznam Mention telefonních čísel",
+    "Mention User List": "Seznam ID uživatelů Mention",
+    "Enter a list of userId": "Zadejte seznam userID",
+    "Enter a list of mobile": "Zadejte seznam telefonních čísel",
+    "Invalid mobile": "Neplatné telefonní číslo [{mobile}]",
+    "Invalid userId": "Neplatné userID [{userId}]",
+    "auto-select": "Automatický výběr"
 }
