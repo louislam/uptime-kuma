@@ -1199,5 +1199,7 @@
     "Enter a list of userId": "Inserisci un elenco di userId",
     "Invalid mobile": "Cellulare non valido [{mobile}]",
     "Enter a list of mobile": "Inserisci un elenco di cellulari",
-    "Invalid userId": "ID utente non valido [{userId}]"
+    "Invalid userId": "ID utente non valido [{userId}]",
+    "Maximum Retries": "Tentativi massimi",
+    "Number of retry attempts if webhook fails": "Numero di tentativi di retry (ogni 60-180 secondi) in caso di errore della webhook."
 }
