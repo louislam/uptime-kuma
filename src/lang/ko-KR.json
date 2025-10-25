@@ -924,5 +924,9 @@
     "Badge URL": "배지 URL",
     "Group": "그룹",
     "monitorToastMessagesLabel": "모니터 토스트 알림",
-    "monitorToastMessagesDescription": "모니터용 토스트 알림은 지정된 초 단위 시간이 지나면 사라집니다. -1로 설정하면 시간 초과를 비활성화합니다. 0으로 설정하면 토스트 알림을 비활성화합니다."
+    "monitorToastMessagesDescription": "모니터용 토스트 알림은 지정된 초 단위 시간이 지나면 사라집니다. -1로 설정하면 시간 초과를 비활성화합니다. 0으로 설정하면 토스트 알림을 비활성화합니다.",
+    "supportBaleChatID": "개인 채팅 / 그룹 / 채널의 ID를 지원해요",
+    "wayToGetBaleChatID": "봇에 메시지를 보내 채팅 ID를 얻고 밑에 URL로 이동해 chat_id를 볼 수 있어요:",
+    "wayToGetBaleToken": "토큰은 여기서 얻을 수 있어요: {0}.",
+    "auto-select": "자동 선택"
 }
