@@ -1,6 +1,16 @@
 <template>
     <div>
-        <div :style="depthMargin">
+        <div
+            :style="depthMargin"
+            :draggable="monitor.type !== 'group'"
+            :class="{ 'drag-over': dragOver }"
+            @dragstart="onDragStart"
+            @dragend="onDragEnd"
+            @dragenter.prevent="onDragEnter"
+            @dragleave.prevent="onDragLeave"
+            @dragover.prevent
+            @drop.prevent="onDrop"
+        >
             <!-- Checkbox -->
             <div v-if="isSelectMode" class="select-input-wrapper">
                 <input
@@ -116,6 +126,8 @@ export default {
     data() {
         return {
             isCollapsed: true,
+            dragging: false,
+            dragOver: false,
         };
     },
     computed: {
@@ -188,6 +200,101 @@ export default {
             window.localStorage.setItem("monitorCollapsed", JSON.stringify(storageObject));
         },
         /**
+         * Initializes the drag operation if the monitor is draggable.
+         * Prevents dragging of group monitors.
+         * @param {DragEvent} event - The dragstart event triggered by the browser.
+         * @returns {void} This method does not return anything.
+         */
+        onDragStart(event) {
+            // Only allow dragging non-group monitors (so groups act as drop targets)
+            if (this.monitor.type === "group") {
+                event.preventDefault();
+                return;
+            }
+
+            try {
+                event.dataTransfer.setData("text/monitor-id", String(this.monitor.id));
+                event.dataTransfer.effectAllowed = "move";
+                this.dragging = true;
+            } catch (e) {
+                // ignore
+            }
+        },
+
+        onDragEnd() {
+            this.dragging = false;
+        },
+
+        onDragEnter(event) {
+            // show visual feedback if this item is a group
+            if (this.monitor.type === "group") {
+                this.dragOver = true;
+            }
+        },
+
+        onDragLeave(event) {
+            if (this.monitor.type === "group") {
+                this.dragOver = false;
+            }
+        },
+
+        async onDrop(event) {
+            event.preventDefault();
+            this.dragOver = false;
+
+            // Only groups accept drops
+            if (this.monitor.type !== "group") {
+                return;
+            }
+
+            const draggedId = event.dataTransfer.getData("text/monitor-id");
+            if (!draggedId) {
+                return;
+            }
+
+            const draggedMonitorId = parseInt(draggedId);
+            if (isNaN(draggedMonitorId) || draggedMonitorId === this.monitor.id) {
+                return;
+            }
+
+            const draggedMonitor = this.$root.monitorList[draggedMonitorId];
+            if (!draggedMonitor) {
+                return;
+            }
+
+            // Save original parent so we can revert locally if server returns error
+            const originalParent = draggedMonitor.parent;
+
+            // Prepare a full monitor object (clone) and set new parent
+            const monitorToSave = JSON.parse(JSON.stringify(draggedMonitor));
+            monitorToSave.parent = this.monitor.id;
+
+            // Optimistically update local state so UI updates immediately
+            this.$root.monitorList[draggedMonitorId].parent = this.monitor.id;
+
+            // Send updated monitor state via socket
+            try {
+                this.$root.getSocket().emit("editMonitor", monitorToSave, (res) => {
+                    if (!res || !res.ok) {
+                        // Revert local change on error
+                        if (this.$root.monitorList[draggedMonitorId]) {
+                            this.$root.monitorList[draggedMonitorId].parent = originalParent;
+                        }
+                        if (res && res.msg) {
+                            this.$root.toastError(res.msg);
+                        }
+                    } else {
+                        this.$root.toastRes(res);
+                    }
+                });
+            } catch (e) {
+                // revert on exception
+                if (this.$root.monitorList[draggedMonitorId]) {
+                    this.$root.monitorList[draggedMonitorId].parent = originalParent;
+                }
+            }
+        },
+        /**
          * Get URL of monitor
          * @param {number} id ID of monitor
          * @returns {string} Relative URL of monitor
@@ -251,6 +358,10 @@ export default {
     padding-left: 4px;
     position: relative;
     z-index: 15;
+}
+
+.drag-over {
+    background-color: rgba(6, 182, 212, 0.04);
 }
 
 </style>
