@@ -206,12 +206,6 @@ export default {
          * @returns {void} This method does not return anything.
          */
         onDragStart(event) {
-            // Only allow dragging non-group monitors (so groups act as drop targets)
-            if (this.monitor.type === "group") {
-                event.preventDefault();
-                return;
-            }
-
             try {
                 event.dataTransfer.setData("text/monitor-id", String(this.monitor.id));
                 event.dataTransfer.effectAllowed = "move";
