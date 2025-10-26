@@ -361,7 +361,7 @@ export default {
 }
 
 .drag-over {
-  background-color: rgba($primary, 0.05);
+    background-color: rgba($primary, 0.05);
 }
 
 </style>
