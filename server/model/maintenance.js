@@ -263,7 +263,7 @@ class Maintenance extends BeanModel {
 
                     // Set last start date to current time
                     this.last_start_date = current.toISOString();
-                    R.store(this);
+                    await R.store(this);
                 };
 
                 // Create Cron
@@ -272,9 +272,16 @@ class Maintenance extends BeanModel {
                     const startDate = dayjs(this.startDate);
                     const [ hour, minute ] = this.startTime.split(":");
                     const startDateTime = startDate.hour(hour).minute(minute);
+
+                    // Fix #6118, since the startDateTime is optional, it will throw error if the date is null when using toISOString()
+                    let startAt = undefined;
+                    try {
+                        startAt = startDateTime.toISOString();
+                    } catch (_) {}
+
                     this.beanMeta.job = new Cron(this.cron, {
                         timezone: await this.getTimezone(),
-                        startAt: startDateTime.toISOString(),
+                        startAt,
                     }, () => {
                         if (!this.lastStartDate || this.interval_day === 1) {
                             return startEvent();

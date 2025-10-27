@@ -25,6 +25,7 @@ class OneBot extends NotificationProvider {
                     "Authorization": "Bearer " + notification.accessToken,
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             let pushText = "UptimeKuma Alert: " + msg;
             let data = {
                 "auto_escape": true,

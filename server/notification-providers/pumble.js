@@ -12,6 +12,7 @@ class Pumble extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON === null && monitorJSON === null) {
                 let data = {
                     "attachments": [
@@ -23,7 +24,7 @@ class Pumble extends NotificationProvider {
                     ]
                 };
 
-                await axios.post(notification.webhookURL, data);
+                await axios.post(notification.webhookURL, data, config);
                 return okMsg;
             }
 
@@ -37,7 +38,7 @@ class Pumble extends NotificationProvider {
                 ]
             };
 
-            await axios.post(notification.webhookURL, data);
+            await axios.post(notification.webhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

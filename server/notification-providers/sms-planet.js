@@ -18,6 +18,7 @@ class SMSPlanet extends NotificationProvider {
                     "content-type": "multipart/form-data"
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let data = {
                 "from": notification.smsplanetSenderName,

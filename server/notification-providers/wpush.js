@@ -18,7 +18,8 @@ class WPush extends NotificationProvider {
                 "apikey": notification.wpushAPIkey,
                 "channel": notification.wpushChannel
             };
-            const result = await axios.post("https://api.wpush.cn/api/v1/send", context);
+            let config = this.getAxiosConfigWithProxy({});
+            const result = await axios.post("https://api.wpush.cn/api/v1/send", context, config);
             if (result.data.code !== 0) {
                 throw result.data.message;
             }

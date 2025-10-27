@@ -24,9 +24,7 @@ if (! exists) {
     // Also update package-lock.json
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
     childProcess.spawnSync(npm, [ "install" ]);
-
     commit(version);
-    tag(version);
 
 } else {
     console.log("version tag exists, please delete the tag or use another tag");
@@ -51,19 +49,6 @@ function commit(version) {
     }
 
     res = childProcess.spawnSync("git", [ "push", "origin", "master" ]);
-    console.log(res.stdout.toString().trim());
-}
-
-/**
- * Create a tag with the specified version
- * @param {string} version Tag to create
- * @returns {void}
- */
-function tag(version) {
-    let res = childProcess.spawnSync("git", [ "tag", version ]);
-    console.log(res.stdout.toString().trim());
-
-    res = childProcess.spawnSync("git", [ "push", "origin", version ]);
     console.log(res.stdout.toString().trim());
 }
 
