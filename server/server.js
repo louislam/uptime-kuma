@@ -1503,7 +1503,7 @@ let needSetup = false;
         socket.on("checkApprise", async (callback) => {
             try {
                 checkLogin(socket);
-                callback(Notification.checkApprise());
+                callback(await Notification.checkApprise());
             } catch (e) {
                 callback(false);
             }
