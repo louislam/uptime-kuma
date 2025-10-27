@@ -1,6 +1,7 @@
 <template>
     <div>
         <div
+            class="draggable-item"
             :style="depthMargin"
             :draggable="monitor.type !== 'group'"
             :class="{ 'drag-over': dragOver }"
@@ -356,6 +357,14 @@ export default {
 
 .drag-over {
     background-color: rgba($primary, 0.05);
+}
+
+.draggable-item {
+    cursor: grab;
+
+    &.dragging {
+        cursor: grabbing;
+    }
 }
 
 </style>
