@@ -1,6 +1,6 @@
-const fs = require("fs");
-const path = require("path");
-const serverUrl = require("../../config/playwright.config.js").url;
+import fs from "fs";
+import path from "path";
+import { url as serverUrl } from "../../config/playwright.config.js";
 
 const dbPath = "./../../data/playwright-test/kuma.db";
 
