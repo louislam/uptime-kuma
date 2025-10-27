@@ -39,11 +39,14 @@ class SimpleMigrationServer {
         this.app.get("/", (req, res) => {
             res.set("Content-Type", "text/html");
 
-            // HTML meta tag redirect to /status
+            // Don't use meta tag redirect, it may cause issues in Chrome (#6223)
             res.end(`
                 <html lang="en">
-                <head><meta http-equiv="refresh" content="0; URL=/migrate-status" /></head>
-                <body>Migration server is running.</body>
+                <head><title>Uptime Kuma Migration</title></head>
+                <body>
+                    Migration is in progress, it may take some time. You can check the progress in the console, or
+                    <a href="/migrate-status" target="_blank">click here to check</a>.
+                </body>
                 </html>
             `);
         });
