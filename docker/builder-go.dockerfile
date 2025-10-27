@@ -19,4 +19,7 @@ RUN apt update && \
     curl -sL https://deb.nodesource.com/setup_18.x | bash && \
     apt --yes --no-install-recommends install nodejs && \
     node ./extra/build-healthcheck.js $TARGETPLATFORM && \
-    apt --yes remove nodejs
+    apt --yes remove nodejs && \
+    apt autoremove -y --purge && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
