@@ -235,7 +235,7 @@ class GlobalpingMonitorType extends MonitorType {
             return;
         }
 
-        await this.handleTLSInfo(monitor, protocol, result.tls);
+        await this.handleTLSInfo(monitor, protocol, probe, result.tls);
 
         heartbeat.msg = this.formatResponse(probe, "OK");
         heartbeat.status = UP;
@@ -336,13 +336,13 @@ class GlobalpingMonitorType extends MonitorType {
     /**
      * @inheritdoc
      */
-    async handleTLSInfo(monitor, protocol, tlsInfo) {
+    async handleTLSInfo(monitor, protocol, probe, tlsInfo) {
         if (!tlsInfo) {
             return;
         }
 
         if (!monitor.ignoreTls && protocol === "HTTPS" && !tlsInfo.authorized) {
-            throw new Error(this.formatResponse(`TLS certificate is not authorized: ${tlsInfo.error}`));
+            throw new Error(this.formatResponse(probe, `TLS certificate is not authorized: ${tlsInfo.error}`));
         }
 
         let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [

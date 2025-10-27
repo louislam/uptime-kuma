@@ -1320,7 +1320,7 @@
                                 <template v-if="monitor.responsecheck === 'keyword'">
                                     <div class="my-3">
                                         <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
-                                        <input id="keyword" ref="" v-model="monitor.keyword" type="text" class="form-control">
+                                        <input id="keyword" v-model="monitor.keyword" type="text" class="form-control">
                                         <div class="form-text">
                                             {{ $t("keywordDescription") }}
                                         </div>
