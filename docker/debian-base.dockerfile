@@ -5,7 +5,10 @@ COPY ./extra/download-apprise.mjs ./download-apprise.mjs
 RUN apt update && \
     apt --yes --no-install-recommends install curl && \
     npm install cheerio semver && \
-    node ./download-apprise.mjs
+    node ./download-apprise.mjs && \
+    apt autoremove -y --purge && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Base Image (Slim)
 # If the image changed, the second stage image should be changed too
@@ -31,8 +34,9 @@ RUN apt update && \
         curl  \
         sudo \
         nscd && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt --yes autoremove
+    apt autoremove -y --purge && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # apprise = for notifications (Install from the deb package, as the stable one is too old) (workaround for #4867)
 # Switching to testing repo is no longer working, as the testing repo is not bookworm anymore.
@@ -41,9 +45,10 @@ RUN apt update && \
 COPY --from=download-apprise /app/apprise.deb ./apprise.deb
 RUN apt update && \
     apt --yes --no-install-recommends install ./apprise.deb python3-paho-mqtt && \
-    rm -rf /var/lib/apt/lists/* && \
     rm -f apprise.deb && \
-    apt --yes autoremove
+    apt autoremove -y --purge && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install cloudflared
 RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyrings/cloudflare-main.gpg && \
@@ -51,13 +56,13 @@ RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyr
     apt update && \
     apt install --yes --no-install-recommends cloudflared && \
     cloudflared version && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt --yes autoremove
+    apt autoremove -y --purge && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # For nscd
 COPY ./docker/etc/nscd.conf /etc/nscd.conf
 COPY ./docker/etc/sudoers /etc/sudoers
-
 
 # Full Base Image
 # MariaDB, Chromium and fonts
@@ -67,6 +72,7 @@ FROM louislam/uptime-kuma:base2-slim AS base2
 ENV UPTIME_KUMA_ENABLE_EMBEDDED_MARIADB=1
 RUN apt update && \
     apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk mariadb-server && \
+    apt autoremove -y --purge && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/* && \
-    apt --yes autoremove && \
     chown -R node:node /var/lib/mysql
