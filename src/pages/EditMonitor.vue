@@ -818,7 +818,7 @@
                             <!-- Description -->
                             <div class="my-3">
                                 <label for="description" class="form-label">{{ $t("Description") }}</label>
-<input id="description" v-model="monitor.description" type="text" class="form-control">
+                                <input id="description" v-model="monitor.description" type="text" class="form-control">
                                 <div class="form-text">{{ $t("descriptionHelpText") }}</div>
                             </div>
 
