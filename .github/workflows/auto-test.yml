@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-22.04, windows-latest, ARM64]
-        node: [ 18, 20 ]
+        node: [ 20, 24 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -30,7 +30,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
@@ -49,7 +49,7 @@ jobs:
     strategy:
       matrix:
         os: [ ARMv7 ]
-        node: [ 18, 20 ]
+        node: [ 20, 22 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
       - run: npm ci --production
@@ -70,7 +70,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Use Node.js 20
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: 20
     - run: npm install
@@ -84,7 +84,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Use Node.js 20
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: 20
     - run: npm install
