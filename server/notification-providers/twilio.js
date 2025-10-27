@@ -19,6 +19,7 @@ class Twilio extends NotificationProvider {
                     "Authorization": "Basic " + Buffer.from(apiKey + ":" + notification.twilioAuthToken).toString("base64"),
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let data = new URLSearchParams();
             data.append("To", notification.twilioToNumber);

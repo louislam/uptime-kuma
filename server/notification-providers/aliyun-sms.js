@@ -72,6 +72,8 @@ class AliyunSMS extends NotificationProvider {
             data: qs.stringify(params),
         };
 
+        config = this.getAxiosConfigWithProxy(config);
+
         let result = await axios(config);
         if (result.data.Message === "OK") {
             return true;

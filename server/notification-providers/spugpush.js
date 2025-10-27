@@ -26,7 +26,8 @@ class SpugPush extends NotificationProvider {
                 }
             }
             const apiUrl = `https://push.spug.cc/send/${notification.templateKey}`;
-            await axios.post(apiUrl, formData);
+            let config = this.getAxiosConfigWithProxy({});
+            await axios.post(apiUrl, formData, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

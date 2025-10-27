@@ -674,7 +674,7 @@ let needSetup = false;
 
                 let user = R.dispense("user");
                 user.username = username;
-                user.password = passwordHash.generate(password);
+                user.password = await passwordHash.generate(password);
                 await R.store(user);
 
                 needSetup = false;
@@ -719,6 +719,17 @@ let needSetup = false;
                 monitor.conditions = JSON.stringify(monitor.conditions);
 
                 monitor.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
+
+                /*
+                 * List of frontend-only properties that should not be saved to the database.
+                 * Should clean up before saving to the database.
+                 */
+                const frontendOnlyProperties = [ "humanReadableInterval" ];
+                for (const prop of frontendOnlyProperties) {
+                    if (prop in monitor) {
+                        delete monitor[prop];
+                    }
+                }
 
                 bean.import(monitor);
                 bean.user_id = socket.userID;
@@ -802,6 +813,7 @@ let needSetup = false;
                 bean.oauth_auth_method = monitor.oauth_auth_method;
                 bean.oauth_token_url = monitor.oauth_token_url;
                 bean.oauth_scopes = monitor.oauth_scopes;
+                bean.oauth_audience = monitor.oauth_audience;
                 bean.tlsCa = monitor.tlsCa;
                 bean.tlsCert = monitor.tlsCert;
                 bean.tlsKey = monitor.tlsKey;
@@ -836,6 +848,7 @@ let needSetup = false;
                 bean.mqttTopic = monitor.mqttTopic;
                 bean.mqttSuccessMessage = monitor.mqttSuccessMessage;
                 bean.mqttCheckType = monitor.mqttCheckType;
+                bean.mqttWebsocketPath = monitor.mqttWebsocketPath;
                 bean.databaseConnectionString = monitor.databaseConnectionString;
                 bean.databaseQuery = monitor.databaseQuery;
                 bean.authMethod = monitor.authMethod;

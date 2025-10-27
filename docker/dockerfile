@@ -79,6 +79,10 @@ USER node
 RUN git config --global user.email "no-reply@no-reply.com"
 RUN git config --global user.name "PR Tester"
 RUN git clone https://github.com/louislam/uptime-kuma.git .
+
+# Hide the warning when running in detached head state
+RUN git config --global advice.detachedHead false
+
 RUN npm ci
 
 EXPOSE 3000 3001
