@@ -17,7 +17,7 @@ class SendGrid extends NotificationProvider {
                     Authorization: `Bearer ${notification.sendgridApiKey}`,
                 },
             };
-
+            config = this.getAxiosConfigWithProxy(config);
             let personalizations = {
                 to: [{ email: notification.sendgridToEmail }],
             };

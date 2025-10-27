@@ -17,6 +17,7 @@ class SMSEagle extends NotificationProvider {
                         "Content-Type": "application/x-www-form-urlencoded",
                     }
                 };
+                config = this.getAxiosConfigWithProxy(config);
 
                 let sendMethod;
                 let recipientType;
@@ -78,6 +79,7 @@ class SMSEagle extends NotificationProvider {
                         "Content-Type": "application/json",
                     }
                 };
+                config = this.getAxiosConfigWithProxy(config);
 
                 let encoding = (notification.smseagleEncoding) ? "unicode" : "standard";
                 let priority = (notification.smseaglePriority) ?? 0;

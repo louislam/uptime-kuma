@@ -41,8 +41,9 @@ class Pushover extends NotificationProvider {
         }
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON == null) {
-                await axios.post(url, data);
+                await axios.post(url, data, config);
                 return okMsg;
             }
 
@@ -52,7 +53,7 @@ class Pushover extends NotificationProvider {
             }
 
             data.message += `\n<b>Time (${heartbeatJSON["timezone"]})</b>: ${heartbeatJSON["localDateTime"]}`;
-            await axios.post(url, data);
+            await axios.post(url, data, config);
             return okMsg;
 
         } catch (error) {

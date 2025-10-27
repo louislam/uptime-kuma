@@ -7,11 +7,17 @@
                 class="beat-hover-area"
                 :class="{ 'empty': (beat === 0) }"
                 :style="beatHoverAreaStyle"
-                :title="getBeatTitle(beat)"
+                :aria-label="getBeatAriaLabel(beat)"
+                role="status"
+                tabindex="0"
+                @mouseenter="showTooltip(beat, $event)"
+                @mouseleave="hideTooltip"
+                @focus="showTooltip(beat, $event)"
+                @blur="hideTooltip"
             >
                 <div
                     class="beat"
-                    :class="{ 'empty': (beat === 0), 'down': (beat.status === 0), 'pending': (beat.status === 2), 'maintenance': (beat.status === 3) }"
+                    :class="getBeatClasses(beat)"
                     :style="beatStyle"
                 />
             </div>
@@ -24,13 +30,27 @@
             <div v-if="$root.styleElapsedTime === 'with-line'" class="connecting-line"></div>
             <div>{{ timeSinceLastBeat }}</div>
         </div>
+
+        <!-- Custom Tooltip -->
+        <Tooltip
+            :visible="tooltipVisible"
+            :content="tooltipContent"
+            :x="tooltipX"
+            :y="tooltipY"
+            :position="tooltipPosition"
+        />
     </div>
 </template>
 
 <script>
 import dayjs from "dayjs";
+import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
+import Tooltip from "./Tooltip.vue";
 
 export default {
+    components: {
+        Tooltip,
+    },
     props: {
         /** Size of the heartbeat bar */
         size: {
@@ -46,6 +66,11 @@ export default {
         heartbeatList: {
             type: Array,
             default: null,
+        },
+        /** Heartbeat bar days */
+        heartbeatBarDays: {
+            type: Number,
+            default: 0
         }
     },
     data() {
@@ -56,9 +81,24 @@ export default {
             beatHoverAreaPadding: 4,
             move: false,
             maxBeat: -1,
+            // Tooltip data
+            tooltipVisible: false,
+            tooltipContent: null,
+            tooltipX: 0,
+            tooltipY: 0,
+            tooltipPosition: "below",
+            tooltipTimeoutId: null,
         };
     },
     computed: {
+
+        /**
+         * Normalized heartbeatBarDays as a number
+         * @returns {number} Number of days for heartbeat bar
+         */
+        normalizedHeartbeatBarDays() {
+            return Math.max(0, Math.min(365, Math.floor(this.heartbeatBarDays || 0)));
+        },
 
         /**
          * If heartbeatList is null, get it from $root.heartbeatList
@@ -80,6 +120,12 @@ export default {
             if (!this.beatList) {
                 return 0;
             }
+
+            // For configured ranges, no padding needed since we show all beats
+            if (this.normalizedHeartbeatBarDays > 0) {
+                return 0;
+            }
+
             let num = this.beatList.length - this.maxBeat;
 
             if (this.move) {
@@ -98,7 +144,19 @@ export default {
                 return [];
             }
 
+            // If heartbeat days is configured (not auto), data is already aggregated from server
+            if (this.normalizedHeartbeatBarDays > 0 && this.beatList.length > 0) {
+                // Show all beats from server - they are already properly aggregated
+                return this.beatList;
+            }
+
+            // Original logic for auto mode (heartbeatBarDays = 0)
             let placeholders = [];
+
+            // Handle case where maxBeat is -1 (no limit)
+            if (this.maxBeat <= 0) {
+                return this.beatList;
+            }
 
             let start = this.beatList.length - this.maxBeat;
 
@@ -172,13 +230,17 @@ export default {
          * @returns {string} The time elapsed in minutes or hours.
          */
         timeSinceFirstBeat() {
+            if (this.normalizedHeartbeatBarDays === 1) {
+                return (this.normalizedHeartbeatBarDays * 24) + "h";
+            }
+            if (this.normalizedHeartbeatBarDays >= 2) {
+                return this.normalizedHeartbeatBarDays + "d";
+            }
+
+            // Need to calculate from actual data
             const firstValidBeat = this.shortBeatList.at(this.numPadding);
             const minutes = dayjs().diff(dayjs.utc(firstValidBeat?.time), "minutes");
-            if (minutes > 60) {
-                return (minutes / 60).toFixed(0) + "h";
-            } else {
-                return minutes + "m";
-            }
+            return minutes > 60 ? Math.floor(minutes / 60) + "h" : minutes + "m";
         },
 
         /**
@@ -197,15 +259,15 @@ export default {
             if (seconds < tolerance) {
                 return this.$t("now");
             } else if (seconds < 60 * 60) {
-                return this.$t("time ago", [ (seconds / 60).toFixed(0) + "m" ]);
+                return this.$t("time ago", [ (seconds / 60).toFixed(0) + "m" ] );
             } else {
-                return this.$t("time ago", [ (seconds / 60 / 60).toFixed(0) + "h" ]);
+                return this.$t("time ago", [ (seconds / 60 / 60).toFixed(0) + "h" ] );
             }
         }
     },
     watch: {
         beatList: {
-            handler(val, oldVal) {
+            handler() {
                 this.move = true;
 
                 setTimeout(() => {
@@ -217,6 +279,10 @@ export default {
     },
     unmounted() {
         window.removeEventListener("resize", this.resize);
+        // Clean up tooltip timeout
+        if (this.tooltipTimeoutId) {
+            clearTimeout(this.tooltipTimeoutId);
+        }
     },
     beforeMount() {
         if (this.heartbeatList === null) {
@@ -256,7 +322,23 @@ export default {
          */
         resize() {
             if (this.$refs.wrap) {
-                this.maxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+                const newMaxBeat = Math.floor(this.$refs.wrap.clientWidth / (this.beatWidth + this.beatHoverAreaPadding * 2));
+
+                // If maxBeat changed and we're in configured days mode, notify parent to reload data
+                if (newMaxBeat !== this.maxBeat && this.normalizedHeartbeatBarDays > 0) {
+                    this.maxBeat = newMaxBeat;
+
+                    // Find the closest parent with reloadHeartbeatData method (StatusPage)
+                    let parent = this.$parent;
+                    while (parent && !parent.reloadHeartbeatData) {
+                        parent = parent.$parent;
+                    }
+                    if (parent && parent.reloadHeartbeatData) {
+                        parent.reloadHeartbeatData(newMaxBeat);
+                    }
+                } else {
+                    this.maxBeat = newMaxBeat;
+                }
             }
         },
 
@@ -267,7 +349,124 @@ export default {
          * @returns {string} Beat title
          */
         getBeatTitle(beat) {
-            return `${this.$root.datetime(beat.time)}` + ((beat.msg) ? ` - ${beat.msg}` : "");
+            if (!beat) {
+                return "";
+            }
+
+            // Show timestamp for all beats (both individual and aggregated)
+            return `${this.$root.datetime(beat.time)}${beat.msg ? ` - ${beat.msg}` : ""}`;
+        },
+
+        /**
+         * Get CSS classes for a beat element based on its status
+         * @param {object} beat - Beat object containing status information
+         * @returns {object} Object with CSS class names as keys and boolean values
+         */
+        getBeatClasses(beat) {
+            if (beat === 0 || beat === null || beat?.status === null) {
+                return { empty: true };
+            }
+
+            const status = Number(beat.status);
+
+            return {
+                down: status === DOWN,
+                pending: status === PENDING,
+                maintenance: status === MAINTENANCE
+            };
+        },
+
+        /**
+         * Get the aria-label for accessibility
+         * @param {object} beat Beat to get aria-label from
+         * @returns {string} Aria label
+         */
+        getBeatAriaLabel(beat) {
+            switch (beat?.status) {
+                case DOWN:
+                    return `Down at ${this.$root.datetime(beat.time)}`;
+                case UP:
+                    return `Up at ${this.$root.datetime(beat.time)}`;
+                case PENDING:
+                    return `Pending at ${this.$root.datetime(beat.time)}`;
+                case MAINTENANCE:
+                    return `Maintenance at ${this.$root.datetime(beat.time)}`;
+                default:
+                    return "No data";
+            }
+        },
+
+        /**
+         * Show custom tooltip
+         * @param {object} beat Beat data
+         * @param {Event} event Mouse event
+         * @returns {void}
+         */
+        showTooltip(beat, event) {
+            if (beat === 0 || !beat) {
+                this.hideTooltip();
+                return;
+            }
+
+            // Clear any existing timeout
+            if (this.tooltipTimeoutId) {
+                clearTimeout(this.tooltipTimeoutId);
+            }
+
+            // Small delay for better UX
+            this.tooltipTimeoutId = setTimeout(() => {
+                this.tooltipContent = beat;
+
+                // Calculate position relative to viewport
+                const rect = event.target.getBoundingClientRect();
+
+                // Position relative to viewport
+                const x = rect.left + (rect.width / 2);
+                const y = rect.top;
+
+                // Check if tooltip would go off-screen and adjust position
+                const tooltipHeight = 80; // Approximate tooltip height
+                const viewportHeight = window.innerHeight;
+                const spaceAbove = y;
+                const spaceBelow = viewportHeight - y - rect.height;
+
+                if (spaceAbove > tooltipHeight && spaceBelow < tooltipHeight) {
+                    // Show above - arrow points down
+                    this.tooltipPosition = "above";
+                    this.tooltipY = y - 10;
+                } else {
+                    // Show below - arrow points up
+                    this.tooltipPosition = "below";
+                    this.tooltipY = y + rect.height + 10;
+                }
+
+                // Ensure tooltip doesn't go off the left or right edge
+                const tooltipWidth = 120; // Approximate tooltip width
+                let adjustedX = x;
+
+                if ((x - tooltipWidth / 2) < 10) {
+                    adjustedX = tooltipWidth / 2 + 10;
+                } else if ((x + tooltipWidth / 2) > (window.innerWidth - 10)) {
+                    adjustedX = window.innerWidth - tooltipWidth / 2 - 10;
+                }
+
+                this.tooltipX = adjustedX;
+                this.tooltipVisible = true;
+            }, 150);
+        },
+
+        /**
+         * Hide custom tooltip
+         * @returns {void}
+         */
+        hideTooltip() {
+            if (this.tooltipTimeoutId) {
+                clearTimeout(this.tooltipTimeoutId);
+                this.tooltipTimeoutId = null;
+            }
+
+            this.tooltipVisible = false;
+            this.tooltipContent = null;
         },
 
     },

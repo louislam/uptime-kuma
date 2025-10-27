@@ -4,6 +4,7 @@ const Alerta = require("./notification-providers/alerta");
 const AlertNow = require("./notification-providers/alertnow");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
+const Bale = require("./notification-providers/bale");
 const Bark = require("./notification-providers/bark");
 const Bitrix24 = require("./notification-providers/bitrix24");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
@@ -13,6 +14,7 @@ const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Elks = require("./notification-providers/46elks");
 const Feishu = require("./notification-providers/feishu");
+const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
@@ -27,6 +29,7 @@ const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
+const NextcloudTalk = require("./notification-providers/nextcloudtalk");
 const Nostr = require("./notification-providers/nostr");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
@@ -68,17 +71,18 @@ const ZohoCliq = require("./notification-providers/zoho-cliq");
 const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
 const WAHA = require("./notification-providers/waha");
+const Evolution = require("./notification-providers/evolution");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
+const Brevo = require("./notification-providers/brevo");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 
 class Notification {
-
     providerList = {};
 
     /**
@@ -97,6 +101,7 @@ class Notification {
             new AlertNow(),
             new AliyunSms(),
             new Apprise(),
+            new Bale(),
             new Bark(),
             new Bitrix24(),
             new ClickSendSMS(),
@@ -120,6 +125,7 @@ class Notification {
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
+            new NextcloudTalk(),
             new Nostr(),
             new Ntfy(),
             new Octopush(),
@@ -162,16 +168,19 @@ class Notification {
             new SevenIO(),
             new Whapi(),
             new WAHA(),
+            new Evolution(),
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
             new SendGrid(),
+            new Brevo(),
             new YZJ(),
             new SMSPlanet(),
             new SpugPush(),
+            new Notifery(),
         ];
         for (let item of list) {
-            if (! item.name) {
+            if (!item.name) {
                 throw new Error("Notification provider without name");
             }
 
@@ -191,9 +200,19 @@ class Notification {
      * @returns {Promise<string>} Successful msg
      * @throws Error with fail msg
      */
-    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
+    static async send(
+        notification,
+        msg,
+        monitorJSON = null,
+        heartbeatJSON = null
+    ) {
         if (this.providerList[notification.type]) {
-            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
+            return this.providerList[notification.type].send(
+                notification,
+                msg,
+                monitorJSON,
+                heartbeatJSON
+            );
         } else {
             throw new Error("Notification type is not supported");
         }
@@ -215,10 +234,9 @@ class Notification {
                 userID,
             ]);
 
-            if (! bean) {
+            if (!bean) {
                 throw new Error("notification not found");
             }
-
         } else {
             bean = R.dispense("notification");
         }
@@ -248,7 +266,7 @@ class Notification {
             userID,
         ]);
 
-        if (! bean) {
+        if (!bean) {
             throw new Error("notification not found");
         }
 
@@ -264,7 +282,6 @@ class Notification {
         let exists = commandExistsSync("apprise");
         return exists;
     }
-
 }
 
 /**
@@ -275,16 +292,17 @@ class Notification {
  */
 async function applyNotificationEveryMonitor(notificationID, userID) {
     let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
-        userID
+        userID,
     ]);
 
     for (let i = 0; i < monitors.length; i++) {
-        let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
-            monitors[i].id,
-            notificationID,
-        ]);
+        let checkNotification = await R.findOne(
+            "monitor_notification",
+            " monitor_id = ? AND notification_id = ? ",
+            [ monitors[i].id, notificationID ]
+        );
 
-        if (! checkNotification) {
+        if (!checkNotification) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;

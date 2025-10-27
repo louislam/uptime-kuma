@@ -11,13 +11,14 @@ class WAHA extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            const config = {
+            let config = {
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                     "X-Api-Key": notification.wahaApiKey,
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let data = {
                 "session": notification.wahaSession,

@@ -13,20 +13,21 @@ class SpugPush extends NotificationProvider {
         let okMsg = "Sent Successfully.";
         try {
             let formData = {
-                msg
+                title: "Uptime Kuma Message",
+                content: msg
             };
-            const apiUrl = `https://push.spug.cc/send/${notification.templateKey}`;
-            if (heartbeatJSON == null) {
-                formData.title = "Uptime Kuma Message";
-            } else if (heartbeatJSON["status"] === UP) {
-                formData.title = `UptimeKuma 「${monitorJSON["name"]}」 is Up`;
-                formData.msg = `[✅ Up] ${heartbeatJSON["msg"]}`;
-            } else if (heartbeatJSON["status"] === DOWN) {
-                formData.title = `UptimeKuma 「${monitorJSON["name"]}」 is Down`;
-                formData.msg = `[🔴 Down] ${heartbeatJSON["msg"]}`;
+            if (heartbeatJSON) {
+                if (heartbeatJSON["status"] === UP) {
+                    formData.title = `UptimeKuma 「${monitorJSON["name"]}」 is Up`;
+                    formData.content = `[✅ Up] ${heartbeatJSON["msg"]}`;
+                } else if (heartbeatJSON["status"] === DOWN) {
+                    formData.title = `UptimeKuma 「${monitorJSON["name"]}」 is Down`;
+                    formData.content = `[🔴 Down] ${heartbeatJSON["msg"]}`;
+                }
             }
-
-            await axios.post(apiUrl, formData);
+            const apiUrl = `https://push.spug.cc/send/${notification.templateKey}`;
+            let config = this.getAxiosConfigWithProxy({});
+            await axios.post(apiUrl, formData, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

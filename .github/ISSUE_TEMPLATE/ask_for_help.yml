@@ -3,7 +3,7 @@ name: ❓ Ask for help
 description: |
   Submit any question related to Uptime Kuma
 #title: "[Help]"
-labels: ["help", "P3-low"]
+labels: ["help"]
 body:
   - type: markdown
     attributes:

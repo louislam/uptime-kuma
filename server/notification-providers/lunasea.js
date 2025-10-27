@@ -13,13 +13,14 @@ class LunaSea extends NotificationProvider {
         const url = "https://notify.lunasea.app/v1";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             const target = this.getTarget(notification);
             if (heartbeatJSON == null) {
                 let testdata = {
                     "title": "Uptime Kuma Alert",
                     "body": msg,
                 };
-                await axios.post(`${url}/custom/${target}`, testdata);
+                await axios.post(`${url}/custom/${target}`, testdata, config);
                 return okMsg;
             }
 
@@ -30,7 +31,7 @@ class LunaSea extends NotificationProvider {
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(`${url}/custom/${target}`, downdata);
+                await axios.post(`${url}/custom/${target}`, downdata, config);
                 return okMsg;
             }
 
@@ -41,7 +42,7 @@ class LunaSea extends NotificationProvider {
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(`${url}/custom/${target}`, updata);
+                await axios.post(`${url}/custom/${target}`, updata, config);
                 return okMsg;
             }
 
