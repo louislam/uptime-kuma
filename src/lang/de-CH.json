@@ -1158,7 +1158,7 @@
     "OneChatBotId": "OneChat Bot-ID",
     "Disable URL in Notification": "URL in der Benachrichtigung deaktivieren",
     "Ip Family": "IP-Familie",
-    "ipFamilyDescriptionAutoSelect": "Verwendet die {happyEyeballs} zur Bestimmung der IP-Familie.",
+    "ipFamilyDescriptionAutoSelect": "Verwendet den {happyEyeballs} zur Bestimmung der IP-Familie.",
     "Happy Eyeballs algorithm": "Happy Eyeballs Algorithmus",
     "Add Another Tag": "Weiteres Tag hinzufügen",
     "Manual": "Manuell",
@@ -1205,5 +1205,6 @@
     "Bot secret": "Bot Secret",
     "Send UP silently": "UP still senden",
     "Send DOWN silently": "DOWN still senden",
-    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Die Installation eines Nextcloud Talk-Bots erfordert Administratorrechte für den Server."
+    "Installing a Nextcloud Talk bot requires administrative access to the server.": "Die Installation eines Nextcloud Talk-Bots erfordert Administratorrechte für den Server.",
+    "auto-select": "Automatische Auswahl"
 }
