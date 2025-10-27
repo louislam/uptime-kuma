@@ -16,9 +16,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # TODO: Since setup-node@v5, Node.js 18 had been dropped, it needs further test before upgrade
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
