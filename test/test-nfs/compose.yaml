@@ -1,0 +1,15 @@
+# docker compose run -it --rm test-nfs bash
+
+# Mount the NFS share inside the container:
+# mount -t nfs 192.168.1.2:/mnt/user/public /mnt/public
+
+# Run this to see the file stat of README.md on the NFS share
+# node index.mjs
+
+services:
+  test-nfs:
+    privileged: true
+    build:
+        context: .
+        dockerfile: Dockerfile
+
