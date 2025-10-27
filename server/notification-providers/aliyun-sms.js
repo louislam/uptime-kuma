@@ -17,7 +17,7 @@ class AliyunSMS extends NotificationProvider {
             if (heartbeatJSON != null) {
                 let msgBody = JSON.stringify({
                     name: monitorJSON["name"],
-                    time: heartbeatJSON["time"],
+                    time: heartbeatJSON["localDateTime"],
                     status: this.statusToString(heartbeatJSON["status"]),
                     msg: heartbeatJSON["msg"],
                 });
@@ -71,6 +71,8 @@ class AliyunSMS extends NotificationProvider {
             },
             data: qs.stringify(params),
         };
+
+        config = this.getAxiosConfigWithProxy(config);
 
         let result = await axios(config);
         if (result.data.Message === "OK") {

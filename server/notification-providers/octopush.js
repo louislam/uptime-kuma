@@ -22,6 +22,7 @@ class Octopush extends NotificationProvider {
                         "cache-control": "no-cache"
                     }
                 };
+                config = this.getAxiosConfigWithProxy(config);
                 let data = {
                     "recipients": [
                         {
@@ -53,6 +54,7 @@ class Octopush extends NotificationProvider {
                     },
                     params: data
                 };
+                config = this.getAxiosConfigWithProxy(config);
 
                 // V1 API returns 200 even on error so we must check
                 // response data
