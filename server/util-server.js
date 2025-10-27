@@ -1116,3 +1116,19 @@ function fsExists(path) {
     });
 }
 module.exports.fsExists = fsExists;
+
+/**
+ * By default, command-exists will throw a null error if the command does not exist, which is ugly. The function makes it better.
+ * Read more: https://github.com/mathisonian/command-exists/issues/22
+ * @param {string} command Command to check
+ * @returns {Promise<boolean>} True if command exists, false otherwise
+ */
+async function commandExists(command) {
+    try {
+        await require("command-exists")(command);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+module.exports.commandExists = commandExists;
