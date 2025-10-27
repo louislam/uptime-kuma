@@ -70,10 +70,7 @@ RUN apt update \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
     && apt update \
-    && apt --yes --no-install-recommends install git \
-    && apt autoremove -y --purge \
-    && apt clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt --yes --no-install-recommends  install git
 
 ## Empty the directory, because we have to clone the Git repo.
 RUN rm -rf ./* && chown node /app
@@ -98,10 +95,7 @@ CMD ["npm", "run", "start-pr-test"]
 FROM louislam/uptime-kuma:base2 AS upload-artifact
 WORKDIR /
 RUN apt update && \
-    apt --yes install curl file && \
-    apt autoremove -y --purge && \
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt --yes install curl file
 
 COPY --from=build /app /app
 
@@ -121,3 +115,4 @@ RUN chmod +x /app/extra/upload-github-release-asset.sh
 # Dist only
 RUN cd /app && tar -zcvf $DIST dist
 RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=/app/$DIST
+
