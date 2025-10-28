@@ -1209,5 +1209,7 @@
     "wayToGetEvolutionUrlAndToken": "Puede obtener la URL de la API y el token ingresando al canal deseado desde {0}",
     "evolutionRecipient": "Número de teléfono / ID de contacto / ID de grupo",
     "evolutionInstanceName": "Nombre de instancia",
-    "auto-select": "Selección automática"
+    "auto-select": "Selección automática",
+    "Number of retry attempts if webhook fails": "Número de intentos de reintento (cada 60–180 segundos) si el webhook falla.",
+    "Maximum Retries": "Máximo de reintentos"
 }
