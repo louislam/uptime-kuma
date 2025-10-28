@@ -1209,5 +1209,18 @@
     "Send UP silently": "Безшумно известяване за Достъпен",
     "Send DOWN silently": "Безшумно известяване за Недостъпен",
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "Инсталирането на Nextcloud Talk бот изисква администраторски достъп до сървъра.",
-    "auto-select": "Автоматичен избор"
+    "auto-select": "Автоматичен избор",
+    "supportBaleChatID": "Поддръжка на директен чат / група / чат ID на канала",
+    "wayToGetBaleChatID": "Можете да получите вашия чат ID, като изпратите съобщение до бота и отидете на този URL адрес, за да видите chat_id:",
+    "wayToGetBaleToken": "Можете да получите токен код от {0}.",
+    "Mention Mobile List": "Списък със споменаващи мобилни устройства",
+    "Mention User List": "Списък със споменаващи потребителски ID-та",
+    "Dingtalk Mobile List": "Списък с мобилни устройства",
+    "Dingtalk User List": "Списък с потребителски ID-та",
+    "Enter a list of userId": "Въведете списък с потребителски ID-та",
+    "Enter a list of mobile": "Въведете списък с мобилни устройства",
+    "Invalid mobile": "Невалиден мобилен телефон [{mobile}]",
+    "Invalid userId": "Невалидно потребителско ID [{userId}]",
+    "Maximum Retries": "Максимален брой повторни опити",
+    "Number of retry attempts if webhook fails": "Брой повторни опити (на всеки 60-180 секунди), ако уеб куката се првали."
 }
