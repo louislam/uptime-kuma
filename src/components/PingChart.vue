@@ -65,9 +65,7 @@ export default {
     },
     computed: {
         threshold() {
-            let heartbeatList = this.heartbeatList ||
-             (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) ||
-             [];
+            let heartbeatList = (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
 
             let lastBeat = heartbeatList.at(-1);
 
