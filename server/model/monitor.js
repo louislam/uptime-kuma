@@ -1510,6 +1510,11 @@ class Monitor extends BeanModel {
         for (let notification of notificationList) {
             try {
                 const heartbeatJSON = bean.toJSON();
+                const monitorData = [{ id: monitor.id,
+                    active: monitor.active,
+                    name: monitor.name
+                }];
+                const preloadData = await Monitor.preparePreloadData(monitorData);
 
                 // Override status with SLOW/NOMINAL, add slowStats
                 heartbeatJSON["status"] = bean.pingStatus;
@@ -1522,7 +1527,7 @@ class Monitor extends BeanModel {
                 heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
                 heartbeatJSON["localDateTime"] = dayjs.utc(heartbeatJSON["time"]).tz(heartbeatJSON["timezone"]).format(SQL_DATETIME_FORMAT);
 
-                await Notification.send(JSON.parse(notification.config), msg, await monitor.toJSON(false), heartbeatJSON);
+                await Notification.send(JSON.parse(notification.config), msg, monitor.toJSON(preloadData, false), heartbeatJSON);
             } catch (e) {
                 log.error("monitor", `[${this.name}] Cannot send slow response notification to ${notification.name}`);
                 log.error("monitor", e);
