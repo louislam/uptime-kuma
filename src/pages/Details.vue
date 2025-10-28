@@ -151,14 +151,14 @@
                     </div>
                     <div class="col-md-4 text-center">
                         <span
-                            class="badge rounded-pill"
+                            class="badge rounded-pill m-1"
                             :class="'bg-' + status.color"
                             style="font-size: 30px;"
                             data-testid="monitor-status"
                         >{{ status.text }}</span>
                         <span
                             v-if="pingStatus"
-                            class="badge rounded-pill"
+                            class="badge rounded-pill m-1"
                             :class="'bg-' + pingStatus.color"
                             style="font-size: 30px;"
                         >{{ pingStatus.text }}</span>
