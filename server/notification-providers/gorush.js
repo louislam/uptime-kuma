@@ -2,14 +2,13 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class Gorush extends NotificationProvider {
-
     name = "gorush";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         let platformMapping = {
             "ios": 1,
@@ -32,8 +31,7 @@ class Gorush extends NotificationProvider {
                     }
                 ]
             };
-            let config = {};
-
+            let config = this.getAxiosConfigWithProxy({});
             await axios.post(`${notification.gorushServerURL}/api/push`, data, config);
             return okMsg;
         } catch (error) {

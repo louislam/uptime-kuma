@@ -3,14 +3,14 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class Ntfy extends NotificationProvider {
-
     name = "ntfy";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let headers = {};
             if (notification.ntfyAuthenticationMethod === "usernamePassword") {
@@ -22,6 +22,8 @@ class Ntfy extends NotificationProvider {
                     "Authorization": "Bearer " + notification.ntfyaccesstoken,
                 };
             }
+            let config = { headers };
+            config = this.getAxiosConfigWithProxy(config);
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
             if (heartbeatJSON == null) {
                 let ntfyTestData = {
@@ -31,7 +33,7 @@ class Ntfy extends NotificationProvider {
                     "priority": notification.ntfyPriority,
                     "tags": [ "test_tube" ],
                 };
-                await axios.post(`${notification.ntfyserverurl}`, ntfyTestData, { headers: headers });
+                await axios.post(notification.ntfyserverurl, ntfyTestData, config);
                 return okMsg;
             }
             let tags = [];
@@ -41,8 +43,8 @@ class Ntfy extends NotificationProvider {
                 if (heartbeatJSON.status === DOWN) {
                     tags = [ "red_circle" ];
                     status = "Down";
-                    // if priority is not 5, increase priority for down alerts
-                    priority = priority === 5 ? priority : priority + 1;
+                    // defaults to max(priority + 1, 5)
+                    priority = notification.ntfyPriorityDown || (priority === 5 ? priority : priority + 1);
                 } else if (heartbeatJSON["status"] === UP) {
                     tags = [ "green_circle" ];
                     status = "Up";
@@ -54,20 +56,23 @@ class Ntfy extends NotificationProvider {
                 "priority": priority,
                 "title": monitorJSON.name + " " + status + " [Uptime-Kuma]",
                 "tags": tags,
-                "actions": [
+            };
+
+            if (monitorJSON.url && monitorJSON.url !== "https://") {
+                data.actions = [
                     {
                         "action": "view",
                         "label": "Open " + monitorJSON.name,
                         "url": monitorJSON.url,
-                    }
-                ]
-            };
+                    },
+                ];
+            }
 
             if (notification.ntfyIcon) {
                 data.icon = notification.ntfyIcon;
             }
 
-            await axios.post(`${notification.ntfyserverurl}`, data, { headers: headers });
+            await axios.post(notification.ntfyserverurl, data, config);
 
             return okMsg;
 

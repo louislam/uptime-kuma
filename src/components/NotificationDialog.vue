@@ -113,45 +113,67 @@ export default {
                 "alerta": "Alerta",
                 "AlertNow": "AlertNow",
                 "apprise": this.$t("apprise"),
+                "bale": "Bale",
                 "Bark": "Bark",
+                "Bitrix24": "Bitrix24",
                 "clicksendsms": "ClickSend SMS",
+                "CallMeBot": "CallMeBot (WhatsApp, Telegram Call, Facebook Messanger)",
                 "discord": "Discord",
+                "Elks": "46elks",
                 "GoogleChat": "Google Chat (Google Workspace)",
                 "gorush": "Gorush",
                 "gotify": "Gotify",
                 "GrafanaOncall": "Grafana Oncall",
+                "HeiiOnCall": "Heii On-Call",
                 "HomeAssistant": "Home Assistant",
+                "Keep": "Keep",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
                 "LineNotify": "LINE Notify",
                 "lunasea": "LunaSea",
                 "matrix": "Matrix",
                 "mattermost": "Mattermost",
+                "nextcloudtalk": "Nextcloud Talk",
                 "nostr": "Nostr",
                 "ntfy": "Ntfy",
                 "octopush": "Octopush",
+                "OneChat": "OneChat",
                 "OneBot": "OneBot",
+                "Onesender": "Onesender",
                 "Opsgenie": "Opsgenie",
                 "PagerDuty": "PagerDuty",
                 "PagerTree": "PagerTree",
+                "pumble": "Pumble",
                 "pushbullet": "Pushbullet",
                 "PushByTechulus": "Push by Techulus",
                 "pushover": "Pushover",
                 "pushy": "Pushy",
                 "rocket.chat": "Rocket.Chat",
                 "signal": "Signal",
+                "SIGNL4": "SIGNL4",
                 "slack": "Slack",
                 "squadcast": "SquadCast",
                 "SMSEagle": "SMSEagle",
+                "SMSPartner": "SMS Partner",
                 "smtp": this.$t("smtp"),
                 "stackfield": "Stackfield",
                 "teams": "Microsoft Teams",
                 "telegram": "Telegram",
+                "threema": "Threema",
                 "twilio": "Twilio",
                 "Splunk": "Splunk",
                 "webhook": "Webhook",
                 "GoAlert": "GoAlert",
-                "ZohoCliq": "ZohoCliq"
+                "ZohoCliq": "ZohoCliq",
+                "SevenIO": "SevenIO",
+                "whapi": "WhatsApp (Whapi)",
+                "evolution": "WhatsApp (Evolution)",
+                "waha": "WhatsApp (WAHA)",
+                "gtxmessaging": "GtxMessaging",
+                "Cellsynt": "Cellsynt",
+                "SendGrid": "SendGrid",
+                "Brevo": "Brevo",
+                "notifery": "Notifery"
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
@@ -167,7 +189,12 @@ export default {
                 "SMSManager": "SmsManager (smsmanager.cz)",
                 "WeCom": "WeCom (企业微信群机器人)",
                 "ServerChan": "ServerChan (Server酱)",
+                "PushPlus": "PushPlus (推送加)",
+                "SpugPush": "SpugPush（Spug推送助手）",
                 "smsc": "SMSC",
+                "WPush": "WPush(wpush.cn)",
+                "YZJ": "YZJ (云之家自定义机器人)",
+                "SMSPlanet": "SMSPlanet.pl"
             };
 
             // Sort by notification name
@@ -216,6 +243,9 @@ export default {
     },
     mounted() {
         this.modal = new Modal(this.$refs.modal);
+    },
+    beforeUnmount() {
+        this.cleanupModal();
     },
     methods: {
 
@@ -321,6 +351,20 @@ export default {
                 });
             } while (this.$root.notificationList.find(it => it.name === name));
             return name;
+        },
+
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
         }
     },
 };

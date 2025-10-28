@@ -2,6 +2,7 @@ const PrometheusClient = require("prom-client");
 const { log } = require("../src/util");
 
 const commonLabels = [
+    "monitor_id",
     "monitor_name",
     "monitor_type",
     "monitor_url",
@@ -40,6 +41,7 @@ class Prometheus {
      */
     constructor(monitor) {
         this.monitorLabelValues = {
+            monitor_id: monitor.id,
             monitor_name: monitor.name,
             monitor_type: monitor.type,
             monitor_url: monitor.url,
@@ -80,23 +82,25 @@ class Prometheus {
             }
         }
 
-        try {
-            monitorStatus.set(this.monitorLabelValues, heartbeat.status);
-        } catch (e) {
-            log.error("prometheus", "Caught error");
-            log.error("prometheus", e);
-        }
-
-        try {
-            if (typeof heartbeat.ping === "number") {
-                monitorResponseTime.set(this.monitorLabelValues, heartbeat.ping);
-            } else {
-                // Is it good?
-                monitorResponseTime.set(this.monitorLabelValues, -1);
+        if (heartbeat) {
+            try {
+                monitorStatus.set(this.monitorLabelValues, heartbeat.status);
+            } catch (e) {
+                log.error("prometheus", "Caught error");
+                log.error("prometheus", e);
             }
-        } catch (e) {
-            log.error("prometheus", "Caught error");
-            log.error("prometheus", e);
+
+            try {
+                if (typeof heartbeat.ping === "number") {
+                    monitorResponseTime.set(this.monitorLabelValues, heartbeat.ping);
+                } else {
+                    // Is it good?
+                    monitorResponseTime.set(this.monitorLabelValues, -1);
+                }
+            } catch (e) {
+                log.error("prometheus", "Caught error");
+                log.error("prometheus", e);
+            }
         }
     }
 

@@ -4,27 +4,28 @@ const qs = require("qs");
 const { DOWN, UP } = require("../../src/util");
 
 class LineNotify extends NotificationProvider {
-
     name = "LineNotify";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+        const url = "https://notify-api.line.me/api/notify";
+
         try {
-            let lineAPIUrl = "https://notify-api.line.me/api/notify";
             let config = {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Authorization": "Bearer " + notification.lineNotifyAccessToken
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             if (heartbeatJSON == null) {
                 let testMessage = {
                     "message": msg,
                 };
-                await axios.post(lineAPIUrl, qs.stringify(testMessage), config);
+                await axios.post(url, qs.stringify(testMessage), config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
                     "message": "\n[🔴 Down]\n" +
@@ -32,7 +33,7 @@ class LineNotify extends NotificationProvider {
                         heartbeatJSON["msg"] + "\n" +
                         `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(lineAPIUrl, qs.stringify(downMessage), config);
+                await axios.post(url, qs.stringify(downMessage), config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
                     "message": "\n[✅ Up]\n" +
@@ -40,7 +41,7 @@ class LineNotify extends NotificationProvider {
                         heartbeatJSON["msg"] + "\n" +
                         `Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
                 };
-                await axios.post(lineAPIUrl, qs.stringify(upMessage), config);
+                await axios.post(url, qs.stringify(upMessage), config);
             }
             return okMsg;
         } catch (error) {

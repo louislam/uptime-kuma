@@ -101,5 +101,10 @@
     "Quick Stats": "綜合數據",
     "markdownSupported": "可以用 Markdown",
     "wayToGetFlashDutyKey": "您可以进入 协作空间 -> (选择一个 协作空间) -> 集成数据 -> 新增一个集成 页面，添加“自定义事件”获得一个推送地址，复制地址中的 Integration Key，更多信息前往{0}",
-    "FlashDuty Severity":"严重程度"
+    "FlashDuty Severity": "严重程度",
+    "setupDatabaseChooseDatabase": "你想用咩資料庫？",
+    "dbName": "資料庫名稱",
+    "Home": "首頁",
+    "Cannot connect to the socket server": "連唔到 Socket 伺服器",
+    "Reconnecting...": "重新連線中..."
 }

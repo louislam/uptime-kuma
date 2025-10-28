@@ -3,11 +3,13 @@ console.log("== Uptime Kuma Reset Password Tool ==");
 const Database = require("../server/database");
 const { R } = require("redbean-node");
 const readline = require("readline");
+const { passwordStrength } = require("check-password-strength");
 const { initJWTSecret } = require("../server/util-server");
 const User = require("../server/model/user");
 const { io } = require("socket.io-client");
 const { localWebSocketURL } = require("../server/config");
 const args = require("args-parser")(process.argv);
+
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -19,10 +21,10 @@ const main = async () => {
     }
 
     console.log("Connecting the database");
-    Database.initDataDir(args);
-    await Database.connect(false, false, true);
 
     try {
+        Database.initDataDir(args);
+        await Database.connect(false, false, true);
         // No need to actually reset the password for testing, just make sure no connection problem. It is ok for now.
         if (!process.env.TEST_BACKEND) {
             const user = await R.findOne("user");
@@ -41,8 +43,15 @@ const main = async () => {
                     console.log("Using password from argument");
                     console.warn("\x1b[31m%s\x1b[0m", "Warning: the password might be stored, in plain text, in your shell's history");
                     password = confirmPassword = args["new-password"] + "";
+                    if (passwordStrength(password).value === "Too weak") {
+                        throw new Error("Password is too weak, please use a stronger password.");
+                    }
                 } else {
                     password = await question("New Password: ");
+                    if (passwordStrength(password).value === "Too weak") {
+                        console.log("Password is too weak, please try again.");
+                        continue;
+                    }
                     confirmPassword = await question("Confirm New Password: ");
                 }
 

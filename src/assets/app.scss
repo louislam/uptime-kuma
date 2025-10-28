@@ -3,7 +3,7 @@
 @import "node_modules/bootstrap/scss/bootstrap";
 
 #app {
-    font-family: BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
+    font-family: "Twemoji Country Flags", BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
 }
 
 h1 {
@@ -576,6 +576,12 @@ optgroup {
     outline: none !important;
 }
 
+.prism-editor__container {
+    .important {
+        font-weight: var(--bs-body-font-weight) !important;
+    }
+}
+
 h5.settings-subheading::after {
     content: "";
     display: block;
@@ -613,7 +619,7 @@ $shadow-box-padding: 20px;
     bottom: 0;
     margin-left: -$shadow-box-padding;
     margin-right: -$shadow-box-padding;
-    z-index: 100;
+    z-index: 10;
     background-color: rgba(white, 0.2);
     backdrop-filter: blur(2px);
     border-radius: 0 0 10px 10px;

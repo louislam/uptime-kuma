@@ -9,7 +9,7 @@ class Group extends BeanModel {
      * @param {boolean} showTags Should the JSON include monitor tags
      * @param {boolean} certExpiry Should JSON include info about
      * certificate expiry?
-     * @returns {object} Object ready to parse
+     * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false) {
         let monitorBeanList = await this.getMonitorList();
@@ -29,11 +29,11 @@ class Group extends BeanModel {
 
     /**
      * Get all monitors
-     * @returns {Bean[]} List of monitors
+     * @returns {Promise<Bean[]>} List of monitors
      */
     async getMonitorList() {
         return R.convertToBeans("monitor", await R.getAll(`
-            SELECT monitor.*, monitor_group.send_url FROM monitor, monitor_group
+            SELECT monitor.*, monitor_group.send_url, monitor_group.custom_url FROM monitor, monitor_group
             WHERE monitor.id = monitor_group.monitor_id
             AND group_id = ?
             ORDER BY monitor_group.weight

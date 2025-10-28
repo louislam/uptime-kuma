@@ -4,7 +4,7 @@ const { sendInfo } = require("../client");
 const { checkLogin } = require("../util-server");
 const GameResolver = require("gamedig/lib/GameResolver");
 const { testChrome } = require("../monitor-types/real-browser-monitor-type");
-const fs = require("fs");
+const fsAsync = require("fs").promises;
 const path = require("path");
 
 let gameResolver = new GameResolver();
@@ -29,8 +29,13 @@ function getGameList() {
     return gameList;
 }
 
+/**
+ * Handler for general events
+ * @param {Socket} socket Socket.io instance
+ * @param {UptimeKumaServer} server Uptime Kuma server
+ * @returns {void}
+ */
 module.exports.generalSocketHandler = (socket, server) => {
-
     socket.on("initServerTimezone", async (timezone) => {
         try {
             checkLogin(socket);
@@ -85,17 +90,29 @@ module.exports.generalSocketHandler = (socket, server) => {
         }
     });
 
-    socket.on("getPushExample", (language, callback) => {
+    socket.on("getPushExample", async (language, callback) => {
+        try {
+            checkLogin(socket);
+            if (!/^[a-z-]+$/.test(language)) {
+                throw new Error("Invalid language");
+            }
+        } catch (e) {
+            callback({
+                ok: false,
+                msg: e.message,
+            });
+            return;
+        }
 
         try {
             let dir = path.join("./extra/push-examples", language);
-            let files = fs.readdirSync(dir);
+            let files = await fsAsync.readdir(dir);
 
             for (let file of files) {
                 if (file.startsWith("index.")) {
                     callback({
                         ok: true,
-                        code: fs.readFileSync(path.join(dir, file), "utf8"),
+                        code: await fsAsync.readFile(path.join(dir, file), "utf8"),
                     });
                     return;
                 }
