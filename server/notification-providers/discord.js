@@ -142,7 +142,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
+                                value: monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
                             },
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
@@ -180,7 +180,7 @@ class Discord extends NotificationProvider {
                             },
                             {
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
+                                value: monitorJSON["type"] === "push" ? "Heartbeat" : this.extractAddress(monitorJSON),
                             },
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
