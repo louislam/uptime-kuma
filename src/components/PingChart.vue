@@ -28,7 +28,6 @@
 import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
 import "chartjs-adapter-dayjs-4";
 import annotationPlugin from "chartjs-plugin-annotation";
-import dayjs from "dayjs";
 import { Line } from "vue-chartjs";
 import { UP, DOWN, PENDING, MAINTENANCE } from "../util.ts";
 
