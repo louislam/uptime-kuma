@@ -755,7 +755,7 @@
                             </div>
 
                             <!-- HTTP / Keyword only -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
@@ -772,7 +772,11 @@
                                         </label>
                                     </div>
                                     <div class="form-text">
-                                        {{ $t("saveResponseDescription") }}
+                                        <i18n-t tag="div" class="form-text" key="saveResponseDescription">
+                                            <template #templateVariable>
+                                                <code>heartbeatJSON.response</code>
+                                            </template>
+                                        </i18n-t>
                                     </div>
                                 </div>
 

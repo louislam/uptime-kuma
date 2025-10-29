@@ -169,7 +169,7 @@ class Monitor extends BeanModel {
 
             // response saving options
             saveResponse: this.getSaveResponse(),
-            responseMaxLength: this.response_max_length !== undefined && this.response_max_length !== null ? this.response_max_length : 10240,
+            responseMaxLength: this.response_max_length ?? 10240,
         };
 
         if (includeSensitiveData) {
