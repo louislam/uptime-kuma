@@ -258,7 +258,7 @@ class RelativeTimeFormatter {
                 .filter(
                     (part, index) =>
                         (part.type === "literal" || part.type === "integer") &&
-                        index > 0
+                        (index > 0 || part.type === "integer")
                 )
                 .map((part) => part.value);
 
