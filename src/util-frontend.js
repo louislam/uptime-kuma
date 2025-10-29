@@ -216,7 +216,7 @@ export function getToastErrorTimeout() {
 
 class TimeDurationFormatter {
     /**
-     * Default locale and options for Relative Time Formatter
+     * Default locale and options for Time Duration Formatter (supports both DurationFormat and RelativeTimeFormat)
      */
     constructor() {
         this.durationFormatOptions = { style: "short" };
