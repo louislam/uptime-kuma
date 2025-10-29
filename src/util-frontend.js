@@ -257,8 +257,7 @@ class RelativeTimeFormatter {
             const filteredParts = partsArray
                 .filter(
                     (part, index) =>
-                        (part.type === "literal" || part.type === "integer") &&
-                        (index > 0 || part.type === "integer")
+                        part.type === "integer" || (part.type === "literal" && index > 0)
                 )
                 .map((part) => part.value);
 
