@@ -214,7 +214,7 @@ export function getToastErrorTimeout() {
     return errorTimeout;
 }
 
-class RelativeTimeFormatter {
+class TimeDurationFormatter {
     /**
      * Default locale and options for Relative Time Formatter
      */
@@ -285,5 +285,5 @@ class RelativeTimeFormatter {
     }
 }
 
-export const relativeTimeFormatter = new RelativeTimeFormatter();
+export const timeDurationFormatter = new TimeDurationFormatter();
 
