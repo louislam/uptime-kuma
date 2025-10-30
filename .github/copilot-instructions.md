@@ -4,7 +4,7 @@
 
 - Check spelling
 - Do not show "Pull Request Overview"
-- You do not have to reply if there is no issues
+- You do not have to reply if there are no issues
 
 ## Repository Overview
 
