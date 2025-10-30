@@ -151,6 +151,7 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+const { getAuth } = require("./better-auth");
 
 app.use(express.json());
 
@@ -1757,6 +1758,9 @@ async function initDatabase(testMode = false) {
     log.debug("server", "Connecting to the database");
     await Database.connect(testMode);
     log.info("server", "Connected to the database");
+
+    log.debug("server", "Init Better Auth");
+    const auth = getAuth();
 
     // Patch the database
     await Database.patch(port, hostname);
