@@ -126,16 +126,21 @@ if (ipsToAllow !== undefined) {
         process.exit(1);
     }
 
-    const splitIps = ipsToAllow.split(",");
+    const splitIps = ipsToAllow.split(",").map(ip => ip.trim());
+    const invalidIps = [];
     const net = require("net");
     for (const ip of splitIps) {
         if (net.isIP(ip) === 0) {
-            log.error("server", "Provided IPs to allow must be valid IP addresses, " + ip + " provided");
-            process.exit(1);
+            invalidIps.push(ip);
         }
     }
 
-    log.info("server", "IPs to allow: " + splitIps);
+    if (invalidIps.length > 0) {
+        log.error("server", "Provided IPs to allow must contain only valid IP addresses. The following IPs are invalid: " + invalidIps.join(", "));
+        process.exit(1);
+    }
+
+    log.info("server", "IPs to allow: " + splitIps.join(", "));
     const ipfilter = require("express-ipfilter").IpFilter;
     app.use(ipfilter(splitIps, { mode: "allow" }));
 }
