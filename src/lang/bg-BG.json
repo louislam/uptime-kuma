@@ -1222,5 +1222,9 @@
     "Invalid mobile": "Невалиден мобилен телефон [{mobile}]",
     "Invalid userId": "Невалидно потребителско ID [{userId}]",
     "Maximum Retries": "Максимален брой повторни опити",
-    "Number of retry attempts if webhook fails": "Брой повторни опити (на всеки 60-180 секунди), ако уеб куката се првали."
+    "Number of retry attempts if webhook fails": "Брой повторни опити (на всеки 60-180 секунди), ако уеб куката се првали.",
+    "HTTP Method": "HTTP Метод",
+    "webhookPostMethodDesc": "POST е подходящ за повечето съвременни HTTP сървъри.",
+    "descriptionHelpText": "Показва се на вътрешното табло. Markdown е разрешен и се обработва (запазва интервалите и отстъпите) преди показване.",
+    "webhookGetMethodDesc": "GET изпраща данни като параметри на заявката и не позволява конфигуриране на тяло. Полезно за задействане на Uptime Kuma Push монитори."
 }
