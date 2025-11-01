@@ -1201,5 +1201,9 @@
     "Enter a list of mobile": "Inserisci un elenco di cellulari",
     "Invalid userId": "ID utente non valido [{userId}]",
     "Maximum Retries": "Tentativi massimi",
-    "Number of retry attempts if webhook fails": "Numero di tentativi di ripetizione (ogni 60-180 secondi) se il webhook fallisce."
+    "Number of retry attempts if webhook fails": "Numero di tentativi di ripetizione (ogni 60-180 secondi) se il webhook fallisce.",
+    "HTTP Method": "Metodo HTTP",
+    "webhookPostMethodDesc": "POST è adatto alla maggior parte dei server HTTP moderni.",
+    "webhookGetMethodDesc": "GET invia dati come parametri di query e non consente la configurazione di un corpo. Utile per attivare i monitoraggi Push di Uptime Kuma.",
+    "descriptionHelpText": "Mostrato sul cruscotto interno. La formattazione è consentita e adattata (conserva spazi e rientri) prima della visualizzazione."
 }

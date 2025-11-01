@@ -1184,5 +1184,11 @@
     "Dingtalk User List": "Lista de IDs de usuário",
     "Enter a list of mobile": "Insira uma lista de dispositivos móveis",
     "Invalid mobile": "Celular inválido [{mobile}]",
-    "Invalid userId": "ID de usuário inválido [{userId}]"
+    "Invalid userId": "ID de usuário inválido [{userId}]",
+    "Number of retry attempts if webhook fails": "Número de tentativas de reenvio (a cada 60-180 segundos) caso o webhook falhe.",
+    "Maximum Retries": "Máximo de Tentativas",
+    "HTTP Method": "Método HTTP",
+    "webhookGetMethodDesc": "GET envia dados como parâmetros de consulta e não permite a configuração de um corpo. Útil para acionar monitores Uptime Kuma Push.",
+    "descriptionHelpText": "Exibido no painel interno. Markdown é permitido e sanitizado (preserva espaços e recuos) antes da exibição.",
+    "webhookPostMethodDesc": "O POST é bom para a maioria dos servidores HTTP modernos."
 }
