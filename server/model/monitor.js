@@ -349,7 +349,7 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
-        this.prometheus = new Prometheus(this);
+        this.prometheus = new Prometheus(this, await this.getTags());
 
         const beat = async () => {
 
