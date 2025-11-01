@@ -359,13 +359,7 @@ class Logger {
      * @returns {void}
      */
     exception(module: string, exception: unknown, ...msg: unknown[]) {
-        let finalMessage = exception;
-
-        if (msg) {
-            finalMessage = `${msg}: ${exception}`;
-        }
-
-        this.log(module, "error", finalMessage);
+        this.log(module, "error", ...msg, exception);
     }
 }
 
