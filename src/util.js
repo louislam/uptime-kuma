@@ -133,7 +133,7 @@ function ucfirst(str) {
 }
 exports.ucfirst = ucfirst;
 function debug(msg) {
-    exports.log.log("", msg, "debug");
+    exports.log.log("", "debug", msg);
 }
 exports.debug = debug;
 class Logger {
@@ -156,7 +156,7 @@ class Logger {
             this.debug("server", this.hideLog);
         }
     }
-    log(module, msg, level) {
+    log(module, level, ...msg) {
         if (level === "DEBUG" && !exports.isDev) {
             return;
         }
@@ -177,7 +177,6 @@ class Logger {
         let timePart;
         let modulePart;
         let levelPart;
-        let msgPart;
         if (exports.isNode) {
             switch (level) {
                 case "DEBUG":
@@ -189,72 +188,50 @@ class Logger {
             }
             modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
             levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
-            switch (level) {
-                case "ERROR":
-                    if (typeof msg === "string") {
-                        msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
-                    }
-                    else {
-                        msgPart = msg;
-                    }
-                    break;
-                case "DEBUG":
-                    if (typeof msg === "string") {
-                        msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
-                    }
-                    else {
-                        msgPart = msg;
-                    }
-                    break;
-                default:
-                    msgPart = msg;
-                    break;
-            }
         }
         else {
             timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
-            msgPart = msg;
         }
         switch (level) {
             case "ERROR":
-                console.error(timePart, modulePart, levelPart, msgPart);
+                console.error(timePart, modulePart, levelPart, ...msg);
                 break;
             case "WARN":
-                console.warn(timePart, modulePart, levelPart, msgPart);
+                console.warn(timePart, modulePart, levelPart, ...msg);
                 break;
             case "INFO":
-                console.info(timePart, modulePart, levelPart, msgPart);
+                console.info(timePart, modulePart, levelPart, ...msg);
                 break;
             case "DEBUG":
                 if (exports.isDev) {
-                    console.debug(timePart, modulePart, levelPart, msgPart);
+                    console.debug(timePart, modulePart, levelPart, ...msg);
                 }
                 break;
             default:
-                console.log(timePart, modulePart, levelPart, msgPart);
+                console.log(timePart, modulePart, levelPart, ...msg);
                 break;
         }
     }
-    info(module, msg) {
-        this.log(module, msg, "info");
+    info(module, ...msg) {
+        this.log(module, "info", ...msg);
     }
-    warn(module, msg) {
-        this.log(module, msg, "warn");
+    warn(module, ...msg) {
+        this.log(module, "warn", ...msg);
     }
-    error(module, msg) {
-        this.log(module, msg, "error");
+    error(module, ...msg) {
+        this.log(module, "error", ...msg);
     }
-    debug(module, msg) {
-        this.log(module, msg, "debug");
+    debug(module, ...msg) {
+        this.log(module, "debug", ...msg);
     }
-    exception(module, exception, msg) {
+    exception(module, exception, ...msg) {
         let finalMessage = exception;
         if (msg) {
             finalMessage = `${msg}: ${exception}`;
         }
-        this.log(module, finalMessage, "error");
+        this.log(module, "error", finalMessage);
     }
 }
 exports.log = new Logger();
