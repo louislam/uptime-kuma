@@ -671,7 +671,7 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'port' " class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox" :disabled="monitor.ignoreTls">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
