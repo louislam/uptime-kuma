@@ -8,7 +8,6 @@ const path = require("path");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const mysql = require("mysql2/promise");
 const { Settings } = require("./settings");
-const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
@@ -219,6 +218,7 @@ class Database {
             dbConfig = {
                 type: "sqlite",
             };
+            Database.dbConfig = dbConfig;  // Fix: Also set Database.dbConfig in catch block
         }
 
         let config = {};
@@ -825,7 +825,8 @@ class Database {
             ]);
 
             for (let date of dates) {
-                // New Uptime Calculator
+                // New Uptime Calculator - import locally to avoid circular dependency
+                const { UptimeCalculator } = require("./uptime-calculator");
                 let calculator = new UptimeCalculator();
                 calculator.monitorID = monitor.monitor_id;
                 calculator.setMigrationMode(true);
