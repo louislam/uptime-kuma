@@ -26,6 +26,15 @@
                         </span>
                     </div>
                     <div class="col">
+                        <h3>{{ $t("Slow") }}</h3>
+                        <span
+                            class="num"
+                            :class="$root.stats.slow > 0 ? 'text-warning' : 'text-secondary'"
+                        >
+                            {{ $root.stats.slow }}
+                        </span>
+                    </div>
+                    <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
                         <span
                             class="num"
@@ -67,11 +76,16 @@
                     <tbody>
                         <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
                             <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
-                            <td><Status :status="beat.status" /></td>
+                            <td>
+                                <div v-if="beat.important"><Status :status="beat.status" /></div>
+                                <div v-if="beat.pingImportant"><Status :status="beat.pingStatus" /></div>
+                            </td>
                             <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0">
+                                <div v-if="beat.important">{{ beat.msg }}</div>
+                                <div v-if="beat.pingImportant">{{ beat.pingMsg }}</div>
+                            </td>
                         </tr>
-
                         <tr v-if="importantHeartBeatListLength === 0">
                             <td colspan="4">
                                 {{ $t("No important events") }}
