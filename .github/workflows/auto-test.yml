@@ -22,8 +22,12 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-22.04, windows-latest, ARM64]
-        node: [ 20, 24 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node: [ 20, 24 ]
+        # Also test non-LTS, but only on Ubuntu.
+        include:
+          - os: ubuntu-22.04
+            node: 25
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
