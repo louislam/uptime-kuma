@@ -96,6 +96,7 @@
         "feed": "^4.2.2",
         "form-data": "~4.0.0",
         "gamedig": "^4.2.0",
+        "hardened-https-agent": "~1.5.0",
         "html-escaper": "^3.0.3",
         "http-cookie-agent": "~5.0.4",
         "http-graceful-shutdown": "~3.1.7",
