@@ -487,7 +487,7 @@ import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import { getResBaseURL, relativeTimeFormatter } from "../util-frontend";
+import { getResBaseURL, timeDurationFormatter } from "../util-frontend";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
@@ -928,7 +928,7 @@ export default {
         },
 
         secondsToHumanReadableFormat(seconds) {
-            return relativeTimeFormatter.secondsToHumanReadableFormat(seconds);
+            return timeDurationFormatter.secondsToHumanReadableFormat(seconds);
         },
     },
 };
