@@ -59,7 +59,7 @@ if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
 }
 
 const checkVersion = require("./check-version");
-log.info("server", "Uptime Kuma Version: " + checkVersion.version);
+log.info("server", "Uptime Kuma Version:", checkVersion.version);
 
 log.info("server", "Loading modules");
 
