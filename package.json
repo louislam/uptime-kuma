@@ -199,7 +199,6 @@
         "v-pagination-3": "~0.1.7",
         "vite": "~5.4.15",
         "vite-plugin-compression": "^0.5.1",
-        "vite-plugin-vue-devtools": "^7.0.15",
         "vue": "~3.4.2",
         "vue-chartjs": "~5.2.0",
         "vue-confirm-dialog": "~1.0.2",
