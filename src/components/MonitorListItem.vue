@@ -347,9 +347,8 @@ export default {
 }
 
 .drag-over {
-    border: 3px dashed $primary;
+    border: 4px dashed $primary;
     border-radius: 0.5rem;
-    margin-right: 5px;
     background-color: $highlight-white;
 }
 .dark {
@@ -357,9 +356,9 @@ export default {
         background-color: $dark-bg2;
     }
 }
-/* right-padding -5px due to margin and moving the border -3px on all due to border-width */
+/* -4px on all due to border-width */
 .monitor-list .drag-over .item {
-    padding: 10px 7px 7px 12px;
+    padding: 9px 11px 6px 11px;
 }
 
 .draggable-item {
