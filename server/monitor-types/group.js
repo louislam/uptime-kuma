@@ -24,7 +24,7 @@ class GroupMonitorType extends MonitorType {
 
         for (const child of children) {
             if (!child.active) {
-                // Ignore inactive children
+                // Ignore inactive (=paused) children
                 continue;
             }
 
