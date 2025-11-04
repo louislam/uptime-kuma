@@ -64,12 +64,10 @@ class GroupMonitorType extends MonitorType {
 
         heartbeat.status = DOWN;
 
-        const downList = downChildren.join(", ");
-        const pendingList = pendingChildren.join(", ");
-        let message = downList ? `Child monitors down: ${downList}` : "Child monitor down";
+        let message = `Child monitors down: ${downChildren.join(", ")}`;
 
         if (pendingChildren.length > 0) {
-            message += `; pending: ${pendingList}`;
+            message += `; pending: ${pendingChildren.join(", ")}`;
         }
 
         // Throw to leverage the generic retry handling and notification flow
