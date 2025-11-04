@@ -6,7 +6,6 @@
             :draggable="monitor.type !== 'group'"
             :class="{ 'drag-over': dragOver }"
             @dragstart="onDragStart"
-            @dragend="onDragEnd"
             @dragenter.prevent="onDragEnter"
             @dragleave.prevent="onDragLeave"
             @dragover.prevent
@@ -127,7 +126,6 @@ export default {
     data() {
         return {
             isCollapsed: true,
-            dragging: false,
             dragOver: false,
         };
     },
@@ -202,7 +200,6 @@ export default {
         },
         /**
          * Initializes the drag operation if the monitor is draggable.
-         * Prevents dragging of group monitors.
          * @param {DragEvent} event - The dragstart event triggered by the browser.
          * @returns {void} This method does not return anything.
          */
@@ -210,18 +207,12 @@ export default {
             try {
                 event.dataTransfer.setData("text/monitor-id", String(this.monitor.id));
                 event.dataTransfer.effectAllowed = "move";
-                this.dragging = true;
             } catch (e) {
                 // ignore
             }
         },
 
-        onDragEnd() {
-            this.dragging = false;
-        },
-
         onDragEnter(event) {
-            // show visual feedback if this item is a group
             if (this.monitor.type === "group") {
                 this.dragOver = true;
             }
@@ -368,7 +359,7 @@ export default {
 }
 /* Overiding the right padding to move the border of the drag over a few pixels to the left */
 .monitor-list .drag-over .item {
-    padding-right: 10px;
+    padding-right: 10px 7px 7px 12px;
 }
 
 .draggable-item {
