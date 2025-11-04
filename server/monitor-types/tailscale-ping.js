@@ -31,7 +31,7 @@ class TailscalePing extends MonitorType {
             timeout: timeout,
             encoding: "utf8",
         });
-        if (res.stderr && res.stderr.toString()) {
+        if (res.stderr && res.stderr.toString() && res.code !== 0) {
             throw new Error(`Error in output: ${res.stderr.toString()}`);
         }
         if (res.stdout && res.stdout.toString()) {
