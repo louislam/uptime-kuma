@@ -46,7 +46,7 @@ RUN apt update && \
 
 # Install cloudflared
 RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyrings/cloudflare-main.gpg && \
-    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared trixie main' | tee /etc/apt/sources.list.d/cloudflared.list && \
+    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared any main' | tee /etc/apt/sources.list.d/cloudflared.list && \
     apt update && \
     apt install --yes --no-install-recommends cloudflared && \
     cloudflared version && \
