@@ -35,7 +35,6 @@ RUN apt update && \
     apt --yes autoremove
 
 # apprise = for notifications (Install from the deb package, as the stable one is too old) (workaround for #4867)
-# Switching to testing repo is no longer working, as the testing repo is not bookworm anymore.
 # python3-paho-mqtt (#4859)
 # TODO: no idea how to delete the deb file after installation as it becomes a layer already
 COPY --from=download-apprise /app/apprise.deb ./apprise.deb
