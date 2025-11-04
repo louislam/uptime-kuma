@@ -355,12 +355,19 @@ export default {
     z-index: 15;
 }
 
-.drag-over {
-    background-color: rgba($primary, 0.05);
+.drag-over::before,
+.drag-over::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-top: 2px dashed $primary;
 }
 
 .draggable-item {
     cursor: grab;
+    position: relative;
 
     &.dragging {
         cursor: grabbing;
