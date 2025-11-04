@@ -355,14 +355,20 @@ export default {
     z-index: 15;
 }
 
-.drag-over::before,
-.drag-over::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 2px;
-    border-top: 2px dashed $primary;
+.drag-over {
+    border: 3px dashed $primary;
+    border-radius: 0.5rem;
+    margin-right: 5px;
+    background-color: $highlight-white;
+}
+.dark {
+    .drag-over {
+        background-color: $dark-bg2;
+    }
+}
+/* Overiding the right padding to move the border of the drag over a few pixels to the left */
+.monitor-list .drag-over .item {
+    padding-right: 10px;
 }
 
 .draggable-item {
