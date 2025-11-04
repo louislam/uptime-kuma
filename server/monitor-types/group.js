@@ -58,7 +58,7 @@ class GroupMonitorType extends MonitorType {
 
         if (worstStatus === PENDING) {
             heartbeat.status = PENDING;
-            heartbeat.msg = pendingChildren.length > 0 ? `Pending child monitors: ${pendingChildren.join(", ")}` : "Child monitor pending";
+            heartbeat.msg = `Pending child monitors: ${pendingChildren.join(", ")}`;
             return;
         }
 
