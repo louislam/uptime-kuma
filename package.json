@@ -19,7 +19,6 @@
         "lint:prod": "npm run lint:js-prod && npm run lint:style",
         "dev": "concurrently -k -r \"wait-on tcp:3000 && npm run start-server-dev \" \"npm run start-frontend-dev\"",
         "start-frontend-dev": "cross-env NODE_ENV=development vite --host --config ./config/vite.config.js",
-        "start-frontend-devcontainer": "cross-env NODE_ENV=development DEVCONTAINER=1 vite --host --config ./config/vite.config.js",
         "start": "npm run start-server",
         "start-server": "tsx server/server.js",
         "start-server-dev": "cross-env NODE_ENV=development tsx server/server.js",
@@ -58,10 +57,8 @@
         "build-dist-and-restart": "npm run build && npm run start-server-dev",
         "start-pr-test": "node extra/checkout-pr.mjs && npm install && npm run dev",
         "deploy-demo-server": "node extra/deploy-demo-server.js",
-        "sort-contributors": "node extra/sort-contributors.js",
         "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly3",
         "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
-        "rebase-pr-to-1.23.X": "node extra/rebase-pr.js 1.23.X",
         "reset-migrate-aggregate-table-state": "node extra/reset-migrate-aggregate-table-state.js",
         "generate-changelog": "node ./extra/generate-changelog.mjs"
     },
