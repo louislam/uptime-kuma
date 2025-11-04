@@ -357,9 +357,9 @@ export default {
         background-color: $dark-bg2;
     }
 }
-/* Overiding the right padding to move the border of the drag over a few pixels to the left */
+/* right-padding -5px due to margin and moving the border -3px on all due to border-width */
 .monitor-list .drag-over .item {
-    padding-right: 10px 7px 7px 12px;
+    padding: 10px 7px 7px 12px;
 }
 
 .draggable-item {
