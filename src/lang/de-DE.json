@@ -1209,5 +1209,22 @@
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "Die Installation eines Nextcloud Talk-Bots erfordert Administratorrechte für den Server.",
     "Nextcloud host": "Nextcloud Host",
     "Send UP silently": "UP still senden",
-    "auto-select": "Automatische Auswahl"
+    "auto-select": "Automatische Auswahl",
+    "supportBaleChatID": "Support-Direkt-Chat / Gruppe / Chat-ID des Kanals",
+    "wayToGetBaleChatID": "Du kannst deine Chat-ID erhalten, indem du dem Bot eine Nachricht sendest und dann diese URL aufrufst, um die chat_id anzusehen:",
+    "wayToGetBaleToken": "Du kannst ein Token von {0} erhalten.",
+    "Mention Mobile List": "Mobile Liste erwähnen",
+    "Mention User List": "Benutzer-ID-Liste erwähnen",
+    "Dingtalk Mobile List": "Liste der Mobilgeräte",
+    "Dingtalk User List": "Benutzer-ID-Liste",
+    "Enter a list of userId": "Gib eine Liste von Benutzer-IDs ein",
+    "Enter a list of mobile": "Gib eine Liste von Mobilnummern ein",
+    "Invalid mobile": "Ungültige Mobilnummer [{mobile}]",
+    "Invalid userId": "Ungültige Benutzer-ID [{userId}]",
+    "Number of retry attempts if webhook fails": "Anzahl der Wiederholungsversuche (alle 60–180 Sekunden), wenn der Webhook fehlschlägt.",
+    "Maximum Retries": "Maximale Wiederholungsversuche",
+    "webhookPostMethodDesc": "POST eignet sich für die meisten modernen HTTP-Server.",
+    "descriptionHelpText": "Wird auf dem internen Dashboard angezeigt. Markdown ist zulässig und wird vor der Anzeige bereinigt (Leerzeichen und Einrückungen bleiben erhalten).",
+    "HTTP Method": "HTTP-Methode",
+    "webhookGetMethodDesc": "GET sendet Daten als Abfrageparameter und erlaubt keine Konfiguration eines Bodys. Nützlich zum Auslösen von Uptime Kuma Push-Überwachungen."
 }

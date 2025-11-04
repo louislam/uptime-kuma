@@ -1173,5 +1173,16 @@
     "Send UP silently": "Enviar UP silenciosamente",
     "Send DOWN silently": "Envie DOWN silenciosamente",
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "A instalação de um bot Nextcloud Talk requer acesso administrativo ao servidor.",
-    "auto-select": "Seleção automática"
+    "auto-select": "Seleção automática",
+    "Mention Mobile List": "Mencionar lista de celulares",
+    "Enter a list of userId": "Insira uma lista de userId",
+    "supportBaleChatID": "Suporte a ID de Chat Direto / Grupo / Canal",
+    "wayToGetBaleChatID": "Você pode obter seu ID de bate-papo enviando uma mensagem ao bot e acessando esta URL para visualizar o chat_id:",
+    "wayToGetBaleToken": "Você pode obter um token de {0}.",
+    "Mention User List": "Mencionar lista de IDs de usuários",
+    "Dingtalk Mobile List": "Lista de celulares",
+    "Dingtalk User List": "Lista de IDs de usuário",
+    "Enter a list of mobile": "Insira uma lista de dispositivos móveis",
+    "Invalid mobile": "Celular inválido [{mobile}]",
+    "Invalid userId": "ID de usuário inválido [{userId}]"
 }

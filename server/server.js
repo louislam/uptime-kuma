@@ -59,7 +59,7 @@ if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
 }
 
 const checkVersion = require("./check-version");
-log.info("server", "Uptime Kuma Version: " + checkVersion.version);
+log.info("server", "Uptime Kuma Version:", checkVersion.version);
 
 log.info("server", "Loading modules");
 
@@ -1063,6 +1063,27 @@ let needSetup = false;
 
                 const startTime = Date.now();
 
+                // Check if this is a group monitor and unlink children before deletion
+                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+                    monitorID,
+                    socket.userID,
+                ]);
+
+                if (monitor && monitor.type === "group") {
+                    // Get all children before unlinking them
+                    const children = await Monitor.getChildren(monitorID);
+
+                    // Unlink all children from the group
+                    await Monitor.unlinkAllChildren(monitorID);
+
+                    // Notify frontend to update each child monitor's parent to null
+                    if (children && children.length > 0) {
+                        for (const child of children) {
+                            await server.sendUpdateMonitorIntoList(socket, child.id);
+                        }
+                    }
+                }
+
                 await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
@@ -1506,7 +1527,7 @@ let needSetup = false;
         socket.on("checkApprise", async (callback) => {
             try {
                 checkLogin(socket);
-                callback(Notification.checkApprise());
+                callback(await Notification.checkApprise());
             } catch (e) {
                 callback(false);
             }
