@@ -127,6 +127,7 @@ export default {
         return {
             isCollapsed: true,
             dragOver: false,
+            dragOverCount: 0,
         };
     },
     computed: {
@@ -213,19 +214,29 @@ export default {
         },
 
         onDragEnter(event) {
-            if (this.monitor.type === "group") {
-                this.dragOver = true;
+            if (this.monitor.type !== "group") {
+                return;
             }
+
+            this.dragOverCount++;
+            this.dragOver = true;
         },
 
         onDragLeave(event) {
-            if (this.monitor.type === "group") {
+            if (this.monitor.type !== "group") {
+                return;
+            }
+
+            this.dragOverCount--;
+            if (this.dragOverCount <= 0) {
+                this.dragOverCount = 0;
                 this.dragOver = false;
             }
         },
 
         async onDrop(event) {
             event.preventDefault();
+            this.dragOverCount = 0;
             this.dragOver = false;
 
             // Only groups accept drops
