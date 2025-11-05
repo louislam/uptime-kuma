@@ -442,8 +442,8 @@
                 @yes="deleteMonitor"
             >
                 <div v-if="monitor && monitor.type === 'group'">
-                    <p>{{ $t("deleteGroupMsg") }}</p>
-                    <div class="form-check">
+                    <div>{{ $t("deleteGroupMsg") }}</div>
+                    <div v-if="hasChildren" class="form-check">
                         <input
                             id="delete-children-checkbox"
                             v-model="deleteChildrenMonitors"
@@ -553,6 +553,18 @@ export default {
         monitor() {
             let id = this.$route.params.id;
             return this.$root.monitorList[id];
+        },
+
+        /**
+         * Check if the monitor is a group and has children
+         * @returns {boolean} True if monitor is a group with children
+         */
+        hasChildren() {
+            if (!this.monitor || this.monitor.type !== "group") {
+                return false;
+            }
+            const children = Object.values(this.$root.monitorList).filter(m => m.parent === this.monitor.id);
+            return children.length > 0;
         },
 
         lastHeartBeat() {
@@ -955,6 +967,10 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.form-check {
+    margin-top: 16px;
+}
 
 @media (max-width: 767px) {
     .badge {
