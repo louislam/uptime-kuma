@@ -1057,8 +1057,6 @@ let needSetup = false;
 
                 checkLogin(socket);
 
-                log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
-
                 if (monitorID in server.monitorList) {
                     await server.monitorList[monitorID].stop();
                     delete server.monitorList[monitorID];
@@ -1071,6 +1069,17 @@ let needSetup = false;
                     monitorID,
                     socket.userID,
                 ]);
+
+                // Log with context about deletion type
+                if (monitor && monitor.type === "group") {
+                    if (deleteChildren) {
+                        log.info("manage", `Delete Group and Children: ${monitorID} User ID: ${socket.userID}`);
+                    } else {
+                        log.info("manage", `Delete Group (unlink children): ${monitorID} User ID: ${socket.userID}`);
+                    }
+                } else {
+                    log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
+                }
 
                 if (monitor && monitor.type === "group") {
                     // Get all children before processing
@@ -1114,7 +1123,16 @@ let needSetup = false;
 
                 const endTime = Date.now();
 
-                log.info("DB", `Delete Monitor completed in : ${endTime - startTime} ms`);
+                // Log completion with context about children handling
+                if (monitor && monitor.type === "group") {
+                    if (deleteChildren) {
+                        log.info("DB", `Delete Monitor completed (group and children deleted) in: ${endTime - startTime} ms`);
+                    } else {
+                        log.info("DB", `Delete Monitor completed (group deleted, children unlinked) in: ${endTime - startTime} ms`);
+                    }
+                } else {
+                    log.info("DB", `Delete Monitor completed in: ${endTime - startTime} ms`);
+                }
 
                 callback({
                     ok: true,
