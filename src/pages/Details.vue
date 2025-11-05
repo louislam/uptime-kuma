@@ -441,7 +441,23 @@
                 :no-text="$t('No')"
                 @yes="deleteMonitor"
             >
-                {{ $t("deleteMonitorMsg") }}
+                <div v-if="monitor && monitor.type === 'group'">
+                    <p>{{ $t("deleteGroupMsg") }}</p>
+                    <div class="form-check">
+                        <input
+                            id="delete-children-checkbox"
+                            v-model="deleteChildrenMonitors"
+                            class="form-check-input"
+                            type="checkbox"
+                        >
+                        <label class="form-check-label" for="delete-children-checkbox">
+                            {{ $t("deleteChildrenMonitors") }}
+                        </label>
+                    </div>
+                </div>
+                <div v-else>
+                    {{ $t("deleteMonitorMsg") }}
+                </div>
             </Confirm>
 
             <Confirm
@@ -530,6 +546,7 @@ export default {
                 currentExample: "javascript-fetch",
                 code: "",
             },
+            deleteChildrenMonitors: false,
         };
     },
     computed: {
@@ -752,11 +769,13 @@ export default {
          * @returns {void}
          */
         deleteMonitor() {
-            this.$root.deleteMonitor(this.monitor.id, (res) => {
+            this.$root.deleteMonitor(this.monitor.id, this.deleteChildrenMonitors, (res) => {
                 this.$root.toastRes(res);
                 if (res.ok) {
                     this.$router.push("/dashboard");
                 }
+                // Reset checkbox state after deletion attempt
+                this.deleteChildrenMonitors = false;
             });
         },
 

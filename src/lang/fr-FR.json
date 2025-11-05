@@ -28,6 +28,8 @@
     "keywordDescription": "Le mot clé sera recherché dans la réponse HTML/JSON reçue du site internet.",
     "pauseDashboardHome": "En pause",
     "deleteMonitorMsg": "Êtes-vous sûr de vouloir supprimer cette sonde ?",
+    "deleteGroupMsg": "Êtes-vous sûr de vouloir supprimer ce groupe ?",
+    "deleteChildrenMonitors": "Supprimer également toutes les sondes de ce groupe",
     "deleteMaintenanceMsg": "Voulez-vous vraiment supprimer cette maintenance ?",
     "deleteNotificationMsg": "Êtes-vous sûr de vouloir supprimer ce type de notification pour toutes les sondes ?",
     "dnsPortDescription": "Port du serveur DNS. La valeur par défaut est 53. Vous pouvez modifier le port à tout moment.",
