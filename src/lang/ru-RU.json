@@ -1216,5 +1216,6 @@
     "brevoLeaveBlankForDefaultSubject": "оставьте пустым для темы по умолчанию",
     "Nextcloud host": "Хост Nextcloud",
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "Для установки бота Nextcloud Talk требуется административный доступ к серверу.",
-    "Conversation token": "Токен разговора"
+    "Conversation token": "Токен разговора",
+    "auto-select": "Автоматический выбор"
 }

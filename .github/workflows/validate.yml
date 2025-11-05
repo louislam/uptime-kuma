@@ -7,6 +7,7 @@ on:
     branches:
       - master
       - 1.23.X
+      - 3.0.X
   workflow_dispatch:
 
 permissions:
@@ -31,10 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Validate language JSON files
         run: node ./extra/check-lang-json.js

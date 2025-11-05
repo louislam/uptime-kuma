@@ -50,13 +50,13 @@ execSync("node ./extra/beta/update-version.js");
 buildDist();
 
 // Build slim image (rootless)
-buildImage(repoNames, [ "beta-slim-rootless", ver(version, "slim-rootless") ], "rootless", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+buildImage(repoNames, [ "beta-slim-rootless", ver(version, "slim-rootless") ], "rootless", "BASE_IMAGE=louislam/uptime-kuma:base3-slim");
 
 // Build full image (rootless)
 buildImage(repoNames, [ "beta-rootless", ver(version, "rootless") ], "rootless");
 
 // Build slim image
-buildImage(repoNames, [ "beta-slim", ver(version, "slim") ], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+buildImage(repoNames, [ "beta-slim", ver(version, "slim") ], "release", "BASE_IMAGE=louislam/uptime-kuma:base3-slim");
 
 // Build full image
 buildImage(repoNames, [ "beta", version ], "release");

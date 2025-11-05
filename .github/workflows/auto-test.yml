@@ -5,11 +5,11 @@ name: Auto Test
 
 on:
   push:
-    branches: [ master, 1.23.X ]
+    branches: [ master, 1.23.X, 3.0.X ]
     paths-ignore:
       - '*.md'
   pull_request:
-    branches: [ master, 1.23.X ]
+    branches: [ master, 1.23.X, 3.0.X ]
     paths-ignore:
       - '*.md'
 
@@ -22,15 +22,15 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-22.04, windows-latest, ARM64]
-        node: [ 18, 20 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node: [ 24, 25 ]
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
@@ -40,28 +40,6 @@ jobs:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
 
-  # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
-  armv7-simple-test:
-    needs: [ ]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
-    if: ${{ github.repository == 'louislam/uptime-kuma' }}
-    strategy:
-      matrix:
-        os: [ ARMv7 ]
-        node: [ 18, 20 ]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
-    steps:
-      - run: git config --global core.autocrlf false  # Mainly for Windows
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-      - run: npm ci --production
-
   check-linters:
     runs-on: ubuntu-latest
 
@@ -69,10 +47,10 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    - name: Use Node.js 20
-      uses: actions/setup-node@v4
+    - name: Use Node.js 24
+      uses: actions/setup-node@v6
       with:
-        node-version: 20
+        node-version: 24
     - run: npm install
     - run: npm run lint:prod
 
@@ -83,10 +61,10 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    - name: Use Node.js 20
-      uses: actions/setup-node@v4
+    - name: Use Node.js 24
+      uses: actions/setup-node@v6
       with:
-        node-version: 20
+        node-version: 24
     - run: npm install
     - run: npx playwright install
     - run: npm run build

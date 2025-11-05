@@ -40,16 +40,16 @@ execSync("node extra/update-version.js");
 buildDist();
 
 // Build slim image (rootless)
-buildImage(repoNames, [ "2-slim-rootless", ver(version, "slim-rootless") ], "rootless", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+buildImage(repoNames, [ "3-slim-rootless", ver(version, "slim-rootless") ], "rootless", "BASE_IMAGE=louislam/uptime-kuma:base3-slim");
 
 // Build full image (rootless)
-buildImage(repoNames, [ "2-rootless", ver(version, "rootless") ], "rootless");
+buildImage(repoNames, [ "3-rootless", ver(version, "rootless") ], "rootless");
 
 // Build slim image
-buildImage(repoNames, [ "next-slim", "2-slim", ver(version, "slim") ], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+buildImage(repoNames, [ "next-slim", "3-slim", ver(version, "slim") ], "release", "BASE_IMAGE=louislam/uptime-kuma:base3-slim");
 
 // Build full image
-buildImage(repoNames, [ "next", "2", version ], "release");
+buildImage(repoNames, [ "next", "3", version ], "release");
 
 await pressAnyKey();
 
