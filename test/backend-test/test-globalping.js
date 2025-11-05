@@ -228,7 +228,7 @@ describe("GlobalpingMonitorType", () => {
                 dns_resolve_server: "8.8.8.8",
                 auth_method: "basic",
                 basic_auth_user: "username",
-                basic_auth_pass: "password"
+                basic_auth_pass: "password",
             };
 
             const heartbeat = {
@@ -263,7 +263,7 @@ describe("GlobalpingMonitorType", () => {
                             method: "GET",
                             headers: {
                                 "Test-Header": "Test-Value",
-                                "Authorization": `Basic ${expectedToken}`
+                                Authorization: `Basic ${expectedToken}`,
                             },
                         },
                         port: 444,
@@ -469,7 +469,8 @@ describe("GlobalpingMonitorType", () => {
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
             const measurement = createHttpMeasurement();
-            measurement.results[0].result.rawOutput = "Response body with KEYWORD word";
+            measurement.results[0].result.rawOutput =
+                "Response body with KEYWORD word";
             const awaitResponse = createMockResponse(measurement);
 
             mockClient.createMeasurement.mock.mockImplementation(
@@ -485,12 +486,12 @@ describe("GlobalpingMonitorType", () => {
                 protocol: "HTTPS",
                 accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
                 keyword: "KEYWORD",
-                invertKeyword: false
+                invertKeyword: false,
             };
 
             const heartbeat = {
                 status: PENDING,
-                msg: ""
+                msg: "",
             };
 
             await monitorType.http(mockClient, monitor, heartbeat, true);
@@ -509,7 +510,8 @@ describe("GlobalpingMonitorType", () => {
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
             const measurement = createHttpMeasurement();
-            measurement.results[0].result.rawOutput = "Response body with KEYWORD word";
+            measurement.results[0].result.rawOutput =
+                "Response body with KEYWORD word";
             const awaitResponse = createMockResponse(measurement);
 
             mockClient.createMeasurement.mock.mockImplementation(
@@ -525,12 +527,12 @@ describe("GlobalpingMonitorType", () => {
                 protocol: "HTTPS",
                 accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
                 keyword: "MISSING_KEYWORD",
-                invertKeyword: false
+                invertKeyword: false,
             };
 
             const heartbeat = {
                 status: PENDING,
-                msg: ""
+                msg: "",
             };
 
             await assert.rejects(
@@ -554,7 +556,8 @@ describe("GlobalpingMonitorType", () => {
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
             const measurement = createHttpMeasurement();
-            measurement.results[0].result.rawOutput = "Response body with KEYWORD word";
+            measurement.results[0].result.rawOutput =
+                "Response body with KEYWORD word";
             const awaitResponse = createMockResponse(measurement);
 
             mockClient.createMeasurement.mock.mockImplementation(
@@ -570,12 +573,12 @@ describe("GlobalpingMonitorType", () => {
                 protocol: "HTTPS",
                 accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
                 keyword: "ERROR",
-                invertKeyword: true
+                invertKeyword: true,
             };
 
             const heartbeat = {
                 status: PENDING,
-                msg: ""
+                msg: "",
             };
 
             await monitorType.http(mockClient, monitor, heartbeat, true);
@@ -594,8 +597,10 @@ describe("GlobalpingMonitorType", () => {
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
             const measurement = createHttpMeasurement();
-            measurement.results[0].result.rawOutput = JSON.stringify({ status: "success",
-                value: 42 });
+            measurement.results[0].result.rawOutput = JSON.stringify({
+                status: "success",
+                value: 42,
+            });
             const awaitResponse = createMockResponse(measurement);
 
             mockClient.createMeasurement.mock.mockImplementation(
@@ -612,12 +617,12 @@ describe("GlobalpingMonitorType", () => {
                 accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
                 jsonPath: "$.status",
                 jsonPathOperator: "==",
-                expectedValue: "success"
+                expectedValue: "success",
             };
 
             const heartbeat = {
                 status: PENDING,
-                msg: ""
+                msg: "",
             };
 
             await monitorType.http(mockClient, monitor, heartbeat, true);
@@ -636,8 +641,10 @@ describe("GlobalpingMonitorType", () => {
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
             const measurement = createHttpMeasurement();
-            measurement.results[0].result.rawOutput = JSON.stringify({ status: "failed",
-                value: 42 });
+            measurement.results[0].result.rawOutput = JSON.stringify({
+                status: "failed",
+                value: 42,
+            });
             const awaitResponse = createMockResponse(measurement);
 
             mockClient.createMeasurement.mock.mockImplementation(
@@ -654,12 +661,12 @@ describe("GlobalpingMonitorType", () => {
                 accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
                 jsonPath: "$.status",
                 jsonPathOperator: "==",
-                expectedValue: "success"
+                expectedValue: "success",
             };
 
             const heartbeat = {
                 status: PENDING,
-                msg: ""
+                msg: "",
             };
 
             await assert.rejects(

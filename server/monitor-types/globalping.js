@@ -251,7 +251,7 @@ class GlobalpingMonitorType extends MonitorType {
         let data = result.rawOutput;
         let keywordFound = data.includes(monitor.keyword);
 
-        if (keywordFound !== !Boolean(monitor.invertKeyword)) {
+        if (keywordFound === Boolean(monitor.invertKeyword)) {
             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
             if (data.length > 50) {
                 data = data.substring(0, 47) + "...";

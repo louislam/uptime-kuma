@@ -783,14 +783,14 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' || monitor.subtype === 'http'" class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'redis' || (monitor.type === 'globalping' && monitor.subtype === 'http')" class="my-3 form-check">
                                 <input id="ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="ignore-tls">
                                     {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
                                 </label>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.subtype === 'http'" class="my-3 form-check">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || (monitor.type === 'globalping' && monitor.subtype === 'http')" class="my-3 form-check">
                                 <input id="cache-bust" v-model="monitor.cacheBust" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="cache-bust">
                                     <i18n-t tag="label" keypath="cacheBusterParam" class="form-check-label" for="cache-bust">

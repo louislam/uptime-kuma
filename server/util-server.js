@@ -1121,8 +1121,8 @@ module.exports.fsExists = fsExists;
 /**
  * Encode user and password to Base64 encoding
  * for HTTP "basic" auth, as per RFC-7617
- * @param {string|null} user - The username (nullable if not changed by a user)
- * @param {string|null} pass - The password (nullable if not changed by a user)
+ * @param {string|null} user - The username (defaults to empty string if null/undefined)
+ * @param {string|null} pass - The password (defaults to empty string if null/undefined)
  * @returns {string} Encoded Base64 string
  */
 function encodeBase64(user, pass) {
@@ -1177,6 +1177,7 @@ async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
 }
 module.exports.checkCertExpiryNotifications = checkCertExpiryNotifications;
 
+/**
  * By default, command-exists will throw a null error if the command does not exist, which is ugly. The function makes it better.
  * Read more: https://github.com/mathisonian/command-exists/issues/22
  * @param {string} command Command to check
