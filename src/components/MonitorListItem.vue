@@ -351,11 +351,13 @@ export default {
     border-radius: 0.5rem;
     background-color: $highlight-white;
 }
+
 .dark {
     .drag-over {
         background-color: $dark-bg2;
     }
 }
+
 /* -4px on all due to border-width */
 .monitor-list .drag-over .item {
     padding: 9px 11px 6px 11px;
