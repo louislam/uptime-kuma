@@ -447,7 +447,7 @@ as easy as installing a mobile app.
 
 - Easy to install for non-Docker users
 
-  - no native build dependency is needed (for `x86_64`/`armv7`/`arm64`)
+  - no native build dependency is needed (for `x86_64`/`arm64`)
   - no extra configuration and
   - no extra effort required to get it running
 
@@ -639,7 +639,6 @@ repo to do that.
 
 - amd64
 - arm64
-- armv7
 
 ### Docker Tags
 
@@ -692,7 +691,7 @@ We have a few procedures we follow. These are documented here:
 - <details><summary><b>Set up a Docker Builder</b> (click to expand)</summary>
   <p>
 
-  - amd64, armv7 using local.
+  - amd64 using local.
   - arm64 using remote arm64 cpu, as the emulator is too slow and can no longer
     pass the `npm ci` command.
 
@@ -707,7 +706,7 @@ We have a few procedures we follow. These are documented here:
   3. Create a new builder.
 
      ```bash
-     docker buildx create --name kuma-builder --platform linux/amd64,linux/arm/v7
+     docker buildx create --name kuma-builder --platform linux/amd64
      docker buildx use kuma-builder
      docker buildx inspect --bootstrap
      ```
@@ -742,8 +741,7 @@ We have a few procedures we follow. These are documented here:
 
   - [ ] Check all tags is fine on
         <https://hub.docker.com/r/louislam/uptime-kuma/tags>
-  - [ ] Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 /
-        armv7)
+  - [ ] Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64)
   - [ ] Try clean installation with Node.js
 
   </p>

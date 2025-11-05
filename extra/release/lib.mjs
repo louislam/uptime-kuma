@@ -57,7 +57,7 @@ export function buildDist() {
  * @param {string} platform Build platform
  * @returns {void}
  */
-export function buildImage(repoNames, tags, target, buildArgs = "", dockerfile = "docker/dockerfile", platform = "linux/amd64,linux/arm64,linux/arm/v7") {
+export function buildImage(repoNames, tags, target, buildArgs = "", dockerfile = "docker/dockerfile", platform = "linux/amd64,linux/arm64") {
     let args = [
         "buildx",
         "build",

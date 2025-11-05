@@ -3,6 +3,8 @@
  * node "server/server.js"
  * DO NOT require("./server") in other modules, it likely creates circular dependency!
  */
+import { genSecret, getRandomInt, isDev, log, sleep } from "../src/util";
+
 console.log("Welcome to Uptime Kuma");
 
 // As the log function need to use dayjs, it should be very top
@@ -37,7 +39,6 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 }
 
 const args = require("args-parser")(process.argv);
-const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
 const config = require("./config");
 
 log.debug("server", "Arguments");
