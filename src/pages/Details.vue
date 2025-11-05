@@ -792,8 +792,6 @@ export default {
             this.$root.deleteMonitor(this.monitor.id, this.deleteChildrenMonitors, (res) => {
                 this.$root.toastRes(res);
                 if (res.ok) {
-                    // Reset checkbox state after successful deletion
-                    this.deleteChildrenMonitors = false;
                     this.$router.push("/dashboard");
                 }
             });
