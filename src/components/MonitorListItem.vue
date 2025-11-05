@@ -4,7 +4,7 @@
             class="draggable-item"
             :style="depthMargin"
             :draggable="monitor.type !== 'group'"
-            :class="{ 'drag-over': dragOver }"
+            :class="{ 'drag-over': dragOverCount === 0 }"
             @dragstart="onDragStart"
             @dragenter.prevent="onDragEnter"
             @dragleave.prevent="onDragLeave"
@@ -219,7 +219,6 @@ export default {
             }
 
             this.dragOverCount++;
-            this.dragOver = true;
         },
 
         onDragLeave(event) {
@@ -227,17 +226,12 @@ export default {
                 return;
             }
 
-            this.dragOverCount--;
-            if (this.dragOverCount <= 0) {
-                this.dragOverCount = 0;
-                this.dragOver = false;
-            }
+            this.dragOverCount = Math.min(0, this.dragOverCount - 1);
         },
 
         async onDrop(event) {
             event.preventDefault();
             this.dragOverCount = 0;
-            this.dragOver = false;
 
             // Only groups accept drops
             if (this.monitor.type !== "group") {
