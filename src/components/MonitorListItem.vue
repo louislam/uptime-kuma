@@ -4,7 +4,7 @@
             class="draggable-item"
             :style="depthMargin"
             :draggable="monitor.type !== 'group'"
-            :class="{ 'drag-over': dragOverCount === 0 }"
+            :class="{ 'drag-over': dragOverCount !== 0 }"
             @dragstart="onDragStart"
             @dragenter.prevent="onDragEnter"
             @dragleave.prevent="onDragLeave"
