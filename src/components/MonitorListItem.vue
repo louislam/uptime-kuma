@@ -229,7 +229,6 @@ export default {
         },
 
         async onDrop(event) {
-            event.preventDefault();
             this.dragOverCount = 0;
 
             // Only groups accept drops
