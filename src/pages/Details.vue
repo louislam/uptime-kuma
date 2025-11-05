@@ -451,7 +451,7 @@
                             type="checkbox"
                         >
                         <label class="form-check-label" for="delete-children-checkbox">
-                            {{ $t("deleteChildrenMonitors") }}
+                            {{ $t("deleteChildrenMonitors", [childrenCount]) }}
                         </label>
                     </div>
                 </div>
@@ -556,15 +556,23 @@ export default {
         },
 
         /**
+         * Get the count of children monitors for this group
+         * @returns {number} Number of children monitors
+         */
+        childrenCount() {
+            if (!this.monitor || this.monitor.type !== "group") {
+                return 0;
+            }
+            const children = Object.values(this.$root.monitorList).filter(m => m.parent === this.monitor.id);
+            return children.length;
+        },
+
+        /**
          * Check if the monitor is a group and has children
          * @returns {boolean} True if monitor is a group with children
          */
         hasChildren() {
-            if (!this.monitor || this.monitor.type !== "group") {
-                return false;
-            }
-            const children = Object.values(this.$root.monitorList).filter(m => m.parent === this.monitor.id);
-            return children.length > 0;
+            return this.childrenCount > 0;
         },
 
         lastHeartBeat() {
