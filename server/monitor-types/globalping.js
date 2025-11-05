@@ -5,17 +5,25 @@ const { log, UP, DOWN, evaluateJsonQuery } = require("../../src/util");
 const { checkStatusCode, getOidcTokenClientCredentials, encodeBase64, getDaysRemaining, checkCertExpiryNotifications } = require("../util-server");
 const { R } = require("redbean-node");
 
+/**
+ * Globalping is a free and open-source tool that allows you to run network tests
+ * and measurements from thousands of community hosted probes around the world.
+ *
+ * Library documentation: https://github.com/jsdelivr/globalping-typescript
+ *
+ * API documentation: https://globalping.io/docs/api.globalping.io
+ */
 class GlobalpingMonitorType extends MonitorType {
     name = "globalping";
 
-    agent = "";
+    httpUserAgent = "";
 
     /**
      * @inheritdoc
      */
-    constructor(agent) {
+    constructor(httpUserAgent) {
         super();
-        this.agent = agent;
+        this.httpUserAgent = httpUserAgent;
     }
 
     /**
@@ -25,7 +33,7 @@ class GlobalpingMonitorType extends MonitorType {
         const apiKey = await Settings.get("globalpingApiToken");
         const client = new Globalping({
             auth: apiKey,
-            agent: this.agent,
+            agent: this.httpUserAgent,
         });
 
         const hasAPIToken = !!apiKey;
@@ -40,7 +48,12 @@ class GlobalpingMonitorType extends MonitorType {
     }
 
     /**
-     * @inheritdoc
+     * Handles ping monitors.
+     * @param {Client} client - The client object.
+     * @param {Monitor} monitor - The monitor object.
+     * @param {Heartbeat} heartbeat - The heartbeat object.
+     * @param {boolean} hasAPIToken - Whether the monitor has an API token.
+     * @returns {Promise<void>} A promise that resolves when the ping monitor is handled.
      */
     async ping(client, monitor, heartbeat, hasAPIToken) {
         const opts = {
@@ -107,7 +120,12 @@ class GlobalpingMonitorType extends MonitorType {
     }
 
     /**
-     * @inheritdoc
+     * Handles HTTP monitors.
+     * @param {Client} client - The client object.
+     * @param {Monitor} monitor - The monitor object.
+     * @param {Heartbeat} heartbeat - The heartbeat object.
+     * @param {boolean} hasAPIToken - Whether the monitor has an API token.
+     * @returns {Promise<void>} A promise that resolves when the HTTP monitor is handled.
      */
     async http(client, monitor, heartbeat, hasAPIToken) {
         const url = new URL(monitor.url);
@@ -142,6 +160,7 @@ class GlobalpingMonitorType extends MonitorType {
                     host: url.hostname,
                     path: url.pathname,
                     query: url.search ? url.search.slice(1) : undefined,
+                    method: monitor.method,
                     headers
                 },
                 protocol: protocol,
@@ -204,34 +223,13 @@ class GlobalpingMonitorType extends MonitorType {
 
         // keyword
         if (monitor.keyword) {
-            let data = result.rawOutput;
-            let keywordFound = data.includes(monitor.keyword);
-
-            if (keywordFound !== !Boolean(monitor.invertKeyword)) {
-                data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
-                if (data.length > 50) {
-                    data = data.substring(0, 47) + "...";
-                }
-                throw new Error(heartbeat.msg + ", but keyword is " +
-                    (keywordFound ? "present" : "not") + " in [" + data + "]");
-
-            }
-
-            heartbeat.msg += this.formatResponse(probe, ", keyword " + (keywordFound ? "is" : "not") + " found");
-            heartbeat.status = UP;
+            await this.handleKeywordForHTTP(monitor, heartbeat, result, probe);
             return;
         }
 
         // json-query
         if (monitor.expectedValue) {
-            const { status, response } = await evaluateJsonQuery(result.rawOutput, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
-
-            if (!status) {
-                throw new Error(this.formatResponse(probe, `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`));
-            }
-
-            heartbeat.msg = this.formatResponse(probe, `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`);
-            heartbeat.status = UP;
+            await this.handleJSONQueryForHTTP(monitor, heartbeat, result, probe);
             return;
         }
 
@@ -242,99 +240,57 @@ class GlobalpingMonitorType extends MonitorType {
     }
 
     /**
-     * @inheritdoc
+     * Handles keyword for HTTP monitors.
+     * @param {Monitor} monitor - The monitor object.
+     * @param {Heartbeat} heartbeat - The heartbeat object.
+     * @param {Result} result - The result object.
+     * @param {Probe} probe - The probe object.
+     * @returns {Promise<void>} A promise that resolves when the keyword is handled.
      */
-    formatApiError(error) {
-        let str = `${error.type} ${error.message}.`;
-        if (error.params) {
-            for (const key in error.params) {
-                str += `\n${key}: ${error.params[key]}`;
+    async handleKeywordForHTTP(monitor, heartbeat, result, probe) {
+        let data = result.rawOutput;
+        let keywordFound = data.includes(monitor.keyword);
+
+        if (keywordFound !== !Boolean(monitor.invertKeyword)) {
+            data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
+            if (data.length > 50) {
+                data = data.substring(0, 47) + "...";
             }
+            throw new Error(heartbeat.msg + ", but keyword is " +
+                (keywordFound ? "present" : "not") + " in [" + data + "]");
+
         }
-        return str;
+
+        heartbeat.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
+        heartbeat.status = UP;
     }
 
     /**
-     * @inheritdoc
+     * Handles JSON query for HTTP monitors.
+     * @param {Monitor} monitor - The monitor object.
+     * @param {Heartbeat} heartbeat - The heartbeat object.
+     * @param {Result} result - The result object.
+     * @param {Probe} probe - The probe object.
+     * @returns {Promise<void>} A promise that resolves when the JSON query is handled.
      */
-    formatTooManyRequestsError(hasAPIToken) {
-        const creditsHelpLink = "https://dash.globalping.io?view=add-credits";
-        if (hasAPIToken) {
-            return `You have run out of credits. Get higher limits by sponsoring us or hosting probes. Learn more at ${creditsHelpLink}.`;
+    async handleJSONQueryForHTTP(monitor, heartbeat, result, probe) {
+        const { status, response } = await evaluateJsonQuery(result.rawOutput, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
+
+        if (!status) {
+            throw new Error(this.formatResponse(probe, `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`));
         }
-        return `You have run out of credits. Get higher limits by creating an account. Sign up at ${creditsHelpLink}.`;
+
+        heartbeat.msg = this.formatResponse(probe, `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`);
+        heartbeat.status = UP;
     }
 
     /**
-     * Returns the formatted probe location string. e.g "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1)"
+     * Updates the TLS information for a monitor.
+     * @param {object} monitor - The monitor object.
+     * @param {string} protocol - The protocol used for the monitor.
      * @param {object} probe - The probe object containing location information.
-     * @returns {string} The formatted probe location string.
-     */
-    formatProbeLocation(probe) {
-        let tag = "";
-
-        for (const t of probe.tags) {
-            // If tag ends in a number, it's likely a region code and should be displayed
-            if (Number.isInteger(Number(t.slice(-1)))) {
-                tag = t;
-                break;
-            }
-        }
-        return `${probe.city}${probe.state ? ` (${probe.state})` : ""
-             }, ${probe.country}, ${probe.continent}, ${probe.network
-             } (AS${probe.asn})${tag ? `, (${tag})` : ""}`;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    formatResponse(probe, text) {
-        return `${this.formatProbeLocation(probe)} : ${text}`;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async getOauth2AuthHeader(monitor) {
-        if (monitor.auth_method !== "oauth2-cc") {
-            return {};
-        }
-
-        try {
-            if (monitor.oauthAccessToken === undefined || new Date(monitor.oauthAccessToken.expires_at * 1000) <= new Date()) {
-                log.debug("monitor", `[${monitor.name}] The oauth access-token undefined or expired. Requesting a new token`);
-                const oAuthAccessToken = await getOidcTokenClientCredentials(monitor.oauth_token_url, monitor.oauth_client_id, monitor.oauth_client_secret, monitor.oauth_scopes, monitor.oauth_audience, monitor.oauth_auth_method);
-                if (monitor.oauthAccessToken?.expires_at) {
-                    log.debug("monitor", `[${monitor.name}] Obtained oauth access-token. Expires at ${new Date(monitor.oauthAccessToken?.expires_at * 1000)}`);
-                } else {
-                    log.debug("monitor", `[${monitor.name}] Obtained oauth access-token. Time until expiry was not provided`);
-                }
-
-                monitor.oauthAccessToken = oAuthAccessToken;
-            }
-            return {
-                "Authorization": monitor.oauthAccessToken.token_type + " " + monitor.oauthAccessToken.access_token,
-            };
-        } catch (e) {
-            throw new Error("The oauth config is invalid. " + e.message);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    getBasicAuthHeader(monitor) {
-        if (monitor.auth_method !== "basic") {
-            return {};
-        }
-
-        return {
-            "Authorization": "Basic " + encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass),
-        };
-    }
-
-    /**
-     * @inheritdoc
+     * @param {object} tlsInfo - The TLS information object.
+     * @returns {Promise<void>}
      */
     async handleTLSInfo(monitor, protocol, probe, tlsInfo) {
         if (!tlsInfo) {
@@ -390,6 +346,105 @@ class GlobalpingMonitorType extends MonitorType {
             await checkCertExpiryNotifications(monitor, certResult);
         }
     }
+
+    /**
+     * Generates the OAuth2 authorization header for the monitor if it is enabled.
+     * @param {object} monitor - The monitor object containing authentication information.
+     * @returns {Promise<object>} The OAuth2 authorization header.
+     */
+    async getOauth2AuthHeader(monitor) {
+        if (monitor.auth_method !== "oauth2-cc") {
+            return {};
+        }
+
+        try {
+            if (new Date((monitor.oauthAccessToken?.expires_at || 0) * 1000) <= new Date()) {
+                const oAuthAccessToken = await getOidcTokenClientCredentials(monitor.oauth_token_url, monitor.oauth_client_id, monitor.oauth_client_secret, monitor.oauth_scopes, monitor.oauth_audience, monitor.oauth_auth_method);
+                log.debug("monitor", `[${monitor.name}] Obtained oauth access-token. Expires at ${new Date(oAuthAccessToken.expires_at * 1000)}`);
+
+                monitor.oauthAccessToken = oAuthAccessToken;
+            }
+            return {
+                "Authorization": monitor.oauthAccessToken.token_type + " " + monitor.oauthAccessToken.access_token,
+            };
+        } catch (e) {
+            throw new Error("The oauth config is invalid. " + e.message);
+        }
+    }
+
+    /**
+     * Generates the basic authentication header for a monitor if it is enabled.
+     * @param {object} monitor - The monitor object.
+     * @returns {object} The basic authentication header.
+     */
+    getBasicAuthHeader(monitor) {
+        if (monitor.auth_method !== "basic") {
+            return {};
+        }
+
+        return {
+            "Authorization": "Basic " + encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass),
+        };
+    }
+
+    /**
+     * Generates a formatted error message for API errors.
+     * @param {Error} error - The API error object.
+     * @returns {string} The formatted error message.
+     */
+    formatApiError(error) {
+        let str = `${error.type} ${error.message}.`;
+        if (error.params) {
+            for (const key in error.params) {
+                str += `\n${key}: ${error.params[key]}`;
+            }
+        }
+        return str;
+    }
+
+    /**
+     * Generates a formatted error message for too many requests.
+     * @param {boolean} hasAPIToken - Indicates whether an API token is available.
+     * @returns {string} The formatted error message.
+     */
+    formatTooManyRequestsError(hasAPIToken) {
+        const creditsHelpLink = "https://dash.globalping.io?view=add-credits";
+        if (hasAPIToken) {
+            return `You have run out of credits. Get higher limits by sponsoring us or hosting probes. Learn more at ${creditsHelpLink}.`;
+        }
+        return `You have run out of credits. Get higher limits by creating an account. Sign up at ${creditsHelpLink}.`;
+    }
+
+    /**
+     * Returns the formatted probe location string. e.g "Ashburn (VA), US, NA, Amazon.com (AS14618), (aws-us-east-1)"
+     * @param {object} probe - The probe object containing location information.
+     * @returns {string} The formatted probe location string.
+     */
+    formatProbeLocation(probe) {
+        let tag = "";
+
+        for (const t of probe.tags) {
+            // If tag ends in a number, it's likely a region code and should be displayed
+            if (Number.isInteger(Number(t.slice(-1)))) {
+                tag = t;
+                break;
+            }
+        }
+        return `${probe.city}${probe.state ? ` (${probe.state})` : ""
+             }, ${probe.country}, ${probe.continent}, ${probe.network
+             } (AS${probe.asn})${tag ? `, (${tag})` : ""}`;
+    }
+
+    /**
+     * Formats the response text with the probe location.
+     * @param {object} probe - The probe object containing location information.
+     * @param {string} text - The response text to append.
+     * @returns {string} The formatted response text.
+     */
+    formatResponse(probe, text) {
+        return `${this.formatProbeLocation(probe)} : ${text}`;
+    }
+
 }
 
 module.exports = {
