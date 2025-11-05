@@ -371,7 +371,9 @@ export default {
     cursor: grab;
     position: relative;
     /* We don't want the padding change due to the border animated */
-    transition: none !important;
+    .item {
+        transition: none !important;
+    }
 
     &.dragging {
         cursor: grabbing;
