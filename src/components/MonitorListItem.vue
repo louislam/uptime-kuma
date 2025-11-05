@@ -126,7 +126,6 @@ export default {
     data() {
         return {
             isCollapsed: true,
-            dragOver: false,
             dragOverCount: 0,
         };
     },
