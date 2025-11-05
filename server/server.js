@@ -1049,6 +1049,12 @@ let needSetup = false;
 
         socket.on("deleteMonitor", async (monitorID, deleteChildren, callback) => {
             try {
+                // Backward compatibility: if deleteChildren is omitted, the second parameter is the callback
+                if (typeof deleteChildren === "function") {
+                    callback = deleteChildren;
+                    deleteChildren = false;
+                }
+
                 checkLogin(socket);
 
                 log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
