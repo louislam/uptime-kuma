@@ -4,7 +4,7 @@
             class="draggable-item"
             :style="depthMargin"
             :draggable="monitor.type !== 'group'"
-            :class="{ 'drag-over': dragOverCount !== 0 }"
+            :class="{ 'drag-over': dragOverCount > 0 }"
             @dragstart="onDragStart"
             @dragenter.prevent="onDragEnter"
             @dragleave.prevent="onDragLeave"
@@ -225,7 +225,7 @@ export default {
                 return;
             }
 
-            this.dragOverCount = Math.min(0, this.dragOverCount - 1);
+            this.dragOverCount = Math.max(0, this.dragOverCount - 1);
         },
 
         async onDrop(event) {
@@ -370,6 +370,7 @@ export default {
 .draggable-item {
     cursor: grab;
     position: relative;
+
     /* We don't want the padding change due to the border animated */
     .item {
         transition: none !important;
