@@ -104,7 +104,6 @@
         "jwt-decode": "~3.1.2",
         "kafkajs": "^2.2.4",
         "knex": "~3.1.0",
-        "kysely": "^0.28.8",
         "limiter": "~2.1.0",
         "liquidjs": "^10.7.0",
         "marked": "^14.0.0",
