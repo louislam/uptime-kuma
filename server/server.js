@@ -1081,10 +1081,10 @@ let needSetup = false;
                     const children = await Monitor.getChildren(monitorID);
 
                     if (deleteChildren) {
-                        // Delete all child monitors
+                        // Delete all child monitors recursively
                         if (children && children.length > 0) {
                             for (const child of children) {
-                                await Monitor.deleteMonitor(child.id, socket.userID);
+                                await Monitor.deleteMonitorRecursively(child.id, socket.userID);
                                 await server.sendDeleteMonitorFromList(socket, child.id);
                             }
                         }
