@@ -591,7 +591,7 @@
     "acceptedStatusCodesDescription": "Select status codes which are considered as a successful response.",
     "deleteMonitorMsg": "Are you sure want to delete this monitor?",
     "deleteGroupMsg": "Are you sure you want to delete this group?",
-    "deleteChildrenMonitors": "Also delete the child monitor | Also delete all {n} child monitors",
+    "deleteChildrenMonitors": "Also delete the child monitor | Also delete all {count} child monitors",
     "deleteMaintenanceMsg": "Are you sure want to delete this maintenance?",
     "deleteNotificationMsg": "Are you sure want to delete this notification for all monitors?",
     "dnsPortDescription": "DNS server port. Defaults to 53. You can change the port at any time.",
