@@ -451,7 +451,7 @@
                             type="checkbox"
                         >
                         <label class="form-check-label" for="delete-children-checkbox">
-                            {{ $t("deleteChildrenMonitors", childrenCount, { n: childrenCount }) }}
+                            {{ $t("deleteChildrenMonitors", childrenCount) }}
                         </label>
                     </div>
                 </div>
