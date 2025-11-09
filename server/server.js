@@ -1057,11 +1057,6 @@ let needSetup = false;
 
                 checkLogin(socket);
 
-                if (monitorID in server.monitorList) {
-                    await server.monitorList[monitorID].stop();
-                    delete server.monitorList[monitorID];
-                }
-
                 const startTime = Date.now();
 
                 // Check if this is a group monitor
@@ -1089,14 +1084,7 @@ let needSetup = false;
                         // Delete all child monitors
                         if (children && children.length > 0) {
                             for (const child of children) {
-                                if (child.id in server.monitorList) {
-                                    await server.monitorList[child.id].stop();
-                                    delete server.monitorList[child.id];
-                                }
-                                await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
-                                    child.id,
-                                    socket.userID,
-                                ]);
+                                await Monitor.deleteMonitor(child.id, socket.userID);
                                 await server.sendDeleteMonitorFromList(socket, child.id);
                             }
                         }
@@ -1113,10 +1101,8 @@ let needSetup = false;
                     }
                 }
 
-                await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
-                    monitorID,
-                    socket.userID,
-                ]);
+                // Delete the monitor itself
+                await Monitor.deleteMonitor(monitorID, socket.userID);
 
                 // Fix #2880
                 apicache.clear();
