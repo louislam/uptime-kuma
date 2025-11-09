@@ -242,7 +242,7 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    log(module: string, level: string, ...msg: unknown[]) {
+    private log(module: string, level: string, ...msg: unknown[]) {
         if (level === "DEBUG" && !isDev) {
             return;
         }

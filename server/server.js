@@ -151,7 +151,6 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
-const { getAuth } = require("./better-auth");
 
 app.use(express.json());
 
@@ -188,6 +187,9 @@ let needSetup = false;
         log.error("server", "Failed to prepare your database: " + e.message);
         process.exit(1);
     }
+
+    // Init Better Auth
+    const { auth } = await import("./better-auth");
 
     // Database should be ready now
     await server.initAfterDatabaseReady();
@@ -1758,9 +1760,6 @@ async function initDatabase(testMode = false) {
     log.debug("server", "Connecting to the database");
     await Database.connect(testMode);
     log.info("server", "Connected to the database");
-
-    log.debug("server", "Init Better Auth");
-    const auth = getAuth();
 
     // Patch the database
     await Database.patch(port, hostname);
