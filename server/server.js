@@ -188,6 +188,9 @@ let needSetup = false;
         process.exit(1);
     }
 
+    // Init Better Auth
+    const { auth } = await import("./better-auth");
+
     // Database should be ready now
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
