@@ -219,7 +219,7 @@ class TimeDurationFormatter {
      * Default locale and options for Time Duration Formatter (supports both DurationFormat and RelativeTimeFormat)
      */
     constructor() {
-        this.durationFormatOptions = { style: "short" };
+        this.durationFormatOptions = { style: "long" };
         this.relativeTimeFormatOptions = { numeric: "always" };
         if (Intl.DurationFormat !== undefined) {
             this.durationFormatInstance = new Intl.DurationFormat(currentLocale(), this.durationFormatOptions);
