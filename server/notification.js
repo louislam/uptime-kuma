@@ -81,6 +81,7 @@ const Brevo = require("./notification-providers/brevo");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
+const SMSIR = require("./notification-providers/smsir");
 const { commandExists } = require("./util-server");
 
 class Notification {
@@ -179,6 +180,7 @@ class Notification {
             new SMSPlanet(),
             new SpugPush(),
             new Notifery(),
+            new SMSIR(),
         ];
         for (let item of list) {
             if (!item.name) {
