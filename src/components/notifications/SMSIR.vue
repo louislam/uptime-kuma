@@ -10,6 +10,9 @@
     <div class="mb-3">
         <label for="smsir-template" class="form-label">{{ $t("Template ID") }}</label>
         <input id="smsir-template" v-model="$parent.notification.smsirTemplate" placeholder="12345" type="text" class="form-control" required>
+        <i18n-t tag="div" class="form-text" keypath="wayToGetClickSMSIRTemplateID">
+            <a href="https://app.sms.ir/fast-send/template" target="_blank">{{ $t("here") }}</a>
+        </i18n-t>
     </div>
 </template>
 <script>
