@@ -53,3 +53,10 @@ export function getAuthSecret() {
 
     return Database.dbConfig.authSecret;
 }
+
+/**
+ *
+ */
+export async function createUser() {
+
+}
