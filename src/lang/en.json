@@ -518,6 +518,7 @@
     "Effective Date Range": "Effective Date Range (Optional)",
     "Schedule Maintenance": "Schedule Maintenance",
     "Edit Maintenance": "Edit Maintenance",
+    "Clone Maintenance": "Clone Maintenance",
     "Date and Time": "Date and Time",
     "DateTime Range": "DateTime Range",
     "loadingError": "Cannot fetch the data, please try again later.",

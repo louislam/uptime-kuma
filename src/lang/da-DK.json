@@ -702,6 +702,7 @@
     "chromeExecutable": "Chrome/Chromium-eksekverbar fil",
     "Single Maintenance Window": "Enkelt vedligeholdelsesvindue",
     "Edit Maintenance": "Rediger vedligeholdelse",
+    "Clone Maintenance": "Duplikér vedligeholdelse",
     "emailCustomisableContent": "Brugerdefinerbart indhold",
     "leave blank for default subject": "lad stå tomt for standardemne",
     "emailCustomBody": "Brugerdefineret body",
