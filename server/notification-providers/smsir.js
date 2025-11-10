@@ -21,20 +21,10 @@ class SMSIR extends NotificationProvider {
             };
             config = this.getAxiosConfigWithProxy(config);
 
-            /**
-             * @type {string}
-             */
             let formattedMobile = notification.smsirNumber;
-
-            if (formattedMobile.length === 10 && formattedMobile.startsWith("9") && String(parseInt(formattedMobile)) === formattedMobile) {
-                // 9xxxxxxxxx Format
-                formattedMobile = notification.smsirNumber; // Same as before
-            } else if (formattedMobile.length === 11 && formattedMobile.startsWith("09") && String(parseInt(formattedMobile)) === formattedMobile.substring(1)) {
+            if (formattedMobile.length === 11 && formattedMobile.startsWith("09") && String(parseInt(formattedMobile)) === formattedMobile.substring(1)) {
                 // 09xxxxxxxxx Format
                 formattedMobile = formattedMobile.substring(1);
-            } else {
-                // Invalid/Unsupported Format
-                // FIXME Throw an error or something
             }
 
             await axios.post(
