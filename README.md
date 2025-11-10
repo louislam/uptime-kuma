@@ -45,8 +45,7 @@ cd uptime-kuma
 curl -o compose.yaml https://raw.githubusercontent.com/louislam/uptime-kuma/master/compose.yaml
 docker compose up -d
 ```
-
-Uptime Kuma is now running on <http://0.0.0.0:3001>.
+Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
@@ -56,22 +55,22 @@ Uptime Kuma is now running on <http://0.0.0.0:3001>.
 ```bash
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:2
 ```
+Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
-Uptime Kuma is now running on <http://0.0.0.0:3001>.
+If you want to limit exposure to localhost only:
 
-> [!NOTE]
-> If you want to limit exposure to localhost (without exposing port for other users or to use a [reverse proxy](https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy)), you can expose the port like this:
->
-> ```bash
-> docker run -d --restart=always -p 127.0.0.1:3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:2
-> ```
+```bash
+docker run ... -p 127.0.0.1:3001:3001 ...
+```
+
+
 
 ### 💪🏻 Non-Docker
 
 Requirements:
 
 - Platform
-  - ✅ Major Linux distros such as Debian, Ubuntu, CentOS, Fedora and ArchLinux etc.
+  - ✅ Major Linux distros such as Debian, Ubuntu, Fedora and ArchLinux etc.
   - ✅ Windows 10 (x64), Windows Server 2012 R2 (x64) or higher
   - ❌ FreeBSD / OpenBSD / NetBSD
   - ❌ Replit / Heroku
@@ -94,8 +93,7 @@ npm install pm2 -g && pm2 install pm2-logrotate
 # Start Server
 pm2 start server/server.js --name uptime-kuma
 ```
-
-Uptime Kuma is now running on <http://localhost:3001>
+Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
 More useful PM2 Commands
 
