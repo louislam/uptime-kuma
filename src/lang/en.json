@@ -1186,5 +1186,5 @@
     "Number of retry attempts if webhook fails": "Number of retry attempts (every 60-180 seconds) if the webhook fails.",
     "Maximum Retries": "Maximum Retries",
     "Template ID": "Template ID",
-    "wayToGetClickSMSIRTemplateID": "Your template must contain an uptimestatus field. You can create a new template {0}."
+    "wayToGetClickSMSIRTemplateID": "Your template must contain an {uptkumaalert} field. You can create a new template {here}."
 }

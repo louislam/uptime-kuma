@@ -34,7 +34,7 @@ class SMSIR extends NotificationProvider {
                     templateId: parseInt(notification.smsirTemplate),
                     parameters: [
                         {
-                            name: "uptimestatus",
+                            name: "uptkumaalert",
                             value: msg
                         }
                     ]
