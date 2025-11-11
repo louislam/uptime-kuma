@@ -1728,6 +1728,55 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Delete a monitor from the system
+     * @param {number} monitorID ID of the monitor to delete
+     * @param {number} userID ID of the user who owns the monitor
+     * @returns {Promise<void>}
+     */
+    static async deleteMonitor(monitorID, userID) {
+        const server = UptimeKumaServer.getInstance();
+
+        // Stop the monitor if it's running
+        if (monitorID in server.monitorList) {
+            await server.monitorList[monitorID].stop();
+            delete server.monitorList[monitorID];
+        }
+
+        // Delete from database
+        await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
+            monitorID,
+            userID,
+        ]);
+    }
+
+    /**
+     * Recursively delete a monitor and all its descendants
+     * @param {number} monitorID ID of the monitor to delete
+     * @param {number} userID ID of the user who owns the monitor
+     * @returns {Promise<void>}
+     */
+    static async deleteMonitorRecursively(monitorID, userID) {
+        // Check if this monitor is a group
+        const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+            monitorID,
+            userID,
+        ]);
+
+        if (monitor && monitor.type === "group") {
+            // Get all children and delete them recursively
+            const children = await Monitor.getChildren(monitorID);
+            if (children && children.length > 0) {
+                for (const child of children) {
+                    await Monitor.deleteMonitorRecursively(child.id, userID);
+                }
+            }
+        }
+
+        // Delete the monitor itself
+        await Monitor.deleteMonitor(monitorID, userID);
+    }
+
+    /**
      * Checks recursive if parent (ancestors) are active
      * @param {number} monitorID ID of the monitor to get
      * @returns {Promise<boolean>} Is the parent monitor active?
