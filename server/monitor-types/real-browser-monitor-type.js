@@ -2,13 +2,13 @@ const { MonitorType } = require("./monitor-type");
 const { chromium } = require("playwright-core");
 const { UP, log } = require("../../src/util");
 const { Settings } = require("../settings");
-const commandExistsSync = require("command-exists").sync;
 const childProcess = require("child_process");
 const path = require("path");
 const Database = require("../database");
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 const { RemoteBrowser } = require("../remote-browser");
+const { commandExists } = require("../util-server");
 
 /**
  * Cached instance of a browser
@@ -122,7 +122,7 @@ async function prepareChromeExecutable(executablePath) {
             executablePath = "/usr/bin/chromium";
 
             // Install chromium in container via apt install
-            if ( !commandExistsSync(executablePath)) {
+            if (! await commandExists(executablePath)) {
                 await new Promise((resolve, reject) => {
                     log.info("Chromium", "Installing Chromium...");
                     let child = childProcess.exec("apt update && apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk");
@@ -146,7 +146,7 @@ async function prepareChromeExecutable(executablePath) {
             }
 
         } else {
-            executablePath = findChrome(allowedList);
+            executablePath = await findChrome(allowedList);
         }
     } else {
         // User specified a path
@@ -160,20 +160,20 @@ async function prepareChromeExecutable(executablePath) {
 
 /**
  * Find the chrome executable
- * @param {any[]} executables Executables to search through
- * @returns {any} Executable
- * @throws Could not find executable
+ * @param {string[]} executables Executables to search through
+ * @returns {Promise<string>} Executable
+ * @throws {Error} Could not find executable
  */
-function findChrome(executables) {
+async function findChrome(executables) {
     // Use the last working executable, so we don't have to search for it again
     if (lastAutoDetectChromeExecutable) {
-        if (commandExistsSync(lastAutoDetectChromeExecutable)) {
+        if (await commandExists(lastAutoDetectChromeExecutable)) {
             return lastAutoDetectChromeExecutable;
         }
     }
 
     for (let executable of executables) {
-        if (commandExistsSync(executable)) {
+        if (await commandExists(executable)) {
             lastAutoDetectChromeExecutable = executable;
             return executable;
         }

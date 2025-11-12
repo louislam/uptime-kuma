@@ -1,13 +1,13 @@
 {
     "name": "uptime-kuma",
-    "version": "2.0.0-beta.4",
+    "version": "2.0.2",
     "license": "MIT",
     "repository": {
         "type": "git",
         "url": "https://github.com/louislam/uptime-kuma.git"
     },
     "engines": {
-        "node": "18 || >= 20.4.0"
+        "node": ">= 20.4.0"
     },
     "scripts": {
         "lint:js": "eslint --ext \".js,.vue\" --ignore-path .gitignore .",
@@ -27,7 +27,9 @@
         "build": "vite build --config ./config/vite.config.js",
         "test": "npm run test-backend && npm run test-e2e",
         "test-with-build": "npm run build && npm test",
-        "test-backend": "cross-env TEST_BACKEND=1 node --test test/backend-test",
+        "test-backend": "node test/test-backend.mjs",
+        "test-backend-22": "cross-env TEST_BACKEND=1 node --test \"test/backend-test/**/*.js\"",
+        "test-backend-20": "cross-env TEST_BACKEND=1 node --test test/backend-test",
         "test-e2e": "playwright test --config ./config/playwright.config.js",
         "test-e2e-ui": "playwright test --config ./config/playwright.config.js --ui --ui-port=51063",
         "playwright-codegen": "playwright codegen localhost:3000 --save-storage=./private/e2e-auth.json",
@@ -41,7 +43,7 @@
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test2 --target pr-test2 . --push",
         "upload-artifacts": "node extra/release/upload-artifacts.mjs",
         "upload-artifacts-beta": "node extra/release/upload-artifacts-beta.mjs",
-        "setup": "git checkout 1.23.16 && npm ci --omit dev && npm run download-dist",
+        "setup": "git checkout 2.0.2 && npm ci --omit dev --no-audit && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -82,7 +84,7 @@
         "chroma-js": "~2.4.2",
         "command-exists": "~1.2.9",
         "compare-versions": "~3.6.0",
-        "compression": "~1.7.4",
+        "compression": "~1.8.1",
         "country-flag-emoji-polyfill": "^0.1.8",
         "croner": "~8.1.0",
         "dayjs": "~1.11.5",
@@ -119,7 +121,6 @@
         "nanoid": "~3.3.4",
         "net-snmp": "^3.11.2",
         "node-cloudflared-tunnel": "~1.0.9",
-        "node-radius-client": "~1.0.0",
         "nodemailer": "~6.9.13",
         "nostr-tools": "^2.10.4",
         "notp": "~2.0.3",
@@ -133,6 +134,8 @@
         "promisify-child-process": "~4.1.2",
         "protobufjs": "~7.2.4",
         "qs": "~6.10.4",
+        "radius": "~1.1.4",
+        "node-radius-utils": "~1.2.0",
         "redbean-node": "~0.3.0",
         "redis": "~4.5.1",
         "semver": "~7.5.4",
@@ -196,7 +199,6 @@
         "v-pagination-3": "~0.1.7",
         "vite": "~5.4.15",
         "vite-plugin-compression": "^0.5.1",
-        "vite-plugin-vue-devtools": "^7.0.15",
         "vue": "~3.4.2",
         "vue-chartjs": "~5.2.0",
         "vue-confirm-dialog": "~1.0.2",

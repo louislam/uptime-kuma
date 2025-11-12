@@ -113,6 +113,7 @@ export default {
                 "alerta": "Alerta",
                 "AlertNow": "AlertNow",
                 "apprise": this.$t("apprise"),
+                "bale": "Bale",
                 "Bark": "Bark",
                 "Bitrix24": "Bitrix24",
                 "clicksendsms": "ClickSend SMS",
@@ -132,6 +133,7 @@ export default {
                 "lunasea": "LunaSea",
                 "matrix": "Matrix",
                 "mattermost": "Mattermost",
+                "nextcloudtalk": "Nextcloud Talk",
                 "nostr": "Nostr",
                 "ntfy": "Ntfy",
                 "octopush": "Octopush",
@@ -170,6 +172,7 @@ export default {
                 "gtxmessaging": "GtxMessaging",
                 "Cellsynt": "Cellsynt",
                 "SendGrid": "SendGrid",
+                "Brevo": "Brevo",
                 "notifery": "Notifery"
             };
 
@@ -189,6 +192,7 @@ export default {
                 "PushPlus": "PushPlus (推送加)",
                 "SpugPush": "SpugPush（Spug推送助手）",
                 "smsc": "SMSC",
+                "smsir": "SMS.IR",
                 "WPush": "WPush(wpush.cn)",
                 "YZJ": "YZJ (云之家自定义机器人)",
                 "SMSPlanet": "SMSPlanet.pl"

@@ -12,6 +12,7 @@ class Discord extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
             const webhookUrl = new URL(notification.discordWebhookUrl);
             if (notification.discordChannelType === "postToThread") {
@@ -21,7 +22,7 @@ class Discord extends NotificationProvider {
             // Check if the webhook has an avatar
             let webhookHasAvatar = true;
             try {
-                const webhookInfo = await axios.get(webhookUrl.toString());
+                const webhookInfo = await axios.get(webhookUrl.toString(), config);
                 webhookHasAvatar = !!webhookInfo.data.avatar;
             } catch (e) {
                 // If we can't verify, we assume he has an avatar to avoid forcing the default avatar
@@ -40,7 +41,7 @@ class Discord extends NotificationProvider {
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
                 }
-                await axios.post(webhookUrl.toString(), discordtestdata);
+                await axios.post(webhookUrl.toString(), discordtestdata, config);
                 return okMsg;
             }
 
@@ -82,7 +83,7 @@ class Discord extends NotificationProvider {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(webhookUrl.toString(), discorddowndata);
+                await axios.post(webhookUrl.toString(), discorddowndata, config);
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
@@ -124,7 +125,7 @@ class Discord extends NotificationProvider {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(webhookUrl.toString(), discordupdata);
+                await axios.post(webhookUrl.toString(), discordupdata, config);
                 return okMsg;
             }
         } catch (error) {

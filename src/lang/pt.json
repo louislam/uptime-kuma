@@ -217,5 +217,8 @@
     "recent": "Recente",
     "Add New below or Select...": "Adicionar ou selecione um novo abaixo…",
     "Bottom": "inferior",
-    "Default enabled": "Padrão ativado"
+    "Default enabled": "Padrão ativado",
+    "Path": "Caminho",
+    "Auto": "Auto",
+    "styleElapsedTime": "Tempo decorrido na barra de pulso"
 }
