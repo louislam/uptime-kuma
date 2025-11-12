@@ -32,6 +32,7 @@ class SMSIR extends NotificationProvider {
                     return mobile;
                 });
 
+            // Run multiple network requests at once
             const requestPromises = formattedMobiles
                 .map(mobile => {
                     axios.post(
