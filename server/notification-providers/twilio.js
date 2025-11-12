@@ -12,7 +12,7 @@ class Twilio extends NotificationProvider {
 
         let apiKey = notification.twilioApiKey ? notification.twilioApiKey : notification.twilioAccountSID;
         let twilioMessagingServiceSID = notification.twilioMessagingServiceSID ? notification.twilioMessagingServiceSID : null;
-        
+
         try {
             let config = {
                 headers: {
@@ -39,6 +39,6 @@ class Twilio extends NotificationProvider {
         }
     }
 
-} 
+}
 
 module.exports = Twilio;
