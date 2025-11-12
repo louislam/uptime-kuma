@@ -11,7 +11,8 @@ class Twilio extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         let apiKey = notification.twilioApiKey ? notification.twilioApiKey : notification.twilioAccountSID;
-
+        let twilioMessagingServiceSID = notification.twilioMessagingServiceSID ? notification.twilioMessagingServiceSID : null;
+        
         try {
             let config = {
                 headers: {
@@ -26,6 +27,10 @@ class Twilio extends NotificationProvider {
             data.append("From", notification.twilioFromNumber);
             data.append("Body", msg);
 
+            if (twilioMessagingServiceSID !== null) {
+                data.append("MessagingServiceSid", twilioMessagingServiceSID);
+            }
+
             await axios.post(`https://api.twilio.com/2010-04-01/Accounts/${(notification.twilioAccountSID)}/Messages.json`, data, config);
 
             return okMsg;
@@ -34,6 +39,6 @@ class Twilio extends NotificationProvider {
         }
     }
 
-}
+} 
 
 module.exports = Twilio;

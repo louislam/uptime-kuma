@@ -16,6 +16,16 @@
     </div>
 
     <div class="mb-3">
+        <label for="twilio-messaging-service-sid" class="form-label">{{ $t("Messaging Service SID (optional)") }}</label>
+        <input id="twilio-messaging-service-sid" v-model="$parent.notification.twilioMessagingServiceSID" type="text" class="form-control">
+        <div class="form-text">
+            <p>
+                Messaging Service SID (optional): Enter this if using a Twilio Messaging Service to manage senders and features.
+            </p>
+        </div>
+    </div>
+
+    <div class="mb-3">
         <label for="twilio-auth-token" class="form-label">{{ $t("Auth Token / Api Key Secret") }}</label>
         <input id="twilio-auth-token" v-model="$parent.notification.twilioAuthToken" type="text" class="form-control" required>
     </div>
