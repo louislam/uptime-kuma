@@ -354,7 +354,14 @@ export default {
         },
 
         pageName() {
-            return this.$t((this.isAdd) ? "Schedule Maintenance" : "Edit Maintenance");
+            let name = "Schedule Maintenance";
+
+            if (this.isEdit) {
+                name = "Edit Maintenance";
+            } else if (this.isClone) {
+                name = "Clone Maintenance";
+            }
+            return this.$t(name);
         },
 
         isAdd() {
@@ -365,6 +372,9 @@ export default {
             return this.$route.path.startsWith("/maintenance/edit");
         },
 
+        isClone() {
+            return this.$route.path.startsWith("/maintenance/clone");
+        }
     },
     watch: {
         "$route.fullPath"() {
@@ -443,10 +453,15 @@ export default {
                     daysOfMonth: [],
                     timezoneOption: null,
                 };
-            } else if (this.isEdit) {
+            } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.maintenance = res.maintenance;
+
+                        if (this.isClone) {
+                            this.maintenance.id = undefined; // Remove id when cloning as we want a new id
+                            this.maintenance.title = this.$t("cloneOf", [ this.maintenance.title ]);
+                        }
 
                         this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
                             if (res.ok) {
@@ -491,7 +506,7 @@ export default {
                 return this.processing = false;
             }
 
-            if (this.isAdd) {
+            if (this.isAdd || this.isClone) {
                 this.$root.addMaintenance(this.maintenance, async (res) => {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {

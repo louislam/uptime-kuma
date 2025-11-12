@@ -1466,7 +1466,7 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
-import { hostNameRegexPattern, relativeTimeFormatter } from "../util-frontend";
+import { hostNameRegexPattern, timeDurationFormatter } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -1484,7 +1484,7 @@ const monitorDefaults = {
     location: "world",
     ipFamily: null,
     interval: 60,
-    humanReadableInterval: relativeTimeFormatter.secondsToHumanReadableFormat(60),
+    humanReadableInterval: timeDurationFormatter.secondsToHumanReadableFormat(60),
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
@@ -1868,7 +1868,7 @@ message HealthCheckResponse {
                 this.monitor.retryInterval = value;
             }
             // Converting monitor.interval to human readable format.
-            this.monitor.humanReadableInterval = relativeTimeFormatter.secondsToHumanReadableFormat(value);
+            this.monitor.humanReadableInterval = timeDurationFormatter.secondsToHumanReadableFormat(value);
         },
 
         "monitor.timeout"(value, oldValue) {
