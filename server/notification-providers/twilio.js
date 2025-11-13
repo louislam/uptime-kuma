@@ -28,6 +28,7 @@ class Twilio extends NotificationProvider {
             if (notification.twilioMessagingServiceSID) {
                 data.append("MessagingServiceSid", notification.twilioMessagingServiceSID);
             }
+
             await axios.post(`https://api.twilio.com/2010-04-01/Accounts/${(notification.twilioAccountSID)}/Messages.json`, data, config);
 
             return okMsg;
