@@ -197,6 +197,12 @@ export default {
                 this.remoteBrowserList = data;
             });
 
+            socket.on("monitorReservation", (data) => {
+                if (this.monitorList[data.monitorID]) {
+                    this.monitorList[data.monitorID].reservation = data.reservation;
+                }
+            });
+
             socket.on("heartbeat", (data) => {
                 if (! (data.monitorID in this.heartbeatList)) {
                     this.heartbeatList[data.monitorID] = [];

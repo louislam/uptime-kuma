@@ -1633,6 +1633,116 @@ let needSetup = false;
             }
         });
 
+        // Monitor Reservation Handlers
+        socket.on("reserveMonitor", async (monitorID, reservedBy, reservedUntil, callback) => {
+            try {
+                checkLogin(socket);
+
+                // Check if monitor exists
+                const monitor = await R.findOne("monitor", " id = ? ", [ monitorID ]);
+                if (!monitor) {
+                    throw new Error("Monitor not found");
+                }
+
+                // Check if monitor is already reserved
+                const existingReservation = await R.findOne("monitor_reservation", " monitor_id = ? AND reserved_until > ? ", [
+                    monitorID,
+                    R.isoDateTime(dayjs())
+                ]);
+
+                if (existingReservation) {
+                    throw new Error("Monitor is already reserved");
+                }
+
+                // Create new reservation
+                const reservation = R.dispense("monitor_reservation");
+                reservation.monitor_id = monitorID;
+                reservation.reserved_by = reservedBy;
+                reservation.reserved_until = R.isoDateTime(dayjs(reservedUntil));
+                await R.store(reservation);
+
+                // Broadcast reservation update to all clients
+                io.to(socket.userID).emit("monitorReservation", {
+                    monitorID: monitorID,
+                    reservation: {
+                        id: reservation.id,
+                        reserved_by: reservation.reserved_by,
+                        reserved_until: reservation.reserved_until,
+                    }
+                });
+
+                log.info("monitor", `Monitor ${monitorID} reserved by ${reservedBy} until ${reservedUntil}`);
+
+                callback({
+                    ok: true,
+                    reservation: {
+                        id: reservation.id,
+                        reserved_by: reservation.reserved_by,
+                        reserved_until: reservation.reserved_until,
+                    }
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("releaseMonitor", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                // Delete reservation
+                await R.exec("DELETE FROM monitor_reservation WHERE monitor_id = ?", [ monitorID ]);
+
+                // Broadcast reservation release to all clients
+                io.to(socket.userID).emit("monitorReservation", {
+                    monitorID: monitorID,
+                    reservation: null
+                });
+
+                log.info("monitor", `Monitor ${monitorID} reservation released`);
+
+                callback({
+                    ok: true,
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("getMonitorReservation", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+
+                const reservation = await R.findOne("monitor_reservation", " monitor_id = ? AND reserved_until > ? ", [
+                    monitorID,
+                    R.isoDateTime(dayjs())
+                ]);
+
+                callback({
+                    ok: true,
+                    reservation: reservation ? {
+                        id: reservation.id,
+                        reserved_by: reservation.reserved_by,
+                        reserved_until: reservation.reserved_until,
+                    } : null
+                });
+
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         // Status Page Socket Handler for admin only
         statusPageSocketHandler(socket);
         cloudflaredSocketHandler(socket);

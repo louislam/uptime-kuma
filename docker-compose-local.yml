@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  uptime-kuma-dev:
+    build:
+      context: .
+      dockerfile: docker/dockerfile-dev
+    container_name: uptime-kuma-dev
+    ports:
+      - "3001:3001"
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./server:/app/server
+      - ./db:/app/db
+      - ./src:/app/src
+    environment:
+      - NODE_ENV=development

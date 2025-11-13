@@ -1186,5 +1186,17 @@
     "Number of retry attempts if webhook fails": "Number of retry attempts (every 60-180 seconds) if the webhook fails.",
     "Maximum Retries": "Maximum Retries",
     "Template ID": "Template ID",
-    "wayToGetClickSMSIRTemplateID": "Your template must contain an {uptkumaalert} field. You can create a new template {here}."
+    "wayToGetClickSMSIRTemplateID": "Your template must contain an {uptkumaalert} field. You can create a new template {here}.",
+    "reserveMonitor": "Reserve Monitor",
+    "reserveMonitorDescription": "Reserve {0} for your use",
+    "yourName": "Your Name",
+    "enterYourName": "Enter your name",
+    "reserveUntil": "Reserve Until",
+    "reserve": "Reserve",
+    "cancel": "Cancel",
+    "reservedBy": "Reserved by {0} until {1}",
+    "clickToReserve": "Click to reserve this monitor",
+    "reservationSuccess": "Monitor reserved successfully",
+    "reservationReleased": "Reservation released successfully",
+    "releaseReservationWarning": "This monitor is currently reserved by {0}. Please check with them before using it. Are you sure you want to release this reservation?"
 }

@@ -166,6 +166,9 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+            
+            // reservation info
+            reservation: preloadData.reservations?.get(this.id) || null,
         };
 
         if (includeSensitiveData) {
@@ -1579,6 +1582,7 @@ class Monitor extends BeanModel {
         const activeStatusMap = new Map();
         const forceInactiveMap = new Map();
         const pathsMap = new Map();
+        const reservationsMap = new Map();
 
         if (monitorData.length > 0) {
             const monitorIDs = monitorData.map(monitor => monitor.id);
@@ -1589,6 +1593,12 @@ class Monitor extends BeanModel {
             const activeStatuses = await Promise.all(monitorData.map(monitor => Monitor.isActive(monitor.id, monitor.active)));
             const forceInactiveStatuses = await Promise.all(monitorData.map(monitor => Monitor.isParentActive(monitor.id)));
             const paths = await Promise.all(monitorData.map(monitor => Monitor.getAllPath(monitor.id, monitor.name)));
+            
+            // Load active reservations
+            const reservations = await R.getAll(
+                "SELECT * FROM monitor_reservation WHERE monitor_id IN (" + monitorIDs.map(() => "?").join(",") + ") AND reserved_until > ?",
+                [ ...monitorIDs, R.isoDateTime(dayjs()) ]
+            );
 
             notifications.forEach(row => {
                 if (!notificationsMap.has(row.monitor_id)) {
@@ -1607,6 +1617,14 @@ class Monitor extends BeanModel {
                     value: row.value,
                     name: row.name,
                     color: row.color
+                });
+            });
+            
+            reservations.forEach(row => {
+                reservationsMap.set(row.monitor_id, {
+                    id: row.id,
+                    reserved_by: row.reserved_by,
+                    reserved_until: row.reserved_until,
                 });
             });
 
@@ -1639,6 +1657,7 @@ class Monitor extends BeanModel {
             activeStatus: activeStatusMap,
             forceInactive: forceInactiveMap,
             paths: pathsMap,
+            reservations: reservationsMap,
         };
     }
 

@@ -60,6 +60,8 @@
                 :deselect="deselect"
                 :filter-func="filterFunc"
                 :sort-func="sortFunc"
+                @showReservationDialog="showReservationDialog"
+                @showReleaseConfirm="showReleaseConfirm"
             />
         </div>
     </div>
@@ -67,12 +69,21 @@
     <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
         {{ $t("pauseMonitorMsg") }}
     </Confirm>
+    
+    <Confirm ref="confirmRelease" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="releaseReservation">
+        <div v-if="currentReservedBy">
+            {{ $t("releaseReservationWarning", [currentReservedBy]) }}
+        </div>
+    </Confirm>
+    
+    <ReservationDialog ref="reservationDialog" />
 </template>
 
 <script>
 import Confirm from "../components/Confirm.vue";
 import MonitorListItem from "../components/MonitorListItem.vue";
 import MonitorListFilter from "./MonitorListFilter.vue";
+import ReservationDialog from "../components/ReservationDialog.vue";
 import { getMonitorRelativeURL } from "../util.ts";
 
 export default {
@@ -80,6 +91,7 @@ export default {
         Confirm,
         MonitorListItem,
         MonitorListFilter,
+        ReservationDialog,
     },
     props: {
         /** Should the scrollbar be shown */
@@ -99,7 +111,9 @@ export default {
                 status: null,
                 active: null,
                 tags: null,
-            }
+            },
+            currentMonitorId: null,
+            currentReservedBy: "",
         };
     },
     computed: {
@@ -384,6 +398,47 @@ export default {
             }
 
             return m1.name.localeCompare(m2.name);
+        },
+        /**
+         * Show reservation dialog for a monitor
+         * @param {object} monitor Monitor to reserve
+         * @returns {void}
+         */
+        showReservationDialog(monitor) {
+            if (this.$refs.reservationDialog) {
+                this.$refs.reservationDialog.show(monitor);
+            } else {
+                console.error("ReservationDialog ref not found");
+            }
+        },
+        
+        /**
+         * Show release confirmation dialog
+         * @param {object} monitor Monitor to release
+         * @returns {void}
+         */
+        showReleaseConfirm(monitor) {
+            this.currentMonitorId = monitor.id;
+            this.currentReservedBy = monitor.reservation?.reserved_by || "Unknown";
+            this.$refs.confirmRelease.show();
+        },
+        
+        /**
+         * Release the current monitor reservation
+         * @returns {void}
+         */
+        releaseReservation() {
+            if (this.currentMonitorId) {
+                this.$root.getSocket().emit("releaseMonitor", this.currentMonitorId, (res) => {
+                    if (res.ok) {
+                        this.$root.toastSuccess(this.$t("reservationReleased"));
+                    } else {
+                        this.$root.toastError(res.msg);
+                    }
+                });
+                this.currentMonitorId = null;
+                this.currentReservedBy = "";
+            }
         }
     },
 };
