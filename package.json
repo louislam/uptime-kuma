@@ -137,7 +137,7 @@
         "radius": "~1.1.4",
         "node-radius-utils": "~1.2.0",
         "redbean-node": "~0.3.0",
-        "redis": "~4.5.1",
+        "redis": "~5.9.0",
         "semver": "~7.5.4",
         "socket.io": "~4.8.0",
         "socket.io-client": "~4.8.0",
