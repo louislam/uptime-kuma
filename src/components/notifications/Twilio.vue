@@ -18,6 +18,7 @@
                 <a href="https://help.twilio.com/articles/223134387-What-is-a-Message-SID-" target="_blank">Twilio Messaging Service</a>
             </template>
         </i18n-t>
+    </div>
 
     <div class="mb-3">
         <label for="twilio-auth-token" class="form-label">{{ $t("twilioAuthToken") }}</label>
