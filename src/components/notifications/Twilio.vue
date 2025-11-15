@@ -13,8 +13,11 @@
     <div class="mb-3">
         <label for="twilio-messaging-service-sid" class="form-label">{{ $t("twilioMessagingServiceSID") }}</label>
         <input id="twilio-messaging-service-sid" v-model="$parent.notification.twilioMessagingServiceSID" type="text" class="form-control">
-        <div class="form-text">{{ $t("twilioMessagingServiceSIDHelptext") }}</div>
-    </div>
+        <i18n-t key="twilioMessagingServiceSIDHelptext" tag="div" class="form-text">
+            <template #twillo_messaging_service_help_link>
+                <a href="https://help.twilio.com/articles/223134387-What-is-a-Message-SID-" target="_blank">Twilio Messaging Service</a>
+            </template>
+        </i18n-t>
 
     <div class="mb-3">
         <label for="twilio-auth-token" class="form-label">{{ $t("twilioAuthToken") }}</label>

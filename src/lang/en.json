@@ -885,7 +885,7 @@
     "twilioApiKey": "Api Key (optional)",
     "twilioApiKeyHelptext": "The API key is optional but recommended. You can provide either Account SID and AuthToken from the may TwilioConsole page or Account SID and the pair of Api Key and Api Key secret",
     "twilioMessagingServiceSID": "Messaging Service SID (optional)",
-    "twilloMessagingServiceSIDHelptext": "Messaging Service SID (optional): Enter this if using a Twilio Messaging Service to manage senders and features",
+    "twilloMessagingServiceSIDHelptext": "Enter your Messaging Service SID here if using {twillo_messaging_service_help_link} to manage senders and features",
     "twilioAuthToken": "Auth Token / Api Key Secret",
     "twilioFromNumber": "From Number",
     "twilioToNumber": "To Number",
