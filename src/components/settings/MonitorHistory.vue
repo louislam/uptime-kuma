@@ -28,11 +28,18 @@
             </button>
         </div>
         <div class="my-4">
-            <div class="my-3">
+            <div v-if="$root.info.dbType === 'sqlite'" class="my-3">
                 <button class="btn btn-outline-info me-2" @click="shrinkDatabase">
                     {{ $t("Shrink Database") }} ({{ databaseSizeDisplay }})
                 </button>
-                <div class="form-text mt-2 mb-4 ms-2">{{ $t("shrinkDatabaseDescription") }}</div>
+                <i18n-t tag="div" keypath="shrinkDatabaseDescriptionSqlite" class="form-text mt-2 mb-4 ms-2">
+                    <template #vacuum>
+                        <code>VACUUM</code>
+                    </template>
+                    <template #auto_vacuum>
+                        <code>AUTO_VACUUM</code>
+                    </template>
+                </i18n-t>
             </div>
             <button
                 id="clearAllStats-btn"

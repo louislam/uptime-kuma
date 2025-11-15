@@ -15,7 +15,6 @@ if (newVersion) {
     // Process package.json
     pkg.version = newVersion;
     pkg.scripts.setup = pkg.scripts.setup.replaceAll(oldVersion, newVersion);
-    pkg.scripts["build-docker"] = pkg.scripts["build-docker"].replaceAll(oldVersion, newVersion);
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
     // Process README.md

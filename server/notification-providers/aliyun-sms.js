@@ -11,13 +11,13 @@ class AliyunSMS extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
             if (heartbeatJSON != null) {
                 let msgBody = JSON.stringify({
                     name: monitorJSON["name"],
-                    time: heartbeatJSON["time"],
+                    time: heartbeatJSON["localDateTime"],
                     status: this.statusToString(heartbeatJSON["status"]),
                     msg: heartbeatJSON["msg"],
                 });
@@ -44,7 +44,7 @@ class AliyunSMS extends NotificationProvider {
      * Send the SMS notification
      * @param {BeanModel} notification Notification details
      * @param {string} msgbody Message template
-     * @returns {boolean} True if successful else false
+     * @returns {Promise<boolean>} True if successful else false
      */
     async sendSms(notification, msgbody) {
         let params = {
@@ -71,6 +71,8 @@ class AliyunSMS extends NotificationProvider {
             },
             data: qs.stringify(params),
         };
+
+        config = this.getAxiosConfigWithProxy(config);
 
         let result = await axios(config);
         if (result.data.Message === "OK") {

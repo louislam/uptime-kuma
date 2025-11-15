@@ -38,7 +38,7 @@ class FlashDuty extends NotificationProvider {
     }
 
     /**
-     * Generate a monitor url from the monitors infomation
+     * Generate a monitor url from the monitors information
      * @param {object} monitorInfo Monitor details
      * @returns {string|undefined} Monitor URL
      */
@@ -62,18 +62,25 @@ class FlashDuty extends NotificationProvider {
      * @returns {string} Success message
      */
     async postNotification(notification, title, body, monitorInfo, eventStatus) {
+        let labels = {
+            resource: this.genMonitorUrl(monitorInfo),
+            check: monitorInfo.name,
+        };
+        if (monitorInfo.tags && monitorInfo.tags.length > 0) {
+            for (let tag of monitorInfo.tags) {
+                labels[tag.name] = tag.value;
+            }
+        }
         const options = {
             method: "POST",
-            url: "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
+            url: notification.flashdutyIntegrationKey.startsWith("http") ? notification.flashdutyIntegrationKey : "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
             headers: { "Content-Type": "application/json" },
             data: {
                 description: `[${title}] [${monitorInfo.name}] ${body}`,
                 title,
                 event_status: eventStatus || "Info",
-                alert_key: String(monitorInfo.id) || Math.random().toString(36).substring(7),
-                labels: monitorInfo?.tags?.reduce((acc, item) => ({ ...acc,
-                    [item.name]: item.value
-                }), { resource: this.genMonitorUrl(monitorInfo) }),
+                alert_key: monitorInfo.id ? String(monitorInfo.id) : Math.random().toString(36).substring(7),
+                labels,
             }
         };
 

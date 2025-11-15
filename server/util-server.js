@@ -1,7 +1,11 @@
 const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
-const { log, genSecret, badgeConstants } = require("../src/util");
+const {
+    log, genSecret, badgeConstants,
+    PING_PACKET_SIZE_DEFAULT, PING_GLOBAL_TIMEOUT_DEFAULT,
+    PING_COUNT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT
+} = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
 const iconv = require("iconv-lite");
@@ -11,14 +15,14 @@ const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
-const { MongoClient } = require("mongodb");
-const { NtlmClient } = require("axios-ntlm");
+const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
-const radiusClient = require("node-radius-client");
+const RadiusClient = require("./radius-client");
 const oidc = require("openid-client");
 const tls = require("tls");
+const { exists } = require("fs");
 
 const {
     dictionaries: {
@@ -47,13 +51,13 @@ exports.initJWTSecret = async () => {
         jwtSecretBean.key = "jwtSecret";
     }
 
-    jwtSecretBean.value = passwordHash.generate(genSecret());
+    jwtSecretBean.value = await passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
 };
 
 /**
- * Decodes a jwt and returns the payload portion without verifying the jqt.
+ * Decodes a jwt and returns the payload portion without verifying the jwt.
  * @param {string} jwt The input jwt as a string
  * @returns {object} Decoded jwt payload object
  */
@@ -62,15 +66,16 @@ exports.decodeJwt = (jwt) => {
 };
 
 /**
- * Gets a Access Token form a oidc/oauth2 provider
- * @param {string} tokenEndpoint The token URI form the auth service provider
+ * Gets an Access Token from an oidc/oauth2 provider
+ * @param {string} tokenEndpoint The token URI from the auth service provider
  * @param {string} clientId The oidc/oauth application client id
  * @param {string} clientSecret The oidc/oauth application client secret
- * @param {string} scope The scope the for which the token should be issued for
- * @param {string} authMethod The method on how to sent the credentials. Default client_secret_basic
+ * @param {string} scope The scope(s) for which the token should be issued for
+ * @param {string} audience The audience for which the token should be issued for
+ * @param {string} authMethod The method used to send the credentials. Default client_secret_basic
  * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
  */
-exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, authMethod = "client_secret_basic") => {
+exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, audience, authMethod = "client_secret_basic") => {
     const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
     let client = new oauthProvider.Client({
         client_id: clientId,
@@ -85,6 +90,10 @@ exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSe
     let grantParams = { grant_type: "client_credentials" };
     if (scope) {
         grantParams.scope = scope;
+    }
+
+    if (audience) {
+        grantParams.audience = audience;
     }
     return await client.grant(grantParams);
 };
@@ -118,20 +127,33 @@ exports.tcping = function (hostname, port) {
 
 /**
  * Ping the specified machine
- * @param {string} hostname Hostname / address of machine
- * @param {number} size Size of packet to send
+ * @param {string} destAddr Hostname / IP address of machine to ping
+ * @param {number} count Number of packets to send before stopping
+ * @param {string} sourceAddr Source address for sending/receiving echo requests
+ * @param {boolean} numeric If true, IP addresses will be output instead of symbolic hostnames
+ * @param {number} size Size (in bytes) of echo request to send
+ * @param {number} deadline Maximum time in seconds before ping stops, regardless of packets sent
+ * @param {number} timeout Maximum time in seconds to wait for each response
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.ping = async (hostname, size = 56) => {
+exports.ping = async (
+    destAddr,
+    count = PING_COUNT_DEFAULT,
+    sourceAddr = "",
+    numeric = true,
+    size = PING_PACKET_SIZE_DEFAULT,
+    deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
+    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT,
+) => {
     try {
-        return await exports.pingAsync(hostname, false, size);
+        return await exports.pingAsync(destAddr, false, count, sourceAddr, numeric, size, deadline, timeout);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
         log.debug("ping", "IPv6 error message: " + e.message);
 
         // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
         if (!e.message) {
-            return await exports.pingAsync(hostname, true, size);
+            return await exports.pingAsync(destAddr, true, count, sourceAddr, numeric, size, deadline, timeout);
         } else {
             throw e;
         }
@@ -140,18 +162,35 @@ exports.ping = async (hostname, size = 56) => {
 
 /**
  * Ping the specified machine
- * @param {string} hostname Hostname / address of machine to ping
+ * @param {string} destAddr Hostname / IP address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
- * @param {number} size Size of ping packet to send
+ * @param {number} count Number of packets to send before stopping
+ * @param {string} sourceAddr Source address for sending/receiving echo requests
+ * @param {boolean} numeric If true, IP addresses will be output instead of symbolic hostnames
+ * @param {number} size Size (in bytes) of echo request to send
+ * @param {number} deadline Maximum time in seconds before ping stops, regardless of packets sent
+ * @param {number} timeout Maximum time in seconds to wait for each response
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
+exports.pingAsync = function (
+    destAddr,
+    ipv6 = false,
+    count = PING_COUNT_DEFAULT,
+    sourceAddr = "",
+    numeric = true,
+    size = PING_PACKET_SIZE_DEFAULT,
+    deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
+    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT,
+) {
     return new Promise((resolve, reject) => {
-        ping.promise.probe(hostname, {
+        ping.promise.probe(destAddr, {
             v6: ipv6,
-            min_reply: 1,
-            deadline: 10,
+            min_reply: count,
+            sourceAddr: sourceAddr,
+            numeric: numeric,
             packetSize: size,
+            deadline: deadline,
+            timeout: timeout
         }).then((res) => {
             // If ping failed, it will set field to unknown
             if (res.alive) {
@@ -437,24 +476,6 @@ exports.mysqlQuery = function (connectionString, query, password = undefined) {
 };
 
 /**
- * Connect to and ping a MongoDB database
- * @param {string} connectionString The database connection string
- * @returns {Promise<(string[] | object[] | object)>} Response from
- * server
- */
-exports.mongodbPing = async function (connectionString) {
-    let client = await MongoClient.connect(connectionString);
-    let dbPing = await client.db().command({ ping: 1 });
-    await client.close();
-
-    if (dbPing["ok"] === 1) {
-        return "UP";
-    } else {
-        throw Error("failed");
-    }
-};
-
-/**
  * Query radius server
  * @param {string} hostname Hostname of radius server
  * @param {string} username Username to use
@@ -476,7 +497,7 @@ exports.radius = function (
     port = 1812,
     timeout = 2500,
 ) {
-    const client = new radiusClient({
+    const client = new RadiusClient({
         host: hostname,
         hostPort: port,
         timeout: timeout,
@@ -618,20 +639,26 @@ const parseCertificateInfo = function (info) {
 
 /**
  * Check if certificate is valid
- * @param {object} res Response object from axios
+ * @param {tls.TLSSocket} socket TLSSocket, which may or may not be connected
  * @returns {object} Object containing certificate information
- * @throws No socket was found to check certificate for
  */
-exports.checkCertificate = function (res) {
-    if (!res.request.res.socket) {
-        throw new Error("No socket found");
+exports.checkCertificate = function (socket) {
+    let certInfoStartTime = dayjs().valueOf();
+
+    // Return null if there is no socket
+    if (socket === undefined || socket == null) {
+        return null;
     }
 
-    const info = res.request.res.socket.getPeerCertificate(true);
-    const valid = res.request.res.socket.authorized || false;
+    const info = socket.getPeerCertificate(true);
+    const valid = socket.authorized || false;
 
     log.debug("cert", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
+
+    if (process.env.TIMELOGGER === "1") {
+        log.debug("monitor", "Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+    }
 
     return {
         valid: valid,
@@ -1036,3 +1063,33 @@ module.exports.axiosAbortSignal = (timeoutMs) => {
         }
     }
 };
+
+/**
+ * Async version of fs.existsSync
+ * @param {PathLike} path File path
+ * @returns {Promise<boolean>} True if file exists, false otherwise
+ */
+function fsExists(path) {
+    return new Promise(function (resolve, reject) {
+        exists(path, function (exists) {
+            resolve(exists);
+        });
+    });
+}
+module.exports.fsExists = fsExists;
+
+/**
+ * By default, command-exists will throw a null error if the command does not exist, which is ugly. The function makes it better.
+ * Read more: https://github.com/mathisonian/command-exists/issues/22
+ * @param {string} command Command to check
+ * @returns {Promise<boolean>} True if command exists, false otherwise
+ */
+async function commandExists(command) {
+    try {
+        await require("command-exists")(command);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+module.exports.commandExists = commandExists;

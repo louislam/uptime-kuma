@@ -6,6 +6,7 @@ const languageList = {
     "cs-CZ": "Čeština",
     "zh-HK": "繁體中文 (香港)",
     "bg-BG": "Български",
+    "be": "Беларуская",
     "de-DE": "Deutsch (Deutschland)",
     "de-CH": "Deutsch (Schweiz)",
     "nl-NL": "Nederlands",
@@ -30,6 +31,7 @@ const languageList = {
     "sv-SE": "Svenska",
     "tr-TR": "Türkçe",
     "ko-KR": "한국어",
+    "lt": "Lietuvių",
     "ru-RU": "Русский",
     "zh-CN": "简体中文",
     "pl": "Polski",
@@ -44,6 +46,8 @@ const languageList = {
     "ur": "Urdu",
     "ge": "ქართული",
     "uz": "O'zbek tili",
+    "ga": "Gaeilge",
+    "sk": "Slovenčina",
 };
 
 let messages = {
@@ -56,12 +60,40 @@ for (let lang in languageList) {
     };
 }
 
-const rtlLangs = [ "fa", "ar-SY", "ur" ];
+const rtlLangs = [ "he-IL", "fa", "ar-SY", "ur" ];
 
-export const currentLocale = () => localStorage.locale
-    || languageList[navigator.language] && navigator.language
-    || languageList[navigator.language.substring(0, 2)] && navigator.language.substring(0, 2)
-    || "en";
+/**
+ * Find the best matching locale to display
+ * If no locale can be matched, the default is "en"
+ * @returns {string} the locale that should be displayed
+ */
+export function currentLocale() {
+    for (const locale of [ localStorage.locale, navigator.language, ...navigator.languages ]) {
+        // localstorage might not have a value or there might not be a language in `navigator.language`
+        if (!locale) {
+            continue;
+        }
+        if (locale in messages) {
+            return locale;
+        }
+        // If the locale is a 2-letter code, we can try to find a regional variant
+        // e.g. "fr" may not be in the messages, but "fr-FR" is
+        if (locale.length === 2) {
+            const regionalLocale = `${locale}-${locale.toUpperCase()}`;
+            if (regionalLocale in messages) {
+                return regionalLocale;
+            }
+        } else {
+            // Some locales are further specified such as "en-US".
+            // If we only have a generic locale for this, we can use it too
+            const genericLocale = locale.slice(0, 2);
+            if (genericLocale in messages) {
+                return genericLocale;
+            }
+        }
+    }
+    return "en";
+}
 
 export const localeDirection = () => {
     return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr";

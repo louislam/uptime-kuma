@@ -8,6 +8,7 @@ const server = UptimeKumaServer.getInstance();
 const io = server.io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
+const Database = require("./database");
 
 /**
  * Send list of notification providers to client
@@ -144,17 +145,20 @@ async function sendInfo(socket, hideVersion = false) {
     let version;
     let latestVersion;
     let isContainer;
+    let dbType;
 
     if (!hideVersion) {
         version = checkVersion.version;
         latestVersion = checkVersion.latestVersion;
         isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
+        dbType = Database.dbConfig.type;
     }
 
     socket.emit("info", {
         version,
         latestVersion,
         isContainer,
+        dbType,
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
@@ -209,6 +213,32 @@ async function sendRemoteBrowserList(socket) {
     return list;
 }
 
+/**
+ * Send list of monitor types to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<void>}
+ */
+async function sendMonitorTypeList(socket) {
+    const result = Object.entries(UptimeKumaServer.monitorTypeList).map(([ key, type ]) => {
+        return [ key, {
+            supportsConditions: type.supportsConditions,
+            conditionVariables: type.conditionVariables.map(v => {
+                return {
+                    id: v.id,
+                    operators: v.operators.map(o => {
+                        return {
+                            id: o.id,
+                            caption: o.caption,
+                        };
+                    }),
+                };
+            }),
+        }];
+    });
+
+    io.to(socket.userID).emit("monitorTypeList", Object.fromEntries(result));
+}
+
 module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
@@ -218,4 +248,5 @@ module.exports = {
     sendInfo,
     sendDockerHostList,
     sendRemoteBrowserList,
+    sendMonitorTypeList,
 };
