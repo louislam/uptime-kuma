@@ -9,18 +9,22 @@ class RedisMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        heartbeat.msg = await this.redisPingAsync(monitor.databaseConnectionString);
+        heartbeat.msg = await this.redisPingAsync(monitor.databaseConnectionString, !monitor.ignoreTls);
         heartbeat.status = UP;
     }
 
     /**
      * Redis server ping
      * @param {string} dsn The redis connection string
+     * @param {boolean} rejectUnauthorized If false, allows unverified server certificates.
      * @returns {Promise<any>} Response from redis server
      */
-    async redisPingAsync(dsn) {
+    async redisPingAsync(dsn, rejectUnauthorized) {
         const client = redis.createClient({
             url: dsn,
+            socket: {
+                rejectUnauthorized
+            }
         });
         client.on("error", (err) => {
             if (client.isOpen) {
