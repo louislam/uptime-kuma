@@ -602,11 +602,12 @@ export default {
         /**
          * Delete monitor by ID
          * @param {number} monitorID ID of monitor to delete
+         * @param {boolean} deleteChildren Whether to delete child monitors (for groups)
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */
-        deleteMonitor(monitorID, callback) {
-            socket.emit("deleteMonitor", monitorID, callback);
+        deleteMonitor(monitorID, deleteChildren, callback) {
+            socket.emit("deleteMonitor", monitorID, deleteChildren, callback);
         },
 
         /**

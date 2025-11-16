@@ -20,7 +20,6 @@ const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const RadiusClient = require("./radius-client");
-const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
 const { exists } = require("fs");
@@ -520,44 +519,6 @@ exports.radius = function (
         } else {
             throw Error(error.message);
         }
-    });
-};
-
-/**
- * Redis server ping
- * @param {string} dsn The redis connection string
- * @param {boolean} rejectUnauthorized If false, allows unverified server certificates.
- * @returns {Promise<any>} Response from server
- */
-exports.redisPingAsync = function (dsn, rejectUnauthorized) {
-    return new Promise((resolve, reject) => {
-        const client = redis.createClient({
-            url: dsn,
-            socket: {
-                rejectUnauthorized
-            }
-        });
-        client.on("error", (err) => {
-            if (client.isOpen) {
-                client.disconnect();
-            }
-            reject(err);
-        });
-        client.connect().then(() => {
-            if (!client.isOpen) {
-                client.emit("error", new Error("connection isn't open"));
-            }
-            client.ping().then((res, err) => {
-                if (client.isOpen) {
-                    client.disconnect();
-                }
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            }).catch(error => reject(error));
-        });
     });
 };
 
@@ -1116,3 +1077,19 @@ function fsExists(path) {
     });
 }
 module.exports.fsExists = fsExists;
+
+/**
+ * By default, command-exists will throw a null error if the command does not exist, which is ugly. The function makes it better.
+ * Read more: https://github.com/mathisonian/command-exists/issues/22
+ * @param {string} command Command to check
+ * @returns {Promise<boolean>} True if command exists, false otherwise
+ */
+async function commandExists(command) {
+    try {
+        await require("command-exists")(command);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+module.exports.commandExists = commandExists;

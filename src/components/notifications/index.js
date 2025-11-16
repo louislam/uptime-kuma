@@ -79,6 +79,7 @@ import SendGrid from "./SendGrid.vue";
 import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
 import SMSPlanet from "./SMSPlanet.vue";
+import SMSIR from "./SMSIR.vue";
 
 /**
  * Manage all notification form.
@@ -95,6 +96,7 @@ const NotificationFormList = {
     "clicksendsms": ClickSendSMS,
     "CallMeBot": CallMeBot,
     "smsc": SMSC,
+    "smsir": SMSIR,
     "DingDing": DingDing,
     "discord": Discord,
     "Elks": Elks,
