@@ -32,10 +32,6 @@ class SMSIR extends NotificationProvider {
                     return mobile;
                 });
 
-            /**
-             * @type {string}
-             */
-            let formattedMessage = msg;
             const MAX_MESSAGE_LENGTH = 25; // This is a limitation placed by SMSIR
             const SHORTEN_EDNING_STRING = "..."; // What to add to the end of a shortened string
 
