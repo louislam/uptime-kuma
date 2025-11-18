@@ -201,7 +201,6 @@ class Database {
         if (!dbConfig.ssl) {
             return undefined;
         }
-        log.info("db", "Enabling SSL for database connection");
 
         const sslOptions = {};
 
@@ -215,7 +214,6 @@ class Database {
         } else {
             sslOptions.rejectUnauthorized = false;
         }
-
         return { ssl: sslOptions };
     }
 
