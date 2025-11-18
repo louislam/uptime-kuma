@@ -201,7 +201,7 @@ class Database {
         if (!dbConfig.ssl) {
             return undefined;
         }
-        log.info("Enabling SSL for database connection");
+        log.info("db", "Enabling SSL for database connection");
 
         const sslOptions = {};
 
@@ -209,7 +209,7 @@ class Database {
             try {
                 sslOptions.ca = fs.readFileSync(dbConfig.ssl_ca, "utf8");
             } catch (error) {
-                log.warn(`Failed to read CA file from ${dbConfig.ssl_ca}:`, error.message);
+                log.warn("db", `Failed to read CA file from ${dbConfig.ssl_ca}: ${error.message}`);
                 sslOptions.rejectUnauthorized = false;
             }
         } else {
