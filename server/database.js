@@ -204,7 +204,6 @@ class Database {
         }
 
         const sslOptions = {};
-
         if (dbConfig.ssl_ca) {
             try {
                 sslOptions.ca = fs.readFileSync(dbConfig.ssl_ca, "utf8");
