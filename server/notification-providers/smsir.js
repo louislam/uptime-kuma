@@ -33,16 +33,12 @@ class SMSIR extends NotificationProvider {
                 });
 
             const MAX_MESSAGE_LENGTH = 25; // This is a limitation placed by SMSIR
-            const SHORTEN_EDNING_STRING = "..."; // What to add to the end of a shortened string
-
-            if (formattedMessage.length > MAX_MESSAGE_LENGTH) {
-                // Shorten By removing spaces, keeping context is better than cutting off the text
-                formattedMessage = formattedMessage.replace(/\s/g, "");
-            }
-
-            if (formattedMessage.length > MAX_MESSAGE_LENGTH) {
-                // Cut off the text. Still better than not receiving an SMS
-                formattedMessage = formattedMessage.substring(0, MAX_MESSAGE_LENGTH - 1 - SHORTEN_EDNING_STRING.length) + SHORTEN_EDNING_STRING;
+            // Shorten By removing spaces, keeping context is better than cutting off the text
+            // If that does not work, truncate. Still better than not receiving an SMS
+            if (msg.length > MAX_MESSAGE_LENGTH && msg.replace(/\s/g, ""). length <= MAX_MESSAGE_LENGTH) {
+                msg = msg.replace(/\s/g, "");
+            } else if (msg.length > MAX_MESSAGE_LENGTH) {
+                msg = msg.substring(0, MAX_MESSAGE_LENGTH - 1 - "...".length) + "...";
             }
 
             // Run multiple network requests at once
