@@ -52,7 +52,7 @@ class SMSIR extends NotificationProvider {
                             parameters: [
                                 {
                                     name: "uptkumaalert",
-                                    value: formattedMessage
+                                    value: msg
                                 }
                             ]
                         },
