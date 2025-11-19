@@ -1,0 +1,15 @@
+# Start the server:
+#   docker compose up
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6380:6380"
+    volumes:
+      - ./certs:/certs
+    command: >
+      redis-server
+      --tls-port 6380 --port 0
+      --tls-cert-file /certs/redis.crt
+      --tls-key-file /certs/redis.key
+      --tls-auth-clients no

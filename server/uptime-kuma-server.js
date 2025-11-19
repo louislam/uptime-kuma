@@ -120,6 +120,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
         UptimeKumaServer.monitorTypeList["globalping"] = new GlobalpingMonitorType(this.getUserAgent());
+        UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -562,4 +563,6 @@ const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
 const { ManualMonitorType } = require("./monitor-types/manual");
 const { GlobalpingMonitorType } = require("./monitor-types/globalping");
+const { RedisMonitorType } = require("./monitor-types/redis");
 const Monitor = require("./model/monitor");
+
