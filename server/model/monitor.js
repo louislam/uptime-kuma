@@ -41,6 +41,24 @@ const rootCertificates = rootCertificatesFingerprints();
 class Monitor extends BeanModel {
 
     /**
+     * Reusable HTTP agent for this monitor instance
+     * @type {http.Agent|null}
+     */
+    _httpAgent = null;
+
+    /**
+     * Reusable HTTPS agent for this monitor instance
+     * @type {https.Agent|HttpsCookieAgent|null}
+     */
+    _httpsAgent = null;
+
+    /**
+     * Reusable HTTPS agent for Docker TCP connections
+     * @type {https.Agent|null}
+     */
+    _dockerTcpAgent = null;
+
+    /**
      * Return an object that ready to parse to JSON for public Only show
      * necessary data to public
      * @param {boolean} showTags Include tags in JSON
@@ -520,16 +538,28 @@ class Monitor extends BeanModel {
                     }
 
                     if (!options.httpAgent) {
-                        options.httpAgent = new http.Agent(httpAgentOptions);
+                        // Reuse the monitor's HTTP agent to prevent resource leaks
+                        if (!this._httpAgent) {
+                            this._httpAgent = new http.Agent({
+                                ...httpAgentOptions,
+                                keepAlive: false,  // Disable keepAlive to prevent connection pooling
+                            });
+                        }
+                        options.httpAgent = this._httpAgent;
                     }
 
                     if (!options.httpsAgent) {
-                        let jar = new CookieJar();
-                        let httpsCookieAgentOptions = {
-                            ...httpsAgentOptions,
-                            cookies: { jar }
-                        };
-                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
+                        // Reuse the monitor's HTTPS agent to prevent resource leaks
+                        if (!this._httpsAgent) {
+                            let jar = new CookieJar();
+                            let httpsCookieAgentOptions = {
+                                ...httpsAgentOptions,
+                                cookies: { jar },
+                                keepAlive: false,  // Disable keepAlive to prevent connection pooling
+                            };
+                            this._httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
+                        }
+                        options.httpsAgent = this._httpsAgent;
                     }
 
                     if (this.auth_method === "mtls") {
@@ -671,19 +701,29 @@ class Monitor extends BeanModel {
                         throw new Error("Steam API Key not found");
                     }
 
+                    // Reuse agents for steam monitor to prevent resource leaks
+                    if (!this._httpAgent) {
+                        this._httpAgent = new http.Agent({
+                            maxCachedSessions: 0,
+                            keepAlive: false,
+                        });
+                    }
+                    if (!this._httpsAgent) {
+                        this._httpsAgent = new https.Agent({
+                            maxCachedSessions: 0,
+                            rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                            keepAlive: false,
+                        });
+                    }
+
                     let res = await axios.get(steamApiUrl, {
                         timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "*/*",
                         },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: !this.getIgnoreTls(),
-                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-                        }),
-                        httpAgent: new http.Agent({
-                            maxCachedSessions: 0,
-                        }),
+                        httpsAgent: this._httpsAgent,
+                        httpAgent: this._httpAgent,
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
@@ -722,20 +762,30 @@ class Monitor extends BeanModel {
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
+                    // Reuse agents for docker monitor to prevent resource leaks
+                    if (!this._httpAgent) {
+                        this._httpAgent = new http.Agent({
+                            maxCachedSessions: 0,
+                            keepAlive: false,
+                        });
+                    }
+                    if (!this._httpsAgent) {
+                        this._httpsAgent = new https.Agent({
+                            maxCachedSessions: 0,
+                            rejectUnauthorized: !this.getIgnoreTls(),
+                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                            keepAlive: false,
+                        });
+                    }
+
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                         },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: !this.getIgnoreTls(),
-                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-                        }),
-                        httpAgent: new http.Agent({
-                            maxCachedSessions: 0,
-                        }),
+                        httpsAgent: this._httpsAgent,
+                        httpAgent: this._httpAgent,
                     };
 
                     const dockerHost = await R.load("docker_host", this.docker_host);
@@ -748,9 +798,14 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
-                        options.httpsAgent = new https.Agent(
-                            await DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
-                        );
+                        // For TCP Docker hosts, we need a special agent with TLS options
+                        // Create a new one only if we haven't already
+                        if (!this._dockerTcpAgent) {
+                            this._dockerTcpAgent = new https.Agent(
+                                await DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                            );
+                        }
+                        options.httpsAgent = this._dockerTcpAgent;
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
@@ -1099,6 +1154,20 @@ class Monitor extends BeanModel {
         this.isStop = true;
 
         this.prometheus?.remove();
+
+        // Clean up HTTP agents to prevent resource leaks
+        if (this._httpAgent) {
+            this._httpAgent.destroy();
+            this._httpAgent = null;
+        }
+        if (this._httpsAgent) {
+            this._httpsAgent.destroy();
+            this._httpsAgent = null;
+        }
+        if (this._dockerTcpAgent) {
+            this._dockerTcpAgent.destroy();
+            this._dockerTcpAgent = null;
+        }
     }
 
     /**
