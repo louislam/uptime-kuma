@@ -348,7 +348,7 @@ class Monitor extends BeanModel {
     getHttpAgent(options = {}) {
         // Store agents in a non-enumerable property to avoid RedBeanNode issues
         if (!this.__httpAgent) {
-            Object.defineProperty(this, '__httpAgent', {
+            Object.defineProperty(this, "__httpAgent", {
                 value: new http.Agent({
                     maxCachedSessions: 0,
                     keepAlive: false,
