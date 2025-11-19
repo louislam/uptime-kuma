@@ -10,9 +10,18 @@
             <div class="mb-5" data-testid="group">
                 <!-- Group Title -->
                 <h2 class="group-title">
-                    <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
-                    <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
-                    <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
+                    <div class="title-section">
+                        <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
+                        <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
+                        <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
+                    </div>
+
+                    <GroupSortDropdown
+                        :group="group.element"
+                        :group-index="group.index"
+                        :show-certificate-expiry="showCertificateExpiry"
+                        @update-group="updateGroup"
+                    />
                 </h2>
 
                 <div class="shadow-box monitor-list mt-4 position-relative">
@@ -57,6 +66,18 @@
                                                 {{ monitor.element.name }}
                                             </a>
                                             <p v-else class="item-name" data-testid="monitor-name"> {{ monitor.element.name }} </p>
+
+                                            <span
+                                                title="Setting"
+                                            >
+                                                <font-awesome-icon
+                                                    v-if="editMode"
+                                                    :class="{'link-active': true, 'btn-link': true}"
+                                                    icon="cog" class="action me-3"
+                                                    data-testid="monitor-settings"
+                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
+                                                />
+                                            </span>
                                         </div>
                                         <div class="extra-info">
                                             <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
@@ -87,6 +108,7 @@ import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
+import GroupSortDropdown from "./GroupSortDropdown.vue";
 
 export default {
     components: {
@@ -95,6 +117,7 @@ export default {
         HeartbeatBar,
         Uptime,
         Tag,
+        GroupSortDropdown,
     },
     props: {
         /** Are we in edit mode? */
@@ -113,7 +136,6 @@ export default {
     },
     data() {
         return {
-
         };
     },
     computed: {
@@ -121,8 +143,11 @@ export default {
             return (this.$root.publicGroupList.length >= 2);
         }
     },
+    watch: {
+        // No watchers needed - sorting is handled by GroupSortDropdown component
+    },
     created() {
-
+        // Sorting is now handled by GroupSortDropdown component
     },
     methods: {
         /**
@@ -136,8 +161,7 @@ export default {
 
         /**
          * Remove a monitor from a group
-         * @param {number} groupIndex Index of group to remove monitor
-         * from
+         * @param {number} groupIndex Index of group to remove monitor from
          * @param {number} index Index of monitor to remove
          * @returns {void}
          */
@@ -158,7 +182,9 @@ export default {
             // We must check if there are any elements in monitorList to
             // prevent undefined errors if it hasn't been loaded yet
             if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
-                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
+                return this.$root.monitorList[monitor.element.id].type === "http" ||
+                    this.$root.monitorList[monitor.element.id].type === "keyword" ||
+                    this.$root.monitorList[monitor.element.id].type === "json-query";
             }
             return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
         },
@@ -189,6 +215,32 @@ export default {
             }
             return "#DC2626";
         },
+
+        /**
+         * Update group properties
+         * @param {number} groupIndex Index of group to update
+         * @param {object} updates Object with properties to update
+         * @returns {void}
+         */
+        updateGroup(groupIndex, updates) {
+            Object.assign(this.$root.publicGroupList[groupIndex], updates);
+        },
+
+        /**
+         * Get unique identifier for a group
+         * @param {object} group object
+         * @returns {string} group identifier
+         */
+        getGroupIdentifier(group) {
+            // Use the name directly if available
+            if (group.name) {
+                // Only remove spaces and use encodeURIComponent for URL safety
+                const cleanName = group.name.replace(/\s+/g, "");
+                return cleanName;
+            }
+            // Fallback to ID or index
+            return group.id ? `group${group.id}` : `group${this.$root.publicGroupList.indexOf(group)}`;
+        }
     }
 };
 </script>
@@ -250,6 +302,15 @@ export default {
 }
 
 .group-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .title-section {
+        display: flex;
+        align-items: center;
+    }
+
     span {
         display: inline-block;
         min-width: 15px;
@@ -260,10 +321,14 @@ export default {
     .item {
         padding: 13px 0 10px;
     }
+
+    .group-title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .bg-maintenance {
     background-color: $maintenance;
 }
-
 </style>
