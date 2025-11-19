@@ -2,6 +2,7 @@
     "name": "Uptime Kuma",
     "short_name": "Uptime Kuma",
     "description": "An easy-to-use self-hosted monitoring tool.",
+    "theme_color": "#5cdd8b",
     "start_url": "/",
     "background_color": "#fff",
     "display": "standalone",
