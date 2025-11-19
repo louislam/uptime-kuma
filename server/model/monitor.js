@@ -378,7 +378,7 @@ class Monitor extends BeanModel {
                 cookies: { jar },
                 ...options
             };
-            Object.defineProperty(this, '__httpsAgent', {
+            Object.defineProperty(this, "__httpsAgent", {
                 value: new HttpsCookieAgent(agentOptions),
                 writable: true,
                 enumerable: false,
@@ -395,7 +395,7 @@ class Monitor extends BeanModel {
      */
     getDockerTcpAgent(options = {}) {
         if (!this.__dockerTcpAgent) {
-            Object.defineProperty(this, '__dockerTcpAgent', {
+            Object.defineProperty(this, "__dockerTcpAgent", {
                 value: new https.Agent({
                     maxCachedSessions: 0,
                     keepAlive: false,
