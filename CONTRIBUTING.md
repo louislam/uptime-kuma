@@ -39,6 +39,8 @@ with that question—please feel free to ask. We're happy to help!
 Different types of pull requests (PRs) may have different guidelines, so be sure
 to review the appropriate one for your contribution.
 
+**You should not create a PR for changing the LICENSE file's year, read [this](https://stackoverflow.com/questions/2390230/do-copyright-dates-need-to-be-updated) for more info.**
+
 - <details><summary><b>Security Fixes</b> (click to expand)</summary>
   <p>
 
