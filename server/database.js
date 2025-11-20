@@ -224,8 +224,8 @@ class Database {
         let config = {};
 
         let mariadbPoolConfig = {
-            min: 0,
-            max: 10,
+            min: process.env.MARIADB_POOL_MIN_CONNECTIONS ? parseInt(process.env.MARIADB_POOL_MIN_CONNECTIONS) : 0,
+            max: process.env.MARIADB_POOL_MAX_CONNECTIONS ? parseInt(process.env.MARIADB_POOL_MAX_CONNECTIONS) : 10,
             idleTimeoutMillis: 30000,
         };
 
