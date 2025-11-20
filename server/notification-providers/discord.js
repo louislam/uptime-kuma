@@ -117,12 +117,7 @@ class Discord extends NotificationProvider {
                     username: discordDisplayName,
                     embeds: [{
                         title: "New notification!",
-                        fields: [
-                            {
-                                name: "Message",
-                                value: msg,
-                            }
-                        ],
+                        description: msg.replace(/\[([^\]]+)\]\[([^\]]+)\]/g, "[$1]($2)"),
                     }],
                 };
                 if (!webhookHasAvatar) {
