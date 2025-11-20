@@ -117,6 +117,7 @@ class Discord extends NotificationProvider {
                     username: discordDisplayName,
                     embeds: [{
                         title: "New notification!",
+                        color: 16225888,
                         description: msg.replace(/\[([^\]]+)\]\[([^\]]+)\]/g, "[$1]($2)"),
                     }],
                 };
