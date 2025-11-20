@@ -29,24 +29,8 @@ class Discord extends NotificationProvider {
                 webhookHasAvatar = true;
             }
 
-            // If heartbeatJSON is null, assume we're testing.
-            if (heartbeatJSON == null) {
-                let discordtestdata = {
-                    username: discordDisplayName,
-                    content: msg,
-                };
-                if (!webhookHasAvatar) {
-                    discordtestdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
-                }
-                if (notification.discordChannelType === "createNewForumPost") {
-                    discordtestdata.thread_name = notification.postName;
-                }
-                await axios.post(webhookUrl.toString(), discordtestdata, config);
-                return okMsg;
-            }
-
             // If heartbeatJSON is not null, we go into the normal alerting loop.
-            if (heartbeatJSON["status"] === DOWN) {
+            if (heartbeatJSON?.status === DOWN) {
                 let discorddowndata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -86,7 +70,7 @@ class Discord extends NotificationProvider {
                 await axios.post(webhookUrl.toString(), discorddowndata, config);
                 return okMsg;
 
-            } else if (heartbeatJSON["status"] === UP) {
+            } else if (heartbeatJSON.status === UP) {
                 let discordupdata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -126,6 +110,34 @@ class Discord extends NotificationProvider {
                 }
 
                 await axios.post(webhookUrl.toString(), discordupdata, config);
+                return okMsg;
+            } else if (!heartbeatJSON) {
+                // If the heartbeat json is undefined, that means the notification is either a test notification or a cert expiry notification
+                let discordunknowndata = {
+                    username: discordDisplayName,
+                    embeds: [{
+                        title: "New notification!",
+                        fields: [
+                            {
+                                name: "Message",
+                                value: msg,
+                            }
+                        ],
+                    }],
+                };
+                if (!webhookHasAvatar) {
+                    discordunknowndata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
+
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordunknowndata.thread_name = notification.postName;
+                }
+
+                if (notification.discordPrefixMessage) {
+                    discordunknowndata.content = notification.discordPrefixMessage;
+                }
+
+                await axios.post(webhookUrl.toString(), discordunknowndata, config);
                 return okMsg;
             }
         } catch (error) {
