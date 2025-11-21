@@ -223,9 +223,21 @@ class Database {
 
         let config = {};
 
+        let maxPoolConnections = process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS;
+
+        if (
+            !maxPoolConnections ||
+            maxPoolConnections.trim() === "" ||
+            Number.isNaN(parseInt(maxPoolConnections)) ||
+            parseInt(maxPoolConnections) > Number.MAX_SAFE_INTEGER ||
+            parseInt(maxPoolConnections) < 1
+        ) {
+            maxPoolConnections = 10;
+        }
+
         let mariadbPoolConfig = {
             min: 0,
-            max: process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS ? parseInt(process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS) : 10,
+            max: parseInt(maxPoolConnections),
             idleTimeoutMillis: 30000,
         };
 
