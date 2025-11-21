@@ -66,18 +66,6 @@
                                                 {{ monitor.element.name }}
                                             </a>
                                             <p v-else class="item-name" data-testid="monitor-name"> {{ monitor.element.name }} </p>
-
-                                            <span
-                                                title="Setting"
-                                            >
-                                                <font-awesome-icon
-                                                    v-if="editMode"
-                                                    :class="{'link-active': true, 'btn-link': true}"
-                                                    icon="cog" class="action me-3"
-                                                    data-testid="monitor-settings"
-                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
-                                                />
-                                            </span>
                                         </div>
                                         <div class="extra-info">
                                             <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
