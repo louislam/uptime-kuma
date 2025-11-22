@@ -109,6 +109,7 @@ const { login } = require("./auth");
 const passwordHash = require("./password-hash");
 
 const { Prometheus } = require("./prometheus");
+const { UptimeCalculator } = require("./uptime-calculator");
 
 const hostname = config.hostname;
 
@@ -1596,6 +1597,22 @@ let needSetup = false;
                     monitorID
                 ]);
 
+                await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ?", [
+                    monitorID
+                ]);
+                await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ?", [
+                    monitorID
+                ]);
+                await R.exec("DELETE FROM stat_daily WHERE monitor_id = ?", [
+                    monitorID
+                ]);
+
+                await UptimeCalculator.remove(monitorID);
+
+                if (monitorID in server.monitorList) {
+                    await restartMonitor(socket.userID, monitorID);
+                }
+
                 await sendHeartbeatList(socket, monitorID, true, true);
 
                 callback({
@@ -1620,6 +1637,8 @@ let needSetup = false;
                 await R.exec("DELETE FROM stat_daily");
                 await R.exec("DELETE FROM stat_hourly");
                 await R.exec("DELETE FROM stat_minutely");
+
+                await UptimeCalculator.removeAll();
 
                 // Restart all monitors to reset the stats
                 for (let monitorID in server.monitorList) {

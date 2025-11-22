@@ -91,6 +91,14 @@ class UptimeCalculator {
     }
 
     /**
+     * Remove all monitors from the list
+     * @returns {Promise<void>}
+     */
+    static async removeAll() {
+        UptimeCalculator.list = {};
+    }
+
+    /**
      *
      */
     constructor() {
