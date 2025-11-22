@@ -104,7 +104,7 @@ class Bark extends NotificationProvider {
             const params = this.additionalParameters(notification);
             result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`, config);
         } else {
-            result = await axios.post(`${endpoint}/push`, {
+            result = await axios.post(endpoint, {
                 title,
                 body: subtitle,
                 icon: barkNotificationAvatar,
