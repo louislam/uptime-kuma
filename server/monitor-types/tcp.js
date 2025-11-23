@@ -95,7 +95,7 @@ class TCPMonitorType extends MonitorType {
                         reject(error);
                     });
 
-                    socket.setTimeout(monitor.interval * 1000 * 0.8, () => {
+                    socket.setTimeout(1000 * 5, () => {
                         reject(new Error("Connection timed out"));
                     });
                 });
