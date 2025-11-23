@@ -366,6 +366,15 @@
                                 </div>
                             </div>
 
+                            <div v-if="monitor.type === 'port'" class="my-3">
+                                <label for="port_security" class="form-label">{{ $t("SSL/TLS") }}</label>
+                                <select id="port_security" v-model="monitor.smtpSecurity" class="form-select">
+                                    <option value="nostarttls">None</option>
+                                    <option value="secure">SSL</option>
+                                    <option value="starttls">STARTTLS</option>
+                                </select>
+                            </div>
+
                             <!-- Json Query -->
                             <!-- For Json Query / SNMP -->
                             <div v-if="monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
@@ -671,7 +680,7 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'port' " class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || (monitor.type === 'port' && ['starttls', 'secure'].includes(monitor.smtpSecurity))" class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox" :disabled="monitor.ignoreTls">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}

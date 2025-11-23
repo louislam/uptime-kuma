@@ -1,7 +1,8 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN } = require("../../src/util");
+const { UP, DOWN, log } = require("../../src/util");
 const { tcping, checkCertificate } = require("../util-server");
 const tls = require("tls");
+const net = require("net");
 
 class TCPMonitorType extends MonitorType {
     name = "port";
@@ -20,13 +21,62 @@ class TCPMonitorType extends MonitorType {
             return;
         }
 
-        if (monitor.isEnabledExpiryNotification()) {
+        let socket_;
+
+        const preTLS = () =>
+            new Promise((resolve, reject) => {
+                let timeout;
+                socket_ = net.connect(monitor.port, monitor.hostname);
+
+                const onTimeout = () => {
+                    log.debug(this.name, `[${monitor.name}] Pre-TLS connection timed out`);
+                    reject("Connection timed out");
+                };
+
+                socket_.on("connect", () => {
+                    log.debug(this.name, `[${monitor.name}] Pre-TLS connection: ${JSON.stringify(socket_)}`);
+                });
+
+                socket_.on("data", data => {
+                    const response = data.toString();
+                    const response_ = response.toLowerCase();
+                    log.debug(this.name, `[${monitor.name}] Pre-TLS response: ${response}`);
+                    switch (true) {
+                        case response_.includes("start tls") || response_.includes("begin tls"):
+                            timeout && clearTimeout(timeout);
+                            resolve({ socket: socket_ });
+                            break;
+                        case response.startsWith("* OK") || response.match(/CAPABILITY.+STARTTLS/):
+                            socket_.write("a001 STARTTLS\r\n");
+                            break;
+                        case response.startsWith("220") || response.includes("ESMTP"):
+                            socket_.write(`EHLO ${monitor.hostname}\r\n`);
+                            break;
+                        case response.includes("250-STARTTLS"):
+                            socket_.write("STARTTLS\r\n");
+                            break;
+                        default:
+                            reject(`Unexpected response: ${response}`);
+                    }
+                });
+                socket_.on("error", error => {
+                    log.debug(this.name, `[${monitor.name}] ${error.toString()}`);
+                    reject(error);
+                });
+                socket_.setTimeout(1000 * 5, onTimeout);
+                timeout = setTimeout(onTimeout, 1000 * 5);
+            });
+
+        const reuseSocket = monitor.smtpSecurity === "starttls" ? await preTLS() : {};
+
+        if (["secure", "starttls"].includes(monitor.smtpSecurity) && monitor.isEnabledExpiryNotification()) {
             let socket = null;
             try {
                 const options = {
                     host: monitor.hostname,
                     port: monitor.port,
                     servername: monitor.hostname,
+                    ...reuseSocket,
                 };
 
                 const tlsInfoObject = await new Promise((resolve, reject) => {
@@ -41,7 +91,7 @@ class TCPMonitorType extends MonitorType {
                         }
                     });
 
-                    socket.on("error", (error) => {
+                    socket.on("error", error => {
                         reject(error);
                     });
 
@@ -65,10 +115,13 @@ class TCPMonitorType extends MonitorType {
                 }
             }
         }
+
+        if (socket_ && !socket_.destroyed) {
+            socket_.end();
+        }
     }
 }
 
 module.exports = {
     TCPMonitorType,
 };
-

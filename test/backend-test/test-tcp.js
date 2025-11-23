@@ -23,7 +23,7 @@ describe("TCP Monitor", () => {
                 resolve(server);
             });
 
-            server.on("error", (err) => {
+            server.on("error", err => {
                 reject(err);
             });
         });
@@ -43,7 +43,7 @@ describe("TCP Monitor", () => {
             const monitor = {
                 hostname: "localhost",
                 port: port,
-                isEnabledExpiryNotification: () => false
+                isEnabledExpiryNotification: () => false,
             };
 
             const heartbeat = {
@@ -70,7 +70,7 @@ describe("TCP Monitor", () => {
         const monitor = {
             hostname: "localhost",
             port: 54321,
-            isEnabledExpiryNotification: () => false
+            isEnabledExpiryNotification: () => false,
         };
 
         const heartbeat = {
@@ -87,16 +87,17 @@ describe("TCP Monitor", () => {
      * Test case to verify TCP monitor handles servers with expired or invalid TLS certificates
      * Checks that the monitor correctly identifies TLS certificate issues
      */
-    test("TCP server with expired or invalid TLS certificate", async (t) => {
+    test("TCP server with expired or invalid TLS certificate", async t => {
         const tcpMonitor = new TCPMonitorType();
 
         const monitor = {
             hostname: "expired.badssl.com",
             port: 443,
+            smtpSecurity: "secure",
             isEnabledExpiryNotification: () => true,
-            handleTlsInfo: async (tlsInfo) => {
+            handleTlsInfo: async tlsInfo => {
                 return tlsInfo;
-            }
+            },
         };
 
         const heartbeat = {
@@ -107,6 +108,76 @@ describe("TCP Monitor", () => {
         await tcpMonitor.check(monitor, heartbeat, {});
 
         assert.strictEqual(heartbeat.status, DOWN);
-        assert([ "Certificate is invalid", "TLS Connection failed:" ].some(prefix => heartbeat.msg.startsWith(prefix)));
+        assert(["Certificate is invalid", "TLS Connection failed:"].some(prefix => heartbeat.msg.startsWith(prefix)));
+    });
+
+    test("TCP server with valid TLS certificate (SSL)", async t => {
+        const tcpMonitor = new TCPMonitorType();
+
+        const monitor = {
+            hostname: "smtp.gmail.com",
+            port: 465,
+            smtpSecurity: "secure",
+            isEnabledExpiryNotification: () => true,
+            handleTlsInfo: async tlsInfo => {
+                return tlsInfo;
+            },
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        await tcpMonitor.check(monitor, heartbeat, {});
+
+        assert.strictEqual(heartbeat.status, UP);
+    });
+
+    test("TCP server with valid TLS certificate (STARTTLS)", async t => {
+        const tcpMonitor = new TCPMonitorType();
+
+        const monitor = {
+            hostname: "smtp.gmail.com",
+            port: 587,
+            smtpSecurity: "starttls",
+            isEnabledExpiryNotification: () => true,
+            handleTlsInfo: async tlsInfo => {
+                return tlsInfo;
+            },
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        await tcpMonitor.check(monitor, heartbeat, {});
+
+        assert.strictEqual(heartbeat.status, UP);
+    });
+
+    test("TCP server with valid but name mismatching TLS certificate (STARTTLS)", async t => {
+        const tcpMonitor = new TCPMonitorType();
+
+        const monitor = {
+            hostname: "wr-in-f108.1e100.net",
+            port: 587,
+            smtpSecurity: "starttls",
+            isEnabledExpiryNotification: () => true,
+            handleTlsInfo: async tlsInfo => {
+                return tlsInfo;
+            },
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        await tcpMonitor.check(monitor, heartbeat, {});
+
+        assert.strictEqual(heartbeat.status, DOWN);
+        assert(["does not match certificate"].some(msg => heartbeat.msg.includes(msg)));
     });
 });
