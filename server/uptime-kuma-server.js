@@ -118,6 +118,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["snmp"] = new SNMPMonitorType();
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
         UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
+        UptimeKumaServer.monitorTypeList["gamedig"] = new GameDigMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
 
@@ -560,6 +561,7 @@ const { GroupMonitorType } = require("./monitor-types/group");
 const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
+const { GameDigMonitorType } = require("./monitor-types/gamedig");
 const { ManualMonitorType } = require("./monitor-types/manual");
 const { RedisMonitorType } = require("./monitor-types/redis");
 const Monitor = require("./model/monitor");
