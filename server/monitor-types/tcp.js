@@ -69,7 +69,7 @@ class TCPMonitorType extends MonitorType {
 
         const reuseSocket = monitor.smtpSecurity === "starttls" ? await preTLS() : {};
 
-        if (["secure", "starttls"].includes(monitor.smtpSecurity) && monitor.isEnabledExpiryNotification()) {
+        if ([ "secure", "starttls" ].includes(monitor.smtpSecurity) && monitor.isEnabledExpiryNotification()) {
             let socket = null;
             try {
                 const options = {

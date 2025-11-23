@@ -108,7 +108,7 @@ describe("TCP Monitor", () => {
         await tcpMonitor.check(monitor, heartbeat, {});
 
         assert.strictEqual(heartbeat.status, DOWN);
-        assert(["Certificate is invalid", "TLS Connection failed:"].some(prefix => heartbeat.msg.startsWith(prefix)));
+        assert([ "Certificate is invalid", "TLS Connection failed:" ].some(prefix => heartbeat.msg.startsWith(prefix)));
     });
 
     test("TCP server with valid TLS certificate (SSL)", async t => {
@@ -178,6 +178,6 @@ describe("TCP Monitor", () => {
         await tcpMonitor.check(monitor, heartbeat, {});
 
         assert.strictEqual(heartbeat.status, DOWN);
-        assert(["does not match certificate"].some(msg => heartbeat.msg.includes(msg)));
+        assert([ "does not match certificate" ].some(msg => heartbeat.msg.includes(msg)));
     });
 });
