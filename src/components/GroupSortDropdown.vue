@@ -349,14 +349,13 @@ export default {
          * @returns {string} group identifier
          */
         getGroupIdentifier() {
-            // Use the name directly if available
-            if (this.group.name) {
-                // Only remove spaces and use encodeURIComponent for URL safety
-                const cleanName = this.group.name.replace(/\s+/g, "");
-                return cleanName;
+            // Prefer a stable server-provided id to avoid clashes between groups with the same name
+            if (this.group.id !== undefined && this.group.id !== null) {
+                return this.group.id.toString();
             }
-            // Fallback to ID or index
-            return this.group.id ? `group${this.group.id}` : `group${this.groupIndex}`;
+
+            // Fallback to the current index for unsaved groups
+            return `group${this.groupIndex}`;
         }
     }
 };
