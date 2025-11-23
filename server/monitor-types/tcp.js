@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, log } = require("../../src/util");
+const { UP, DOWN, PING_GLOBAL_TIMEOUT_DEFAULT: TIMEOUT, log } = require("../../src/util");
 const { tcping, checkCertificate } = require("../util-server");
 const tls = require("tls");
 const net = require("net");
@@ -63,7 +63,7 @@ class TCPMonitorType extends MonitorType {
                     log.debug(this.name, `[${monitor.name}] ${error.toString()}`);
                     reject(error);
                 });
-                socket_.setTimeout(1000 * 5, onTimeout);
+                socket_.setTimeout(1000 * TIMEOUT, onTimeout);
                 timeout = setTimeout(onTimeout, 1000 * 5);
             });
 
@@ -95,7 +95,7 @@ class TCPMonitorType extends MonitorType {
                         reject(error);
                     });
 
-                    socket.setTimeout(1000 * 5, () => {
+                    socket.setTimeout(1000 * TIMEOUT, () => {
                         reject(new Error("Connection timed out"));
                     });
                 });
