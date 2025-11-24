@@ -9,7 +9,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
 const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, getDaysRemaining, getDaysBetween, getDomain, getDomainExpiryDate
+    kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, getDaysRemaining, getDaysBetween, getDomainExpiryDate
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -28,6 +28,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const { parse: parseTld } = require("tldts");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -100,6 +101,8 @@ class Monitor extends BeanModel {
             parent: this.parent,
             childrenIDs: preloadData.childrenIDs.get(this.id) || [],
             url: this.url,
+            domain: this.domain,
+            urlIsDomain: !!this.domain,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
@@ -413,12 +416,6 @@ class Monitor extends BeanModel {
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
-
-                    // If the monitored url doesn't resolve (no DNS record, etc...), the http request throw an error and exit the block.
-                    // By checking domain expiry early, we allow to monitor domain without record entry.
-                    if (this.isEnabledDomainExpiryNotification()) {
-                        this.checkDomainExpiryNotifications(getDomain(this.url));
-                    }
 
                     // HTTP basic auth
                     let basicAuthHeader = {};
@@ -891,6 +888,10 @@ class Monitor extends BeanModel {
                     throw new Error("Unknown Monitor Type");
                 }
 
+                if (this.isEnabledDomainExpiryNotification()) {
+                    this.checkDomainExpiryNotifications();
+                }
+
                 if (this.isUpsideDown()) {
                     bean.status = flipStatus(bean.status);
 
@@ -1147,6 +1148,27 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * @returns {(object)} parsed domain components
+     */
+    parseDomain() {
+        return parseTld(this.type === "port" ? this.hostname : this.url);
+    }
+
+    /**
+     * @returns {(null|object)} parsed domain
+     */
+    get domain() {
+        return this.parseDomain().domain;
+    }
+
+    /**
+     * @returns {(null|object)} parsed domain tld
+     */
+    get tld() {
+        return this.parseDomain().publicSuffix;
+    }
+
+    /**
      * Store TLS info to database
      * @param {object} checkCertificateResult Certificate to update
      * @returns {Promise<object>} Updated certificate
@@ -1265,9 +1287,8 @@ class Monitor extends BeanModel {
      */
     static async sendDomainInfo(io, monitorID, userID) {
         const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
-        const domain = getDomain(monitor.url);
 
-        const domainInfo = await R.findOne("domain_expiry_info", "domain = ?", [ domain ]);
+        const domainInfo = await R.findOne("domain_expiry_info", "domain = ?", [ monitor.domain ]);
         if (domainInfo !== null && domainInfo.expiry !== null) {
             const daysRemaining = getDaysRemaining(new Date(), new Date(domainInfo.expiry));
             io.to(userID).emit("domainInfo", monitorID, daysRemaining, new Date(domainInfo.expiry));
@@ -1488,10 +1509,11 @@ class Monitor extends BeanModel {
 
     /**
      * Check expiry date based on RDAP
-     * @param {string} domain Domain to lookup
      * @returns {void}
      */
-    async checkDomainExpiryNotifications(domain) {
+    async checkDomainExpiryNotifications() {
+        const domain = this.domain;
+        const tld = this.tld;
         const notificationList = await Monitor.getNotificationList(this);
         if (! notificationList.length > 0) {
             // fail fast. If no notification is set, all the following checks can be skipped.
@@ -1503,7 +1525,7 @@ class Monitor extends BeanModel {
 
         let expiryDate;
         if (domainInfoBean === null || getDaysBetween(new Date(domainInfoBean.lastCheck), new Date()) > 1) {
-            expiryDate = await getDomainExpiryDate(domain);
+            expiryDate = await getDomainExpiryDate(domain, tld);
 
             if (domainInfoBean === null) {
                 domainInfoBean = R.dispense("domain_expiry_info");

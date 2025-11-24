@@ -563,18 +563,6 @@ const getDaysRemaining = (validFrom, validTo) => {
 exports.getDaysRemaining = getDaysRemaining;
 
 /**
- * Get domain name from an URL
- * @param {string} url Url to get the domain from
- * @returns {string} Domain name
- */
-exports.getDomain = (url) => {
-    const parsedUrl = new URL(url);
-    const domainParts = parsedUrl.hostname.split(".");
-    const tld = domainParts.pop();
-    return `${domainParts.pop()}.${tld}`;
-};
-
-/**
  * Find the RDAP server for a given TLD
  * @param {string} tld TLD
  * @returns {string} First RDAP server found
@@ -601,10 +589,10 @@ async function getRdapServer(tld) {
 /**
  * Request RDAP server to retrieve the expiry date of a domain
  * @param {string} domain Domain to retrieve the expiry date from
+ * @param {string} tld Public suffix of domain
  * @returns {string} First RDAP server found
  */
-exports.getDomainExpiryDate = async function (domain) {
-    const tld = domain.split(".").pop();
+exports.getDomainExpiryDate = async function (domain, tld) {
     const rdapServer = await getRdapServer(tld);
     if (rdapServer === null) {
         log.warn("domain", `No RDAP server found, TLD ${tld} not supported.`);
