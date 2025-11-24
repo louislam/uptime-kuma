@@ -342,7 +342,6 @@ class Monitor extends BeanModel {
         let retries = 0;
 
         this.rootCertificates = rootCertificates;
-        this.prometheus = new Prometheus(this);
         this.prometheus = new Prometheus(this, await this.getTags());
 
         const beat = async () => {
