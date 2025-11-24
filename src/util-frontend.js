@@ -213,3 +213,97 @@ export function getToastErrorTimeout() {
 
     return errorTimeout;
 }
+
+class TimeDurationFormatter {
+    /**
+     * Default locale and options for Time Duration Formatter (supports both DurationFormat and RelativeTimeFormat)
+     */
+    constructor() {
+        this.durationFormatOptions = { style: "long" };
+        this.relativeTimeFormatOptions = { numeric: "always" };
+        if (Intl.DurationFormat !== undefined) {
+            this.durationFormatInstance = new Intl.DurationFormat(currentLocale(), this.durationFormatOptions);
+        } else {
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(currentLocale(), this.relativeTimeFormatOptions);
+        }
+    }
+
+    /**
+     * Method to update the instance locale and options
+     * @param {string} locale Localization identifier (e.g., "en", "ar-sy") to update the instance with.
+     * @returns {void} No return value.
+     */
+    updateLocale(locale) {
+        if (Intl.DurationFormat !== undefined) {
+            this.durationFormatInstance = new Intl.DurationFormat(locale, this.durationFormatOptions);
+        } else {
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(locale, this.relativeTimeFormatOptions);
+        }
+    }
+
+    /**
+     * Method to convert seconds into Human readable format
+     * @param {number} seconds Receive value in seconds.
+     * @returns {string} String converted to Days Mins Seconds Format
+     */
+    secondsToHumanReadableFormat(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor(((seconds % 86400) % 3600) / 60);
+        const secs = ((seconds % 86400) % 3600) % 60;
+
+        if (this.durationFormatInstance !== undefined) {
+            // use Intl.DurationFormat if available
+            return this.durationFormatInstance.format({
+                days,
+                hours,
+                minutes,
+                seconds: secs
+            });
+        }
+
+        const parts = [];
+        /**
+         * Build the formatted string from parts
+         * 1. Get the relative time formatted parts from the instance.
+         * 2. Filter out the relevant parts literal (unit of time) or integer (value).
+         * 3. Map out the required values.
+         * @param {number} value Receives value in seconds.
+         * @param {string} unitOfTime Expected unit of time after conversion.
+         * @returns {void}
+         */
+        const toFormattedPart = (value, unitOfTime) => {
+            const partsArray = this.relativeTimeFormatInstance.formatToParts(value, unitOfTime);
+            const filteredParts = partsArray
+                .filter(
+                    (part, index) =>
+                        part.type === "integer" || (part.type === "literal" && index > 0)
+                )
+                .map((part) => part.value);
+
+            const formattedString = filteredParts.join("").trim();
+            parts.push(formattedString);
+        };
+
+        if (days > 0) {
+            toFormattedPart(days, "day");
+        }
+        if (hours > 0) {
+            toFormattedPart(hours, "hour");
+        }
+        if (minutes > 0) {
+            toFormattedPart(minutes, "minute");
+        }
+        if (secs > 0) {
+            toFormattedPart(secs, "second");
+        }
+
+        if (parts.length > 0) {
+            return `${parts.join(" ")}`;
+        }
+        return this.relativeTimeFormatInstance.format(0, "second"); // Handle case for 0 seconds
+    }
+}
+
+export const timeDurationFormatter = new TimeDurationFormatter();
+

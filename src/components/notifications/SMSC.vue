@@ -2,7 +2,9 @@
     <div class="mb-3">
         <label for="smsc-login" class="form-label">{{ $t("API Username") }}</label>
         <i18n-t tag="div" class="form-text" keypath="wayToGetClickSendSMSToken">
-            <a href="https://smsc.kz/" target="_blank">{{ $t("here") }}</a>
+            <template #here>
+                <a href="https://smsc.kz/" target="_blank">{{ $t("here") }}</a>
+            </template>
         </i18n-t>
         <input id="smsc-login" v-model="$parent.notification.smscLogin" type="text" class="form-control" required>
         <label for="smsc-key" class="form-label">{{ $t("API Key") }}</label>

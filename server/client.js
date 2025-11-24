@@ -213,6 +213,32 @@ async function sendRemoteBrowserList(socket) {
     return list;
 }
 
+/**
+ * Send list of monitor types to client
+ * @param {Socket} socket Socket.io socket instance
+ * @returns {Promise<void>}
+ */
+async function sendMonitorTypeList(socket) {
+    const result = Object.entries(UptimeKumaServer.monitorTypeList).map(([ key, type ]) => {
+        return [ key, {
+            supportsConditions: type.supportsConditions,
+            conditionVariables: type.conditionVariables.map(v => {
+                return {
+                    id: v.id,
+                    operators: v.operators.map(o => {
+                        return {
+                            id: o.id,
+                            caption: o.caption,
+                        };
+                    }),
+                };
+            }),
+        }];
+    });
+
+    io.to(socket.userID).emit("monitorTypeList", Object.fromEntries(result));
+}
+
 module.exports = {
     sendNotificationList,
     sendImportantHeartbeatList,
@@ -222,4 +248,5 @@ module.exports = {
     sendInfo,
     sendDockerHostList,
     sendRemoteBrowserList,
+    sendMonitorTypeList,
 };

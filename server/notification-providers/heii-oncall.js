@@ -18,7 +18,7 @@ class HeiiOnCall extends NotificationProvider {
             payload["url"] = baseURL + getMonitorRelativeURL(monitorJSON.id);
         }
 
-        const config = {
+        let config = {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
@@ -28,6 +28,7 @@ class HeiiOnCall extends NotificationProvider {
         const heiiUrl = `https://heiioncall.com/triggers/${notification.heiiOnCallTriggerId}/`;
         // docs https://heiioncall.com/docs#manual-triggers
         try {
+            config = this.getAxiosConfigWithProxy(config);
             if (!heartbeatJSON) {
                 // Testing or general notification like certificate expiry
                 payload["msg"] = msg;
