@@ -1763,7 +1763,6 @@ message HealthCheckResponse {
                     ping_numeric: true,
                     packetSize: 56,
                     ping_per_request_timeout: 2,
-                    tags: []
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -1808,16 +1807,7 @@ message HealthCheckResponse {
                             this.monitor.screenshot = undefined;
 
                             this.monitor.name = this.$t("cloneOf", [ this.monitor.name ]);
-                            this.$refs.tagsManager.newTags = this.monitor.tags.map((monitorTag) => {
-                                return {
-                                    id: monitorTag.tag_id,
-                                    name: monitorTag.name,
-                                    color: monitorTag.color,
-                                    value: monitorTag.value,
-                                    new: true,
-                                };
-                            });
-                            this.monitor.tags = undefined;
+
                         }
 
                         // Handling for monitors that are created before 1.7.0

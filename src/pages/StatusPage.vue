@@ -1400,10 +1400,6 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
 
-.sidebar {
-    z-index: 1000 !important;
-}
-
 .overall-status {
     font-weight: bold;
     font-size: 25px;
@@ -1445,6 +1441,7 @@ h1 {
     top: 0;
     width: 300px;
     height: 100vh;
+    z-index: 1000 !important;
 
     border-right: 1px solid #ededed;
 

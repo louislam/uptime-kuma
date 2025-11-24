@@ -239,13 +239,29 @@ export default {
             // Helper function to get tag ID from different structures
             const getTagId = (tag) => tag.tag_id || tag.id;
 
-            return this.preSelectedTags.concat(this.newTags).filter(tag =>
+            // Combine preSelectedTags and newTags, then filter out deleted tags
+            const combinedTags = this.preSelectedTags.concat(this.newTags).filter(tag =>
                 !this.deleteTags.find(monitorTag => {
                     const tagIdMatch = getTagId(monitorTag) === getTagId(tag);
                     const valueMatch = normalizeValue(monitorTag.value) === normalizeValue(tag.value);
                     return tagIdMatch && valueMatch;
                 })
             );
+
+            // Remove duplicates based on name + value combination
+            const seen = new Map();
+            return combinedTags.filter(tag => {
+                if (!tag || !tag.name) {
+                    return false;
+                }
+
+                const key = `${tag.name}-${normalizeValue(tag.value)}-${tag.color}`;
+                if (!seen.has(key)) {
+                    seen.set(key, true);
+                    return true;
+                }
+                return false;
+            });
         },
         /**
          * @returns {boolean} True if more new system tags can be staged, false otherwise.
