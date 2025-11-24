@@ -235,6 +235,11 @@ class Database {
             parsedMaxPoolConnections < 1
         ) {
             parsedMaxPoolConnections = DEFAULT_MAX_POOL_CONNECTIONS;
+
+            // Only log if there was a UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS defined
+            if (maxPoolConnections !== undefined) {
+                log.warn("db", `Max pool connections defaulted to ${DEFAULT_MAX_POOL_CONNECTIONS} because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was invalid`);
+            }
         }
 
         let mariadbPoolConfig = {
