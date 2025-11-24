@@ -232,6 +232,9 @@ class Database {
             maxPoolConnections.trim() === "" ||
             Number.isNaN(parsedMaxPoolConnections) ||
             parsedMaxPoolConnections > 100 ||
+            // NOTE: We cap the pool size because MySQL/MariaDB connections are heavy.
+            // Each connection consumes memory and CPU, and too many cause severe slowdown.
+            // If you need higher concurrency, use a proxy like ProxySQL or MaxScale instead of raising this limit.
             parsedMaxPoolConnections < 1
         ) {
             parsedMaxPoolConnections = DEFAULT_MAX_POOL_CONNECTIONS;
