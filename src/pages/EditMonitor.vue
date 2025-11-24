@@ -823,7 +823,11 @@
                             </div>
 
                             <div class="my-3">
-                                <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
+                                <tags-manager
+                                    ref="tagsManager"
+                                    :pre-selected-tags="monitor.tags"
+                                    @tags-updated="handleTagsUpdated"
+                                ></tags-manager>
                             </div>
                         </div>
 
@@ -1268,6 +1272,7 @@ export default {
             },
             draftGroupName: null,
             remoteBrowsersEnabled: false,
+            tagsModified: false
         };
     },
 
@@ -1695,6 +1700,14 @@ message HealthCheckResponse {
                 this.monitor.expiryNotification = false;
             }
         },
+
+        // Watch for tags changes
+        "monitor.tags": {
+            handler(newTags) {
+                this.tagsModified = true;
+            },
+            deep: true
+        },
     },
     mounted() {
         this.init();
@@ -1750,6 +1763,7 @@ message HealthCheckResponse {
                     ping_numeric: true,
                     packetSize: 56,
                     ping_per_request_timeout: 2,
+                    tags: []
                 };
 
                 if (this.$root.proxyList && !this.monitor.proxyId) {
@@ -1826,7 +1840,7 @@ message HealthCheckResponse {
             }
 
             this.draftGroupName = null;
-
+            this.tagsModified = false;
         },
 
         addKafkaProducerBroker(newBroker) {
@@ -1961,6 +1975,9 @@ message HealthCheckResponse {
                     if (res.ok) {
                         await this.$refs.tagsManager.submit(res.monitorID);
 
+                        // Then check for dynamic pages
+                        await this.checkDynamicPages(res.monitorID);
+
                         // Start the new parent monitor after edit is done
                         if (createdNewParent) {
                             await this.startParentGroupMonitor();
@@ -1976,6 +1993,9 @@ message HealthCheckResponse {
             } else {
                 await this.$refs.tagsManager.submit(this.monitor.id);
 
+                // Check for dynamic pages
+                await this.checkDynamicPages(this.monitor.id);
+
                 this.$root.getSocket().emit("editMonitor", this.monitor, (res) => {
                     this.processing = false;
                     this.$root.toastRes(res);
@@ -1987,6 +2007,47 @@ message HealthCheckResponse {
                     }
                 });
             }
+        },
+
+        async checkDynamicPages(monitorId) {
+
+            // Get current tags from TagsManager
+            const tagsManager = this.$refs.tagsManager;
+            const currentTags = tagsManager.getSelectedTags();
+
+            if (!currentTags || currentTags.length === 0) {
+                return;
+            }
+
+            const formattedTags = currentTags.map(tag => ({
+                tag_id: tag.tag_id || tag.id,
+                name: tag.name,
+                color: tag.color,
+                value: tag.value || ""
+            }));
+
+            this.$root.getSocket().emit("checkMonitorForDynamicPages", monitorId, formattedTags, (dynamicRes) => {
+                if (dynamicRes.ok) {
+                    if (dynamicRes.addedToPages && dynamicRes.addedToPages.length > 0) {
+                        this.$root.toastSuccess(this.$t("Monitor was automatically added to {count} dynamic status page(s)", {
+                            count: dynamicRes.addedToPages.length
+                        }));
+                    }
+                } else {
+                    // Don't show error to user as this is a secondary action
+                }
+            });
+        },
+
+        /**
+         * Handle tags updated from TagsManager
+         * @param {Array} tags - Updated tags array
+         * @returns {void}
+         */
+        handleTagsUpdated(tags) {
+            this.tagsModified = true;
+            // Update monitor tags to keep in sync
+            this.monitor.tags = [...tags];
         },
 
         async startParentGroupMonitor() {

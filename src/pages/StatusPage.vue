@@ -51,6 +51,15 @@
                     </select>
                 </div>
 
+                <!-- Tags Manager for Dynamic Status Pages -->
+                <div v-if="dynamic_status_page" class="my-3">
+                    <tags-manager
+                        ref="tagsManager"
+                        :pre-selected-tags="preSelectedTags"
+                        @tags-updated="handleTagsUpdated"
+                    ></tags-manager>
+                </div>
+
                 <div class="my-3 form-check form-switch">
                     <input id="showTags" v-model="config.showTags" class="form-check-input" type="checkbox" data-testid="show-tags-checkbox">
                     <label class="form-check-label" for="showTags">{{ $t("Show Tags") }}</label>
@@ -381,6 +390,7 @@ import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
 import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
+import TagsManager from "../components/TagsManager.vue";
 import Tag from "../components/Tag.vue";
 import VueMultiselect from "vue-multiselect";
 
@@ -404,6 +414,7 @@ export default {
         Confirm,
         PrismEditor,
         MaintenanceTime,
+        TagsManager,
         Tag,
         VueMultiselect
     },
@@ -451,6 +462,15 @@ export default {
             updateCountdown: null,
             updateCountdownText: null,
             loading: true,
+            dynamic_status_page: false,
+            preSelectedTags: [],
+            newTag: {
+                name: "",
+                color: "#007bff",
+                value: ""
+            },
+            tagsModified: false,
+            tagsUpdateTimeout: null
         };
     },
     computed: {
@@ -673,6 +693,42 @@ export default {
                     }
                 }
             }
+        },
+
+        config: {
+            deep: true,
+            handler(newConfig) {
+                // Handle dynamic page status from server if available
+                if (newConfig.isDynamic !== undefined) {
+                    this.dynamic_status_page = newConfig.isDynamic;
+                }
+                // Sync tags if available
+                if (newConfig.tags && Array.isArray(newConfig.tags)) {
+                    this.preSelectedTags = [...newConfig.tags];
+                }
+            }
+        },
+
+        // Watch for dynamic page toggle
+        dynamic_status_page(newVal) {
+            if (!newVal) {
+                // Clear tags when dynamic page is disabled
+                this.preSelectedTags = [];
+                this.tagsModified = false;
+            }
+        },
+        // Watch for tags changes
+        preSelectedTags: {
+            handler(newTags, oldTags) {
+                // Only mark as modified if tags actually changed and it wasn't from an external update
+                if (JSON.stringify(newTags) !== JSON.stringify(oldTags)) {
+                    // Small delay to ensure this isn't from the same update cycle
+                    setTimeout(() => {
+                        this.tagsModified = true;
+                    }, 50);
+                }
+            },
+            deep: true
         }
 
     },
@@ -707,6 +763,12 @@ export default {
                 this.config.domainNameList = [];
             }
 
+            // Set loadedTheme to true to ensure page displays
+            this.loadedTheme = true;
+
+            // Initialize the dynamic status page settings
+            this.initDynamicStatusPage();
+
             if (this.config.icon) {
                 this.imgDataUrl = this.config.icon;
             }
@@ -728,6 +790,8 @@ export default {
                 location.href = "/page-not-found";
             }
             console.log(error);
+            // Ensure page loads even on error
+            this.loadedTheme = true;
         });
 
         this.updateHeartbeatList();
@@ -751,7 +815,15 @@ export default {
                     data: window.preloadData
                 }));
             } else {
-                return axios.get("/api/status-page/" + this.slug);
+                return axios.get("/api/status-page/" + this.slug)
+                    .then(response => response)
+                    .catch(error => {
+                        if (error.response?.status === 403) {
+                            // Handle forbidden error - page might not be published
+                            this.$root.toastError("Status page not accessible. It may not be published.");
+                        }
+                        throw error;
+                    });
             }
         },
 
@@ -833,6 +905,17 @@ export default {
                 this.enableEditMode = true;
                 this.clickedEditButton = true;
 
+                // Wait for socket to be properly connected before initializing dynamic page
+                const checkSocketAndInit = () => {
+                    if (this.$root.socket && this.$root.socket.connected) {
+                        this.initDynamicStatusPage();
+                    } else {
+                        setTimeout(checkSocketAndInit, 100);
+                    }
+                };
+
+                checkSocketAndInit();
+
                 // Try to fix #1658
                 this.loadedData = true;
             }
@@ -844,26 +927,35 @@ export default {
          */
         save() {
             this.loading = true;
-            let startTime = new Date();
-            this.config.slug = this.config.slug.trim().toLowerCase();
 
-            this.$root.getSocket().emit("saveStatusPage", this.slug, this.config, this.imgDataUrl, this.$root.publicGroupList, (res) => {
+            // Get current tags from tags manager
+            let currentTags = [];
+            if (this.dynamic_status_page) {
+                if (this.$refs.tagsManager) {
+                    currentTags = this.$refs.tagsManager.getSelectedTags();
+                } else {
+                    currentTags = this.preSelectedTags || [];
+                }
+            }
+
+            this.$root.getSocket().emit("saveStatusPage", this.slug, this.config, this.imgDataUrl, this.$root.publicGroupList, async (res) => {
                 if (res.ok) {
+                    // Save dynamic page config if we have tags
+                    if (this.dynamic_status_page && currentTags.length > 0) {
+                        await this.saveDynamicPageConfig(currentTags);
+                    } else {
+                        // Clear dynamic page config if not dynamic or no tags
+                        await this.clearDynamicPageConfig();
+                    }
+
                     this.enableEditMode = false;
                     this.$root.publicGroupList = res.publicGroupList;
 
-                    // Add some delay, so that the side menu animation would be better
-                    let endTime = new Date();
-                    let time = 100 - (endTime - startTime) / 1000;
-
-                    if (time < 0) {
-                        time = 0;
-                    }
-
+                    // Redirect to the status page
                     setTimeout(() => {
                         this.loading = false;
                         location.href = "/status/" + this.config.slug;
-                    }, time);
+                    }, 100);
 
                 } else {
                     this.loading = false;
@@ -1060,12 +1152,258 @@ export default {
             }
         },
 
+        /**
+         * Handle tags updated from tags manager
+         * @param {Array} updatedTags - Array of updated tags
+         * @returns {void}
+         */
+        handleTagsUpdated(updatedTags) {
+            if (!updatedTags || !Array.isArray(updatedTags)) {
+                return;
+            }
+
+            // Clear any existing timeout
+            if (this.tagsUpdateTimeout) {
+                clearTimeout(this.tagsUpdateTimeout);
+            }
+
+            // Debounce the update to prevent rapid successive updates
+            this.tagsUpdateTimeout = setTimeout(() => {
+                // Use a simpler and more reliable deduplication approach
+                const uniqueTags = this.deduplicateTags(updatedTags);
+
+                // Only update if there's an actual change
+                const currentTagsString = JSON.stringify(this.preSelectedTags || []);
+                const newTagsString = JSON.stringify(uniqueTags);
+
+                if (currentTagsString !== newTagsString) {
+                    this.preSelectedTags = uniqueTags;
+                    // Also update config.tags to keep them in sync
+                    this.config.tags = [...uniqueTags];
+                }
+
+                this.tagsModified = true;
+            }, 100); // Increased debounce time
+        },
+
+        /**
+         * Deduplicate tags based on a consistent identifier
+         * @param {Array} tags - Array of tags to deduplicate
+         * @returns {Array} Deduplicated tags
+         */
+        deduplicateTags(tags) {
+            if (!tags || !Array.isArray(tags)) {
+                return [];
+            }
+
+            const seen = new Map();
+            const result = [];
+
+            tags.forEach(tag => {
+                if (!tag || !tag.name) {
+                    return;
+                }
+
+                // Create a consistent identifier - prioritize existing IDs
+                const identifier = tag.tag_id || tag.id || `new-${tag.name}-${tag.color}`;
+
+                if (!seen.has(identifier)) {
+                    seen.set(identifier, true);
+                    // Ensure we have a clean tag object with all necessary properties
+                    result.push({
+                        tag_id: tag.tag_id || tag.id || null,
+                        id: tag.id || tag.tag_id || null,
+                        name: tag.name,
+                        color: tag.color || "#007bff",
+                        value: tag.value || "",
+                        monitor_id: tag.monitor_id || null
+                    });
+                }
+            });
+
+            return result;
+        },
+
+        /**
+         * Initialize dynamic status page settings and read from database
+         * @returns {void}
+         */
+        initDynamicStatusPage() {
+
+            // Only check for dynamic page if we're in edit mode and have token
+            if (this.enableEditMode && this.hasToken) {
+                // Ensure socket is available and connected
+                if (!this.$root.socket || !this.$root.socket.connected) {
+                    setTimeout(() => {
+                        this.initDynamicStatusPage();
+                    }, 500);
+                    return;
+                }
+
+                this.$root.getSocket().emit("getDynamicPageConfig", this.slug, (res) => {
+
+                    if (res.ok) {
+                        const hasTags = !!(res.tags && res.tags.length > 0);
+                        this.dynamic_status_page = hasTags;
+                        this.preSelectedTags = res.tags || [];
+
+                        // Ensure config.tags is set
+                        if (this.config) {
+                            this.config.tags = this.preSelectedTags;
+                        }
+
+                    } else {
+                        console.error("❌ Failed to load dynamic page config:", res.msg);
+                        this.dynamic_status_page = false;
+                        this.preSelectedTags = [];
+                        if (this.config) {
+                            this.config.tags = [];
+                        }
+                    }
+                });
+            } else {
+                this.dynamic_status_page = false;
+                this.preSelectedTags = [];
+                if (this.config) {
+                    this.config.tags = [];
+                }
+            }
+        },
+
+        /**
+         * Add a new tag to the dynamic page
+         * @returns {void}
+         */
+        addTag() {
+            if (!this.newTag.name.trim()) {
+                return;
+            }
+
+            // Ensure preSelectedTags exists
+            if (!this.preSelectedTags) {
+                this.preSelectedTags = [];
+            }
+
+            const newTag = {
+                tag_id: Date.now(), // Temporary ID
+                id: Date.now(),
+                name: this.newTag.name.trim(),
+                color: this.newTag.color || "#007bff",
+                value: (this.newTag.value || "").trim(),
+                monitor_id: null,
+                new: true
+            };
+
+            this.preSelectedTags.push(newTag);
+            this.config.tags = this.preSelectedTags;
+
+            // Clear the form
+            this.newTag = {
+                name: "",
+                color: "#007bff",
+                value: ""
+            };
+
+            console.log("Tag added:", newTag);
+            this.handleTagsUpdated(this.preSelectedTags);
+        },
+
+        /**
+         * Remove a tag from the dynamic page
+         * @param {number} tagId - ID of tag to remove
+         * @returns {void}
+         */
+        removeTag(tagId) {
+            if (!this.preSelectedTags) {
+                return;
+            }
+
+            const index = this.preSelectedTags.findIndex(tag => tag && tag.tag_id === tagId);
+            if (index !== -1) {
+                this.preSelectedTags.splice(index, 1);
+                this.config.tags = this.preSelectedTags;
+                this.handleTagsUpdated(this.preSelectedTags);
+            }
+        },
+
+        /**
+         * Save dynamic page configuration
+         * @param {Array} tags - Tags to save
+         * @returns {Promise}
+         */
+        saveDynamicPageConfig(tags) {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("saveDynamicPageConfig", this.slug, tags, (res) => {
+                    if (res.ok) {
+                        // Refresh the dynamic page after saving config
+                        this.refreshDynamicPage();
+                    } else {
+                        toast.error(this.$t("Failed to save dynamic page configuration"));
+                    }
+                    resolve();
+                });
+            });
+        },
+
+        /**
+         * Clear dynamic page configuration
+         * @returns {Promise}
+         */
+        clearDynamicPageConfig() {
+            return new Promise((resolve) => {
+                this.$root.getSocket().emit("clearDynamicPageConfig", this.slug, (res) => {
+                    resolve();
+                });
+            });
+        },
+
+        /**
+         * Refresh dynamic page by reloading monitors based on current tags
+         * @returns {void}
+         */
+        refreshDynamicPage() {
+            if (this.dynamic_status_page && this.preSelectedTags.length > 0) {
+
+                // Clear existing data first
+                this.$root.publicGroupList = [];
+                this.loadedData = false;
+
+                // Force a complete reload of the status page data including monitors
+                axios.get("/api/status-page/" + this.slug + "?t=" + Date.now()).then((res) => {
+                    this.$root.publicGroupList = res.data.publicGroupList;
+                    this.loadedData = true;
+
+                    // Also update heartbeats to get latest status
+                    this.updateHeartbeatList();
+                }).catch(error => {
+                    this.loadedData = true;
+                });
+            } else if (!this.dynamic_status_page) {
+                // If not dynamic anymore, clear the groups
+                this.$root.publicGroupList = [];
+                this.loadedData = true;
+            }
+        },
+
+        /**
+         * Get current tags without triggering reactive updates
+         * @returns {Array} Current tags
+         */
+        getCurrentTags() {
+            return this.preSelectedTags || [];
+        },
+
     }
 };
 </script>
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.sidebar {
+    z-index: 1000 !important;
+}
+
 
 .overall-status {
     font-weight: bold;
@@ -1274,6 +1612,94 @@ footer {
 
 .refresh-info {
     opacity: 0.7;
+}
+
+.tags-manager-section {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+
+    .tags-manager-header {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25em 0.6em;
+    font-size: 0.75em;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.375rem;
+    margin: 0.125rem;
+
+    .btn-close {
+        margin-left: 0.25rem;
+        opacity: 0.8;
+        font-size: 0.7rem;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+// Style for the multiselect in tags manager
+.multiselect {
+    margin-bottom: 0.5rem;
+
+    .multiselect__tags {
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .multiselect__input {
+        border: none;
+        box-shadow: none;
+    }
+}
+
+.dark .tags-manager-section {
+    border-color: $dark-border-color;
+    background-color: $dark-header-bg;
+}
+
+.dark .tag-badge {
+    color: white;
+}
+
+.dynamic-page-section {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #f8f9fa;
+
+    .dynamic-page-header {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+}
+
+.dark .dynamic-page-section {
+    border-color: $dark-border-color;
+    background-color: $dark-header-bg;
+
+    .dynamic-page-header {
+        color: $dark-font-color;
+    }
+}
+
+.tags-validation-warning {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
 }
 
 </style>

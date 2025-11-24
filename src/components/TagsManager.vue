@@ -20,115 +20,118 @@
                 <font-awesome-icon class="me-1" icon="plus" /> {{ $t("Add") }}
             </button>
         </div>
-        <div ref="modal" class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <h4 v-if="stagedForBatchAdd.length > 0">{{ $t("Add Tags") }}</h4>
-                        <div v-if="stagedForBatchAdd.length > 0" class="mb-3 staging-area" style="max-height: 150px; overflow-y: auto;">
-                            <Tag
-                                v-for="stagedTag in stagedForBatchAdd"
-                                :key="stagedTag.keyForList"
-                                :item="mapStagedTagToDisplayItem(stagedTag)"
-                                :remove="() => unstageTag(stagedTag)"
-                            />
-                        </div>
+        <!-- Custom modal for sidebar context -->
+        <div v-if="showCustomModal" class="custom-modal-overlay" @click="closeModal">
+            <div class="custom-modal-content" @click.stop>
+                <div class="custom-modal-header">
+                    <h5 class="modal-title">{{ $t("Add Tags") }}</h5>
+                    <button type="button" class="btn-close" @click="closeModal"></button>
+                </div>
+                <div class="custom-modal-body">
+                    <h4 v-if="stagedForBatchAdd.length > 0">{{ $t("Add Tags") }}</h4>
+                    <div v-if="stagedForBatchAdd.length > 0" class="mb-3 staging-area" style="max-height: 150px; overflow-y: auto;">
+                        <Tag
+                            v-for="stagedTag in stagedForBatchAdd"
+                            :key="stagedTag.keyForList"
+                            :item="mapStagedTagToDisplayItem(stagedTag)"
+                            :remove="() => unstageTag(stagedTag)"
+                        />
+                    </div>
 
-                        <vue-multiselect
-                            v-model="newDraftTag.select"
-                            class="mb-2"
-                            :options="tagOptions"
-                            :multiple="false"
-                            :searchable="true"
-                            :placeholder="$t('Add New below or Select...')"
-                            track-by="id"
-                            label="name"
-                        >
-                            <template #option="{ option }">
-                                <div
-                                    class="mx-2 py-1 px-3 rounded d-inline-flex"
-                                    style="margin-top: -5px; margin-bottom: -5px; height: 24px;"
-                                    :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
-                                >
-                                    <span>
-                                        {{ option.name }}</span>
-                                </div>
-                            </template>
-                            <template #singleLabel="{ option }">
-                                <div
-                                    class="py-1 px-3 rounded d-inline-flex"
-                                    style="height: 24px;"
-                                    :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
-                                >
-                                    <span>{{ option.name }}</span>
-                                </div>
-                            </template>
-                        </vue-multiselect>
-                        <div v-if="newDraftTag.select?.name == null" class="d-flex mb-2">
-                            <div class="w-50 pe-2">
-                                <input
-                                    v-model="newDraftTag.name" class="form-control"
-                                    :class="{'is-invalid': validateDraftTag.invalid && (validateDraftTag.messageKey === 'tagNameColorRequired' || validateDraftTag.messageKey === 'tagNameExists')}"
-                                    :placeholder="$t('Name')"
-                                    data-testid="tag-name-input"
-                                    @keydown.enter.prevent="onEnter"
-                                />
+                    <vue-multiselect
+                        v-model="newDraftTag.select"
+                        class="mb-2"
+                        :options="tagOptions"
+                        :multiple="false"
+                        :searchable="true"
+                        :placeholder="$t('Add New below or Select...')"
+                        track-by="id"
+                        label="name"
+                    >
+                        <template #option="{ option }">
+                            <div
+                                class="mx-2 py-1 px-3 rounded d-inline-flex"
+                                style="margin-top: -5px; margin-bottom: -5px; height: 24px;"
+                                :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
+                            >
+                                <span>
+                                    {{ option.name }}</span>
                             </div>
-                            <div class="w-50 ps-2">
-                                <vue-multiselect
-                                    v-model="newDraftTag.color"
-                                    :options="colorOptions"
-                                    :multiple="false"
-                                    :searchable="true"
-                                    :placeholder="$t('color')"
-                                    track-by="color"
-                                    label="name"
-                                    select-label=""
-                                    deselect-label=""
-                                    data-testid="tag-color-select"
-                                >
-                                    <template #option="{ option }">
-                                        <div
-                                            class="mx-2 py-1 px-3 rounded d-inline-flex"
-                                            style="height: 24px; color: white;"
-                                            :style="{ backgroundColor: option.color + ' !important' }"
-                                        >
-                                            <span>{{ option.name }}</span>
-                                        </div>
-                                    </template>
-                                    <template #singleLabel="{ option }">
-                                        <div
-                                            class="py-1 px-3 rounded d-inline-flex"
-                                            style="height: 24px; color: white;"
-                                            :style="{ backgroundColor: option.color + ' !important' }"
-                                        >
-                                            <span>{{ option.name }}</span>
-                                        </div>
-                                    </template>
-                                </vue-multiselect>
+                        </template>
+                        <template #singleLabel="{ option }">
+                            <div
+                                class="py-1 px-3 rounded d-inline-flex"
+                                style="height: 24px;"
+                                :style="{ color: textColor(option), backgroundColor: option.color + ' !important' }"
+                            >
+                                <span>{{ option.name }}</span>
                             </div>
-                        </div>
-                        <div class="mb-2">
+                        </template>
+                    </vue-multiselect>
+                    <div v-if="newDraftTag.select?.name == null" class="d-flex mb-2">
+                        <div class="w-50 pe-2">
                             <input
-                                v-model="newDraftTag.value" class="form-control"
-                                :class="{'is-invalid': validateDraftTag.invalid && validateDraftTag.messageKey === 'tagAlreadyOnMonitor'}"
-                                :placeholder="$t('value (optional)')"
-                                data-testid="tag-value-input"
+                                v-model="newDraftTag.name" class="form-control"
+                                :class="{'is-invalid': validateDraftTag.invalid && (validateDraftTag.messageKey === 'tagNameColorRequired' || validateDraftTag.messageKey === 'tagNameExists')}"
+                                :placeholder="$t('Name')"
+                                data-testid="tag-name-input"
                                 @keydown.enter.prevent="onEnter"
                             />
                         </div>
-
-                        <div v-if="validateDraftTag.invalid && validateDraftTag.messageKey" class="form-text text-danger mb-2">
-                            {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
+                        <div class="w-50 ps-2">
+                            <vue-multiselect
+                                v-model="newDraftTag.color"
+                                :options="colorOptions"
+                                :multiple="false"
+                                :searchable="true"
+                                :placeholder="$t('color')"
+                                track-by="color"
+                                label="name"
+                                select-label=""
+                                deselect-label=""
+                                data-testid="tag-color-select"
+                            >
+                                <template #option="{ option }">
+                                    <div
+                                        class="mx-2 py-1 px-3 rounded d-inline-flex"
+                                        style="height: 24px; color: white;"
+                                        :style="{ backgroundColor: option.color + ' !important' }"
+                                    >
+                                        <span>{{ option.name }}</span>
+                                    </div>
+                                </template>
+                                <template #singleLabel="{ option }">
+                                    <div
+                                        class="py-1 px-3 rounded d-inline-flex"
+                                        style="height: 24px; color: white;"
+                                        :style="{ backgroundColor: option.color + ' !important' }"
+                                    >
+                                        <span>{{ option.name }}</span>
+                                    </div>
+                                </template>
+                            </vue-multiselect>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
-                        <button type="button" class="btn btn-outline-primary me-2" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
-                            {{ $t("Add Another Tag") }}
-                        </button>
-                        <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="add-tags-final-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Done") }}</button>
+                    <div class="mb-2">
+                        <input
+                            v-model="newDraftTag.value" class="form-control"
+                            :class="{'is-invalid': validateDraftTag.invalid && validateDraftTag.messageKey === 'tagAlreadyOnMonitor'}"
+                            :placeholder="$t('value (optional)')"
+                            data-testid="tag-value-input"
+                            @keydown.enter.prevent="onEnter"
+                        />
                     </div>
+
+                    <div v-if="validateDraftTag.invalid && validateDraftTag.messageKey" class="form-text text-danger mb-2">
+                        {{ $t(validateDraftTag.messageKey, validateDraftTag.messageParams) }}
+                    </div>
+                </div>
+                <div class="custom-modal-footer">
+                    <button type="button" class="btn btn-secondary" @click.stop="clearStagingAndCloseModal">{{ $t("Cancel") }}</button>
+                    <button type="button" class="btn btn-outline-primary me-2" :disabled="processing || validateDraftTag.invalid" @click.stop="stageCurrentTag">
+                        {{ $t("Add Another Tag") }}
+                    </button>
+                    <button type="button" class="btn btn-primary" :disabled="processing || (stagedForBatchAdd.length === 0 && validateDraftTag.invalid)" data-testid="add-tags-final-button" @click.stop="confirmAndCommitStagedTags">{{ $t("Done") }}</button>
                 </div>
             </div>
         </div>
@@ -136,7 +139,6 @@
 </template>
 
 <script>
-import { Modal } from "bootstrap";
 import VueMultiselect from "vue-multiselect";
 import { colorOptions } from "../util-frontend";
 import Tag from "../components/Tag.vue";
@@ -169,10 +171,9 @@ export default {
             default: () => [],
         },
     },
+    emits: [ "tags-updated" ],
     data() {
         return {
-            /** @type {Modal | null} */
-            modal: null,
             /** @type {Tag[]} */
             existingTags: [],
             processing: false,
@@ -191,6 +192,11 @@ export default {
                 color: null,
                 value: "",
             },
+            showCustomModal: false,
+            // Track if we're in the middle of an update to prevent loops
+            isUpdating: false,
+            emitTimeout: null,
+            lastEmittedTags: null
         };
     },
     computed: {
@@ -323,12 +329,21 @@ export default {
             };
         },
     },
-    mounted() {
-        this.modal = new Modal(this.$refs.modal);
-        this.getExistingTags();
+    watch: {
+        preSelectedTags: {
+            immediate: true,
+            handler(newVal, oldVal) {
+                // Only update if the tags actually changed and we're not in the middle of an update
+                if (!this.isUpdating && JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+                    // Clear internal state when parent provides new tags
+                    this.newTags = [];
+                    this.deleteTags = [];
+                }
+            }
+        }
     },
-    beforeUnmount() {
-        this.cleanupModal();
+    mounted() {
+        this.getExistingTags();
     },
     methods: {
         /**
@@ -339,7 +354,14 @@ export default {
             this.stagedForBatchAdd = [];
             this.clearDraftTag();
             this.getExistingTags();
-            this.modal.show();
+            this.showCustomModal = true;
+        },
+        /**
+         * Close the modal
+         * @returns {void}
+         */
+        closeModal() {
+            this.showCustomModal = false;
         },
         /**
          * Get all existing tags
@@ -367,6 +389,7 @@ export default {
                 // Remove an Existing Tag
                 this.deleteTags.push(item);
             }
+            this.emitTagsUpdated();
         },
         /**
          * Get colour of text inside the tag
@@ -513,20 +536,6 @@ export default {
             this.processing = false;
         },
         /**
-         * Clean up modal and restore scroll behavior
-         * @returns {void}
-         */
-        cleanupModal() {
-            if (this.modal) {
-                try {
-                    this.modal.hide();
-                } catch (e) {
-                    console.warn("Modal hide failed:", e);
-                }
-            }
-            this.stagedForBatchAdd = [];
-        },
-        /**
          * Stages the current draft tag for batch addition.
          * @returns {void}
          */
@@ -580,7 +589,7 @@ export default {
         clearStagingAndCloseModal() {
             this.stagedForBatchAdd = [];
             this.clearDraftTag(); // Clears input fields
-            this.modal.hide();
+            this.showCustomModal = false;
         },
         /**
          * Processes all staged tags, adds them to the monitor, and closes the modal.
@@ -601,7 +610,6 @@ export default {
             // Phase 2: Process everything that is now in stagedForBatchAdd.
             if (this.stagedForBatchAdd.length === 0) {
                 this.clearDraftTag(); // Ensure draft is clear even if nothing was committed
-                this.modal.hide();
                 return;
             }
 
@@ -635,8 +643,58 @@ export default {
             // newDraftTag should have been cleared if stageCurrentTag ran in Phase 1, or earlier.
             // Call clearDraftTag again to be certain the form is reset before closing.
             this.clearDraftTag();
-            this.modal.hide();
+            this.showCustomModal = false;
+            this.emitTagsUpdated();
         },
+        /**
+         * Get all selected tags in a consistent format
+         * @returns {Array} Array of selected tags
+         */
+        getSelectedTags() {
+            return this.selectedTags.map(tag => ({
+                id: tag.id,
+                tag_id: tag.tag_id,
+                name: tag.name,
+                color: tag.color,
+                value: tag.value || "",
+                monitor_id: tag.monitor_id
+            }));
+        },
+
+        /**
+         * Emit tags updated event to parent
+         * @returns {void}
+         */
+        emitTagsUpdated() {
+            if (this.isUpdating) {
+                return;
+            }
+
+            // Clear any existing timeout
+            if (this.emitTimeout) {
+                clearTimeout(this.emitTimeout);
+            }
+
+            // Debounce the emission
+            this.emitTimeout = setTimeout(() => {
+                this.isUpdating = true;
+                const tags = this.getSelectedTags();
+
+                // Only emit if tags actually changed
+                const currentTagsString = JSON.stringify(tags);
+                const lastEmittedString = JSON.stringify(this.lastEmittedTags);
+
+                if (currentTagsString !== lastEmittedString) {
+                    this.$emit("tags-updated", tags);
+                    this.lastEmittedTags = [...tags];
+                }
+
+                // Reset the flag after emission is complete
+                this.$nextTick(() => {
+                    this.isUpdating = false;
+                });
+            }, 100); // debounce time
+        }
     },
 };
 </script>
@@ -648,5 +706,61 @@ export default {
 
 .modal-body {
     padding: 1.5rem;
+}
+
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-modal-content {
+    background: white;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    z-index: 10000;
+}
+
+.custom-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.custom-modal-body {
+    padding: 1rem;
+}
+
+.custom-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+    gap: 0.5rem;
+}
+
+.dark .custom-modal-content {
+    background: #0d1117;
+    color: white;
+}
+
+.dark .custom-modal-header {
+    border-bottom-color: #444;
+}
+
+.dark .custom-modal-footer {
+    border-top-color: #444;
 }
 </style>
