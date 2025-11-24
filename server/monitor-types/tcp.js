@@ -64,7 +64,7 @@ class TCPMonitorType extends MonitorType {
                     reject(error);
                 });
                 socket_.setTimeout(1000 * TIMEOUT, onTimeout);
-                timeout = setTimeout(onTimeout, 1000 * 5);
+                timeout = setTimeout(onTimeout, 1000 * TIMEOUT);
             });
 
         const reuseSocket = monitor.smtpSecurity === "starttls" ? await preTLS() : {};
