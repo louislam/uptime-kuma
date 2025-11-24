@@ -230,7 +230,7 @@ class Database {
             !maxPoolConnections ||
             maxPoolConnections.trim() === "" ||
             Number.isNaN(parsedMaxPoolConnections) ||
-            parsedMaxPoolConnections > Number.MAX_SAFE_INTEGER ||
+            parsedMaxPoolConnections > 100 ||
             parsedMaxPoolConnections < 1
         ) {
             parsedMaxPoolConnections = 10;
