@@ -704,7 +704,7 @@ export default {
                 }
                 // Sync tags if available
                 if (newConfig.tags && Array.isArray(newConfig.tags)) {
-                    this.preSelectedTags = [...newConfig.tags];
+                    this.preSelectedTags = [ ...newConfig.tags ];
                 }
             }
         },
@@ -1179,7 +1179,7 @@ export default {
                 if (currentTagsString !== newTagsString) {
                     this.preSelectedTags = uniqueTags;
                     // Also update config.tags to keep them in sync
-                    this.config.tags = [...uniqueTags];
+                    this.config.tags = [ ...uniqueTags ];
                 }
 
                 this.tagsModified = true;
@@ -1329,7 +1329,7 @@ export default {
         /**
          * Save dynamic page configuration
          * @param {Array} tags - Tags to save
-         * @returns {Promise}
+         * @returns {Promise<void>}
          */
         saveDynamicPageConfig(tags) {
             return new Promise((resolve) => {
@@ -1347,7 +1347,7 @@ export default {
 
         /**
          * Clear dynamic page configuration
-         * @returns {Promise}
+         * @returns {Promise<void>}
          */
         clearDynamicPageConfig() {
             return new Promise((resolve) => {
@@ -1403,7 +1403,6 @@ export default {
 .sidebar {
     z-index: 1000 !important;
 }
-
 
 .overall-status {
     font-weight: bold;

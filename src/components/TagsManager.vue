@@ -686,7 +686,7 @@ export default {
 
                 if (currentTagsString !== lastEmittedString) {
                     this.$emit("tags-updated", tags);
-                    this.lastEmittedTags = [...tags];
+                    this.lastEmittedTags = [ ...tags ];
                 }
 
                 // Reset the flag after emission is complete

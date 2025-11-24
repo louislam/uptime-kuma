@@ -2047,7 +2047,7 @@ message HealthCheckResponse {
         handleTagsUpdated(tags) {
             this.tagsModified = true;
             // Update monitor tags to keep in sync
-            this.monitor.tags = [...tags];
+            this.monitor.tags = [ ...tags ];
         },
 
         async startParentGroupMonitor() {

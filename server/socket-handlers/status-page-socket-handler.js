@@ -329,10 +329,11 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 
-    // Automatically add monitors with matching tags to dynamic status page using groups
     /**
-     * @param statusPageId
-     * @param tags
+     * Automatically add monitors with matching tags to dynamic status page using groups
+     * @param {string} statusPageId - status page ID
+     * @param {Array} tags - tags array
+     * @returns {void}
      */
     async function addMonitorsByTagsToStatusPage(statusPageId, tags) {
         try {
@@ -381,9 +382,10 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     }
 
-    // Get monitors by tags with configurable logic (AND or OR)
     /**
-     * @param tags
+     * Get monitors by tags
+     * @param {Array} tags - tags array
+     * @returns {Array} - returns matching monitors
      */
     async function getMonitorsByTags(tags) {
         if (!tags || tags.length === 0) {
@@ -454,8 +456,9 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     // Helper function to store dynamic page configuration
     /**
-     * @param statusPageId
-     * @param tags
+     * @param {string} statusPageId - status page ID
+     * @param {Array} tags - tags
+     * @returns {void}
      */
     async function storeDynamicPageConfig(statusPageId, tags) {
         // First, clear any existing config for this page
@@ -479,7 +482,8 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     // Refresh dynamic status page monitors when viewed - FIXED WITH AND LOGIC
     /**
-     * @param statusPageId
+     * @param {string} statusPageId - status page ID
+     * @returns {void}
      */
     async function refreshDynamicStatusPageMonitors(statusPageId) {
         try {
@@ -638,9 +642,10 @@ module.exports.statusPageSocketHandler = (socket) => {
 
     // Helper function to check and add to a single dynamic page
     /**
-     * @param monitorId
-     * @param monitorTags
-     * @param statusPageId
+     * @param {string} monitorId - monitor ID
+     * @param {Array} monitorTags - monitor tags
+     * @param {string} statusPageId - status page ID
+     * @returns {boolean} - bool
      */
     async function checkAndAddToSingleDynamicPage(monitorId, monitorTags, statusPageId) {
         try {
@@ -674,11 +679,12 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     }
 
-    // Helper function to check if monitor matches required tags - OR LOGIC
     /**
-     * @param monitorId
-     * @param monitorTags
-     * @param requiredTags
+     * Helper function to check if monitor matches required tags
+     * @param {string} monitorId - monitor ID
+     * @param {Array} monitorTags - monitor tags
+     * @param {Array} requiredTags - required tags
+     * @returns {boolean} - bool
      */
     async function monitorMatchesTags(monitorId, monitorTags, requiredTags) {
         try {
@@ -729,10 +735,11 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     }
 
-    // Helper function to add monitor to dynamic page group
     /**
-     * @param monitorId
-     * @param statusPageId
+     * Helper function to add monitor to dynamic page group
+     * @param {string} monitorId - monitor ID
+     * @param {string} statusPageId - status page ID
+     * @returns {boolean} - bool if returned error
      */
     async function addMonitorToDynamicPageGroup(monitorId, statusPageId) {
         try {
@@ -882,10 +889,11 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 
-    // Simple function to update dynamic page monitors based on tags
     /**
-     * @param statusPageId
-     * @param tags
+     * Simple function to update dynamic page monitors based on tags
+     * @param {string} statusPageId - status page ID
+     * @param {Array} tags - tags array
+     * @returns {void}
      */
     async function updateDynamicPageMonitors(statusPageId, tags) {
         // Get or create dynamic group
@@ -944,7 +952,7 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             if (dynamicConfigs && dynamicConfigs.length > 0) {
                 // This is a dynamic page, refresh monitors
-                const refreshedCount = await refreshDynamicStatusPageMonitors(statusPage.id);
+                await refreshDynamicStatusPageMonitors(statusPage.id);
             }
 
             callback({
