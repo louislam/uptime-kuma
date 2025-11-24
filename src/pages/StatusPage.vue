@@ -60,10 +60,10 @@
                     <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
                 </div>
 
-                <!-- Show last heartbeat -->
+                <!-- Show only last heartbeat -->
                 <div class="my-3 form-check form-switch">
-                    <input id="show-last-heartbeat" v-model="config.showLastHeartbeat" class="form-check-input" type="checkbox">
-                    <label class="form-check-label" for="show-last-heartbeat">{{ $t("showLastHeartbeat") }}</label>
+                    <input id="show-only-last-heartbeat" v-model="config.showOnlyLastHeartbeat" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-only-last-heartbeat">{{ $t("showOnlyLastHeartbeat") }}</label>
                 </div>
 
                 <div v-if="false" class="my-3">
@@ -325,7 +325,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :show-last-heartbeat="config.showLastHeartbeat" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :show-only-last-heartbeat="config.showOnlyLastHeartbeat" />
             </div>
 
             <footer class="mt-5 mb-4">
