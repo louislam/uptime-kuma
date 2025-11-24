@@ -300,7 +300,7 @@
 
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'domain-expiry' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -684,6 +684,15 @@
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox" :disabled="monitor.ignoreTls">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
+                                </label>
+                                <div class="form-text">
+                                </div>
+                            </div>
+
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox" :disabled="!urlIsDomain">
+                                <label class="form-check-label" for="domain-expiry-notification">
+                                    {{ $t("Domain Name Expiry Notification") }}
                                 </label>
                                 <div class="form-text">
                                 </div>
@@ -1207,6 +1216,7 @@ const monitorDefaults = {
     ignoreTls: false,
     upsideDown: false,
     expiryNotification: false,
+    domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
     dns_resolve_type: "A",
@@ -1559,6 +1569,20 @@ message HealthCheckResponse {
         conditionVariables() {
             return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
         },
+
+        urlIsDomain() {
+            if (!this.monitor.url) {
+                return false;
+            }
+            try {
+                const url = new URL(this.monitor.url);
+                const tld = url.hostname.split(".").pop();
+                // Very simple check : if the tld contains a letter, it is a domain, if not, it is an IP
+                return /[a-zA-Z]/.test(tld);
+            } catch {
+                return false;
+            }
+        }
     },
     watch: {
         "$root.proxyList"() {
@@ -1938,6 +1962,10 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
+            }
+
+            if (this.monitor.domainExpiryNotification) {
+                this.monitor.domainExpiryNotification = this.urlIsDomain;
             }
 
             let createdNewParent = false;

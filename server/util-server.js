@@ -545,6 +545,7 @@ exports.setSettings = async function (type, data) {
  */
 const getDaysBetween = (validFrom, validTo) =>
     Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
+exports.getDaysBetween = getDaysBetween;
 
 /**
  * Get days remaining from a time range
@@ -554,10 +555,84 @@ const getDaysBetween = (validFrom, validTo) =>
  */
 const getDaysRemaining = (validFrom, validTo) => {
     const daysRemaining = getDaysBetween(validFrom, validTo);
-    if (new Date(validTo).getTime() < new Date().getTime()) {
+    if (new Date(validTo).getTime() < new Date(validFrom).getTime()) {
         return -daysRemaining;
     }
     return daysRemaining;
+};
+exports.getDaysRemaining = getDaysRemaining;
+
+/**
+ * Get domain name from an URL
+ * @param {string} url Url to get the domain from
+ * @returns {string} Domain name
+ */
+exports.getDomain = (url) => {
+    const parsedUrl = new URL(url);
+    const domainParts = parsedUrl.hostname.split(".");
+    const tld = domainParts.pop();
+    return `${domainParts.pop()}.${tld}`;
+};
+
+/**
+ * Find the RDAP server for a given TLD
+ * @param {string} tld TLD
+ * @returns {string} First RDAP server found
+ */
+async function getRdapServer(tld) {
+    let rdapList;
+    try {
+        const res = await fetch("https://data.iana.org/rdap/dns.json");
+        rdapList = await res.json();
+    } catch (error) {
+        log.debug("monitor", error);
+        return null;
+    }
+
+    for (const service of rdapList["services"]) {
+        const [ tlds, urls ] = service;
+        if (tlds.includes(tld)) {
+            return urls[0];
+        }
+    }
+    return null;
+}
+
+/**
+ * Request RDAP server to retrieve the expiry date of a domain
+ * @param {string} domain Domain to retrieve the expiry date from
+ * @returns {string} First RDAP server found
+ */
+exports.getDomainExpiryDate = async function (domain) {
+    const tld = domain.split(".").pop();
+    const rdapServer = await getRdapServer(tld);
+    if (rdapServer === null) {
+        log.warn("domain", `No RDAP server found, TLD ${tld} not supported.`);
+        return null;
+    }
+    const url = `${rdapServer}domain/${domain}`;
+
+    let rdapInfos;
+    try {
+        const res = await fetch(url);
+        if (res.status !== 200) {
+            return null;
+        }
+        rdapInfos = await res.json();
+    } catch (error) {
+        log.warn("domain", "Not able to get expiry date from RDAP");
+        return null;
+    }
+
+    if (rdapInfos["events"] === undefined) {
+        return null;
+    }
+    for (const event of rdapInfos["events"]) {
+        if (event["eventAction"] === "expiration") {
+            return new Date(event["eventDate"]);
+        }
+    }
+    return null;
 };
 
 /**

@@ -839,6 +839,7 @@ let needSetup = false;
                 bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
+                bean.domainExpiryNotification = monitor.domainExpiryNotification;
                 bean.upsideDown = monitor.upsideDown;
                 bean.packetSize = monitor.packetSize;
                 bean.maxredirects = monitor.maxredirects;
