@@ -223,6 +223,7 @@ class Database {
 
         let config = {};
 
+        const DEFAULT_MAX_POOL_CONNECTIONS = 10;
         const maxPoolConnections = process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS;
         let parsedMaxPoolConnections = parseInt(maxPoolConnections);
 
@@ -233,7 +234,7 @@ class Database {
             parsedMaxPoolConnections > 100 ||
             parsedMaxPoolConnections < 1
         ) {
-            parsedMaxPoolConnections = 10;
+            parsedMaxPoolConnections = DEFAULT_MAX_POOL_CONNECTIONS;
         }
 
         let mariadbPoolConfig = {
