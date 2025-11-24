@@ -1126,18 +1126,22 @@ let needSetup = false;
                     log.info("DB", `Delete Monitor completed in: ${endTime - startTime} ms`);
                 }
 
-                callback({
-                    ok: true,
-                    msg: "successDeleted",
-                    msgi18n: true,
-                });
+                if (callback) {
+                    callback({
+                        ok: true,
+                        msg: "successDeleted",
+                        msgi18n: true,
+                    });
+                }
                 await server.sendDeleteMonitorFromList(socket, monitorID);
 
             } catch (e) {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
+                if (callback) {
+                    callback({
+                        ok: false,
+                        msg: e.message,
+                    });
+                }
             }
         });
 
