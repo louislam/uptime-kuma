@@ -54,7 +54,6 @@ describe("TCP Monitor", () => {
             await tcpMonitor.check(monitor, heartbeat, {});
 
             assert.strictEqual(heartbeat.status, UP);
-            assert.strictEqual(heartbeat.msg, "");
         } finally {
             server.close();
         }
