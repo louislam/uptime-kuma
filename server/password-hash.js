@@ -5,10 +5,10 @@ const saltRounds = 10;
 /**
  * Hash a password
  * @param {string} password Password to hash
- * @returns {string} Hash
+ * @returns {Promise<string>} Hash
  */
 exports.generate = function (password) {
-    return bcrypt.hashSync(password, saltRounds);
+    return bcrypt.hash(password, saltRounds);
 };
 
 /**

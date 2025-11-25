@@ -19,6 +19,7 @@ class Line extends NotificationProvider {
                     "Authorization": "Bearer " + notification.lineChannelAccessToken
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             if (heartbeatJSON == null) {
                 let testMessage = {
                     "to": notification.lineUserID,

@@ -19,11 +19,15 @@ class Twilio extends NotificationProvider {
                     "Authorization": "Basic " + Buffer.from(apiKey + ":" + notification.twilioAuthToken).toString("base64"),
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let data = new URLSearchParams();
             data.append("To", notification.twilioToNumber);
             data.append("From", notification.twilioFromNumber);
             data.append("Body", msg);
+            if (notification.twilioMessagingServiceSID) {
+                data.append("MessagingServiceSid", notification.twilioMessagingServiceSID);
+            }
 
             await axios.post(`https://api.twilio.com/2010-04-01/Accounts/${(notification.twilioAccountSID)}/Messages.json`, data, config);
 

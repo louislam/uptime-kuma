@@ -17,7 +17,7 @@ class SevenIO extends NotificationProvider {
             text: msg,
         };
 
-        const config = {
+        let config = {
             baseURL: "https://gateway.seven.io/api/",
             headers: {
                 "Content-Type": "application/json",
@@ -26,34 +26,14 @@ class SevenIO extends NotificationProvider {
         };
 
         try {
+            config = this.getAxiosConfigWithProxy(config);
             // testing or certificate expiry notification
             if (heartbeatJSON == null) {
                 await axios.post("sms", data, config);
                 return okMsg;
             }
 
-            let address = "";
-
-            switch (monitorJSON["type"]) {
-                case "ping":
-                    address = monitorJSON["hostname"];
-                    break;
-                case "port":
-                case "dns":
-                case "gamedig":
-                case "steam":
-                    address = monitorJSON["hostname"];
-                    if (monitorJSON["port"]) {
-                        address += ":" + monitorJSON["port"];
-                    }
-                    break;
-                default:
-                    if (![ "https://", "http://", "" ].includes(monitorJSON["url"])) {
-                        address = monitorJSON["url"];
-                    }
-                    break;
-            }
-
+            let address = this.extractAddress(monitorJSON);
             if (address !== "") {
                 address = `(${address}) `;
             }

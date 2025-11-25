@@ -158,12 +158,22 @@ class Maintenance extends BeanModel {
         bean.active = obj.active;
 
         if (obj.dateRange[0]) {
+            const parsedDate = new Date(obj.dateRange[0]);
+            if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() > 9999) {
+                throw new Error("Invalid start date");
+            }
+
             bean.start_date = obj.dateRange[0];
         } else {
             bean.start_date = null;
         }
 
         if (obj.dateRange[1]) {
+            const parsedDate = new Date(obj.dateRange[1]);
+            if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() > 9999) {
+                throw new Error("Invalid end date");
+            }
+
             bean.end_date = obj.dateRange[1];
         } else {
             bean.end_date = null;
@@ -192,7 +202,7 @@ class Maintenance extends BeanModel {
      * @returns {void}
      */
     static validateCron(cron) {
-        let job = new Cron(cron, () => {});
+        let job = new Cron(cron, () => { });
         job.stop();
     }
 
@@ -229,29 +239,19 @@ class Maintenance extends BeanModel {
                 apicache.clear();
             });
         } else if (this.cron != null) {
+            let current = dayjs();
+
             // Here should be cron or recurring
             try {
                 this.beanMeta.status = "scheduled";
 
-                let startEvent = (customDuration = 0) => {
+                let startEvent = async (customDuration = 0) => {
                     log.info("maintenance", "Maintenance id: " + this.id + " is under maintenance now");
 
                     this.beanMeta.status = "under-maintenance";
                     clearTimeout(this.beanMeta.durationTimeout);
 
-                    // Check if duration is still in the window. If not, use the duration from the current time to the end of the window
-                    let duration;
-
-                    if (customDuration > 0) {
-                        duration = customDuration;
-                    } else if (this.end_date) {
-                        let d = dayjs(this.end_date).diff(dayjs(), "second");
-                        if (d < this.duration) {
-                            duration = d * 1000;
-                        }
-                    } else {
-                        duration = this.duration * 1000;
-                    }
+                    let duration = this.inferDuration(customDuration);
 
                     UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
 
@@ -260,16 +260,54 @@ class Maintenance extends BeanModel {
                         this.beanMeta.status = "scheduled";
                         UptimeKumaServer.getInstance().sendMaintenanceListByUserID(this.user_id);
                     }, duration);
+
+                    // Set last start date to current time
+                    this.last_start_date = current.toISOString();
+                    await R.store(this);
                 };
 
                 // Create Cron
-                this.beanMeta.job = new Cron(this.cron, {
-                    timezone: await this.getTimezone(),
-                }, startEvent);
+                if (this.strategy === "recurring-interval") {
+                    // For recurring-interval, Croner needs to have interval and startAt
+                    const startDate = dayjs(this.startDate);
+                    const [ hour, minute ] = this.startTime.split(":");
+                    const startDateTime = startDate.hour(hour).minute(minute);
+
+                    // Fix #6118, since the startDateTime is optional, it will throw error if the date is null when using toISOString()
+                    let startAt = undefined;
+                    try {
+                        startAt = startDateTime.toISOString();
+                    } catch (_) {}
+
+                    this.beanMeta.job = new Cron(this.cron, {
+                        timezone: await this.getTimezone(),
+                        startAt,
+                    }, () => {
+                        if (!this.lastStartDate || this.interval_day === 1) {
+                            return startEvent();
+                        }
+
+                        // If last start date is set, it means the maintenance has been started before
+                        let lastStartDate = dayjs(this.lastStartDate)
+                            .subtract(1.1, "hour"); // Subtract 1.1 hour to avoid issues with timezone differences
+
+                        // Check if the interval is enough
+                        if (current.diff(lastStartDate, "day") < this.interval_day) {
+                            log.debug("maintenance", "Maintenance id: " + this.id + " is still in the window, skipping start event");
+                            return;
+                        }
+
+                        log.debug("maintenance", "Maintenance id: " + this.id + " is not in the window, starting event");
+                        return startEvent();
+                    });
+                } else {
+                    this.beanMeta.job = new Cron(this.cron, {
+                        timezone: await this.getTimezone(),
+                    }, startEvent);
+                }
 
                 // Continue if the maintenance is still in the window
                 let runningTimeslot = this.getRunningTimeslot();
-                let current = dayjs();
 
                 if (runningTimeslot) {
                     let duration = dayjs(runningTimeslot.endDate).diff(current, "second") * 1000;
@@ -309,6 +347,24 @@ class Maintenance extends BeanModel {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Calculate the maintenance duration
+     * @param {number} customDuration - The custom duration in milliseconds.
+     * @returns {number} The inferred duration in milliseconds.
+     */
+    inferDuration(customDuration) {
+        // Check if duration is still in the window. If not, use the duration from the current time to the end of the window
+        if (customDuration > 0) {
+            return customDuration;
+        } else if (this.end_date) {
+            let d = dayjs(this.end_date).diff(dayjs(), "second");
+            if (d < this.duration) {
+                return d * 1000;
+            }
+        }
+        return this.duration * 1000;
     }
 
     /**
@@ -395,10 +451,11 @@ class Maintenance extends BeanModel {
         } else if (!this.strategy.startsWith("recurring-")) {
             this.cron = "";
         } else if (this.strategy === "recurring-interval") {
+            // For intervals, the pattern is used to check if the execution should be started
             let array = this.start_time.split(":");
             let hour = parseInt(array[0]);
             let minute = parseInt(array[1]);
-            this.cron = minute + " " + hour + " */" + this.interval_day + " * *";
+            this.cron = `${minute} ${hour}  * * *`;
             this.duration = this.calcDuration();
             log.debug("maintenance", "Cron: " + this.cron);
             log.debug("maintenance", "Duration: " + this.duration);

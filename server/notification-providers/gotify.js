@@ -11,6 +11,7 @@ class Gotify extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             if (notification.gotifyserverurl && notification.gotifyserverurl.endsWith("/")) {
                 notification.gotifyserverurl = notification.gotifyserverurl.slice(0, -1);
             }
@@ -18,7 +19,7 @@ class Gotify extends NotificationProvider {
                 "message": msg,
                 "priority": notification.gotifyPriority || 8,
                 "title": "Uptime-Kuma",
-            });
+            }, config);
 
             return okMsg;
 
