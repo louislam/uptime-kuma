@@ -1,4 +1,3 @@
-const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const {
@@ -20,7 +19,6 @@ const { Settings } = require("./settings");
 const grpc = require("@grpc/grpc-js");
 const protojs = require("protobufjs");
 const RadiusClient = require("./radius-client");
-const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
 const { exists } = require("fs");
@@ -97,33 +95,6 @@ exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSe
         grantParams.audience = audience;
     }
     return await client.grant(grantParams);
-};
-
-/**
- * Send TCP request to specified hostname and port
- * @param {string} hostname Hostname / address of machine
- * @param {number} port TCP port to test
- * @returns {Promise<number>} Maximum time in ms rounded to nearest integer
- */
-exports.tcping = function (hostname, port) {
-    return new Promise((resolve, reject) => {
-        tcpp.ping({
-            address: hostname,
-            port: port,
-            attempts: 1,
-        }, function (err, data) {
-
-            if (err) {
-                reject(err);
-            }
-
-            if (data.results.length >= 1 && data.results[0].err) {
-                reject(data.results[0].err);
-            }
-
-            resolve(Math.round(data.max));
-        });
-    });
 };
 
 /**
@@ -520,44 +491,6 @@ exports.radius = function (
         } else {
             throw Error(error.message);
         }
-    });
-};
-
-/**
- * Redis server ping
- * @param {string} dsn The redis connection string
- * @param {boolean} rejectUnauthorized If false, allows unverified server certificates.
- * @returns {Promise<any>} Response from server
- */
-exports.redisPingAsync = function (dsn, rejectUnauthorized) {
-    return new Promise((resolve, reject) => {
-        const client = redis.createClient({
-            url: dsn,
-            socket: {
-                rejectUnauthorized
-            }
-        });
-        client.on("error", (err) => {
-            if (client.isOpen) {
-                client.disconnect();
-            }
-            reject(err);
-        });
-        client.connect().then(() => {
-            if (!client.isOpen) {
-                client.emit("error", new Error("connection isn't open"));
-            }
-            client.ping().then((res, err) => {
-                if (client.isOpen) {
-                    client.disconnect();
-                }
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            }).catch(error => reject(error));
-        });
     });
 };
 

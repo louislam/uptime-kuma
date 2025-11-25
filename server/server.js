@@ -59,7 +59,7 @@ if (process.env.UPTIME_KUMA_WS_ORIGIN_CHECK === "bypass") {
 }
 
 const checkVersion = require("./check-version");
-log.info("server", "Uptime Kuma Version: " + checkVersion.version);
+log.info("server", "Uptime Kuma Version:", checkVersion.version);
 
 log.info("server", "Loading modules");
 
@@ -107,6 +107,9 @@ const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
+
+const { Prometheus } = require("./prometheus");
+const { UptimeCalculator } = require("./uptime-calculator");
 
 const hostname = config.hostname;
 
@@ -191,6 +194,9 @@ let needSetup = false;
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
+
+    log.debug("server", "Initializing Prometheus");
+    await Prometheus.init();
 
     log.debug("server", "Adding route");
 
@@ -1047,30 +1053,78 @@ let needSetup = false;
             }
         });
 
-        socket.on("deleteMonitor", async (monitorID, callback) => {
+        socket.on("deleteMonitor", async (monitorID, deleteChildren, callback) => {
             try {
-                checkLogin(socket);
-
-                log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
-
-                if (monitorID in server.monitorList) {
-                    await server.monitorList[monitorID].stop();
-                    delete server.monitorList[monitorID];
+                // Backward compatibility: if deleteChildren is omitted, the second parameter is the callback
+                if (typeof deleteChildren === "function") {
+                    callback = deleteChildren;
+                    deleteChildren = false;
                 }
+
+                checkLogin(socket);
 
                 const startTime = Date.now();
 
-                await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
+                // Check if this is a group monitor
+                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
                 ]);
+
+                // Log with context about deletion type
+                if (monitor && monitor.type === "group") {
+                    if (deleteChildren) {
+                        log.info("manage", `Delete Group and Children: ${monitorID} User ID: ${socket.userID}`);
+                    } else {
+                        log.info("manage", `Delete Group (unlink children): ${monitorID} User ID: ${socket.userID}`);
+                    }
+                } else {
+                    log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
+                }
+
+                if (monitor && monitor.type === "group") {
+                    // Get all children before processing
+                    const children = await Monitor.getChildren(monitorID);
+
+                    if (deleteChildren) {
+                        // Delete all child monitors recursively
+                        if (children && children.length > 0) {
+                            for (const child of children) {
+                                await Monitor.deleteMonitorRecursively(child.id, socket.userID);
+                                await server.sendDeleteMonitorFromList(socket, child.id);
+                            }
+                        }
+                    } else {
+                        // Unlink all children from the group (set parent to null)
+                        await Monitor.unlinkAllChildren(monitorID);
+
+                        // Notify frontend to update each child monitor's parent to null
+                        if (children && children.length > 0) {
+                            for (const child of children) {
+                                await server.sendUpdateMonitorIntoList(socket, child.id);
+                            }
+                        }
+                    }
+                }
+
+                // Delete the monitor itself
+                await Monitor.deleteMonitor(monitorID, socket.userID);
 
                 // Fix #2880
                 apicache.clear();
 
                 const endTime = Date.now();
 
-                log.info("DB", `Delete Monitor completed in : ${endTime - startTime} ms`);
+                // Log completion with context about children handling
+                if (monitor && monitor.type === "group") {
+                    if (deleteChildren) {
+                        log.info("DB", `Delete Monitor completed (group and children deleted) in: ${endTime - startTime} ms`);
+                    } else {
+                        log.info("DB", `Delete Monitor completed (group deleted, children unlinked) in: ${endTime - startTime} ms`);
+                    }
+                } else {
+                    log.info("DB", `Delete Monitor completed in: ${endTime - startTime} ms`);
+                }
 
                 callback({
                     ok: true,
@@ -1539,9 +1593,11 @@ let needSetup = false;
 
                 log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
-                    monitorID
-                ]);
+                await UptimeCalculator.clearStatistics(monitorID);
+
+                if (monitorID in server.monitorList) {
+                    await restartMonitor(socket.userID, monitorID);
+                }
 
                 await sendHeartbeatList(socket, monitorID, true, true);
 
@@ -1563,10 +1619,7 @@ let needSetup = false;
 
                 log.info("manage", `Clear Statistics User ID: ${socket.userID}`);
 
-                await R.exec("DELETE FROM heartbeat");
-                await R.exec("DELETE FROM stat_daily");
-                await R.exec("DELETE FROM stat_hourly");
-                await R.exec("DELETE FROM stat_minutely");
+                await UptimeCalculator.clearAllStatistics();
 
                 // Restart all monitors to reset the stats
                 for (let monitorID in server.monitorList) {
