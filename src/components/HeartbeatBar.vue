@@ -528,6 +528,16 @@ export default {
             const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
             const centerY = this.canvasHeight / 2;
 
+            // Cache CSS colors once per redraw
+            const styles = getComputedStyle(document.documentElement);
+            const colors = {
+                empty: styles.getPropertyValue("--bs-body-bg") || "#f0f8ff",
+                down: styles.getPropertyValue("--bs-danger") || "#dc3545",
+                pending: styles.getPropertyValue("--bs-warning") || "#ffc107",
+                maintenance: styles.getPropertyValue("--maintenance") || "#1d4ed8",
+                up: styles.getPropertyValue("--bs-primary") || "#5cdd8b",
+            };
+
             // Draw each beat
             this.shortBeatList.forEach((beat, index) => {
                 const x = index * beatFullWidth + this.beatHoverAreaPadding;
@@ -547,7 +557,7 @@ export default {
                 }
 
                 // Get color based on beat status
-                let color = this.getBeatColor(beat);
+                let color = this.getBeatColor(beat, colors);
 
                 // Draw beat rectangle
                 ctx.fillStyle = color;
@@ -592,25 +602,24 @@ export default {
         /**
          * Get color for a beat based on its status
          * @param {object} beat Beat object
+         * @param {object} colors Cached CSS colors
          * @returns {string} CSS color
          */
-        getBeatColor(beat) {
+        getBeatColor(beat, colors) {
             if (beat === 0 || beat === null || beat?.status === null) {
-                // Empty beat color
-                return getComputedStyle(document.documentElement).getPropertyValue("--bs-body-bg") || "#f0f8ff";
+                return colors.empty;
             }
 
             const status = Number(beat.status);
 
             if (status === DOWN) {
-                return getComputedStyle(document.documentElement).getPropertyValue("--bs-danger") || "#dc3545";
+                return colors.down;
             } else if (status === PENDING) {
-                return getComputedStyle(document.documentElement).getPropertyValue("--bs-warning") || "#ffc107";
+                return colors.pending;
             } else if (status === MAINTENANCE) {
-                return getComputedStyle(document.documentElement).getPropertyValue("--maintenance") || "#1d4ed8";
+                return colors.maintenance;
             } else {
-                // UP status - primary color
-                return getComputedStyle(document.documentElement).getPropertyValue("--bs-primary") || "#5cdd8b";
+                return colors.up;
             }
         },
 
