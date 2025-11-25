@@ -22,10 +22,10 @@ class GrpcKeywordMonitorType extends MonitorType {
 
             let truncatedResponse = (response.length > 50) ? response.toString().substring(0, 47) + "..." : response;
 
-            throw new Error(`keyword [${monitor.keyword}] is not in [" + ${truncatedResponse} + "]`);
+            throw new Error(`keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${truncatedResponse} + "]`);
         }
         heartbeat.status = UP;
-        heartbeat.msg = `${response}, keyword [${monitor.keyword}] is found`;
+        heartbeat.msg = `${response}, keyword [${monitor.keyword}] ${keywordFound ? "is" : "not"} found`;
     }
 
     /**
