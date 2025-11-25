@@ -12,20 +12,20 @@ class GrpcKeywordMonitorType extends MonitorType {
      */
     async check(monitor, heartbeat, _server) {
         const startTime = dayjs().valueOf();
-        const service = this.constructGrpcService(this.grpcUrl, this.grpcProtobuf, this.grpcServiceName, this.grpcEnableTls);
-        let response = await this.grpcQuery(service, this.grpcMethod, this.grpcBody);
+        const service = this.constructGrpcService(monitor.grpcUrl, monitor.grpcProtobuf, monitor.grpcServiceName, monitor.grpcEnableTls);
+        let response = await this.grpcQuery(service, monitor.grpcMethod, monitor.grpcBody);
         heartbeat.ping = dayjs().valueOf() - startTime;
-        log.debug(this.name, `gRPC response: ${response}`);
-        if (response.length > 50) {
-            response = response.toString().substring(0, 47) + "...";
-        }
-        let keywordFound = response.toString().includes(this.keyword);
-        if (keywordFound !== !this.isInvertKeyword()) {
-            log.debug(this.name, `GRPC response [${response}] + ", but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response} + "]"`);
-            throw new Error(`keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response} + "]`);
+        log.debug(this.name, "gRPC response:", response);
+        let keywordFound = response.toString().includes(monitor.keyword);
+        if (keywordFound !== !monitor.isInvertKeyword()) {
+            log.debug(this.name, `GRPC response [${response}] + ", but keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response} + "]"`);
+
+            let trimmedResponse = (response.length > 50) ? response.toString().substring(0, 47) + "..." : response;
+
+            throw new Error(`keyword [${monitor.keyword}] is not in [" + ${trimmedResponse} + "]`);
         }
         heartbeat.status = UP;
-        heartbeat.msg = `${response}, keyword [${this.keyword}] ${keywordFound ? "is" : "not"} found`;
+        heartbeat.msg = `${response}, keyword [${monitor.keyword}] is found`;
     }
 
     /**
@@ -67,10 +67,10 @@ class GrpcKeywordMonitorType extends MonitorType {
     async grpcQuery(service, method, body) {
         return new Promise((resolve, reject) => {
             try {
-                service[`${method}`](JSON.parse(body), (err, response) => {
+                service[method](JSON.parse(body), (err, response) => {
                     if (err) {
                         if (err.code !== 1) {
-                            reject(`Error in send gRPC ${err.code} ${err.details}`);
+                            reject(err);
                         }
                         log.debug(this.name, `ignoring ${err.code} ${err.details}, as code=1 is considered OK`);
                         resolve(`${err.code} is considered OK because ${err.details}`);
@@ -78,9 +78,8 @@ class GrpcKeywordMonitorType extends MonitorType {
                     resolve(JSON.stringify(response));
                 });
             } catch (err) {
-                reject(`Error ${err}. Please review your gRPC configuration option. The service name must not include package name value, and the method name must follow camelCase format`);
+                reject(err);
             }
-
         });
     }
 }
