@@ -20,9 +20,9 @@ class GrpcKeywordMonitorType extends MonitorType {
         if (keywordFound !== !monitor.isInvertKeyword()) {
             log.debug(this.name, `GRPC response [${response}] + ", but keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response} + "]"`);
 
-            let trimmedResponse = (response.length > 50) ? response.toString().substring(0, 47) + "..." : response;
+            let truncatedResponse = (response.length > 50) ? response.toString().substring(0, 47) + "..." : response;
 
-            throw new Error(`keyword [${monitor.keyword}] is not in [" + ${trimmedResponse} + "]`);
+            throw new Error(`keyword [${monitor.keyword}] is not in [" + ${truncatedResponse} + "]`);
         }
         heartbeat.status = UP;
         heartbeat.msg = `${response}, keyword [${monitor.keyword}] is found`;
