@@ -277,26 +277,21 @@ export default {
     watch: {
         beatList: {
             handler() {
+                // Only handle the slide animation, drawCanvas is triggered by shortBeatList watcher
                 this.move = true;
 
                 setTimeout(() => {
                     this.move = false;
                 }, 300);
-
-                this.$nextTick(() => {
-                    this.drawCanvas();
-                });
             },
             deep: true,
         },
 
-        shortBeatList: {
-            handler() {
-                this.$nextTick(() => {
-                    this.drawCanvas();
-                });
-            },
-            deep: true,
+        shortBeatList() {
+            // Triggers on beatList, maxBeat, or move changes
+            this.$nextTick(() => {
+                this.drawCanvas();
+            });
         },
 
         hoveredBeatIndex() {
