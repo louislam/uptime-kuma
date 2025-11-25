@@ -278,7 +278,6 @@ export default {
         beatList: {
             handler() {
                 this.move = true;
-                this.canvasNeedsRedraw = true;
 
                 setTimeout(() => {
                     this.move = false;
@@ -293,7 +292,6 @@ export default {
 
         shortBeatList: {
             handler() {
-                this.canvasNeedsRedraw = true;
                 this.$nextTick(() => {
                     this.drawCanvas();
                 });
