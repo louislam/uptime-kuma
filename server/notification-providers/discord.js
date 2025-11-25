@@ -118,9 +118,8 @@ class Discord extends NotificationProvider {
                     embeds: [{
                         title: "New notification!",
                         color: 16225888,
-                        // Replace [name][url] with [name](url) to work with discord markdowns
                         // This pattern is only found in cert expiry notifications and it won't cause any issues with other stuff (like test notificatins)
-                        description: msg.replace(/\[([^\]]+)\]\[([^\]]+)\]/g, "[$1]($2)"),
+                        description: this.convertBracketLinks(msg),
                     }],
                 };
                 if (!webhookHasAvatar) {
@@ -141,6 +140,52 @@ class Discord extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
+    }
+
+    /**
+     * Converts a certificate expiry notification to markdown
+     * @param {string} input the input text
+     * @returns {string} the output text
+     */
+    convertBracketLinks(input) {
+        let result = "";
+        let i = 0;
+
+        while (i < input.length) {
+            // Look for opening bracket
+            if (input[i] === "[") {
+                const nameStart = i + 1;
+                const nameEnd = input.indexOf("]", nameStart);
+
+                // If no matching "]", just append char
+                if (nameEnd === -1) {
+                    result += input[i++];
+                    continue;
+                }
+
+                // Check if next part starts with "[url]"
+                if (input[nameEnd + 1] === "[") {
+                    const urlStart = nameEnd + 2;
+                    const urlEnd = input.indexOf("]", urlStart);
+
+                    if (urlEnd !== -1) {
+                    // We found [name][url] → convert it
+                        const name = input.slice(nameStart, nameEnd);
+                        const url = input.slice(urlStart, urlEnd);
+
+                        result += `[${name}](${url})`;
+                        i = urlEnd + 1;
+                        continue;
+                    }
+                }
+            }
+
+            // Default: copy character
+            result += input[i];
+            i++;
+        }
+
+        return result;
     }
 
 }
