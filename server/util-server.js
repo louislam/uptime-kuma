@@ -1,4 +1,3 @@
-const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const {
@@ -96,33 +95,6 @@ exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSe
         grantParams.audience = audience;
     }
     return await client.grant(grantParams);
-};
-
-/**
- * Send TCP request to specified hostname and port
- * @param {string} hostname Hostname / address of machine
- * @param {number} port TCP port to test
- * @returns {Promise<number>} Maximum time in ms rounded to nearest integer
- */
-exports.tcping = function (hostname, port) {
-    return new Promise((resolve, reject) => {
-        tcpp.ping({
-            address: hostname,
-            port: port,
-            attempts: 1,
-        }, function (err, data) {
-
-            if (err) {
-                reject(err);
-            }
-
-            if (data.results.length >= 1 && data.results[0].err) {
-                reject(data.results[0].err);
-            }
-
-            resolve(Math.round(data.max));
-        });
-    });
 };
 
 /**
