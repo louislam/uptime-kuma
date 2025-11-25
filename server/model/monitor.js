@@ -1010,6 +1010,12 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
+                // Recreate HTTP agents when monitor fails to resolve potential agent issues
+                if (bean.status === DOWN && previousBeat?.status !== DOWN) {
+                    log.debug("monitor", `[${this.name}] Monitor failed, recreating HTTP agents`);
+                    this.destroyAgents();
+                }
+
                 if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
