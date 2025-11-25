@@ -79,7 +79,7 @@ export default {
             tooltipTimeoutId: null,
             // Canvas
             hoveredBeatIndex: -1,
-            canvasNeedsRedraw: true,
+            beatBorderRadius: 2.5,
         };
     },
     computed: {
@@ -558,15 +558,14 @@ export default {
 
                 // Draw beat rectangle
                 ctx.fillStyle = color;
-                const borderRadius = 2.5;
-                this.roundRect(ctx, offsetX, offsetY, width, height, borderRadius);
+                this.roundRect(ctx, offsetX, offsetY, width, height, this.beatBorderRadius);
                 ctx.fill();
 
                 // Apply hover opacity
                 if (isHovered && beat !== 0) {
                     ctx.globalAlpha = 0.8;
                     ctx.fillStyle = color;
-                    this.roundRect(ctx, offsetX, offsetY, width, height, borderRadius);
+                    this.roundRect(ctx, offsetX, offsetY, width, height, this.beatBorderRadius);
                     ctx.fill();
                     ctx.globalAlpha = 1;
                 }
