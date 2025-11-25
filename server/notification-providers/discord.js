@@ -118,7 +118,6 @@ class Discord extends NotificationProvider {
                     embeds: [{
                         title: "New notification!",
                         color: 16225888,
-                        // This pattern is only found in cert expiry notifications and it won't cause any issues with other stuff (like test notificatins)
                         description: this.convertBracketLinks(msg),
                     }],
                 };
