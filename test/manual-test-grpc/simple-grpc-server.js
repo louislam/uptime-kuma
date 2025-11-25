@@ -5,8 +5,10 @@ const grpcObject = grpc.loadPackageDefinition(packageDef);
 const { echo } = grpcObject;
 
 /**
- * @param call
- * @param callback
+ * Echo service implementation
+ * @param {object} call Call object
+ * @param {Function} callback Callback function
+ * @returns {void}
  */
 function Echo(call, callback) {
     callback(null, { message: call.request.message });
