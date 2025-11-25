@@ -615,6 +615,30 @@ export default {
         },
 
         /**
+         * Update tooltip when hovering a new beat
+         * @param {object} beat Beat data
+         * @param {number} beatIndex Index of the beat
+         * @param {DOMRect} rect Canvas bounding rectangle
+         * @returns {void}
+         */
+        updateTooltipOnHover(beat, beatIndex, rect) {
+            const previousIndex = this.hoveredBeatIndex;
+            this.hoveredBeatIndex = beatIndex;
+
+            if (previousIndex !== -1) {
+                // Hide previous tooltip and show new one after brief delay
+                this.hideTooltip(false);
+                setTimeout(() => {
+                    if (this.hoveredBeatIndex === beatIndex) {
+                        this.showTooltip(beat, beatIndex, rect);
+                    }
+                }, 50);
+            } else {
+                this.showTooltip(beat, beatIndex, rect);
+            }
+        },
+
+        /**
          * Handle mouse move on canvas for hover detection
          * @param {MouseEvent} event Mouse event
          * @returns {void}
@@ -635,31 +659,15 @@ export default {
 
                 if (beat !== 0 && beat !== null) {
                     if (this.hoveredBeatIndex !== beatIndex) {
-                        const previousIndex = this.hoveredBeatIndex;
-                        this.hoveredBeatIndex = beatIndex;
-
-                        // Only hide tooltip if we had one showing
-                        if (previousIndex !== -1) {
-                            this.hideTooltip(false); // Don't reset hover index
-                            // Show tooltip for new beat after a brief delay
-                            setTimeout(() => {
-                                // Verify we're still hovering the same beat
-                                if (this.hoveredBeatIndex === beatIndex) {
-                                    this.showTooltip(beat, beatIndex, rect);
-                                }
-                            }, 50);
-                        } else {
-                            // First time hovering, show immediately
-                            this.showTooltip(beat, beatIndex, rect);
-                        }
+                        this.updateTooltipOnHover(beat, beatIndex, rect);
                     }
                 } else {
                     this.hoveredBeatIndex = -1;
-                    this.hideTooltip(true); // Reset hover index
+                    this.hideTooltip(true);
                 }
             } else {
                 this.hoveredBeatIndex = -1;
-                this.hideTooltip(true); // Reset hover index
+                this.hideTooltip(true);
             }
         },
 
