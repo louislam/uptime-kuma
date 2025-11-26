@@ -12,6 +12,9 @@
                 @mousemove="handleMouseMove"
                 @mouseleave="hideTooltip"
                 @click="handleClick"
+                @keydown="handleKeydown"
+                @focus="handleFocus"
+                @blur="handleBlur"
             />
         </div>
         <div
@@ -707,6 +710,93 @@ export default {
         handleClick(event) {
             // For future accessibility features if needed
             this.handleMouseMove(event);
+        },
+
+        /**
+         * Handle keyboard navigation on canvas
+         * @param {KeyboardEvent} event Keyboard event
+         * @returns {void}
+         */
+        handleKeydown(event) {
+            const validIndices = this.shortBeatList
+                .map((beat, index) => (beat !== 0 && beat !== null) ? index : -1)
+                .filter(index => index !== -1);
+
+            if (validIndices.length === 0) {
+                return;
+            }
+
+            let newIndex = this.hoveredBeatIndex;
+
+            if (event.key === "ArrowRight") {
+                event.preventDefault();
+                // Find next valid beat
+                const currentPos = validIndices.indexOf(this.hoveredBeatIndex);
+                if (currentPos === -1) {
+                    newIndex = validIndices[0];
+                } else if (currentPos < validIndices.length - 1) {
+                    newIndex = validIndices[currentPos + 1];
+                }
+            } else if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                // Find previous valid beat
+                const currentPos = validIndices.indexOf(this.hoveredBeatIndex);
+                if (currentPos === -1) {
+                    newIndex = validIndices[validIndices.length - 1];
+                } else if (currentPos > 0) {
+                    newIndex = validIndices[currentPos - 1];
+                }
+            } else if (event.key === "Home") {
+                event.preventDefault();
+                newIndex = validIndices[0];
+            } else if (event.key === "End") {
+                event.preventDefault();
+                newIndex = validIndices[validIndices.length - 1];
+            } else if (event.key === "Escape") {
+                event.preventDefault();
+                this.hoveredBeatIndex = -1;
+                this.hideTooltip();
+                return;
+            } else {
+                return;
+            }
+
+            if (newIndex !== this.hoveredBeatIndex && newIndex !== -1) {
+                const beat = this.shortBeatList[newIndex];
+                const canvas = this.$refs.canvas;
+                if (canvas) {
+                    const rect = canvas.getBoundingClientRect();
+                    this.updateTooltipOnHover(beat, newIndex, rect);
+                }
+            }
+        },
+
+        /**
+         * Handle canvas focus
+         * @returns {void}
+         */
+        handleFocus() {
+            // Select first valid beat on focus if none selected
+            if (this.hoveredBeatIndex === -1) {
+                const firstValidIndex = this.shortBeatList.findIndex(beat => beat !== 0 && beat !== null);
+                if (firstValidIndex !== -1) {
+                    const beat = this.shortBeatList[firstValidIndex];
+                    const canvas = this.$refs.canvas;
+                    if (canvas) {
+                        const rect = canvas.getBoundingClientRect();
+                        this.updateTooltipOnHover(beat, firstValidIndex, rect);
+                    }
+                }
+            }
+        },
+
+        /**
+         * Handle canvas blur
+         * @returns {void}
+         */
+        handleBlur() {
+            this.hoveredBeatIndex = -1;
+            this.hideTooltip();
         },
 
     },
