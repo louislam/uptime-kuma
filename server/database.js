@@ -237,6 +237,8 @@ class Database {
 
         if (error) {
             log.warn("db", `Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was ${error}.`);
+        } else {
+            log.info("db", `Max database connections: ${parsedMaxPoolConnections}`);
         }
 
         let mariadbPoolConfig = {
