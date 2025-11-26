@@ -1568,7 +1568,7 @@ message HealthCheckResponse {
 
         conditionVariables() {
             return this.$root.monitorTypeList[this.monitor.type]?.conditionVariables || [];
-        }
+        },
     },
     watch: {
         "$root.proxyList"() {
@@ -1948,10 +1948,6 @@ message HealthCheckResponse {
 
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
-            }
-
-            if (this.monitor.domainExpiryNotification) {
-                this.monitor.domainExpiryNotification = this.monitor.urlIsDomain;
             }
 
             let createdNewParent = false;
