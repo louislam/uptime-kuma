@@ -1191,7 +1191,7 @@
     "Maximum Retries": "Maximum Retries",
     "Template ID": "Template ID",
     "wayToGetClickSMSIRTemplateID": "Your template must contain an {uptkumaalert} field. You can create a new template {here}.",
-    "Recipient Numbers": "Recipient Numbers"
+    "Recipient Numbers": "Recipient Numbers",
     "Notifications Enabled": "Notifications Enabled",
     "Allow Notifications": "Allow Notifications",
     "Browser not supported": "Browser not supported",
