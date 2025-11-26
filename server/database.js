@@ -223,31 +223,25 @@ class Database {
 
         let config = {};
 
-        const DEFAULT_MAX_POOL_CONNECTIONS = 10;
-        const maxPoolConnections = process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS;
-        let parsedMaxPoolConnections = parseInt(maxPoolConnections);
+        let parsedMaxPoolConnections = parseInt(process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS);
+        let error = undefined;
 
-        if (
-            !maxPoolConnections ||
-            maxPoolConnections.trim() === "" ||
-            Number.isNaN(parsedMaxPoolConnections) ||
-            parsedMaxPoolConnections > 100 ||
-            // NOTE: We cap the pool size because MySQL/MariaDB connections are heavy.
-            // Each connection consumes memory and CPU, and too many cause severe slowdown.
-            // If you need higher concurrency, use a proxy like ProxySQL or MaxScale instead of raising this limit.
-            parsedMaxPoolConnections < 1
-        ) {
-            parsedMaxPoolConnections = DEFAULT_MAX_POOL_CONNECTIONS;
+        if (!process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS || Number.isNaN(parsedMaxPoolConnections)) {
+            error = "invalid";
+        } else if (parsedMaxPoolConnections < 1) {
+            error = "less than 1";
+        } else if (parsedMaxPoolConnections > 100) {
+            error = "more than 100";
+            log.warn("db", "We cap pool connections because Mysql/Mariadb connections are heavy. consider using a proxy like ProxySQL or MaxScale.");
+        }
 
-            // Only log if there was a UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS defined
-            if (maxPoolConnections !== undefined) {
-                log.warn("db", `Max pool connections defaulted to ${DEFAULT_MAX_POOL_CONNECTIONS} because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was invalid`);
-            }
+        if (error) {
+            log.warn("db", `Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was ${error}.`);
         }
 
         let mariadbPoolConfig = {
             min: 0,
-            max: parsedMaxPoolConnections,
+            max: error ? 10 : parsedMaxPoolConnections,
             idleTimeoutMillis: 30000,
         };
 
