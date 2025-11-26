@@ -83,6 +83,7 @@ const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
 const { commandExists } = require("./util-server");
+const Webpush = require("./notification-providers/Webpush");
 
 class Notification {
     providerList = {};
@@ -181,6 +182,8 @@ class Notification {
             new SpugPush(),
             new Notifery(),
             new SMSIR(),
+            new SendGrid(),
+            new Webpush(),
         ];
         for (let item of list) {
             if (!item.name) {
