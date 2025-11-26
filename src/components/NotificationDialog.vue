@@ -173,8 +173,7 @@ export default {
                 "Cellsynt": "Cellsynt",
                 "SendGrid": "SendGrid",
                 "Brevo": "Brevo",
-                "notifery": "Notifery"
-                "SendGrid": "SendGrid",
+                "notifery": "Notifery",
                 "Webpush": "Webpush",
             };
 
