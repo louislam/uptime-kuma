@@ -122,6 +122,32 @@ const port = config.port;
 const disableFrameSameOrigin = !!process.env.UPTIME_KUMA_DISABLE_FRAME_SAMEORIGIN || args["disable-frame-sameorigin"] || false;
 const cloudflaredToken = args["cloudflared-token"] || process.env.UPTIME_KUMA_CLOUDFLARED_TOKEN || undefined;
 
+const ipsToAllow = process.env.UPTIME_KUMA_IPS_TO_ALLOW || args["ips-to-allow"] || undefined;
+if (ipsToAllow !== undefined) {
+    if (typeof ipsToAllow !== "string") {
+        log.error("server", "IPs to allow must be a string, " + typeof ipsToAllow + " provided");
+        process.exit(1);
+    }
+
+    const splitIps = ipsToAllow.split(",").map(ip => ip.trim());
+    const invalidIps = [];
+    const net = require("net");
+    for (const ip of splitIps) {
+        if (net.isIP(ip) === 0) {
+            invalidIps.push(ip);
+        }
+    }
+
+    if (invalidIps.length > 0) {
+        log.error("server", "Provided IPs to allow must contain only valid IP addresses. The following IPs are invalid: " + invalidIps.join(", "));
+        process.exit(1);
+    }
+
+    log.info("server", "IPs to allow: " + splitIps.join(", "));
+    const ipfilter = require("express-ipfilter").IpFilter;
+    app.use(ipfilter(splitIps, { mode: "allow" }));
+}
+
 // 2FA / notp verification defaults
 const twoFAVerifyOptions = {
     "window": 1,
