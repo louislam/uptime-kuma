@@ -6,6 +6,9 @@
                 class="heartbeat-canvas"
                 :width="canvasWidth"
                 :height="canvasHeight"
+                :aria-label="canvasAriaLabel"
+                role="img"
+                tabindex="0"
                 @mousemove="handleMouseMove"
                 @mouseleave="hideTooltip"
                 @click="handleClick"
@@ -272,6 +275,22 @@ export default {
          */
         canvasHeight() {
             return this.beatHeight * this.hoverScale;
+        },
+
+        /**
+         * Aria label for canvas accessibility
+         * @returns {string} Description of heartbeat status
+         */
+        canvasAriaLabel() {
+            if (!this.shortBeatList || this.shortBeatList.length === 0) {
+                return "Heartbeat history: No data";
+            }
+
+            const validBeats = this.shortBeatList.filter(b => b !== 0 && b !== null);
+            const upCount = validBeats.filter(b => Number(b.status) === UP).length;
+            const downCount = validBeats.filter(b => Number(b.status) === DOWN).length;
+
+            return `Heartbeat history: ${validBeats.length} checks, ${upCount} up, ${downCount} down`;
         },
     },
     watch: {
