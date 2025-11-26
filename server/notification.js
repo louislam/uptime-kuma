@@ -175,7 +175,6 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid(),
             new Brevo(),
             new YZJ(),
             new SMSPlanet(),
