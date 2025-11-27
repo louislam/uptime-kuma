@@ -82,11 +82,12 @@ class StatusPage extends BeanModel {
         });
 
         heartbeats.forEach(heartbeat => {
+            const heartbeatTime = `${heartbeat.time}Z`; // ensure it's treated as UTC
             feed.addItem({
                 title: `${heartbeat.name} is down`,
                 description: `${heartbeat.name} has been down since ${heartbeat.time}`,
                 id: heartbeat.monitorID,
-                date: new Date(heartbeat.time),
+                date: new Date(heartbeatTime),
             });
         });
 
