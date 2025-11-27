@@ -25,23 +25,23 @@ async function createTestDb() {
 
 test("Test with mock db", async (t) => {
     const dataDir = await createTestDb();
-    const mon_http_com = {
+    const monHttpCom = {
         type: "http",
         url: "https://www.google.com",
         domainExpiryNotification: true,
-    }
+    };
     try {
         await t.test("Should get expiry date for .wiki with no A record", async () => {
             const d = DomainExpiry.createByName("google.wiki");
             assert.deepEqual(await d.getExpiryDate(), new Date("2026-11-26T23:59:59.000Z"));
         });
         await t.test("Should get expiration date for .com from RDAP", async () => {
-            const domain = await DomainExpiry.forMonitor(mon_http_com);
+            const domain = await DomainExpiry.forMonitor(monHttpCom);
             const expiryFromRdap = await domain.getExpiryDate(); // from RDAP
             assert.deepEqual(expiryFromRdap, new Date("2028-09-14T04:00:00.000Z"));
         });
         await t.test("Should have expiration date cached in database", async () => {
-            await DomainExpiry.checkExpiry(mon_http_com); // RDAP -> Cache
+            await DomainExpiry.checkExpiry(monHttpCom); // RDAP -> Cache
             const domain = await DomainExpiry.findByName("google.com");
             assert(Date.now() - domain.lastCheck < 5 * 1000);
         });
