@@ -3,7 +3,7 @@ const assert = require("node:assert");
 const { sync: rimrafSync } = require("rimraf");
 const Database = require("../../server/database");
 // const DomainExpiry = require("../../server/model/domain_expiry");
-const Monitor = require("../../server/model/monitor");
+// const Monitor = require("../../server/model/monitor");
 const DomainExpiry = require("../../server/model/domain_expiry.js");
 const { Settings } = require("../../server/settings");
 
@@ -12,8 +12,8 @@ const { Settings } = require("../../server/settings");
  * @returns {string} Path to test data
  */
 async function createTestDb() {
-    const dataDir = "./data/test"
-    Database.initDataDir({ "data-dir": dataDir })
+    const dataDir = "./data/test";
+    Database.initDataDir({ "data-dir": dataDir });
     Database.dbConfig = {
         type: "sqlite"
     };

@@ -883,7 +883,7 @@ class Monitor extends BeanModel {
                     if (domainExpiryDate) {
                         DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
                     } else {
-                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`)
+                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
                     }
                 }
 
@@ -1260,7 +1260,7 @@ class Monitor extends BeanModel {
      * @returns {void}
      */
     static async sendDomainInfo(io, monitorID, userID) {
-        const monitor = await R.findOne("monitor", "id = ?", [monitorID]);
+        const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
 
         const domain = await DomainExpiry.forMonitor(monitor);
         if (domain !== null && domain.expiry !== null) {

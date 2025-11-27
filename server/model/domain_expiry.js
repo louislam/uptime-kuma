@@ -3,7 +3,6 @@ const { R } = require("redbean-node");
 const { log } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
 const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../util-server");
-const Monitor = require("./monitor");
 
 const TABLE = "domain_expiry";
 
