@@ -208,11 +208,13 @@ class SetupDatabase {
 
                     // Test connection
                     try {
+                        log.info("setup-database", "Testing database connection...");
                         const connection = await mysql.createConnection({
                             host: dbConfig.hostname,
                             port: dbConfig.port,
                             user: dbConfig.username,
                             password: dbConfig.password,
+                            database: dbConfig.dbName,
                         });
                         await connection.execute("SELECT 1");
                         connection.end();

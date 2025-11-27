@@ -12,6 +12,7 @@ class Mattermost extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             const mattermostUserName = notification.mattermostusername || "Uptime Kuma";
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
             if (heartbeatJSON == null) {
@@ -19,7 +20,7 @@ class Mattermost extends NotificationProvider {
                     username: mattermostUserName,
                     text: msg,
                 };
-                await axios.post(notification.mattermostWebhookUrl, mattermostTestData);
+                await axios.post(notification.mattermostWebhookUrl, mattermostTestData, config);
                 return okMsg;
             }
 
@@ -79,13 +80,11 @@ class Mattermost extends NotificationProvider {
                         fallback:
                             "Your " +
                             monitorJSON.pathName +
-                            monitorJSON.name +
                             " service went " +
                             statusText,
                         color: color,
                         title:
                             monitorJSON.pathName +
-                            monitorJSON.name +
                             " service went " +
                             statusText,
                         title_link: monitorJSON.url,
@@ -100,7 +99,7 @@ class Mattermost extends NotificationProvider {
                     },
                 ],
             };
-            await axios.post(notification.mattermostWebhookUrl, mattermostdata);
+            await axios.post(notification.mattermostWebhookUrl, mattermostdata, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

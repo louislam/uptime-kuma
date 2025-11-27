@@ -10,12 +10,13 @@ class Threema extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const url = "https://msgapi.threema.ch/send_simple";
 
-        const config = {
+        let config = {
             headers: {
                 "Accept": "*/*",
                 "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
             }
         };
+        config = this.getAxiosConfigWithProxy(config);
 
         const data = {
             from: notification.threemaSenderIdentity,

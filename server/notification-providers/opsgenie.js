@@ -80,6 +80,7 @@ class Opsgenie extends NotificationProvider {
                 "Authorization": `GenieKey ${notification.opsgenieApiKey}`,
             }
         };
+        config = this.getAxiosConfigWithProxy(config);
 
         let res = await axios.post(url, data, config);
         if (res.status == null) {

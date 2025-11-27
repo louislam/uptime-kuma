@@ -82,7 +82,7 @@ function createNTLMv2Response(type2message, username, ntlmhash, nonce, targetNam
     //reserved
     buf.writeUInt32LE(0, 20);
     //timestamp
-    //TODO: we are loosing precision here since js is not able to handle those large integers
+    //TODO: we are losing precision here since js is not able to handle those large integers
     // maybe think about a different solution here
     // 11644473600000 = diff between 1970 and 1601
     var timestamp = ((Date.now() + 11644473600000) * 10000).toString(16);
