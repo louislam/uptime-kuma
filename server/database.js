@@ -227,7 +227,7 @@ class Database {
         const poolMax = parseInt(process.env.DB_CONNECTION_POOL_MAX) || 10;
         const poolIdleTimeout = parseInt(process.env.DB_CONNECTION_POOL_IDLE_TIMEOUT) || 30000;
         const poolAcquireTimeout = parseInt(process.env.DB_CONNECTION_POOL_ACQUIRE_TIMEOUT) || acquireConnectionTimeout;
-        
+
         let mariadbPoolConfig = {
             min: poolMin,
             max: poolMax,
@@ -238,7 +238,7 @@ class Database {
             reapIntervalMillis: 1000,
             createRetryIntervalMillis: 200,
         };
-        
+
         log.info("db", `MariaDB Pool Config - Min: ${poolMin}, Max: ${poolMax}, IdleTimeout: ${poolIdleTimeout}ms, AcquireTimeout: ${poolAcquireTimeout}ms`);
 
         log.info("db", `Database Type: ${dbConfig.type}`);
