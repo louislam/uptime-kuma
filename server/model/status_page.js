@@ -82,7 +82,7 @@ class StatusPage extends BeanModel {
         });
 
         heartbeats.forEach(heartbeat => {
-            if(!/([zZ]|[+-][0-9]{2}:[0-9]{2})$/.test(heartbeat.time)) {
+            if (!/([zZ]|[+-][0-9]{2}:[0-9]{2})$/.test(heartbeat.time)) {
                 heartbeat.time += "Z"; // append Z to indicate UTC time
             }
             feed.addItem({
