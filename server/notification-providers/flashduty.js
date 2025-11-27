@@ -38,7 +38,7 @@ class FlashDuty extends NotificationProvider {
     }
 
     /**
-     * Generate a monitor url from the monitors infomation
+     * Generate a monitor url from the monitors information
      * @param {object} monitorInfo Monitor details
      * @returns {string|undefined} Monitor URL
      */
@@ -73,13 +73,13 @@ class FlashDuty extends NotificationProvider {
         }
         const options = {
             method: "POST",
-            url: "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
+            url: notification.flashdutyIntegrationKey.startsWith("http") ? notification.flashdutyIntegrationKey : "https://api.flashcat.cloud/event/push/alert/standard?integration_key=" + notification.flashdutyIntegrationKey,
             headers: { "Content-Type": "application/json" },
             data: {
                 description: `[${title}] [${monitorInfo.name}] ${body}`,
                 title,
                 event_status: eventStatus || "Info",
-                alert_key: String(monitorInfo.id) || Math.random().toString(36).substring(7),
+                alert_key: monitorInfo.id ? String(monitorInfo.id) : Math.random().toString(36).substring(7),
                 labels,
             }
         };

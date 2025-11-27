@@ -1,4 +1,5 @@
 const fs = require("fs");
+const fsAsync = fs.promises;
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
@@ -11,6 +12,7 @@ const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
+const SqlString = require("sqlstring");
 
 /**
  * Database & App Data Folder
@@ -18,7 +20,7 @@ const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysq
 class Database {
 
     /**
-     * Boostrap database for SQLite
+     * Bootstrap database for SQLite
      * @type {string}
      */
     static templatePath = "./db/kuma.db";
@@ -255,10 +257,6 @@ class Database {
                 }
             };
         } else if (dbConfig.type === "mariadb") {
-            if (!/^\w+$/.test(dbConfig.dbName)) {
-                throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
-            }
-
             const connection = await mysql.createConnection({
                 host: dbConfig.hostname,
                 port: dbConfig.port,
@@ -266,7 +264,11 @@ class Database {
                 password: dbConfig.password,
             });
 
-            await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
+            // Set to true, so for example "uptime.kuma", becomes `uptime.kuma`, not `uptime`.`kuma`
+            // Doc: https://github.com/mysqljs/sqlstring?tab=readme-ov-file#escaping-query-identifiers
+            const escapedDBName = SqlString.escapeId(dbConfig.dbName, true);
+
+            await connection.execute("CREATE DATABASE IF NOT EXISTS " + escapedDBName + " CHARACTER SET utf8mb4");
             connection.end();
 
             config = {
@@ -296,7 +298,7 @@ class Database {
                 client: "mysql2",
                 connection: {
                     socketPath: embeddedMariaDB.socketPath,
-                    user: "node",
+                    user: embeddedMariaDB.username,
                     database: "kuma",
                     timezone: "Z",
                     typeCast: function (field, next) {
@@ -707,12 +709,12 @@ class Database {
 
     /**
      * Get the size of the database (SQLite only)
-     * @returns {number} Size of database
+     * @returns {Promise<number>} Size of database
      */
-    static getSize() {
+    static async getSize() {
         if (Database.dbConfig.type === "sqlite") {
             log.debug("db", "Database.getSize()");
-            let stats = fs.statSync(Database.sqlitePath);
+            let stats = await fsAsync.stat(Database.sqlitePath);
             log.debug("db", stats);
             return stats.size;
         }
@@ -736,7 +738,7 @@ class Database {
         if (Database.dbConfig.type === "sqlite") {
             return "DATETIME('now', ? || ' hours')";
         } else {
-            return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
+            return "DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? HOUR)";
         }
     }
 
@@ -892,11 +894,13 @@ class Database {
                 AND important = 0
                 AND time < ${sqlHourOffset}
                 AND id NOT IN (
-                    SELECT id
-                    FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT ?
+                    SELECT id FROM ( -- written this way for Maria's support
+                        SELECT id
+                        FROM heartbeat
+                        WHERE monitor_id = ?
+                        ORDER BY time DESC
+                        LIMIT ?
+                    )  AS limited_ids
                 )
             `, [
                 monitor.id,

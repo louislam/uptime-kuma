@@ -29,6 +29,7 @@ class SMSPartner extends NotificationProvider {
                     "Accept": "application/json",
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let resp = await axios.post(url, data, config);
 

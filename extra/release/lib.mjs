@@ -24,8 +24,15 @@ export function checkDocker() {
 /**
  * Get Docker Hub repository name
  */
-export function getRepoName() {
-    return process.env.RELEASE_REPO_NAME || "louislam/uptime-kuma";
+export function getRepoNames() {
+    if (process.env.RELEASE_REPO_NAMES) {
+        // Split by comma
+        return process.env.RELEASE_REPO_NAMES.split(",").map((name) => name.trim());
+    }
+    return [
+        "louislam/uptime-kuma",
+        "ghcr.io/louislam/uptime-kuma",
+    ];
 }
 
 /**
@@ -42,7 +49,7 @@ export function buildDist() {
 
 /**
  * Build docker image and push to Docker Hub
- * @param {string} repoName Docker Hub repository name
+ * @param {string[]} repoNames Docker Hub repository names
  * @param {string[]} tags Docker image tags
  * @param {string} target Dockerfile's target name
  * @param {string} buildArgs Docker build args
@@ -50,7 +57,7 @@ export function buildDist() {
  * @param {string} platform Build platform
  * @returns {void}
  */
-export function buildImage(repoName, tags, target, buildArgs = "", dockerfile = "docker/dockerfile", platform = "linux/amd64,linux/arm64,linux/arm/v7") {
+export function buildImage(repoNames, tags, target, buildArgs = "", dockerfile = "docker/dockerfile", platform = "linux/amd64,linux/arm64,linux/arm/v7") {
     let args = [
         "buildx",
         "build",
@@ -60,9 +67,11 @@ export function buildImage(repoName, tags, target, buildArgs = "", dockerfile = 
         platform,
     ];
 
-    // Add tags
-    for (let tag of tags) {
-        args.push("-t", `${repoName}:${tag}`);
+    for (let repoName of repoNames) {
+        // Add tags
+        for (let tag of tags) {
+            args.push("-t", `${repoName}:${tag}`);
+        }
     }
 
     args = [
@@ -92,12 +101,30 @@ export function buildImage(repoName, tags, target, buildArgs = "", dockerfile = 
 /**
  * Check if the version already exists on Docker Hub
  * TODO: use semver to compare versions if it is greater than the previous?
- * @param {string} repoName Docker Hub repository name
+ * @param {string[]} repoNames repository name (Only check the name with single slash)
  * @param {string} version Version to check
  * @returns {void}
  */
-export async function checkTagExists(repoName, version) {
-    console.log(`Checking if version ${version} exists on Docker Hub`);
+export async function checkTagExists(repoNames, version) {
+    // Skip if the tag is not on Docker Hub
+    // louislam/uptime-kuma
+    let dockerHubRepoNames = repoNames.filter((name) => {
+        return name.split("/").length === 2;
+    });
+
+    for (let repoName of dockerHubRepoNames) {
+        await checkTagExistsSingle(repoName, version);
+    }
+}
+
+/**
+ * Check if the version already exists on Docker Hub
+ * @param {string} repoName repository name
+ * @param {string} version Version to check
+ * @returns {Promise<void>}
+ */
+export async function checkTagExistsSingle(repoName, version) {
+    console.log(`Checking if version ${version} exists on Docker Hub:`, repoName);
 
     // Get a list of tags from the Docker Hub repository
     let tags = [];
@@ -220,5 +247,18 @@ export function execSync(cmd) {
         childProcess.execSync(cmd, { stdio: "inherit" });
     } else {
         console.info(`[DRY RUN] ${cmd}`);
+    }
+}
+
+/**
+ * Check if the current branch is "release"
+ * @returns {void}
+ */
+export function checkReleaseBranch() {
+    const res = childProcess.spawnSync("git", [ "rev-parse", "--abbrev-ref", "HEAD" ]);
+    const branch = res.stdout.toString().trim();
+    if (branch !== "release") {
+        console.error(`Current branch is ${branch}, please switch to "release" branch`);
+        process.exit(1);
     }
 }
