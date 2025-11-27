@@ -31,12 +31,9 @@ class Webpush extends NotificationProvider {
             }
 
             const title = `Monitor ${heartbeatJSON["status"] === UP ? "UP" : "DOWN"}`;
-            const down = "❌ " + monitorJSON["name"] + " is DOWN ❌";
-            const up = "✅ " + monitorJSON["name"] + " is UP ✅";
-
             const data = JSON.stringify({
                 title: title,
-                body: `${heartbeatJSON["status"] === UP ? up : down}`
+                body: heartbeatJSON["status"] === UP ? `❌ ${heartbeatJSON["name"]} is DOWN` : `✅ ${heartbeatJSON["name"]} is UP`
             });
 
             await webpush.sendNotification(notification.subscription, data);
