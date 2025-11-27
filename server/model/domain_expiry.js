@@ -3,7 +3,7 @@ const { R } = require("redbean-node");
 const { log } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
 const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../util-server");
-
+const { Notification } = require("../notification");
 const TABLE = "domain_expiry";
 
 /**
@@ -195,18 +195,18 @@ class DomainExpiry extends BeanModel {
      * @param {LooseObject<any>[]} notificationList notification List
      * @returns {void}
      */
-    async sendNotifications(monitor, notificationList) {
-        const name = monitor.domain;
-        const expiryDate = this.expiry;
+    static async sendNotifications(monitor, notificationList) {
+        const domain = await DomainExpiry.forMonitor(monitor);
+        const name = domain.domain;
 
         if (!notificationList.length > 0) {
             // fail fast. If no notification is set, all the following checks can be skipped.
-            log.debug("monitor", "No notification, no need to send domain notification");
+            log.debug("domain", "No notification, no need to send domain notification");
             return;
         }
 
-        const daysRemaining = getDaysRemaining(new Date(), expiryDate);
-        log.warn("domain", `${name} expires in ${daysRemaining} days`);
+        const daysRemaining = getDaysRemaining(new Date(), domain.expiry);
+        log.debug("domain", `${name} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
         if (notifyDays == null || !Array.isArray(notifyDays)) {
