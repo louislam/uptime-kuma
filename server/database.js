@@ -223,11 +223,23 @@ class Database {
 
         let config = {};
 
+        const poolMin = parseInt(process.env.DB_CONNECTION_POOL_MIN) || 0;
+        const poolMax = parseInt(process.env.DB_CONNECTION_POOL_MAX) || 10;
+        const poolIdleTimeout = parseInt(process.env.DB_CONNECTION_POOL_IDLE_TIMEOUT) || 30000;
+        const poolAcquireTimeout = parseInt(process.env.DB_CONNECTION_POOL_ACQUIRE_TIMEOUT) || acquireConnectionTimeout;
+        
         let mariadbPoolConfig = {
-            min: 0,
-            max: 10,
-            idleTimeoutMillis: 30000,
+            min: poolMin,
+            max: poolMax,
+            idleTimeoutMillis: poolIdleTimeout,
+            acquireTimeoutMillis: poolAcquireTimeout,
+            createTimeoutMillis: 30000,
+            destroyTimeoutMillis: 5000,
+            reapIntervalMillis: 1000,
+            createRetryIntervalMillis: 200,
         };
+        
+        log.info("db", `MariaDB Pool Config - Min: ${poolMin}, Max: ${poolMax}, IdleTimeout: ${poolIdleTimeout}ms, AcquireTimeout: ${poolAcquireTimeout}ms`);
 
         log.info("db", `Database Type: ${dbConfig.type}`);
 
@@ -315,9 +327,10 @@ class Database {
             throw new Error("Unknown Database type: " + dbConfig.type);
         }
 
-        // Set to utf8mb4 for MariaDB
+        // Set to utf8mb4 for MariaDB and merge with pool config
         if (dbConfig.type.endsWith("mariadb")) {
             config.pool = {
+                ...mariadbPoolConfig,
                 afterCreate(conn, done) {
                     conn.query("SET CHARACTER SET utf8mb4;", (err) => done(err, conn));
                 },

@@ -1,0 +1,76 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2.0.1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    cap_add:
+      - NET_RAW
+    environment:
+      - UPTIME_KUMA_DB_TYPE=mariadb
+      - UPTIME_KUMA_DB_HOSTNAME=kuma-mariadb
+      - UPTIME_KUMA_DB_PORT=3306
+      - UPTIME_KUMA_DB_NAME=kuma_db
+      - UPTIME_KUMA_DB_USERNAME=kuma_user
+      - UPTIME_KUMA_DB_PASSWORD=kumapass
+      - DB_CONNECTION_POOL_MIN=20
+      - DB_CONNECTION_POOL_MAX=150
+      - DB_CONNECTION_POOL_IDLE_TIMEOUT=120000
+      - DB_CONNECTION_POOL_ACQUIRE_TIMEOUT=60000
+    ports:
+      - "3001:3001"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '2.0'
+        reservations:
+          memory: 512M
+    depends_on:
+      kuma-mariadb:
+        condition: service_healthy
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: kuma-mariadb
+      PMA_USER: kuma_user
+      PMA_PASSWORD: kumapass
+    depends_on:
+      - kuma-mariadb
+  kuma-mariadb:
+    image: mariadb:12.0-ubi9-rc
+    container_name: kuma-mariadb
+    restart: unless-stopped
+    command: --max-connections=500 --innodb-buffer-pool-size=512M --innodb-log-file-size=128M --wait-timeout=600 --interactive-timeout=600 --thread-cache-size=50 --table-open-cache=2000
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: kuma_db
+      MYSQL_USER: kuma_user
+      MYSQL_PASSWORD: kumapass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "kuma_user", "-p=kumapass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  mariadb_data:
+    # Uncomment to use bind mount for data persistence
+    # driver: local
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: /data/uptime/mariadb-data
