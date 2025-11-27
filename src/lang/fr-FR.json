@@ -1209,5 +1209,22 @@
     "Conversation token": "Jeton de conversation",
     "Send UP silently": "Envoyer un UP silencieusement",
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "L’installation d’un bot Nextcloud Talk nécessite un accès administratif au serveur.",
-    "auto-select": "Sélection automatique"
+    "auto-select": "Sélection automatique",
+    "Enter a list of userId": "Entrez une liste d’IDs utilisateur",
+    "supportBaleChatID": "Prend en charge l’ID de chat direct / de groupe / de canal",
+    "wayToGetBaleChatID": "Vous pouvez obtenir votre ID de chat en envoyant un message au bot, puis en accédant à cette URL pour voir le chat_id :",
+    "wayToGetBaleToken": "Vous pouvez obtenir un jeton depuis {0}.",
+    "Mention Mobile List": "Liste des mentions mobiles",
+    "Mention User List": "Liste des IDs des utilisateurs à mentionner",
+    "Dingtalk Mobile List": "Liste des mobiles",
+    "Dingtalk User List": "Liste des IDs utilisateurs",
+    "Enter a list of mobile": "Entrez une liste de numéros de téléphone",
+    "Invalid mobile": "Numéro de téléphone invalide [{mobile}]",
+    "Invalid userId": "ID utilisateur invalide [{userId}]",
+    "Maximum Retries": "Nombre maximal de tentatives",
+    "Number of retry attempts if webhook fails": "Nombre de tentatives de réessai (toutes les 60 à 180 secondes) en cas d’échec du webhook.",
+    "HTTP Method": "Méthode HTTP",
+    "webhookPostMethodDesc": "POST convient à la plupart des serveurs HTTP modernes.",
+    "webhookGetMethodDesc": "GET envoie les données sous forme de paramètres de requête et ne permet pas de configurer un corps. Utile pour déclencher les sondes Push d’Uptime Kuma.",
+    "descriptionHelpText": "Affiché sur le tableau de bord interne. Le Markdown est autorisé et assaini (les espaces et l’indentation sont conservés) avant l’affichage."
 }

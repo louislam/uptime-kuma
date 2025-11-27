@@ -1188,5 +1188,18 @@
     "Nextcloud host": "Sistema Nextcloud",
     "Conversation token": "Token di conversazione",
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "Per installare un bot Nextcloud Talk è necessario disporre dell'accesso amministrativo al server.",
-    "auto-select": "Selezione automatica"
+    "auto-select": "Selezione automatica",
+    "supportBaleChatID": "Supporto Chat Diretta / Gruppo / ID Chat del Canale",
+    "wayToGetBaleChatID": "Puoi ottenere il tuo ID chat inviando un messaggio al bot e andando a questo URL per visualizzare la chat_id:",
+    "wayToGetBaleToken": "Puoi ottenere un token da {0}.",
+    "Mention Mobile List": "Menziona l'elenco dei cellulari",
+    "Mention User List": "Menziona l'elenco degli ID utente",
+    "Dingtalk Mobile List": "Elenco dei cellulari",
+    "Dingtalk User List": "Elenco ID utente",
+    "Enter a list of userId": "Inserisci un elenco di userId",
+    "Invalid mobile": "Cellulare non valido [{mobile}]",
+    "Enter a list of mobile": "Inserisci un elenco di cellulari",
+    "Invalid userId": "ID utente non valido [{userId}]",
+    "Maximum Retries": "Tentativi massimi",
+    "Number of retry attempts if webhook fails": "Numero di tentativi di ripetizione (ogni 60-180 secondi) se il webhook fallisce."
 }
