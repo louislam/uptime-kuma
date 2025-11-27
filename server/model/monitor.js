@@ -100,6 +100,8 @@ class Monitor extends BeanModel {
             parent: this.parent,
             childrenIDs: preloadData.childrenIDs.get(this.id) || [],
             url: this.url,
+            wsIgnoreSecWebsocketAcceptHeader: this.getWsIgnoreSecWebsocketAcceptHeader(),
+            wsSubprotocol: this.wsSubprotocol,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
@@ -274,6 +276,14 @@ class Monitor extends BeanModel {
      */
     getIgnoreTls() {
         return Boolean(this.ignoreTls);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Should WS headers be ignored?
+     */
+    getWsIgnoreSecWebsocketAcceptHeader() {
+        return Boolean(this.wsIgnoreSecWebsocketAcceptHeader);
     }
 
     /**
