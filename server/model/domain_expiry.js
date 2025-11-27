@@ -165,14 +165,13 @@ class DomainExpiry extends BeanModel {
     static async checkExpiry(monitor) {
 
         let bean = await DomainExpiry.forMonitor(monitor);
-        const name = bean.domain;
 
         let expiryDate;
         if (bean?.lastCheck && getDaysBetween(new Date(bean.lastCheck), new Date()) < 1) {
             log.debug("domain", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
             return bean.expiry;
         } else {
-            expiryDate = await getRdapDomainExpiryDate(name);
+            expiryDate = await bean.getExpiryDate();
 
             if (new Date(expiryDate) > new Date(bean.expiry)) {
                 bean.lastExpiryNotificationSent = null;
