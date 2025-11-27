@@ -22,7 +22,7 @@ class Webpush extends NotificationProvider {
                 // Test message
                 const data = JSON.stringify({
                     title: "TEST",
-                    body: "Test Alert - " + msg
+                    body: `Test Alert - ${msg}`
                 });
 
                 await webpush.sendNotification(notification.subscription, data);
