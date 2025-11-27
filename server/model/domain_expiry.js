@@ -136,7 +136,7 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<DomainExpiry>} Domain expiry bean
      */
     static async forMonitor(monitor) {
-        const parsed = parseTld(monitor.type === "port" ? monitor.hostname : monitor.url);
+        const parsed = parseTld(monitor.type === "http" ? monitor.url : monitor.hostname);
         const existing = await DomainExpiry.findByName(parsed.domain);
         if (existing) {
             return existing;
