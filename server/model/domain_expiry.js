@@ -205,6 +205,7 @@ class DomainExpiry extends BeanModel {
         }
 
         const daysRemaining = getDaysRemaining(new Date(), domain.expiry);
+        const lastSent = domain.lastExpiryNotificationSent;
         log.debug("domain", `${name} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
@@ -223,7 +224,7 @@ class DomainExpiry extends BeanModel {
                         `No need to send domain notification for ${name} (${daysRemaining} days valid) on ${targetDays} deadline.`
                     );
                     continue;
-                } else if (this.lastExpiryNotificationSent <= targetDays) {
+                } else if (lastSent && lastSent <= targetDays) {
                     log.debug(
                         "domain",
                         `Notification for ${name} on ${targetDays} deadline sent already, no need to send again.`
@@ -237,8 +238,9 @@ class DomainExpiry extends BeanModel {
                     notificationList
                 );
                 if (sent) {
-                    this.lastExpiryNotificationSent = targetDays;
-                    await R.store(this);
+                    domain.lastExpiryNotificationSent = targetDays;
+                    await R.store(domain);
+                    return targetDays;
                 }
             }
         }
