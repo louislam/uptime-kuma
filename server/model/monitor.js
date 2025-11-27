@@ -878,15 +878,6 @@ class Monitor extends BeanModel {
                     throw new Error("Unknown Monitor Type");
                 }
 
-                if (Boolean(this.domainExpiryNotification)) {
-                    const domainExpiryDate = await DomainExpiry.checkExpiry(this);
-                    if (domainExpiryDate) {
-                        DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
-                    } else {
-                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
-                    }
-                }
-
                 if (this.isUpsideDown()) {
                     bean.status = flipStatus(bean.status);
 
@@ -958,6 +949,15 @@ class Monitor extends BeanModel {
                         // Reset down count
                         bean.downCount = 0;
                     }
+                }
+            }
+
+            if (Boolean(this.domainExpiryNotification)) {
+                const domainExpiryDate = await DomainExpiry.checkExpiry(this);
+                if (domainExpiryDate) {
+                    DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
+                } else {
+                    log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
                 }
             }
 
