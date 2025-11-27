@@ -952,12 +952,16 @@ class Monitor extends BeanModel {
                 }
             }
 
-            if (Boolean(this.domainExpiryNotification)) {
-                const domainExpiryDate = await DomainExpiry.checkExpiry(this);
-                if (domainExpiryDate) {
-                    DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
-                } else {
-                    log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
+            if (!bean.status === MAINTENANCE && Boolean(this.domainExpiryNotification)) {
+                try {
+                    const domainExpiryDate = await DomainExpiry.checkExpiry(this);
+                    if (domainExpiryDate) {
+                        DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
+                    } else {
+                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
+                    }
+                } catch (error) {
+                    log.warn(`Failed to get domain expiry for ${this.name} : ${error.message}`);
                 }
             }
 
