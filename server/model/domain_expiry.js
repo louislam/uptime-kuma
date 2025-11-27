@@ -9,7 +9,7 @@ const TABLE = "domain_expiry";
 /**
  * Find the RDAP server for a given TLD
  * @param {string} tld TLD
- * @returns {string} First RDAP server found
+ * @returns {Promise<string>} First RDAP server found
  */
 async function getRdapServer(tld) {
     let rdapList;
@@ -33,7 +33,7 @@ async function getRdapServer(tld) {
 /**
  * Request RDAP server to retrieve the expiry date of a domain
  * @param {string} domain Domain to retrieve the expiry date from
- * @returns {(Date|null)} Expiry date from RDAP server
+ * @returns {Promise<(Date|null)>} Expiry date from RDAP server
  */
 async function getRdapDomainExpiryDate(domain) {
     const tld = DomainExpiry.parseTld(domain).publicSuffix;
@@ -99,7 +99,7 @@ async function sendDomainNotificationByTargetDays(domain, daysRemaining, targetD
 class DomainExpiry extends BeanModel {
     /**
      * @param {string} domain Domain name
-     * @returns {DomainExpiry} Domain bean
+     * @returns {Promise<DomainExpiry>} Domain bean
      */
     static async findByName(domain) {
         return R.findOne(TABLE, "domain = ?", [ domain ]);
@@ -133,7 +133,7 @@ class DomainExpiry extends BeanModel {
 
     /**
      * @param {Monitor} monitor Monitor object
-     * @returns {DomainExpiry} Domain expiry bean
+     * @returns {Promise<DomainExpiry>} Domain expiry bean
      */
     static async forMonitor(monitor) {
         const parsed = parseTld(monitor.type === "port" ? monitor.hostname : monitor.url);
@@ -160,7 +160,7 @@ class DomainExpiry extends BeanModel {
 
     /**
      * @param {(Monitor)} monitor Monitor object
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async checkExpiry(monitor) {
 
@@ -193,7 +193,7 @@ class DomainExpiry extends BeanModel {
     /**
      * @param {Monitor} monitor Monitor instance
      * @param {LooseObject<any>[]} notificationList notification List
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async sendNotifications(monitor, notificationList) {
         const domain = await DomainExpiry.forMonitor(monitor);
