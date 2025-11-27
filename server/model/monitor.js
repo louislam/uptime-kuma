@@ -952,7 +952,7 @@ class Monitor extends BeanModel {
                 }
             }
 
-            if (!bean.status === MAINTENANCE && Boolean(this.domainExpiryNotification)) {
+            if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
                 try {
                     const domainExpiryDate = await DomainExpiry.checkExpiry(this);
                     if (domainExpiryDate) {
