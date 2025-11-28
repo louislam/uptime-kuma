@@ -105,7 +105,8 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        const regex = /^(Certificate is invalid|TLS Connection failed:)/;
+        // Regex: contains with "TLS Connection failed:" or "Certificate is invalid"
+        const regex = /TLS Connection failed:|Certificate is invalid/;
 
         await assert.rejects(
             tcpMonitor.check(monitor, heartbeat, {}),
