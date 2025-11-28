@@ -2,7 +2,7 @@ const { WebSocketServer } = require("ws");
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { WebSocketMonitorType } = require("../../server/monitor-types/websocket-upgrade");
-const { UP, DOWN, PENDING } = require("../../src/util");
+const { UP, PENDING } = require("../../src/util");
 
 describe("Websocket Test", {
 }, () => {
@@ -84,13 +84,10 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
-        const expected = {
-            msg: "Invalid Sec-WebSocket-Accept header",
-            status: DOWN,
-        };
-
-        await websocketMonitor.check(monitor, heartbeat, {});
-        assert.deepStrictEqual(heartbeat, expected);
+        await assert.rejects(
+            websocketMonitor.check(monitor, heartbeat, {}),
+            new Error("Invalid Sec-WebSocket-Accept header")
+        );
     });
 
     test("Non compliant WS server with IgnoreSecWebsocket", async () => {
@@ -150,13 +147,10 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
-        const expected = {
-            msg: "Unexpected server response: 200",
-            status: DOWN,
-        };
-
-        await websocketMonitor.check(monitor, heartbeat, {});
-        assert.deepStrictEqual(heartbeat, expected);
+        await assert.rejects(
+            websocketMonitor.check(monitor, heartbeat, {}),
+            new Error("Unexpected server response: 200")
+        );
     });
 
     test("Secure Websocket with Subprotocol", async () => {
@@ -173,12 +167,9 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
-        const expected = {
-            msg: "Server sent no subprotocol",
-            status: DOWN,
-        };
-
-        await websocketMonitor.check(monitor, heartbeat, {});
-        assert.deepStrictEqual(heartbeat, expected);
+        await assert.rejects(
+            websocketMonitor.check(monitor, heartbeat, {}),
+            new Error("Server sent no subprotocol")
+        );
     });
 });

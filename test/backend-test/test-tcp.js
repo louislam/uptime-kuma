@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { TCPMonitorType } = require("../../server/monitor-types/tcp");
-const { UP, DOWN, PENDING } = require("../../src/util");
+const { UP, PENDING } = require("../../src/util");
 const net = require("net");
 
 /**
@@ -77,9 +77,10 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        await tcpMonitor.check(monitor, heartbeat, {});
-
-        assert.strictEqual(heartbeat.status, DOWN);
+        await assert.rejects(
+            tcpMonitor.check(monitor, heartbeat, {}),
+            new Error("Connection failed")
+        );
     });
 
     /**
@@ -104,10 +105,12 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        await tcpMonitor.check(monitor, heartbeat, {});
+        const regex = /^(Certificate is invalid|TLS Connection failed:)/;
 
-        assert.strictEqual(heartbeat.status, DOWN);
-        assert([ "Certificate is invalid", "TLS Connection failed:" ].some(prefix => heartbeat.msg.startsWith(prefix)));
+        await assert.rejects(
+            tcpMonitor.check(monitor, heartbeat, {}),
+            regex
+        );
     });
 
     test("TCP server with valid TLS certificate (SSL)", async t => {
@@ -174,9 +177,11 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        await tcpMonitor.check(monitor, heartbeat, {});
+        const regex = /does not match certificate/;
 
-        assert.strictEqual(heartbeat.status, DOWN);
-        assert([ "does not match certificate" ].some(msg => heartbeat.msg.includes(msg)));
+        await assert.rejects(
+            tcpMonitor.check(monitor, heartbeat, {}),
+            regex
+        );
     });
 });
