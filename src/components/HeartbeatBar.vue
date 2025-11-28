@@ -316,8 +316,10 @@ export default {
         },
 
         "$root.theme"() {
-            // Redraw canvas when theme changes
-            this.drawCanvas();
+            // Redraw canvas when theme changes (nextTick ensures .dark class is applied)
+            this.$nextTick(() => {
+                this.drawCanvas();
+            });
         },
 
         hoveredBeatIndex() {
