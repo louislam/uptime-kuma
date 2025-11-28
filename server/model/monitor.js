@@ -864,6 +864,11 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
                     const monitorType = UptimeKumaServer.monitorTypeList[this.type];
                     await monitorType.check(this, bean, UptimeKumaServer.getInstance());
+
+                    if (!monitorType.allowCustomStatus && bean.status !== UP) {
+                        throw new Error("The monitor implementation is incorrect, non-UP error must throw error inside check()");
+                    }
+
                     if (!bean.ping) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }

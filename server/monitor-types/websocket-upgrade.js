@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const WebSocket = require("ws");
-const { UP, DOWN } = require("../../src/util");
+const { UP } = require("../../src/util");
 
 class WebSocketMonitorType extends MonitorType {
     name = "websocket-upgrade";
@@ -10,8 +10,13 @@ class WebSocketMonitorType extends MonitorType {
      */
     async check(monitor, heartbeat, _server) {
         const [ message, code ] = await this.attemptUpgrade(monitor);
-        heartbeat.status = code === 1000 ? UP : DOWN;
-        heartbeat.msg = message;
+
+        if (code === 1000) {
+            heartbeat.status = UP;
+            heartbeat.msg = message;
+        } else {
+            throw new Error(message);
+        }
     }
 
     /**
