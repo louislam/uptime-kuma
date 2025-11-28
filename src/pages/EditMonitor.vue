@@ -769,7 +769,7 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.hasDomain" class="my-3 form-check">
+                            <div v-if="hasDomain" class="my-3 form-check">
                                 <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
@@ -1721,7 +1721,7 @@ message HealthCheckResponse {
 
         "monitorTypeUrlHost"(data) {
             this.$root.getSocket().emit("checkMointor", data, (res) => {
-                this.monitor.hasDomain = !!res?.domain;
+                this.hasDomain = !!res?.domain;
                 if (!res?.domain) {
                     this.monitor.domainExpiryNotification = false;
                 }
