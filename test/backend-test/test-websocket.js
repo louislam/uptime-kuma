@@ -2,7 +2,7 @@ const { WebSocketServer } = require("ws");
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { WebSocketMonitorType } = require("../../server/monitor-types/websocket-upgrade");
-const { UP, PENDING } = require("../../src/util");
+const { UP, DOWN, PENDING } = require("../../src/util");
 
 describe("Websocket Test", {
 }, () => {
