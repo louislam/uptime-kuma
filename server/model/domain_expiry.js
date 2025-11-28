@@ -4,10 +4,16 @@ const { log } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
 const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
-const TABLE = "domain_expiry";
+const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 
+const TABLE = "domain_expiry";
 const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
 const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
+
+const cachedFetch = NodeFetchCache.create({
+    // cache for 8h
+    cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 })
+});
 
 /**
  * Find the RDAP server for a given TLD
@@ -17,7 +23,7 @@ const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" 
 async function getRdapServer(tld) {
     let rdapList;
     try {
-        const res = await fetch("https://data.iana.org/rdap/dns.json");
+        const res = await cachedFetch("https://data.iana.org/rdap/dns.json");
         rdapList = await res.json();
     } catch (error) {
         log.debug("rdap", error);
