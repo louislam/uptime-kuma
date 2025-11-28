@@ -864,7 +864,7 @@ class Monitor extends BeanModel {
                     // If allowCustomStatus is false,
                     // only UP is allowed, other status must throw error inside check()
                     if (!monitorType.allowCustomStatus && bean.status !== UP) {
-                        throw new Error("The monitor implementation is incorrect, non-UP error must  throw error inside check()");
+                        throw new Error("The monitor implementation is incorrect, non-UP error must throw error inside check()");
                     }
 
                     if (!bean.ping) {
