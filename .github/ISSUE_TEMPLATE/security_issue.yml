@@ -13,7 +13,7 @@ body:
 
         ## Do not report any upstream dependency issues / scan result by any tools.
 
-        It will be closed immediately without explanations. Unless you have PoC to prove that the upstream issue affected Uptime Kuma.
+        It will be closed immediately without explanation, unless you have a PoC to prove that the upstream issue affects Uptime Kuma.
 
         ### ⚠️ Report a Security Vulnerability
 
