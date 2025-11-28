@@ -6,6 +6,9 @@ const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../ut
 const { Notification } = require("../notification");
 const TABLE = "domain_expiry";
 
+const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
+const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
+
 /**
  * Find the RDAP server for a given TLD
  * @param {string} tld TLD
@@ -136,13 +139,17 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<DomainExpiry>} Domain expiry bean
      */
     static async forMonitor(monitor) {
-        const parsed = parseTld(monitor.type === "http" ? monitor.url : monitor.hostname);
-        const existing = await DomainExpiry.findByName(parsed.domain);
+        const m = monitor;
+        if (excludeTypes.includes(m.type) || m.type?.match(/sql$/)) {
+            return false;
+        }
+        const tld = parseTld(urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname);
+        const existing = await DomainExpiry.findByName(tld.domain);
         if (existing) {
             return existing;
         }
-        if (parsed.domain) {
-            return await DomainExpiry.createByName(parsed.domain);
+        if (tld.domain) {
+            return await DomainExpiry.createByName(tld.domain);
         }
     }
 

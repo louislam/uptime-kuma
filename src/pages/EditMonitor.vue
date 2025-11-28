@@ -769,7 +769,7 @@
                                 </div>
                             </div>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'dns' " class="my-3 form-check">
+                            <div v-if="monitor.hasDomain" class="my-3 form-check">
                                 <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
@@ -1281,6 +1281,7 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
+import { parse as parseTld } from "tldts";
 import { hostNameRegexPattern, timeDurationFormatter } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
@@ -1430,6 +1431,17 @@ export default {
                 return this.ipRegexPattern;
             }
             return null;
+        },
+
+        monitorHasDomain() {
+            const m = this.monitor;
+            const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
+            const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
+            if (excludeTypes.includes(this.monitor.type) || m.type?.match(/sql$/)) {
+                return false;
+            }
+            const tld = parseTld(urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname);
+            return !!tld.domain;
         },
 
         pageName() {
@@ -1706,6 +1718,13 @@ message HealthCheckResponse {
         "monitor.ping_per_request_timeout"() {
             if (this.monitor.type === "ping") {
                 this.finishUpdateInterval();
+            }
+        },
+
+        "monitorHasDomain"(hasDomain) {
+            this.monitor.hasDomain = hasDomain;
+            if (!hasDomain) {
+                this.monitor.domainExpiryNotification = false;
             }
         },
 
