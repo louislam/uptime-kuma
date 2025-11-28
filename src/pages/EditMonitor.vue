@@ -1281,7 +1281,6 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
-import { parse as parseTld } from "tldts";
 import { hostNameRegexPattern, timeDurationFormatter } from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
@@ -1433,15 +1432,14 @@ export default {
             return null;
         },
 
-        monitorHasDomain() {
-            const m = this.monitor;
-            const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
-            const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
-            if (excludeTypes.includes(this.monitor.type) || m.type?.match(/sql$/)) {
-                return false;
-            }
-            const tld = parseTld(urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname);
-            return !!tld.domain;
+        monitorTypeUrlHost() {
+            const { type, url, hostname, grpcUrl } = this.monitor;
+            return {
+                type,
+                url,
+                hostname,
+                grpcUrl
+            };
         },
 
         pageName() {
@@ -1721,11 +1719,13 @@ message HealthCheckResponse {
             }
         },
 
-        "monitorHasDomain"(hasDomain) {
-            this.monitor.hasDomain = hasDomain;
-            if (!hasDomain) {
-                this.monitor.domainExpiryNotification = false;
-            }
+        "monitorTypeUrlHost"(data) {
+            this.$root.getSocket().emit("checkMointor", data, (res) => {
+                this.monitor.hasDomain = !!res?.domain;
+                if (!res?.domain) {
+                    this.monitor.domainExpiryNotification = false;
+                }
+            });
         },
 
         "monitor.type"(newType, oldType) {
