@@ -141,7 +141,9 @@ class DomainExpiry extends BeanModel {
         if (existing) {
             return existing;
         }
-        return await DomainExpiry.createByName(parsed.domain);
+        if (parsed.domain) {
+            return await DomainExpiry.createByName(parsed.domain);
+        }
     }
 
     /**
@@ -170,7 +172,7 @@ class DomainExpiry extends BeanModel {
         if (bean?.lastCheck && getDaysBetween(new Date(bean.lastCheck), new Date()) < 1) {
             log.debug("domain", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
             return bean.expiry;
-        } else {
+        } else if (bean) {
             expiryDate = await bean.getExpiryDate();
 
             if (new Date(expiryDate) > new Date(bean.expiry)) {
