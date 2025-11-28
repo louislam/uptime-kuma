@@ -2,7 +2,7 @@ const { WebSocketServer } = require("ws");
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { WebSocketMonitorType } = require("../../server/monitor-types/websocket-upgrade");
-const { UP, DOWN, PENDING } = require("../../src/util");
+const { UP, PENDING } = require("../../src/util");
 
 describe("Websocket Test", {
 }, () => {
@@ -19,13 +19,11 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
-        const expected = {
-            msg: "Unexpected server response: 200",
-            status: DOWN,
-        };
-
-        await websocketMonitor.check(monitor, heartbeat, {});
-        assert.deepStrictEqual(heartbeat, expected);
+        assert.throws(async () => {
+            await websocketMonitor.check(monitor, heartbeat, {});
+        }, {
+            message: "Unexpected server response: 200"
+        });
     });
 
     test("Secure Websocket", async () => {
