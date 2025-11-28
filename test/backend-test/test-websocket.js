@@ -19,11 +19,10 @@ describe("Websocket Test", {
             status: PENDING,
         };
 
-        assert.throws(async () => {
-            await websocketMonitor.check(monitor, heartbeat, {});
-        }, {
-            message: "Unexpected server response: 200"
-        });
+        await assert.rejects(
+            websocketMonitor.check(monitor, heartbeat, {}),
+            new Error("Unexpected server response: 200")
+        );
     });
 
     test("Secure Websocket", async () => {
