@@ -4,6 +4,7 @@ const Monitor = require("../model/monitor");
 
 class GroupMonitorType extends MonitorType {
     name = "group";
+    allowCustomStatus = true;
 
     /**
      * @inheritdoc
