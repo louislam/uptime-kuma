@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, PING_GLOBAL_TIMEOUT_DEFAULT: TIMEOUT, log } = require("../../src/util");
+const { UP, PING_GLOBAL_TIMEOUT_DEFAULT: TIMEOUT, log } = require("../../src/util");
 const { checkCertificate } = require("../util-server");
 const tls = require("tls");
 const net = require("net");
@@ -47,9 +47,7 @@ class TCPMonitorType extends MonitorType {
             heartbeat.msg = `${resp} ms`;
             heartbeat.status = UP;
         } catch {
-            heartbeat.status = DOWN;
-            heartbeat.msg = "Connection failed";
-            return;
+            throw new Error("Connection failed");
         }
 
         let socket_;
@@ -133,13 +131,11 @@ class TCPMonitorType extends MonitorType {
 
                 await monitor.handleTlsInfo(tlsInfoObject);
                 if (!tlsInfoObject.valid) {
-                    heartbeat.status = DOWN;
-                    heartbeat.msg = "Certificate is invalid";
+                    throw new Error("Certificate is invalid");
                 }
             } catch (error) {
                 const message = error instanceof Error ? error.message : "Unknown error";
-                heartbeat.status = DOWN;
-                heartbeat.msg = `TLS Connection failed: ${message}`;
+                throw new Error(`TLS Connection failed: ${message}`);
             } finally {
                 if (socket && !socket.destroyed) {
                     socket.end();
