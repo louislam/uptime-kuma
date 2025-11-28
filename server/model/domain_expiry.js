@@ -150,6 +150,10 @@ class DomainExpiry extends BeanModel {
             return false;
         }
         const tld = parseTld(urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname);
+        const rdap = await getRdapServer(tld.publicSuffix);
+        if (!rdap) {
+            return false;
+        }
         const existing = await DomainExpiry.findByName(tld.domain);
         if (existing) {
             return existing;
