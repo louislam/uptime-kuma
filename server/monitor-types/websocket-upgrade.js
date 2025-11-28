@@ -14,9 +14,9 @@ class WebSocketMonitorType extends MonitorType {
         if (code === 1000) {
             heartbeat.status = UP;
             heartbeat.msg = message;
+        } else {
+            throw new Error(message);
         }
-
-        throw new Error(message);
     }
 
     /**
