@@ -85,7 +85,6 @@ export default {
             tooltipTimeoutId: null,
             // Canvas
             hoveredBeatIndex: -1,
-            beatBorderRadius: 2.5,
         };
     },
     computed: {
@@ -578,19 +577,22 @@ export default {
                     offsetY = centerY - height / 2;
                 }
 
+                // Calculate border radius based on current width (pill shape = half of width)
+                const borderRadius = width / 2;
+
                 // Get color based on beat status
                 let color = this.getBeatColor(beat, colors);
 
                 // Draw beat rectangle
                 ctx.fillStyle = color;
-                this.roundRect(ctx, offsetX, offsetY, width, height, this.beatBorderRadius);
+                this.roundRect(ctx, offsetX, offsetY, width, height, borderRadius);
                 ctx.fill();
 
                 // Apply hover opacity
                 if (isHovered && beat !== 0) {
                     ctx.globalAlpha = 0.8;
                     ctx.fillStyle = color;
-                    this.roundRect(ctx, offsetX, offsetY, width, height, this.beatBorderRadius);
+                    this.roundRect(ctx, offsetX, offsetY, width, height, borderRadius);
                     ctx.fill();
                     ctx.globalAlpha = 1;
                 }
