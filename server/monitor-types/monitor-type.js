@@ -15,7 +15,7 @@ class MonitorType {
     conditionVariables = [];
 
     /**
-     * Allow to set any custom status to heartbeat, other than UP.
+     * Allows setting any custom status to heartbeat, other than UP.
      * @type {boolean}
      */
     allowCustomStatus = false;
