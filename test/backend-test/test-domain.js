@@ -1,12 +1,12 @@
 const test = require("node:test");
 const assert = require("node:assert");
-const DomainExpiry = require("../../server/model/domain_expiry.js");
-const { Settings } = require("../../server/settings");
+const DomainExpiry = require("../../server/model/domain_expiry");
 const mockWebhook = require("../mock-webhook");
 const TestDB = require("../mock-testdb");
-const { setSetting } = require("../../server/util-server");
 const { R } = require("redbean-node");
 const { Notification } = require("../../server/notification");
+const { Settings } = require("../../server/settings");
+const { setSetting } = require("../../server/util-server");
 
 const testDb = new TestDB();
 

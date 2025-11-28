@@ -1362,6 +1362,7 @@ export default {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
             },
+            hasDomain: false,
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
             kafkaSaslMechanismOptions: [],

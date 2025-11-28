@@ -10,10 +10,10 @@ const TABLE = "domain_expiry";
 const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
 const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
 
-const cachedFetch = NodeFetchCache.create({
+const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
     // cache for 8h
     cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 })
-});
+}) : fetch;
 
 /**
  * Find the RDAP server for a given TLD
