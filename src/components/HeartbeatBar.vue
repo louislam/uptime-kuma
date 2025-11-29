@@ -85,7 +85,6 @@ export default {
             tooltipTimeoutId: null,
             // Canvas
             hoveredBeatIndex: -1,
-            beatBorderRadius: 2.5,
         };
     },
     computed: {
@@ -311,6 +310,13 @@ export default {
 
         shortBeatList() {
             // Triggers on beatList, maxBeat, or move changes
+            this.$nextTick(() => {
+                this.drawCanvas();
+            });
+        },
+
+        "$root.theme"() {
+            // Redraw canvas when theme changes (nextTick ensures .dark class is applied)
             this.$nextTick(() => {
                 this.drawCanvas();
             });
@@ -551,13 +557,14 @@ export default {
             const centerY = this.canvasHeight / 2;
 
             // Cache CSS colors once per redraw
-            const styles = getComputedStyle(document.documentElement);
+            const rootStyles = getComputedStyle(document.documentElement);
+            const canvasStyles = getComputedStyle(canvas.parentElement);
             const colors = {
-                empty: styles.getPropertyValue("--bs-body-bg") || "#f0f8ff",
-                down: styles.getPropertyValue("--bs-danger") || "#dc3545",
-                pending: styles.getPropertyValue("--bs-warning") || "#ffc107",
-                maintenance: styles.getPropertyValue("--maintenance") || "#1d4ed8",
-                up: styles.getPropertyValue("--bs-primary") || "#5cdd8b",
+                empty: canvasStyles.getPropertyValue("--beat-empty-color") || "#f0f8ff",
+                down: rootStyles.getPropertyValue("--bs-danger") || "#dc3545",
+                pending: rootStyles.getPropertyValue("--bs-warning") || "#ffc107",
+                maintenance: rootStyles.getPropertyValue("--maintenance") || "#1d4ed8",
+                up: rootStyles.getPropertyValue("--bs-primary") || "#5cdd8b",
             };
 
             // Draw each beat
@@ -578,19 +585,22 @@ export default {
                     offsetY = centerY - height / 2;
                 }
 
+                // Calculate border radius based on current width (pill shape = half of width)
+                const borderRadius = width / 2;
+
                 // Get color based on beat status
                 let color = this.getBeatColor(beat, colors);
 
                 // Draw beat rectangle
                 ctx.fillStyle = color;
-                this.roundRect(ctx, offsetX, offsetY, width, height, this.beatBorderRadius);
+                this.roundRect(ctx, offsetX, offsetY, width, height, borderRadius);
                 ctx.fill();
 
                 // Apply hover opacity
                 if (isHovered && beat !== 0) {
                     ctx.globalAlpha = 0.8;
                     ctx.fillStyle = color;
-                    this.roundRect(ctx, offsetX, offsetY, width, height, this.beatBorderRadius);
+                    this.roundRect(ctx, offsetX, offsetY, width, height, borderRadius);
                     ctx.fill();
                     ctx.globalAlpha = 1;
                 }
@@ -813,6 +823,12 @@ export default {
 }
 
 .hp-bar-big {
+    --beat-empty-color: #f0f8ff;
+
+    .dark & {
+        --beat-empty-color: #848484;
+    }
+
     .heartbeat-canvas {
         display: block;
         cursor: pointer;

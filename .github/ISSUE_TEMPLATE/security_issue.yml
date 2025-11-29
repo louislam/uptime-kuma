@@ -11,6 +11,10 @@ body:
       value: |
         ## ❗ IMPORTANT: DO NOT SHARE VULNERABILITY DETAILS HERE
 
+        ## Do not report any upstream dependency issues / scan results by any tools.
+
+        It will be closed immediately without explanation, unless you have a PoC to prove that the upstream issue affects Uptime Kuma.
+
         ### ⚠️ Report a Security Vulnerability
 
         **If you have discovered a security vulnerability, please report it securely using the GitHub Security Advisory.**
