@@ -7,6 +7,7 @@ const googleAnalytics = require("../google-analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
+const dayjs = require("dayjs");
 
 const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
 
@@ -80,16 +81,12 @@ class StatusPage extends BeanModel {
             language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
             updated: new Date(), // optional, default = today
         });
-
         heartbeats.forEach(heartbeat => {
-            if (!/([zZ]|[+-][0-9]{2}:[0-9]{2})$/.test(heartbeat.time)) {
-                heartbeat.time += "Z"; // append Z to indicate UTC time
-            }
             feed.addItem({
                 title: `${heartbeat.name} is down`,
                 description: `${heartbeat.name} has been down since ${heartbeat.time}`,
                 id: heartbeat.monitorID,
-                date: new Date(heartbeat.time),
+                date: dayjs(heartbeat.time).toDate(),
             });
         });
 
