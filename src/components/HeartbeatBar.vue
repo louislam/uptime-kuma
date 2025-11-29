@@ -1,26 +1,21 @@
 <template>
     <div ref="wrap" class="wrap" :style="wrapStyle">
         <div class="hp-bar-big" :style="barStyle">
-            <div
-                v-for="(beat, index) in shortBeatList"
-                :key="index"
-                class="beat-hover-area"
-                :class="{ 'empty': (beat === 0) }"
-                :style="beatHoverAreaStyle"
-                :aria-label="getBeatAriaLabel(beat)"
-                role="status"
+            <canvas
+                ref="canvas"
+                class="heartbeat-canvas"
+                :width="canvasWidth"
+                :height="canvasHeight"
+                :aria-label="canvasAriaLabel"
+                role="img"
                 tabindex="0"
-                @mouseenter="showTooltip(beat, $event)"
+                @mousemove="handleMouseMove"
                 @mouseleave="hideTooltip"
-                @focus="showTooltip(beat, $event)"
-                @blur="hideTooltip"
-            >
-                <div
-                    class="beat"
-                    :class="getBeatClasses(beat)"
-                    :style="beatStyle"
-                />
-            </div>
+                @click="handleClick"
+                @keydown="handleKeydown"
+                @focus="handleFocus"
+                @blur="handleBlur"
+            />
         </div>
         <div
             v-if="!$root.isMobile && size !== 'small' && beatList.length > 4 && $root.styleElapsedTime !== 'none'"
@@ -88,6 +83,8 @@ export default {
             tooltipY: 0,
             tooltipPosition: "below",
             tooltipTimeoutId: null,
+            // Canvas
+            hoveredBeatIndex: -1,
         };
     },
     computed: {
@@ -263,11 +260,45 @@ export default {
             } else {
                 return this.$t("time ago", [ (seconds / 60 / 60).toFixed(0) + "h" ] );
             }
-        }
+        },
+
+        /**
+         * Canvas width based on number of beats
+         * @returns {number} Canvas width in pixels
+         */
+        canvasWidth() {
+            const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
+            return this.shortBeatList.length * beatFullWidth;
+        },
+
+        /**
+         * Canvas height based on beat height and hover scale
+         * @returns {number} Canvas height in pixels
+         */
+        canvasHeight() {
+            return this.beatHeight * this.hoverScale;
+        },
+
+        /**
+         * Aria label for canvas accessibility
+         * @returns {string} Description of heartbeat status
+         */
+        canvasAriaLabel() {
+            if (!this.shortBeatList || this.shortBeatList.length === 0) {
+                return "Heartbeat history: No data";
+            }
+
+            const validBeats = this.shortBeatList.filter(b => b !== 0 && b !== null);
+            const upCount = validBeats.filter(b => Number(b.status) === UP).length;
+            const downCount = validBeats.filter(b => Number(b.status) === DOWN).length;
+
+            return `Heartbeat history: ${validBeats.length} checks, ${upCount} up, ${downCount} down`;
+        },
     },
     watch: {
         beatList: {
             handler() {
+                // Only handle the slide animation, drawCanvas is triggered by shortBeatList watcher
                 this.move = true;
 
                 setTimeout(() => {
@@ -275,6 +306,24 @@ export default {
                 }, 300);
             },
             deep: true,
+        },
+
+        shortBeatList() {
+            // Triggers on beatList, maxBeat, or move changes
+            this.$nextTick(() => {
+                this.drawCanvas();
+            });
+        },
+
+        "$root.theme"() {
+            // Redraw canvas when theme changes (nextTick ensures .dark class is applied)
+            this.$nextTick(() => {
+                this.drawCanvas();
+            });
+        },
+
+        hoveredBeatIndex() {
+            this.drawCanvas();
         },
     },
     unmounted() {
@@ -314,6 +363,11 @@ export default {
 
         window.addEventListener("resize", this.resize);
         this.resize();
+
+        // Initial canvas draw
+        this.$nextTick(() => {
+            this.drawCanvas();
+        });
     },
     methods: {
         /**
@@ -399,10 +453,11 @@ export default {
         /**
          * Show custom tooltip
          * @param {object} beat Beat data
-         * @param {Event} event Mouse event
+         * @param {number} beatIndex Index of the beat
+         * @param {object} canvasRect Canvas bounding rectangle
          * @returns {void}
          */
-        showTooltip(beat, event) {
+        showTooltip(beat, beatIndex, canvasRect) {
             if (beat === 0 || !beat) {
                 this.hideTooltip();
                 return;
@@ -417,18 +472,19 @@ export default {
             this.tooltipTimeoutId = setTimeout(() => {
                 this.tooltipContent = beat;
 
-                // Calculate position relative to viewport
-                const rect = event.target.getBoundingClientRect();
+                // Calculate the beat's position within the canvas
+                const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
+                const beatCenterX = beatIndex * beatFullWidth + beatFullWidth / 2;
 
-                // Position relative to viewport
-                const x = rect.left + (rect.width / 2);
-                const y = rect.top;
+                // Convert to viewport coordinates
+                const x = canvasRect.left + beatCenterX;
+                const y = canvasRect.top;
 
                 // Check if tooltip would go off-screen and adjust position
                 const tooltipHeight = 80; // Approximate tooltip height
                 const viewportHeight = window.innerHeight;
                 const spaceAbove = y;
-                const spaceBelow = viewportHeight - y - rect.height;
+                const spaceBelow = viewportHeight - y - canvasRect.height;
 
                 if (spaceAbove > tooltipHeight && spaceBelow < tooltipHeight) {
                     // Show above - arrow points down
@@ -437,7 +493,7 @@ export default {
                 } else {
                     // Show below - arrow points up
                     this.tooltipPosition = "below";
-                    this.tooltipY = y + rect.height + 10;
+                    this.tooltipY = y + canvasRect.height + 10;
                 }
 
                 // Ensure tooltip doesn't go off the left or right edge
@@ -457,9 +513,10 @@ export default {
 
         /**
          * Hide custom tooltip
+         * @param {boolean} resetHoverIndex Whether to reset the hovered beat index
          * @returns {void}
          */
-        hideTooltip() {
+        hideTooltip(resetHoverIndex = true) {
             if (this.tooltipTimeoutId) {
                 clearTimeout(this.tooltipTimeoutId);
                 this.tooltipTimeoutId = null;
@@ -467,6 +524,289 @@ export default {
 
             this.tooltipVisible = false;
             this.tooltipContent = null;
+
+            if (resetHoverIndex) {
+                this.hoveredBeatIndex = -1;
+            }
+        },
+
+        /**
+         * Draw all beats on the canvas
+         * @returns {void}
+         */
+        drawCanvas() {
+            const canvas = this.$refs.canvas;
+            if (!canvas) {
+                return;
+            }
+
+            const ctx = canvas.getContext("2d");
+            const dpr = window.devicePixelRatio || 1;
+
+            // Set canvas size accounting for device pixel ratio for crisp rendering
+            canvas.width = this.canvasWidth * dpr;
+            canvas.height = this.canvasHeight * dpr;
+            canvas.style.width = this.canvasWidth + "px";
+            canvas.style.height = this.canvasHeight + "px";
+            ctx.scale(dpr, dpr);
+
+            // Clear canvas
+            ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+            const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
+            const centerY = this.canvasHeight / 2;
+
+            // Cache CSS colors once per redraw
+            const rootStyles = getComputedStyle(document.documentElement);
+            const canvasStyles = getComputedStyle(canvas.parentElement);
+            const colors = {
+                empty: canvasStyles.getPropertyValue("--beat-empty-color") || "#f0f8ff",
+                down: rootStyles.getPropertyValue("--bs-danger") || "#dc3545",
+                pending: rootStyles.getPropertyValue("--bs-warning") || "#ffc107",
+                maintenance: rootStyles.getPropertyValue("--maintenance") || "#1d4ed8",
+                up: rootStyles.getPropertyValue("--bs-primary") || "#5cdd8b",
+            };
+
+            // Draw each beat
+            this.shortBeatList.forEach((beat, index) => {
+                const x = index * beatFullWidth + this.beatHoverAreaPadding;
+                const isHovered = index === this.hoveredBeatIndex;
+
+                let width = this.beatWidth;
+                let height = this.beatHeight;
+                let offsetX = x;
+                let offsetY = centerY - height / 2;
+
+                // Apply hover scale
+                if (isHovered && beat !== 0) {
+                    width *= this.hoverScale;
+                    height *= this.hoverScale;
+                    offsetX = x - (width - this.beatWidth) / 2;
+                    offsetY = centerY - height / 2;
+                }
+
+                // Calculate border radius based on current width (pill shape = half of width)
+                const borderRadius = width / 2;
+
+                // Get color based on beat status
+                let color = this.getBeatColor(beat, colors);
+
+                // Draw beat rectangle
+                ctx.fillStyle = color;
+                this.roundRect(ctx, offsetX, offsetY, width, height, borderRadius);
+                ctx.fill();
+
+                // Apply hover opacity
+                if (isHovered && beat !== 0) {
+                    ctx.globalAlpha = 0.8;
+                    ctx.fillStyle = color;
+                    this.roundRect(ctx, offsetX, offsetY, width, height, borderRadius);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            });
+        },
+
+        /**
+         * Draw a rounded rectangle
+         * @param {CanvasRenderingContext2D} ctx Canvas context
+         * @param {number} x X position
+         * @param {number} y Y position
+         * @param {number} width Width
+         * @param {number} height Height
+         * @param {number} radius Border radius
+         * @returns {void}
+         */
+        roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        },
+
+        /**
+         * Get color for a beat based on its status
+         * @param {object} beat Beat object
+         * @param {object} colors Cached CSS colors
+         * @returns {string} CSS color
+         */
+        getBeatColor(beat, colors) {
+            if (beat === 0 || beat === null || beat?.status === null) {
+                return colors.empty;
+            }
+
+            const status = Number(beat.status);
+
+            if (status === DOWN) {
+                return colors.down;
+            } else if (status === PENDING) {
+                return colors.pending;
+            } else if (status === MAINTENANCE) {
+                return colors.maintenance;
+            } else {
+                return colors.up;
+            }
+        },
+
+        /**
+         * Update tooltip when hovering a new beat
+         * @param {object} beat Beat data
+         * @param {number} beatIndex Index of the beat
+         * @param {DOMRect} rect Canvas bounding rectangle
+         * @returns {void}
+         */
+        updateTooltipOnHover(beat, beatIndex, rect) {
+            const previousIndex = this.hoveredBeatIndex;
+            this.hoveredBeatIndex = beatIndex;
+
+            if (previousIndex !== -1) {
+                // Hide previous tooltip and show new one after brief delay
+                this.hideTooltip(false);
+                setTimeout(() => {
+                    if (this.hoveredBeatIndex === beatIndex) {
+                        this.showTooltip(beat, beatIndex, rect);
+                    }
+                }, 50);
+            } else {
+                this.showTooltip(beat, beatIndex, rect);
+            }
+        },
+
+        /**
+         * Handle mouse move on canvas for hover detection
+         * @param {MouseEvent} event Mouse event
+         * @returns {void}
+         */
+        handleMouseMove(event) {
+            const canvas = this.$refs.canvas;
+            if (!canvas) {
+                return;
+            }
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const beatFullWidth = this.beatWidth + (this.beatHoverAreaPadding * 2);
+            const beatIndex = Math.floor(x / beatFullWidth);
+
+            if (beatIndex >= 0 && beatIndex < this.shortBeatList.length) {
+                const beat = this.shortBeatList[beatIndex];
+
+                if (beat !== 0 && beat !== null) {
+                    if (this.hoveredBeatIndex !== beatIndex) {
+                        this.updateTooltipOnHover(beat, beatIndex, rect);
+                    }
+                } else {
+                    this.hoveredBeatIndex = -1;
+                    this.hideTooltip(true);
+                }
+            } else {
+                this.hoveredBeatIndex = -1;
+                this.hideTooltip(true);
+            }
+        },
+
+        /**
+         * Handle click on canvas (for accessibility)
+         * @param {MouseEvent} event Mouse event
+         * @returns {void}
+         */
+        handleClick(event) {
+            // For future accessibility features if needed
+            this.handleMouseMove(event);
+        },
+
+        /**
+         * Handle keyboard navigation on canvas
+         * @param {KeyboardEvent} event Keyboard event
+         * @returns {void}
+         */
+        handleKeydown(event) {
+            const validIndices = this.shortBeatList
+                .map((beat, index) => (beat !== 0 && beat !== null) ? index : -1)
+                .filter(index => index !== -1);
+
+            if (validIndices.length === 0) {
+                return;
+            }
+
+            let newIndex = this.hoveredBeatIndex;
+
+            if (event.key === "ArrowRight") {
+                event.preventDefault();
+                // Find next valid beat
+                const currentPos = validIndices.indexOf(this.hoveredBeatIndex);
+                if (currentPos === -1) {
+                    newIndex = validIndices[0];
+                } else if (currentPos < validIndices.length - 1) {
+                    newIndex = validIndices[currentPos + 1];
+                }
+            } else if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                // Find previous valid beat
+                const currentPos = validIndices.indexOf(this.hoveredBeatIndex);
+                if (currentPos === -1) {
+                    newIndex = validIndices[validIndices.length - 1];
+                } else if (currentPos > 0) {
+                    newIndex = validIndices[currentPos - 1];
+                }
+            } else if (event.key === "Home") {
+                event.preventDefault();
+                newIndex = validIndices[0];
+            } else if (event.key === "End") {
+                event.preventDefault();
+                newIndex = validIndices[validIndices.length - 1];
+            } else if (event.key === "Escape") {
+                event.preventDefault();
+                this.hoveredBeatIndex = -1;
+                this.hideTooltip();
+                return;
+            } else {
+                return;
+            }
+
+            if (newIndex !== this.hoveredBeatIndex && newIndex !== -1) {
+                const beat = this.shortBeatList[newIndex];
+                const canvas = this.$refs.canvas;
+                if (canvas) {
+                    const rect = canvas.getBoundingClientRect();
+                    this.updateTooltipOnHover(beat, newIndex, rect);
+                }
+            }
+        },
+
+        /**
+         * Handle canvas focus
+         * @returns {void}
+         */
+        handleFocus() {
+            // Select first valid beat on focus if none selected
+            if (this.hoveredBeatIndex === -1) {
+                const firstValidIndex = this.shortBeatList.findIndex(beat => beat !== 0 && beat !== null);
+                if (firstValidIndex !== -1) {
+                    const beat = this.shortBeatList[firstValidIndex];
+                    const canvas = this.$refs.canvas;
+                    if (canvas) {
+                        const rect = canvas.getBoundingClientRect();
+                        this.updateTooltipOnHover(beat, firstValidIndex, rect);
+                    }
+                }
+            }
+        },
+
+        /**
+         * Handle canvas blur
+         * @returns {void}
+         */
+        handleBlur() {
+            this.hoveredBeatIndex = -1;
+            this.hideTooltip();
         },
 
     },
@@ -483,47 +823,15 @@ export default {
 }
 
 .hp-bar-big {
-    .beat-hover-area {
-        display: inline-block;
+    --beat-empty-color: #f0f8ff;
 
-        &:not(.empty):hover {
-            transition: all ease-in-out 0.15s;
-            opacity: 0.8;
-            transform: scale(var(--hover-scale));
-        }
-
-        .beat {
-            background-color: $primary;
-            border-radius: $border-radius;
-
-            /*
-            pointer-events needs to be changed because
-            tooltip momentarily disappears when crossing between .beat-hover-area and .beat
-            */
-            pointer-events: none;
-
-            &.empty {
-                background-color: aliceblue;
-            }
-
-            &.down {
-                background-color: $danger;
-            }
-
-            &.pending {
-                background-color: $warning;
-            }
-
-            &.maintenance {
-                background-color: $maintenance;
-            }
-        }
+    .dark & {
+        --beat-empty-color: #848484;
     }
-}
 
-.dark {
-    .hp-bar-big .beat.empty {
-        background-color: #848484;
+    .heartbeat-canvas {
+        display: block;
+        cursor: pointer;
     }
 }
 

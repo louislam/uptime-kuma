@@ -78,6 +78,7 @@ module.exports = {
         "keyword-spacing": "warn",
         "space-infix-ops": "error",
         "arrow-spacing": "warn",
+        "no-throw-literal": "error",
         "no-trailing-spaces": "error",
         "no-constant-condition": [ "error", {
             "checkLoops": false,

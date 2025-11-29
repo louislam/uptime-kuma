@@ -173,7 +173,8 @@ export default {
                 "Cellsynt": "Cellsynt",
                 "SendGrid": "SendGrid",
                 "Brevo": "Brevo",
-                "notifery": "Notifery"
+                "notifery": "Notifery",
+                "Webpush": "Webpush",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
