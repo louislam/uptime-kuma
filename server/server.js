@@ -96,6 +96,8 @@ const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleChec
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
+log.debug("server", "Importing Web-Push");
+const webpush = require("web-push");
 
 log.debug("server", "Importing Database");
 const Database = require("./database");
@@ -807,6 +809,8 @@ let needSetup = false;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
+                bean.wsIgnoreSecWebsocketAcceptHeader = monitor.wsIgnoreSecWebsocketAcceptHeader;
+                bean.wsSubprotocol = monitor.wsSubprotocol;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
                 bean.ipFamily = monitor.ipFamily;
@@ -1560,6 +1564,32 @@ let needSetup = false;
                 callback(await Notification.checkApprise());
             } catch (e) {
                 callback(false);
+            }
+        });
+
+        socket.on("getWebpushVapidPublicKey", async (callback) => {
+            try {
+                let publicVapidKey = await Settings.get("webpushPublicVapidKey");
+
+                if (!publicVapidKey) {
+                    log.debug("webpush", "Generating new VAPID keys");
+                    const vapidKeys = webpush.generateVAPIDKeys();
+
+                    await Settings.set("webpushPublicVapidKey", vapidKeys.publicKey);
+                    await Settings.set("webpushPrivateVapidKey", vapidKeys.privateKey);
+
+                    publicVapidKey = vapidKeys.publicKey;
+                }
+
+                callback({
+                    ok: true,
+                    msg: publicVapidKey,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
             }
         });
 
