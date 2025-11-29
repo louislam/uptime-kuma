@@ -86,7 +86,7 @@ class StatusPage extends BeanModel {
                 title: `${heartbeat.name} is down`,
                 description: `${heartbeat.name} has been down since ${heartbeat.time}`,
                 id: heartbeat.monitorID,
-                date: dayjs(heartbeat.time).toDate(),
+                date: dayjs.utc(heartbeat.time).toDate()
             });
         });
 
