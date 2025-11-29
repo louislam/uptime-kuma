@@ -168,6 +168,10 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+
+            // response saving options
+            saveResponse: this.getSaveResponse(),
+            responseMaxLength: this.response_max_length ?? 10240,
         };
 
         if (includeSensitiveData) {
@@ -348,6 +352,14 @@ class Monitor extends BeanModel {
      */
     getKafkaProducerAllowAutoTopicCreation() {
         return Boolean(this.kafkaProducerAllowAutoTopicCreation);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Should save response data?
+     */
+    getSaveResponse() {
+        return Boolean(this.save_response);
     }
 
     /**
@@ -578,6 +590,21 @@ class Monitor extends BeanModel {
 
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
+
+                    // Store response data for notifications (with size limit) if enabled
+                    if (this.getSaveResponse() && res.data) {
+                        let responseData = res.data;
+                        // Convert to string if not already
+                        if (typeof responseData !== "string") {
+                            responseData = JSON.stringify(responseData);
+                        }
+                        // Use configured max length: 0 = unlimited, otherwise default to 10KB
+                        const maxSize = this.response_max_length !== undefined ? this.response_max_length : 10240;
+                        if (maxSize > 0 && responseData.length > maxSize) {
+                            responseData = responseData.substring(0, maxSize) + "... (truncated)";
+                        }
+                        bean.response = responseData;
+                    }
 
                     // fallback for if kelog event is not emitted, but we may still have tlsInfo,
                     // e.g. if the connection is made through a proxy
