@@ -223,9 +223,27 @@ class Database {
 
         let config = {};
 
+        let parsedMaxPoolConnections = parseInt(process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS);
+        let error = undefined;
+
+        if (!process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS || Number.isNaN(parsedMaxPoolConnections)) {
+            error = "invalid";
+        } else if (parsedMaxPoolConnections < 1) {
+            error = "less than 1";
+        } else if (parsedMaxPoolConnections > 100) {
+            error = "more than 100";
+            log.warn("db", "We cap pool connections because Mysql/Mariadb connections are heavy. consider using a proxy like ProxySQL or MaxScale.");
+        }
+
+        if (error) {
+            log.warn("db", `Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was ${error}.`);
+        } else {
+            log.info("db", `Max database connections: ${parsedMaxPoolConnections}`);
+        }
+
         let mariadbPoolConfig = {
             min: 0,
-            max: 10,
+            max: error ? 10 : parsedMaxPoolConnections,
             idleTimeoutMillis: 30000,
         };
 
