@@ -36,19 +36,12 @@ iPenGDCg1awOyRnvxNq1MtMDkR9AHwksukzwiYNexYjyvE2t0UzXhFXwazQ3
 -----END CERTIFICATE-----
 `;
 
-if (semver.satisfies(nodeVersion, ">= 15")) {
-    test("Certificate and hostname match", () => {
-        const result = checkCertificateHostname(testCert, "www.eff.org");
-        assert.strictEqual(result, true);
-    });
+test("Certificate and hostname match", () => {
+    const result = checkCertificateHostname(testCert, "www.eff.org");
+    assert.strictEqual(result, true);
+});
 
-    test("Certificate and hostname mismatch", () => {
-        const result = checkCertificateHostname(testCert, "example.com");
-        assert.strictEqual(result, false);
-    });
-} else {
-    test("Fallback for old node.js version", () => {
-        const result = checkCertificateHostname(testCert, "www.eff.org");
-        assert.strictEqual(result, true);
-    });
-}
+test("Certificate and hostname mismatch", () => {
+    const result = checkCertificateHostname(testCert, "example.com");
+    assert.strictEqual(result, false);
+});
