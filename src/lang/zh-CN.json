@@ -1211,5 +1211,22 @@
     "Bot secret": "机器人密钥",
     "Conversation token": "会话令牌",
     "Nextcloud host": "Nextcloud 主机",
-    "auto-select": "自动选择"
+    "auto-select": "自动选择",
+    "Maximum Retries": "最大重试次数",
+    "Number of retry attempts if webhook fails": "webhook 失败后的重试次数（60-180秒为一周期）。",
+    "webhookPostMethodDesc": "POST 适用于大多数现代 HTTP 服务器。",
+    "HTTP Method": "HTTP 方法",
+    "webhookGetMethodDesc": "GET 将数据作为查询参数发送，不允许配置请求体。对于触发 Uptime Kuma Push 监控非常有用。",
+    "Invalid userId": "不合法的 userId [{userId}]",
+    "Invalid mobile": "不合法的电话号码 [{mobile}]",
+    "descriptionHelpText": "在内部仪表板上显示。允许使用 Markdown，显示前会进行净化处理（保留空格和缩进）。",
+    "Enter a list of mobile": "输入手机号码列表",
+    "Enter a list of userId": "输入 usedId 列表",
+    "Dingtalk User List": "UserId 列表",
+    "Dingtalk Mobile List": "手机号码列表",
+    "Mention User List": "需提及的 userId 列表",
+    "Mention Mobile List": "需提及的手机号码列表",
+    "wayToGetBaleToken": "你可以从 {0} 获取一个令牌。",
+    "wayToGetBaleChatID": "你可以通过向机器人发送消息并访问此 URL 来查看 chat_id：",
+    "supportBaleChatID": "支持私聊/群聊/频道的聊天ID"
 }
