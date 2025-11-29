@@ -1,9 +1,11 @@
 const { R } = require("redbean-node");
-const HttpProxyAgent = require("http-proxy-agent");
-const HttpsProxyAgent = require("https-proxy-agent");
-const SocksProxyAgent = require("socks-proxy-agent");
+const { HttpProxyAgent } = require("http-proxy-agent");
+const { HttpsProxyAgent } = require("https-proxy-agent");
+const { SocksProxyAgent } = require("socks-proxy-agent");
 const { debug } = require("../src/util");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
+const { CookieJar } = require("tough-cookie");
+const { createCookieAgent } = require("http-cookie-agent/http");
 
 class Proxy {
 
@@ -95,41 +97,50 @@ class Proxy {
         let httpAgent;
         let httpsAgent;
 
+        let jar = new CookieJar();
+
         const proxyOptions = {
-            protocol: proxy.protocol,
-            host: proxy.host,
-            port: proxy.port,
+            cookies: { jar },
         };
 
+        const proxyUrl = new URL(`${proxy.protocol}://${proxy.host}:${proxy.port}`);
+
         if (proxy.auth) {
-            proxyOptions.auth = `${proxy.username}:${proxy.password}`;
+            proxyUrl.username = proxy.username;
+            proxyUrl.password = proxy.password;
         }
 
-        debug(`Proxy Options: ${JSON.stringify(proxyOptions)}`);
+        debug(`Proxy URL: ${proxyUrl.toString()}`);
         debug(`HTTP Agent Options: ${JSON.stringify(httpAgentOptions)}`);
         debug(`HTTPS Agent Options: ${JSON.stringify(httpsAgentOptions)}`);
 
         switch (proxy.protocol) {
             case "http":
             case "https":
-                httpAgent = new HttpProxyAgent({
-                    ...httpAgentOptions || {},
-                    ...proxyOptions
-                });
+                // eslint-disable-next-line no-case-declarations
+                const HttpCookieProxyAgent = createCookieAgent(HttpProxyAgent);
+                // eslint-disable-next-line no-case-declarations
+                const HttpsCookieProxyAgent = createCookieAgent(HttpsProxyAgent);
 
-                httpsAgent = new HttpsProxyAgent({
-                    ...httpsAgentOptions || {},
+                httpAgent = new HttpCookieProxyAgent(proxyUrl.toString(), {
+                    ...(httpAgentOptions || {}),
                     ...proxyOptions,
                 });
+                httpsAgent = new HttpsCookieProxyAgent(proxyUrl.toString(), {
+                    ...(httpsAgentOptions || {}),
+                    ...proxyOptions,
+                });
+
                 break;
             case "socks":
             case "socks5":
             case "socks5h":
             case "socks4":
-                agent = new SocksProxyAgent({
+                // eslint-disable-next-line no-case-declarations
+                const SocksCookieProxyAgent = createCookieAgent(SocksProxyAgent);
+                agent = new SocksCookieProxyAgent(proxyUrl.toString(), {
                     ...httpAgentOptions,
                     ...httpsAgentOptions,
-                    ...proxyOptions,
                     tls: {
                         rejectUnauthorized: httpsAgentOptions.rejectUnauthorized,
                     },

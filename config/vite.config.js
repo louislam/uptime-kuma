@@ -2,7 +2,7 @@ import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 import visualizer from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
-import commonjs from "vite-plugin-commonjs";
+import { VitePWA } from "vite-plugin-pwa";
 
 const postCssScss = require("postcss-scss");
 const postcssRTLCSS = require("postcss-rtlcss");
@@ -16,12 +16,9 @@ export default defineConfig({
     },
     define: {
         "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
-        "DEVCONTAINER": JSON.stringify(process.env.DEVCONTAINER),
-        "GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN": JSON.stringify(process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN),
-        "CODESPACE_NAME": JSON.stringify(process.env.CODESPACE_NAME),
+        "process.env": {},
     },
     plugins: [
-        commonjs(),
         vue(),
         visualizer({
             filename: "tmp/dist-stats.html"
@@ -33,6 +30,12 @@ export default defineConfig({
         viteCompression({
             algorithm: "brotliCompress",
             filter: viteCompressionFilter,
+        }),
+        VitePWA({
+            registerType: null,
+            srcDir: "src",
+            filename: "serviceWorker.ts",
+            strategies: "injectManifest",
         }),
     ],
     css: {

@@ -29,13 +29,14 @@ class Heartbeat extends BeanModel {
      */
     toJSON() {
         return {
-            monitorID: this.monitor_id,
-            status: this.status,
-            time: this.time,
-            msg: this.msg,
-            ping: this.ping,
-            important: this.important,
-            duration: this.duration,
+            monitorID: this._monitorId,
+            status: this._status,
+            time: this._time,
+            msg: this._msg,
+            ping: this._ping,
+            important: this._important,
+            duration: this._duration,
+            retries: this._retries,
         };
     }
 

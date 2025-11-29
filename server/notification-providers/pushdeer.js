@@ -3,17 +3,16 @@ const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
 class PushDeer extends NotificationProvider {
-
     name = "PushDeer";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
-        let endpoint = "/message/push";
-        let serverUrl = notification.pushdeerServer || "https://api2.pushdeer.com";
-        let pushdeerlink = `${serverUrl.trim().replace(/\/*$/, "")}${endpoint}`;
+        const okMsg = "Sent Successfully.";
+        const serverUrl = notification.pushdeerServer || "https://api2.pushdeer.com";
+        // capture group below is necessary to prevent an ReDOS-attack
+        const url = `${serverUrl.trim().replace(/([^/])\/+$/, "$1")}/message/push`;
 
         let valid = msg != null && monitorJSON != null && heartbeatJSON != null;
 
@@ -34,7 +33,8 @@ class PushDeer extends NotificationProvider {
         };
 
         try {
-            let res = await axios.post(pushdeerlink, data);
+            let config = this.getAxiosConfigWithProxy({});
+            let res = await axios.post(url, data, config);
 
             if ("error" in res.data) {
                 let error = res.data.error;

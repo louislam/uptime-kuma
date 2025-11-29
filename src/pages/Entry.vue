@@ -33,10 +33,10 @@ export default {
 
             } else if (res.type === "entryPage") {          // Dev only. For production, the logic is in the server side
                 const entryPage = res.entryPage;
-
-                if (entryPage === "statusPage") {
-                    this.$router.push("/status");
+                if (entryPage?.startsWith("statusPage-")) {
+                    this.$router.push("/status/" + entryPage.replace("statusPage-", ""));
                 } else {
+                    // should the old setting style still exist here?
                     this.$router.push("/dashboard");
                 }
             } else if (res.type === "setup-database") {

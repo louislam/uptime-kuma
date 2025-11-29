@@ -1,0 +1,93 @@
+---
+name: 🚀 Feature Request
+description: |
+  Submit a proposal for a new feature
+# title: "[Feature]"
+labels: ["feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 🚫 Please Avoid Unnecessary Pinging of Maintainers
+
+        We kindly ask you to refrain from pinging maintainers unless absolutely necessary.
+        Pings are for critical/urgent pull requests that require immediate attention.
+  - type: textarea
+    id: related-issues
+    validations:
+      required: true
+    attributes:
+      label: 📑 I have found these related issues/pull requests
+      description: |
+        Please search for related **[ISSUES](https://github.com/louislam/uptime-kuma/issues?q=is%3Aissue%20sort%3Acreated-desc)**
+        and **[PULL REQUESTS](https://github.com/louislam/uptime-kuma/pulls?q=is%3Apr+sort%3Acreated-desc+)**.
+        Explain the differences between them or clarify if you were unable to find any related issues/pull requests.
+      placeholder: |
+        Example: This relates to issue #1, which also affects the ... system. It should not be merged because ...
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: 🏷️ Feature Request Type
+      description: |
+        What kind of feature request is this?
+      multiple: true
+      options:
+        - API / automation options
+        - New notification-provider
+        - Change to existing notification-provider
+        - New monitor
+        - Change to existing monitor
+        - Dashboard
+        - Status-page
+        - Maintenance
+        - Deployment
+        - Certificate expiry
+        - Settings
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature-description
+    validations:
+      required: true
+    attributes:
+      label: 🔖 Feature description
+      description: |
+        A clear and concise description of what the feature request is.
+      placeholder: |
+        You should add ...
+
+  - type: textarea
+    id: solution
+    validations:
+      required: true
+    attributes:
+      label: ✔️ Solution
+      description: |
+        A clear and concise description of what you want to happen.
+      placeholder: |
+        In my use-case, ...
+
+  - type: textarea
+    id: alternatives
+    validations:
+      required: false
+    attributes:
+      label: ❓ Alternatives
+      description: |
+        A clear and concise description of any alternative solutions or features you've considered.
+      placeholder: |
+        I have considered ...
+
+  - type: textarea
+    id: additional-context
+    validations:
+      required: false
+    attributes:
+      label: 📝 Additional Context
+      description: |
+        Add any other context or screenshots about the feature request here.
+      placeholder: |
+        ...

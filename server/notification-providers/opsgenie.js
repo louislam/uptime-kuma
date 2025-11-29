@@ -4,10 +4,9 @@ const { UP, DOWN } = require("../../src/util");
 
 const opsgenieAlertsUrlEU = "https://api.eu.opsgenie.com/v2/alerts";
 const opsgenieAlertsUrlUS = "https://api.opsgenie.com/v2/alerts";
-let okMsg = "Sent Successfully.";
+const okMsg = "Sent Successfully.";
 
 class Opsgenie extends NotificationProvider {
-
     name = "Opsgenie";
 
     /**
@@ -81,6 +80,7 @@ class Opsgenie extends NotificationProvider {
                 "Authorization": `GenieKey ${notification.opsgenieApiKey}`,
             }
         };
+        config = this.getAxiosConfigWithProxy(config);
 
         let res = await axios.post(url, data, config);
         if (res.status == null) {

@@ -6,7 +6,7 @@
  * ⚠️ Deprecated: Changed to healthcheck.go, it will be deleted in the future.
  * This script should be run after a period of time (180s), because the server may need some time to prepare.
  */
-const { FBSD } = require("../server/util-server");
+const FBSD = /^freebsd/.test(process.platform);
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 

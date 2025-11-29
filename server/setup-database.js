@@ -74,7 +74,7 @@ class SetupDatabase {
             dbConfig.type = process.env.UPTIME_KUMA_DB_TYPE;
             dbConfig.hostname = process.env.UPTIME_KUMA_DB_HOSTNAME;
             dbConfig.port = process.env.UPTIME_KUMA_DB_PORT;
-            dbConfig.database = process.env.UPTIME_KUMA_DB_NAME;
+            dbConfig.dbName = process.env.UPTIME_KUMA_DB_NAME;
             dbConfig.username = process.env.UPTIME_KUMA_DB_USERNAME;
             dbConfig.password = process.env.UPTIME_KUMA_DB_PASSWORD;
             Database.writeDBConfig(dbConfig);
@@ -208,11 +208,13 @@ class SetupDatabase {
 
                     // Test connection
                     try {
+                        log.info("setup-database", "Testing database connection...");
                         const connection = await mysql.createConnection({
                             host: dbConfig.hostname,
                             port: dbConfig.port,
                             user: dbConfig.username,
                             password: dbConfig.password,
+                            database: dbConfig.dbName,
                         });
                         await connection.execute("SELECT 1");
                         connection.end();

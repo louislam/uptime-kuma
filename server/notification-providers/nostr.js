@@ -1,27 +1,16 @@
-const { log } = require("../../src/util");
 const NotificationProvider = require("./notification-provider");
 const {
-    relayInit,
-    getPublicKey,
-    getEventHash,
-    getSignature,
+    finalizeEvent,
+    Relay,
+    kinds,
     nip04,
-    nip19
+    nip19,
 } = require("nostr-tools");
 
 // polyfills for node versions
 const semver = require("semver");
 const nodeVersion = process.version;
-if (semver.lt(nodeVersion, "16.0.0")) {
-    log.warn("monitor", "Node <= 16 is unsupported for nostr, sorry :(");
-} else if (semver.lt(nodeVersion, "18.0.0")) {
-    // polyfills for node 16
-    global.crypto = require("crypto");
-    global.WebSocket = require("isomorphic-ws");
-    if (typeof crypto !== "undefined" && !crypto.subtle && crypto.webcrypto) {
-        crypto.subtle = crypto.webcrypto.subtle;
-    }
-} else if (semver.lt(nodeVersion, "20.0.0")) {
+if (semver.lt(nodeVersion, "20.0.0")) {
     // polyfills for node 18
     global.crypto = require("crypto");
     global.WebSocket = require("isomorphic-ws");
@@ -41,7 +30,6 @@ class Nostr extends NotificationProvider {
         const createdAt = Math.floor(Date.now() / 1000);
 
         const senderPrivateKey = await this.getPrivateKey(notification.sender);
-        const senderPublicKey = getPublicKey(senderPrivateKey);
         const recipientsPublicKeys = await this.getPublicKeys(notification.recipients);
 
         // Create NIP-04 encrypted direct message event for each recipient
@@ -49,34 +37,41 @@ class Nostr extends NotificationProvider {
         for (const recipientPublicKey of recipientsPublicKeys) {
             const ciphertext = await nip04.encrypt(senderPrivateKey, recipientPublicKey, msg);
             let event = {
-                kind: 4,
-                pubkey: senderPublicKey,
+                kind: kinds.EncryptedDirectMessage,
                 created_at: createdAt,
                 tags: [[ "p", recipientPublicKey ]],
                 content: ciphertext,
             };
-            event.id = getEventHash(event);
-            event.sig = getSignature(event, senderPrivateKey);
-            events.push(event);
+            const signedEvent = finalizeEvent(event, senderPrivateKey);
+            events.push(signedEvent);
         }
 
         // Publish events to each relay
         const relays = notification.relays.split("\n");
         let successfulRelays = 0;
-
-        // Connect to each relay
         for (const relayUrl of relays) {
-            const relay = relayInit(relayUrl);
-            try {
-                await relay.connect();
-                successfulRelays++;
+            const relay = await Relay.connect(relayUrl);
+            let eventIndex = 0;
 
-                // Publish events
-                for (const event of events) {
-                    relay.publish(event);
-                }
+            // Authenticate to the relay, if required
+            try {
+                await relay.publish(events[0]);
+                eventIndex = 1;
             } catch (error) {
-                continue;
+                if (relay.challenge) {
+                    await relay.auth(async (evt) => {
+                        return finalizeEvent(evt, senderPrivateKey);
+                    });
+                }
+            }
+
+            try {
+                for (let i = eventIndex; i < events.length; i++) {
+                    await relay.publish(events[i]);
+                }
+                successfulRelays++;
+            } catch (error) {
+                console.error(`Failed to publish event to ${relayUrl}:`, error);
             } finally {
                 relay.close();
             }
@@ -100,14 +95,14 @@ class Nostr extends NotificationProvider {
             const { data } = senderDecodeResult;
             return data;
         } catch (error) {
-            throw new Error(`Failed to get private key: ${error.message}`);
+            throw new Error(`Failed to decode private key for sender ${sender}: ${error.message}`);
         }
     }
 
     /**
      * Get public keys for recipients
      * @param {string} recipients Newline delimited list of recipients
-     * @returns {nip19.DecodeResult[]} Public keys
+     * @returns {Promise<nip19.DecodeResult[]>} Public keys
      */
     async getPublicKeys(recipients) {
         const recipientsList = recipients.split("\n");
@@ -119,10 +114,10 @@ class Nostr extends NotificationProvider {
                 if (type === "npub") {
                     publicKeys.push(data);
                 } else {
-                    throw new Error("not an npub");
+                    throw new Error(`Recipient ${recipient} is not an npub`);
                 }
             } catch (error) {
-                throw new Error(`Error decoding recipient: ${error}`);
+                throw new Error(`Error decoding recipient ${recipient}: ${error}`);
             }
         }
         return publicKeys;

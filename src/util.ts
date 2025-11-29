@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /*!
 // Common Util for frontend and backend
 //
@@ -8,15 +9,25 @@
 // Frontend uses util.ts
 */
 
-import * as dayjs from "dayjs";
+import dayjsFrontend from "dayjs";
 
-// For loading dayjs plugins, don't remove event though it is not used in this file
+// For dayjs plugins' type checking, don't remove event though it is not used in this file
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as timezone from "dayjs/plugin/timezone";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as utc from "dayjs/plugin/utc";
 
+import * as jsonata from "jsonata";
+
 export const isDev = process.env.NODE_ENV === "development";
+export const isNode = typeof process !== "undefined" && process?.versions?.node;
+
+/**
+ * Smarter dayjs import that supports both frontend and backend
+ * @returns {dayjs.Dayjs} dayjs instance
+ */
+const dayjs = (isNode) ? require("dayjs") : dayjsFrontend;
+
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
@@ -34,6 +45,26 @@ export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
 export const MIN_INTERVAL_SECOND = 20; // 20 seconds
+
+// Packet Size limits
+export const PING_PACKET_SIZE_MIN = 1;
+export const PING_PACKET_SIZE_MAX = 65500;
+export const PING_PACKET_SIZE_DEFAULT = 56;
+
+// Global timeout (aka deadline) limits in seconds
+export const PING_GLOBAL_TIMEOUT_MIN = 1;
+export const PING_GLOBAL_TIMEOUT_MAX = 300;
+export const PING_GLOBAL_TIMEOUT_DEFAULT = 10;
+
+// Ping count limits
+export const PING_COUNT_MIN = 1;
+export const PING_COUNT_MAX = 100;
+export const PING_COUNT_DEFAULT = 1;
+
+// per-request timeout (aka timeout) limits in seconds
+export const PING_PER_REQUEST_TIMEOUT_MIN = 1;
+export const PING_PER_REQUEST_TIMEOUT_MAX = 60;
+export const PING_PER_REQUEST_TIMEOUT_DEFAULT = 2;
 
 // Console colors
 // https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
@@ -93,7 +124,33 @@ const consoleLevelColors : Record<string, string> = {
 
 /**
  * Flip the status of s
- * @param s
+ * @param s input status: UP or DOWN
+ * @returns {number} UP or DOWN
+ */
+export const badgeConstants = {
+    naColor: "#999",
+    defaultUpColor: "#66c20a",
+    defaultWarnColor: "#eed202",
+    defaultDownColor: "#c2290a",
+    defaultPendingColor: "#f8a306",
+    defaultMaintenanceColor: "#1747f5",
+    defaultPingColor: "blue",  // as defined by badge-maker / shields.io
+    defaultStyle: "flat",
+    defaultPingValueSuffix: "ms",
+    defaultPingLabelSuffix: "h",
+    defaultUptimeValueSuffix: "%",
+    defaultUptimeLabelSuffix: "h",
+    defaultCertExpValueSuffix: " days",
+    defaultCertExpLabelSuffix: "h",
+    // Values Come From Default Notification Times
+    defaultCertExpireWarnDays: "14",
+    defaultCertExpireDownDays: "7"
+};
+
+/**
+ * Flip the status of s between UP and DOWN if this is possible
+ * @param s {number} status
+ * @returns {number} flipped status
  */
 export function flipStatus(s: number) {
     if (s === UP) {
@@ -110,6 +167,7 @@ export function flipStatus(s: number) {
 /**
  * Delays for specified number of seconds
  * @param ms Number of milliseconds to sleep for
+ * @returns {Promise<void>} Promise that resolves after ms
  */
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -117,7 +175,8 @@ export function sleep(ms: number) {
 
 /**
  * PHP's ucfirst
- * @param str
+ * @param str string input
+ * @returns {string} string with first letter capitalized
  */
 export function ucfirst(str: string) {
     if (!str) {
@@ -130,10 +189,11 @@ export function ucfirst(str: string) {
 
 /**
  * @deprecated Use log.debug (https://github.com/louislam/uptime-kuma/pull/910)
- * @param msg
+ * @param msg Message to write
+ * @returns {void}
  */
 export function debug(msg: unknown) {
-    log.log("", msg, "debug");
+    log.log("", "debug", msg);
 }
 
 class Logger {
@@ -178,10 +238,15 @@ class Logger {
     /**
      * Write a message to the log
      * @param module The module the log comes from
-     * @param msg Message to write
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @param msg Message to write
+     * @returns {void}
      */
-    log(module: string, msg: any, level: string) {
+    log(module: string, level: string, ...msg: unknown[]) {
+        if (level === "DEBUG" && !isDev) {
+            return;
+        }
+
         if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
             return;
         }
@@ -199,35 +264,50 @@ class Logger {
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
 
-        let timePart = CONSOLE_STYLE_FgCyan + now + CONSOLE_STYLE_Reset;
-        let modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
-        let levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
+        let timePart: string;
+        let modulePart: string;
+        let levelPart: string;
 
-        if (level === "INFO") {
-            console.info(timePart, modulePart, levelPart, msg);
-        } else if (level === "WARN") {
-            console.warn(timePart, modulePart, levelPart, msg);
-        } else if (level === "ERROR") {
-            let msgPart :string;
-            if (typeof msg === "string") {
-                msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
-            } else {
-                msgPart = msg;
+        if (isNode) {
+            // Add console colors
+            switch (level) {
+                case "DEBUG":
+                    timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
+                    break;
+                default:
+                    timePart = CONSOLE_STYLE_FgCyan + now + CONSOLE_STYLE_Reset;
+                    break;
             }
-            console.error(timePart, modulePart, levelPart, msgPart);
-        } else if (level === "DEBUG") {
-            if (isDev) {
-                timePart = CONSOLE_STYLE_FgGray + now + CONSOLE_STYLE_Reset;
-                let msgPart :string;
-                if (typeof msg === "string") {
-                    msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
-                } else {
-                    msgPart = msg;
-                }
-                console.debug(timePart, modulePart, levelPart, msgPart);
-            }
+
+            modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
+            levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
+
         } else {
-            console.log(timePart, modulePart, msg);
+            // No console colors
+            timePart = now;
+            modulePart = `[${module}]`;
+            levelPart = `${level}:`;
+        }
+
+        // Write to console
+        switch (level) {
+            case "ERROR":
+                console.error(timePart, modulePart, levelPart, ...msg);
+                break;
+            case "WARN":
+                console.warn(timePart, modulePart, levelPart, ...msg);
+                break;
+            case "INFO":
+                console.info(timePart, modulePart, levelPart, ...msg);
+                break;
+            case "DEBUG":
+                if (isDev) {
+                    console.debug(timePart, modulePart, levelPart, ...msg);
+                }
+                break;
+            default:
+                console.log(timePart, modulePart, levelPart, ...msg);
+                break;
         }
     }
 
@@ -235,36 +315,40 @@ class Logger {
      * Log an INFO message
      * @param module Module log comes from
      * @param msg Message to write
+     * @returns {void}
      */
-    info(module: string, msg: unknown) {
-        this.log(module, msg, "info");
+    info(module: string, ...msg: unknown[]) {
+        this.log(module, "info", ...msg);
     }
 
     /**
      * Log a WARN message
      * @param module Module log comes from
      * @param msg Message to write
+     * @returns {void}
      */
-    warn(module: string, msg: unknown) {
-        this.log(module, msg, "warn");
+    warn(module: string, ...msg: unknown[]) {
+        this.log(module, "warn", ...msg);
     }
 
     /**
      * Log an ERROR message
      * @param module Module log comes from
      * @param msg Message to write
+     * @returns {void}
      */
-    error(module: string, msg: unknown) {
-        this.log(module, msg, "error");
+    error(module: string, ...msg: unknown[]) {
+        this.log(module, "error", ...msg);
     }
 
     /**
      * Log a DEBUG message
      * @param module Module log comes from
      * @param msg Message to write
+     * @returns {void}
      */
-    debug(module: string, msg: unknown) {
-        this.log(module, msg, "debug");
+    debug(module: string, ...msg: unknown[]) {
+        this.log(module, "debug", ...msg);
     }
 
     /**
@@ -272,15 +356,10 @@ class Logger {
      * @param module Module log comes from
      * @param exception The exception to include
      * @param msg The message to write
+     * @returns {void}
      */
-    exception(module: string, exception: unknown, msg: unknown) {
-        let finalMessage = exception;
-
-        if (msg) {
-            finalMessage = `${msg}: ${exception}`;
-        }
-
-        this.log(module, finalMessage, "error");
+    exception(module: string, exception: unknown, ...msg: unknown[]) {
+        this.log(module, "error", ...msg, exception);
     }
 }
 
@@ -293,6 +372,7 @@ declare global { interface String { replaceAll(str: string, newStr: string): str
  * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
  * @author Chris Ferdinandi
  * @license MIT
+ * @returns {void}
  */
 export function polyfill() {
     if (!String.prototype.replaceAll) {
@@ -321,6 +401,7 @@ export class TimeLogger {
     /**
      * Output time since start of monitor
      * @param name Name of monitor
+     * @returns {void}
      */
     print(name: string) {
         if (isDev && process.env.TIMELOGGER === "1") {
@@ -331,8 +412,9 @@ export class TimeLogger {
 
 /**
  * Returns a random number between min (inclusive) and max (exclusive)
- * @param min
- * @param max
+ * @param min minumim value, inclusive
+ * @param max maximum value, exclusive
+ * @returns {number} Random number
  */
 export function getRandomArbitrary(min: number, max: number) {
     return Math.random() * (max - min) + min;
@@ -346,8 +428,9 @@ export function getRandomArbitrary(min: number, max: number) {
  * if min isn't an integer) and no greater than max (or the next integer
  * lower than max if max isn't an integer).
  * Using Math.round() will give you a non-uniform distribution!
- * @param min
- * @param max
+ * @param min minumim value, inclusive
+ * @param max maximum value, exclusive
+ * @returns {number} Random number
  */
 export function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
@@ -358,6 +441,7 @@ export function getRandomInt(min: number, max: number) {
 /**
  * Returns either the NodeJS crypto.randomBytes() function or its
  * browser equivalent implemented via window.crypto.getRandomValues()
+ * @returns {Uint8Array} Random bytes
  */
 const getRandomBytes = (
     (typeof window !== "undefined" && window.crypto)
@@ -463,6 +547,7 @@ export function getMaintenanceRelativeURL(id: string) {
  * Parse to Time Object that used in VueDatePicker
  * @param {string} time E.g. 12:00
  * @returns object
+ * @throws {Error} if time string is invalid
  */
 export function parseTimeObject(time: string) {
     if (!time) {
@@ -490,8 +575,9 @@ export function parseTimeObject(time: string) {
 }
 
 /**
- * @param obj
- * @returns string e.g. 12:00
+ * Parse time to string from object {hours: number, minutes: number, seconds?: number}
+ * @param obj object to parse
+ * @returns {string} e.g. 12:00
  */
 export function parseTimeFromTimeObject(obj : any) {
     if (!obj) {
@@ -519,7 +605,8 @@ export function isoToUTCDateTime(input : string) {
 }
 
 /**
- * @param input
+ * @param input valid datetime string
+ * @returns {string} ISO DateTime string
  */
 export function utcToISODateTime(input : string) {
     return dayjs.utc(input).toISOString();
@@ -527,8 +614,8 @@ export function utcToISODateTime(input : string) {
 
 /**
  * For SQL_DATETIME_FORMAT
- * @param input
- * @param format
+ * @param input valid datetime string
+ * @param format Format to return
  * @returns A string date of SQL_DATETIME_FORMAT
  */
 export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) : string {
@@ -549,6 +636,7 @@ export function localToUTC(input : string, format = SQL_DATETIME_FORMAT) {
  * Generate a decimal integer number from a string
  * @param str Input
  * @param length Default is 10 which means 0 - 9
+ * @returns {number} output number
  */
 export function intHash(str : string, length = 10) : number {
     // A simple hashing function (you can use more complex hash functions if needed)
@@ -560,3 +648,76 @@ export function intHash(str : string, length = 10) : number {
     return (hash % length + length) % length; // Ensure the result is non-negative
 }
 
+/**
+ * Evaluate a JSON query expression against the provided data.
+ * @param data The data to evaluate the JSON query against.
+ * @param jsonPath The JSON path or custom JSON query expression.
+ * @param jsonPathOperator The operator to use for comparison.
+ * @param expectedValue The expected value to compare against.
+ * @returns An object containing the status and the evaluation result.
+ * @throws Error if the evaluation returns undefined.
+ */
+export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOperator: string, expectedValue: any): Promise<{ status: boolean; response: any }> {
+    // Attempt to parse data as JSON; if unsuccessful, handle based on data type.
+    let response: any;
+    try {
+        response = JSON.parse(data);
+    } catch {
+        response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
+    }
+
+    try {
+        // If a JSON path is provided, pre-evaluate the data using it.
+        response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
+
+        if (response === null || response === undefined) {
+            throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+
+        if (typeof response === "object" || response instanceof Date || typeof response === "function") {
+            throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
+        }
+
+        // Perform the comparison logic using the chosen operator
+        let jsonQueryExpression;
+        switch (jsonPathOperator) {
+            case ">":
+            case ">=":
+            case "<":
+            case "<=":
+                jsonQueryExpression = `$number($.value) ${jsonPathOperator} $number($.expected)`;
+                break;
+            case "!=":
+                jsonQueryExpression = "$.value != $.expected";
+                break;
+            case "==":
+                jsonQueryExpression = "$.value = $.expected";
+                break;
+            case "contains":
+                jsonQueryExpression = "$contains($.value, $.expected)";
+                break;
+            default:
+                throw new Error(`Invalid condition ${jsonPathOperator}`);
+        }
+
+        // Evaluate the JSON Query Expression
+        const expression = jsonata(jsonQueryExpression);
+        const status = await expression.evaluate({
+            value: response.toString(),
+            expected: expectedValue.toString()
+        });
+
+        if (status === undefined) {
+            throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
+        }
+
+        return {
+            status,  // The evaluation of the json query
+            response // The response from the server or result from initial json-query evaluation
+        };
+    } catch (err: any) {
+        response = JSON.stringify(response); // Ensure the response is treated as a string for the console
+        response = (response && response.length > 50) ? `${response.substring(0, 100)}… (truncated)` : response;// Truncate long responses to the console
+        throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
+    }
+}

@@ -4,14 +4,14 @@ const { setting } = require("../util-server");
 const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
 
 class AlertNow extends NotificationProvider {
-
     name = "AlertNow";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+
         try {
             let textMsg = "";
             let status = "open";
@@ -41,7 +41,9 @@ class AlertNow extends NotificationProvider {
                 "event_id": eventId,
             };
 
-            await axios.post(notification.alertNowWebhookURL, data);
+            let config = this.getAxiosConfigWithProxy({});
+
+            await axios.post(notification.alertNowWebhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

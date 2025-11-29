@@ -288,7 +288,7 @@ export default {
 
         /**
          * Submit tag and monitorTag changes to server
-         * @returns {void}
+         * @returns {Promise<void>}
          */
         async submit() {
             this.processing = true;
@@ -348,7 +348,7 @@ export default {
 
         /**
          * Delete the editing tag from server
-         * @returns {void}
+         * @returns {Promise<void>}
          */
         async deleteTag() {
             this.processing = true;

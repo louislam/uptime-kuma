@@ -1,6 +1,15 @@
 <template>
     <div>
-        <div :style="depthMargin">
+        <div
+            class="draggable-item"
+            :style="depthMargin"
+            :class="{ 'drag-over': dragOverCount > 0 }"
+            @dragstart="onDragStart"
+            @dragenter.prevent="onDragEnter"
+            @dragleave.prevent="onDragLeave"
+            @dragover.prevent
+            @drop.prevent="onDrop"
+        >
             <!-- Checkbox -->
             <div v-if="isSelectMode" class="select-input-wrapper">
                 <input
@@ -14,19 +23,19 @@
 
             <router-link :to="monitorURL(monitor.id)" class="item" :class="{ 'disabled': ! monitor.active }">
                 <div class="row">
-                    <div class="col-9 col-md-8 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div class="col-6 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
                         <div class="info">
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                             <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
                                 <font-awesome-icon icon="chevron-down" class="animated" :class="{ collapsed: isCollapsed}" />
                             </span>
-                            {{ monitorName }}
+                            {{ monitor.name }}
                         </div>
-                        <div v-if="monitor.tags.length > 0" class="tags">
+                        <div v-if="monitor.tags.length > 0" class="tags gap-1">
                             <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-md-4">
+                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-6">
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
@@ -43,13 +52,15 @@
             <div v-if="!isCollapsed" class="childs">
                 <MonitorListItem
                     v-for="(item, index) in sortedChildMonitorList"
-                    :key="index" :monitor="item"
-                    :showPathName="showPathName"
+                    :key="index"
+                    :monitor="item"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"
                     :select="select"
                     :deselect="deselect"
                     :depth="depth + 1"
+                    :filter-func="filterFunc"
+                    :sort-func="sortFunc"
                 />
             </div>
         </transition>
@@ -74,11 +85,6 @@ export default {
         monitor: {
             type: Object,
             default: null,
-        },
-        /** Should the monitor name show it's parent */
-        showPathName: {
-            type: Boolean,
-            default: false,
         },
         /** If the user is in select mode */
         isSelectMode: {
@@ -105,42 +111,34 @@ export default {
             type: Function,
             default: () => {}
         },
+        /** Function to filter child monitors */
+        filterFunc: {
+            type: Function,
+            default: () => {}
+        },
+        /** Function to sort child monitors */
+        sortFunc: {
+            type: Function,
+            default: () => {},
+        }
     },
     data() {
         return {
             isCollapsed: true,
+            dragOverCount: 0,
         };
     },
     computed: {
         sortedChildMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
+            // Get children
             result = result.filter(childMonitor => childMonitor.parent === this.monitor.id);
 
-            result.sort((m1, m2) => {
+            // Run filter on children
+            result = result.filter(this.filterFunc);
 
-                if (m1.active !== m2.active) {
-                    if (m1.active === 0) {
-                        return 1;
-                    }
-
-                    if (m2.active === 0) {
-                        return -1;
-                    }
-                }
-
-                if (m1.weight !== m2.weight) {
-                    if (m1.weight > m2.weight) {
-                        return -1;
-                    }
-
-                    if (m1.weight < m2.weight) {
-                        return 1;
-                    }
-                }
-
-                return m1.name.localeCompare(m2.name);
-            });
+            result.sort(this.sortFunc);
 
             return result;
         },
@@ -152,13 +150,6 @@ export default {
                 marginLeft: `${31 * this.depth}px`,
             };
         },
-        monitorName() {
-            if (this.showPathName) {
-                return this.monitor.pathName;
-            } else {
-                return this.monitor.name;
-            }
-        }
     },
     watch: {
         isSelectMode() {
@@ -205,6 +196,91 @@ export default {
             storageObject[`monitor_${this.monitor.id}`] = this.isCollapsed;
 
             window.localStorage.setItem("monitorCollapsed", JSON.stringify(storageObject));
+        },
+        /**
+         * Initializes the drag operation if the monitor is draggable.
+         * @param {DragEvent} event - The dragstart event triggered by the browser.
+         * @returns {void} This method does not return anything.
+         */
+        onDragStart(event) {
+            try {
+                event.dataTransfer.setData("text/monitor-id", String(this.monitor.id));
+                event.dataTransfer.effectAllowed = "move";
+            } catch (e) {
+                // ignore
+            }
+        },
+
+        onDragEnter(event) {
+            if (this.monitor.type !== "group") {
+                return;
+            }
+
+            this.dragOverCount++;
+        },
+
+        onDragLeave(event) {
+            if (this.monitor.type !== "group") {
+                return;
+            }
+
+            this.dragOverCount = Math.max(0, this.dragOverCount - 1);
+        },
+
+        async onDrop(event) {
+            this.dragOverCount = 0;
+
+            // Only groups accept drops
+            if (this.monitor.type !== "group") {
+                return;
+            }
+
+            const draggedId = event.dataTransfer.getData("text/monitor-id");
+            if (!draggedId) {
+                return;
+            }
+
+            const draggedMonitorId = parseInt(draggedId);
+            if (isNaN(draggedMonitorId) || draggedMonitorId === this.monitor.id) {
+                return;
+            }
+
+            const draggedMonitor = this.$root.monitorList[draggedMonitorId];
+            if (!draggedMonitor) {
+                return;
+            }
+
+            // Save original parent so we can revert locally if server returns error
+            const originalParent = draggedMonitor.parent;
+
+            // Prepare a full monitor object (clone) and set new parent
+            const monitorToSave = JSON.parse(JSON.stringify(draggedMonitor));
+            monitorToSave.parent = this.monitor.id;
+
+            // Optimistically update local state so UI updates immediately
+            this.$root.monitorList[draggedMonitorId].parent = this.monitor.id;
+
+            // Send updated monitor state via socket
+            try {
+                this.$root.getSocket().emit("editMonitor", monitorToSave, (res) => {
+                    if (!res || !res.ok) {
+                        // Revert local change on error
+                        if (this.$root.monitorList[draggedMonitorId]) {
+                            this.$root.monitorList[draggedMonitorId].parent = originalParent;
+                        }
+                        if (res && res.msg) {
+                            this.$root.toastError(res.msg);
+                        }
+                    } else {
+                        this.$root.toastRes(res);
+                    }
+                });
+            } catch (e) {
+                // revert on exception
+                if (this.$root.monitorList[draggedMonitorId]) {
+                    this.$root.monitorList[draggedMonitorId].parent = originalParent;
+                }
+            }
         },
         /**
          * Get URL of monitor
@@ -270,6 +346,37 @@ export default {
     padding-left: 4px;
     position: relative;
     z-index: 15;
+}
+
+.drag-over {
+    border: 4px dashed $primary;
+    border-radius: 0.5rem;
+    background-color: $highlight-white;
+}
+
+.dark {
+    .drag-over {
+        background-color: $dark-bg2;
+    }
+}
+
+/* -4px on all due to border-width */
+.monitor-list .drag-over .item {
+    padding: 9px 11px 6px 11px;
+}
+
+.draggable-item {
+    cursor: grab;
+    position: relative;
+
+    /* We don't want the padding change due to the border animated */
+    .item {
+        transition: none !important;
+    }
+
+    &.dragging {
+        cursor: grabbing;
+    }
 }
 
 </style>

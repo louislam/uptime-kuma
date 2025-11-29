@@ -1,27 +1,25 @@
-const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
-const { log, genSecret } = require("../src/util");
+const {
+    log, genSecret, badgeConstants,
+    PING_PACKET_SIZE_DEFAULT, PING_GLOBAL_TIMEOUT_DEFAULT,
+    PING_COUNT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT
+} = require("../src/util");
 const passwordHash = require("./password-hash");
 const { Resolver } = require("dns");
-const childProcess = require("child_process");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
-const mqtt = require("mqtt");
 const chroma = require("chroma-js");
-const { badgeConstants } = require("./config");
 const mssql = require("mssql");
 const { Client } = require("pg");
 const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
-const { MongoClient } = require("mongodb");
-const { NtlmClient } = require("axios-ntlm");
+const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
-const grpc = require("@grpc/grpc-js");
-const protojs = require("protobufjs");
-const radiusClient = require("node-radius-client");
-const redis = require("redis");
+const RadiusClient = require("./radius-client");
 const oidc = require("openid-client");
+const tls = require("tls");
+const { exists } = require("fs");
 
 const {
     dictionaries: {
@@ -50,13 +48,13 @@ exports.initJWTSecret = async () => {
         jwtSecretBean.key = "jwtSecret";
     }
 
-    jwtSecretBean.value = passwordHash.generate(genSecret());
+    jwtSecretBean.value = await passwordHash.generate(genSecret());
     await R.store(jwtSecretBean);
     return jwtSecretBean;
 };
 
 /**
- * Decodes a jwt and returns the payload portion without verifying the jqt.
+ * Decodes a jwt and returns the payload portion without verifying the jwt.
  * @param {string} jwt The input jwt as a string
  * @returns {object} Decoded jwt payload object
  */
@@ -65,15 +63,16 @@ exports.decodeJwt = (jwt) => {
 };
 
 /**
- * Gets a Access Token form a oidc/oauth2 provider
- * @param {string} tokenEndpoint The token URI form the auth service provider
+ * Gets an Access Token from an oidc/oauth2 provider
+ * @param {string} tokenEndpoint The token URI from the auth service provider
  * @param {string} clientId The oidc/oauth application client id
  * @param {string} clientSecret The oidc/oauth application client secret
- * @param {string} scope The scope the for which the token should be issued for
- * @param {string} authMethod The method on how to sent the credentials. Default client_secret_basic
+ * @param {string} scope The scope(s) for which the token should be issued for
+ * @param {string} audience The audience for which the token should be issued for
+ * @param {string} authMethod The method used to send the credentials. Default client_secret_basic
  * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
  */
-exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, authMethod = "client_secret_basic") => {
+exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, audience, authMethod = "client_secret_basic") => {
     const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
     let client = new oauthProvider.Client({
         client_id: clientId,
@@ -89,52 +88,42 @@ exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSe
     if (scope) {
         grantParams.scope = scope;
     }
+
+    if (audience) {
+        grantParams.audience = audience;
+    }
     return await client.grant(grantParams);
 };
 
 /**
- * Send TCP request to specified hostname and port
- * @param {string} hostname Hostname / address of machine
- * @param {number} port TCP port to test
- * @returns {Promise<number>} Maximum time in ms rounded to nearest integer
- */
-exports.tcping = function (hostname, port) {
-    return new Promise((resolve, reject) => {
-        tcpp.ping({
-            address: hostname,
-            port: port,
-            attempts: 1,
-        }, function (err, data) {
-
-            if (err) {
-                reject(err);
-            }
-
-            if (data.results.length >= 1 && data.results[0].err) {
-                reject(data.results[0].err);
-            }
-
-            resolve(Math.round(data.max));
-        });
-    });
-};
-
-/**
  * Ping the specified machine
- * @param {string} hostname Hostname / address of machine
- * @param {number} size Size of packet to send
+ * @param {string} destAddr Hostname / IP address of machine to ping
+ * @param {number} count Number of packets to send before stopping
+ * @param {string} sourceAddr Source address for sending/receiving echo requests
+ * @param {boolean} numeric If true, IP addresses will be output instead of symbolic hostnames
+ * @param {number} size Size (in bytes) of echo request to send
+ * @param {number} deadline Maximum time in seconds before ping stops, regardless of packets sent
+ * @param {number} timeout Maximum time in seconds to wait for each response
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.ping = async (hostname, size = 56) => {
+exports.ping = async (
+    destAddr,
+    count = PING_COUNT_DEFAULT,
+    sourceAddr = "",
+    numeric = true,
+    size = PING_PACKET_SIZE_DEFAULT,
+    deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
+    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT,
+) => {
     try {
-        return await exports.pingAsync(hostname, false, size);
+        return await exports.pingAsync(destAddr, false, count, sourceAddr, numeric, size, deadline, timeout);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
-        console.debug("ping", "IPv6 error message: " + e.message);
+        log.debug("ping", "IPv6 error message: " + e.message);
 
         // As node-ping does not report a specific error for this, try again if it is an empty message with ipv6 no matter what.
         if (!e.message) {
-            return await exports.pingAsync(hostname, true, size);
+            return await exports.pingAsync(destAddr, true, count, sourceAddr, numeric, size, deadline, timeout);
         } else {
             throw e;
         }
@@ -143,18 +132,35 @@ exports.ping = async (hostname, size = 56) => {
 
 /**
  * Ping the specified machine
- * @param {string} hostname Hostname / address of machine to ping
+ * @param {string} destAddr Hostname / IP address of machine to ping
  * @param {boolean} ipv6 Should IPv6 be used?
- * @param {number} size Size of ping packet to send
+ * @param {number} count Number of packets to send before stopping
+ * @param {string} sourceAddr Source address for sending/receiving echo requests
+ * @param {boolean} numeric If true, IP addresses will be output instead of symbolic hostnames
+ * @param {number} size Size (in bytes) of echo request to send
+ * @param {number} deadline Maximum time in seconds before ping stops, regardless of packets sent
+ * @param {number} timeout Maximum time in seconds to wait for each response
  * @returns {Promise<number>} Time for ping in ms rounded to nearest integer
  */
-exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
+exports.pingAsync = function (
+    destAddr,
+    ipv6 = false,
+    count = PING_COUNT_DEFAULT,
+    sourceAddr = "",
+    numeric = true,
+    size = PING_PACKET_SIZE_DEFAULT,
+    deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
+    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT,
+) {
     return new Promise((resolve, reject) => {
-        ping.promise.probe(hostname, {
+        ping.promise.probe(destAddr, {
             v6: ipv6,
-            min_reply: 1,
-            deadline: 10,
+            min_reply: count,
+            sourceAddr: sourceAddr,
+            numeric: numeric,
             packetSize: size,
+            deadline: deadline,
+            timeout: timeout
         }).then((res) => {
             // If ping failed, it will set field to unknown
             if (res.alive) {
@@ -169,73 +175,6 @@ exports.pingAsync = function (hostname, ipv6 = false, size = 56) {
         }).catch((err) => {
             reject(err);
         });
-    });
-};
-
-/**
- * MQTT Monitor
- * @param {string} hostname Hostname / address of machine to test
- * @param {string} topic MQTT topic
- * @param {string} okMessage Expected result
- * @param {object} options MQTT options. Contains port, username,
- * password and interval (interval defaults to 20)
- * @returns {Promise<string>} Received MQTT message
- */
-exports.mqttAsync = function (hostname, topic, okMessage, options = {}) {
-    return new Promise((resolve, reject) => {
-        const { port, username, password, interval = 20 } = options;
-
-        // Adds MQTT protocol to the hostname if not already present
-        if (!/^(?:http|mqtt|ws)s?:\/\//.test(hostname)) {
-            hostname = "mqtt://" + hostname;
-        }
-
-        const timeoutID = setTimeout(() => {
-            log.debug("mqtt", "MQTT timeout triggered");
-            client.end();
-            reject(new Error("Timeout"));
-        }, interval * 1000 * 0.8);
-
-        const mqttUrl = `${hostname}:${port}`;
-
-        log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
-
-        let client = mqtt.connect(mqttUrl, {
-            username,
-            password
-        });
-
-        client.on("connect", () => {
-            log.debug("mqtt", "MQTT connected");
-
-            try {
-                log.debug("mqtt", "MQTT subscribe topic");
-                client.subscribe(topic);
-            } catch (e) {
-                client.end();
-                clearTimeout(timeoutID);
-                reject(new Error("Cannot subscribe topic"));
-            }
-        });
-
-        client.on("error", (error) => {
-            client.end();
-            clearTimeout(timeoutID);
-            reject(error);
-        });
-
-        client.on("message", (messageTopic, message) => {
-            if (messageTopic === topic) {
-                client.end();
-                clearTimeout(timeoutID);
-                if (okMessage != null && okMessage !== "" && message.toString() !== okMessage) {
-                    reject(new Error(`Message Mismatch - Topic: ${messageTopic}; Message: ${message.toString()}`));
-                } else {
-                    resolve(`Topic: ${messageTopic}; Message: ${message.toString()}`);
-                }
-            }
-        });
-
     });
 };
 
@@ -397,6 +336,9 @@ exports.mssqlQuery = async function (connectionString, query) {
     try {
         pool = new mssql.ConnectionPool(connectionString);
         await pool.connect();
+        if (!query) {
+            query = "SELECT 1";
+        }
         await pool.request().query(query);
         pool.close();
     } catch (e) {
@@ -418,12 +360,22 @@ exports.postgresQuery = function (connectionString, query) {
     return new Promise((resolve, reject) => {
         const config = postgresConParse(connectionString);
 
-        if (config.password === "") {
-            // See https://github.com/brianc/node-postgres/issues/1927
-            return reject(new Error("Password is undefined."));
+        // Fix #3868, which true/false is not parsed to boolean
+        if (typeof config.ssl === "string") {
+            config.ssl = config.ssl === "true";
         }
 
-        const client = new Client({ connectionString });
+        if (config.password === "") {
+            // See https://github.com/brianc/node-postgres/issues/1927
+            reject(new Error("Password is undefined."));
+            return;
+        }
+        const client = new Client(config);
+
+        client.on("error", (error) => {
+            log.debug("postgres", "Error caught in the error event handler.");
+            reject(error);
+        });
 
         client.connect((err) => {
             if (err) {
@@ -447,6 +399,7 @@ exports.postgresQuery = function (connectionString, query) {
                     });
                 } catch (e) {
                     reject(e);
+                    client.end();
                 }
             }
         });
@@ -458,11 +411,15 @@ exports.postgresQuery = function (connectionString, query) {
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
+ * @param {?string} password The password to use
  * @returns {Promise<(string)>} Response from server
  */
-exports.mysqlQuery = function (connectionString, query) {
+exports.mysqlQuery = function (connectionString, query, password = undefined) {
     return new Promise((resolve, reject) => {
-        const connection = mysql.createConnection(connectionString);
+        const connection = mysql.createConnection({
+            uri: connectionString,
+            password
+        });
 
         connection.on("error", (err) => {
             reject(err);
@@ -489,24 +446,6 @@ exports.mysqlQuery = function (connectionString, query) {
 };
 
 /**
- * Connect to and ping a MongoDB database
- * @param {string} connectionString The database connection string
- * @returns {Promise<(string[] | object[] | object)>} Response from
- * server
- */
-exports.mongodbPing = async function (connectionString) {
-    let client = await MongoClient.connect(connectionString);
-    let dbPing = await client.db().command({ ping: 1 });
-    await client.close();
-
-    if (dbPing["ok"] === 1) {
-        return "UP";
-    } else {
-        throw Error("failed");
-    }
-};
-
-/**
  * Query radius server
  * @param {string} hostname Hostname of radius server
  * @param {string} username Username to use
@@ -528,7 +467,7 @@ exports.radius = function (
     port = 1812,
     timeout = 2500,
 ) {
-    const client = new radiusClient({
+    const client = new RadiusClient({
         host: hostname,
         hostPort: port,
         timeout: timeout,
@@ -550,40 +489,6 @@ exports.radius = function (
         } else {
             throw Error(error.message);
         }
-    });
-};
-
-/**
- * Redis server ping
- * @param {string} dsn The redis connection string
- * @returns {Promise<any>} Response from redis server
- */
-exports.redisPingAsync = function (dsn) {
-    return new Promise((resolve, reject) => {
-        const client = redis.createClient({
-            url: dsn
-        });
-        client.on("error", (err) => {
-            if (client.isOpen) {
-                client.disconnect();
-            }
-            reject(err);
-        });
-        client.connect().then(() => {
-            if (!client.isOpen) {
-                client.emit("error", new Error("connection isn't open"));
-            }
-            client.ping().then((res, err) => {
-                if (client.isOpen) {
-                    client.disconnect();
-                }
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            }).catch(error => reject(error));
-        });
     });
 };
 
@@ -704,20 +609,26 @@ const parseCertificateInfo = function (info) {
 
 /**
  * Check if certificate is valid
- * @param {object} res Response object from axios
+ * @param {tls.TLSSocket} socket TLSSocket, which may or may not be connected
  * @returns {object} Object containing certificate information
- * @throws No socket was found to check certificate for
  */
-exports.checkCertificate = function (res) {
-    if (!res.request.res.socket) {
-        throw new Error("No socket found");
+exports.checkCertificate = function (socket) {
+    let certInfoStartTime = dayjs().valueOf();
+
+    // Return null if there is no socket
+    if (socket === undefined || socket == null) {
+        return null;
     }
 
-    const info = res.request.res.socket.getPeerCertificate(true);
-    const valid = res.request.res.socket.authorized || false;
+    const info = socket.getPeerCertificate(true);
+    const valid = socket.authorized || false;
 
     log.debug("cert", "Parsing Certificate Info");
     const parsedInfo = parseCertificateInfo(info);
+
+    if (process.env.TIMELOGGER === "1") {
+        log.debug("monitor", "Cert Info Query Time: " + (dayjs().valueOf() - certInfoStartTime) + "ms");
+    }
 
     return {
         valid: valid,
@@ -872,29 +783,6 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
 };
 
 /**
- * Start end-to-end tests
- * @returns {void}
- */
-exports.startE2eTests = async () => {
-    console.log("Starting unit test...");
-    const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const child = childProcess.spawn(npm, [ "run", "cy:run" ]);
-
-    child.stdout.on("data", (data) => {
-        console.log(data.toString());
-    });
-
-    child.stderr.on("data", (data) => {
-        console.log(data.toString());
-    });
-
-    child.on("close", function (code) {
-        console.log("Jest exit code: " + code);
-        process.exit(code);
-    });
-};
-
-/**
  * Convert unknown string to UTF8
  * @param {Uint8Array} body Buffer
  * @returns {string} UTF8 string
@@ -1027,61 +915,27 @@ module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
 };
 
 /**
- * Create gRPC client stib
- * @param {object} options from gRPC client
- * @returns {Promise<object>} Result of gRPC query
+ * Returns an array of SHA256 fingerprints for all known root certificates.
+ * @returns {Set} A set of SHA256 fingerprints.
  */
-module.exports.grpcQuery = async (options) => {
-    const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
-    const protocObject = protojs.parse(grpcProtobufData);
-    const protoServiceObject = protocObject.root.lookupService(grpcServiceName);
-    const Client = grpc.makeGenericClientConstructor({});
-    const credentials = grpcEnableTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
-    const client = new Client(
-        grpcUrl,
-        credentials
-    );
-    const grpcService = protoServiceObject.create(function (method, requestData, cb) {
-        const fullServiceName = method.fullName;
-        const serviceFQDN = fullServiceName.split(".");
-        const serviceMethod = serviceFQDN.pop();
-        const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
-        log.debug("monitor", `gRPC method ${serviceMethodClientImpl}`);
-        client.makeUnaryRequest(
-            serviceMethodClientImpl,
-            arg => arg,
-            arg => arg,
-            requestData,
-            cb);
-    }, false, false);
-    return new Promise((resolve, _) => {
-        try {
-            return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
-                const responseData = JSON.stringify(response);
-                if (err) {
-                    return resolve({
-                        code: err.code,
-                        errorMessage: err.details,
-                        data: ""
-                    });
-                } else {
-                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
-                    return resolve({
-                        code: 1,
-                        errorMessage: "",
-                        data: responseData
-                    });
-                }
-            });
-        } catch (err) {
-            return resolve({
-                code: -1,
-                errorMessage: `Error ${err}. Please review your gRPC configuration option. The service name must not include package name value, and the method name must follow camelCase format`,
-                data: ""
-            });
-        }
+module.exports.rootCertificatesFingerprints = () => {
+    let fingerprints = tls.rootCertificates.map(cert => {
+        let certLines = cert.split("\n");
+        certLines.shift();
+        certLines.pop();
+        let certBody = certLines.join("");
+        let buf = Buffer.from(certBody, "base64");
 
+        const shasum = crypto.createHash("sha256");
+        shasum.update(buf);
+
+        return shasum.digest("hex").toUpperCase().replace(/(.{2})(?!$)/g, "$1:");
     });
+
+    fingerprints.push("6D:99:FB:26:5E:B1:C5:B3:74:47:65:FC:BC:64:8F:3C:D8:E1:BF:FA:FD:C4:C2:F9:9B:9D:47:CF:7F:F1:C2:4F"); // ISRG X1 cross-signed with DST X3
+    fingerprints.push("8B:05:B6:8C:C6:59:E5:ED:0F:CB:38:F2:C9:42:FB:FD:20:0E:6F:2F:F9:F8:5D:63:C6:99:4E:F5:E0:B0:27:01"); // ISRG X2 cross-signed with ISRG X1
+
+    return new Set(fingerprints);
 };
 
 module.exports.SHAKE256_LENGTH = 16;
@@ -1119,3 +973,59 @@ if (process.env.TEST_BACKEND) {
         return module.exports.__test[functionName];
     };
 }
+
+/**
+ * Generates an abort signal with the specified timeout.
+ * @param {number} timeoutMs - The timeout in milliseconds.
+ * @returns {AbortSignal | null} - The generated abort signal, or null if not supported.
+ */
+module.exports.axiosAbortSignal = (timeoutMs) => {
+    try {
+        // Just in case, as 0 timeout here will cause the request to be aborted immediately
+        if (!timeoutMs || timeoutMs <= 0) {
+            timeoutMs = 5000;
+        }
+        return AbortSignal.timeout(timeoutMs);
+    } catch (_) {
+        // v16-: AbortSignal.timeout is not supported
+        try {
+            const abortController = new AbortController();
+            setTimeout(() => abortController.abort(), timeoutMs);
+
+            return abortController.signal;
+        } catch (_) {
+            // v15-: AbortController is not supported
+            return null;
+        }
+    }
+};
+
+/**
+ * Async version of fs.existsSync
+ * @param {PathLike} path File path
+ * @returns {Promise<boolean>} True if file exists, false otherwise
+ */
+function fsExists(path) {
+    return new Promise(function (resolve, reject) {
+        exists(path, function (exists) {
+            resolve(exists);
+        });
+    });
+}
+module.exports.fsExists = fsExists;
+
+/**
+ * By default, command-exists will throw a null error if the command does not exist, which is ugly. The function makes it better.
+ * Read more: https://github.com/mathisonian/command-exists/issues/22
+ * @param {string} command Command to check
+ * @returns {Promise<boolean>} True if command exists, false otherwise
+ */
+async function commandExists(command) {
+    try {
+        await require("command-exists")(command);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+module.exports.commandExists = commandExists;
