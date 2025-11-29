@@ -1142,5 +1142,21 @@
     "smtpHelpText": "SMTPSは『SMTP/TLSが機能しているかテスト』Ignore TLSは『プレーンテキストで接続』STARTTLSは『接続し、STARTTLSコマンドを発行し、サーバー証明書を検証』いずれもメールを送信しない。",
     "Custom URL": "カスタムURL",
     "customUrlDescription": "モニターのURLの代わりにクリック可能なURLとして使用されます。",
-    "OneChatAccessToken": "OneChat アクセストークン"
+    "OneChatAccessToken": "OneChat アクセストークン",
+    "mqttWebSocketPath": "MQTT WebSocket パス",
+    "mqttWebsocketPathInvalid": "有効な WebSocket パスフォーマットを使用してください",
+    "mqttHostnameTip": "次のフォーマットを使用してください {hostnameFormat}",
+    "HTTP Method": "HTTP メソッド",
+    "Clear All Events": "すべてのイベントをクリア",
+    "clearAllEventsMsg": "本当にすべてのイベントを削除しますか？",
+    "No monitors found": "モニターはありません。",
+    "wayToGetBaleToken": "{0} からトークンを入手できます。",
+    "Path": "パス",
+    "Events cleared successfully": "イベントが正常にクリアされました。",
+    "Could not clear events": "{total} 個中 {failed} 個のイベントをクリアできませんでした",
+    "webhookPostMethodDesc": "モダンな HTTP サーバーでは POST が最もおすすめです。",
+    "webhookGetMethodDesc": "GET はデータをクエリパラメータとして送信し、Body の設定は許可しません。Uptime Kuma Push モニターのトリガーとして便利です。",
+    "evolutionInstanceName": "インスタンス名",
+    "descriptionHelpText": "内部ダッシュボードに表示されます。Markdownを使用できますが、表示前にサニタイズ処理（スペースとインデントは保持）されます。",
+    "auto-select": "自動選択"
 }
