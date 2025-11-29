@@ -445,6 +445,7 @@
     "Query": "Query",
     "settingsCertificateExpiry": "TLS Certificate Expiry",
     "certificationExpiryDescription": "HTTPS Monitors trigger notification when TLS certificate expires in:",
+    "certHostnameMismatch": "Certificate hostname does not match the monitor URL.",
     "Setup Docker Host": "Set Up Docker Host",
     "Connection Type": "Connection Type",
     "Docker Daemon": "Docker Daemon",
