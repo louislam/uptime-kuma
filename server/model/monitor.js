@@ -8,7 +8,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
-const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
+const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius,
     kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
 } = require("../util-server");
 const { R } = require("redbean-node");
@@ -784,37 +784,6 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type === "grpc-keyword") {
-                    let startTime = dayjs().valueOf();
-                    const options = {
-                        grpcUrl: this.grpcUrl,
-                        grpcProtobufData: this.grpcProtobuf,
-                        grpcServiceName: this.grpcServiceName,
-                        grpcEnableTls: this.grpcEnableTls,
-                        grpcMethod: this.grpcMethod,
-                        grpcBody: this.grpcBody,
-                    };
-                    const response = await grpcQuery(options);
-                    bean.ping = dayjs().valueOf() - startTime;
-                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
-                    let responseData = response.data;
-                    if (responseData.length > 50) {
-                        responseData = responseData.toString().substring(0, 47) + "...";
-                    }
-                    if (response.code !== 1) {
-                        bean.status = DOWN;
-                        bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
-                    } else {
-                        let keywordFound = response.data.toString().includes(this.keyword);
-                        if (keywordFound === !this.isInvertKeyword()) {
-                            bean.status = UP;
-                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keywordFound ? "is" : "not"} found`;
-                        } else {
-                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response.data} + "]"`);
-                            bean.status = DOWN;
-                            bean.msg = `, but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${responseData} + "]`;
-                        }
-                    }
                 } else if (this.type === "postgres") {
                     let startTime = dayjs().valueOf();
 
