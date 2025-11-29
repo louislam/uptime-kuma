@@ -82,10 +82,10 @@ class StatusPage extends BeanModel {
             updated: new Date(), // optional, default = today
         });
         heartbeats.forEach(heartbeat => {
-            let heartbeatDate = new Date(heartbeat.time)
+            let heartbeatDate = new Date(heartbeat.time);
             // If time string does not contain timezone info, parse it as UTC such as 'Z' or '-05:00'
             if (!/([zZ]|[+-][0-9]{2}:[0-9]{2})$/.test(heartbeat.time)) {
-                heartbeatDate = new dayjs.utc(heartbeat.time).toDate()
+                heartbeatDate = new dayjs.utc(heartbeat.time).toDate();
             }
             feed.addItem({
                 title: `${heartbeat.name} is down`,
