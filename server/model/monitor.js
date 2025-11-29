@@ -351,6 +351,94 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Get or create the HTTP agent for this monitor
+     * @param {object} options Agent options
+     * @returns {http.Agent} HTTP agent instance
+     */
+    getHttpAgent(options = {}) {
+        // Store agents in a non-enumerable property to avoid RedBeanNode issues
+        if (!this.__httpAgent) {
+            Object.defineProperty(this, "__httpAgent", {
+                value: new http.Agent({
+                    maxCachedSessions: 0,
+                    keepAlive: false,
+                    ...options
+                }),
+                writable: true,
+                enumerable: false,
+                configurable: true
+            });
+        }
+        return this.__httpAgent;
+    }
+
+    /**
+     * Get or create the HTTPS agent for this monitor
+     * Note: Options are only used on first creation
+     * @param {object} options Agent options
+     * @returns {https.Agent|HttpsCookieAgent} HTTPS agent instance
+     */
+    getHttpsAgent(options = {}) {
+        if (!this.__httpsAgent) {
+            let jar = new CookieJar();
+            // Create agent with merged options
+            const agentOptions = {
+                maxCachedSessions: 0,
+                keepAlive: false,
+                cookies: { jar },
+                ...options
+            };
+            Object.defineProperty(this, "__httpsAgent", {
+                value: new HttpsCookieAgent(agentOptions),
+                writable: true,
+                enumerable: false,
+                configurable: true
+            });
+        }
+        return this.__httpsAgent;
+    }
+
+    /**
+     * Get or create the Docker TCP HTTPS agent for this monitor
+     * @param {object} options Agent options
+     * @returns {https.Agent} HTTPS agent instance
+     */
+    getDockerTcpAgent(options = {}) {
+        if (!this.__dockerTcpAgent) {
+            Object.defineProperty(this, "__dockerTcpAgent", {
+                value: new https.Agent({
+                    maxCachedSessions: 0,
+                    keepAlive: false,
+                    ...options
+                }),
+                writable: true,
+                enumerable: false,
+                configurable: true
+            });
+        }
+        return this.__dockerTcpAgent;
+    }
+
+    /**
+     * Destroy all HTTP agents for this monitor
+     * @returns {void}
+     */
+    destroyAgents() {
+        if (this.__httpAgent) {
+            this.__httpAgent.destroy();
+            delete this.__httpAgent;
+        }
+        if (this.__httpsAgent) {
+            this.__httpsAgent.destroy();
+            delete this.__httpsAgent;
+        }
+        if (this.__dockerTcpAgent) {
+            this.__dockerTcpAgent.destroy();
+            delete this.__dockerTcpAgent;
+        }
+    }
+
+    /**
      * Start monitor
      * @param {Server} io Socket server instance
      * @returns {Promise<void>}
@@ -534,16 +622,13 @@ class Monitor extends BeanModel {
                     }
 
                     if (!options.httpAgent) {
-                        options.httpAgent = new http.Agent(httpAgentOptions);
+                        // Reuse the monitor's HTTP agent to prevent resource leaks
+                        options.httpAgent = this.getHttpAgent(httpAgentOptions);
                     }
 
                     if (!options.httpsAgent) {
-                        let jar = new CookieJar();
-                        let httpsCookieAgentOptions = {
-                            ...httpsAgentOptions,
-                            cookies: { jar }
-                        };
-                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
+                        // Reuse the monitor's HTTPS agent to prevent resource leaks
+                        options.httpsAgent = this.getHttpsAgent(httpsAgentOptions);
                     }
 
                     if (this.auth_method === "mtls") {
@@ -680,19 +765,20 @@ class Monitor extends BeanModel {
                         throw new Error("Steam API Key not found");
                     }
 
+                    // Reuse agents for steam monitor to prevent resource leaks
+                    const steamHttpAgent = this.getHttpAgent();
+                    const steamHttpsAgent = this.getHttpsAgent({
+                        rejectUnauthorized: !this.getIgnoreTls(),
+                        secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                    });
+
                     let res = await axios.get(steamApiUrl, {
                         timeout: this.timeout * 1000,
                         headers: {
                             "Accept": "*/*",
                         },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: !this.getIgnoreTls(),
-                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-                        }),
-                        httpAgent: new http.Agent({
-                            maxCachedSessions: 0,
-                        }),
+                        httpsAgent: steamHttpsAgent,
+                        httpAgent: steamHttpAgent,
                         maxRedirects: this.maxredirects,
                         validateStatus: (status) => {
                             return checkStatusCode(status, this.getAcceptedStatuscodes());
@@ -731,20 +817,21 @@ class Monitor extends BeanModel {
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
+                    // Reuse agents for docker monitor to prevent resource leaks
+                    const dockerHttpAgent = this.getHttpAgent();
+                    const dockerHttpsAgent = this.getHttpsAgent({
+                        rejectUnauthorized: !this.getIgnoreTls(),
+                        secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                    });
+
                     const options = {
                         url: `/containers/${this.docker_container}/json`,
                         timeout: this.interval * 1000 * 0.8,
                         headers: {
                             "Accept": "*/*",
                         },
-                        httpsAgent: new https.Agent({
-                            maxCachedSessions: 0,      // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                            rejectUnauthorized: !this.getIgnoreTls(),
-                            secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-                        }),
-                        httpAgent: new http.Agent({
-                            maxCachedSessions: 0,
-                        }),
+                        httpsAgent: dockerHttpsAgent,
+                        httpAgent: dockerHttpAgent,
                     };
 
                     const dockerHost = await R.load("docker_host", this.docker_host);
@@ -757,9 +844,9 @@ class Monitor extends BeanModel {
                         options.socketPath = dockerHost._dockerDaemon;
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
-                        options.httpsAgent = new https.Agent(
-                            await DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
-                        );
+                        // For TCP Docker hosts, we need a special agent with TLS options
+                        const dockerTcpAgentOptions = await DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL);
+                        options.httpsAgent = this.getDockerTcpAgent(dockerTcpAgentOptions);
                     }
 
                     log.debug("monitor", `[${this.name}] Axios Request`);
@@ -905,6 +992,12 @@ class Monitor extends BeanModel {
             // Don't notify if disrupted changes to up
             if (isImportant) {
                 bean.important = true;
+
+                // Recreate HTTP agents when monitor fails to resolve potential agent issues
+                if (bean.status === DOWN && previousBeat?.status !== DOWN) {
+                    log.debug("monitor", `[${this.name}] Monitor failed, recreating HTTP agents`);
+                    this.destroyAgents();
+                }
 
                 if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
@@ -1082,6 +1175,9 @@ class Monitor extends BeanModel {
         this.isStop = true;
 
         this.prometheus?.remove();
+
+        // Clean up HTTP agents to prevent resource leaks
+        this.destroyAgents();
     }
 
     /**
