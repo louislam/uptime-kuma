@@ -769,6 +769,14 @@
                                 </div>
                             </div>
 
+                            <div v-if="hasDomain" class="my-3 form-check">
+                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="domain-expiry-notification">
+                                    {{ $t("labelDomainNameExpiryNotification") }}
+                                </label>
+                                <div class="form-text">
+                                </div>
+                            </div>
                             <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
                                 <input id="wsIgnoreSecWebsocketAcceptHeader" v-model="monitor.wsIgnoreSecWebsocketAcceptHeader" class="form-check-input" type="checkbox">
                                 <i18n-t tag="label" keypath="Ignore Sec-WebSocket-Accept header" class="form-check-label" for="wsIgnoreSecWebsocketAcceptHeader">
@@ -1298,6 +1306,7 @@ const monitorDefaults = {
     ignoreTls: false,
     upsideDown: false,
     expiryNotification: false,
+    domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
     dns_resolve_type: "A",
@@ -1353,6 +1362,7 @@ export default {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
             },
+            hasDomain: false,
             acceptedStatusCodeOptions: [],
             dnsresolvetypeOptions: [],
             kafkaSaslMechanismOptions: [],
@@ -1421,6 +1431,16 @@ export default {
                 return this.ipRegexPattern;
             }
             return null;
+        },
+
+        monitorTypeUrlHost() {
+            const { type, url, hostname, grpcUrl } = this.monitor;
+            return {
+                type,
+                url,
+                hostname,
+                grpcUrl
+            };
         },
 
         pageName() {
@@ -1698,6 +1718,15 @@ message HealthCheckResponse {
             if (this.monitor.type === "ping") {
                 this.finishUpdateInterval();
             }
+        },
+
+        "monitorTypeUrlHost"(data) {
+            this.$root.getSocket().emit("checkMointor", data, (res) => {
+                this.hasDomain = !!res?.domain;
+                if (!res?.domain) {
+                    this.monitor.domainExpiryNotification = false;
+                }
+            });
         },
 
         "monitor.type"(newType, oldType) {

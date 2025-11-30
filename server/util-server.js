@@ -543,6 +543,7 @@ exports.setSettings = async function (type, data) {
  */
 const getDaysBetween = (validFrom, validTo) =>
     Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
+exports.getDaysBetween = getDaysBetween;
 
 /**
  * Get days remaining from a time range
@@ -552,11 +553,12 @@ const getDaysBetween = (validFrom, validTo) =>
  */
 const getDaysRemaining = (validFrom, validTo) => {
     const daysRemaining = getDaysBetween(validFrom, validTo);
-    if (new Date(validTo).getTime() < new Date().getTime()) {
+    if (new Date(validTo).getTime() < new Date(validFrom).getTime()) {
         return -daysRemaining;
     }
     return daysRemaining;
 };
+exports.getDaysRemaining = getDaysRemaining;
 
 /**
  * Fix certificate info for display
