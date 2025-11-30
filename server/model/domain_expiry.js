@@ -21,10 +21,6 @@ const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
  * @returns {Promise<string>} First RDAP server found
  */
 async function getRdapServer(tld) {
-    switch (tld) {
-        case "de": // not present in iana.org json
-            return "https://rdap.denic.de/domain/";
-    }
     let rdapList;
     try {
         const res = await cachedFetch("https://data.iana.org/rdap/dns.json");
