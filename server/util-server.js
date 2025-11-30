@@ -16,8 +16,6 @@ const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
 const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
-const grpc = require("@grpc/grpc-js");
-const protojs = require("protobufjs");
 const RadiusClient = require("./radius-client");
 const oidc = require("openid-client");
 const tls = require("tls");
@@ -892,64 +890,6 @@ module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
  */
 module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
     return timeObjectConvertTimezone(obj, timezone, false);
-};
-
-/**
- * Create gRPC client stib
- * @param {object} options from gRPC client
- * @returns {Promise<object>} Result of gRPC query
- */
-module.exports.grpcQuery = async (options) => {
-    const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
-    const protocObject = protojs.parse(grpcProtobufData);
-    const protoServiceObject = protocObject.root.lookupService(grpcServiceName);
-    const Client = grpc.makeGenericClientConstructor({});
-    const credentials = grpcEnableTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
-    const client = new Client(
-        grpcUrl,
-        credentials
-    );
-    const grpcService = protoServiceObject.create(function (method, requestData, cb) {
-        const fullServiceName = method.fullName;
-        const serviceFQDN = fullServiceName.split(".");
-        const serviceMethod = serviceFQDN.pop();
-        const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
-        log.debug("monitor", `gRPC method ${serviceMethodClientImpl}`);
-        client.makeUnaryRequest(
-            serviceMethodClientImpl,
-            arg => arg,
-            arg => arg,
-            requestData,
-            cb);
-    }, false, false);
-    return new Promise((resolve, _) => {
-        try {
-            return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
-                const responseData = JSON.stringify(response);
-                if (err) {
-                    return resolve({
-                        code: err.code,
-                        errorMessage: err.details,
-                        data: ""
-                    });
-                } else {
-                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
-                    return resolve({
-                        code: 1,
-                        errorMessage: "",
-                        data: responseData
-                    });
-                }
-            });
-        } catch (err) {
-            return resolve({
-                code: -1,
-                errorMessage: `Error ${err}. Please review your gRPC configuration option. The service name must not include package name value, and the method name must follow camelCase format`,
-                data: ""
-            });
-        }
-
-    });
 };
 
 /**
