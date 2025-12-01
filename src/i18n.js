@@ -31,6 +31,7 @@ const languageList = {
     "sv-SE": "Svenska",
     "tr-TR": "Türkçe",
     "ko-KR": "한국어",
+    "lt": "Lietuvių",
     "ru-RU": "Русский",
     "zh-CN": "简体中文",
     "pl": "Polski",
@@ -46,6 +47,7 @@ const languageList = {
     "ge": "ქართული",
     "uz": "O'zbek tili",
     "ga": "Gaeilge",
+    "sk": "Slovenčina",
 };
 
 let messages = {
@@ -74,11 +76,20 @@ export function currentLocale() {
         if (locale in messages) {
             return locale;
         }
-        // some locales are further specified such as "en-US".
-        // If we only have a generic locale for this, we can use it too
-        const genericLocale = locale.split("-")[0];
-        if (genericLocale in messages) {
-            return genericLocale;
+        // If the locale is a 2-letter code, we can try to find a regional variant
+        // e.g. "fr" may not be in the messages, but "fr-FR" is
+        if (locale.length === 2) {
+            const regionalLocale = `${locale}-${locale.toUpperCase()}`;
+            if (regionalLocale in messages) {
+                return regionalLocale;
+            }
+        } else {
+            // Some locales are further specified such as "en-US".
+            // If we only have a generic locale for this, we can use it too
+            const genericLocale = locale.slice(0, 2);
+            if (genericLocale in messages) {
+                return genericLocale;
+            }
         }
     }
     return "en";

@@ -67,26 +67,25 @@
             <input id="to-bcc" v-model="$parent.notification.smtpBCC" type="text" class="form-control" autocomplete="false" :required="!hasRecipient">
         </div>
 
-        <p class="form-text">
-            <i18n-t tag="div" keypath="smtpLiquidIntroduction" class="form-text mb-3">
-                <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
-            </i18n-t>
-            <code v-pre>{{name}}</code>: {{ $t("emailTemplateServiceName") }}<br />
-            <code v-pre>{{msg}}</code>: {{ $t("emailTemplateMsg") }}<br />
-            <code v-pre>{{status}}</code>: {{ $t("emailTemplateStatus") }}<br />
-            <code v-pre>{{heartbeatJSON}}</code>: {{ $t("emailTemplateHeartbeatJSON") }}<b>{{ $t("emailTemplateLimitedToUpDownNotification") }}</b><br />
-            <code v-pre>{{monitorJSON}}</code>: {{ $t("emailTemplateMonitorJSON") }} <b>{{ $t("emailTemplateLimitedToUpDownNotification") }}</b><br />
-            <code v-pre>{{hostnameOrURL}}</code>: {{ $t("emailTemplateHostnameOrURL") }}<br />
-        </p>
         <div class="mb-3">
             <label for="subject-email" class="form-label">{{ $t("emailCustomSubject") }}</label>
-            <input id="subject-email" v-model="$parent.notification.customSubject" type="text" class="form-control" autocomplete="false" placeholder="">
+            <TemplatedInput id="subject-email" v-model="$parent.notification.customSubject" :required="false" placeholder=""></TemplatedInput>
             <div class="form-text">{{ $t("leave blank for default subject") }}</div>
         </div>
+
         <div class="mb-3">
             <label for="body-email" class="form-label">{{ $t("emailCustomBody") }}</label>
-            <textarea id="body-email" v-model="$parent.notification.customBody" type="text" class="form-control" autocomplete="false" placeholder=""></textarea>
+            <TemplatedTextarea id="body-email" v-model="$parent.notification.customBody" :required="false" placeholder=""></TemplatedTextarea>
             <div class="form-text">{{ $t("leave blank for default body") }}</div>
+        </div>
+
+        <div class="mb-3">
+            <div class="form-check">
+                <input id="use-html-body" v-model="$parent.notification.htmlBody" class="form-check-input" type="checkbox" value="">
+                <label class="form-check-label" for="use-html-body">
+                    {{ $t("Use HTML for custom E-mail body") }}
+                </label>
+            </div>
         </div>
 
         <ToggleSection :heading="$t('smtpDkimSettings')">
@@ -124,11 +123,15 @@
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedInput from "../TemplatedInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 import ToggleSection from "../ToggleSection.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedInput,
+        TemplatedTextarea,
         ToggleSection,
     },
     computed: {

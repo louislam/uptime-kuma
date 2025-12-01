@@ -14,6 +14,7 @@ class RocketChat extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON == null) {
                 let data = {
                     "text": msg,
@@ -21,7 +22,7 @@ class RocketChat extends NotificationProvider {
                     "username": notification.rocketusername,
                     "icon_emoji": notification.rocketiconemo,
                 };
-                await axios.post(notification.rocketwebhookURL, data);
+                await axios.post(notification.rocketwebhookURL, data, config);
                 return okMsg;
             }
 
@@ -55,7 +56,7 @@ class RocketChat extends NotificationProvider {
                 data.attachments[0].title_link = baseURL + getMonitorRelativeURL(monitorJSON.id);
             }
 
-            await axios.post(notification.rocketwebhookURL, data);
+            await axios.post(notification.rocketwebhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

@@ -2,15 +2,16 @@ const { R } = require("redbean-node");
 const { log } = require("../../src/util");
 const Database = require("../database");
 const { Settings } = require("../settings");
+const dayjs = require("dayjs");
 
-const DEFAULT_KEEP_PERIOD = 180;
+const DEFAULT_KEEP_PERIOD = 365;
 
 /**
- * Clears old data from the heartbeat table of the database.
+ * Clears old data from the heartbeat table and the stat_daily of the database.
  * @returns {Promise<void>} A promise that resolves when the data has been cleared.
  */
-
 const clearOldData = async () => {
+    await Database.clearHeartbeatData();
     let period = await Settings.get("keepDataPeriodDays");
 
     // Set Default Period
@@ -32,16 +33,21 @@ const clearOldData = async () => {
     if (parsedPeriod < 1) {
         log.info("clearOldData", `Data deletion has been disabled as period is less than 1. Period is ${parsedPeriod} days.`);
     } else {
-
         log.debug("clearOldData", `Clearing Data older than ${parsedPeriod} days...`);
-
         const sqlHourOffset = Database.sqlHourOffset();
 
         try {
-            await R.exec(
-                "DELETE FROM heartbeat WHERE time < " + sqlHourOffset,
-                [ parsedPeriod * -24 ]
-            );
+            // Heartbeat
+            await R.exec("DELETE FROM heartbeat WHERE time < " + sqlHourOffset, [
+                parsedPeriod * -24,
+            ]);
+
+            let timestamp = dayjs().subtract(parsedPeriod, "day").utc().startOf("day").unix();
+
+            // stat_daily
+            await R.exec("DELETE FROM stat_daily WHERE timestamp < ? ", [
+                timestamp,
+            ]);
 
             if (Database.dbConfig.type === "sqlite") {
                 await R.exec("PRAGMA optimize;");
@@ -50,6 +56,8 @@ const clearOldData = async () => {
             log.error("clearOldData", `Failed to clear old data: ${e.message}`);
         }
     }
+
+    log.debug("clearOldData", "Data cleared.");
 };
 
 module.exports = {

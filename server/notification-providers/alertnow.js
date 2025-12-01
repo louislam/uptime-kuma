@@ -41,7 +41,9 @@ class AlertNow extends NotificationProvider {
                 "event_id": eventId,
             };
 
-            await axios.post(notification.alertNowWebhookURL, data);
+            let config = this.getAxiosConfigWithProxy({});
+
+            await axios.post(notification.alertNowWebhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

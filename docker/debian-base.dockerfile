@@ -1,5 +1,15 @@
+# Download Apprise deb package
+FROM node:22-bookworm-slim AS download-apprise
+WORKDIR /app
+COPY ./extra/download-apprise.mjs ./download-apprise.mjs
+RUN apt update && \
+    apt --yes --no-install-recommends install curl && \
+    npm install cheerio semver && \
+    node ./download-apprise.mjs
+
+# Base Image (Slim)
 # If the image changed, the second stage image should be changed too
-FROM node:20-bookworm-slim AS base2-slim
+FROM node:22-bookworm-slim AS base2-slim
 ARG TARGETPLATFORM
 
 # Specify --no-install-recommends to skip unused dependencies, make the base much smaller!
@@ -27,8 +37,9 @@ RUN apt update && \
 # apprise = for notifications (Install from the deb package, as the stable one is too old) (workaround for #4867)
 # Switching to testing repo is no longer working, as the testing repo is not bookworm anymore.
 # python3-paho-mqtt (#4859)
-RUN curl http://ftp.debian.org/debian/pool/main/a/apprise/apprise_1.8.0-2_all.deb --output apprise.deb && \
-    apt update && \
+# TODO: no idea how to delete the deb file after installation as it becomes a layer already
+COPY --from=download-apprise /app/apprise.deb ./apprise.deb
+RUN apt update && \
     apt --yes --no-install-recommends install ./apprise.deb python3-paho-mqtt && \
     rm -rf /var/lib/apt/lists/* && \
     rm -f apprise.deb && \
@@ -36,9 +47,9 @@ RUN curl http://ftp.debian.org/debian/pool/main/a/apprise/apprise_1.8.0-2_all.de
 
 # Install cloudflared
 RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyrings/cloudflare-main.gpg && \
-    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bullseye main' | tee /etc/apt/sources.list.d/cloudflared.list && \
+    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | tee /etc/apt/sources.list.d/cloudflared.list && \
     apt update && \
-    apt install --yes --no-install-recommends -t stable cloudflared && \
+    apt install --yes --no-install-recommends cloudflared && \
     cloudflared version && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove

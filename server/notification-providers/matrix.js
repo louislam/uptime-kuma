@@ -37,6 +37,7 @@ class Matrix extends NotificationProvider {
                 "body": msg
             };
 
+            config = this.getAxiosConfigWithProxy(config);
             await axios.put(`${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`, data, config);
             return okMsg;
         } catch (error) {

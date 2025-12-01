@@ -1,7 +1,7 @@
 const { R } = require("redbean-node");
-const HttpProxyAgent = require("http-proxy-agent");
-const HttpsProxyAgent = require("https-proxy-agent");
-const SocksProxyAgent = require("socks-proxy-agent");
+const { HttpProxyAgent } = require("http-proxy-agent");
+const { HttpsProxyAgent } = require("https-proxy-agent");
+const { SocksProxyAgent } = require("socks-proxy-agent");
 const { log } = require("../src/util");
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const { CookieJar } = require("tough-cookie");
@@ -100,14 +100,14 @@ class Proxy {
         let jar = new CookieJar();
 
         const proxyOptions = {
-            protocol: proxy.protocol,
-            host: proxy.host,
-            port: proxy.port,
             cookies: { jar },
         };
 
+        const proxyUrl = new URL(`${proxy.protocol}://${proxy.host}:${proxy.port}`);
+
         if (proxy.auth) {
-            proxyOptions.auth = `${proxy.username}:${proxy.password}`;
+            proxyUrl.username = proxy.username;
+            proxyUrl.password = proxy.password;
         }
 
         log.debug("update-proxy", `Proxy Options: ${JSON.stringify(proxyOptions)}`);
@@ -122,15 +122,15 @@ class Proxy {
                 // eslint-disable-next-line no-case-declarations
                 const HttpsCookieProxyAgent = createCookieAgent(HttpsProxyAgent);
 
-                httpAgent = new HttpCookieProxyAgent({
-                    ...httpAgentOptions || {},
+                httpAgent = new HttpCookieProxyAgent(proxyUrl.toString(), {
+                    ...(httpAgentOptions || {}),
+                    ...proxyOptions,
+                });
+                httpsAgent = new HttpsCookieProxyAgent(proxyUrl.toString(), {
+                    ...(httpsAgentOptions || {}),
                     ...proxyOptions,
                 });
 
-                httpsAgent = new HttpsCookieProxyAgent({
-                    ...httpsAgentOptions || {},
-                    ...proxyOptions,
-                });
                 break;
             case "socks":
             case "socks5":
@@ -138,10 +138,9 @@ class Proxy {
             case "socks4":
                 // eslint-disable-next-line no-case-declarations
                 const SocksCookieProxyAgent = createCookieAgent(SocksProxyAgent);
-                agent = new SocksCookieProxyAgent({
+                agent = new SocksCookieProxyAgent(proxyUrl.toString(), {
                     ...httpAgentOptions,
                     ...httpsAgentOptions,
-                    ...proxyOptions,
                     tls: {
                         rejectUnauthorized: httpsAgentOptions.rejectUnauthorized,
                     },
