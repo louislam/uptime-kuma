@@ -1,4 +1,3 @@
-const tcpp = require("tcp-ping");
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const {
@@ -17,10 +16,7 @@ const postgresConParse = require("pg-connection-string").parse;
 const mysql = require("mysql2");
 const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
-const grpc = require("@grpc/grpc-js");
-const protojs = require("protobufjs");
 const RadiusClient = require("./radius-client");
-const redis = require("redis");
 const oidc = require("openid-client");
 const tls = require("tls");
 const { exists } = require("fs");
@@ -97,33 +93,6 @@ exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSe
         grantParams.audience = audience;
     }
     return await client.grant(grantParams);
-};
-
-/**
- * Send TCP request to specified hostname and port
- * @param {string} hostname Hostname / address of machine
- * @param {number} port TCP port to test
- * @returns {Promise<number>} Maximum time in ms rounded to nearest integer
- */
-exports.tcping = function (hostname, port) {
-    return new Promise((resolve, reject) => {
-        tcpp.ping({
-            address: hostname,
-            port: port,
-            attempts: 1,
-        }, function (err, data) {
-
-            if (err) {
-                reject(err);
-            }
-
-            if (data.results.length >= 1 && data.results[0].err) {
-                reject(data.results[0].err);
-            }
-
-            resolve(Math.round(data.max));
-        });
-    });
 };
 
 /**
@@ -524,44 +493,6 @@ exports.radius = function (
 };
 
 /**
- * Redis server ping
- * @param {string} dsn The redis connection string
- * @param {boolean} rejectUnauthorized If false, allows unverified server certificates.
- * @returns {Promise<any>} Response from server
- */
-exports.redisPingAsync = function (dsn, rejectUnauthorized) {
-    return new Promise((resolve, reject) => {
-        const client = redis.createClient({
-            url: dsn,
-            socket: {
-                rejectUnauthorized
-            }
-        });
-        client.on("error", (err) => {
-            if (client.isOpen) {
-                client.disconnect();
-            }
-            reject(err);
-        });
-        client.connect().then(() => {
-            if (!client.isOpen) {
-                client.emit("error", new Error("connection isn't open"));
-            }
-            client.ping().then((res, err) => {
-                if (client.isOpen) {
-                    client.disconnect();
-                }
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            }).catch(error => reject(error));
-        });
-    });
-};
-
-/**
  * Retrieve value of setting based on key
  * @param {string} key Key of setting to retrieve
  * @returns {Promise<any>} Value
@@ -957,64 +888,6 @@ module.exports.timeObjectToUTC = (obj, timezone = undefined) => {
  */
 module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
     return timeObjectConvertTimezone(obj, timezone, false);
-};
-
-/**
- * Create gRPC client stib
- * @param {object} options from gRPC client
- * @returns {Promise<object>} Result of gRPC query
- */
-module.exports.grpcQuery = async (options) => {
-    const { grpcUrl, grpcProtobufData, grpcServiceName, grpcEnableTls, grpcMethod, grpcBody } = options;
-    const protocObject = protojs.parse(grpcProtobufData);
-    const protoServiceObject = protocObject.root.lookupService(grpcServiceName);
-    const Client = grpc.makeGenericClientConstructor({});
-    const credentials = grpcEnableTls ? grpc.credentials.createSsl() : grpc.credentials.createInsecure();
-    const client = new Client(
-        grpcUrl,
-        credentials
-    );
-    const grpcService = protoServiceObject.create(function (method, requestData, cb) {
-        const fullServiceName = method.fullName;
-        const serviceFQDN = fullServiceName.split(".");
-        const serviceMethod = serviceFQDN.pop();
-        const serviceMethodClientImpl = `/${serviceFQDN.slice(1).join(".")}/${serviceMethod}`;
-        log.debug("monitor", `gRPC method ${serviceMethodClientImpl}`);
-        client.makeUnaryRequest(
-            serviceMethodClientImpl,
-            arg => arg,
-            arg => arg,
-            requestData,
-            cb);
-    }, false, false);
-    return new Promise((resolve, _) => {
-        try {
-            return grpcService[`${grpcMethod}`](JSON.parse(grpcBody), function (err, response) {
-                const responseData = JSON.stringify(response);
-                if (err) {
-                    return resolve({
-                        code: err.code,
-                        errorMessage: err.details,
-                        data: ""
-                    });
-                } else {
-                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
-                    return resolve({
-                        code: 1,
-                        errorMessage: "",
-                        data: responseData
-                    });
-                }
-            });
-        } catch (err) {
-            return resolve({
-                code: -1,
-                errorMessage: `Error ${err}. Please review your gRPC configuration option. The service name must not include package name value, and the method name must follow camelCase format`,
-                data: ""
-            });
-        }
-
-    });
 };
 
 /**

@@ -8,8 +8,8 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
-const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius,
+    kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -100,6 +100,8 @@ class Monitor extends BeanModel {
             parent: this.parent,
             childrenIDs: preloadData.childrenIDs.get(this.id) || [],
             url: this.url,
+            wsIgnoreSecWebsocketAcceptHeader: this.getWsIgnoreSecWebsocketAcceptHeader(),
+            wsSubprotocol: this.wsSubprotocol,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
@@ -278,6 +280,14 @@ class Monitor extends BeanModel {
 
     /**
      * Parse to boolean
+     * @returns {boolean} Should WS headers be ignored?
+     */
+    getWsIgnoreSecWebsocketAcceptHeader() {
+        return Boolean(this.wsIgnoreSecWebsocketAcceptHeader);
+    }
+
+    /**
+     * Parse to boolean
      * @returns {boolean} Is the monitor in upside down mode?
      */
     isUpsideDown() {
@@ -349,7 +359,11 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
-        this.prometheus = new Prometheus(this);
+        try {
+            this.prometheus = new Prometheus(this, await this.getTags());
+        } catch (e) {
+            log.error("prometheus", "Please submit an issue to our GitHub repo. Prometheus update error: ", e.message);
+        }
 
         const beat = async () => {
 
@@ -621,11 +635,6 @@ class Monitor extends BeanModel {
 
                     }
 
-                } else if (this.type === "port") {
-                    bean.ping = await tcping(this.hostname, this.port);
-                    bean.msg = "";
-                    bean.status = UP;
-
                 } else if (this.type === "ping") {
                     bean.ping = await ping(this.hostname, this.ping_count, "", this.ping_numeric, this.packetSize, this.timeout, this.ping_per_request_timeout);
                     bean.msg = "";
@@ -775,37 +784,6 @@ class Monitor extends BeanModel {
                     bean.msg = "";
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type === "grpc-keyword") {
-                    let startTime = dayjs().valueOf();
-                    const options = {
-                        grpcUrl: this.grpcUrl,
-                        grpcProtobufData: this.grpcProtobuf,
-                        grpcServiceName: this.grpcServiceName,
-                        grpcEnableTls: this.grpcEnableTls,
-                        grpcMethod: this.grpcMethod,
-                        grpcBody: this.grpcBody,
-                    };
-                    const response = await grpcQuery(options);
-                    bean.ping = dayjs().valueOf() - startTime;
-                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
-                    let responseData = response.data;
-                    if (responseData.length > 50) {
-                        responseData = responseData.toString().substring(0, 47) + "...";
-                    }
-                    if (response.code !== 1) {
-                        bean.status = DOWN;
-                        bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
-                    } else {
-                        let keywordFound = response.data.toString().includes(this.keyword);
-                        if (keywordFound === !this.isInvertKeyword()) {
-                            bean.status = UP;
-                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keywordFound ? "is" : "not"} found`;
-                        } else {
-                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response.data} + "]"`);
-                            bean.status = DOWN;
-                            bean.msg = `, but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${responseData} + "]`;
-                        }
-                    }
                 } else if (this.type === "postgres") {
                     let startTime = dayjs().valueOf();
 
@@ -851,17 +829,15 @@ class Monitor extends BeanModel {
                     bean.msg = resp.code;
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type === "redis") {
-                    let startTime = dayjs().valueOf();
-
-                    bean.msg = await redisPingAsync(this.databaseConnectionString, !this.ignoreTls);
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
-
                 } else if (this.type in UptimeKumaServer.monitorTypeList) {
                     let startTime = dayjs().valueOf();
                     const monitorType = UptimeKumaServer.monitorTypeList[this.type];
                     await monitorType.check(this, bean, UptimeKumaServer.getInstance());
+
+                    if (!monitorType.allowCustomStatus && bean.status !== UP) {
+                        throw new Error("The monitor implementation is incorrect, non-UP error must throw error inside check()");
+                    }
+
                     if (!bean.ping) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }

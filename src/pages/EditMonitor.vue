@@ -49,6 +49,10 @@
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
+
+                                        <option value="websocket-upgrade">
+                                            Websocket Upgrade
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -131,9 +135,85 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
+                            <div v-if="monitor.type === 'websocket-upgrade' || monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
+                                <input id="url" v-model="monitor.url" type="url" class="form-control" :pattern="monitor.type !== 'websocket-upgrade' ? 'https?://.+' : 'wss?://.+'" required data-testid="url-input">
+                            </div>
+
+                            <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
+                            <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
+                                <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol") }}</label>
+                                <select id="ws_subprotocol" v-model="monitor.wsSubprotocol" class="form-select">
+                                    <option value="" selected>{{ $t("None") }}</option>
+                                    <option value="MBWS.huawei.com">MBWS</option>
+                                    <option value="MBLWS.huawei.com">MBLWS</option>
+                                    <option value="soap">soap</option>
+                                    <option value="wamp">{{ $t("WebSocket Application Messaging Protocol") }}</option>
+                                    <option value="v10.stomp">STOMP 1.0</option>
+                                    <option value="v11.stomp">STOMP 1.1</option>
+                                    <option value="v12.stomp">STOMP 1.2</option>
+                                    <option value="ocpp1.2">OCPP 1.2</option>
+                                    <option value="ocpp1.5">OCPP 1.5</option>
+                                    <option value="ocpp1.6">OCPP 1.6</option>
+                                    <option value="ocpp2.0">OCPP 2.0</option>
+                                    <option value="ocpp2.0.1">OCPP 2.0.1</option>
+                                    <option value="ocpp2.1">OCPP 2.1</option>
+                                    <option value="rfb">RFB</option>
+                                    <option value="sip">{{ $t("Session Initiation Protocol") }}</option>
+                                    <option value="notificationchannel-netapi-rest.openmobilealliance.org">{{ $t("Network API for Notification Channel") }}</option>
+                                    <option value="wpcp">{{ $t("Web Process Control Protocol") }}</option>
+                                    <option value="amqp">{{ $t("Advanced Message Queuing Protocol") }}</option>
+                                    <option value="mqtt">MQTT</option>
+                                    <option value="jsflow">{{ $t("jsflow") }}</option>
+                                    <option value="rwpcp">{{ $t("Reverse Web Process Control") }}</option>
+                                    <option value="xmpp">{{ $t("Extensible Messaging and Presence Protocol") }}</option>
+                                    <option value="ship">{{ $t("Smart Home IP") }}</option>
+                                    <option value="mielecloudconnect">{{ $t("Miele Cloud Connect Protocol") }}</option>
+                                    <option value="v10.pcp.sap.com">{{ $t("Push Channel Protocol") }}</option>
+                                    <option value="msrp">{{ $t("Message Session Relay Protocol") }}</option>
+                                    <option value="v1.saltyrtc.org">SaltyRTC 1.0</option>
+                                    <option value="TLCP-2.0.0.lightstreamer.com">TLCP 2.0.0</option>
+                                    <option value="bfcp">{{ $t("Binary Floor Control Protocol") }}</option>
+                                    <option value="sldp.softvelum.com">{{ $t("Softvelum Low Delay Protocol") }}</option>
+                                    <option value="opcua+uacp">{{ $t("OPC UA Connection Protocol") }}</option>
+                                    <option value="opcua+uajson">{{ $t("OPC UA JSON Encoding") }}</option>
+                                    <option value="v1.swindon-lattice+json">{{ $t("Swindon Web Server Protocol") }}</option>
+                                    <option value="v1.usp">{{ $t("Broadband Forum User Services Platform") }}</option>
+                                    <option value="mles-websocket">mles-websocket</option>
+                                    <option value="coap">{{ $t("Constrained Application Protocol") }}</option>
+                                    <option value="TLCP-2.1.0.lightstreamer.com">TLCP 2.1.0</option>
+                                    <option value="sqlnet.oracle.com">sqlnet</option>
+                                    <option value="oneM2M.R2.0.json">oneM2M R2.0 JSON</option>
+                                    <option value="oneM2M.R2.0.xml">oneM2M R2.0 XML</option>
+                                    <option value="oneM2M.R2.0.cbor">oneM2M R2.0 CBOR</option>
+                                    <option value="transit">Transit</option>
+                                    <option value="2016.serverpush.dash.mpeg.org">MPEG-DASH-ServerPush-23009-6-2017</option>
+                                    <option value="2018.mmt.mpeg.org">MPEG-MMT-23008-1-2018</option>
+                                    <option value="clue">clue</option>
+                                    <option value="webrtc.softvelum.com">{{ $t("Softvelum WebSocket signaling protocol") }}</option>
+                                    <option value="cobra.v2.json">{{ $t("Cobra Real Time Messaging Protocol") }}</option>
+                                    <option value="drp">{{ $t("Declarative Resource Protocol") }}</option>
+                                    <option value="hub.bsc.bacnet.org">{{ $t("BACnet Secure Connect Hub Connection") }}</option>
+                                    <option value="dc.bsc.bacnet.org">{{ $t("BACnet Secure Connect Direct Connection") }}</option>
+                                    <option value="jmap">{{ $t("WebSocket Transport for JMAP") }}</option>
+                                    <option value="t140">{{ $t("ITU-T T.140 Real-Time Text") }}</option>
+                                    <option value="done">{{ $t("Done.best IoT Protocol") }}</option>
+                                    <option value="TLCP-2.2.0.lightstreamer.com">TLCP 2.2.0</option>
+                                    <option value="collection-update">{{ $t("Collection Update") }}</option>
+                                    <option value="TLCP-2.3.0.lightstreamer.com">TLCP 2.3.0</option>
+                                    <option value="text.ircv3.net">{{ $t("Text IRC Protocol") }}</option>
+                                    <option value="binary.ircv3.net">{{ $t("Binary IRC Protocol") }}</option>
+                                    <option value="v3.penguin-stats.live+proto">{{ $t("Penguin Statistics Live Protocol v3") }}</option>
+                                    <option value="TLCP-2.4.0.lightstreamer.com">TLCP 2.4.0</option>
+                                    <option value="TLCP-2.5.0.lightstreamer.com">TLCP 2.5.0</option>
+                                    <option value="Redfish">Redfish DSP0266</option>
+                                    <option value="bidib">webBiDiB</option>
+                                </select>
+                                <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
+                                    <template #documentation>
+                                        <a href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name" target="_blank" rel="noopener noreferrer">{{ $t('documentationOf', ['IANA']) }}</a>
+                                    </template>
+                                </i18n-t>
                             </div>
 
                             <!-- gRPC URL -->
@@ -366,14 +446,23 @@
                                 </div>
                             </div>
 
+                            <div v-if="monitor.type === 'port'" class="my-3">
+                                <label for="port_security" class="form-label">{{ $t("SSL/TLS") }}</label>
+                                <select id="port_security" v-model="monitor.smtpSecurity" class="form-select">
+                                    <option value="nostarttls">None</option>
+                                    <option value="secure">SSL</option>
+                                    <option value="starttls">STARTTLS</option>
+                                </select>
+                            </div>
+
                             <!-- Json Query -->
                             <!-- For Json Query / SNMP -->
                             <div v-if="monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
                                 <div class="my-2">
                                     <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
                                     <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('playground') }}</a>
                                     </i18n-t>
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
                                 </div>
@@ -527,8 +616,8 @@
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
 
                                     <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('here') }}</a>
                                     </i18n-t>
                                     <br>
 
@@ -598,7 +687,7 @@
                                     <textarea id="mongodbCommand" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ '{ &quot;ping&quot;: 1 }' ])"></textarea>
                                     <i18n-t tag="div" class="form-text" keypath="mongodbCommandDescription">
                                         <template #documentation>
-                                            <a href="https://www.mongodb.com/docs/manual/reference/command/">{{ $t('documentationOf', ['MongoDB']) }}</a>
+                                            <a href="https://www.mongodb.com/docs/manual/reference/command/" target="_blank" rel="noopener noreferrer">{{ $t('documentationOf', ['MongoDB']) }}</a>
                                         </template>
                                     </i18n-t>
                                 </div>
@@ -607,8 +696,8 @@
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control">
 
                                     <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('here') }}</a>
                                     </i18n-t>
                                 </div>
                                 <div class="my-3">
@@ -671,12 +760,22 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || (monitor.type === 'port' && ['starttls', 'secure'].includes(monitor.smtpSecurity))" class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox" :disabled="monitor.ignoreTls">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
                                 </label>
                                 <div class="form-text">
+                                </div>
+                            </div>
+
+                            <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
+                                <input id="wsIgnoreSecWebsocketAcceptHeader" v-model="monitor.wsIgnoreSecWebsocketAcceptHeader" class="form-check-input" type="checkbox">
+                                <i18n-t tag="label" keypath="Ignore Sec-WebSocket-Accept header" class="form-check-label" for="wsIgnoreSecWebsocketAcceptHeader">
+                                    <code>Sec-Websocket-Accept</code>
+                                </i18n-t>
+                                <div class="form-text">
+                                    {{ $t("ignoreSecWebsocketAcceptHeaderDescription") }}
                                 </div>
                             </div>
 
@@ -1187,6 +1286,7 @@ const monitorDefaults = {
     name: "",
     parent: null,
     url: "https://",
+    wsSubprotocol: "",
     method: "GET",
     ipFamily: null,
     interval: 60,
@@ -1601,6 +1701,9 @@ message HealthCheckResponse {
         },
 
         "monitor.type"(newType, oldType) {
+            if (oldType && this.monitor.type === "websocket-upgrade") {
+                this.monitor.url = "wss://";
+            }
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used

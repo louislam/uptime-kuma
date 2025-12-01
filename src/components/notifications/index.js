@@ -80,6 +80,7 @@ import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 import SMSIR from "./SMSIR.vue";
+import Webpush from "./Webpush.vue";
 
 /**
  * Manage all notification form.
@@ -168,6 +169,7 @@ const NotificationFormList = {
     "Brevo": Brevo,
     "YZJ": YZJ,
     "SMSPlanet": SMSPlanet,
+    "Webpush": Webpush,
 };
 
 export default NotificationFormList;

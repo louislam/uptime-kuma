@@ -96,6 +96,8 @@ const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleChec
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
+log.debug("server", "Importing Web-Push");
+const webpush = require("web-push");
 
 log.debug("server", "Importing Database");
 const Database = require("./database");
@@ -107,6 +109,9 @@ const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
+
+const { Prometheus } = require("./prometheus");
+const { UptimeCalculator } = require("./uptime-calculator");
 
 const hostname = config.hostname;
 
@@ -191,6 +196,9 @@ let needSetup = false;
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
+
+    log.debug("server", "Initializing Prometheus");
+    await Prometheus.init();
 
     log.debug("server", "Adding route");
 
@@ -801,6 +809,8 @@ let needSetup = false;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
+                bean.wsIgnoreSecWebsocketAcceptHeader = monitor.wsIgnoreSecWebsocketAcceptHeader;
+                bean.wsSubprotocol = monitor.wsSubprotocol;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
                 bean.ipFamily = monitor.ipFamily;
@@ -1557,6 +1567,32 @@ let needSetup = false;
             }
         });
 
+        socket.on("getWebpushVapidPublicKey", async (callback) => {
+            try {
+                let publicVapidKey = await Settings.get("webpushPublicVapidKey");
+
+                if (!publicVapidKey) {
+                    log.debug("webpush", "Generating new VAPID keys");
+                    const vapidKeys = webpush.generateVAPIDKeys();
+
+                    await Settings.set("webpushPublicVapidKey", vapidKeys.publicKey);
+                    await Settings.set("webpushPrivateVapidKey", vapidKeys.privateKey);
+
+                    publicVapidKey = vapidKeys.publicKey;
+                }
+
+                callback({
+                    ok: true,
+                    msg: publicVapidKey,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("clearEvents", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
@@ -1587,9 +1623,11 @@ let needSetup = false;
 
                 log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
-                    monitorID
-                ]);
+                await UptimeCalculator.clearStatistics(monitorID);
+
+                if (monitorID in server.monitorList) {
+                    await restartMonitor(socket.userID, monitorID);
+                }
 
                 await sendHeartbeatList(socket, monitorID, true, true);
 
@@ -1611,10 +1649,7 @@ let needSetup = false;
 
                 log.info("manage", `Clear Statistics User ID: ${socket.userID}`);
 
-                await R.exec("DELETE FROM heartbeat");
-                await R.exec("DELETE FROM stat_daily");
-                await R.exec("DELETE FROM stat_hourly");
-                await R.exec("DELETE FROM stat_minutely");
+                await UptimeCalculator.clearAllStatistics();
 
                 // Restart all monitors to reset the stats
                 for (let monitorID in server.monitorList) {
