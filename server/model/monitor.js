@@ -9,7 +9,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
 const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius,
-    kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+    kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, checkCertificateHostname
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -567,6 +567,7 @@ class Monitor extends BeanModel {
                         tlsSocket.once("secureConnect", async () => {
                             tlsInfo = checkCertificate(tlsSocket);
                             tlsInfo.valid = tlsSocket.authorized || false;
+                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(tlsInfo.certInfo.raw, this.getUrl()?.hostname);
 
                             await this.handleTlsInfo(tlsInfo);
                         });
@@ -589,6 +590,7 @@ class Monitor extends BeanModel {
                         if (tlsSocket) {
                             tlsInfo = checkCertificate(tlsSocket);
                             tlsInfo.valid = tlsSocket.authorized || false;
+                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(tlsInfo.certInfo.raw, this.getUrl()?.hostname);
 
                             await this.handleTlsInfo(tlsInfo);
                         }
