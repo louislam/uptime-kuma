@@ -1,3 +1,5 @@
+process.env.UPTIME_KUMA_HIDE_LOG = [ "info_db", "info_server" ].join(",");
+
 const test = require("node:test");
 const assert = require("node:assert");
 const DomainExpiry = require("../../server/model/domain_expiry");
@@ -10,7 +12,7 @@ const { setSetting } = require("../../server/util-server");
 
 const testDb = new TestDB();
 
-test("Test with mock db", async (t) => {
+test("Domain Expiry", async (t) => {
     await testDb.create();
     Notification.init();
 
