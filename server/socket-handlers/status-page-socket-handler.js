@@ -164,6 +164,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.footer_text = config.footerText;
             statusPage.custom_css = config.customCSS;
             statusPage.show_powered_by = config.showPoweredBy;
+            statusPage.show_only_last_heartbeat = config.showOnlyLastHeartbeat;
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
             statusPage.modified_date = R.isoDateTime();
             statusPage.google_analytics_tag_id = config.googleAnalyticsId;
@@ -211,6 +212,10 @@ module.exports.statusPageSocketHandler = (socket) => {
                         relationBean.send_url = monitor.sendUrl;
                     }
 
+                    if (monitor.url !== undefined) {
+                        relationBean.custom_url = monitor.url;
+                    }
+
                     await R.store(relationBean);
                 }
 
@@ -220,13 +225,17 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             // Delete groups that are not in the list
             log.debug("socket", "Delete groups that are not in the list");
-            const slots = groupIDList.map(() => "?").join(",");
+            if (groupIDList.length === 0) {
+                await R.exec("DELETE FROM `group` WHERE status_page_id = ?", [ statusPage.id ]);
+            } else {
+                const slots = groupIDList.map(() => "?").join(",");
 
-            const data = [
-                ...groupIDList,
-                statusPage.id
-            ];
-            await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
+                const data = [
+                    ...groupIDList,
+                    statusPage.id
+                ];
+                await R.exec(`DELETE FROM \`group\` WHERE id NOT IN (${slots}) AND status_page_id = ?`, data);
+            }
 
             const server = UptimeKumaServer.getInstance();
 
@@ -288,6 +297,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ok: true,
                 msg: "successAdded",
                 msgi18n: true,
+                slug: slug
             });
 
         } catch (error) {
@@ -333,6 +343,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 await R.exec("DELETE FROM status_page WHERE id = ? ", [
                     statusPageID
                 ]);
+
+                apicache.clear();
 
             } else {
                 throw new Error("Status Page is not found");

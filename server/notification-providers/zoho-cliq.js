@@ -27,7 +27,8 @@ class ZohoCliq extends NotificationProvider {
      * @returns {Promise<void>}
      */
     _sendNotification = async (webhookUrl, payload) => {
-        await axios.post(webhookUrl, { text: payload.join("\n") });
+        let config = this.getAxiosConfigWithProxy({});
+        await axios.post(webhookUrl, { text: payload.join("\n") }, config);
     };
 
     /**
@@ -85,7 +86,7 @@ class ZohoCliq extends NotificationProvider {
             const payload = this._notificationPayloadFactory({
                 monitorMessage: heartbeatJSON.msg,
                 monitorName: monitorJSON.name,
-                monitorUrl: this.extractAdress(monitorJSON),
+                monitorUrl: this.extractAddress(monitorJSON),
                 status: heartbeatJSON.status
             });
 

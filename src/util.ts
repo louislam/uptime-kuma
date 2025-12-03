@@ -9,9 +9,9 @@
 // Frontend uses util.ts
 */
 
-import dayjs from "dayjs";
+import dayjsFrontend from "dayjs";
 
-// For loading dayjs plugins, don't remove event though it is not used in this file
+// For dayjs plugins' type checking, don't remove event though it is not used in this file
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as timezone from "dayjs/plugin/timezone";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,6 +21,13 @@ import * as jsonata from "jsonata";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
+
+/**
+ * Smarter dayjs import that supports both frontend and backend
+ * @returns {dayjs.Dayjs} dayjs instance
+ */
+const dayjs = (isNode) ? require("dayjs") : dayjsFrontend;
+
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
@@ -38,6 +45,26 @@ export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
 export const MIN_INTERVAL_SECOND = 20; // 20 seconds
+
+// Packet Size limits
+export const PING_PACKET_SIZE_MIN = 1;
+export const PING_PACKET_SIZE_MAX = 65500;
+export const PING_PACKET_SIZE_DEFAULT = 56;
+
+// Global timeout (aka deadline) limits in seconds
+export const PING_GLOBAL_TIMEOUT_MIN = 1;
+export const PING_GLOBAL_TIMEOUT_MAX = 300;
+export const PING_GLOBAL_TIMEOUT_DEFAULT = 10;
+
+// Ping count limits
+export const PING_COUNT_MIN = 1;
+export const PING_COUNT_MAX = 100;
+export const PING_COUNT_DEFAULT = 1;
+
+// per-request timeout (aka timeout) limits in seconds
+export const PING_PER_REQUEST_TIMEOUT_MIN = 1;
+export const PING_PER_REQUEST_TIMEOUT_MAX = 60;
+export const PING_PER_REQUEST_TIMEOUT_DEFAULT = 2;
 
 // Console colors
 // https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
@@ -120,7 +147,11 @@ export const badgeConstants = {
     defaultCertExpireDownDays: "7"
 };
 
-/** Flip the status of s */
+/**
+ * Flip the status of s between UP and DOWN if this is possible
+ * @param s {number} status
+ * @returns {number} flipped status
+ */
 export function flipStatus(s: number) {
     if (s === UP) {
         return DOWN;
@@ -162,7 +193,7 @@ export function ucfirst(str: string) {
  * @returns {void}
  */
 export function debug(msg: unknown) {
-    log.log("", msg, "debug");
+    log.log("", "debug", msg);
 }
 
 class Logger {
@@ -207,11 +238,11 @@ class Logger {
     /**
      * Write a message to the log
      * @param module The module the log comes from
-     * @param msg Message to write
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @param msg Message to write
      * @returns {void}
      */
-    log(module: string, msg: any, level: string) {
+    log(module: string, level: string, ...msg: unknown[]) {
         if (level === "DEBUG" && !isDev) {
             return;
         }
@@ -236,7 +267,6 @@ class Logger {
         let timePart: string;
         let modulePart: string;
         let levelPart: string;
-        let msgPart: string;
 
         if (isNode) {
             // Add console colors
@@ -250,54 +280,33 @@ class Logger {
             }
 
             modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
-
             levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
 
-            switch (level) {
-                case "ERROR":
-                    if (typeof msg === "string") {
-                        msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
-                    }
-                    break;
-                case "DEBUG":
-                    if (typeof msg === "string") {
-                        msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
-                    }
-                    break;
-                default:
-                    msgPart = msg;
-                    break;
-            }
         } else {
             // No console colors
             timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
-            msgPart = msg;
         }
 
         // Write to console
         switch (level) {
             case "ERROR":
-                console.error(timePart, modulePart, levelPart, msgPart);
+                console.error(timePart, modulePart, levelPart, ...msg);
                 break;
             case "WARN":
-                console.warn(timePart, modulePart, levelPart, msgPart);
+                console.warn(timePart, modulePart, levelPart, ...msg);
                 break;
             case "INFO":
-                console.info(timePart, modulePart, levelPart, msgPart);
+                console.info(timePart, modulePart, levelPart, ...msg);
                 break;
             case "DEBUG":
                 if (isDev) {
-                    console.debug(timePart, modulePart, levelPart, msgPart);
+                    console.debug(timePart, modulePart, levelPart, ...msg);
                 }
                 break;
             default:
-                console.log(timePart, modulePart, levelPart, msgPart);
+                console.log(timePart, modulePart, levelPart, ...msg);
                 break;
         }
     }
@@ -308,8 +317,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    info(module: string, msg: unknown) {
-        this.log(module, msg, "info");
+    info(module: string, ...msg: unknown[]) {
+        this.log(module, "info", ...msg);
     }
 
     /**
@@ -318,8 +327,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    warn(module: string, msg: unknown) {
-        this.log(module, msg, "warn");
+    warn(module: string, ...msg: unknown[]) {
+        this.log(module, "warn", ...msg);
     }
 
     /**
@@ -328,8 +337,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    error(module: string, msg: unknown) {
-        this.log(module, msg, "error");
+    error(module: string, ...msg: unknown[]) {
+        this.log(module, "error", ...msg);
     }
 
     /**
@@ -338,8 +347,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    debug(module: string, msg: unknown) {
-        this.log(module, msg, "debug");
+    debug(module: string, ...msg: unknown[]) {
+        this.log(module, "debug", ...msg);
     }
 
     /**
@@ -349,14 +358,8 @@ class Logger {
      * @param msg The message to write
      * @returns {void}
      */
-    exception(module: string, exception: unknown, msg: unknown) {
-        let finalMessage = exception;
-
-        if (msg) {
-            finalMessage = `${msg}: ${exception}`;
-        }
-
-        this.log(module, finalMessage, "error");
+    exception(module: string, exception: unknown, ...msg: unknown[]) {
+        this.log(module, "error", ...msg, exception);
     }
 }
 

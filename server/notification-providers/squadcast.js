@@ -34,7 +34,7 @@ class Squadcast extends NotificationProvider {
                     data.status = "resolve";
                 }
 
-                data.tags["AlertAddress"] = this.extractAdress(monitorJSON);
+                data.tags["AlertAddress"] = this.extractAddress(monitorJSON);
 
                 monitorJSON["tags"].forEach(tag => {
                     data.tags[tag["name"]] = {
@@ -45,6 +45,7 @@ class Squadcast extends NotificationProvider {
                     }
                 });
             }
+            config = this.getAxiosConfigWithProxy(config);
 
             await axios.post(notification.squadcastWebhookURL, data, config);
             return okMsg;

@@ -12,12 +12,12 @@ class SevenIO extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         const data = {
-            to: notification.sevenioTo,
+            to: notification.sevenioReceiver,
             from: notification.sevenioSender || "Uptime Kuma",
             text: msg,
         };
 
-        const config = {
+        let config = {
             baseURL: "https://gateway.seven.io/api/",
             headers: {
                 "Content-Type": "application/json",
@@ -26,13 +26,14 @@ class SevenIO extends NotificationProvider {
         };
 
         try {
+            config = this.getAxiosConfigWithProxy(config);
             // testing or certificate expiry notification
             if (heartbeatJSON == null) {
                 await axios.post("sms", data, config);
                 return okMsg;
             }
 
-            let address = this.extractAdress(monitorJSON);
+            let address = this.extractAddress(monitorJSON);
             if (address !== "") {
                 address = `(${address}) `;
             }

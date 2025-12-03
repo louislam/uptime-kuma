@@ -7,12 +7,21 @@
         :animation="100"
     >
         <template #item="group">
-            <div class="mb-5 ">
+            <div class="mb-5" data-testid="group">
                 <!-- Group Title -->
                 <h2 class="group-title">
-                    <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
-                    <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
-                    <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" />
+                    <div class="title-section">
+                        <font-awesome-icon v-if="editMode && showGroupDrag" icon="arrows-alt-v" class="action drag me-3" />
+                        <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeGroup(group.index)" />
+                        <Editable v-model="group.element.name" :contenteditable="editMode" tag="span" data-testid="group-name" />
+                    </div>
+
+                    <GroupSortDropdown
+                        :group="group.element"
+                        :group-index="group.index"
+                        :show-certificate-expiry="showCertificateExpiry"
+                        @update-group="updateGroup"
+                    />
                 </h2>
 
                 <div class="shadow-box monitor-list mt-4 position-relative">
@@ -31,46 +40,45 @@
                         item-key="id"
                     >
                         <template #item="monitor">
-                            <div class="item">
+                            <div class="item" data-testid="monitor">
                                 <div class="row">
-                                    <div class="col-9 col-md-8 small-padding">
+                                    <div class="col-6 small-padding">
                                         <div class="info">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
 
-                                            <Uptime :monitor="monitor.element" type="24" :pill="true" />
+                                            <font-awesome-icon
+                                                v-if="editMode"
+                                                icon="cog"
+                                                class="action me-3 ms-0"
+                                                :class="{'link-active': true, 'btn-link': true}"
+                                                data-testid="monitor-settings"
+                                                @click="$refs.monitorSettingDialog.show(group, monitor)"
+                                            />
+                                            <Status v-if="showOnlyLastHeartbeat" :status="statusOfLastHeartbeat(monitor.element.id)" />
+                                            <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
                                             <a
                                                 v-if="showLink(monitor)"
                                                 :href="monitor.element.url"
                                                 class="item-name"
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                data-testid="monitor-name"
                                             >
                                                 {{ monitor.element.name }}
                                             </a>
-                                            <p v-else class="item-name"> {{ monitor.element.name }} </p>
-
-                                            <span
-                                                title="Setting"
-                                            >
-                                                <font-awesome-icon
-                                                    v-if="editMode"
-                                                    :class="{'link-active': true, 'btn-link': true}"
-                                                    icon="cog" class="action me-3"
-                                                    @click="$refs.monitorSettingDialog.show(group, monitor)"
-                                                />
-                                            </span>
+                                            <p v-else class="item-name" data-testid="monitor-name"> {{ monitor.element.name }} </p>
                                         </div>
                                         <div class="extra-info">
                                             <div v-if="showCertificateExpiry && monitor.element.certExpiryDaysRemaining">
                                                 <Tag :item="{name: $t('Cert Exp.'), value: formattedCertExpiryMessage(monitor), color: certExpiryColor(monitor)}" :size="'sm'" />
                                             </div>
                                             <div v-if="showTags">
-                                                <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" />
+                                                <Tag v-for="tag in monitor.element.tags" :key="tag" :item="tag" :size="'sm'" data-testid="monitor-tag" />
                                             </div>
                                         </div>
                                     </div>
-                                    <div :key="$root.userHeartbeatBar" class="col-3 col-md-4">
+                                    <div :key="$root.userHeartbeatBar" class="col-6">
                                         <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
@@ -90,6 +98,8 @@ import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
+import Status from "./Status.vue";
+import GroupSortDropdown from "./GroupSortDropdown.vue";
 
 export default {
     components: {
@@ -98,6 +108,8 @@ export default {
         HeartbeatBar,
         Uptime,
         Tag,
+        Status,
+        GroupSortDropdown,
     },
     props: {
         /** Are we in edit mode? */
@@ -112,11 +124,14 @@ export default {
         /** Should expiry be shown? */
         showCertificateExpiry: {
             type: Boolean,
-        }
+        },
+        /** Should only the last heartbeat be shown? */
+        showOnlyLastHeartbeat: {
+            type: Boolean,
+        },
     },
     data() {
         return {
-
         };
     },
     computed: {
@@ -124,8 +139,11 @@ export default {
             return (this.$root.publicGroupList.length >= 2);
         }
     },
+    watch: {
+        // No watchers needed - sorting is handled by GroupSortDropdown component
+    },
     created() {
-
+        // Sorting is now handled by GroupSortDropdown component
     },
     methods: {
         /**
@@ -139,8 +157,7 @@ export default {
 
         /**
          * Remove a monitor from a group
-         * @param {number} groupIndex Index of group to remove monitor
-         * from
+         * @param {number} groupIndex Index of group to remove monitor from
          * @param {number} index Index of monitor to remove
          * @returns {void}
          */
@@ -161,7 +178,9 @@ export default {
             // We must check if there are any elements in monitorList to
             // prevent undefined errors if it hasn't been loaded yet
             if (this.$parent.editMode && ignoreSendUrl && Object.keys(this.$root.monitorList).length) {
-                return this.$root.monitorList[monitor.element.id].type === "http" || this.$root.monitorList[monitor.element.id].type === "keyword" || this.$root.monitorList[monitor.element.id].type === "json-query";
+                return this.$root.monitorList[monitor.element.id].type === "http" ||
+                    this.$root.monitorList[monitor.element.id].type === "keyword" ||
+                    this.$root.monitorList[monitor.element.id].type === "json-query";
             }
             return monitor.element.sendUrl && monitor.element.url && monitor.element.url !== "https://";
         },
@@ -182,6 +201,17 @@ export default {
         },
 
         /**
+         * Returns the status of the last heartbeat
+         * @param {number} monitorId Id of the monitor to get status for
+         * @returns {number} Status of the last heartbeat
+         */
+        statusOfLastHeartbeat(monitorId) {
+            let heartbeats = this.$root.heartbeatList[monitorId] ?? [];
+            let lastHeartbeat = heartbeats[heartbeats.length - 1];
+            return lastHeartbeat?.status;
+        },
+
+        /**
          * Returns certificate expiry color based on days remaining
          * @param {object} monitor Monitor to show expiry for
          * @returns {string} Color for certificate expiry
@@ -192,6 +222,32 @@ export default {
             }
             return "#DC2626";
         },
+
+        /**
+         * Update group properties
+         * @param {number} groupIndex Index of group to update
+         * @param {object} updates Object with properties to update
+         * @returns {void}
+         */
+        updateGroup(groupIndex, updates) {
+            Object.assign(this.$root.publicGroupList[groupIndex], updates);
+        },
+
+        /**
+         * Get unique identifier for a group
+         * @param {object} group object
+         * @returns {string} group identifier
+         */
+        getGroupIdentifier(group) {
+            // Use the name directly if available
+            if (group.name) {
+                // Only remove spaces and use encodeURIComponent for URL safety
+                const cleanName = group.name.replace(/\s+/g, "");
+                return cleanName;
+            }
+            // Fallback to ID or index
+            return group.id ? `group${group.id}` : `group${this.$root.publicGroupList.indexOf(group)}`;
+        }
     }
 };
 </script>
@@ -253,6 +309,15 @@ export default {
 }
 
 .group-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .title-section {
+        display: flex;
+        align-items: center;
+    }
+
     span {
         display: inline-block;
         min-width: 15px;
@@ -263,10 +328,14 @@ export default {
     .item {
         padding: 13px 0 10px;
     }
+
+    .group-title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 
 .bg-maintenance {
     background-color: $maintenance;
 }
-
 </style>

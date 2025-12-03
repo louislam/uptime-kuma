@@ -17,7 +17,7 @@ class Signal extends NotificationProvider {
                 "recipients": notification.signalRecipients.replace(/\s/g, "").split(","),
             };
             let config = {};
-
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(notification.signalURL, data, config);
             return okMsg;
         } catch (error) {
