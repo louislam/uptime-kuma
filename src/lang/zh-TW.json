@@ -1132,5 +1132,9 @@
     "Clear Form": "清除表單",
     "pause": "暫停",
     "Staged Tags for Batch Add": "暫存標籤以批次新增",
-    "Add Another Tag": "新增標籤"
+    "Add Another Tag": "新增標籤",
+    "Path": "路徑",
+    "defaultFriendlyName": "新監測器",
+    "Add Tags": "加入標籤",
+    "tagAlreadyOnMonitor": "此標籤(名稱與值)已經存在監視器或等待加入中。"
 }
