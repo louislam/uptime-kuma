@@ -40,9 +40,7 @@ describe(
         test("Postgres is not running", async () => {
             const postgresMonitor = new PostgresMonitorType();
             const monitor = {
-                databaseConnectionString: JSON.stringify([
-                    "http://localhost:15432",
-                ]),
+                databaseConnectionString: "http://localhost:15432",
             };
 
             const heartbeat = {
