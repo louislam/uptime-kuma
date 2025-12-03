@@ -185,7 +185,8 @@ class Teams extends NotificationProvider {
      * @returns {Promise<void>}
      */
     _sendNotification = async (webhookUrl, payload) => {
-        await axios.post(webhookUrl, payload);
+        let config = this.getAxiosConfigWithProxy({});
+        await axios.post(webhookUrl, payload, config);
     };
 
     /**
@@ -216,21 +217,6 @@ class Teams extends NotificationProvider {
                 return okMsg;
             }
 
-            let monitorUrl;
-
-            switch (monitorJSON["type"]) {
-                case "http":
-                case "keywork":
-                    monitorUrl = monitorJSON["url"];
-                    break;
-                case "docker":
-                    monitorUrl = monitorJSON["docker_host"];
-                    break;
-                default:
-                    monitorUrl = monitorJSON["hostname"];
-                    break;
-            }
-
             const baseURL = await setting("primaryBaseURL");
             let dashboardUrl;
             if (baseURL) {
@@ -240,7 +226,7 @@ class Teams extends NotificationProvider {
             const payload = this._notificationPayloadFactory({
                 heartbeatJSON: heartbeatJSON,
                 monitorName: monitorJSON.name,
-                monitorUrl: monitorUrl,
+                monitorUrl: this.extractAddress(monitorJSON),
                 dashboardUrl: dashboardUrl,
             });
 

@@ -17,6 +17,7 @@ class SerwerSMS extends NotificationProvider {
                     "Content-Type": "application/json",
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             let data = {
                 "username": notification.serwersmsUsername,
                 "password": notification.serwersmsPassword,

@@ -45,7 +45,7 @@
                 </span>
             </div>
         </div>
-        <div ref="monitorList" class="monitor-list" :class="{ scrollbar: scrollbar }" :style="monitorListStyle">
+        <div ref="monitorList" class="monitor-list" :class="{ scrollbar: scrollbar }" :style="monitorListStyle" data-testid="monitor-list">
             <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
                 {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>

@@ -41,19 +41,23 @@
                         <router-link v-if="false" :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
 
                         <div class="btn-group" role="group">
-                            <button v-if="item.active" class="btn btn-normal" @click="pauseDialog(item.id)">
+                            <button v-if="item.active" class="btn btn-normal" :aria-label="$t('ariaPauseMaintenance')" @click="pauseDialog(item.id)">
                                 <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
                             </button>
 
-                            <button v-if="!item.active" class="btn btn-primary" @click="resumeMaintenance(item.id)">
+                            <button v-if="!item.active" class="btn btn-primary" :aria-label="$t('ariaResumeMaintenance')" @click="resumeMaintenance(item.id)">
                                 <font-awesome-icon icon="play" /> {{ $t("Resume") }}
                             </button>
 
-                            <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-normal">
+                            <router-link :to="'/maintenance/clone/' + item.id" class="btn btn-normal" :aria-label="$t('ariaCloneMaintenance')">
+                                <font-awesome-icon icon="clone" /> {{ $t("Clone") }}
+                            </router-link>
+
+                            <router-link :to="'/maintenance/edit/' + item.id" class="btn btn-normal" :aria-label="$t('ariaEditMaintenance')">
                                 <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
                             </router-link>
 
-                            <button class="btn btn-normal text-danger" @click="deleteDialog(item.id)">
+                            <button class="btn btn-normal text-danger" :aria-label="$t('ariaDeleteMaintenance')" @click="deleteDialog(item.id)">
                                 <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                             </button>
                         </div>

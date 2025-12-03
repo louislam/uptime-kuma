@@ -34,25 +34,7 @@ class Squadcast extends NotificationProvider {
                     data.status = "resolve";
                 }
 
-                let address;
-                switch (monitorJSON["type"]) {
-                    case "ping":
-                        address = monitorJSON["hostname"];
-                        break;
-                    case "port":
-                    case "dns":
-                    case "steam":
-                        address = monitorJSON["hostname"];
-                        if (monitorJSON["port"]) {
-                            address += ":" + monitorJSON["port"];
-                        }
-                        break;
-                    default:
-                        address = monitorJSON["url"];
-                        break;
-                }
-
-                data.tags["AlertAddress"] = address;
+                data.tags["AlertAddress"] = this.extractAddress(monitorJSON);
 
                 monitorJSON["tags"].forEach(tag => {
                     data.tags[tag["name"]] = {
@@ -63,6 +45,7 @@ class Squadcast extends NotificationProvider {
                     }
                 });
             }
+            config = this.getAxiosConfigWithProxy(config);
 
             await axios.post(notification.squadcastWebhookURL, data, config);
             return okMsg;

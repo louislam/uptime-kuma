@@ -12,7 +12,22 @@ class Discord extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
+            const webhookUrl = new URL(notification.discordWebhookUrl);
+            if (notification.discordChannelType === "postToThread") {
+                webhookUrl.searchParams.append("thread_id", notification.threadId);
+            }
+
+            // Check if the webhook has an avatar
+            let webhookHasAvatar = true;
+            try {
+                const webhookInfo = await axios.get(webhookUrl.toString(), config);
+                webhookHasAvatar = !!webhookInfo.data.avatar;
+            } catch (e) {
+                // If we can't verify, we assume he has an avatar to avoid forcing the default avatar
+                webhookHasAvatar = true;
+            }
 
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
@@ -20,28 +35,14 @@ class Discord extends NotificationProvider {
                     username: discordDisplayName,
                     content: msg,
                 };
-                await axios.post(notification.discordWebhookUrl, discordtestdata);
+                if (!webhookHasAvatar) {
+                    discordtestdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordtestdata.thread_name = notification.postName;
+                }
+                await axios.post(webhookUrl.toString(), discordtestdata, config);
                 return okMsg;
-            }
-
-            let address;
-
-            switch (monitorJSON["type"]) {
-                case "ping":
-                    address = monitorJSON["hostname"];
-                    break;
-                case "port":
-                case "dns":
-                case "gamedig":
-                case "steam":
-                    address = monitorJSON["hostname"];
-                    if (monitorJSON["port"]) {
-                        address += ":" + monitorJSON["port"];
-                    }
-                    break;
-                default:
-                    address = monitorJSON["url"];
-                    break;
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
@@ -57,10 +58,10 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            {
+                            ...(!notification.disableUrl ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
-                            },
+                                value: this.extractAddress(monitorJSON),
+                            }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],
@@ -72,12 +73,17 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 };
-
+                if (!webhookHasAvatar) {
+                    discorddowndata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discorddowndata.thread_name = notification.postName;
+                }
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discorddowndata);
+                await axios.post(webhookUrl.toString(), discorddowndata, config);
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
@@ -92,10 +98,10 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            {
+                            ...(!notification.disableUrl ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: monitorJSON["type"] === "push" ? "Heartbeat" : address,
-                            },
+                                value: this.extractAddress(monitorJSON),
+                            }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],
@@ -107,12 +113,19 @@ class Discord extends NotificationProvider {
                         ],
                     }],
                 };
+                if (!webhookHasAvatar) {
+                    discordupdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
+
+                if (notification.discordChannelType === "createNewForumPost") {
+                    discordupdata.thread_name = notification.postName;
+                }
 
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(notification.discordWebhookUrl, discordupdata);
+                await axios.post(webhookUrl.toString(), discordupdata, config);
                 return okMsg;
             }
         } catch (error) {

@@ -16,7 +16,7 @@
                 <span class="fs-4 title">{{ $t("Uptime Kuma") }}</span>
             </router-link>
 
-            <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
+            <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-primary me-3">
                 <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
             </a>
 
@@ -211,6 +211,20 @@ export default {
 @import "../assets/vars.scss";
 
 .nav-link {
+    &:hover {
+        background-color: $primary;
+        color: #fff;
+
+        .dark & {
+            background-color: $primary;
+            color: #000;
+        }
+
+        &.active {
+            background-color: $highlight;
+        }
+    }
+
     &.status-page {
         background-color: rgba(255, 255, 255, 0.1);
     }
