@@ -1,7 +1,6 @@
 const { MonitorType } = require("./monitor-type");
-const { UP } = require("../../src/util");
+const { log, UP } = require("../../src/util");
 const dayjs = require("dayjs");
-const { postgresQuery } = require("../util-server");
 const postgresConParse = require("pg-connection-string").parse;
 const { Client } = require("pg");
 
