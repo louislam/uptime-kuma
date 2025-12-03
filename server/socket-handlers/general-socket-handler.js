@@ -12,8 +12,8 @@ const path = require("path");
  * @returns {object} list of games supported by GameDig
  */
 function getGameList() {
-    let gamelist = [];
-    gamelist = Object.keys(games).map(key => {
+    let gameList = [];
+    gameList = Object.keys(games).map(key => {
         const item = games[key];
         return {
             keys: [ key ],
@@ -22,7 +22,7 @@ function getGameList() {
             extra: item.extra || {}
         };
     });
-    gamelist.sort((a, b) => {
+    gameList.sort((a, b) => {
         if ( a.pretty < b.pretty ) {
             return -1;
         }
@@ -31,7 +31,7 @@ function getGameList() {
         }
         return 0;
     });
-    return gamelist;
+    return gameList;
 }
 
 module.exports.generalSocketHandler = (socket, server) => {
