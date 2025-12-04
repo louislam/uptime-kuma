@@ -27,7 +27,7 @@ class PostgresMonitorType extends MonitorType {
      * @returns {Promise<(string[] | object[] | object)>} Response from
      * server
      */
-    async function postgresQuery(connectionString, query) {
+    async postgresQuery(connectionString, query) {
         return new Promise((resolve, reject) => {
             const config = postgresConParse(connectionString);
     
