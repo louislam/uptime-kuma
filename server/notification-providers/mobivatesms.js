@@ -1,5 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
+const { log } = require("../../src/util");
 
 class MobivateSMS extends NotificationProvider {
     name = "MobivateSMS";
@@ -10,7 +11,7 @@ class MobivateSMS extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://vortex.mobivatebulksms.com/send/batch";
-console.log('notification', notification, 'msg', msg);
+
         try {
             // smspartner does not support non ascii characters and only a maximum 639 characters
             let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "").substring(0, 639);
@@ -30,6 +31,9 @@ console.log('notification', notification, 'msg', msg);
                 }
             };
             config = this.getAxiosConfigWithProxy(config);
+
+            console.log('Sending to', url, data, config);
+            log.debug("mobivate", "Sending to ", url, data, config);
 
             let resp = await axios.post(url, data, config);
 
