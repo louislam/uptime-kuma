@@ -1119,22 +1119,24 @@ export default {
     .search-divider {
         width: 1px;
         height: 30px;
-        background: linear-gradient(
-            to bottom,
-            transparent 0%,
-            #d0d0d0 20%,
-            #d0d0d0 80%,
-            transparent 100%
-        );
-
-        .dark & {
-            background: linear-gradient(
+        background:
+            linear-gradient(
                 to bottom,
                 transparent 0%,
-                #3a4450 20%,
-                #3a4450 80%,
+                #d0d0d0 20%,
+                #d0d0d0 80%,
                 transparent 100%
             );
+
+        .dark & {
+            background:
+                linear-gradient(
+                    to bottom,
+                    transparent 0%,
+                    #3a4450 20%,
+                    #3a4450 80%,
+                    transparent 100%
+                );
         }
     }
 
