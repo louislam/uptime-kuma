@@ -10,7 +10,7 @@ class MobivateSMS extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const url = "https://vortex.mobivatebulksms.com/send/batch";
-
+console.log('notification', notification, 'msg', msg);
         try {
             // smspartner does not support non ascii characters and only a maximum 639 characters
             let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "").substring(0, 639);
