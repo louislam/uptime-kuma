@@ -132,6 +132,7 @@ export default {
                 "LineNotify": "LINE Notify",
                 "lunasea": "LunaSea",
                 "matrix": "Matrix",
+                "matrix-encrypted": "Matrix (encrypted)",
                 "mattermost": "Mattermost",
                 "nextcloudtalk": "Nextcloud Talk",
                 "nostr": "Nostr",
