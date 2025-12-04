@@ -129,6 +129,7 @@ class Notification {
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
+            new MobivateSMS(),
             new NextcloudTalk(),
             new Nostr(),
             new Ntfy(),
