@@ -30,24 +30,24 @@ class PostgresMonitorType extends MonitorType {
     async postgresQuery(connectionString, query) {
         return new Promise((resolve, reject) => {
             const config = postgresConParse(connectionString);
-    
+
             // Fix #3868, which true/false is not parsed to boolean
             if (typeof config.ssl === "string") {
                 config.ssl = config.ssl === "true";
             }
-    
+
             if (config.password === "") {
                 // See https://github.com/brianc/node-postgres/issues/1927
                 reject(new Error("Password is undefined."));
                 return;
             }
             const client = new Client(config);
-    
+
             client.on("error", (error) => {
                 log.debug("postgres", "Error caught in the error event handler.");
                 reject(error);
             });
-    
+
             client.connect((err) => {
                 if (err) {
                     reject(err);
@@ -74,7 +74,6 @@ class PostgresMonitorType extends MonitorType {
                     }
                 }
             });
-    
         });
     }
 }
