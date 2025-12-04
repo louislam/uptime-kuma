@@ -18,7 +18,7 @@ class MobivateSMS extends NotificationProvider {
 
             let data = {
                 "originator": notification.mobivateOriginator.substring(0, 15),
-                "recipients": notification.mobivateRecipients.split(",").map(n => n.replace(/[^0-9]/g, "")).filter(n => n.length > 10),
+                "recipients": notification.mobivateRecipients.split(",").map(n => n.replace(/[^0-9]/g, "")).filter(n => n.length >= 9),
                 "text": cleanMsg
             };
 
