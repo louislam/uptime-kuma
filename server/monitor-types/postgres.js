@@ -61,11 +61,6 @@ class PostgresMonitorType extends MonitorType {
                 } else {
                     // Connected here
                     try {
-                        // No query provided by user, use SELECT 1
-                        if (!query || (typeof query === "string" && query.trim() === "")) {
-                            query = "SELECT 1";
-                        }
-    
                         client.query(query, (err, res) => {
                             if (err) {
                                 reject(err);
