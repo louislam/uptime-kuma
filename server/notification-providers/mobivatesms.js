@@ -1,6 +1,5 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { log } = require("../../src/util");
 
 class MobivateSMS extends NotificationProvider {
     name = "MobivateSMS";
@@ -31,9 +30,6 @@ class MobivateSMS extends NotificationProvider {
                 }
             };
             config = this.getAxiosConfigWithProxy(config);
-
-            console.log('Sending to', url, data, config);
-            log.debug("mobivate", "Sending to ", url, data, config);
 
             let resp = await axios.post(url, data, config);
 
