@@ -13,7 +13,13 @@ class PostgresMonitorType extends MonitorType {
     async check(monitor, heartbeat, _server) {
         let startTime = dayjs().valueOf();
 
-        await this.postgresQuery(monitor.databaseConnectionString, monitor.databaseQuery || "SELECT 1");
+        let query = monitor.databaseQuery;
+        // No query provided by user, use SELECT 1
+        if (!query || (typeof query === "string" && query.trim() === "")) {
+            query = "SELECT 1";
+        }
+        
+        await this.postgresQuery(monitor.databaseConnectionString, query);
 
         heartbeat.msg = "";
         heartbeat.status = UP;
