@@ -707,6 +707,7 @@ let needSetup = false;
 
         // Add a new monitor
         socket.on("add", async (monitor, callback) => {
+            console.log(monitor);
             try {
                 checkLogin(socket);
                 let bean = R.dispense("monitor");

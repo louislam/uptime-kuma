@@ -769,6 +769,12 @@
                                 </div>
 
                                 <div class="my-3">
+                                    <label for="restartSshUser" class="form-label">SSH Username</label>
+                                    <input id="restartSshUser" v-model="monitor.restartSshUser" type="text" class="form-control" placeholder="e.g., root">
+                                    <div class="form-text">The username for the SSH connection.</div>
+                                </div>
+
+                                <div class="my-3">
                                     <label for="restartSshPort" class="form-label">SSH Port</label>
                                     <input id="restartSshPort" v-model="monitor.restartSshPort" type="number" class="form-control" placeholder="22">
                                 </div>

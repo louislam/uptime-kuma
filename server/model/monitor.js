@@ -28,6 +28,53 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const { NodeSSH } = require("node-ssh");
+
+/**
+ * Asynchronously executes an SSH restart command for a given monitor.
+ * It checks if the necessary SSH configuration is present on the monitor object.
+ * If so, it attempts to connect to the specified host and execute the restart script.
+ * All operations are wrapped in a try-catch block to prevent crashes and log errors.
+ *
+ * @param {object} monitor The monitor instance, containing restartSshHost, restartSshUser, etc.
+ * @returns {Promise<void>} A promise that resolves when the operation is complete.
+ */
+async function executeSshRestart(monitor) {
+    log.info("ssh", `Checking if SSH restart is configured for monitor: ${monitor.name}`);
+    // Check if all necessary SSH restart fields are present
+    if (monitor.restartSshHost && monitor.restartSshUser && monitor.restartSshPrivateKey && monitor.restartScript) {
+        const ssh = new NodeSSH();
+        const sshOptions = {
+            host: monitor.restartSshHost,
+            port: monitor.restartSshPort || 22,
+            username: monitor.restartSshUser,
+            privateKey: monitor.restartSshPrivateKey,
+        };
+
+        try {
+            log.info("ssh", `Attempting to SSH into ${sshOptions.host} for monitor: ${monitor.name}`);
+            await ssh.connect(sshOptions);
+
+            log.info("ssh", `Executing restart script for monitor: ${monitor.name}`);
+            const result = await ssh.execCommand(monitor.restartScript);
+
+            if (result.code === 0) {
+                log.info("ssh", `Successfully executed restart script for monitor: ${monitor.name}. stdout: ${result.stdout}`);
+            } else {
+                log.error("ssh", `Failed to execute restart script for monitor: ${monitor.name}. stderr: ${result.stderr}`);
+            }
+
+        } catch (error) {
+            log.error("ssh", `SSH operation failed for monitor ${monitor.name}: ${error.message}`);
+        } finally {
+            if (ssh.isConnected()) {
+                ssh.dispose();
+            }
+        }
+    } else {
+        log.info("ssh", `SSH restart not configured for monitor: ${monitor.name}`);
+    }
+}
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -895,6 +942,7 @@ class Monitor extends BeanModel {
                 } else {
                     // Continue counting retries during DOWN
                     retries++;
+                    executeSshRestart(this);
                 }
             }
 
