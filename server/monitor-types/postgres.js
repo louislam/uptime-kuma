@@ -13,42 +13,53 @@ class PostgresMonitorType extends MonitorType {
     async check(monitor, heartbeat, _server) {
         let startTime = dayjs().valueOf();
 
-        await new Promise((resolve, reject) => {
-            const connectionString = monitor.databaseConnectionString;
-            let query = monitor.databaseQuery || "SELECT 1";
+        await postgresQuery(monitor.databaseConnectionString, monitor.databaseQuery || "SELECT 1");
 
+        heartbeat.msg = "";
+        heartbeat.status = UP;
+        heartbeat.ping = dayjs().valueOf() - startTime;
+    }
+
+    /**
+     * Run a query on Postgres
+     * @param {string} connectionString The database connection string
+     * @param {string} query The query to validate the database with
+     * @returns {Promise<(string[] | object[] | object)>} Response from
+     * server
+     */
+    async function postgresQuery(connectionString, query) {
+        return new Promise((resolve, reject) => {
             const config = postgresConParse(connectionString);
-
-            // Fix #3868: ensure SSL string values become booleans
+    
+            // Fix #3868, which true/false is not parsed to boolean
             if (typeof config.ssl === "string") {
                 config.ssl = config.ssl === "true";
             }
-
+    
             if (config.password === "") {
+                // See https://github.com/brianc/node-postgres/issues/1927
                 reject(new Error("Password is undefined."));
                 return;
             }
-
             const client = new Client(config);
-
+    
             client.on("error", (error) => {
-                log.debug("postgres", "Error caught in error event handler.");
+                log.debug("postgres", "Error caught in the error event handler.");
                 reject(error);
             });
-
+    
             client.connect((err) => {
                 if (err) {
                     reject(err);
                     client.end();
                 } else {
+                    // Connected here
                     try {
-                        if (
-                            !query ||
-                            (typeof query === "string" && query.trim() === "")
-                        ) {
+                        // No query provided by user, use SELECT 1
+                        if (!query || (typeof query === "string" && query.trim() === "")) {
                             query = "SELECT 1";
                         }
-
+    
                         client.query(query, (err, res) => {
                             if (err) {
                                 reject(err);
@@ -63,11 +74,8 @@ class PostgresMonitorType extends MonitorType {
                     }
                 }
             });
+    
         });
-
-        heartbeat.msg = "";
-        heartbeat.status = UP;
-        heartbeat.ping = dayjs().valueOf() - startTime;
     }
 }
 
