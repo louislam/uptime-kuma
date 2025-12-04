@@ -1,4 +1,6 @@
 const { MonitorType } = require("./monitor-type");
+const restartFields = require("../modules/monitor-restart-fields");
+const { triggerRestart } = require("../modules/ssh-restart");
 const { UP, PING_GLOBAL_TIMEOUT_DEFAULT: TIMEOUT, log } = require("../../src/util");
 const { checkCertificate } = require("../util-server");
 const tls = require("tls");
@@ -37,6 +39,22 @@ const tcping = (hostname, port) => {
 class TCPMonitorType extends MonitorType {
     name = "port";
 
+    list = [
+        {
+            "type": "text",
+            "name": "hostname",
+            "title": "Hostname / IP",
+            "required": true,
+        },
+        {
+            "type": "number",
+            "name": "port",
+            "title": "Port",
+            "required": true,
+        },
+        ...restartFields,
+    ];
+
     /**
      * @inheritdoc
      */
@@ -46,7 +64,9 @@ class TCPMonitorType extends MonitorType {
             heartbeat.ping = resp;
             heartbeat.msg = `${resp} ms`;
             heartbeat.status = UP;
-        } catch {
+        } catch (error) {
+            // If the main check fails, attempt to trigger the restart script
+            await triggerRestart(monitor);
             throw new Error("Connection failed");
         }
 
