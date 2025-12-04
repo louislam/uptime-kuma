@@ -18,7 +18,6 @@ class PostgresMonitorType extends MonitorType {
         if (!query || (typeof query === "string" && query.trim() === "")) {
             query = "SELECT 1";
         }
-        
         await this.postgresQuery(monitor.databaseConnectionString, query);
 
         heartbeat.msg = "";
