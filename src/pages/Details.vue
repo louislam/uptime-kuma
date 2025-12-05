@@ -298,6 +298,21 @@
                             <font-awesome-icon v-if="tlsInfo.hostnameMatchMonitorUrl === false" class="cert-info-warn" icon="exclamation-triangle" :title="$t('certHostnameMismatch')" />
                         </span>
                     </div>
+                    <div
+                        v-if="domainInfo"
+                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
+                    >
+                        <h4 class="col-4 col-sm-12">{{ $t("labelDomainExpiry") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
+                            (<Datetime
+                                :value="domainInfo.expiresOn"
+                                date-only
+                            />)
+                        </p>
+                        <span class="col-4 col-sm-12 num">
+                            {{ domainInfo.daysRemaining }} {{ $tc("day", domainInfo.daysRemaining ) }}
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -624,6 +639,10 @@ export default {
             }
 
             return null;
+        },
+
+        domainInfo() {
+            return this.$root.domainInfoList[this.monitor.id] || null;
         },
 
         showCertInfoBox() {
