@@ -132,10 +132,6 @@ function ucfirst(str) {
     return firstLetter.toUpperCase() + str.substr(1);
 }
 exports.ucfirst = ucfirst;
-function debug(msg) {
-    exports.log.log("", "debug", msg);
-}
-exports.debug = debug;
 class Logger {
     constructor() {
         this.hideLog = {
@@ -160,11 +156,9 @@ class Logger {
         if (level === "DEBUG" && !exports.isDev) {
             return;
         }
-        if (this.hideLog[level] && this.hideLog[level].includes(module.toLowerCase())) {
+        if (this.hideLog[level.toLowerCase()] && this.hideLog[level.toLowerCase()].includes(module.toLowerCase())) {
             return;
         }
-        module = module.toUpperCase();
-        level = level.toUpperCase();
         let now;
         if (dayjs.tz) {
             now = dayjs.tz(new Date()).format();
@@ -174,9 +168,20 @@ class Logger {
         }
         const levelColor = consoleLevelColors[level];
         const moduleColor = consoleModuleColors[intHash(module, consoleModuleColors.length)];
-        let timePart;
-        let modulePart;
-        let levelPart;
+        let timePart = now;
+        let modulePart = module;
+        let levelPart = level;
+        let msgPart = msg;
+        if (process.env.UPTIME_KUMA_LOG_FORMAT === "json") {
+            console.log(JSON.stringify({
+                time: timePart,
+                module: modulePart,
+                level: levelPart,
+                msg: typeof msg === "string" ? msg : JSON.stringify(msg),
+            }));
+            return;
+        }
+        module = module.toUpperCase();
         if (exports.isNode) {
             switch (level) {
                 case "DEBUG":
@@ -188,9 +193,20 @@ class Logger {
             }
             modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
             levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
+            switch (level) {
+                case "ERROR":
+                    if (typeof msg === "string") {
+                        msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
+                    }
+                    break;
+                case "DEBUG":
+                    if (typeof msg === "string") {
+                        msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
+                    }
+                    break;
+            }
         }
         else {
-            timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
         }
@@ -214,24 +230,24 @@ class Logger {
                 break;
         }
     }
-    info(module, ...msg) {
-        this.log(module, "info", ...msg);
+    info(module, msg) {
+        this.log(module, msg, "INFO");
     }
-    warn(module, ...msg) {
-        this.log(module, "warn", ...msg);
+    warn(module, msg) {
+        this.log(module, msg, "WARN");
     }
-    error(module, ...msg) {
-        this.log(module, "error", ...msg);
+    error(module, msg) {
+        this.log(module, msg, "ERROR");
     }
-    debug(module, ...msg) {
-        this.log(module, "debug", ...msg);
+    debug(module, msg) {
+        this.log(module, msg, "DEBUG");
     }
     exception(module, exception, ...msg) {
         let finalMessage = exception;
         if (msg) {
             finalMessage = `${msg}: ${exception}`;
         }
-        this.log(module, "error", finalMessage);
+        this.log(module, finalMessage, "ERROR");
     }
 }
 exports.log = new Logger();

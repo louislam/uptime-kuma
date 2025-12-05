@@ -28,6 +28,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const { Settings } = require("../settings");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -675,7 +676,7 @@ class Monitor extends BeanModel {
 
                 } else if (this.type === "steam") {
                     const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
-                    const steamAPIKey = await setting("steamAPIKey");
+                    const steamAPIKey = await Settings.get("steamAPIKey");
                     const filter = `addr\\${this.hostname}:${this.port}`;
 
                     if (!steamAPIKey) {
@@ -1357,11 +1358,11 @@ class Monitor extends BeanModel {
                 return;
             }
 
-            let notifyDays = await setting("tlsExpiryNotifyDays");
+            let notifyDays = await Settings.get("tlsExpiryNotifyDays");
             if (notifyDays == null || !Array.isArray(notifyDays)) {
                 // Reset Default
-                await setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
                 notifyDays = [ 7, 14, 21 ];
+                await Settings.set("tlsExpiryNotifyDays", notifyDays, "general");
             }
 
             if (Array.isArray(notifyDays)) {

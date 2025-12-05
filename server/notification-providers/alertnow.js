@@ -1,7 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { setting } = require("../util-server");
 const { getMonitorRelativeURL, UP, DOWN } = require("../../src/util");
+const { Settings } = require("../settings");
 
 class AlertNow extends NotificationProvider {
     name = "AlertNow";
@@ -29,7 +29,7 @@ class AlertNow extends NotificationProvider {
 
             textMsg += ` - ${msg}`;
 
-            const baseURL = await setting("primaryBaseURL");
+            const baseURL = await Settings.get("primaryBaseURL");
             if (baseURL && monitorJSON) {
                 textMsg += ` >> ${baseURL + getMonitorRelativeURL(monitorJSON.id)}`;
             }
