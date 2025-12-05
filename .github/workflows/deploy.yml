@@ -1,0 +1,30 @@
+name: Deploy Frontend
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v3
+
+            # 1. The requested "Build" step
+            - name: Build Application
+              run: echo "building...by ahmed hany"
+
+            # 2. Deploy using the docker-compose binary installed in bootstrap
+            - name: Deploy via SSH
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      cd /opt/uptime-kuma
+                      git pull origin main
+                      sudo docker-compose pull
+                      sudo docker-compose up -d
