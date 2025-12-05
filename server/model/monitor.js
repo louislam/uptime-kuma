@@ -20,7 +20,7 @@ const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { DockerHost } = require("../docker");
-const Gamedig = require("gamedig");
+const { GameDig } = require("gamedig");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
@@ -717,7 +717,7 @@ class Monitor extends BeanModel {
                     }
                 } else if (this.type === "gamedig") {
                     try {
-                        const state = await Gamedig.query({
+                        const state = await GameDig.query({
                             type: this.game,
                             host: this.hostname,
                             port: this.port,
