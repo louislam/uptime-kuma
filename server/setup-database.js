@@ -77,6 +77,8 @@ class SetupDatabase {
             dbConfig.dbName = process.env.UPTIME_KUMA_DB_NAME;
             dbConfig.username = process.env.UPTIME_KUMA_DB_USERNAME;
             dbConfig.password = process.env.UPTIME_KUMA_DB_PASSWORD;
+            dbConfig.ssl = process.env.UPTIME_KUMA_DB_SSL === "true";
+            dbConfig.ssl_ca = process.env.UPTIME_KUMA_DB_SSL_CA;
             Database.writeDBConfig(dbConfig);
         }
 
@@ -215,6 +217,7 @@ class SetupDatabase {
                             user: dbConfig.username,
                             password: dbConfig.password,
                             database: dbConfig.dbName,
+                            ...Database.getSslConfig(dbConfig),
                         });
                         await connection.execute("SELECT 1");
                         connection.end();

@@ -166,7 +166,7 @@ class Database {
      * Read the database config
      * @throws {Error} If the config is invalid
      * @typedef {string|undefined} envString
-     * @returns {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} Database config
+     * @returns {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, ssl:boolean, ssl_ca:envString}} Database config
      */
     static readDBConfig() {
         let dbConfig;
@@ -186,11 +186,35 @@ class Database {
 
     /**
      * @typedef {string|undefined} envString
-     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
+     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, ssl:boolean, ssl_ca:envString}} dbConfig the database configuration that should be written
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {
         fs.writeFileSync(path.join(Database.dataDir, "db-config.json"), JSON.stringify(dbConfig, null, 4));
+    }
+
+    /**
+     * Conditionally generates the MySQL SSL configuration object.
+     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, ssl:boolean, ssl_ca:envString}} dbConfig the database configuration
+     * @returns {object | undefined} An object containing the `ssl` property, or undefined.
+     */
+    static getSslConfig(dbConfig) {
+        if (!dbConfig.ssl) {
+            return undefined;
+        }
+
+        const sslOptions = {};
+        if (dbConfig.ssl_ca) {
+            try {
+                sslOptions.ca = fs.readFileSync(dbConfig.ssl_ca, "utf8");
+            } catch (error) {
+                log.warn("db", `Failed to read CA file from ${dbConfig.ssl_ca}: ${error.message}`);
+                sslOptions.rejectUnauthorized = false;
+            }
+        } else {
+            sslOptions.rejectUnauthorized = false;
+        }
+        return { ssl: sslOptions };
     }
 
     /**
@@ -277,6 +301,7 @@ class Database {
                 port: dbConfig.port,
                 user: dbConfig.username,
                 password: dbConfig.password,
+                ...Database.getSslConfig(dbConfig),
             });
 
             // Set to true, so for example "uptime.kuma", becomes `uptime.kuma`, not `uptime`.`kuma`
@@ -295,6 +320,7 @@ class Database {
                     password: dbConfig.password,
                     database: dbConfig.dbName,
                     timezone: "Z",
+                    ...Database.getSslConfig(dbConfig),
                     typeCast: function (field, next) {
                         if (field.type === "DATETIME") {
                             // Do not perform timezone conversion
@@ -929,3 +955,4 @@ class Database {
 }
 
 module.exports = Database;
+
