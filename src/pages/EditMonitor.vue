@@ -1360,7 +1360,12 @@ const monitorDefaults = {
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
-    conditions: []
+    conditions: [],
+    restartSshHost: "",
+    restartSshUser: "",
+    restartSshPort: 22,
+    restartSshPrivateKey: "",
+    restartScript: ""
 };
 
 export default {

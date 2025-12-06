@@ -215,6 +215,12 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+
+            // SSH restart options
+            restartSshHost: this.restart_ssh_host,
+            restartSshUser: this.restart_ssh_user,
+            restartSshPort: this.restart_ssh_port,
+            restartScript: this.restart_script,
         };
 
         if (includeSensitiveData) {
@@ -248,6 +254,7 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                restartSshPrivateKey: this.restart_ssh_private_key,
             };
         }
 
@@ -942,7 +949,10 @@ class Monitor extends BeanModel {
                 } else {
                     // Continue counting retries during DOWN
                     retries++;
-                    executeSshRestart(this);
+                    // Only trigger SSH restart for HTTP type monitors
+                    if (this.type === "http") {
+                        executeSshRestart(this);
+                    }
                 }
             }
 

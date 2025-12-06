@@ -907,6 +907,13 @@ let needSetup = false;
                 bean.ping_count = monitor.ping_count;
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
 
+                // SSH restart options
+                bean.restart_ssh_host = monitor.restartSshHost || null;
+                bean.restart_ssh_user = monitor.restartSshUser || null;
+                bean.restart_ssh_port = monitor.restartSshPort || 22;
+                bean.restart_ssh_private_key = monitor.restartSshPrivateKey || null;
+                bean.restart_script = monitor.restartScript || null;
+
                 bean.validate();
 
                 await R.store(bean);

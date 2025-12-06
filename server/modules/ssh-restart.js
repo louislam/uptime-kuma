@@ -11,8 +11,8 @@ const ssh = new NodeSSH();
  * @returns {Promise<void>}
  */
 async function triggerRestart(monitor) {
-    // Only proceed if host and private key are configured
-    if (!monitor.restartSshHost || !monitor.restartSshPrivateKey || !monitor.restartScript) {
+    // Only proceed if all required fields are configured
+    if (!monitor.restartSshHost || !monitor.restartSshUser || !monitor.restartSshPrivateKey || !monitor.restartScript) {
         return;
     }
 
@@ -23,7 +23,7 @@ async function triggerRestart(monitor) {
         await ssh.connect({
             host: monitor.restartSshHost,
             port: monitor.restartSshPort || 22,
-            username: "root", // Defaulting to root, consider making this configurable
+            username: monitor.restartSshUser,
             privateKey: monitor.restartSshPrivateKey,
             tryKeyboard: true,
         });
