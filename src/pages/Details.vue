@@ -751,6 +751,8 @@ export default {
                 return;
             }
 
+            const nativeURL = window.URL || window.webkitURL;
+
             this.reportDownload.loading = true;
             this.reportDownload.format = format;
             this.reportDownload.error = null;
@@ -768,16 +770,29 @@ export default {
                     headers: this.buildAuthHeader(),
                 });
 
-                const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+                const contentType = response.headers["content-type"] || "application/octet-stream";
+                const blob = new Blob([response.data], { type: contentType });
                 const filename = `monitor-${this.monitor.id}-report-30d.${format}`;
+
                 const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
+                const objectUrl = nativeURL.createObjectURL(blob);
+                link.href = objectUrl;
                 link.download = filename;
+                link.style.display = "none";
                 document.body.appendChild(link);
+
+                // Try native click first (better Safari support), then dispatch if needed
                 link.click();
-                link.remove();
-                URL.revokeObjectURL(link.href);
+                link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+
+                setTimeout(() => {
+                    link.remove();
+                    nativeURL.revokeObjectURL(objectUrl);
+                }, 4000);
+
+                this.reportDownload.error = null;
             } catch (e) {
+                console.error("Report download failed", e);
                 this.reportDownload.error = this.$t ? this.$t("Report download failed or API not available.") : "Report download failed or API not available.";
                 toast.error(this.reportDownload.error);
             } finally {
