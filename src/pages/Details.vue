@@ -138,6 +138,37 @@
                 </div>
             </div>
 
+            <!-- Reports Download -->
+            <div class="shadow-box reports-box">
+                <div class="d-flex flex-wrap align-items-center justify-content-between">
+                    <div class="mb-2 mb-md-0">
+                        <h2 class="mb-1">Reports (Past 30 Days)</h2>
+                        <div class="text-muted small">Timezone: UTC+8</div>
+                    </div>
+                    <div class="btn-group">
+                        <button
+                            class="btn btn-outline-primary"
+                            :disabled="reportDownload.loading"
+                            @click="downloadReport('pdf')"
+                        >
+                            <span v-if="reportDownload.loading && reportDownload.format === 'pdf'" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <font-awesome-icon icon="file-pdf" /> PDF
+                        </button>
+                        <button
+                            class="btn btn-outline-primary"
+                            :disabled="reportDownload.loading"
+                            @click="downloadReport('csv')"
+                        >
+                            <span v-if="reportDownload.loading && reportDownload.format === 'csv'" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <font-awesome-icon icon="file-csv" /> CSV
+                        </button>
+                    </div>
+                </div>
+                <div v-if="reportDownload.error" class="alert alert-warning mt-3 mb-0" role="alert">
+                    {{ reportDownload.error }}
+                </div>
+            </div>
+
             <div class="shadow-box">
                 <div class="row">
                     <div class="col-md-8">
@@ -477,6 +508,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { defineAsyncComponent } from "vue";
 import { useToast } from "vue-toastification";
 const toast = useToast();
@@ -540,6 +572,11 @@ export default {
                 code: "",
             },
             deleteChildrenMonitors: false,
+            reportDownload: {
+                loading: false,
+                format: null,
+                error: null,
+            },
         };
     },
     computed: {
@@ -705,12 +742,70 @@ export default {
     methods: {
         getResBaseURL,
         /**
+         * Download report for current monitor
+         * @param {"pdf"|"csv"} format Desired file format
+         * @returns {Promise<void>}
+         */
+        async downloadReport(format) {
+            if (!this.monitor) {
+                return;
+            }
+
+            this.reportDownload.loading = true;
+            this.reportDownload.format = format;
+            this.reportDownload.error = null;
+
+            try {
+                const params = {
+                    format,
+                    range: "30d",
+                    tz: "UTC+8",
+                };
+                const url = `/api/monitor/${this.monitor.id}/report`;
+                const response = await axios.get(url, {
+                    params,
+                    responseType: "blob",
+                    headers: this.buildAuthHeader(),
+                });
+
+                const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+                const filename = `monitor-${this.monitor.id}-report-30d.${format}`;
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(link.href);
+            } catch (e) {
+                this.reportDownload.error = this.$t ? this.$t("Report download failed or API not available.") : "Report download failed or API not available.";
+                toast.error(this.reportDownload.error);
+            } finally {
+                this.reportDownload.loading = false;
+                this.reportDownload.format = null;
+            }
+        },
+
+        /**
          * Request a test notification be sent for this monitor
          * @returns {void}
          */
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
             this.$root.toastSuccess("Test notification is requested.");
+        },
+
+        /**
+         * Build Authorization header using stored JWT if available
+         * @returns {object} headers object
+         */
+        buildAuthHeader() {
+            const headers = {};
+            const token = this.$root?.storage().token;
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+            return headers;
         },
 
         /**
