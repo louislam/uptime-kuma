@@ -45,12 +45,20 @@ async function executeSshRestart(monitor) {
     
     log.info("ssh-restart", `[${monitorName} (#${monitorId})] Checking SSH restart configuration...`);
     
+    // RedBean uses snake_case for database fields, so we need to access them correctly
+    // Try both camelCase and snake_case for compatibility
+    const restartSshHost = monitor.restartSshHost || monitor.restart_ssh_host;
+    const restartSshUser = monitor.restartSshUser || monitor.restart_ssh_user;
+    const restartSshPort = monitor.restartSshPort || monitor.restart_ssh_port;
+    const restartSshPrivateKey = monitor.restartSshPrivateKey || monitor.restart_ssh_private_key;
+    const restartScript = monitor.restartScript || monitor.restart_script;
+    
     // Check if all necessary SSH restart fields are present
     const missingFields = [];
-    if (!monitor.restartSshHost) missingFields.push("SSH Host");
-    if (!monitor.restartSshUser) missingFields.push("SSH Username");
-    if (!monitor.restartSshPrivateKey) missingFields.push("SSH Private Key");
-    if (!monitor.restartScript) missingFields.push("Restart Script");
+    if (!restartSshHost) missingFields.push("SSH Host");
+    if (!restartSshUser) missingFields.push("SSH Username");
+    if (!restartSshPrivateKey) missingFields.push("SSH Private Key");
+    if (!restartScript) missingFields.push("Restart Script");
     
     if (missingFields.length > 0) {
         log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH restart not configured. Missing fields: ${missingFields.join(", ")}`);
@@ -59,10 +67,10 @@ async function executeSshRestart(monitor) {
     
     const ssh = new NodeSSH();
     const sshOptions = {
-        host: monitor.restartSshHost,
-        port: monitor.restartSshPort || 22,
-        username: monitor.restartSshUser,
-        privateKey: monitor.restartSshPrivateKey,
+        host: restartSshHost,
+        port: restartSshPort || 22,
+        username: restartSshUser,
+        privateKey: restartSshPrivateKey,
     };
     
     log.info("ssh-restart", `[${monitorName} (#${monitorId})] Website is DOWN. Attempting to trigger restart script via SSH...`);
@@ -73,8 +81,8 @@ async function executeSshRestart(monitor) {
         await ssh.connect(sshOptions);
         log.info("ssh-restart", `[${monitorName} (#${monitorId})] ✓ SSH connection established successfully`);
         
-        log.info("ssh-restart", `[${monitorName} (#${monitorId})] Executing restart script: "${monitor.restartScript}"`);
-        const result = await ssh.execCommand(monitor.restartScript);
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] Executing restart script: "${restartScript}"`);
+        const result = await ssh.execCommand(restartScript);
         
         if (result.code === 0) {
             log.info("ssh-restart", `[${monitorName} (#${monitorId})] ✓ Restart script executed successfully (exit code: 0)`);
@@ -996,9 +1004,19 @@ class Monitor extends BeanModel {
                 } else {
                     // Continue counting retries during DOWN
                     retries++;
+                    bean.status = DOWN; // Ensure status is DOWN
                     // Only trigger SSH restart for HTTP type monitors
-                    if (this.type === "http") {
+                    // Only restart once when status changes from non-DOWN to DOWN
+                    const previousStatus = previousBeat?.status;
+                    const isStatusChangeToDown = previousStatus !== DOWN && bean.status === DOWN;
+                    
+                    log.debug("ssh-restart", `[${this.name} (#${this.id})] Checking restart conditions: type=${this.type}, previousStatus=${previousStatus}, currentStatus=${bean.status}, isStatusChangeToDown=${isStatusChangeToDown}`);
+                    
+                    if (this.type === "http" && isStatusChangeToDown) {
+                        log.info("ssh-restart", `[${this.name} (#${this.id})] Status changed to DOWN. Triggering restart script once...`);
                         executeSshRestart(this);
+                    } else if (this.type === "http" && !isStatusChangeToDown) {
+                        log.debug("ssh-restart", `[${this.name} (#${this.id})] Skipping restart: ${previousStatus === DOWN ? "already DOWN" : "not HTTP type or status not changed to DOWN"}`);
                     }
                 }
             }
