@@ -65,6 +65,14 @@ async function executeSshRestart(monitor) {
         return;
     }
     
+    // Get notification list for this monitor
+    let notificationList = [];
+    try {
+        notificationList = await Monitor.getNotificationList(monitor);
+    } catch (e) {
+        log.error("ssh-restart", `[${monitorName} (#${monitorId})] Failed to get notification list: ${e.message}`);
+    }
+    
     const ssh = new NodeSSH();
     const sshOptions = {
         host: restartSshHost,
@@ -76,6 +84,10 @@ async function executeSshRestart(monitor) {
     log.info("ssh-restart", `[${monitorName} (#${monitorId})] Website is DOWN. Attempting to trigger restart script via SSH...`);
     log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH Connection Details: Host=${sshOptions.host}, Port=${sshOptions.port}, Username=${sshOptions.username}`);
     
+    let restartSuccess = false;
+    let restartMessage = "";
+    let errorDetails = "";
+    
     try {
         log.info("ssh-restart", `[${monitorName} (#${monitorId})] Attempting to establish SSH connection to ${sshOptions.host}:${sshOptions.port}...`);
         await ssh.connect(sshOptions);
@@ -85,23 +97,30 @@ async function executeSshRestart(monitor) {
         const result = await ssh.execCommand(restartScript);
         
         if (result.code === 0) {
-            log.info("ssh-restart", `[${monitorName} (#${monitorId})] ✓ Restart script executed successfully (exit code: 0)`);
+            restartSuccess = true;
+            restartMessage = `Restart script executed successfully (exit code: 0)`;
             if (result.stdout) {
+                restartMessage += `. Output: ${result.stdout}`;
                 log.info("ssh-restart", `[${monitorName} (#${monitorId})] Script stdout: ${result.stdout}`);
             }
+            log.info("ssh-restart", `[${monitorName} (#${monitorId})] ✓ ${restartMessage}`);
         } else {
-            log.error("ssh-restart", `[${monitorName} (#${monitorId})] ✗ Restart script failed with exit code: ${result.code}`);
+            restartSuccess = false;
+            errorDetails = `Restart script failed with exit code: ${result.code}`;
             if (result.stderr) {
+                errorDetails += `. Error: ${result.stderr}`;
                 log.error("ssh-restart", `[${monitorName} (#${monitorId})] Script stderr: ${result.stderr}`);
             }
             if (result.stdout) {
+                errorDetails += `. Output: ${result.stdout}`;
                 log.error("ssh-restart", `[${monitorName} (#${monitorId})] Script stdout: ${result.stdout}`);
             }
+            log.error("ssh-restart", `[${monitorName} (#${monitorId})] ✗ ${errorDetails}`);
         }
         
     } catch (error) {
-        // Provide detailed error information
-        let errorDetails = `Error: ${error.message}`;
+        restartSuccess = false;
+        errorDetails = `Error: ${error.message}`;
         
         if (error.code) {
             errorDetails += ` (Error Code: ${error.code})`;
@@ -127,6 +146,44 @@ async function executeSshRestart(monitor) {
             log.info("ssh-restart", `[${monitorName} (#${monitorId})] Closing SSH connection...`);
             ssh.dispose();
             log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH connection closed`);
+        }
+        
+        // Send notification about restart result
+        if (notificationList.length > 0) {
+            try {
+                const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
+                const preloadData = await Monitor.preparePreloadData(monitorData);
+                const monitorJSON = monitor.toJSON(preloadData, false);
+                
+                // Create a heartbeat-like JSON for notification
+                const heartbeatJSON = {
+                    status: restartSuccess ? UP : DOWN,
+                    msg: restartSuccess ? restartMessage : errorDetails,
+                    time: R.isoDateTimeMillis(dayjs.utc()),
+                    ping: 0,
+                    timezone: await UptimeKumaServer.getInstance().getTimezone(),
+                    timezoneOffset: UptimeKumaServer.getInstance().getTimezoneOffset(),
+                    localDateTime: dayjs.utc().tz(await UptimeKumaServer.getInstance().getTimezone()).format(SQL_DATETIME_FORMAT)
+                };
+                
+                const notificationText = restartSuccess 
+                    ? `✅ Auto-Restart Success` 
+                    : `🔴 Auto-Restart Failed`;
+                const notificationMsg = `[${monitor.name}] [${notificationText}] ${restartSuccess ? restartMessage : errorDetails}`;
+                
+                for (let notification of notificationList) {
+                    try {
+                        await Notification.send(JSON.parse(notification.config), notificationMsg, monitorJSON, heartbeatJSON);
+                        log.info("ssh-restart", `[${monitorName} (#${monitorId})] Notification sent via ${notification.name}`);
+                    } catch (e) {
+                        log.error("ssh-restart", `[${monitorName} (#${monitorId})] Failed to send notification via ${notification.name}: ${e.message}`);
+                    }
+                }
+            } catch (e) {
+                log.error("ssh-restart", `[${monitorName} (#${monitorId})] Failed to send restart notification: ${e.message}`);
+            }
+        } else {
+            log.debug("ssh-restart", `[${monitorName} (#${monitorId})] No notifications configured for this monitor`);
         }
     }
 }
