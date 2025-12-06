@@ -40,39 +40,86 @@ const { NodeSSH } = require("node-ssh");
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
  */
 async function executeSshRestart(monitor) {
-    log.info("ssh", `Checking if SSH restart is configured for monitor: ${monitor.name}`);
+    const monitorName = monitor.name || `Monitor #${monitor.id}`;
+    const monitorId = monitor.id || "unknown";
+    
+    log.info("ssh-restart", `[${monitorName} (#${monitorId})] Checking SSH restart configuration...`);
+    
     // Check if all necessary SSH restart fields are present
-    if (monitor.restartSshHost && monitor.restartSshUser && monitor.restartSshPrivateKey && monitor.restartScript) {
-        const ssh = new NodeSSH();
-        const sshOptions = {
-            host: monitor.restartSshHost,
-            port: monitor.restartSshPort || 22,
-            username: monitor.restartSshUser,
-            privateKey: monitor.restartSshPrivateKey,
-        };
-
-        try {
-            log.info("ssh", `Attempting to SSH into ${sshOptions.host} for monitor: ${monitor.name}`);
-            await ssh.connect(sshOptions);
-
-            log.info("ssh", `Executing restart script for monitor: ${monitor.name}`);
-            const result = await ssh.execCommand(monitor.restartScript);
-
-            if (result.code === 0) {
-                log.info("ssh", `Successfully executed restart script for monitor: ${monitor.name}. stdout: ${result.stdout}`);
-            } else {
-                log.error("ssh", `Failed to execute restart script for monitor: ${monitor.name}. stderr: ${result.stderr}`);
+    const missingFields = [];
+    if (!monitor.restartSshHost) missingFields.push("SSH Host");
+    if (!monitor.restartSshUser) missingFields.push("SSH Username");
+    if (!monitor.restartSshPrivateKey) missingFields.push("SSH Private Key");
+    if (!monitor.restartScript) missingFields.push("Restart Script");
+    
+    if (missingFields.length > 0) {
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH restart not configured. Missing fields: ${missingFields.join(", ")}`);
+        return;
+    }
+    
+    const ssh = new NodeSSH();
+    const sshOptions = {
+        host: monitor.restartSshHost,
+        port: monitor.restartSshPort || 22,
+        username: monitor.restartSshUser,
+        privateKey: monitor.restartSshPrivateKey,
+    };
+    
+    log.info("ssh-restart", `[${monitorName} (#${monitorId})] Website is DOWN. Attempting to trigger restart script via SSH...`);
+    log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH Connection Details: Host=${sshOptions.host}, Port=${sshOptions.port}, Username=${sshOptions.username}`);
+    
+    try {
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] Attempting to establish SSH connection to ${sshOptions.host}:${sshOptions.port}...`);
+        await ssh.connect(sshOptions);
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] ✓ SSH connection established successfully`);
+        
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] Executing restart script: "${monitor.restartScript}"`);
+        const result = await ssh.execCommand(monitor.restartScript);
+        
+        if (result.code === 0) {
+            log.info("ssh-restart", `[${monitorName} (#${monitorId})] ✓ Restart script executed successfully (exit code: 0)`);
+            if (result.stdout) {
+                log.info("ssh-restart", `[${monitorName} (#${monitorId})] Script stdout: ${result.stdout}`);
             }
-
-        } catch (error) {
-            log.error("ssh", `SSH operation failed for monitor ${monitor.name}: ${error.message}`);
-        } finally {
-            if (ssh.isConnected()) {
-                ssh.dispose();
+        } else {
+            log.error("ssh-restart", `[${monitorName} (#${monitorId})] ✗ Restart script failed with exit code: ${result.code}`);
+            if (result.stderr) {
+                log.error("ssh-restart", `[${monitorName} (#${monitorId})] Script stderr: ${result.stderr}`);
+            }
+            if (result.stdout) {
+                log.error("ssh-restart", `[${monitorName} (#${monitorId})] Script stdout: ${result.stdout}`);
             }
         }
-    } else {
-        log.info("ssh", `SSH restart not configured for monitor: ${monitor.name}`);
+        
+    } catch (error) {
+        // Provide detailed error information
+        let errorDetails = `Error: ${error.message}`;
+        
+        if (error.code) {
+            errorDetails += ` (Error Code: ${error.code})`;
+        }
+        
+        if (error.message.includes("ECONNREFUSED")) {
+            errorDetails += " - Connection refused. Possible causes: SSH service not running, wrong port, or firewall blocking connection.";
+        } else if (error.message.includes("ETIMEDOUT") || error.message.includes("timeout")) {
+            errorDetails += " - Connection timeout. Possible causes: Network issue, host unreachable, or firewall blocking connection.";
+        } else if (error.message.includes("ENOTFOUND") || error.message.includes("getaddrinfo")) {
+            errorDetails += " - Host not found. Check if the SSH Host address is correct.";
+        } else if (error.message.includes("authentication") || error.message.includes("key")) {
+            errorDetails += " - Authentication failed. Check if SSH Private Key and Username are correct.";
+        } else if (error.message.includes("Permission denied")) {
+            errorDetails += " - Permission denied. Check if the SSH key has proper permissions and the user has access.";
+        }
+        
+        log.error("ssh-restart", `[${monitorName} (#${monitorId})] ✗ SSH operation failed: ${errorDetails}`);
+        log.error("ssh-restart", `[${monitorName} (#${monitorId})] Full error details:`, error);
+        
+    } finally {
+        if (ssh.isConnected()) {
+            log.info("ssh-restart", `[${monitorName} (#${monitorId})] Closing SSH connection...`);
+            ssh.dispose();
+            log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH connection closed`);
+        }
     }
 }
 
