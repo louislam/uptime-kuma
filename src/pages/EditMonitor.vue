@@ -759,7 +759,7 @@
                             </div>
 
                             <!-- SSH Auto Restart -->
-                            <div v-if="$root.monitorTypeList[monitor.type] && $root.monitorTypeList[monitor.type].supportsRestart">
+                            <div v-if="monitor.type === 'http' || ($root.monitorTypeList[monitor.type] && $root.monitorTypeList[monitor.type].supportsRestart)">
                                 <h2 class="mt-5 mb-2">Offline Auto-Restart (via SSH)</h2>
 
                                 <div class="my-3">
