@@ -129,9 +129,11 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         await R.store(bean);
 
-        io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
-
-        Monitor.sendStats(io, monitor.id, monitor.user_id);
+        const userIDs = await require("../util-server").getMonitorUserIDs(monitor.id);
+        for (const uid of userIDs) {
+            io.to(uid).emit("heartbeat", bean.toJSON());
+            Monitor.sendStats(io, monitor.id, uid);
+        }
 
         try {
             new Prometheus(monitor, []).update(bean, undefined);

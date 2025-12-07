@@ -29,6 +29,7 @@ const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
 const { NodeSSH } = require("node-ssh");
+const { getMonitorUserIDs } = require("../util-server");
 
 /**
  * Asynchronously executes an SSH restart command for a given monitor.
@@ -1140,8 +1141,11 @@ class Monitor extends BeanModel {
 
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            io.to(this.user_id).emit("heartbeat", bean.toJSON());
-            Monitor.sendStats(io, this.id, this.user_id);
+            const userIDs = await getMonitorUserIDs(this.id);
+            for (const uid of userIDs) {
+                io.to(uid).emit("heartbeat", bean.toJSON());
+                Monitor.sendStats(io, this.id, uid);
+            }
 
             // Store to database
             log.debug("monitor", `[${this.name}] Store`);
@@ -1888,10 +1892,9 @@ class Monitor extends BeanModel {
     /**
      * Delete a monitor from the system
      * @param {number} monitorID ID of the monitor to delete
-     * @param {number} userID ID of the user who owns the monitor
      * @returns {Promise<void>}
      */
-    static async deleteMonitor(monitorID, userID) {
+    static async deleteMonitor(monitorID) {
         const server = UptimeKumaServer.getInstance();
 
         // Stop the monitor if it's running
@@ -1901,10 +1904,7 @@ class Monitor extends BeanModel {
         }
 
         // Delete from database
-        await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
-            monitorID,
-            userID,
-        ]);
+        await R.exec("DELETE FROM monitor WHERE id = ?", [ monitorID ]);
     }
 
     /**
@@ -1915,9 +1915,8 @@ class Monitor extends BeanModel {
      */
     static async deleteMonitorRecursively(monitorID, userID) {
         // Check if this monitor is a group
-        const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+        const monitor = await R.findOne("monitor", " id = ? ", [
             monitorID,
-            userID,
         ]);
 
         if (monitor && monitor.type === "group") {
@@ -1931,7 +1930,7 @@ class Monitor extends BeanModel {
         }
 
         // Delete the monitor itself
-        await Monitor.deleteMonitor(monitorID, userID);
+        await Monitor.deleteMonitor(monitorID);
     }
 
     /**

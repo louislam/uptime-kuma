@@ -100,7 +100,7 @@
                 }}</span>
             </p>
 
-            <div class="functions">
+            <div class="functions" v-if="canEdit">
                 <div class="btn-group" role="group">
                     <button
                         v-if="monitor.active"
@@ -166,6 +166,47 @@
                 </div>
                 <div v-if="reportDownload.error" class="alert alert-warning mt-3 mb-0" role="alert">
                     {{ reportDownload.error }}
+                </div>
+            </div>
+
+            <div v-if="canEdit" class="shadow-box p-3 mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">{{ $t("Access Control") }}</h5>
+                    <button class="btn btn-sm btn-outline-primary" @click="addAccessEntry">
+                        <font-awesome-icon icon="plus" /> {{ $t("Add User") }}
+                    </button>
+                </div>
+                <div v-if="accessLoading" class="text-muted">{{ $t("Loading") }}...</div>
+                <table v-else class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>{{ $t("User") }}</th>
+                            <th>{{ $t("Permission") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(entry, idx) in accessList" :key="idx">
+                            <td>
+                                <select v-model.number="entry.userID" class="form-select form-select-sm">
+                                    <option :value="null">{{ $t("Select User") }}</option>
+                                    <option
+                                        v-for="u in allUsers"
+                                        :key="u.id"
+                                        :value="u.id"
+                                    >{{ u.username }}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select v-model="entry.permission" class="form-select form-select-sm">
+                                    <option value="view">{{ $t("View") }}</option>
+                                    <option value="edit">{{ $t("Edit") }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-end">
+                    <button class="btn btn-primary" @click="saveAccess">{{ $t("Save") }}</button>
                 </div>
             </div>
 
@@ -577,6 +618,9 @@ export default {
                 format: null,
                 error: null,
             },
+            accessList: [],
+            accessLoading: false,
+            allUsers: [],
         };
     },
     computed: {
@@ -696,6 +740,13 @@ export default {
                 return "";
             }
         },
+
+        canEdit() {
+            if (this.$root.role === "admin" || this.$root.role === "editor") {
+                return true;
+            }
+            return this.monitor?.permission === "edit";
+        },
     },
 
     watch: {
@@ -705,6 +756,9 @@ export default {
 
         monitor(to) {
             this.getImportantHeartbeatListLength();
+            if (this.canEdit) {
+                this.loadAccess();
+            }
         },
         "monitor.type"() {
             if (this.monitor && this.monitor.type === "push") {
@@ -729,6 +783,10 @@ export default {
                 this.pushMonitor.showPushExamples = true;
             }
             this.loadPushExample();
+        }
+
+        if (this.canEdit) {
+            this.loadAccess();
         }
     },
 
@@ -799,6 +857,51 @@ export default {
                 this.reportDownload.loading = false;
                 this.reportDownload.format = null;
             }
+        },
+
+        loadAccess() {
+            if (!this.monitor || !this.canEdit) {
+                return;
+            }
+            this.accessLoading = true;
+
+            this.$root.getSocket().emit("listUsers", (res) => {
+                if (res.ok) {
+                    this.allUsers = res.users;
+                }
+            });
+
+            this.$root.getSocket().emit("getMonitorAccess", this.monitor.id, (res) => {
+                this.accessLoading = false;
+                if (res.ok) {
+                    this.accessList = res.access.map((entry) => ({
+                        userID: entry.id,
+                        permission: entry.permission,
+                        username: entry.username,
+                    }));
+                } else {
+                    this.$root.toastRes(res);
+                }
+            });
+        },
+
+        saveAccess() {
+            if (!this.monitor) {
+                return;
+            }
+            this.$root.getSocket().emit("setMonitorAccess", {
+                monitorID: this.monitor.id,
+                access: this.accessList.map((a) => ({ userID: a.userID, permission: a.permission })),
+            }, (res) => {
+                this.$root.toastRes(res);
+                if (res.ok) {
+                    this.loadAccess();
+                }
+            });
+        },
+
+        addAccessEntry() {
+            this.accessList.push({ userID: null, permission: "view" });
         },
 
         /**

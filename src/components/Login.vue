@@ -2,7 +2,7 @@
     <div class="form-container">
         <div class="form">
             <form @submit.prevent="submit">
-                <h1 class="h3 mb-3 fw-normal" />
+                <h1 class="h3 mb-3 fw-normal">{{ mode === 'login' ? $t('Login') : $t('Create Account') }}</h1>
 
                 <div v-if="!tokenRequired" class="form-floating">
                     <input id="floatingInput" v-model="username" type="text" class="form-control" placeholder="Username" autocomplete="username" required>
@@ -31,8 +31,14 @@
                     </div>
                 </div>
                 <button class="w-100 btn btn-primary" type="submit" :disabled="processing">
-                    {{ $t("Login") }}
+                    {{ mode === 'login' ? $t("Login") : $t("Create Account") }}
                 </button>
+
+                <div class="mt-3 text-center">
+                    <a href="#" @click.prevent="toggleMode">
+                        {{ mode === 'login' ? $t('Create a new account') : $t('Back to login') }}
+                    </a>
+                </div>
 
                 <div v-if="res && !res.ok" class="alert alert-danger mt-3" role="alert">
                     {{ $t(res.msg) }}
@@ -52,6 +58,7 @@ export default {
             token: "",
             res: null,
             tokenRequired: false,
+            mode: "login",
         };
     },
 
@@ -80,16 +87,29 @@ export default {
          */
         submit() {
             this.processing = true;
+            if (this.mode === "login") {
+                this.$root.login(this.username, this.password, this.token, (res) => {
+                    this.processing = false;
 
-            this.$root.login(this.username, this.password, this.token, (res) => {
-                this.processing = false;
-
-                if (res.tokenRequired) {
-                    this.tokenRequired = true;
-                } else {
+                    if (res.tokenRequired) {
+                        this.tokenRequired = true;
+                    } else {
+                        this.res = res;
+                    }
+                });
+            } else {
+                this.$root.register(this.username, this.password, (res) => {
+                    this.processing = false;
                     this.res = res;
-                }
-            });
+                });
+            }
+        },
+
+        toggleMode() {
+            this.mode = this.mode === "login" ? "register" : "login";
+            this.tokenRequired = false;
+            this.token = "";
+            this.res = null;
         },
     },
 };
