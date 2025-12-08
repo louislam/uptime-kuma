@@ -674,6 +674,12 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
             throw new Error("Empty or undefined response. Check query syntax and response structure");
         }
 
+        // If the response is an array with a single element, unwrap it for comparison.
+        // This handles JSONata expressions that return single-element arrays like [true] or [false].
+        if (Array.isArray(response) && response.length === 1) {
+            response = response[0];
+        }
+
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {
             throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
         }
