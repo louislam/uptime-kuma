@@ -717,9 +717,25 @@
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
-                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
+                                <input
+                                    id="interval"
+                                    v-model="monitor.interval"
+                                    type="number"
+                                    class="form-control"
+                                    required
+                                    :min="minInterval"
+                                    :max="maxInterval"
+                                    step="1"
+                                    @focus="lowIntervalConfirmation.editedValue=true"
+                                    @blur="checkIntervalValue"
+                                >
+
                                 <div class="form-text">
                                     {{ monitor.humanReadableInterval }}
+                                </div>
+
+                                <div v-if="monitor.interval < 20" class="form-text">
+                                    {{ $t("minimumIntervalWarning") }}
                                 </div>
                             </div>
 
@@ -736,7 +752,19 @@
                                     {{ $t("Heartbeat Retry Interval") }}
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
-                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
+                                <input
+                                    id="retry-interval"
+                                    v-model="monitor.retryInterval"
+                                    type="number"
+                                    class="form-control"
+                                    required
+                                    :min="minInterval"
+                                    step="1"
+                                    @focus="lowIntervalConfirmation.editedValue=true"
+                                >
+                                <div v-if="monitor.retryInterval < 20" class="form-text">
+                                    {{ $t("minimumIntervalWarning") }}
+                                </div>
                             </div>
 
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
@@ -1251,6 +1279,10 @@
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
             <RemoteBrowserDialog ref="remoteBrowserDialog" />
+            <Confirm ref="confirmLowIntervalValue" btn-style="btn-danger" :yes-text="$t('Confirm')" :no-text="$t('Cancel')" @yes="handleIntervalConfirm">
+                <p>{{ $t("lowIntervalWarning") }}</p>
+                <p>{{ $t("Please use this option carefully!") }}</p>
+            </Confirm>
         </div>
     </transition>
 </template>
@@ -1261,6 +1293,7 @@ import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
 import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
+import Confirm from "../components/Confirm.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
@@ -1336,6 +1369,7 @@ export default {
         ProxyDialog,
         CopyableInput,
         CreateGroupDialog,
+        Confirm,
         NotificationDialog,
         DockerHostDialog,
         RemoteBrowserDialog,
@@ -1368,6 +1402,10 @@ export default {
             },
             draftGroupName: null,
             remoteBrowsersEnabled: false,
+            lowIntervalConfirmation: {
+                confirmed: false,
+                editedValue: false,
+            },
         };
     },
 
@@ -1995,6 +2033,11 @@ message HealthCheckResponse {
             this.monitor.pushToken = genSecret(pushTokenLength);
         },
 
+        handleIntervalConfirm() {
+            this.lowIntervalConfirmation.confirmed = true;
+            this.submit();
+        },
+
         /**
          * Submit the form data for processing
          * @returns {Promise<void>}
@@ -2002,6 +2045,15 @@ message HealthCheckResponse {
         async submit() {
 
             this.processing = true;
+
+            // Check user has confirmed use of low interval value. Only
+            // do this if the interval value has changed since last save.
+            if (this.lowIntervalConfirmation.editedValue && (this.monitor.interval < 20 || this.monitor.retryInterval < 20) && !this.lowIntervalConfirmation.confirmed) {
+                // The dialog will then re-call submit
+                this.$refs.confirmLowIntervalValue.show();
+                this.processing = false;
+                return;
+            }
 
             if (!this.monitor.name) {
                 this.monitor.name = this.defaultFriendlyName;
@@ -2011,6 +2063,9 @@ message HealthCheckResponse {
                 this.processing = false;
                 return;
             }
+
+            this.lowIntervalConfirmation.confirmed = false;
+            this.lowIntervalConfirmation.editedValue = false;
 
             // Beautify the JSON format (only if httpBodyEncoding is not set or === json)
             if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {
