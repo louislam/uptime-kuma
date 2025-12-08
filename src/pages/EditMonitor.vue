@@ -758,6 +758,40 @@
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
 
+                            <!-- SSH Auto Restart -->
+                            <div v-if="monitor.type === 'http' || ($root.monitorTypeList[monitor.type] && $root.monitorTypeList[monitor.type].supportsRestart)">
+                                <h2 class="mt-5 mb-2">Offline Auto-Restart (via SSH)</h2>
+
+                                <div class="my-3">
+                                    <label for="restartSshHost" class="form-label">SSH Host</label>
+                                    <input id="restartSshHost" v-model="monitor.restartSshHost" type="text" class="form-control" placeholder="e.g., 192.168.1.100">
+                                    <div class="form-text">The IP address or hostname of the remote server.</div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="restartSshUser" class="form-label">SSH Username</label>
+                                    <input id="restartSshUser" v-model="monitor.restartSshUser" type="text" class="form-control" placeholder="e.g., root">
+                                    <div class="form-text">The username for the SSH connection.</div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="restartSshPort" class="form-label">SSH Port</label>
+                                    <input id="restartSshPort" v-model="monitor.restartSshPort" type="number" class="form-control" placeholder="22">
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="restartSshPrivateKey" class="form-label">SSH Private Key</label>
+                                    <textarea id="restartSshPrivateKey" v-model="monitor.restartSshPrivateKey" class="form-control" rows="5" placeholder="-----BEGIN RSA PRIVATE KEY-----..."></textarea>
+                                    <div class="form-text">For security, it's recommended to use a dedicated, limited-privilege key.</div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="restartScript" class="form-label">Restart Script</label>
+                                    <input id="restartScript" v-model="monitor.restartScript" type="text" class="form-control" placeholder="e.g., sudo systemctl restart my-app">
+                                    <div class="form-text">The command to execute on the remote server.</div>
+                                </div>
+                            </div>
+
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || (monitor.type === 'port' && ['starttls', 'secure'].includes(monitor.smtpSecurity))" class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
@@ -1326,7 +1360,12 @@ const monitorDefaults = {
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
-    conditions: []
+    conditions: [],
+    restartSshHost: "",
+    restartSshUser: "",
+    restartSshPort: 22,
+    restartSshPrivateKey: "",
+    restartScript: ""
 };
 
 export default {

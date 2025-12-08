@@ -220,7 +220,7 @@ async function sendRemoteBrowserList(socket) {
  */
 async function sendMonitorTypeList(socket) {
     const result = Object.entries(UptimeKumaServer.monitorTypeList).map(([ key, type ]) => {
-        return [ key, {
+        const monitorTypeObj = {
             supportsConditions: type.supportsConditions,
             conditionVariables: type.conditionVariables.map(v => {
                 return {
@@ -233,7 +233,14 @@ async function sendMonitorTypeList(socket) {
                     }),
                 };
             }),
-        }];
+        };
+
+        // Add custom flag for TCP Port monitors to support our restart feature
+        if (key === "port") {
+            monitorTypeObj.supportsRestart = true;
+        }
+
+        return [ key, monitorTypeObj ];
     });
 
     io.to(socket.userID).emit("monitorTypeList", Object.fromEntries(result));

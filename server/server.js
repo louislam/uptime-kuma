@@ -91,6 +91,7 @@ const User = require("./model/user");
 
 log.debug("server", "Importing Settings");
 const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleCheckPassword, shake256, SHAKE256_LENGTH, allowDevAllOrigin,
+    requireRole, requireMonitorPermission, getMonitorUserIDs,
 } = require("./util-server");
 
 log.debug("server", "Importing Notification");
@@ -397,6 +398,49 @@ let needSetup = false;
 
         });
 
+        socket.on("register", async (data, callback) => {
+            const clientIP = await server.getClientIP(socket);
+            try {
+                if (!data || typeof data.username !== "string" || typeof data.password !== "string") {
+                    throw new Error("Invalid payload");
+                }
+
+                const username = data.username.trim();
+                const password = data.password;
+
+                if (!username || !password) {
+                    throw new Error("Username and password are required");
+                }
+
+                const exists = await R.findOne("user", " username = ? ", [ username ]);
+                if (exists) {
+                    throw new Error("User already exists");
+                }
+
+                const bean = R.dispense("user");
+                bean.username = username;
+                bean.password = await passwordHash.generate(password);
+                bean.role = "viewer";
+                bean.active = true;
+                await R.store(bean);
+
+                await afterLogin(socket, bean);
+
+                log.info("auth", `Registered user ${username}. IP=${clientIP}`);
+
+                callback({
+                    ok: true,
+                    token: User.createJWT(bean, server.jwtSecret),
+                });
+            } catch (error) {
+                log.warn("auth", `Failed registration attempt. IP=${clientIP} Error=${error.message}`);
+                callback({
+                    ok: false,
+                    msg: error.message,
+                });
+            }
+        });
+
         socket.on("login", async (data, callback) => {
             const clientIP = await server.getClientIP(socket);
 
@@ -492,6 +536,126 @@ let needSetup = false;
 
             if (typeof callback === "function") {
                 callback();
+            }
+        });
+
+        // User management - admin only
+        socket.on("listUsers", async (callback) => {
+            try {
+                checkLogin(socket);
+                requireRole(socket, ["admin", "editor"]);
+
+                const users = await R.getAll("SELECT id, username, role, active FROM user");
+                callback({ ok: true, users });
+            } catch (error) {
+                callback({ ok: false, msg: error.message });
+            }
+        });
+
+        socket.on("createUser", async (data, callback) => {
+            try {
+                checkLogin(socket);
+                requireRole(socket, ["admin"]);
+
+                const { username, password, role = "viewer" } = data || {};
+                if (!username || !password) {
+                    throw new Error("Username and password are required");
+                }
+
+                if (! ["admin", "editor", "viewer"].includes(role)) {
+                    throw new Error("Invalid role");
+                }
+
+                const exists = await R.findOne("user", " username = ?", [ username ]);
+                if (exists) {
+                    throw new Error("User already exists");
+                }
+
+                const bean = R.dispense("user");
+                bean.username = username.trim();
+                bean.password = await passwordHash.generate(password);
+                bean.role = role;
+                bean.active = true;
+                await R.store(bean);
+
+                callback({ ok: true, userID: bean.id });
+            } catch (error) {
+                callback({ ok: false, msg: error.message });
+            }
+        });
+
+        socket.on("updateUser", async (data, callback) => {
+            try {
+                checkLogin(socket);
+                requireRole(socket, ["admin"]);
+
+                const { id, role, active } = data || {};
+                const user = await R.findOne("user", " id = ?", [ id ]);
+                if (!user) {
+                    throw new Error("User not found");
+                }
+
+                if (role && ["admin", "editor", "viewer"].includes(role)) {
+                    user.role = role;
+                }
+                if (active !== undefined) {
+                    user.active = !!active;
+                }
+                await R.store(user);
+                callback({ ok: true });
+            } catch (error) {
+                callback({ ok: false, msg: error.message });
+            }
+        });
+
+        // Monitor access control
+        socket.on("getMonitorAccess", async (monitorID, callback) => {
+            try {
+                checkLogin(socket);
+                await requireMonitorPermission(socket.userID, monitorID, "edit");
+
+                const rows = await R.getAll(`
+                    SELECT user.id, user.username, user.role, monitor_access.permission
+                    FROM monitor_access
+                    INNER JOIN user ON user.id = monitor_access.user_id
+                    WHERE monitor_access.monitor_id = ?
+                `, [ monitorID ]);
+
+                callback({ ok: true, access: rows });
+            } catch (error) {
+                callback({ ok: false, msg: error.message });
+            }
+        });
+
+        socket.on("setMonitorAccess", async (payload, callback) => {
+            try {
+                checkLogin(socket);
+                const { monitorID, access = [] } = payload || {};
+                await requireMonitorPermission(socket.userID, monitorID, "edit");
+
+                const monitor = await R.findOne("monitor", " id = ?", [ monitorID ]);
+                const ownerID = monitor?.user_id;
+
+                await R.exec("DELETE FROM monitor_access WHERE monitor_id = ? AND user_id != ?", [ monitorID, ownerID || 0 ]);
+
+                for (const entry of access) {
+                    if (!entry.userID) {
+                        continue;
+                    }
+                    if (entry.userID === ownerID) {
+                        continue;
+                    }
+                    const permission = entry.permission === "edit" ? "edit" : "view";
+                    await R.exec("INSERT OR REPLACE INTO monitor_access (monitor_id, user_id, permission) VALUES (?, ?, ?)", [
+                        monitorID,
+                        entry.userID,
+                        permission,
+                    ]);
+                }
+
+                callback({ ok: true });
+            } catch (error) {
+                callback({ ok: false, msg: error.message });
             }
         });
 
@@ -707,8 +871,10 @@ let needSetup = false;
 
         // Add a new monitor
         socket.on("add", async (monitor, callback) => {
+            console.log(monitor);
             try {
                 checkLogin(socket);
+                requireRole(socket, ["admin", "editor"]);
                 let bean = R.dispense("monitor");
 
                 let notificationIDList = monitor.notificationIDList;
@@ -746,6 +912,11 @@ let needSetup = false;
 
                 await R.store(bean);
 
+                await R.exec("INSERT OR IGNORE INTO monitor_access (monitor_id, user_id, permission) VALUES (?, ?, 'edit')", [
+                    bean.id,
+                    socket.userID,
+                ]);
+
                 await updateMonitorNotification(bean.id, notificationIDList);
 
                 await server.sendUpdateMonitorIntoList(socket, bean.id);
@@ -779,12 +950,8 @@ let needSetup = false;
             try {
                 let removeGroupChildren = false;
                 checkLogin(socket);
-
+                await requireMonitorPermission(socket.userID, monitor.id, "edit");
                 let bean = await R.findOne("monitor", " id = ? ", [ monitor.id ]);
-
-                if (bean.user_id !== socket.userID) {
-                    throw new Error("Permission denied.");
-                }
 
                 // Check if Parent is Descendant (would cause endless loop)
                 if (monitor.parent !== null) {
@@ -906,6 +1073,13 @@ let needSetup = false;
                 bean.ping_count = monitor.ping_count;
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
 
+                // SSH restart options
+                bean.restart_ssh_host = monitor.restartSshHost || null;
+                bean.restart_ssh_user = monitor.restartSshUser || null;
+                bean.restart_ssh_port = monitor.restartSshPort || 22;
+                bean.restart_ssh_private_key = monitor.restartSshPrivateKey || null;
+                bean.restart_script = monitor.restartScript || null;
+
                 bean.validate();
 
                 await R.store(bean);
@@ -957,13 +1131,14 @@ let needSetup = false;
         socket.on("getMonitor", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
+                await requireMonitorPermission(socket.userID, monitorID, "view");
 
                 log.info("monitor", `Get Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                let monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
-                    monitorID,
-                    socket.userID,
-                ]);
+                let monitor = await R.findOne("monitor", " id = ? ", [ monitorID ]);
+                if (!monitor) {
+                    throw new Error("Monitor not found");
+                }
                 const monitorData = [{ id: monitor.id,
                     active: monitor.active
                 }];
@@ -984,6 +1159,7 @@ let needSetup = false;
         socket.on("getMonitorBeats", async (monitorID, period, callback) => {
             try {
                 checkLogin(socket);
+                await requireMonitorPermission(socket.userID, monitorID, "view");
 
                 log.info("monitor", `Get Monitor Beats: ${monitorID} User ID: ${socket.userID}`);
 
@@ -1066,13 +1242,13 @@ let needSetup = false;
                 }
 
                 checkLogin(socket);
+                await requireMonitorPermission(socket.userID, monitorID, "edit");
 
                 const startTime = Date.now();
 
                 // Check if this is a group monitor
-                const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+                const monitor = await R.findOne("monitor", " id = ? ", [
                     monitorID,
-                    socket.userID,
                 ]);
 
                 // Log with context about deletion type
@@ -1112,7 +1288,7 @@ let needSetup = false;
                 }
 
                 // Delete the monitor itself
-                await Monitor.deleteMonitor(monitorID, socket.userID);
+                await Monitor.deleteMonitor(monitorID);
 
                 // Fix #2880
                 apicache.clear();
@@ -1776,7 +1952,9 @@ async function checkOwner(userID, monitorID) {
  */
 async function afterLogin(socket, user) {
     socket.userID = user.id;
+    socket.role = user.role;
     socket.join(user.id);
+    socket.join("authenticated");
 
     let monitorList = await server.sendMonitorList(socket);
     await Promise.allSettled([
@@ -1850,13 +2028,12 @@ async function initDatabase(testMode = false) {
  * @returns {Promise<void>}
  */
 async function startMonitor(userID, monitorID) {
-    await checkOwner(userID, monitorID);
+    await requireMonitorPermission(userID, monitorID, "edit");
 
     log.info("manage", `Resume Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 1 WHERE id = ? AND user_id = ? ", [
+    await R.exec("UPDATE monitor SET active = 1 WHERE id = ?", [
         monitorID,
-        userID,
     ]);
 
     let monitor = await R.findOne("monitor", " id = ? ", [
@@ -1888,13 +2065,12 @@ async function restartMonitor(userID, monitorID) {
  * @returns {Promise<void>}
  */
 async function pauseMonitor(userID, monitorID) {
-    await checkOwner(userID, monitorID);
+    await requireMonitorPermission(userID, monitorID, "edit");
 
     log.info("manage", `Pause Monitor: ${monitorID} User ID: ${userID}`);
 
-    await R.exec("UPDATE monitor SET active = 0 WHERE id = ? AND user_id = ? ", [
+    await R.exec("UPDATE monitor SET active = 0 WHERE id = ?", [
         monitorID,
-        userID,
     ]);
 
     if (monitorID in server.monitorList) {

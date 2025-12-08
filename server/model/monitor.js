@@ -28,6 +28,166 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const { NodeSSH } = require("node-ssh");
+const { getMonitorUserIDs } = require("../util-server");
+
+/**
+ * Asynchronously executes an SSH restart command for a given monitor.
+ * It checks if the necessary SSH configuration is present on the monitor object.
+ * If so, it attempts to connect to the specified host and execute the restart script.
+ * All operations are wrapped in a try-catch block to prevent crashes and log errors.
+ *
+ * @param {object} monitor The monitor instance, containing restartSshHost, restartSshUser, etc.
+ * @returns {Promise<void>} A promise that resolves when the operation is complete.
+ */
+async function executeSshRestart(monitor) {
+    const monitorName = monitor.name || `Monitor #${monitor.id}`;
+    const monitorId = monitor.id || "unknown";
+    
+    log.info("ssh-restart", `[${monitorName} (#${monitorId})] Checking SSH restart configuration...`);
+    
+    // RedBean uses snake_case for database fields, so we need to access them correctly
+    // Try both camelCase and snake_case for compatibility
+    const restartSshHost = monitor.restartSshHost || monitor.restart_ssh_host;
+    const restartSshUser = monitor.restartSshUser || monitor.restart_ssh_user;
+    const restartSshPort = monitor.restartSshPort || monitor.restart_ssh_port;
+    const restartSshPrivateKey = monitor.restartSshPrivateKey || monitor.restart_ssh_private_key;
+    const restartScript = monitor.restartScript || monitor.restart_script;
+    
+    // Check if all necessary SSH restart fields are present
+    const missingFields = [];
+    if (!restartSshHost) missingFields.push("SSH Host");
+    if (!restartSshUser) missingFields.push("SSH Username");
+    if (!restartSshPrivateKey) missingFields.push("SSH Private Key");
+    if (!restartScript) missingFields.push("Restart Script");
+    
+    if (missingFields.length > 0) {
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH restart not configured. Missing fields: ${missingFields.join(", ")}`);
+        return;
+    }
+    
+    // Get notification list for this monitor
+    let notificationList = [];
+    try {
+        notificationList = await Monitor.getNotificationList(monitor);
+    } catch (e) {
+        log.error("ssh-restart", `[${monitorName} (#${monitorId})] Failed to get notification list: ${e.message}`);
+    }
+    
+    const ssh = new NodeSSH();
+    const sshOptions = {
+        host: restartSshHost,
+        port: restartSshPort || 22,
+        username: restartSshUser,
+        privateKey: restartSshPrivateKey,
+    };
+    
+    log.info("ssh-restart", `[${monitorName} (#${monitorId})] Website is DOWN. Attempting to trigger restart script via SSH...`);
+    log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH Connection Details: Host=${sshOptions.host}, Port=${sshOptions.port}, Username=${sshOptions.username}`);
+    
+    let restartSuccess = false;
+    let restartMessage = "";
+    let errorDetails = "";
+    
+    try {
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] Attempting to establish SSH connection to ${sshOptions.host}:${sshOptions.port}...`);
+        await ssh.connect(sshOptions);
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] ✓ SSH connection established successfully`);
+        
+        log.info("ssh-restart", `[${monitorName} (#${monitorId})] Executing restart script: "${restartScript}"`);
+        const result = await ssh.execCommand(restartScript);
+        
+        if (result.code === 0) {
+            restartSuccess = true;
+            restartMessage = `Restart script executed successfully (exit code: 0)`;
+            if (result.stdout) {
+                restartMessage += `. Output: ${result.stdout}`;
+                log.info("ssh-restart", `[${monitorName} (#${monitorId})] Script stdout: ${result.stdout}`);
+            }
+            log.info("ssh-restart", `[${monitorName} (#${monitorId})] ✓ ${restartMessage}`);
+        } else {
+            restartSuccess = false;
+            errorDetails = `Restart script failed with exit code: ${result.code}`;
+            if (result.stderr) {
+                errorDetails += `. Error: ${result.stderr}`;
+                log.error("ssh-restart", `[${monitorName} (#${monitorId})] Script stderr: ${result.stderr}`);
+            }
+            if (result.stdout) {
+                errorDetails += `. Output: ${result.stdout}`;
+                log.error("ssh-restart", `[${monitorName} (#${monitorId})] Script stdout: ${result.stdout}`);
+            }
+            log.error("ssh-restart", `[${monitorName} (#${monitorId})] ✗ ${errorDetails}`);
+        }
+        
+    } catch (error) {
+        restartSuccess = false;
+        errorDetails = `Error: ${error.message}`;
+        
+        if (error.code) {
+            errorDetails += ` (Error Code: ${error.code})`;
+        }
+        
+        if (error.message.includes("ECONNREFUSED")) {
+            errorDetails += " - Connection refused. Possible causes: SSH service not running, wrong port, or firewall blocking connection.";
+        } else if (error.message.includes("ETIMEDOUT") || error.message.includes("timeout")) {
+            errorDetails += " - Connection timeout. Possible causes: Network issue, host unreachable, or firewall blocking connection.";
+        } else if (error.message.includes("ENOTFOUND") || error.message.includes("getaddrinfo")) {
+            errorDetails += " - Host not found. Check if the SSH Host address is correct.";
+        } else if (error.message.includes("authentication") || error.message.includes("key")) {
+            errorDetails += " - Authentication failed. Check if SSH Private Key and Username are correct.";
+        } else if (error.message.includes("Permission denied")) {
+            errorDetails += " - Permission denied. Check if the SSH key has proper permissions and the user has access.";
+        }
+        
+        log.error("ssh-restart", `[${monitorName} (#${monitorId})] ✗ SSH operation failed: ${errorDetails}`);
+        log.error("ssh-restart", `[${monitorName} (#${monitorId})] Full error details:`, error);
+        
+    } finally {
+        if (ssh.isConnected()) {
+            log.info("ssh-restart", `[${monitorName} (#${monitorId})] Closing SSH connection...`);
+            ssh.dispose();
+            log.info("ssh-restart", `[${monitorName} (#${monitorId})] SSH connection closed`);
+        }
+        
+        // Send notification about restart result
+        if (notificationList.length > 0) {
+            try {
+                const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
+                const preloadData = await Monitor.preparePreloadData(monitorData);
+                const monitorJSON = monitor.toJSON(preloadData, false);
+                
+                // Create a heartbeat-like JSON for notification
+                const heartbeatJSON = {
+                    status: restartSuccess ? UP : DOWN,
+                    msg: restartSuccess ? restartMessage : errorDetails,
+                    time: R.isoDateTimeMillis(dayjs.utc()),
+                    ping: 0,
+                    timezone: await UptimeKumaServer.getInstance().getTimezone(),
+                    timezoneOffset: UptimeKumaServer.getInstance().getTimezoneOffset(),
+                    localDateTime: dayjs.utc().tz(await UptimeKumaServer.getInstance().getTimezone()).format(SQL_DATETIME_FORMAT)
+                };
+                
+                const notificationText = restartSuccess 
+                    ? `✅ Auto-Restart Success` 
+                    : `🔴 Auto-Restart Failed`;
+                const notificationMsg = `[${monitor.name}] [${notificationText}] ${restartSuccess ? restartMessage : errorDetails}`;
+                
+                for (let notification of notificationList) {
+                    try {
+                        await Notification.send(JSON.parse(notification.config), notificationMsg, monitorJSON, heartbeatJSON);
+                        log.info("ssh-restart", `[${monitorName} (#${monitorId})] Notification sent via ${notification.name}`);
+                    } catch (e) {
+                        log.error("ssh-restart", `[${monitorName} (#${monitorId})] Failed to send notification via ${notification.name}: ${e.message}`);
+                    }
+                }
+            } catch (e) {
+                log.error("ssh-restart", `[${monitorName} (#${monitorId})] Failed to send restart notification: ${e.message}`);
+            }
+        } else {
+            log.debug("ssh-restart", `[${monitorName} (#${monitorId})] No notifications configured for this monitor`);
+        }
+    }
+}
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -168,6 +328,12 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+
+            // SSH restart options
+            restartSshHost: this.restart_ssh_host,
+            restartSshUser: this.restart_ssh_user,
+            restartSshPort: this.restart_ssh_port,
+            restartScript: this.restart_script,
         };
 
         if (includeSensitiveData) {
@@ -201,6 +367,7 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
+                restartSshPrivateKey: this.restart_ssh_private_key,
             };
         }
 
@@ -895,6 +1062,20 @@ class Monitor extends BeanModel {
                 } else {
                     // Continue counting retries during DOWN
                     retries++;
+                    bean.status = DOWN; // Ensure status is DOWN
+                    // Only trigger SSH restart for HTTP type monitors
+                    // Only restart once when status changes from non-DOWN to DOWN
+                    const previousStatus = previousBeat?.status;
+                    const isStatusChangeToDown = previousStatus !== DOWN && bean.status === DOWN;
+                    
+                    log.debug("ssh-restart", `[${this.name} (#${this.id})] Checking restart conditions: type=${this.type}, previousStatus=${previousStatus}, currentStatus=${bean.status}, isStatusChangeToDown=${isStatusChangeToDown}`);
+                    
+                    if (this.type === "http" && isStatusChangeToDown) {
+                        log.info("ssh-restart", `[${this.name} (#${this.id})] Status changed to DOWN. Triggering restart script once...`);
+                        executeSshRestart(this);
+                    } else if (this.type === "http" && !isStatusChangeToDown) {
+                        log.debug("ssh-restart", `[${this.name} (#${this.id})] Skipping restart: ${previousStatus === DOWN ? "already DOWN" : "not HTTP type or status not changed to DOWN"}`);
+                    }
                 }
             }
 
@@ -960,8 +1141,11 @@ class Monitor extends BeanModel {
 
             // Send to frontend
             log.debug("monitor", `[${this.name}] Send to socket`);
-            io.to(this.user_id).emit("heartbeat", bean.toJSON());
-            Monitor.sendStats(io, this.id, this.user_id);
+            const userIDs = await getMonitorUserIDs(this.id);
+            for (const uid of userIDs) {
+                io.to(uid).emit("heartbeat", bean.toJSON());
+                Monitor.sendStats(io, this.id, uid);
+            }
 
             // Store to database
             log.debug("monitor", `[${this.name}] Store`);
@@ -1708,10 +1892,9 @@ class Monitor extends BeanModel {
     /**
      * Delete a monitor from the system
      * @param {number} monitorID ID of the monitor to delete
-     * @param {number} userID ID of the user who owns the monitor
      * @returns {Promise<void>}
      */
-    static async deleteMonitor(monitorID, userID) {
+    static async deleteMonitor(monitorID) {
         const server = UptimeKumaServer.getInstance();
 
         // Stop the monitor if it's running
@@ -1721,10 +1904,7 @@ class Monitor extends BeanModel {
         }
 
         // Delete from database
-        await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
-            monitorID,
-            userID,
-        ]);
+        await R.exec("DELETE FROM monitor WHERE id = ?", [ monitorID ]);
     }
 
     /**
@@ -1735,9 +1915,8 @@ class Monitor extends BeanModel {
      */
     static async deleteMonitorRecursively(monitorID, userID) {
         // Check if this monitor is a group
-        const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+        const monitor = await R.findOne("monitor", " id = ? ", [
             monitorID,
-            userID,
         ]);
 
         if (monitor && monitor.type === "group") {
@@ -1751,7 +1930,7 @@ class Monitor extends BeanModel {
         }
 
         // Delete the monitor itself
-        await Monitor.deleteMonitor(monitorID, userID);
+        await Monitor.deleteMonitor(monitorID);
     }
 
     /**

@@ -100,7 +100,7 @@
                 }}</span>
             </p>
 
-            <div class="functions">
+            <div class="functions" v-if="canEdit">
                 <div class="btn-group" role="group">
                     <button
                         v-if="monitor.active"
@@ -135,6 +135,78 @@
                     >
                         <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
                     </button>
+                </div>
+            </div>
+
+            <!-- Reports Download -->
+            <div class="shadow-box reports-box">
+                <div class="d-flex flex-wrap align-items-center justify-content-between">
+                    <div class="mb-2 mb-md-0">
+                        <h2 class="mb-1">Reports (Past 30 Days)</h2>
+                        <div class="text-muted small">Timezone: UTC+8</div>
+                    </div>
+                    <div class="btn-group">
+                        <button
+                            class="btn btn-outline-primary"
+                            :disabled="reportDownload.loading"
+                            @click="downloadReport('pdf')"
+                        >
+                            <span v-if="reportDownload.loading && reportDownload.format === 'pdf'" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <font-awesome-icon icon="file-pdf" /> PDF
+                        </button>
+                        <button
+                            class="btn btn-outline-primary"
+                            :disabled="reportDownload.loading"
+                            @click="downloadReport('csv')"
+                        >
+                            <span v-if="reportDownload.loading && reportDownload.format === 'csv'" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            <font-awesome-icon icon="file-csv" /> CSV
+                        </button>
+                    </div>
+                </div>
+                <div v-if="reportDownload.error" class="alert alert-warning mt-3 mb-0" role="alert">
+                    {{ reportDownload.error }}
+                </div>
+            </div>
+
+            <div v-if="canEdit" class="shadow-box p-3 mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">{{ $t("Access Control") }}</h5>
+                    <button class="btn btn-sm btn-outline-primary" @click="addAccessEntry">
+                        <font-awesome-icon icon="plus" /> {{ $t("Add User") }}
+                    </button>
+                </div>
+                <div v-if="accessLoading" class="text-muted">{{ $t("Loading") }}...</div>
+                <table v-else class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>{{ $t("User") }}</th>
+                            <th>{{ $t("Permission") }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(entry, idx) in accessList" :key="idx">
+                            <td>
+                                <select v-model.number="entry.userID" class="form-select form-select-sm">
+                                    <option :value="null">{{ $t("Select User") }}</option>
+                                    <option
+                                        v-for="u in allUsers"
+                                        :key="u.id"
+                                        :value="u.id"
+                                    >{{ u.username }}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select v-model="entry.permission" class="form-select form-select-sm">
+                                    <option value="view">{{ $t("View") }}</option>
+                                    <option value="edit">{{ $t("Edit") }}</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="text-end">
+                    <button class="btn btn-primary" @click="saveAccess">{{ $t("Save") }}</button>
                 </div>
             </div>
 
@@ -477,6 +549,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { defineAsyncComponent } from "vue";
 import { useToast } from "vue-toastification";
 const toast = useToast();
@@ -540,6 +613,14 @@ export default {
                 code: "",
             },
             deleteChildrenMonitors: false,
+            reportDownload: {
+                loading: false,
+                format: null,
+                error: null,
+            },
+            accessList: [],
+            accessLoading: false,
+            allUsers: [],
         };
     },
     computed: {
@@ -659,6 +740,13 @@ export default {
                 return "";
             }
         },
+
+        canEdit() {
+            if (this.$root.role === "admin" || this.$root.role === "editor") {
+                return true;
+            }
+            return this.monitor?.permission === "edit";
+        },
     },
 
     watch: {
@@ -668,6 +756,9 @@ export default {
 
         monitor(to) {
             this.getImportantHeartbeatListLength();
+            if (this.canEdit) {
+                this.loadAccess();
+            }
         },
         "monitor.type"() {
             if (this.monitor && this.monitor.type === "push") {
@@ -693,6 +784,10 @@ export default {
             }
             this.loadPushExample();
         }
+
+        if (this.canEdit) {
+            this.loadAccess();
+        }
     },
 
     beforeUnmount() {
@@ -705,12 +800,130 @@ export default {
     methods: {
         getResBaseURL,
         /**
+         * Download report for current monitor
+         * @param {"pdf"|"csv"} format Desired file format
+         * @returns {Promise<void>}
+         */
+        async downloadReport(format) {
+            if (!this.monitor) {
+                return;
+            }
+
+            const nativeURL = window.URL || window.webkitURL;
+
+            this.reportDownload.loading = true;
+            this.reportDownload.format = format;
+            this.reportDownload.error = null;
+
+            try {
+                const params = {
+                    format,
+                    range: "30d",
+                    tz: "UTC+8",
+                };
+                const url = `/api/monitor/${this.monitor.id}/report`;
+                const response = await axios.get(url, {
+                    params,
+                    responseType: "blob",
+                    headers: this.buildAuthHeader(),
+                });
+
+                const contentType = response.headers["content-type"] || "application/octet-stream";
+                const blob = new Blob([response.data], { type: contentType });
+                const filename = `monitor-${this.monitor.id}-report-30d.${format}`;
+
+                const link = document.createElement("a");
+                const objectUrl = nativeURL.createObjectURL(blob);
+                link.href = objectUrl;
+                link.download = filename;
+                link.style.display = "none";
+                document.body.appendChild(link);
+
+                // Try native click first (better Safari support), then dispatch if needed
+                link.click();
+                link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+
+                setTimeout(() => {
+                    link.remove();
+                    nativeURL.revokeObjectURL(objectUrl);
+                }, 4000);
+
+                this.reportDownload.error = null;
+            } catch (e) {
+                console.error("Report download failed", e);
+                this.reportDownload.error = this.$t ? this.$t("Report download failed or API not available.") : "Report download failed or API not available.";
+                toast.error(this.reportDownload.error);
+            } finally {
+                this.reportDownload.loading = false;
+                this.reportDownload.format = null;
+            }
+        },
+
+        loadAccess() {
+            if (!this.monitor || !this.canEdit) {
+                return;
+            }
+            this.accessLoading = true;
+
+            this.$root.getSocket().emit("listUsers", (res) => {
+                if (res.ok) {
+                    this.allUsers = res.users;
+                }
+            });
+
+            this.$root.getSocket().emit("getMonitorAccess", this.monitor.id, (res) => {
+                this.accessLoading = false;
+                if (res.ok) {
+                    this.accessList = res.access.map((entry) => ({
+                        userID: entry.id,
+                        permission: entry.permission,
+                        username: entry.username,
+                    }));
+                } else {
+                    this.$root.toastRes(res);
+                }
+            });
+        },
+
+        saveAccess() {
+            if (!this.monitor) {
+                return;
+            }
+            this.$root.getSocket().emit("setMonitorAccess", {
+                monitorID: this.monitor.id,
+                access: this.accessList.map((a) => ({ userID: a.userID, permission: a.permission })),
+            }, (res) => {
+                this.$root.toastRes(res);
+                if (res.ok) {
+                    this.loadAccess();
+                }
+            });
+        },
+
+        addAccessEntry() {
+            this.accessList.push({ userID: null, permission: "view" });
+        },
+
+        /**
          * Request a test notification be sent for this monitor
          * @returns {void}
          */
         testNotification() {
             this.$root.getSocket().emit("testNotification", this.monitor.id);
             this.$root.toastSuccess("Test notification is requested.");
+        },
+
+        /**
+         * Build Authorization header using stored JWT if available
+         * @returns {object} headers object
+         */
+        buildAuthHeader() {
+            const headers = {};
+            const token = this.$root?.storage().token;
+            if (token) {
+                headers.Authorization = `Bearer ${token}`;
+            }
+            return headers;
         },
 
         /**

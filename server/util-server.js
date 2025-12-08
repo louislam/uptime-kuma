@@ -743,7 +743,63 @@ exports.allowDevAllOrigin = (res) => {
 exports.allowAllOrigin = (res) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+};
+
+/**
+ * Ensure the connected user has one of the required roles
+ * @param {Socket} socket Socket.io instance
+ * @param {string[]} roles Allowed roles
+ * @returns {void}
+ */
+exports.requireRole = (socket, roles = []) => {
+    if (!socket || !socket.role || !roles.includes(socket.role)) {
+        throw new Error("Insufficient permissions");
+    }
+};
+
+/**
+ * Check monitor permission for a given user
+ * @param {number} userID User id
+ * @param {number} monitorID Monitor id
+ * @param {"view"|"edit"} minPermission Minimum permission required
+ * @returns {Promise<string>} actual permission
+ */
+exports.requireMonitorPermission = async (userID, monitorID, minPermission = "view") => {
+    const row = await R.getRow(`
+        SELECT
+            CASE
+                WHEN monitor.user_id = ? THEN 'edit'
+                ELSE monitor_access.permission
+            END as permission
+        FROM monitor
+        LEFT JOIN monitor_access ON monitor_access.monitor_id = monitor.id AND monitor_access.user_id = ?
+        WHERE monitor.id = ?
+    `, [ userID, userID, monitorID ]);
+
+    if (!row || !row.permission) {
+        throw new Error("You do not have access to this monitor.");
+    }
+
+    const order = { view: 1, edit: 2 };
+    if (order[row.permission] < order[minPermission]) {
+        throw new Error("You do not have enough permission to modify this monitor.");
+    }
+    return row.permission;
+};
+
+/**
+ * Get all user ids that can access a monitor
+ * @param {number} monitorID Monitor id
+ * @returns {Promise<number[]>}
+ */
+exports.getMonitorUserIDs = async (monitorID) => {
+    const rows = await R.getAll(`
+        SELECT DISTINCT user_id FROM monitor_access WHERE monitor_id = ?
+        UNION
+        SELECT user_id FROM monitor WHERE id = ? AND user_id IS NOT NULL
+    `, [ monitorID, monitorID ]);
+    return rows.map((r) => r.user_id);
 };
 
 /**

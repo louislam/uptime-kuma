@@ -37,6 +37,7 @@ export default {
             remember: (localStorage.remember !== "0"),
             allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
+            role: null,
             monitorList: { },
             monitorTypeList: {},
             maintenanceList: {},
@@ -409,11 +410,32 @@ export default {
                     this.socket.token = res.token;
                     this.loggedIn = true;
                     this.username = this.getJWTPayload()?.username;
+                    this.role = this.getJWTPayload()?.role || null;
 
                     // Trigger Chrome Save Password
                     history.pushState({}, "");
                 }
 
+                callback(res);
+            });
+        },
+
+        /**
+         * Register a new user (viewer role) and log in
+         * @param {string} username Username to register
+         * @param {string} password Password to register
+         * @param {function} callback Callback to handle response
+         * @returns {void}
+         */
+        register(username, password, callback) {
+            socket.emit("register", { username, password }, (res) => {
+                if (res.ok && res.token) {
+                    this.storage().token = res.token;
+                    this.socket.token = res.token;
+                    this.loggedIn = true;
+                    this.username = this.getJWTPayload()?.username;
+                    this.role = this.getJWTPayload()?.role || null;
+                }
                 callback(res);
             });
         },
@@ -432,6 +454,7 @@ export default {
                 } else {
                     this.loggedIn = true;
                     this.username = this.getJWTPayload()?.username;
+                    this.role = this.getJWTPayload()?.role || null;
                 }
             });
         },
@@ -446,6 +469,7 @@ export default {
             this.socket.token = null;
             this.loggedIn = false;
             this.username = null;
+            this.role = null;
             this.clearData();
         },
 
