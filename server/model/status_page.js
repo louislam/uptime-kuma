@@ -263,14 +263,11 @@ class StatusPage extends BeanModel {
     static async getStatusPageData(statusPage) {
         const config = await statusPage.toPublicJSON();
 
-        // Incident
-        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
+        // All active incidents
+        let incidents = await R.find("incident", " pin = 1 AND active = 1 AND status_page_id = ? ORDER BY created_date DESC", [
             statusPage.id,
         ]);
-
-        if (incident) {
-            incident = incident.toPublicJSON();
-        }
+        incidents = incidents.map(i => i.toPublicJSON());
 
         let maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
 
@@ -290,7 +287,7 @@ class StatusPage extends BeanModel {
         // Response
         return {
             config,
-            incident,
+            incidents,
             publicGroupList,
             maintenanceList,
         };

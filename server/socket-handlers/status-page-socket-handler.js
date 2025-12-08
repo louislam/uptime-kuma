@@ -9,6 +9,21 @@ const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 
 /**
+ * Validates incident data
+ * @param {object} incident - The incident object
+ * @returns {void}
+ * @throws {Error} If validation fails
+ */
+function validateIncident(incident) {
+    if (!incident.title || incident.title.trim() === "") {
+        throw new Error("Please input title");
+    }
+    if (!incident.content || incident.content.trim() === "") {
+        throw new Error("Please input content");
+    }
+}
+
+/**
  * Socket handlers for status page
  * @param {Socket} socket Socket.io instance to add listeners on
  * @returns {void}
@@ -23,12 +38,8 @@ module.exports.statusPageSocketHandler = (socket) => {
             let statusPageID = await StatusPage.slugToID(slug);
 
             if (!statusPageID) {
-                throw new Error("slug is not found");
+                throw new Error("slug not found");
             }
-
-            await R.exec("UPDATE incident SET pin = 0 WHERE status_page_id = ? ", [
-                statusPageID
-            ]);
 
             let incidentBean;
 
@@ -47,6 +58,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             incidentBean.content = incident.content;
             incidentBean.style = incident.style;
             incidentBean.pin = true;
+            incidentBean.active = true;
             incidentBean.status_page_id = statusPageID;
 
             if (incident.id) {
@@ -86,6 +98,216 @@ module.exports.statusPageSocketHandler = (socket) => {
             callback({
                 ok: false,
                 msg: error.message,
+            });
+        }
+    });
+
+    socket.on("getIncidentHistory", async (slug, page, callback) => {
+        try {
+            checkLogin(socket);
+
+            let statusPageID = await StatusPage.slugToID(slug);
+            if (!statusPageID) {
+                throw new Error("slug not found");
+            }
+
+            const limit = 10;
+            const offset = (page - 1) * limit;
+
+            const incidents = await R.find("incident",
+                " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ",
+                [ statusPageID, limit, offset ]
+            );
+
+            const total = await R.count("incident", " status_page_id = ? ", [ statusPageID ]);
+
+            callback({
+                ok: true,
+                incidents: incidents.map(i => i.toJSON()),
+                total: total,
+                page: page,
+                totalPages: Math.ceil(total / limit)
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    socket.on("getPublicIncidentHistory", async (slug, page, callback) => {
+        try {
+            let statusPageID = await StatusPage.slugToID(slug);
+            if (!statusPageID) {
+                throw new Error("slug not found");
+            }
+
+            const limit = 10;
+            const offset = (page - 1) * limit;
+
+            const incidents = await R.find("incident",
+                " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ",
+                [ statusPageID, limit, offset ]
+            );
+
+            const total = await R.count("incident", " status_page_id = ? ", [ statusPageID ]);
+
+            callback({
+                ok: true,
+                incidents: incidents.map(i => i.toPublicJSON()),
+                total: total,
+                page: page,
+                totalPages: Math.ceil(total / limit)
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+            });
+        }
+    });
+
+    socket.on("editIncident", async (slug, incidentID, incident, callback) => {
+        try {
+            checkLogin(socket);
+
+            let statusPageID = await StatusPage.slugToID(slug);
+            if (!statusPageID) {
+                callback({
+                    ok: false,
+                    msg: "slug not found",
+                    msgi18n: true
+                });
+                return;
+            }
+
+            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [ incidentID, statusPageID ]);
+            if (!bean) {
+                callback({
+                    ok: false,
+                    msg: "Incident not found or access denied",
+                    msgi18n: true
+                });
+                return;
+            }
+
+            try {
+                validateIncident(incident);
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                    msgi18n: true
+                });
+                return;
+            }
+
+            const validStyles = [ "info", "warning", "danger", "primary", "light", "dark" ];
+            if (!validStyles.includes(incident.style)) {
+                incident.style = "warning";
+            }
+
+            bean.title = incident.title;
+            bean.content = incident.content;
+            bean.style = incident.style;
+            bean.pin = incident.pin !== false;
+            bean.lastUpdatedDate = R.isoDateTime(dayjs.utc());
+
+            await R.store(bean);
+
+            callback({
+                ok: true,
+                msg: "Saved.",
+                msgi18n: true,
+                incident: bean.toJSON(),
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+                msgi18n: true,
+            });
+        }
+    });
+
+    socket.on("deleteIncident", async (slug, incidentID, callback) => {
+        try {
+            checkLogin(socket);
+
+            let statusPageID = await StatusPage.slugToID(slug);
+            if (!statusPageID) {
+                callback({
+                    ok: false,
+                    msg: "slug not found",
+                    msgi18n: true
+                });
+                return;
+            }
+
+            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [ incidentID, statusPageID ]);
+            if (!bean) {
+                callback({
+                    ok: false,
+                    msg: "Incident not found or access denied",
+                    msgi18n: true
+                });
+                return;
+            }
+
+            await R.trash(bean);
+
+            callback({
+                ok: true,
+                msg: "successDeleted",
+                msgi18n: true,
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+                msgi18n: true,
+            });
+        }
+    });
+
+    socket.on("resolveIncident", async (slug, incidentID, callback) => {
+        try {
+            checkLogin(socket);
+
+            let statusPageID = await StatusPage.slugToID(slug);
+            if (!statusPageID) {
+                callback({
+                    ok: false,
+                    msg: "slug not found",
+                    msgi18n: true
+                });
+                return;
+            }
+
+            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [ incidentID, statusPageID ]);
+            if (!bean) {
+                callback({
+                    ok: false,
+                    msg: "Incident not found or access denied",
+                    msgi18n: true
+                });
+                return;
+            }
+
+            await bean.resolve();
+
+            callback({
+                ok: true,
+                msg: "Resolved",
+                msgi18n: true,
+                incident: bean.toJSON(),
+            });
+        } catch (error) {
+            callback({
+                ok: false,
+                msg: error.message,
+                msgi18n: true,
             });
         }
     });
