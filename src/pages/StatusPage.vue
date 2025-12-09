@@ -862,9 +862,6 @@ export default {
                 this.imgDataUrl = this.config.icon;
             }
 
-            if (res.data.incidents && res.data.incidents.length > 0) {
-                this.incidentHistory = res.data.incidents;
-            }
             this.maintenanceList = res.data.maintenanceList;
             this.$root.publicGroupList = res.data.publicGroupList;
 
@@ -1157,6 +1154,7 @@ export default {
          * @returns {void}
          */
         editIncident(incident) {
+            this.previousIncident = this.incident;
             this.incident = { ...incident };
             this.enableEditIncidentMode = true;
         },
@@ -1255,6 +1253,9 @@ export default {
                         }
                         this.incidentHistoryPage = res.page;
                         this.incidentHistoryTotalPages = res.totalPages;
+                    } else {
+                        console.error("Failed to load incident history:", res.msg);
+                        this.$root.toastError(res.msg);
                     }
                 });
             } else {
@@ -1293,7 +1294,7 @@ export default {
          */
         formatDateKey(dateStr) {
             if (!dateStr) {
-                return "Unknown";
+                return this.$t("Unknown");
             }
             const date = new Date(dateStr);
             return date.toLocaleDateString(undefined, {

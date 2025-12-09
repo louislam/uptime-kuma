@@ -47,7 +47,7 @@
                         </div>
                     </div>
                     <!-- eslint-disable-next-line vue/no-v-html-->
-                    <div class="incident-content mt-1" v-html="incident.content"></div>
+                    <div class="incident-content mt-1" v-html="getIncidentHTML(incident.content)"></div>
                     <div class="incident-meta text-muted small mt-2">
                         <div>
                             {{ $t("Created") }}: {{ datetime(incident.createdDate) }}
@@ -63,6 +63,8 @@
 </template>
 
 <script>
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import datetimeMixin from "../mixins/datetime";
 
 export default {
@@ -86,7 +88,20 @@ export default {
         "edit-incident",
         "delete-incident",
         "resolve-incident"
-    ]
+    ],
+    methods: {
+        /**
+         * Get sanitized HTML for incident content
+         * @param {string} content - Markdown content
+         * @returns {string} Sanitized HTML
+         */
+        getIncidentHTML(content) {
+            if (content != null) {
+                return DOMPurify.sanitize(marked(content));
+            }
+            return "";
+        }
+    }
 };
 </script>
 
