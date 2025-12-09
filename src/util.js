@@ -227,11 +227,7 @@ class Logger {
         this.log(module, "debug", ...msg);
     }
     exception(module, exception, ...msg) {
-        let finalMessage = exception;
-        if (msg) {
-            finalMessage = `${msg}: ${exception}`;
-        }
-        this.log(module, "error", finalMessage);
+        this.log(module, "error", ...msg, exception);
     }
 }
 exports.log = new Logger();
@@ -399,6 +395,12 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+        if (Array.isArray(response)) {
+            const responseStr = JSON.stringify(response);
+            const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
+            throw new Error("JSON query returned the array " + truncatedResponse + ", but a primitive value is required. " +
+                "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean().");
         }
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {
             throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
