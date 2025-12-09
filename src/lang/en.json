@@ -1231,5 +1231,7 @@
     "Allow Notifications": "Allow Notifications",
     "Browser not supported": "Browser not supported",
     "Unable to get permission to notify": "Unable to get permission to notify (request either denied or ignored).",
-    "Webpush Helptext": "Web push only works with SSL (HTTPS) connections. For iOS devices, webpage must be added to homescreen beforehand."
+    "Webpush Helptext": "Web push only works with SSL (HTTPS) connections. For iOS devices, webpage must be added to homescreen beforehand.",
+    "minimumIntervalWarning": "Intervals below 20 seconds may result in poor performance.",
+    "lowIntervalWarning": "Are you sure want to set the interval value below 20 seconds? Performance may be degraded, particularly if there are a large number of monitors."
 }
