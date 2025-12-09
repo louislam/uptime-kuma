@@ -674,10 +674,14 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
             throw new Error("Empty or undefined response. Check query syntax and response structure");
         }
 
-        // If the response is an array with a single element, unwrap it for comparison.
-        // This handles JSONata expressions that return single-element arrays like [true] or [false].
-        if (Array.isArray(response) && response.length === 1) {
-            response = response[0];
+        // Check for arrays: JSONata filter expressions like .[predicate] always return arrays
+        if (Array.isArray(response)) {
+            const responseStr = JSON.stringify(response);
+            const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "..." : responseStr;
+            throw new Error(
+                "JSON query returned an array (" + truncatedResponse + "), but a primitive value is required for comparison. " +
+                "Modify your query to return a single value, e.g., append [0] to get the first element, or use an aggregation function like $count(), $sum(), or $boolean()."
+            );
         }
 
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {
