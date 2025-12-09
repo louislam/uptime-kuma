@@ -677,10 +677,10 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
         // Check for arrays: JSONata filter expressions like .[predicate] always return arrays
         if (Array.isArray(response)) {
             const responseStr = JSON.stringify(response);
-            const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "..." : responseStr;
+            const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
             throw new Error(
-                "JSON query returned an array (" + truncatedResponse + "), but a primitive value is required for comparison. " +
-                "Modify your query to return a single value, e.g., append [0] to get the first element, or use an aggregation function like $count(), $sum(), or $boolean()."
+                "JSON query returned the array " + truncatedResponse + ", but a primitive value is required. " +
+                "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean()."
             );
         }
 
