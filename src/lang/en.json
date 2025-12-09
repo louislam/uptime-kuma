@@ -1248,4 +1248,3 @@
     "Unable to get permission to notify": "Unable to get permission to notify (request either denied or ignored).",
     "Webpush Helptext": "Web push only works with SSL (HTTPS) connections. For iOS devices, webpage must be added to homescreen beforehand."
 }
-
