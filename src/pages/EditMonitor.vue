@@ -98,6 +98,9 @@
                                         <option value="redis">
                                             Redis
                                         </option>
+                                        <option value="local-service">
+                                            {{ $t("Local Service") }}
+                                        </option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
@@ -656,11 +659,69 @@
                                 </div>
                             </template>
 
+
                             <!-- SQL Server / PostgreSQL / MySQL / Redis / MongoDB -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql' || monitor.type === 'redis' || monitor.type === 'mongodb'">
                                 <div class="my-3">
                                     <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
                                     <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'local-service'">
+                                <div class="my-3">
+                                    <label for="local-service-command" class="form-label">{{ $t("Command") }}</label>
+                                    <input id="local-service-command" v-model="monitor.local_service_command" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("localServiceCommandDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="local-service-check-type" class="form-label">{{ $t("Check Type") }}</label>
+                                    <select id="local-service-check-type" v-model="monitor.local_service_check_type" class="form-select" required>
+                                        <option value="keyword">{{ $t("Keyword") }}</option>
+                                        <option value="json-query">{{ $t("Json Query") }}</option>
+                                    </select>
+                                </div>
+
+                                <div v-if="monitor.local_service_check_type === 'keyword'" class="my-3">
+                                    <label for="local-service-expected-output" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="local-service-expected-output" v-model="monitor.local_service_expected_output" type="text" class="form-control">
+                                    <div class="form-text">
+                                        {{ $t("localServiceExpectedOutputDescription") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="monitor.local_service_check_type === 'json-query'" class="my-3">
+                                    <div class="my-2">
+                                        <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
+                                        <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
+                                            <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                            <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('playground') }}</a>
+                                        </i18n-t>
+                                        <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
+                                    </div>
+
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-2">
+                                            <label for="json_path_operator" class="form-label">{{ $t("Condition") }}</label>
+                                            <select id="json_path_operator" v-model="monitor.jsonPathOperator" class="form-select me-3" required>
+                                                <option value=">">&gt;</option>
+                                                <option value=">=">&gt;=</option>
+                                                <option value="<">&lt;</option>
+                                                <option value="<=">&lt;=</option>
+                                                <option value="!=">&#33;=</option>
+                                                <option value="==">==</option>
+                                                <option value="contains">contains</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                            <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '==' && monitor.jsonPathOperator !== '!='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
+                                            <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
 
@@ -671,16 +732,16 @@
                                     <HiddenInput id="mysql-password" v-model="monitor.radiusPassword" autocomplete="false"></HiddenInput>
                                 </div>
                             </template>
-
-                            <!-- SQL Server / PostgreSQL / MySQL -->
+			    
+			    		     <!-- SQL Server / PostgreSQL / MySQL -->
                             <template v-if="monitor.type === 'sqlserver' || monitor.type === 'postgres' || monitor.type === 'mysql'">
                                 <div class="my-3">
                                     <label for="sqlQuery" class="form-label">{{ $t("Query") }}</label>
                                     <textarea id="sqlQuery" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ 'SELECT 1' ])"></textarea>
                                 </div>
                             </template>
-
-                            <!-- MongoDB -->
+					
+					   <!-- MongoDB -->
                             <template v-if="monitor.type === 'mongodb'">
                                 <div class="my-3">
                                     <label for="mongodbCommand" class="form-label">{{ $t("Command") }}</label>
@@ -705,8 +766,8 @@
                                     <input id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control">
                                 </div>
                             </template>
-
-                            <!-- Conditions -->
+					
+					   <!-- Conditions -->
                             <EditMonitorConditions
                                 v-if="supportsConditions && conditionVariables.length > 0"
                                 v-model="monitor.conditions"
@@ -738,8 +799,8 @@
                                     {{ $t("minimumIntervalWarning") }}
                                 </div>
                             </div>
-
-                            <div class="my-3">
+					
+					   <div class="my-3">
                                 <label for="maxRetries" class="form-label">{{ $t("Retries") }}</label>
                                 <input id="maxRetries" v-model="monitor.maxretries" type="number" class="form-control" required min="0" step="1">
                                 <div class="form-text">
@@ -766,8 +827,8 @@
                                     {{ $t("minimumIntervalWarning") }}
                                 </div>
                             </div>
-
-                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
+					
+					   <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
                                 <label for="timeout" class="form-label">
                                     {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
@@ -785,8 +846,8 @@
                                 </label>
                                 <input id="resend-interval" v-model="monitor.resendInterval" type="number" class="form-control" required min="0" step="1">
                             </div>
-
-                            <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
+					
+					   <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || (monitor.type === 'port' && ['starttls', 'secure'].includes(monitor.smtpSecurity))" class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox" :disabled="monitor.ignoreTls">
@@ -796,8 +857,8 @@
                                 <div class="form-text">
                                 </div>
                             </div>
-
-                            <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
+					
+					   <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
                                 <input id="wsIgnoreSecWebsocketAcceptHeader" v-model="monitor.wsIgnoreSecWebsocketAcceptHeader" class="form-check-input" type="checkbox">
                                 <i18n-t tag="label" keypath="Ignore Sec-WebSocket-Accept header" class="form-check-label" for="wsIgnoreSecWebsocketAcceptHeader">
                                     <code>Sec-Websocket-Accept</code>
@@ -813,8 +874,8 @@
                                     {{ monitor.type === "redis" ? $t("ignoreTLSErrorGeneral") : $t("ignoreTLSError") }}
                                 </label>
                             </div>
-
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
+					
+					   <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check">
                                 <input id="cache-bust" v-model="monitor.cacheBust" class="form-check-input" type="checkbox" value="">
                                 <label class="form-check-label" for="cache-bust">
                                     <i18n-t tag="label" keypath="cacheBusterParam" class="form-check-label" for="cache-bust">
@@ -835,8 +896,8 @@
                                     {{ $t("upsideDownModeDescription") }}
                                 </div>
                             </div>
-
-                            <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
+					
+					   <div v-if="monitor.type === 'gamedig'" class="my-3 form-check">
                                 <input id="gamedig-guess-port" v-model="monitor.gamedigGivenPortOnly" :true-value="false" :false-value="true" class="form-check-input" type="checkbox">
                                 <label class="form-check-label" for="gamedig-guess-port">
                                     {{ $t("gamedigGuessPort") }}
@@ -854,8 +915,8 @@
                                     {{ $t("pingCountDescription") }}
                                 </div>
                             </div>
-
-                            <!-- Numeric Output -->
+					
+					   <!-- Numeric Output -->
                             <div v-if="monitor.type === 'ping'" class="my-3 form-check">
                                 <input id="ping_numeric" v-model="monitor.ping_numeric" type="checkbox" class="form-check-input" :checked="monitor.ping_numeric">
                                 <label class="form-check-label" for="ping_numeric">
@@ -871,8 +932,8 @@
                                 <label for="packet-size" class="form-label">{{ $t("Packet Size") }}</label>
                                 <input id="packet-size" v-model="monitor.packetSize" type="number" class="form-control" required min="1" :max="65500" step="1">
                             </div>
-
-                            <!-- per-request timeout -->
+					
+					   <!-- per-request timeout -->
                             <div v-if="monitor.type === 'ping'" class="my-3">
                                 <label for="ping_per_request_timeout" class="form-label">{{ $t("pingPerRequestTimeoutLabel") }}</label>
                                 <input id="ping_per_request_timeout" v-model="monitor.ping_per_request_timeout" type="number" class="form-control" required min="0" max="300" step="1">
@@ -912,8 +973,8 @@
                                         {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
                                 </div>
-
-                                <div class="my-3">
+					
+					   <div class="my-3">
                                     <label for="ipFamily" class="form-label">{{ $t("Ip Family") }}</label>
                                     <select id="ipFamily" v-model="monitor.ipFamily" class="form-select">
                                         <option :value="null">{{ $t("auto-select") }}</option>
@@ -941,8 +1002,8 @@
                                     :action="() => $refs.createGroupDialog.show()"
                                 />
                             </div>
-
-                            <!-- Description -->
+					
+					   <!-- Description -->
                             <div class="my-3">
                                 <label for="description" class="form-label">{{ $t("Description") }}</label>
                                 <input id="description" v-model="monitor.description" type="text" class="form-control">
@@ -956,8 +1017,8 @@
 
                         <div class="col-md-6">
                             <div v-if="$root.isMobile" class="mt-3" />
-
-                            <!-- Notifications -->
+					
+					   <!-- Notifications -->
                             <h2 class="mb-2">{{ $t("Notifications") }}</h2>
                             <p v-if="$root.notificationList.length === 0">
                                 {{ $t("Not available, please setup.") }}
@@ -977,8 +1038,8 @@
                             <button class="btn btn-primary me-2" type="button" @click="$refs.notificationDialog.show()">
                                 {{ $t("Setup Notification") }}
                             </button>
-
-                            <!-- Proxies -->
+					
+					   <!-- Proxies -->
                             <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'">
                                 <h2 class="mt-5 mb-2">{{ $t("Proxy") }}</h2>
                                 <p v-if="$root.proxyList.length === 0">
@@ -997,8 +1058,8 @@
                                         {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
                                         <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
                                     </label>
-
-                                    <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>
+					
+					   <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("default") }}</span>
                                 </div>
 
                                 <button class="btn btn-primary me-2" type="button" @click="$refs.proxyDialog.show()">
@@ -1109,8 +1170,8 @@
                                     <label for="headers" class="form-label">{{ $t("Headers") }}</label>
                                     <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
                                 </div>
-
-                                <!-- HTTP Auth -->
+					
+					   <!-- HTTP Auth -->
                                 <h4 class="mt-5 mb-2">{{ $t("Authentication") }}</h4>
 
                                 <!-- Method -->
@@ -1189,8 +1250,8 @@
                                             <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
                                             <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
                                         </div>
-
-                                        <div class="my-3">
+					
+					   <div class="my-3">
                                             <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
                                             <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
                                         </div>
@@ -1236,8 +1297,8 @@
                                         {{ $t("grpcMethodDescription") }}
                                     </div>
                                 </div>
-
-                                <!-- Proto data -->
+					
+					   <!-- Proto data -->
                                 <div class="my-3">
                                     <label for="protobuf" class="form-label">{{ $t("Proto Content") }}</label>
                                     <textarea id="protobuf" v-model="monitor.grpcProtobuf" class="form-control" :placeholder="protoBufDataPlaceholder"></textarea>
@@ -1359,7 +1420,10 @@ const monitorDefaults = {
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
-    conditions: []
+    conditions: [],
+    local_service_command: "",
+    local_service_expected_output: "",
+    local_service_check_type: "keyword",
 };
 
 export default {
