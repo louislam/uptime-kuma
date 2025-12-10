@@ -38,7 +38,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             let statusPageID = await StatusPage.slugToID(slug);
 
             if (!statusPageID) {
-                throw new Error("slug not found");
+                throw new Error("slug is not found");
             }
 
             let incidentBean;
@@ -108,25 +108,13 @@ module.exports.statusPageSocketHandler = (socket) => {
 
             let statusPageID = await StatusPage.slugToID(slug);
             if (!statusPageID) {
-                throw new Error("slug not found");
+                throw new Error("slug is not found");
             }
 
-            const limit = 10;
-            const offset = (page - 1) * limit;
-
-            const incidents = await R.find("incident",
-                " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ",
-                [ statusPageID, limit, offset ]
-            );
-
-            const total = await R.count("incident", " status_page_id = ? ", [ statusPageID ]);
-
+            const result = await StatusPage.getIncidentHistory(statusPageID, page, false);
             callback({
                 ok: true,
-                incidents: incidents.map(i => i.toJSON()),
-                total: total,
-                page: page,
-                totalPages: Math.ceil(total / limit)
+                ...result
             });
         } catch (error) {
             callback({
@@ -140,25 +128,13 @@ module.exports.statusPageSocketHandler = (socket) => {
         try {
             let statusPageID = await StatusPage.slugToID(slug);
             if (!statusPageID) {
-                throw new Error("slug not found");
+                throw new Error("slug is not found");
             }
 
-            const limit = 10;
-            const offset = (page - 1) * limit;
-
-            const incidents = await R.find("incident",
-                " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ",
-                [ statusPageID, limit, offset ]
-            );
-
-            const total = await R.count("incident", " status_page_id = ? ", [ statusPageID ]);
-
+            const result = await StatusPage.getIncidentHistory(statusPageID, page, true);
             callback({
                 ok: true,
-                incidents: incidents.map(i => i.toPublicJSON()),
-                total: total,
-                page: page,
-                totalPages: Math.ceil(total / limit)
+                ...result
             });
         } catch (error) {
             callback({
@@ -176,7 +152,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             if (!statusPageID) {
                 callback({
                     ok: false,
-                    msg: "slug not found",
+                    msg: "slug is not found",
                     msgi18n: true
                 });
                 return;
@@ -239,7 +215,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             if (!statusPageID) {
                 callback({
                     ok: false,
-                    msg: "slug not found",
+                    msg: "slug is not found",
                     msgi18n: true
                 });
                 return;
@@ -279,7 +255,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             if (!statusPageID) {
                 callback({
                     ok: false,
-                    msg: "slug not found",
+                    msg: "slug is not found",
                     msgi18n: true
                 });
                 return;

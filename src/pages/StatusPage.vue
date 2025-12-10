@@ -182,89 +182,23 @@
                 </div>
             </div>
 
-            <!-- Incident -->
-            <div v-if="editIncidentMode && incident !== null && !incident.id" class="shadow-box alert mb-4 p-4 incident" role="alert" :class="incidentClass" data-testid="incident-edit">
-                <strong>{{ $t("Title") }}:</strong>
-                <Editable v-model="incident.title" tag="h4" :contenteditable="true" :noNL="true" class="alert-heading" data-testid="incident-title" />
-
-                <strong>{{ $t("Content") }}:</strong>
-                <Editable v-model="incident.content" tag="div" :contenteditable="true" class="content" data-testid="incident-content-editable" />
-                <div class="form-text">
-                    {{ $t("markdownSupported") }}
-                </div>
-
-                <div class="mt-3">
-                    <button class="btn btn-light me-2" data-testid="post-incident-button" @click="postIncident">
-                        <font-awesome-icon icon="bullhorn" />
-                        {{ $t("Post") }}
-                    </button>
-
-                    <button class="btn btn-light me-2" @click="cancelIncident">
-                        <font-awesome-icon icon="times" />
-                        {{ $t("Cancel") }}
-                    </button>
-
-                    <div class="dropdown d-inline-block me-2">
-                        <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ $t("Style") }}: {{ $t(incident.style) }}
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
-                            <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            <!-- Incident Edit Form -->
+            <IncidentEditForm
+                v-if="editIncidentMode && incident !== null && (!incident.id || !activeIncidents.some(i => i.id === incident.id))"
+                v-model="incident"
+                @post="postIncident"
+                @cancel="cancelIncident"
+            />
 
             <!-- Active Pinned Incidents -->
             <template v-for="activeIncident in activeIncidents" :key="activeIncident.id">
                 <!-- Edit mode for this specific incident -->
-                <div
+                <IncidentEditForm
                     v-if="editIncidentMode && incident !== null && incident.id === activeIncident.id"
-                    class="shadow-box alert mb-4 p-4 incident"
-                    role="alert"
-                    :class="incidentClass"
-                    data-testid="incident-edit"
-                >
-                    <strong>{{ $t("Title") }}:</strong>
-                    <Editable v-model="incident.title" tag="h4" :contenteditable="true" :noNL="true" class="alert-heading" data-testid="incident-title" />
-
-                    <strong>{{ $t("Content") }}:</strong>
-                    <Editable v-model="incident.content" tag="div" :contenteditable="true" class="content" data-testid="incident-content-editable" />
-                    <div class="form-text">
-                        {{ $t("markdownSupported") }}
-                    </div>
-
-                    <div class="mt-3">
-                        <button class="btn btn-light me-2" data-testid="post-incident-button" @click="postIncident">
-                            <font-awesome-icon icon="bullhorn" />
-                            {{ $t("Post") }}
-                        </button>
-
-                        <button class="btn btn-light me-2" @click="cancelIncident">
-                            <font-awesome-icon icon="times" />
-                            {{ $t("Cancel") }}
-                        </button>
-
-                        <div class="dropdown d-inline-block me-2">
-                            <button id="dropdownMenuButton1" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ $t("Style") }}: {{ $t(incident.style) }}
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                <li><a class="dropdown-item" href="#" @click="incident.style = 'info'">{{ $t("info") }}</a></li>
-                                <li><a class="dropdown-item" href="#" @click="incident.style = 'warning'">{{ $t("warning") }}</a></li>
-                                <li><a class="dropdown-item" href="#" @click="incident.style = 'danger'">{{ $t("danger") }}</a></li>
-                                <li><a class="dropdown-item" href="#" @click="incident.style = 'primary'">{{ $t("primary") }}</a></li>
-                                <li><a class="dropdown-item" href="#" @click="incident.style = 'light'">{{ $t("light") }}</a></li>
-                                <li><a class="dropdown-item" href="#" @click="incident.style = 'dark'">{{ $t("dark") }}</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                    v-model="incident"
+                    @post="postIncident"
+                    @cancel="cancelIncident"
+                />
 
                 <!-- Display mode for this incident -->
                 <div
@@ -500,6 +434,7 @@ import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
 import IncidentHistory from "../components/IncidentHistory.vue";
 import IncidentManageModal from "../components/IncidentManageModal.vue";
+import IncidentEditForm from "../components/IncidentEditForm.vue";
 import { getResBaseURL } from "../util-frontend";
 import { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE } from "../util.ts";
 import Tag from "../components/Tag.vue";
@@ -529,6 +464,7 @@ export default {
         VueMultiselect,
         IncidentHistory,
         IncidentManageModal,
+        IncidentEditForm,
     },
 
     // Leave Page for vue route change

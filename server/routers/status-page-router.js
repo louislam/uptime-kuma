@@ -161,24 +161,11 @@ router.get("/api/status-page/:slug/incident-history", cache("5 minutes"), async 
         }
 
         const page = parseInt(request.query.page) || 1;
-        const limit = 10;
-        const offset = (page - 1) * limit;
-
-        const incidents = await R.find("incident",
-            " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ",
-            [ statusPageID, limit, offset ]
-        );
-
-        const total = await R.count("incident", " status_page_id = ? ", [ statusPageID ]);
-
+        const result = await StatusPage.getIncidentHistory(statusPageID, page, true);
         response.json({
             ok: true,
-            incidents: incidents.map(i => i.toPublicJSON()),
-            total: total,
-            page: page,
-            totalPages: Math.ceil(total / limit)
+            ...result
         });
-
     } catch (error) {
         sendHttpError(response, error.message);
     }

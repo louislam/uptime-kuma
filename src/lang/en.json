@@ -391,7 +391,7 @@
     "Stop": "Stop",
     "Add New Status Page": "Add New Status Page",
     "Slug": "Slug",
-    "slug not found": "Slug not found",
+    "slug is not found": "Slug is not found",
     "Accept characters:": "Accept characters:",
     "startOrEndWithOnly": "Start or end with {0} only",
     "No consecutive dashes": "No consecutive dashes",

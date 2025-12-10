@@ -8,7 +8,7 @@ const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
 
-const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
+const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN, INCIDENT_PAGE_SIZE } = require("../../src/util");
 
 class StatusPage extends BeanModel {
 
@@ -455,6 +455,31 @@ class StatusPage extends BeanModel {
         } else {
             return this.icon;
         }
+    }
+
+    /**
+     * Get paginated incident history for a status page
+     * @param {number} statusPageId ID of the status page
+     * @param {number} page Page number (1-based)
+     * @param {boolean} isPublic Whether to return public or admin data
+     * @returns {Promise<object>} Paginated incident data
+     */
+    static async getIncidentHistory(statusPageId, page, isPublic = true) {
+        const offset = (page - 1) * INCIDENT_PAGE_SIZE;
+
+        const incidents = await R.find("incident",
+            " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ",
+            [ statusPageId, INCIDENT_PAGE_SIZE, offset ]
+        );
+
+        const total = await R.count("incident", " status_page_id = ? ", [ statusPageId ]);
+
+        return {
+            incidents: incidents.map(i => isPublic ? i.toPublicJSON() : i.toJSON()),
+            total,
+            page,
+            totalPages: Math.ceil(total / INCIDENT_PAGE_SIZE)
+        };
     }
 
     /**
