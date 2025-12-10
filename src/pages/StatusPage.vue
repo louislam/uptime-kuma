@@ -161,14 +161,14 @@
             </h1>
 
             <!-- Admin functions -->
-            <div v-if="hasToken" class="mb-4">
+            <div v-if="hasToken" class="mb-2">
                 <div v-if="!enableEditMode">
-                    <button class="btn btn-primary me-2" data-testid="edit-button" @click="edit">
+                    <button class="btn btn-primary mb-2 me-2" data-testid="edit-button" @click="edit">
                         <font-awesome-icon icon="edit" />
                         {{ $t("Edit Status Page") }}
                     </button>
 
-                    <a href="/manage-status-page" class="btn btn-primary">
+                    <a href="/manage-status-page" class="btn btn-primary mb-2">
                         <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Go to Dashboard") }}
                     </a>
