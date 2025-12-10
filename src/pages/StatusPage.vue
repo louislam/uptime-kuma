@@ -68,6 +68,12 @@
                     <label class="form-check-label" for="show-certificate-expiry">{{ $t("showCertificateExpiry") }}</label>
                 </div>
 
+                <!-- Show only last heartbeat -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-only-last-heartbeat" v-model="config.showOnlyLastHeartbeat" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-only-last-heartbeat">{{ $t("showOnlyLastHeartbeat") }}</label>
+                </div>
+
                 <div v-if="false" class="my-3">
                     <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
                     <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
@@ -155,14 +161,14 @@
             </h1>
 
             <!-- Admin functions -->
-            <div v-if="hasToken" class="mb-4">
+            <div v-if="hasToken" class="mb-2">
                 <div v-if="!enableEditMode">
-                    <button class="btn btn-primary me-2" data-testid="edit-button" @click="edit">
+                    <button class="btn btn-primary mb-2 me-2" data-testid="edit-button" @click="edit">
                         <font-awesome-icon icon="edit" />
                         {{ $t("Edit Status Page") }}
                     </button>
 
-                    <a href="/manage-status-page" class="btn btn-primary">
+                    <a href="/manage-status-page" class="btn btn-primary mb-2">
                         <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Go to Dashboard") }}
                     </a>
@@ -328,7 +334,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :show-only-last-heartbeat="config.showOnlyLastHeartbeat" />
             </div>
 
             <footer class="mt-5 mb-4">

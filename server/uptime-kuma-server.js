@@ -111,14 +111,19 @@ class UptimeKumaServer {
         // Set Monitor Types
         UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
         UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
+        UptimeKumaServer.monitorTypeList["websocket-upgrade"] = new WebSocketMonitorType();
         UptimeKumaServer.monitorTypeList["dns"] = new DnsMonitorType();
+        UptimeKumaServer.monitorTypeList["postgres"] = new PostgresMonitorType();
         UptimeKumaServer.monitorTypeList["mqtt"] = new MqttMonitorType();
         UptimeKumaServer.monitorTypeList["smtp"] = new SMTPMonitorType();
         UptimeKumaServer.monitorTypeList["group"] = new GroupMonitorType();
         UptimeKumaServer.monitorTypeList["snmp"] = new SNMPMonitorType();
+        UptimeKumaServer.monitorTypeList["grpc-keyword"] = new GrpcKeywordMonitorType();
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
         UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
+        UptimeKumaServer.monitorTypeList["port"] = new TCPMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
+        UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -552,12 +557,18 @@ module.exports = {
 // Must be at the end to avoid circular dependencies
 const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
+const { WebSocketMonitorType } = require("./monitor-types/websocket-upgrade");
 const { DnsMonitorType } = require("./monitor-types/dns");
+const { PostgresMonitorType } = require("./monitor-types/postgres");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
 const { SMTPMonitorType } = require("./monitor-types/smtp");
 const { GroupMonitorType } = require("./monitor-types/group");
 const { SNMPMonitorType } = require("./monitor-types/snmp");
+const { GrpcKeywordMonitorType } = require("./monitor-types/grpc");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
+const { TCPMonitorType } = require("./monitor-types/tcp.js");
 const { ManualMonitorType } = require("./monitor-types/manual");
+const { RedisMonitorType } = require("./monitor-types/redis");
 const Monitor = require("./model/monitor");
+

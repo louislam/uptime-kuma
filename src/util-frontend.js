@@ -214,13 +214,18 @@ export function getToastErrorTimeout() {
     return errorTimeout;
 }
 
-class RelativeTimeFormatter {
+class TimeDurationFormatter {
     /**
-     * Default locale and options for Relative Time Formatter
+     * Default locale and options for Time Duration Formatter (supports both DurationFormat and RelativeTimeFormat)
      */
     constructor() {
-        this.options = { numeric: "always" };
-        this.instance = new Intl.RelativeTimeFormat(currentLocale(), this.options);
+        this.durationFormatOptions = { style: "long" };
+        this.relativeTimeFormatOptions = { numeric: "always" };
+        if (Intl.DurationFormat !== undefined) {
+            this.durationFormatInstance = new Intl.DurationFormat(currentLocale(), this.durationFormatOptions);
+        } else {
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(currentLocale(), this.relativeTimeFormatOptions);
+        }
     }
 
     /**
@@ -229,7 +234,11 @@ class RelativeTimeFormatter {
      * @returns {void} No return value.
      */
     updateLocale(locale) {
-        this.instance = new Intl.RelativeTimeFormat(locale, this.options);
+        if (Intl.DurationFormat !== undefined) {
+            this.durationFormatInstance = new Intl.DurationFormat(locale, this.durationFormatOptions);
+        } else {
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(locale, this.relativeTimeFormatOptions);
+        }
     }
 
     /**
@@ -242,6 +251,17 @@ class RelativeTimeFormatter {
         const hours = Math.floor((seconds % 86400) / 3600);
         const minutes = Math.floor(((seconds % 86400) % 3600) / 60);
         const secs = ((seconds % 86400) % 3600) % 60;
+
+        if (this.durationFormatInstance !== undefined) {
+            // use Intl.DurationFormat if available
+            return this.durationFormatInstance.format({
+                days,
+                hours,
+                minutes,
+                seconds: secs
+            });
+        }
+
         const parts = [];
         /**
          * Build the formatted string from parts
@@ -253,12 +273,11 @@ class RelativeTimeFormatter {
          * @returns {void}
          */
         const toFormattedPart = (value, unitOfTime) => {
-            const partsArray = this.instance.formatToParts(value, unitOfTime);
+            const partsArray = this.relativeTimeFormatInstance.formatToParts(value, unitOfTime);
             const filteredParts = partsArray
                 .filter(
                     (part, index) =>
-                        (part.type === "literal" || part.type === "integer") &&
-                        index > 0
+                        part.type === "integer" || (part.type === "literal" && index > 0)
                 )
                 .map((part) => part.value);
 
@@ -282,9 +301,9 @@ class RelativeTimeFormatter {
         if (parts.length > 0) {
             return `${parts.join(" ")}`;
         }
-        return this.instance.format(0, "second"); // Handle case for 0 seconds
+        return this.relativeTimeFormatInstance.format(0, "second"); // Handle case for 0 seconds
     }
 }
 
-export const relativeTimeFormatter = new RelativeTimeFormatter();
+export const timeDurationFormatter = new TimeDurationFormatter();
 
