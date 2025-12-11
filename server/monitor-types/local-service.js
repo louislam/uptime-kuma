@@ -1,11 +1,14 @@
 const { MonitorType } = require("./monitor-type");
 const { exec } = require("child_process");
-const { DOWN, UP, log, evaluateJsonQuery } = require("../../src/util");
+const { DOWN, UP, evaluateJsonQuery } = require("../../src/util");
 
 class LocalServiceMonitorType extends MonitorType {
     name = "local-service";
     description = "Checks if a local service is running by executing a command.";
 
+    /**
+     * @inheritdoc
+     */
     async check(monitor, heartbeat, server) {
         return new Promise((resolve, reject) => {
             exec(monitor.local_service_command, async (error, stdout, stderr) => {

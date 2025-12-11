@@ -1,7 +1,6 @@
-const { settings } = require("../../server/util-server");
-
 /**
- * @param {import("knex").Knex} knex
+ * @param {import("knex").Knex} knex Database connection
+ * @returns {Promise<void>}
  */
 exports.up = async (knex) => {
     await knex.schema.alterTable("monitor", (table) => {
@@ -12,7 +11,8 @@ exports.up = async (knex) => {
 };
 
 /**
- * @param {import("knex").Knex} knex
+ * @param {import("knex").Knex} knex Database connection
+ * @returns {Promise<void>}
  */
 exports.down = async (knex) => {
     if (await knex.schema.hasColumn("monitor", "local_service_command")) {
