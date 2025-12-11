@@ -27,6 +27,7 @@ import Line from "./Line.vue";
 import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
+import MatrixEncrypted from "./MatrixEncrypted.vue";
 import Mattermost from "./Mattermost.vue";
 import NextcloudTalk from "./NextcloudTalk.vue";
 import Nostr from "./Nostr.vue";
@@ -115,6 +116,7 @@ const NotificationFormList = {
     "LineNotify": LineNotify,
     "lunasea": LunaSea,
     "matrix": Matrix,
+    "matrix-encrypted": MatrixEncrypted,
     "mattermost": Mattermost,
     "nextcloudtalk": NextcloudTalk,
     "nostr": Nostr,

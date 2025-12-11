@@ -28,6 +28,7 @@ const Line = require("./notification-providers/line");
 const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
+const MatrixEncrypted = require("./notification-providers/matrix-encrypted");
 const Mattermost = require("./notification-providers/mattermost");
 const NextcloudTalk = require("./notification-providers/nextcloudtalk");
 const Nostr = require("./notification-providers/nostr");
@@ -127,6 +128,7 @@ class Notification {
             new LineNotify(),
             new LunaSea(),
             new Matrix(),
+            new MatrixEncrypted(),
             new Mattermost(),
             new NextcloudTalk(),
             new Nostr(),
