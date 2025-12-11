@@ -151,11 +151,17 @@
                     </div>
                     <div class="col-md-4 text-center">
                         <span
-                            class="badge rounded-pill"
+                            class="badge rounded-pill m-1"
                             :class="'bg-' + status.color"
                             style="font-size: 30px;"
                             data-testid="monitor-status"
                         >{{ status.text }}</span>
+                        <span
+                            v-if="pingStatus"
+                            class="badge rounded-pill m-1"
+                            :class="'bg-' + pingStatus.color"
+                            style="font-size: 30px;"
+                        >{{ pingStatus.text }}</span>
                     </div>
                 </div>
             </div>
@@ -393,11 +399,17 @@
                             :key="index"
                             style="padding: 10px;"
                         >
-                            <td><Status :status="beat.status" /></td>
+                            <td>
+                                <div v-if="beat.important"><Status :status="beat.status" /></div>
+                                <div v-if="beat.pingImportant"><Status :status="beat.pingStatus" /></div>
+                            </td>
                             <td :class="{ 'border-0': !beat.msg }">
                                 <Datetime :value="beat.time" />
                             </td>
-                            <td class="border-0">{{ beat.msg }}</td>
+                            <td class="border-0">
+                                <div v-if="beat.important">{{ beat.msg }}</div>
+                                <div v-if="beat.pingImportant">{{ beat.pingMsg }}</div>
+                            </td>
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
@@ -610,6 +622,14 @@ export default {
             }
 
             return {};
+        },
+
+        pingStatus() {
+            if (this.$root.pingStatusList[this.monitor.id]) {
+                return this.$root.pingStatusList[this.monitor.id];
+            }
+
+            return { };
         },
 
         tlsInfo() {

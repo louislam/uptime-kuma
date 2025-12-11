@@ -864,6 +864,13 @@ let needSetup = false;
                 bean.authMethod = monitor.authMethod;
                 bean.authWorkstation = monitor.authWorkstation;
                 bean.authDomain = monitor.authDomain;
+                bean.slowResponseNotification = monitor.slowResponseNotification;
+                bean.slowResponseNotificationMethod = monitor.slowResponseNotificationMethod;
+                bean.slowResponseNotificationRange = monitor.slowResponseNotificationRange;
+                bean.slowResponseNotificationThresholdMethod = monitor.slowResponseNotificationThresholdMethod;
+                bean.slowResponseNotificationThreshold = monitor.slowResponseNotificationThreshold;
+                bean.slowResponseNotificationThresholdMultiplier = monitor.slowResponseNotificationThresholdMultiplier;
+                bean.slowResponseNotificationResendInterval = monitor.slowResponseNotificationResendInterval;
                 bean.grpcUrl = monitor.grpcUrl;
                 bean.grpcProtobuf = monitor.grpcProtobuf;
                 bean.grpcServiceName = monitor.grpcServiceName;
@@ -1316,9 +1323,9 @@ let needSetup = false;
 
                 let count;
                 if (monitorID == null) {
-                    count = await R.count("heartbeat", "important = 1");
+                    count = await R.count("heartbeat", "important = 1 OR ping_important = 1");
                 } else {
-                    count = await R.count("heartbeat", "monitor_id = ? AND important = 1", [
+                    count = await R.count("heartbeat", "monitor_id = ? AND (important = 1 OR ping_important = 1)", [
                         monitorID,
                     ]);
                 }
@@ -1342,7 +1349,7 @@ let needSetup = false;
                 let list;
                 if (monitorID == null) {
                     list = await R.find("heartbeat", `
-                        important = 1
+                        important = 1 OR ping_important = 1
                         ORDER BY time DESC
                         LIMIT ?
                         OFFSET ?
@@ -1353,7 +1360,7 @@ let needSetup = false;
                 } else {
                     list = await R.find("heartbeat", `
                         monitor_id = ?
-                        AND important = 1
+                        AND (important = 1 OR ping_important = 1)
                         ORDER BY time DESC
                         LIMIT ?
                         OFFSET ?
@@ -1599,7 +1606,9 @@ let needSetup = false;
 
                 log.info("manage", `Clear Events Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("UPDATE heartbeat SET msg = ?, important = ? WHERE monitor_id = ? ", [
+                await R.exec("UPDATE heartbeat SET msg = ?, important = ?, ping_msg = ?, ping_important = ? WHERE monitor_id = ? ", [
+                    "",
+                    "0",
                     "",
                     "0",
                     monitorID,
