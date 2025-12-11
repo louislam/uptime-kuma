@@ -1101,7 +1101,7 @@
                                         <label for="kafkaProducerSaslAuthorizationIdentity" class="form-label">{{ $t("Authorization Identity") }}</label>
                                         <input id="kafkaProducerSaslAuthorizationIdentity" v-model="monitor.kafkaProducerSaslOptions.authorizationIdentity" type="text" autocomplete="kafkaProducerSaslAuthorizationIdentity" class="form-control" required>
                                     </div>
-                                    <div vif="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
+                                    <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslAccessKeyId" class="form-label">{{ $t("AccessKey Id") }}</label>
                                         <input id="kafkaProducerSaslAccessKeyId" v-model="monitor.kafkaProducerSaslOptions.accessKeyId" type="text" autocomplete="kafkaProducerSaslAccessKeyId" class="form-control" required>
                                     </div>
