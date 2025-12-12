@@ -1,7 +1,7 @@
 {
     "languageName": "English",
     "setupDatabaseChooseDatabase": "Which database would you like to use?",
-    "setupDatabaseEmbeddedMariaDB": "You don't need to set anything. This docker image has embedded and configured MariaDB for you automatically. Uptime Kuma will connect to this database via unix socket.",
+    "setupDatabaseEmbeddedMariaDB": "You don't need to set anything. This Docker image has embedded and configured MariaDB for you automatically. Uptime Kuma will connect to this database via Unix socket.",
     "setupDatabaseMariaDB": "Connect to an external MariaDB database. You need to set the database connection information.",
     "setupDatabaseSQLite": "A simple database file, recommended for small-scale deployments. Prior to v2.0.0, Uptime Kuma used SQLite as the default database.",
     "settingUpDatabaseMSG": "Setting up the database. It may take a while, please be patient.",
@@ -69,7 +69,7 @@
     "Hostname": "Hostname",
     "Host URL": "Host URL",
     "locally configured mail transfer agent": "locally configured mail transfer agent",
-    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Either enter the hostname of the server you want to connect to or {localhost} if you intend to use a {local_mta}",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "Either enter the hostname of the server you want to connect to, or {localhost} if you intend to use a {local_mta}",
     "Port": "Port",
     "Path": "Path",
     "Heartbeat Interval": "Heartbeat Interval",
