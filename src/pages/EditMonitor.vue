@@ -42,13 +42,15 @@
                                         <option value="dns">
                                             DNS
                                         </option>
-                                        <option value="docker">
-                                            {{ $t("Docker Container") }}
-                                        </option>
-
-                                        <option value="real-browser">
-                                            HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
-                                        </option>
+                                                                                <option value="docker">
+                                                                                    {{ $t("Docker Container") }}
+                                                                                </option>
+                                                                                <option value="local-service">
+                                                                                    {{ $t("Local Service") }}
+                                                                                </option>
+                                                                                <option value="real-browser">
+                                                                                    HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
+                                                                                </option>
 
                                         <option value="websocket-upgrade">
                                             Websocket Upgrade
@@ -97,9 +99,6 @@
                                         </option>
                                         <option value="redis">
                                             Redis
-                                        </option>
-                                        <option value="local-service">
-                                            {{ $t("Local Service") }}
                                         </option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
@@ -1422,7 +1421,7 @@ const monitorDefaults = {
     conditions: [],
     local_service_command: "",
     local_service_expected_output: "",
-    local_service_check_type: "keyword",
+    local_service_check_type: "",
 };
 
 export default {
