@@ -900,9 +900,7 @@ let needSetup = false;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
-                bean.local_service_command = monitor.local_service_command;
-                bean.local_service_expected_output = monitor.local_service_expected_output;
-                bean.local_service_check_type = monitor.local_service_check_type;
+                bean.local_service_name = monitor.local_service_name;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;

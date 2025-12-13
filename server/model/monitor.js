@@ -148,7 +148,7 @@ class Monitor extends BeanModel {
             httpBodyEncoding: this.httpBodyEncoding,
             jsonPath: this.jsonPath,
             expectedValue: this.expectedValue,
-            local_service_check_type: this.local_service_check_type,
+            local_service_name: this.local_service_name,
             kafkaProducerTopic: this.kafkaProducerTopic,
             kafkaProducerBrokers: JSON.parse(this.kafkaProducerBrokers),
             kafkaProducerSsl: this.getKafkaProducerSsl(),
@@ -202,8 +202,6 @@ class Monitor extends BeanModel {
                 kafkaProducerSaslOptions: JSON.parse(this.kafkaProducerSaslOptions),
                 rabbitmqUsername: this.rabbitmqUsername,
                 rabbitmqPassword: this.rabbitmqPassword,
-                local_service_command: this.local_service_command,
-                local_service_expected_output: this.local_service_expected_output,
             };
         }
 
