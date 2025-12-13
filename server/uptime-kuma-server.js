@@ -124,6 +124,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["port"] = new TCPMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
+        UptimeKumaServer.monitorTypeList["local-service"] = new LocalServiceMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -570,5 +571,6 @@ const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
 const { TCPMonitorType } = require("./monitor-types/tcp.js");
 const { ManualMonitorType } = require("./monitor-types/manual");
 const { RedisMonitorType } = require("./monitor-types/redis");
+const { LocalServiceMonitorType } = require("./monitor-types/local-service");
 const Monitor = require("./model/monitor");
 

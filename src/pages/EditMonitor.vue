@@ -45,11 +45,12 @@
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
-
+                                        <option value="local-service">
+                                            {{ $t("Local Service") }}
+                                        </option>
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
-
                                         <option value="websocket-upgrade">
                                             Websocket Upgrade
                                         </option>
@@ -661,6 +662,63 @@
                                 <div class="my-3">
                                     <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
                                     <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'local-service'">
+                                <div class="my-3">
+                                    <label for="local-service-command" class="form-label">{{ $t("Command") }}</label>
+                                    <input id="local-service-command" v-model="monitor.local_service_command" type="text" class="form-control" required>
+                                    <div class="form-text">
+                                        {{ $t("localServiceCommandDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="local-service-check-type" class="form-label">{{ $t("Check Type") }}</label>
+                                    <select id="local-service-check-type" v-model="monitor.local_service_check_type" class="form-select" required>
+                                        <option value="keyword">{{ $t("Keyword") }}</option>
+                                        <option value="json-query">{{ $t("Json Query") }}</option>
+                                    </select>
+                                </div>
+
+                                <div v-if="monitor.local_service_check_type === 'keyword'" class="my-3">
+                                    <label for="local-service-expected-output" class="form-label">{{ $t("Expected Value") }}</label>
+                                    <input id="local-service-expected-output" v-model="monitor.local_service_expected_output" type="text" class="form-control">
+                                    <div class="form-text">
+                                        {{ $t("localServiceExpectedOutputDescription") }}
+                                    </div>
+                                </div>
+
+                                <div v-if="monitor.local_service_check_type === 'json-query'" class="my-3">
+                                    <div class="my-2">
+                                        <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
+                                        <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
+                                            <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                            <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('playground') }}</a>
+                                        </i18n-t>
+                                        <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
+                                    </div>
+
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-2">
+                                            <label for="json_path_operator" class="form-label">{{ $t("Condition") }}</label>
+                                            <select id="json_path_operator" v-model="monitor.jsonPathOperator" class="form-select me-3" required>
+                                                <option value=">">&gt;</option>
+                                                <option value=">=">&gt;=</option>
+                                                <option value="<">&lt;</option>
+                                                <option value="<=">&lt;=</option>
+                                                <option value="!=">&#33;=</option>
+                                                <option value="==">==</option>
+                                                <option value="contains">contains</option>
+                                            </select>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
+                                            <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '==' && monitor.jsonPathOperator !== '!='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
+                                            <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
 
@@ -1359,7 +1417,10 @@ const monitorDefaults = {
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
-    conditions: []
+    conditions: [],
+    local_service_command: "",
+    local_service_expected_output: "",
+    local_service_check_type: "",
 };
 
 export default {
