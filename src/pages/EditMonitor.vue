@@ -42,16 +42,15 @@
                                         <option value="dns">
                                             DNS
                                         </option>
-                                                                                <option value="docker">
-                                                                                    {{ $t("Docker Container") }}
-                                                                                </option>
-                                                                                <option value="local-service">
-                                                                                    {{ $t("Local Service") }}
-                                                                                </option>
-                                                                                <option value="real-browser">
-                                                                                    HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
-                                                                                </option>
-
+                                        <option value="docker">
+                                            {{ $t("Docker Container") }}
+                                        </option>
+                                        <option value="local-service">
+                                            {{ $t("Local Service") }}
+                                        </option>
+                                        <option value="real-browser">
+                                            HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
+                                        </option>
                                         <option value="websocket-upgrade">
                                             Websocket Upgrade
                                         </option>
