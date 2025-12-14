@@ -1173,6 +1173,8 @@ let needSetup = false;
                 bean.color = tag.color;
                 await R.store(bean);
 
+                await Prometheus.init();
+
                 callback({
                     ok: true,
                     tag: await bean.toJSON(),
@@ -1248,6 +1250,8 @@ let needSetup = false;
                     value,
                 ]);
 
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successAdded",
@@ -1272,6 +1276,8 @@ let needSetup = false;
                     monitorID,
                 ]);
 
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successEdited",
@@ -1295,6 +1301,8 @@ let needSetup = false;
                     monitorID,
                     value,
                 ]);
+
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
                     ok: true,
@@ -1979,3 +1987,4 @@ let unexpectedErrorHandler = (error, promise) => {
 };
 process.addListener("unhandledRejection", unexpectedErrorHandler);
 process.addListener("uncaughtException", unexpectedErrorHandler);
+
