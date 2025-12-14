@@ -34,7 +34,6 @@ class Prometheus {
      * @returns {Promise<void>}
      */
     static async init() {
-        PrometheusClient.register.clear();
         // Add all available tags as possible labels,
         // and use Set to remove possible duplicates (for when multiple tags contain non-ascii characters, and thus are sanitized to the same label)
         const tags = new Set((await R.findAll("tag")).map((tag) => {
