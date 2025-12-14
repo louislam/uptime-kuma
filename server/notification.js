@@ -81,6 +81,9 @@ const Brevo = require("./notification-providers/brevo");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
+const SMSIR = require("./notification-providers/smsir");
+const { commandExists } = require("./util-server");
+const Webpush = require("./notification-providers/Webpush");
 
 class Notification {
     providerList = {};
@@ -172,12 +175,14 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid(),
             new Brevo(),
             new YZJ(),
             new SMSPlanet(),
             new SpugPush(),
             new Notifery(),
+            new SMSIR(),
+            new SendGrid(),
+            new Webpush(),
         ];
         for (let item of list) {
             if (!item.name) {
@@ -275,12 +280,10 @@ class Notification {
 
     /**
      * Check if apprise exists
-     * @returns {boolean} Does the command apprise exist?
+     * @returns {Promise<boolean>} Does the command apprise exist?
      */
-    static checkApprise() {
-        let commandExistsSync = require("command-exists").sync;
-        let exists = commandExistsSync("apprise");
-        return exists;
+    static async checkApprise() {
+        return await commandExists("apprise");
     }
 }
 

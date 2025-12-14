@@ -813,5 +813,6 @@
     "telegramServerUrl": "(Valgfrit) Server URL",
     "Clear All Events": "Ryd alle begivenheder",
     "clearAllEventsMsg": "Er du sikker på du vil slette alle begivenheder?",
-    "Remove domain": "Fjern domæne '{0}'"
+    "Remove domain": "Fjern domæne '{0}'",
+    "tagNameExists": "Et system tag med dette navn eksisterer allerede. Vælg det fra listen eller brug et andet navn."
 }
