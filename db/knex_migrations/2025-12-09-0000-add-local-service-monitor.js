@@ -4,7 +4,7 @@
  */
 exports.up = async (knex) => {
     await knex.schema.alterTable("monitor", (table) => {
-        table.string("local_service_name");
+        table.string("system_service_name");
     });
 };
 
@@ -14,6 +14,6 @@ exports.up = async (knex) => {
  */
 exports.down = async (knex) => {
     await knex.schema.alterTable("monitor", (table) => {
-        table.dropColumn("local_service_name");
+        table.dropColumn("system_service_name");
     });
 };

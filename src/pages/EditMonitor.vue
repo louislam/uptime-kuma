@@ -668,7 +668,7 @@
                             <template v-if="monitor.type === 'system-service'">
                                 <div class="my-3">
                                     <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
-                                    <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx.service">
+                                    <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx">
                                     <div class="form-text">
                                         {{ $t("systemServiceDescription") }}
 
