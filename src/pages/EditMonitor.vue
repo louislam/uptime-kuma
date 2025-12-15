@@ -671,7 +671,7 @@
                                     <input id="local-service-name" v-model="monitor.local_service_name" type="text" class="form-control" required placeholder="nginx.service">
                                     <div class="form-text">
                                         {{ $t("localServiceDescription") }}
-    
+
                                         <div class="mt-2">
                                             <i18n-t keypath="localServiceDebugHelp" tag="span">
                                                 <template #linuxCommand>
