@@ -1,5 +1,5 @@
 /**
- * @param {import("knex").Knex} knex
+ * @param {import("knex").Knex} knex The Knex.js instance for database interaction.
  * @returns {Promise<void>}
  */
 exports.up = async (knex) => {
@@ -18,7 +18,7 @@ exports.up = async (knex) => {
 };
 
 /**
- * @param {import("knex").Knex} knex
+ * @param {import("knex").Knex} knex The Knex.js instance for database interaction.
  * @returns {Promise<void>}
  */
 exports.down = async (knex) => {
