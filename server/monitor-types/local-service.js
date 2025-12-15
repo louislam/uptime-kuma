@@ -28,17 +28,14 @@ class LocalServiceMonitorType extends MonitorType {
             execFile("systemctl", [ "is-active", monitor.local_service_name ], (error, stdout, stderr) => {
                 // systemctl is-active exits with 0 if the service is active,
                 // and a non-zero code if it is inactive, failed, or not found.
-                // 1. Capture the raw output (prioritize stderr for errors)
+                // stderr often contains useful info like "service not found"
                 let output = (stderr || stdout || "").toString().trim();
 
-                // 2. Truncate if too long to ~200 chars
                 if (output.length > 200) {
                     output = output.substring(0, 200) + "...";
                 }
 
                 if (error) {
-                    // stderr often contains useful info like "service not found"
-                    // Use the truncated output, or a default fallback if empty
                     heartbeat.msg = stderr || stdout || `Service '${monitor.local_service_name}' is not running.`;
                     reject(new Error(heartbeat.msg));
                     return;
