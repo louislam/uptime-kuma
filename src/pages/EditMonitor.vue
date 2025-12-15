@@ -45,8 +45,8 @@
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
-                                        <option value="local-service">
-                                            {{ $t("Local Service") }}
+                                        <option value="system-service">
+                                            {{ $t("System Service") }}
                                         </option>
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
@@ -665,15 +665,15 @@
                                 </div>
                             </template>
 
-                            <template v-if="monitor.type === 'local-service'">
+                            <template v-if="monitor.type === 'system-service'">
                                 <div class="my-3">
-                                    <label for="local-service-name" class="form-label">{{ $t("Service Name") }}</label>
-                                    <input id="local-service-name" v-model="monitor.local_service_name" type="text" class="form-control" required placeholder="nginx.service">
+                                    <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
+                                    <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx.service">
                                     <div class="form-text">
-                                        {{ $t("localServiceDescription") }}
+                                        {{ $t("systemServiceDescription") }}
 
                                         <div class="mt-2">
-                                            <i18n-t keypath="localServiceDebugHelp" tag="span">
+                                            <i18n-t keypath="systemServiceDebugHelp" tag="span">
                                                 <template #linuxCommand>
                                                     <code>systemctl is-active &lt;service&gt;</code>
                                                 </template>
@@ -1383,7 +1383,7 @@ const monitorDefaults = {
     rabbitmqUsername: "",
     rabbitmqPassword: "",
     conditions: [],
-    local_service_name: "",
+    system_service_name: "",
 };
 
 export default {
