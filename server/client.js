@@ -153,7 +153,7 @@ async function sendInfo(socket, hideVersion = false) {
         latestVersion = checkVersion.latestVersion;
         isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
         dbType = Database.dbConfig.type;
-        os = process.platform;
+        platform = process.platform;
     }
 
     socket.emit("info", {
