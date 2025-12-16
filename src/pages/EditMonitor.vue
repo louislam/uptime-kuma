@@ -678,9 +678,9 @@
                                                     <code>systemctl is-active &lt;service&gt;</code>
                                                 </template>
                                                 <!-- Reserved for Windows impl.ementation -->
-                                                <!-- template #windowsCommand>
+                                                <template #windowsCommand>
                                                     <code>Get-Service -Name "&lt;service&gt;"</code>
-                                                </template -->
+                                                </template>
                                             </i18n-t>
                                         </div>
                                     </div>
