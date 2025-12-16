@@ -673,15 +673,37 @@
                                         {{ $t("systemServiceDescription") }}
 
                                         <div class="mt-2">
-                                            <i18n-t keypath="systemServiceDebugHelp" tag="span">
-                                                <template #linuxCommand>
-                                                    <code>systemctl is-active &lt;service&gt;</code>
-                                                </template>
-                                                <!-- Reserved for Windows impl.ementation -->
-                                                <template #windowsCommand>
-                                                    <code>Get-Service -Name "&lt;service&gt;"</code>
-                                                </template>
-                                            </i18n-t>
+                                            <details class="mb-2">
+                                                <summary
+                                                    class="btn btn-outline-primary btn-sm w-100 text-start"
+                                                    style="box-shadow: none !important;
+
+                                                        --bs-btn-focus-box-shadow: none;"
+                                                >
+                                                    <i class="fab fa-linux me-1"></i>
+                                                    {{ $t("systemServiceLinuxLabel") }}
+                                                </summary>
+                                                <div class="p-2 ps-4">
+                                                    <code>systemctl is-active {{ monitor.system_service_name || '&lt;service&gt;' }}</code>
+                                                    <div class="text-secondary small mt-1">ExpectedOutput: 'active'</div>
+                                                </div>
+                                            </details>
+
+                                            <details>
+                                                <summary
+                                                    class="btn btn-outline-primary btn-sm w-100 text-start"
+                                                    style="box-shadow: none !important;
+
+                                                        --bs-btn-focus-box-shadow: none;"
+                                                >
+                                                    <i class="fab fa-windows me-1"></i>
+                                                    {{ $t("systemServiceWindowsLabel") }}
+                                                </summary>
+                                                <div class="p-2 ps-4">
+                                                    <code>(Get-Service -Name "{{ monitor.system_service_name || '&lt;service&gt;' }}").Status</code>
+                                                    <div class="text-secondary small mt-1">ExpectedOutput: 'Running'</div>
+                                                </div>
+                                            </details>
                                         </div>
                                     </div>
                                 </div>
