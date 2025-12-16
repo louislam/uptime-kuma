@@ -146,12 +146,14 @@ async function sendInfo(socket, hideVersion = false) {
     let latestVersion;
     let isContainer;
     let dbType;
+    let os;
 
     if (!hideVersion) {
         version = checkVersion.version;
         latestVersion = checkVersion.latestVersion;
         isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
         dbType = Database.dbConfig.type;
+        os = process.platform;
     }
 
     socket.emit("info", {
@@ -159,6 +161,7 @@ async function sendInfo(socket, hideVersion = false) {
         latestVersion,
         isContainer,
         dbType,
+        os,
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
