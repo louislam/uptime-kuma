@@ -222,7 +222,9 @@ class UptimeKumaServer {
      */
     async sendUpdateMonitorIntoList(socket, monitorID) {
         let list = await this.getMonitorJSONList(socket.userID, monitorID);
-        this.io.to(socket.userID).emit("updateMonitorIntoList", list);
+        if (list && list[monitorID]) {
+            this.io.to(socket.userID).emit("updateMonitorIntoList", list);
+        }
     }
 
     /**
