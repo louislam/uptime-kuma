@@ -142,25 +142,19 @@ async function sendAPIKeyList(socket) {
  * @returns {Promise<void>}
  */
 async function sendInfo(socket, hideVersion = false) {
-    // 1. Prepare the base object with non-sensitive/public data
     const info = {
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
     };
-
-    // 2. Add sensitive or technical details if version hiding is disabled
     if (!hideVersion) {
         info.version = checkVersion.version;
         info.latestVersion = checkVersion.latestVersion;
         info.isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
         info.dbType = Database.dbConfig.type;
-
-        // Gather real-time system metrics
-        // We use 'runtime' to describe the environment and avoid naming conflicts with global 'process'
         info.runtime = {
-            platform: process.platform, // linux/win32
-            arch: process.arch,
+            platform: process.platform, // linux or win32
+            arch: process.arch, // x86 or arm
         };
     }
 
