@@ -1248,6 +1248,9 @@ let needSetup = false;
                     monitorID,
                     value,
                 ]);
+
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successAdded",
@@ -1271,6 +1274,9 @@ let needSetup = false;
                     tagID,
                     monitorID,
                 ]);
+
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successEdited",
@@ -1294,6 +1300,9 @@ let needSetup = false;
                     monitorID,
                     value,
                 ]);
+
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successDeleted",
