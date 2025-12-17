@@ -159,9 +159,8 @@ async function sendInfo(socket, hideVersion = false) {
         // Gather real-time system metrics
         // We use 'runtime' to describe the environment and avoid naming conflicts with global 'process'
         info.runtime = {
-            platform: process.platform,
+            platform: process.platform, // linux/win32
             arch: process.arch,
-            nodeVersion: process.versions.node,
         };
     }
 
