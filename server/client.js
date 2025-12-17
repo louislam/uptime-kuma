@@ -158,17 +158,10 @@ async function sendInfo(socket, hideVersion = false) {
 
         // Gather real-time system metrics
         // We use 'runtime' to describe the environment and avoid naming conflicts with global 'process'
-        const mem = process.memoryUsage();
-
         info.runtime = {
             platform: process.platform,
             arch: process.arch,
             nodeVersion: process.versions.node,
-            uptime: Math.floor(process.uptime()),
-            memory: {
-                rss: mem.rss,
-                heapUsed: mem.heapUsed,
-            },
         };
     }
 
