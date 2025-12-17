@@ -15,7 +15,7 @@ on:
 
 jobs:
   auto-test:
-    needs: [ check-linters ]
+    needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
@@ -46,7 +46,7 @@ jobs:
 
   # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
   armv7-simple-test:
-    needs: [ ]
+    needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     if: ${{ github.repository == 'louislam/uptime-kuma' }}
@@ -81,17 +81,17 @@ jobs:
     - run: npm run lint:prod
 
   e2e-test:
-    needs: [ ]
-    runs-on: ubuntu-24.04-arm
+    needs: [ check-linters ]
+    runs-on: ubuntu-24.04
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    - name: Use Node.js 20
+    - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
-        node-version: 20
+        node-version: 22
     - run: npm install
-    - run: npx playwright install
+    - run: npx playwright@~1.39.0 install
     - run: npm run build
     - run: npm run test-e2e
