@@ -119,7 +119,12 @@ router.all("/api/push/:pushToken", async (request, response) => {
         io.to(monitor.user_id).emit("heartbeat", bean.toJSON());
 
         Monitor.sendStats(io, monitor.id, monitor.user_id);
-        new Prometheus(monitor).update(bean, undefined);
+
+        try {
+            new Prometheus(monitor, []).update(bean, undefined);
+        } catch (e) {
+            log.error("prometheus", "Please submit an issue to our GitHub repo. Prometheus update error: ", e.message);
+        }
 
         response.json({
             ok: true,

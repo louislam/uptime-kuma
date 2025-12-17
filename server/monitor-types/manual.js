@@ -8,6 +8,8 @@ class ManualMonitorType extends MonitorType {
     supportsConditions = false;
     conditionVariables = [];
 
+    allowCustomStatus = true;
+
     /**
      * @inheritdoc
      */

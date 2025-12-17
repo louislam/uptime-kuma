@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { log, UP, DOWN } = require("../../src/util");
+const { log, UP } = require("../../src/util");
 const { axiosAbortSignal } = require("../util-server");
 const axios = require("axios");
 
@@ -17,7 +17,6 @@ class RabbitMqMonitorType extends MonitorType {
             throw new Error("Invalid RabbitMQ Nodes");
         }
 
-        heartbeat.status = DOWN;
         for (let baseUrl of baseUrls) {
             try {
                 // Without a trailing slash, path in baseUrl will be removed. https://example.com/api -> https://example.com
@@ -45,17 +44,17 @@ class RabbitMqMonitorType extends MonitorType {
                     heartbeat.msg = "OK";
                     break;
                 } else if (res.status === 503) {
-                    heartbeat.msg = res.data.reason;
+                    throw new Error(res.data.reason);
                 } else {
-                    heartbeat.msg = `${res.status} - ${res.statusText}`;
+                    throw new Error(`${res.status} - ${res.statusText}`);
                 }
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    heartbeat.msg = "Request timed out";
                     log.debug("monitor", `[${monitor.name}] Request timed out`);
+                    throw new Error("Request timed out");
                 } else {
                     log.debug("monitor", `[${monitor.name}] Axios Error: ${JSON.stringify(error.message)}`);
-                    heartbeat.msg = error.message;
+                    throw new Error(error.message);
                 }
             }
         }

@@ -46,6 +46,7 @@
                                         <div class="info">
                                             <font-awesome-icon v-if="editMode" icon="arrows-alt-v" class="action drag me-3" />
                                             <font-awesome-icon v-if="editMode" icon="times" class="action remove me-3" @click="removeMonitor(group.index, monitor.index)" />
+
                                             <font-awesome-icon
                                                 v-if="editMode"
                                                 icon="cog"
@@ -54,7 +55,8 @@
                                                 data-testid="monitor-settings"
                                                 @click="$refs.monitorSettingDialog.show(group, monitor)"
                                             />
-                                            <Uptime :monitor="monitor.element" type="24" :pill="true" />
+                                            <Status v-if="showOnlyLastHeartbeat" :status="statusOfLastHeartbeat(monitor.element.id)" />
+                                            <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
                                             <a
                                                 v-if="showLink(monitor)"
                                                 :href="monitor.element.url"
@@ -96,6 +98,7 @@ import Draggable from "vuedraggable";
 import HeartbeatBar from "./HeartbeatBar.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
+import Status from "./Status.vue";
 import GroupSortDropdown from "./GroupSortDropdown.vue";
 
 export default {
@@ -105,6 +108,7 @@ export default {
         HeartbeatBar,
         Uptime,
         Tag,
+        Status,
         GroupSortDropdown,
     },
     props: {
@@ -120,7 +124,11 @@ export default {
         /** Should expiry be shown? */
         showCertificateExpiry: {
             type: Boolean,
-        }
+        },
+        /** Should only the last heartbeat be shown? */
+        showOnlyLastHeartbeat: {
+            type: Boolean,
+        },
     },
     data() {
         return {
@@ -190,6 +198,17 @@ export default {
             } else {
                 return this.$t("Unknown") + " " + this.$tc("day", 2);
             }
+        },
+
+        /**
+         * Returns the status of the last heartbeat
+         * @param {number} monitorId Id of the monitor to get status for
+         * @returns {number} Status of the last heartbeat
+         */
+        statusOfLastHeartbeat(monitorId) {
+            let heartbeats = this.$root.heartbeatList[monitorId] ?? [];
+            let lastHeartbeat = heartbeats[heartbeats.length - 1];
+            return lastHeartbeat?.status;
         },
 
         /**
