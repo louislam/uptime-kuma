@@ -136,36 +136,43 @@ async function sendAPIKeyList(socket) {
 }
 
 /**
- * Emits the version information to the client.
+ * Emits the version and system runtime information to the client.
  * @param {Socket} socket Socket.io socket instance
- * @param {boolean} hideVersion Should we hide the version information in the response?
+ * @param {boolean} [hideVersion=false] Should we hide the version information in the response?
  * @returns {Promise<void>}
  */
 async function sendInfo(socket, hideVersion = false) {
-    let version;
-    let latestVersion;
-    let isContainer;
-    let dbType;
-    let os;
-
-    if (!hideVersion) {
-        version = checkVersion.version;
-        latestVersion = checkVersion.latestVersion;
-        isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
-        dbType = Database.dbConfig.type;
-        platform = process.platform;
-    }
-
-    socket.emit("info", {
-        version,
-        latestVersion,
-        isContainer,
-        dbType,
-        os,
+    // 1. Prepare the base object with non-sensitive/public data
+    const info = {
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
-    });
+    };
+
+    // 2. Add sensitive or technical details if version hiding is disabled
+    if (!hideVersion) {
+        info.version = checkVersion.version;
+        info.latestVersion = checkVersion.latestVersion;
+        info.isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
+        info.dbType = Database.dbConfig.type;
+
+        // Gather real-time system metrics
+        // We use 'runtime' to describe the environment and avoid naming conflicts with global 'process'
+        const mem = process.memoryUsage();
+
+        info.runtime = {
+            platform: process.platform,
+            arch: process.arch,
+            nodeVersion: process.versions.node,
+            uptime: Math.floor(process.uptime()),
+            memory: {
+                rss: mem.rss,
+                heapUsed: mem.heapUsed,
+            },
+        };
+    }
+
+    socket.emit("info", info);
 }
 
 /**
