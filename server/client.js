@@ -136,9 +136,9 @@ async function sendAPIKeyList(socket) {
 }
 
 /**
- * Emits the version and system runtime information to the client.
+ * Emits the version information to the client.
  * @param {Socket} socket Socket.io socket instance
- * @param {boolean} [hideVersion=false] Should we hide the version information in the response?
+ * @param {boolean} hideVersion Should we hide the version information in the response?
  * @returns {Promise<void>}
  */
 async function sendInfo(socket, hideVersion = false) {
