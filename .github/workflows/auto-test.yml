@@ -82,7 +82,7 @@ jobs:
 
   e2e-test:
     needs: [ check-linters ]
-    runs-on: ubuntu-24.04
+    runs-on: ARM64
     env:
       PLAYWRIGHT_VERSION: 1.39.0
       PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
