@@ -33,12 +33,19 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
+    - name: Cache/Restore node_modules
+      uses: actions/cache@v4
+      id: node-modules-cache
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
     - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node }}
         cache: "npm"
-    - run: npm ci
+    - run: npm install
     - run: npm run build
     - run: npm run test-backend
       env:
@@ -61,12 +68,19 @@ jobs:
       - run: git config --global core.autocrlf false  # Mainly for Windows
       - uses: actions/checkout@v4
 
+      - name: Cache/Restore node_modules
+        uses: actions/cache@v4
+        id: node-modules-cache
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
           cache: "npm"
-      - run: npm ci --production
+      - run: npm install --production
 
   check-linters:
     runs-on: ubuntu-latest
@@ -75,12 +89,19 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
+    - name: Cache/Restore node_modules
+      uses: actions/cache@v4
+      id: node-modules-cache
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
     - name: Use Node.js 20
       uses: actions/setup-node@v6
       with:
         node-version: 20
         cache: "npm"
-    - run: npm ci
+    - run: npm install
     - run: npm run lint:prod
 
   e2e-test:
@@ -93,14 +114,21 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
+    - name: Cache/Restore node_modules
+      uses: actions/cache@v4
+      id: node-modules-cache
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
     - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
         node-version: 22
         cache: "npm"
-    - run: npm ci
+    - run: npm install
 
-    - name: Cache Playwright browsers
+    - name: Cache/Restore Playwright browsers
       uses: actions/cache@v4
       id: playwright-cache
       with:
