@@ -105,8 +105,7 @@ jobs:
     needs: [ check-linters ]
     runs-on: ARM64
     env:
-      PLAYWRIGHT_VERSION: 1.39.0
-      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+      PLAYWRIGHT_VERSION: ~1.39.0
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
@@ -124,15 +123,7 @@ jobs:
         node-version: 22
     - run: npm install
 
-    - name: Cache/Restore Playwright browsers
-      uses: actions/cache@v4
-      id: playwright-cache
-      with:
-        path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-        key: playwright-browsers-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
-
     - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
-      if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
 
     - run: npm run build
