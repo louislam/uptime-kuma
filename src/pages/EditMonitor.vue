@@ -693,7 +693,7 @@
                                                 </summary>
                                                 <div class="p-2 ps-4">
                                                     <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
-                                                    <div class="text-secondary small mt-1">ExpectedOutput: 'active'</div>
+                                                    <div class="text-secondary small mt-1">{{ "systemServiceExpectedOutput" }}: {{ systemServiceActiveTextLinux }}</div>
                                                 </div>
                                             </details>
 
@@ -709,7 +709,7 @@
                                                 </summary>
                                                 <div class="p-2 ps-4">
                                                     <code>(Get-Service -Name "{{ monitor.system_service_name || 'nginx' }}").Status</code>
-                                                    <div class="text-secondary small mt-1">ExpectedOutput: 'Running'</div>
+                                                    <div class="text-secondary small mt-1">{{ "systemServiceExpectedOutput" }}: {{ systemServiceActiveTextWindows }}</div>
                                                 </div>
                                             </details>
                                         </div>
