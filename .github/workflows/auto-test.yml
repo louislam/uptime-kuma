@@ -15,7 +15,7 @@ on:
 
 jobs:
   auto-test:
-    needs: [ check-linters ]
+    needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
@@ -33,6 +33,13 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
+    - name: Cache/Restore node_modules
+      uses: actions/cache@v4
+      id: node-modules-cache
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
     - name: Use Node.js ${{ matrix.node }}
       uses: actions/setup-node@v6
       with:
@@ -46,7 +53,7 @@ jobs:
 
   # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
   armv7-simple-test:
-    needs: [ ]
+    needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     if: ${{ github.repository == 'louislam/uptime-kuma' }}
@@ -60,11 +67,18 @@ jobs:
       - run: git config --global core.autocrlf false  # Mainly for Windows
       - uses: actions/checkout@v4
 
+      - name: Cache/Restore node_modules
+        uses: actions/cache@v4
+        id: node-modules-cache
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
-      - run: npm ci --production
+      - run: npm install --production
 
   check-linters:
     runs-on: ubuntu-latest
@@ -72,6 +86,13 @@ jobs:
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
+
+    - name: Cache/Restore node_modules
+      uses: actions/cache@v4
+      id: node-modules-cache
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Use Node.js 20
       uses: actions/setup-node@v6
@@ -81,17 +102,29 @@ jobs:
     - run: npm run lint:prod
 
   e2e-test:
-    needs: [ ]
-    runs-on: ubuntu-24.04-arm
+    needs: [ check-linters ]
+    runs-on: ARM64
+    env:
+      PLAYWRIGHT_VERSION: ~1.39.0
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    - name: Use Node.js 20
+    - name: Cache/Restore node_modules
+      uses: actions/cache@v4
+      id: node-modules-cache
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Setup Node.js
       uses: actions/setup-node@v6
       with:
-        node-version: 20
+        node-version: 22
     - run: npm install
-    - run: npx playwright install
+
+    - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
+      run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+
     - run: npm run build
     - run: npm run test-e2e
