@@ -102,13 +102,14 @@ jobs:
 
     - name: Cache Playwright browsers
       uses: actions/cache@v4
+      id: playwright-cache
       with:
         path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-        key: playwright-browsers-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-${{ hashFiles('package-lock.json') }}
-        restore-keys: |
-          playwright-browsers-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-
-          playwright-browsers-${{ runner.os }}-
+        key: playwright-browsers-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
 
-    - run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+    - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+
     - run: npm run build
     - run: npm run test-e2e
