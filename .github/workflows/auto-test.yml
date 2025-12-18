@@ -83,6 +83,9 @@ jobs:
   e2e-test:
     needs: [ check-linters ]
     runs-on: ubuntu-24.04
+    env:
+      PLAYWRIGHT_VERSION: 1.39.0
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
@@ -92,6 +95,16 @@ jobs:
       with:
         node-version: 22
     - run: npm install
-    - run: npx playwright@~1.39.0 install
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
+        key: playwright-browsers-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          playwright-browsers-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}-
+          playwright-browsers-${{ runner.os }}-
+
+    - run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
     - run: npm run build
     - run: npm run test-e2e
