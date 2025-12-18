@@ -670,10 +670,18 @@
                                     <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
                                     <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx">
                                     <div class="form-text">
-                                        {{ $t("systemServiceDescription") }}
+                                        <template v-if="$root.info.runtime.platform === 'linux'">
+                                            {{ $t("systemServiceDescriptionLinux") }} {{ monitor.system_service_name || 'nginx' }} {{ $t("systemServiceActiveText") }}
+                                        </template>
+                                        <template v-else-if="$root.info.runtime.platform === 'win32'">
+                                            {{ $t("systemServiceDescriptionWindows") }} {{ monitor.system_service_name || 'nginx' }} {{ $t("systemServiceActiveText") }}
+                                        </template>
+                                        <template v-else>
+                                            {{ $t("systemServiceDescription") }} {{ monitor.system_service_name || 'nginx' }} {{ $t("systemServiceActiveText") }}
+                                        </template>
 
                                         <div class="mt-2">
-                                            <details class="mb-2">
+                                            <details v-if="$root.info.runtime.platform === 'linux'" class="mb-2">
                                                 <summary
                                                     class="btn btn-outline-primary btn-sm w-100 text-start"
                                                     style="box-shadow: none !important;
@@ -684,12 +692,12 @@
                                                     {{ $t("systemServiceLinuxLabel") }}
                                                 </summary>
                                                 <div class="p-2 ps-4">
-                                                    <code>systemctl is-active {{ monitor.system_service_name || '&lt;service&gt;' }}</code>
+                                                    <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
                                                     <div class="text-secondary small mt-1">ExpectedOutput: 'active'</div>
                                                 </div>
                                             </details>
 
-                                            <details>
+                                            <details v-if="$root.info.runtime.platform === 'win32'">
                                                 <summary
                                                     class="btn btn-outline-primary btn-sm w-100 text-start"
                                                     style="box-shadow: none !important;
@@ -700,7 +708,7 @@
                                                     {{ $t("systemServiceWindowsLabel") }}
                                                 </summary>
                                                 <div class="p-2 ps-4">
-                                                    <code>(Get-Service -Name "{{ monitor.system_service_name || '&lt;service&gt;' }}").Status</code>
+                                                    <code>(Get-Service -Name "{{ monitor.system_service_name || 'nginx' }}").Status</code>
                                                     <div class="text-secondary small mt-1">ExpectedOutput: 'Running'</div>
                                                 </div>
                                             </details>
