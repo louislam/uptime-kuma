@@ -44,7 +44,6 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node }}
-        cache: "npm"
     - run: npm install
     - run: npm run build
     - run: npm run test-backend
@@ -79,7 +78,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
-          cache: "npm"
       - run: npm install --production
 
   check-linters:
@@ -100,7 +98,6 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: 20
-        cache: "npm"
     - run: npm install
     - run: npm run lint:prod
 
@@ -125,7 +122,6 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: 22
-        cache: "npm"
     - run: npm install
 
     - name: Cache/Restore Playwright browsers
