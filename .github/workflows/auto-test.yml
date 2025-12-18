@@ -37,7 +37,8 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node }}
-    - run: npm install
+        cache: "npm"
+    - run: npm ci
     - run: npm run build
     - run: npm run test-backend
       env:
@@ -64,6 +65,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
+          cache: "npm"
       - run: npm ci --production
 
   check-linters:
@@ -77,7 +79,8 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: 20
-    - run: npm install
+        cache: "npm"
+    - run: npm ci
     - run: npm run lint:prod
 
   e2e-test:
@@ -94,7 +97,8 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: 22
-    - run: npm install
+        cache: "npm"
+    - run: npm ci
 
     - name: Cache Playwright browsers
       uses: actions/cache@v4
