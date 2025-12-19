@@ -1289,5 +1289,7 @@
     "Collection Update": "Подпротокол Websocket обновления коллекции",
     "Text IRC Protocol": "Текстовый протокол IRC",
     "Penguin Statistics Live Protocol v3": "Протокол Penguin Statistics Live v3 (кодирование Protobuf)",
-    "certHostnameMismatch": "Имя хоста сертификата не соответствует URL-адресу монитора."
+    "certHostnameMismatch": "Имя хоста сертификата не соответствует URL-адресу монитора.",
+    "minimumIntervalWarning": "Интервалы менее 20 секунд могут привести к снижению производительности.",
+    "lowIntervalWarning": "Вы уверены, что хотите установить значение интервала меньше 20 секунд? Производительность может снизиться, особенно при наличии большого количества мониторов."
 }
