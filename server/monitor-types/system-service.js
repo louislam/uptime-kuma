@@ -74,10 +74,10 @@ class SystemServiceMonitorType extends MonitorType {
     async checkWindows(serviceName, heartbeat) {
         return new Promise((resolve, reject) => {
             // SECURITY: Prevent Command Injection
-            // Only allow alphanumeric, dots, dashes, underscores, and @.
-            if (!serviceName || !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
+            // Only allow alphanumeric, dots, dashes, underscores, @, and SPACES.
+            if (!serviceName || !/^[a-zA-Z0-9._\-@ ]+$/.test(serviceName)) {
                 heartbeat.status = DOWN;
-                heartbeat.msg = "Invalid service name. Please use the internal Service Name (no spaces).";
+                heartbeat.msg = "Invalid service name. Only alphanumeric characters, dots, dashes, underscores, @ and spaces are allowed.";
                 reject(new Error(heartbeat.msg));
                 return;
             }
