@@ -18,14 +18,8 @@ class SystemServiceMonitorType extends MonitorType {
         // Use the new variable name 'system_service_name' to match the monitor type change
         const serviceName = monitor.system_service_name;
 
-        // Basic sanitization.
-        // We do not allow spaces to ensure users use the "Service Name" (wuauserv) and not "Display Name".
-        if (!serviceName || !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
-            heartbeat.status = DOWN;
-            heartbeat.msg = "Invalid service name. Please use the internal Service Name (no spaces).";
-            throw new Error(heartbeat.msg);
-        }
-
+        // Dispatch to OS-specific handler
+        // Security validation is handled inside the specific methods to prevent code duplication
         if (process.platform === "win32") {
             return this.checkWindows(serviceName, heartbeat);
         } else {
@@ -41,6 +35,15 @@ class SystemServiceMonitorType extends MonitorType {
      */
     async checkLinux(serviceName, heartbeat) {
         return new Promise((resolve, reject) => {
+            // SECURITY: Prevent Argument Injection (e.g. passing flags like --help)
+            // Only allow alphanumeric, dots, dashes, underscores, and @ (common in systemd services like user@1000)
+            if (!serviceName || !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
+                heartbeat.status = DOWN;
+                heartbeat.msg = "Invalid service name. Please use the internal Service Name (no spaces).";
+                reject(new Error(heartbeat.msg));
+                return;
+            }
+
             // Linter requires spaces inside array brackets: [ "arg1", "arg2" ]
             execFile("systemctl", [ "is-active", serviceName ], (error, stdout, stderr) => {
                 // Combine output and truncate to ~200 chars to prevent DB bloat
@@ -70,6 +73,15 @@ class SystemServiceMonitorType extends MonitorType {
      */
     async checkWindows(serviceName, heartbeat) {
         return new Promise((resolve, reject) => {
+            // SECURITY: Prevent Command Injection
+            // Only allow alphanumeric, dots, dashes, underscores, and @.
+            if (!serviceName || !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
+                heartbeat.status = DOWN;
+                heartbeat.msg = "Invalid service name. Please use the internal Service Name (no spaces).";
+                reject(new Error(heartbeat.msg));
+                return;
+            }
+
             const cmd = "powershell";
             // -NoProfile: Faster startup, -NonInteractive: No prompts
             const args = [
