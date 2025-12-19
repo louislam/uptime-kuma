@@ -45,7 +45,10 @@
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
-                                        <option value="system-service">
+                                        <option
+                                            v-if="['linux', 'win32'].includes($root.info.runtime.platform)"
+                                            value="system-service"
+                                        >
                                             {{ $t("System Service") }}
                                         </option>
                                         <option value="real-browser">
