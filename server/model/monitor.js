@@ -28,6 +28,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -117,6 +118,7 @@ class Monitor extends BeanModel {
             keyword: this.keyword,
             invertKeyword: this.isInvertKeyword(),
             expiryNotification: this.isEnabledExpiryNotification(),
+            domainExpiryNotification: Boolean(this.domainExpiryNotification),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             packetSize: this.packetSize,
@@ -934,6 +936,19 @@ class Monitor extends BeanModel {
                 }
             }
 
+            if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
+                try {
+                    const domainExpiryDate = await DomainExpiry.checkExpiry(this);
+                    if (domainExpiryDate) {
+                        DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
+                    } else {
+                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
+                    }
+                } catch (error) {
+                    log.warn("monitor", `Failed to get domain expiry for ${this.name} : ${error.message}`);
+                }
+            }
+
             if (bean.status === UP) {
                 log.debug("monitor", `Monitor #${this.id} '${this.name}': Successful Response: ${bean.ping} ms | Interval: ${beatInterval} seconds | Type: ${this.type}`);
             } else if (bean.status === PENDING) {
@@ -1201,6 +1216,9 @@ class Monitor extends BeanModel {
 
             // Send Cert Info
             await Monitor.sendCertInfo(io, monitorID, userID);
+
+            // Send domain info
+            await Monitor.sendDomainInfo(io, monitorID, userID);
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
         }
@@ -1219,6 +1237,22 @@ class Monitor extends BeanModel {
         ]);
         if (tlsInfo != null) {
             io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
+        }
+    }
+
+    /**
+     * Send domain name information to client
+     * @param {Server} io Socket server instance
+     * @param {number} monitorID ID of monitor to send
+     * @param {number} userID ID of user to send to
+     * @returns {void}
+     */
+    static async sendDomainInfo(io, monitorID, userID) {
+        const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
+
+        const domain = await DomainExpiry.forMonitor(monitor);
+        if (domain?.expiry) {
+            io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
         }
     }
 
