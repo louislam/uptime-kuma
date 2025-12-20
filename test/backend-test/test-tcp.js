@@ -185,4 +185,26 @@ describe("TCP Monitor", () => {
             regex
         );
     });
+    test("XMPP server with valid certificate (STARTTLS)", async t => {
+        const tcpMonitor = new TCPMonitorType();
+
+        const monitor = {
+            hostname: "xmpp.earth",
+            port: 5222,
+            smtpSecurity: "starttls",
+            isEnabledExpiryNotification: () => true,
+            handleTlsInfo: async tlsInfo => {
+                return tlsInfo;
+            },
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        await tcpMonitor.check(monitor, heartbeat, {});
+
+        assert.strictEqual(heartbeat.status, UP);
+    });
 });
