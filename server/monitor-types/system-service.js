@@ -46,7 +46,7 @@ class SystemServiceMonitorType extends MonitorType {
                 return;
             }
 
-            execFile("systemctl", [ "is-active", serviceName ], (error, stdout, stderr) => {
+            execFile("systemctl", [ "is-active", serviceName ], { timeout: 5000 }, (error, stdout, stderr) => {
                 // Combine output and truncate to ~200 chars to prevent DB bloat
                 let output = (stderr || stdout || "").toString().trim();
                 if (output.length > 200) {
@@ -86,7 +86,7 @@ class SystemServiceMonitorType extends MonitorType {
                 `(Get-Service -Name '${safeServiceName}').Status`
             ];
 
-            execFile(cmd, args, (error, stdout, stderr) => {
+            execFile(cmd, args, { timeout: 5000 }, (error, stdout, stderr) => {
                 let output = (stderr || stdout || "").toString().trim();
                 if (output.length > 200) {
                     output = output.substring(0, 200) + "...";
