@@ -1,6 +1,5 @@
-/* eslint-disable */
-const { describe, it, before, after, beforeEach } = require('node:test');
-const assert = require('node:assert');
+const { describe, it, before, after, beforeEach } = require("node:test");
+const assert = require("node:assert");
 const childProcess = require("child_process");
 const { UP, DOWN } = require("../../src/util");
 
@@ -71,7 +70,7 @@ describe("SystemServiceMonitorType", () => {
             };
 
             const monitor = { system_service_name: "apache2" };
-            
+
             try {
                 await monitorType.check(monitor, mockHeartbeat);
             } catch (e) {
@@ -99,7 +98,7 @@ describe("SystemServiceMonitorType", () => {
             await monitorType.check(monitor, mockHeartbeat);
 
             assert.strictEqual(mockHeartbeat.status, UP);
-            
+
             // Verify escaping: Must contain single quotes around service name
             assert.ok(capturedCommand.includes("(Get-Service -Name 'wuauserv').Status"));
         });
