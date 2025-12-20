@@ -768,12 +768,14 @@ class Monitor extends BeanModel {
                     let res = await axios.request(options);
 
                     if (res.data.State.Running) {
-                        if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
-                            bean.status = PENDING;
-                            bean.msg = res.data.State.Health.Status;
-                        } else {
+                        if (res.data.State.Health.Status === "healthy") {
                             bean.status = UP;
                             bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
+                        } else if (res.data.State.Health.Status === "unhealthy") {
+                            throw Error("Container State is unhealthy");
+                        } else {
+                            bean.status = PENDING;
+                            bean.msg = res.data.State.Health.Status;
                         }
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
