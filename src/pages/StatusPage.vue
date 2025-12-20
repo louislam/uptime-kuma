@@ -87,6 +87,12 @@
                     }}</label>
                 </div>
 
+                <!-- Show only last heartbeat -->
+                <div class="my-3 form-check form-switch">
+                    <input id="show-only-last-heartbeat" v-model="config.showOnlyLastHeartbeat" class="form-check-input" type="checkbox">
+                    <label class="form-check-label" for="show-only-last-heartbeat">{{ $t("showOnlyLastHeartbeat") }}</label>
+                </div>
+
                 <div v-if="false" class="my-3">
                     <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon")
                     }}</sup></label>
@@ -187,15 +193,15 @@
             </h1>
 
             <!-- Admin functions -->
-            <div v-if="hasToken" class="mb-4">
+            <div v-if="hasToken" class="mb-2">
                 <div v-if="!enableEditMode">
-                    <button class="btn btn-info me-2" data-testid="edit-button" @click="edit">
+                    <button class="btn btn-primary mb-2 me-2" data-testid="edit-button" @click="edit">
                         <font-awesome-icon icon="edit" />
                         {{ $t("Edit Status Page") }}
                     </button>
 
-                    <a href="/manage-status-page" class="btn btn-info me-2">
-                        <font-awesome-icon icon="tag" />
+                    <a href="/manage-status-page" class="btn btn-primary mb-2">
+                        <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Go to Dashboard") }}
                     </a>
 
@@ -402,10 +408,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList
-                    :edit-mode="enableEditMode" :show-tags="config.showTags"
-                    :show-certificate-expiry="config.showCertificateExpiry"
-                />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :show-only-last-heartbeat="config.showOnlyLastHeartbeat" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -813,7 +816,7 @@ export default {
             // Configure auto-refresh loop
             feedInterval = setInterval(() => {
                 this.updateHeartbeatList();
-            }, (this.config.autoRefreshInterval + 10) * 1000);
+            }, Math.max(5, this.config.autoRefreshInterval) * 1000);
 
             this.updateUpdateTimer();
         }).catch(function (error) {
@@ -899,7 +902,15 @@ export default {
             clearInterval(this.updateCountdown);
 
             this.updateCountdown = setInterval(() => {
-                const countdown = dayjs.duration(this.lastUpdateTime.add(this.config.autoRefreshInterval, "seconds").add(10, "seconds").diff(dayjs()));
+                // rounding here as otherwise we sometimes skip numbers in cases of time drift
+                const countdown = dayjs.duration(
+                    Math.round(
+                        this.lastUpdateTime
+                            .add(Math.max(5, this.config.autoRefreshInterval), "seconds")
+                            .diff(dayjs())
+                        / 1000
+                    ), "seconds");
+
                 if (countdown.as("seconds") < 0) {
                     clearInterval(this.updateCountdown);
                 } else {

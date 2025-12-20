@@ -30,6 +30,8 @@ class Alerta extends NotificationProvider {
                 type: "exceptionAlert",
             };
 
+            config = this.getAxiosConfigWithProxy(config);
+
             if (heartbeatJSON == null) {
                 let postData = Object.assign({
                     event: "msg",

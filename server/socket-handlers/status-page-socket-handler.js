@@ -164,6 +164,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.footer_text = config.footerText;
             statusPage.custom_css = config.customCSS;
             statusPage.show_powered_by = config.showPoweredBy;
+            statusPage.show_only_last_heartbeat = config.showOnlyLastHeartbeat;
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
             statusPage.modified_date = R.isoDateTime();
             statusPage.google_analytics_tag_id = config.googleAnalyticsId;
@@ -209,6 +210,10 @@ module.exports.statusPageSocketHandler = (socket) => {
 
                     if (monitor.sendUrl !== undefined) {
                         relationBean.send_url = monitor.sendUrl;
+                    }
+
+                    if (monitor.url !== undefined) {
+                        relationBean.custom_url = monitor.url;
                     }
 
                     await R.store(relationBean);
@@ -338,6 +343,8 @@ module.exports.statusPageSocketHandler = (socket) => {
                 await R.exec("DELETE FROM status_page WHERE id = ? ", [
                     statusPageID
                 ]);
+
+                apicache.clear();
 
             } else {
                 throw new Error("Status Page is not found");
