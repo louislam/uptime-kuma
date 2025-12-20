@@ -54,7 +54,8 @@ class TCPMonitorType extends MonitorType {
 
         const preTLS = () =>
             new Promise((resolve, reject) => {
-                let dialog_timeout, banner_timeout;
+                let dialogTimeout;
+                let bannerTimeout;
                 socket_ = net.connect(monitor.port, monitor.hostname);
 
                 const onTimeout = () => {
@@ -65,18 +66,18 @@ class TCPMonitorType extends MonitorType {
                 const onBannerTimeout = () => {
                     log.debug(this.name, `[${monitor.name}] Pre-TLS timed out waiting for banner`);
                     // No banner. Could be a XMPP server?
-                    socket_.write(`<stream:stream to='${monitor.hostname}' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>`)
+                    socket_.write(`<stream:stream to='${monitor.hostname}' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>`);
                 };
 
                 const doResolve = () => {
-                    dialog_timeout && clearTimeout(dialog_timeout);
-                    banner_timeout && clearTimeout(banner_timeout);
+                    dialogTimeout && clearTimeout(dialogTimeout);
+                    bannerTimeout && clearTimeout(bannerTimeout);
                     resolve({ socket: socket_ });
                 };
 
                 const doReject = (error) => {
-                    dialog_timeout && clearTimeout(dialog_timeout);
-                    banner_timeout && clearTimeout(banner_timeout);
+                    dialogTimeout && clearTimeout(dialogTimeout);
+                    bannerTimeout && clearTimeout(bannerTimeout);
                     socket_.end();
                     reject(error);
                 };
@@ -89,7 +90,7 @@ class TCPMonitorType extends MonitorType {
                     const response = data.toString();
                     const response_ = response.toLowerCase();
                     log.debug(this.name, `[${monitor.name}] Pre-TLS response: ${response}`);
-                    clearTimeout(banner_timeout);
+                    clearTimeout(bannerTimeout);
                     switch (true) {
                         case response_.includes("start tls") || response_.includes("begin tls"):
                             doResolve();
@@ -107,7 +108,7 @@ class TCPMonitorType extends MonitorType {
                             doResolve();
                             break;
                         case response_.includes("<starttls"):
-                            socket_.write(`<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>`);
+                            socket_.write("<starttls xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>");
                             break;
                         case response_.includes("<stream:stream") || response_.includes("</stream:stream>"):
                             break;
@@ -120,8 +121,8 @@ class TCPMonitorType extends MonitorType {
                     reject(error);
                 });
                 socket_.setTimeout(1000 * TIMEOUT, onTimeout);
-                dialog_timeout = setTimeout(onTimeout, 1000 * TIMEOUT);
-                banner_timeout = setTimeout(onBannerTimeout, 1000 * 1.5);
+                dialogTimeout = setTimeout(onTimeout, 1000 * TIMEOUT);
+                bannerTimeout = setTimeout(onBannerTimeout, 1000 * 1.5);
             });
 
         const reuseSocket = monitor.smtpSecurity === "starttls" ? await preTLS() : {};
