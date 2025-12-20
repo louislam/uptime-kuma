@@ -1,6 +1,15 @@
 <template>
     <div>
-        <div :style="depthMargin">
+        <div
+            class="draggable-item"
+            :style="depthMargin"
+            :class="{ 'drag-over': dragOverCount > 0 }"
+            @dragstart="onDragStart"
+            @dragenter.prevent="onDragEnter"
+            @dragleave.prevent="onDragLeave"
+            @dragover.prevent
+            @drop.prevent="onDrop"
+        >
             <!-- Checkbox -->
             <div v-if="isSelectMode" class="select-input-wrapper">
                 <input
@@ -116,6 +125,7 @@ export default {
     data() {
         return {
             isCollapsed: true,
+            dragOverCount: 0,
         };
     },
     computed: {
@@ -188,6 +198,91 @@ export default {
             window.localStorage.setItem("monitorCollapsed", JSON.stringify(storageObject));
         },
         /**
+         * Initializes the drag operation if the monitor is draggable.
+         * @param {DragEvent} event - The dragstart event triggered by the browser.
+         * @returns {void} This method does not return anything.
+         */
+        onDragStart(event) {
+            try {
+                event.dataTransfer.setData("text/monitor-id", String(this.monitor.id));
+                event.dataTransfer.effectAllowed = "move";
+            } catch (e) {
+                // ignore
+            }
+        },
+
+        onDragEnter(event) {
+            if (this.monitor.type !== "group") {
+                return;
+            }
+
+            this.dragOverCount++;
+        },
+
+        onDragLeave(event) {
+            if (this.monitor.type !== "group") {
+                return;
+            }
+
+            this.dragOverCount = Math.max(0, this.dragOverCount - 1);
+        },
+
+        async onDrop(event) {
+            this.dragOverCount = 0;
+
+            // Only groups accept drops
+            if (this.monitor.type !== "group") {
+                return;
+            }
+
+            const draggedId = event.dataTransfer.getData("text/monitor-id");
+            if (!draggedId) {
+                return;
+            }
+
+            const draggedMonitorId = parseInt(draggedId);
+            if (isNaN(draggedMonitorId) || draggedMonitorId === this.monitor.id) {
+                return;
+            }
+
+            const draggedMonitor = this.$root.monitorList[draggedMonitorId];
+            if (!draggedMonitor) {
+                return;
+            }
+
+            // Save original parent so we can revert locally if server returns error
+            const originalParent = draggedMonitor.parent;
+
+            // Prepare a full monitor object (clone) and set new parent
+            const monitorToSave = JSON.parse(JSON.stringify(draggedMonitor));
+            monitorToSave.parent = this.monitor.id;
+
+            // Optimistically update local state so UI updates immediately
+            this.$root.monitorList[draggedMonitorId].parent = this.monitor.id;
+
+            // Send updated monitor state via socket
+            try {
+                this.$root.getSocket().emit("editMonitor", monitorToSave, (res) => {
+                    if (!res || !res.ok) {
+                        // Revert local change on error
+                        if (this.$root.monitorList[draggedMonitorId]) {
+                            this.$root.monitorList[draggedMonitorId].parent = originalParent;
+                        }
+                        if (res && res.msg) {
+                            this.$root.toastError(res.msg);
+                        }
+                    } else {
+                        this.$root.toastRes(res);
+                    }
+                });
+            } catch (e) {
+                // revert on exception
+                if (this.$root.monitorList[draggedMonitorId]) {
+                    this.$root.monitorList[draggedMonitorId].parent = originalParent;
+                }
+            }
+        },
+        /**
          * Get URL of monitor
          * @param {number} id ID of monitor
          * @returns {string} Relative URL of monitor
@@ -251,6 +346,37 @@ export default {
     padding-left: 4px;
     position: relative;
     z-index: 15;
+}
+
+.drag-over {
+    border: 4px dashed $primary;
+    border-radius: 0.5rem;
+    background-color: $highlight-white;
+}
+
+.dark {
+    .drag-over {
+        background-color: $dark-bg2;
+    }
+}
+
+/* -4px on all due to border-width */
+.monitor-list .drag-over .item {
+    padding: 9px 11px 6px 11px;
+}
+
+.draggable-item {
+    cursor: grab;
+    position: relative;
+
+    /* We don't want the padding change due to the border animated */
+    .item {
+        transition: none !important;
+    }
+
+    &.dragging {
+        cursor: grabbing;
+    }
 }
 
 </style>

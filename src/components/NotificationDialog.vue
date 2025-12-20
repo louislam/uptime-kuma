@@ -173,7 +173,8 @@ export default {
                 "Cellsynt": "Cellsynt",
                 "SendGrid": "SendGrid",
                 "Brevo": "Brevo",
-                "notifery": "Notifery"
+                "notifery": "Notifery",
+                "Webpush": "Webpush",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
@@ -192,6 +193,7 @@ export default {
                 "PushPlus": "PushPlus (推送加)",
                 "SpugPush": "SpugPush（Spug推送助手）",
                 "smsc": "SMSC",
+                "smsir": "SMS.IR",
                 "WPush": "WPush(wpush.cn)",
                 "YZJ": "YZJ (云之家自定义机器人)",
                 "SMSPlanet": "SMSPlanet.pl"

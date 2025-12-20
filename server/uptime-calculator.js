@@ -91,6 +91,14 @@ class UptimeCalculator {
     }
 
     /**
+     * Remove all monitors from the list
+     * @returns {Promise<void>}
+     */
+    static async removeAll() {
+        UptimeCalculator.list = {};
+    }
+
+    /**
      *
      */
     constructor() {
@@ -844,6 +852,42 @@ class UptimeCalculator {
      */
     setMigrationMode(value) {
         this.migrationMode = value;
+    }
+
+    /**
+     * Clear all statistics and heartbeats for a monitor
+     * @param {number} monitorID the id of the monitor
+     * @returns {Promise<void>}
+     */
+    static async clearStatistics(monitorID) {
+        await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
+            monitorID
+        ]);
+
+        await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ?", [
+            monitorID
+        ]);
+        await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ?", [
+            monitorID
+        ]);
+        await R.exec("DELETE FROM stat_daily WHERE monitor_id = ?", [
+            monitorID
+        ]);
+
+        await UptimeCalculator.remove(monitorID);
+    }
+
+    /**
+     * Clear all statistics and heartbeats for all monitors
+     * @returns {Promise<void>}
+     */
+    static async clearAllStatistics() {
+        await R.exec("DELETE FROM heartbeat");
+        await R.exec("DELETE FROM stat_minutely");
+        await R.exec("DELETE FROM stat_hourly");
+        await R.exec("DELETE FROM stat_daily");
+
+        await UptimeCalculator.removeAll();
     }
 }
 

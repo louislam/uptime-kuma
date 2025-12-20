@@ -30,7 +30,7 @@ exports.SQL_DATE_FORMAT = "YYYY-MM-DD";
 exports.SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 exports.MAX_INTERVAL_SECOND = 2073600;
-exports.MIN_INTERVAL_SECOND = 20;
+exports.MIN_INTERVAL_SECOND = 1;
 exports.PING_PACKET_SIZE_MIN = 1;
 exports.PING_PACKET_SIZE_MAX = 65500;
 exports.PING_PACKET_SIZE_DEFAULT = 56;
@@ -133,7 +133,7 @@ function ucfirst(str) {
 }
 exports.ucfirst = ucfirst;
 function debug(msg) {
-    exports.log.log("", msg, "debug");
+    exports.log.log("", "debug", msg);
 }
 exports.debug = debug;
 class Logger {
@@ -156,7 +156,7 @@ class Logger {
             this.debug("server", this.hideLog);
         }
     }
-    log(module, msg, level) {
+    log(module, level, ...msg) {
         if (level === "DEBUG" && !exports.isDev) {
             return;
         }
@@ -177,7 +177,6 @@ class Logger {
         let timePart;
         let modulePart;
         let levelPart;
-        let msgPart;
         if (exports.isNode) {
             switch (level) {
                 case "DEBUG":
@@ -189,72 +188,46 @@ class Logger {
             }
             modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
             levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
-            switch (level) {
-                case "ERROR":
-                    if (typeof msg === "string") {
-                        msgPart = exports.CONSOLE_STYLE_FgRed + msg + exports.CONSOLE_STYLE_Reset;
-                    }
-                    else {
-                        msgPart = msg;
-                    }
-                    break;
-                case "DEBUG":
-                    if (typeof msg === "string") {
-                        msgPart = exports.CONSOLE_STYLE_FgGray + msg + exports.CONSOLE_STYLE_Reset;
-                    }
-                    else {
-                        msgPart = msg;
-                    }
-                    break;
-                default:
-                    msgPart = msg;
-                    break;
-            }
         }
         else {
             timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
-            msgPart = msg;
         }
         switch (level) {
             case "ERROR":
-                console.error(timePart, modulePart, levelPart, msgPart);
+                console.error(timePart, modulePart, levelPart, ...msg);
                 break;
             case "WARN":
-                console.warn(timePart, modulePart, levelPart, msgPart);
+                console.warn(timePart, modulePart, levelPart, ...msg);
                 break;
             case "INFO":
-                console.info(timePart, modulePart, levelPart, msgPart);
+                console.info(timePart, modulePart, levelPart, ...msg);
                 break;
             case "DEBUG":
                 if (exports.isDev) {
-                    console.debug(timePart, modulePart, levelPart, msgPart);
+                    console.debug(timePart, modulePart, levelPart, ...msg);
                 }
                 break;
             default:
-                console.log(timePart, modulePart, levelPart, msgPart);
+                console.log(timePart, modulePart, levelPart, ...msg);
                 break;
         }
     }
-    info(module, msg) {
-        this.log(module, msg, "info");
+    info(module, ...msg) {
+        this.log(module, "info", ...msg);
     }
-    warn(module, msg) {
-        this.log(module, msg, "warn");
+    warn(module, ...msg) {
+        this.log(module, "warn", ...msg);
     }
-    error(module, msg) {
-        this.log(module, msg, "error");
+    error(module, ...msg) {
+        this.log(module, "error", ...msg);
     }
-    debug(module, msg) {
-        this.log(module, msg, "debug");
+    debug(module, ...msg) {
+        this.log(module, "debug", ...msg);
     }
-    exception(module, exception, msg) {
-        let finalMessage = exception;
-        if (msg) {
-            finalMessage = `${msg}: ${exception}`;
-        }
-        this.log(module, finalMessage, "error");
+    exception(module, exception, ...msg) {
+        this.log(module, "error", ...msg, exception);
     }
 }
 exports.log = new Logger();
@@ -422,6 +395,12 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+        if (Array.isArray(response)) {
+            const responseStr = JSON.stringify(response);
+            const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
+            throw new Error("JSON query returned the array " + truncatedResponse + ", but a primitive value is required. " +
+                "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean().");
         }
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {
             throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
