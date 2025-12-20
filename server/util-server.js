@@ -497,6 +497,7 @@ const getDaysRemaining = (validFrom, validTo) => {
     }
     return daysRemaining;
 };
+module.exports.getDaysRemaining = getDaysRemaining;
 
 /**
  * Fix certificate info for display
@@ -953,6 +954,65 @@ function fsExists(path) {
     });
 }
 module.exports.fsExists = fsExists;
+
+/**
+ * Encode user and password to Base64 encoding
+ * for HTTP "basic" auth, as per RFC-7617
+ * @param {string|null} user - The username (defaults to empty string if null/undefined)
+ * @param {string|null} pass - The password (defaults to empty string if null/undefined)
+ * @returns {string} Encoded Base64 string
+ */
+function encodeBase64(user, pass) {
+    return Buffer.from(`${user || ""}:${pass || ""}`).toString("base64");
+}
+module.exports.encodeBase64 = encodeBase64;
+
+/**
+ * checks certificate chain for expiring certificates
+ * @param {object} monitor - The monitor object
+ * @param {object} tlsInfoObject Information about certificate
+ * @returns {Promise<void>}
+ */
+async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
+    if (!tlsInfoObject || !tlsInfoObject.certInfo || !tlsInfoObject.certInfo.daysRemaining) {
+        return;
+    }
+
+    let notificationList = await R.getAll("SELECT notification.* FROM notification, monitor_notification WHERE monitor_id = ? AND monitor_notification.notification_id = notification.id ", [
+        monitor.id,
+    ]);
+
+    if (! notificationList.length > 0) {
+        // fail fast. If no notification is set, all the following checks can be skipped.
+        log.debug("monitor", "No notification, no need to send cert notification");
+        return;
+    }
+
+    let notifyDays = await Settings.get("tlsExpiryNotifyDays");
+    if (notifyDays == null || !Array.isArray(notifyDays)) {
+        // Reset Default
+        await Settings.setSetting("tlsExpiryNotifyDays", [ 7, 14, 21 ], "general");
+        notifyDays = [ 7, 14, 21 ];
+    }
+
+    for (const targetDays of notifyDays) {
+        let certInfo = tlsInfoObject.certInfo;
+        while (certInfo) {
+            let subjectCN = certInfo.subject["CN"];
+            if (monitor.rootCertificates.has(certInfo.fingerprint256)) {
+                log.debug("monitor", `Known root cert: ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
+                break;
+            } else if (certInfo.daysRemaining > targetDays) {
+                log.debug("monitor", `No need to send cert notification for ${certInfo.certType} certificate "${subjectCN}" (${certInfo.daysRemaining} days valid) on ${targetDays} deadline.`);
+            } else {
+                log.debug("monitor", `call sendCertNotificationByTargetDays for ${targetDays} deadline on certificate ${subjectCN}.`);
+                await monitor.sendCertNotificationByTargetDays(subjectCN, certInfo.certType, certInfo.daysRemaining, targetDays, notificationList);
+            }
+            certInfo = certInfo.issuerCertificate;
+        }
+    }
+}
+module.exports.checkCertExpiryNotifications = checkCertExpiryNotifications;
 
 /**
  * By default, command-exists will throw a null error if the command does not exist, which is ugly. The function makes it better.
