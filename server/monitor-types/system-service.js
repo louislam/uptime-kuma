@@ -73,22 +73,18 @@ class SystemServiceMonitorType extends MonitorType {
      */
     async checkWindows(serviceName, heartbeat) {
         return new Promise((resolve, reject) => {
-            // SECURITY: Prevent Command Injection
-            // Only allow alphanumeric, dots, dashes, underscores, @, and SPACES.
-            if (!serviceName || !/^[a-zA-Z0-9._\-@ ]+$/.test(serviceName)) {
-                heartbeat.status = DOWN;
-                heartbeat.msg = "Invalid service name. Only alphanumeric characters, dots, dashes, underscores, @ and spaces are allowed.";
-                reject(new Error(heartbeat.msg));
-                return;
-            }
+            // SECURITY: Proper Escaping.
+            // 1. Use Single Quotes ('${safeServiceName}') which tells PowerShell to treat the content as a pure literal string.
+            // 2. Escape any existing single quotes in the input by doubling them (' -> '').
+            const safeServiceName = serviceName.replaceAll("'", "''");
 
             const cmd = "powershell";
-            // -NoProfile: Faster startup, -NonInteractive: No prompts
             const args = [
                 "-NoProfile",
                 "-NonInteractive",
                 "-Command",
-                `(Get-Service -Name "${serviceName}").Status`
+                // Single quotes around the service name
+                `(Get-Service -Name '${safeServiceName}').Status`
             ];
 
             execFile(cmd, args, (error, stdout, stderr) => {
@@ -97,7 +93,6 @@ class SystemServiceMonitorType extends MonitorType {
                     output = output.substring(0, 200) + "...";
                 }
 
-                // PowerShell writes to stderr if the service is not found
                 if (error || stderr) {
                     heartbeat.msg = output || `Service '${serviceName}' is not running/found.`;
                     reject(new Error(heartbeat.msg));
