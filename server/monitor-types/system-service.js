@@ -18,8 +18,10 @@ class SystemServiceMonitorType extends MonitorType {
         // Use the new variable name 'system_service_name' to match the monitor type change
         const serviceName = monitor.system_service_name;
 
-        // Dispatch to OS-specific handler
-        // Security validation is handled inside the specific methods to prevent code duplication
+        if (!serviceName) {
+            throw new Error("Service Name is required.");
+        }
+
         if (process.platform === "win32") {
             return this.checkWindows(serviceName, heartbeat);
         } else {
@@ -31,12 +33,12 @@ class SystemServiceMonitorType extends MonitorType {
      * Linux Check (Systemd)
      * @param {string} serviceName The name of the service to check.
      * @param {object} heartbeat The heartbeat object.
-     * @returns {Promise<void>} Resolves on success, rejects on error.
+     * @returns {Promise<void>}
      */
     async checkLinux(serviceName, heartbeat) {
         return new Promise((resolve, reject) => {
-            // SECURITY: Prevent Argument Injection (e.g. passing flags like --help)
-            // Only allow alphanumeric, dots, dashes, underscores, and @ (common in systemd services like user@1000)
+            // SECURITY: Prevent Argument Injection
+            // Only allow alphanumeric, dots, dashes, underscores, and @
             if (!serviceName || !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
                 heartbeat.status = DOWN;
                 heartbeat.msg = "Invalid service name. Please use the internal Service Name (no spaces).";
@@ -44,7 +46,6 @@ class SystemServiceMonitorType extends MonitorType {
                 return;
             }
 
-            // Linter requires spaces inside array brackets: [ "arg1", "arg2" ]
             execFile("systemctl", [ "is-active", serviceName ], (error, stdout, stderr) => {
                 // Combine output and truncate to ~200 chars to prevent DB bloat
                 let output = (stderr || stdout || "").toString().trim();
@@ -74,8 +75,6 @@ class SystemServiceMonitorType extends MonitorType {
     async checkWindows(serviceName, heartbeat) {
         return new Promise((resolve, reject) => {
             // SECURITY: Proper Escaping.
-            // 1. Use Single Quotes ('${safeServiceName}') which tells PowerShell to treat the content as a pure literal string.
-            // 2. Escape any existing single quotes in the input by doubling them (' -> '').
             const safeServiceName = serviceName.replaceAll("'", "''");
 
             const cmd = "powershell";
