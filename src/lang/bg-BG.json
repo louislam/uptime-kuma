@@ -1280,5 +1280,8 @@
     "Collection Update": "The Collection Update Websocket подпротокол",
     "Text IRC Protocol": "Text IRC протокол",
     "Binary IRC Protocol": "Binary IRC протокол",
-    "Penguin Statistics Live Protocol v3": "Penguin Statistics Live протокол v3 (Protobuf кодировка)"
+    "Penguin Statistics Live Protocol v3": "Penguin Statistics Live протокол v3 (Protobuf кодировка)",
+    "minimumIntervalWarning": "Интервали под 20 секунди може да доведат до лоша производителност.",
+    "lowIntervalWarning": "Наистина ли желаете да зададете стойността на интервала под 20 секунди? Производителността може да се влоши, особено ако има голям брой монитори.",
+    "certHostnameMismatch": "Хоста от сертификата не съвпада с URL адреса на монитора."
 }
