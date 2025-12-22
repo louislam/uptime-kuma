@@ -853,7 +853,7 @@ class Database {
                 `, [ monitor.monitor_id, date.date ]);
 
                 if (heartbeats.length > 0) {
-                    msg = `[DON'T STOP] Migrating monitor data ${monitor.monitor_id} - ${date.date} [${progressPercent.toFixed(2)}%][${i + 1}/${monitors.length}]`;
+                    msg = `[DON'T STOP] Migrating monitor ${monitor.monitor_id}s' (${i + 1} of ${monitors.length} total) data - ${date.date} - total migration progress ${progressPercent.toFixed(2)}%`;
                     log.info("db", msg);
                     migrationServer?.update(msg);
                 }
