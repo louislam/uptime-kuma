@@ -6,6 +6,12 @@ const { GenericContainer, Wait } = require("testcontainers");
 describe("Database Migration - Optimize Important Indexes", () => {
     test("SQLite: All migrations run successfully", async () => {
         const testDbPath = path.join(__dirname, "../../data/test-migration.db");
+        const testDbDir = path.dirname(testDbPath);
+
+        // Ensure data directory exists
+        if (!fs.existsSync(testDbDir)) {
+            fs.mkdirSync(testDbDir, { recursive: true });
+        }
 
         // Clean up any existing test database
         if (fs.existsSync(testDbPath)) {
