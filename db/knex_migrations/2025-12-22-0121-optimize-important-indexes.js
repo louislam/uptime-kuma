@@ -6,8 +6,7 @@ exports.up = function (knex) {
         return knex.schema.alterTable("heartbeat", function (table) {
             // Drop existing indexes
             table.dropIndex([ "monitor_id", "important", "time" ], "monitor_important_time_index");
-            table.dropIndex([ "important" ], "important");
-            table.dropIndex([ "important" ], "heartbeat_important_index");
+            table.dropIndex([ "important" ]);
 
             // Create partial indexes with predicate
             table.index([ "monitor_id", "time" ], "monitor_important_time_index", {

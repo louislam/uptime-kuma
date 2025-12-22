@@ -13,10 +13,6 @@ describe("Database Migration - Optimize Important Indexes", () => {
             fs.unlinkSync(testDbPath);
         }
 
-        // Copy the template database
-        const templatePath = path.join(__dirname, "../../db/kuma.db");
-        fs.copyFileSync(templatePath, testDbPath);
-
         // Use the same SQLite driver as the project
         const Dialect = require("knex/lib/dialects/sqlite3/index.js");
         Dialect.prototype._driver = () => require("@louislam/sqlite3");
@@ -30,14 +26,22 @@ describe("Database Migration - Optimize Important Indexes", () => {
             useNullAsDefault: true,
         });
 
+        // Setup R (redbean) with knex instance like production code does
+        const { R } = require("redbean-node");
+        R.setup(db);
+
         try {
-            // Run all migrations like the actual application does
-            await db.migrate.latest({
+            // Use production code to initialize SQLite tables (like first run)
+            const { createTables } = require("../../db/knex_init_db.js");
+            await createTables();
+
+            // Run all migrations like production code does
+            await R.knex.migrate.latest({
                 directory: path.join(__dirname, "../../db/knex_migrations")
             });
 
             // Query SQLite to check if partial indexes were created
-            const indexes = await db.raw(`
+            const indexes = await R.knex.raw(`
                 SELECT name, sql
                 FROM sqlite_master
                 WHERE type='index'
@@ -77,7 +81,7 @@ describe("Database Migration - Optimize Important Indexes", () => {
 
         } finally {
             // Clean up
-            await db.destroy();
+            await R.knex.destroy();
             if (fs.existsSync(testDbPath)) {
                 fs.unlinkSync(testDbPath);
             }
