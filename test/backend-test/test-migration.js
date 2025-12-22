@@ -1,5 +1,4 @@
 const { describe, test } = require("node:test");
-const assert = require("node:assert");
 const fs = require("fs");
 const path = require("path");
 const { GenericContainer, Wait } = require("testcontainers");
