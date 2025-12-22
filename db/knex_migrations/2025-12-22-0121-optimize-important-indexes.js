@@ -13,16 +13,10 @@ exports.up = function (knex) {
             .then(() => knex.raw("CREATE INDEX monitor_important_time_index ON heartbeat (monitor_id, time DESC) WHERE important = 1"))
             .then(() => knex.raw("CREATE INDEX important ON heartbeat (important) WHERE important = 1"));
     } else {
-        // For MariaDB/MySQL: Partial indexes are not supported, but we can still optimize
-        // Remove the important column from the compound index as it provides minimal benefit
-        // when queries already filter explicitly by important = 1
-        return knex.schema.alterTable("heartbeat", function (table) {
-            table.dropIndex([ "monitor_id", "important", "time" ], "monitor_important_time_index");
-        }).then(() => {
-            return knex.schema.alterTable("heartbeat", function (table) {
-                table.index([ "monitor_id", "time" ], "monitor_important_time_index");
-            });
-        });
+        // For MariaDB/MySQL: Partial indexes are not supported
+        // Keep the existing compound index (monitor_id, important, time) as-is
+        // This ensures optimal performance for queries filtering by both monitor_id and important
+        return Promise.resolve();
     }
 };
 
@@ -36,13 +30,7 @@ exports.down = function (knex) {
             .then(() => knex.raw("CREATE INDEX monitor_important_time_index ON heartbeat (monitor_id, important, time)"))
             .then(() => knex.raw("CREATE INDEX important ON heartbeat (important)"));
     } else {
-        // Restore original compound index with important column
-        return knex.schema.alterTable("heartbeat", function (table) {
-            table.dropIndex([ "monitor_id", "time" ], "monitor_important_time_index");
-        }).then(() => {
-            return knex.schema.alterTable("heartbeat", function (table) {
-                table.index([ "monitor_id", "important", "time" ], "monitor_important_time_index");
-            });
-        });
+        // For MariaDB/MySQL: No changes needed, keep existing indexes
+        return Promise.resolve();
     }
 };
