@@ -6,13 +6,14 @@ exports.up = async function (knex) {
         // Drop existing indexes using IF EXISTS
         await knex.raw("DROP INDEX IF EXISTS monitor_important_time_index");
         await knex.raw("DROP INDEX IF EXISTS heartbeat_important_index");
+        await knex.raw("DROP INDEX IF EXISTS important");
 
         // Create partial indexes with predicate
         await knex.schema.alterTable("heartbeat", function (table) {
             table.index([ "monitor_id", "time" ], "monitor_important_time_index", {
                 predicate: knex.whereRaw("important = 1")
             });
-            table.index([ "important" ], "important", {
+            table.index([ "important" ], "heartbeat_important_index", {
                 predicate: knex.whereRaw("important = 1")
             });
         });
@@ -26,6 +27,7 @@ exports.down = async function (knex) {
     if (isSQLite) {
         // Restore original indexes
         await knex.raw("DROP INDEX IF EXISTS monitor_important_time_index");
+        await knex.raw("DROP INDEX IF EXISTS heartbeat_important_index");
         await knex.raw("DROP INDEX IF EXISTS important");
 
         await knex.schema.alterTable("heartbeat", function (table) {
