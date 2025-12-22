@@ -92,8 +92,8 @@ describe("Database Migration - Optimize Important Indexes", () => {
                 (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
-            // Start MariaDB container
-            const mariadbContainer = await new GenericContainer("mariadb:10")
+            // Start MariaDB container (using MariaDB 12 to match current production)
+            const mariadbContainer = await new GenericContainer("mariadb:12")
                 .withEnvironment({
                     "MYSQL_ROOT_PASSWORD": "root",
                     "MYSQL_DATABASE": "kuma_test",
@@ -106,7 +106,7 @@ describe("Database Migration - Optimize Important Indexes", () => {
                 .start();
 
             const knex = require("knex");
-            const db = knex({
+            const knexInstance = knex({
                 client: "mysql2",
                 connection: {
                     host: mariadbContainer.getHost(),
@@ -117,32 +117,22 @@ describe("Database Migration - Optimize Important Indexes", () => {
                 },
             });
 
+            // Setup R (redbean) with knex instance like production code does
+            const { R } = require("redbean-node");
+            R.setup(knexInstance);
+
             try {
-                // Create the heartbeat table like knex_init_db does
-                await db.schema.createTable("heartbeat", (table) => {
-                    table.increments("id");
-                    table.boolean("important").notNullable().defaultTo(false);
-                    table.integer("monitor_id").unsigned().notNullable();
-                    table.smallint("status").notNullable();
-                    table.text("msg");
-                    table.datetime("time").notNullable();
-                    table.integer("ping");
-                    table.integer("duration").notNullable().defaultTo(0);
-                    table.integer("down_count").notNullable().defaultTo(0);
+                // Use production code to initialize MariaDB tables
+                const { createTables } = require("../../db/knex_init_db.js");
+                await createTables();
 
-                    table.index([ "important" ]);
-                    table.index([ "monitor_id", "time" ], "monitor_time_index");
-                    table.index([ "monitor_id" ]);
-                    table.index([ "monitor_id", "important", "time" ], "monitor_important_time_index");
-                });
-
-                // Run all migrations
-                await db.migrate.latest({
+                // Run all migrations like production code does
+                await R.knex.migrate.latest({
                     directory: path.join(__dirname, "../../db/knex_migrations")
                 });
 
                 // Query MariaDB to check indexes on heartbeat table
-                const indexes = await db.raw(`
+                const indexes = await R.knex.raw(`
                     SHOW INDEXES FROM heartbeat
                     WHERE Key_name IN ('monitor_important_time_index', 'important')
                 `);
@@ -191,10 +181,10 @@ describe("Database Migration - Optimize Important Indexes", () => {
                         down_count: 0
                     });
                 }
-                await db("heartbeat").insert(heartbeats);
+                await R.knex("heartbeat").insert(heartbeats);
 
                 // Verify query uses the index
-                const explainResult = await db.raw(`
+                const explainResult = await R.knex.raw(`
                     EXPLAIN
                     SELECT * FROM heartbeat
                     WHERE monitor_id = 1 AND important = 1
@@ -210,7 +200,7 @@ describe("Database Migration - Optimize Important Indexes", () => {
 
             } finally {
                 // Clean up
-                await db.destroy();
+                await R.knex.destroy();
                 await mariadbContainer.stop();
             }
         }
