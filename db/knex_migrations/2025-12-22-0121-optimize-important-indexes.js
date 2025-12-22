@@ -1,14 +1,14 @@
-exports.up = function (knex) {
+exports.up = async function (knex) {
     const isSQLite = knex.client.dialect === "sqlite3";
 
     if (isSQLite) {
         // For SQLite: Use partial indexes with WHERE important = 1
-        return knex.schema.alterTable("heartbeat", function (table) {
-            // Drop existing indexes
-            table.dropIndex([ "monitor_id", "important", "time" ], "monitor_important_time_index");
-            table.dropIndex([ "important" ]);
+        // Drop existing indexes using IF EXISTS
+        await knex.raw("DROP INDEX IF EXISTS monitor_important_time_index");
+        await knex.raw("DROP INDEX IF EXISTS heartbeat_important_index");
 
-            // Create partial indexes with predicate
+        // Create partial indexes with predicate
+        await knex.schema.alterTable("heartbeat", function (table) {
             table.index([ "monitor_id", "time" ], "monitor_important_time_index", {
                 predicate: knex.whereRaw("important = 1")
             });
@@ -16,26 +16,22 @@ exports.up = function (knex) {
                 predicate: knex.whereRaw("important = 1")
             });
         });
-    } else {
-        // For MariaDB/MySQL: No changes (partial indexes not supported)
-        return Promise.resolve();
     }
+    // For MariaDB/MySQL: No changes (partial indexes not supported)
 };
 
-exports.down = function (knex) {
+exports.down = async function (knex) {
     const isSQLite = knex.client.dialect === "sqlite3";
 
     if (isSQLite) {
         // Restore original indexes
-        return knex.schema.alterTable("heartbeat", function (table) {
-            table.dropIndex([ "monitor_id", "time" ], "monitor_important_time_index");
-            table.dropIndex([ "important" ], "important");
+        await knex.raw("DROP INDEX IF EXISTS monitor_important_time_index");
+        await knex.raw("DROP INDEX IF EXISTS important");
 
+        await knex.schema.alterTable("heartbeat", function (table) {
             table.index([ "monitor_id", "important", "time" ], "monitor_important_time_index");
-            table.index([ "important" ], "important");
+            table.index([ "important" ]);
         });
-    } else {
-        // For MariaDB/MySQL: No changes
-        return Promise.resolve();
     }
+    // For MariaDB/MySQL: No changes
 };
