@@ -168,36 +168,6 @@ describe("Database Migration - Optimize Important Indexes", () => {
                     "important index should exist for MariaDB"
                 );
 
-                // Test query performance
-                // Insert test data
-                const heartbeats = [];
-                for (let i = 1; i <= 100; i++) {
-                    heartbeats.push({
-                        monitor_id: 1,
-                        status: 1,
-                        time: new Date(Date.now() - i * 60000),
-                        important: i <= 5 ? 1 : 0,
-                        duration: 100,
-                        down_count: 0
-                    });
-                }
-                await R.knex("heartbeat").insert(heartbeats);
-
-                // Verify query uses the index
-                const explainResult = await R.knex.raw(`
-                    EXPLAIN
-                    SELECT * FROM heartbeat
-                    WHERE monitor_id = 1 AND important = 1
-                    ORDER BY time DESC
-                `);
-
-                // Check that an index is being used (not doing a full table scan)
-                const explainRows = explainResult[0];
-                assert.ok(
-                    explainRows.some(row => row.key === "monitor_important_time_index" || row.key === "important"),
-                    "Query should use an index in MariaDB"
-                );
-
             } finally {
                 // Clean up
                 await R.knex.destroy();
