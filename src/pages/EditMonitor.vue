@@ -672,7 +672,7 @@
                                 <div class="my-3">
                                     <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
                                     <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx">
-                                    
+
                                     <div class="form-text">
                                         <template v-if="$root.info.runtime.platform === 'linux'">
                                             {{ $t("systemServiceDescriptionLinux", {service_name: monitor.system_service_name || 'nginx'}) }}
@@ -683,7 +683,7 @@
                                         <template v-else>
                                             {{ $t("systemServiceDescription", {service_name: monitor.system_service_name || 'nginx'}) }}
                                         </template>
-                            
+
                                         <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
                                             <div>
                                                 <i18n-t keypath="systemServiceCommandHint" tag="span">
@@ -696,7 +696,7 @@
                                                 {{ $t("systemServiceExpectedOutput", ["active"]) }}
                                             </div>
                                         </div>
-                            
+
                                         <div v-if="$root.info.runtime.platform === 'win32'" class="mt-2">
                                             <div>
                                                 <i18n-t keypath="systemServiceCommandHint" tag="span">
