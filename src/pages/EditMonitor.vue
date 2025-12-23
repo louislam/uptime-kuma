@@ -674,13 +674,13 @@
                                     <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx">
                                     <div class="form-text">
                                         <template v-if="$root.info.runtime.platform === 'linux'">
-                                            {{ $t("systemServiceDescriptionLinux") }} {{ monitor.system_service_name || 'nginx' }} {{ $t("systemServiceActiveText") }}
+                                            {{ $t("systemServiceDescriptionLinux", {service_name: monitor.system_service_name || 'nginx'}) }}
                                         </template>
                                         <template v-else-if="$root.info.runtime.platform === 'win32'">
-                                            {{ $t("systemServiceDescriptionWindows") }} {{ monitor.system_service_name || 'nginx' }} {{ $t("systemServiceActiveText") }}
+                                            {{ $t("systemServiceDescriptionWindows", {service_name: monitor.system_service_name || 'nginx'}) }}
                                         </template>
                                         <template v-else>
-                                            {{ $t("systemServiceDescription") }} {{ monitor.system_service_name || 'nginx' }} {{ $t("systemServiceActiveText") }}
+                                            {{ $t("systemServiceDescription", {service_name: monitor.system_service_name || 'nginx'}) }}
                                         </template>
 
                                         <div class="mt-2">
