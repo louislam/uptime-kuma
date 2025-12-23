@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN } = require("../../src/util");
+const { UP } = require("../../src/util");
 const dayjs = require("dayjs");
 const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
@@ -34,10 +34,14 @@ class DnsMonitorType extends MonitorType {
         switch (monitor.dns_resolve_type) {
             case "A":
             case "AAAA":
-            case "TXT":
             case "PTR":
                 dnsMessage = `Records: ${dnsRes.join(" | ")}`;
                 conditionsResult = dnsRes.some(record => handleConditions({ record }));
+                break;
+
+            case "TXT":
+                dnsMessage = `Records: ${dnsRes.join(" | ")}`;
+                conditionsResult = dnsRes.flat().some(record => handleConditions({ record }));
                 break;
 
             case "CNAME":
@@ -75,8 +79,12 @@ class DnsMonitorType extends MonitorType {
             await R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [ dnsMessage, monitor.id ]);
         }
 
+        if (!conditionsResult) {
+            throw new Error(dnsMessage);
+        }
+
         heartbeat.msg = dnsMessage;
-        heartbeat.status = conditionsResult ? UP : DOWN;
+        heartbeat.status = UP;
     }
 }
 

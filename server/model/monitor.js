@@ -2,10 +2,14 @@ const dayjs = require("dayjs");
 const axios = require("axios");
 const { Prometheus } = require("../prometheus");
 const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MIN_INTERVAL_SECOND,
-    SQL_DATETIME_FORMAT, evaluateJsonQuery
+    SQL_DATETIME_FORMAT, evaluateJsonQuery,
+    PING_PACKET_SIZE_MIN, PING_PACKET_SIZE_MAX, PING_PACKET_SIZE_DEFAULT,
+    PING_GLOBAL_TIMEOUT_MIN, PING_GLOBAL_TIMEOUT_MAX, PING_GLOBAL_TIMEOUT_DEFAULT,
+    PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
+    PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
-const { tcping, ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, postgresQuery, mysqlQuery, setSetting, httpNtlm, radius, grpcQuery,
-    redisPingAsync, kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal
+const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, mysqlQuery, setSetting, httpNtlm, radius,
+    kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, checkCertificateHostname
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
@@ -24,6 +28,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -53,7 +58,7 @@ class Monitor extends BeanModel {
         };
 
         if (this.sendUrl) {
-            obj.url = this.url;
+            obj.url = this.customUrl ?? this.url;
         }
 
         if (showTags) {
@@ -96,6 +101,8 @@ class Monitor extends BeanModel {
             parent: this.parent,
             childrenIDs: preloadData.childrenIDs.get(this.id) || [],
             url: this.url,
+            wsIgnoreSecWebsocketAcceptHeader: this.getWsIgnoreSecWebsocketAcceptHeader(),
+            wsSubprotocol: this.wsSubprotocol,
             method: this.method,
             hostname: this.hostname,
             port: this.port,
@@ -111,6 +118,7 @@ class Monitor extends BeanModel {
             keyword: this.keyword,
             invertKeyword: this.isInvertKeyword(),
             expiryNotification: this.isEnabledExpiryNotification(),
+            domainExpiryNotification: Boolean(this.domainExpiryNotification),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             packetSize: this.packetSize,
@@ -153,8 +161,15 @@ class Monitor extends BeanModel {
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
             snmpVersion: this.snmpVersion,
+            smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
+            ipFamily: this.ipFamily,
+
+            // ping advanced options
+            ping_numeric: this.isPingNumeric(),
+            ping_count: this.ping_count,
+            ping_per_request_timeout: this.ping_per_request_timeout,
         };
 
         if (includeSensitiveData) {
@@ -170,6 +185,7 @@ class Monitor extends BeanModel {
                 oauth_client_secret: this.oauth_client_secret,
                 oauth_token_url: this.oauth_token_url,
                 oauth_scopes: this.oauth_scopes,
+                oauth_audience: this.oauth_audience,
                 oauth_auth_method: this.oauth_auth_method,
                 pushToken: this.pushToken,
                 databaseConnectionString: this.databaseConnectionString,
@@ -178,6 +194,7 @@ class Monitor extends BeanModel {
                 radiusSecret: this.radiusSecret,
                 mqttUsername: this.mqttUsername,
                 mqttPassword: this.mqttPassword,
+                mqttWebsocketPath: this.mqttWebsocketPath,
                 authWorkstation: this.authWorkstation,
                 authDomain: this.authDomain,
                 tlsCa: this.tlsCa,
@@ -248,11 +265,27 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Check if ping should use numeric output only
+     * @returns {boolean} True if IP addresses will be output instead of symbolic hostnames
+     */
+    isPingNumeric() {
+        return Boolean(this.ping_numeric);
+    }
+
+    /**
      * Parse to boolean
      * @returns {boolean} Should TLS errors be ignored?
      */
     getIgnoreTls() {
         return Boolean(this.ignoreTls);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Should WS headers be ignored?
+     */
+    getWsIgnoreSecWebsocketAcceptHeader() {
+        return Boolean(this.wsIgnoreSecWebsocketAcceptHeader);
     }
 
     /**
@@ -328,7 +361,11 @@ class Monitor extends BeanModel {
         let previousBeat = null;
         let retries = 0;
 
-        this.prometheus = new Prometheus(this);
+        try {
+            this.prometheus = new Prometheus(this, await this.getTags());
+        } catch (e) {
+            log.error("prometheus", "Please submit an issue to our GitHub repo. Prometheus update error: ", e.message);
+        }
 
         const beat = async () => {
 
@@ -380,39 +417,6 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                } else if (this.type === "group") {
-                    const children = await Monitor.getChildren(this.id);
-
-                    if (children.length > 0) {
-                        bean.status = UP;
-                        bean.msg = "All children up and running";
-                        for (const child of children) {
-                            if (!child.active) {
-                                // Ignore inactive childs
-                                continue;
-                            }
-                            const lastBeat = await Monitor.getPreviousHeartbeat(child.id);
-
-                            // Only change state if the monitor is in worse conditions then the ones before
-                            // lastBeat.status could be null
-                            if (!lastBeat) {
-                                bean.status = PENDING;
-                            } else if (bean.status === UP && (lastBeat.status === PENDING || lastBeat.status === DOWN)) {
-                                bean.status = lastBeat.status;
-                            } else if (bean.status === PENDING && lastBeat.status === DOWN) {
-                                bean.status = lastBeat.status;
-                            }
-                        }
-
-                        if (bean.status !== UP) {
-                            bean.msg = "Child inaccessible";
-                        }
-                    } else {
-                        // Set status pending if group is empty
-                        bean.status = PENDING;
-                        bean.msg = "Group empty";
-                    }
-
                 } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
@@ -441,10 +445,26 @@ class Monitor extends BeanModel {
                         }
                     }
 
+                    let agentFamily = undefined;
+                    if (this.ipFamily === "ipv4") {
+                        agentFamily = 4;
+                    }
+                    if (this.ipFamily === "ipv6") {
+                        agentFamily = 6;
+                    }
+
                     const httpsAgentOptions = {
                         maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
                         rejectUnauthorized: !this.getIgnoreTls(),
                         secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
+                        autoSelectFamily: true,
+                        ...(agentFamily ? { family: agentFamily } : {})
+                    };
+
+                    const httpAgentOptions = {
+                        maxCachedSessions: 0,
+                        autoSelectFamily: true,
+                        ...(agentFamily ? { family: agentFamily } : {})
                     };
 
                     log.debug("monitor", `[${this.name}] Prepare Options for axios`);
@@ -506,12 +526,17 @@ class Monitor extends BeanModel {
                         if (proxy && proxy.active) {
                             const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
                                 httpsAgentOptions: httpsAgentOptions,
+                                httpAgentOptions: httpAgentOptions,
                             });
 
                             options.proxy = false;
                             options.httpAgent = httpAgent;
                             options.httpsAgent = httpsAgent;
                         }
+                    }
+
+                    if (!options.httpAgent) {
+                        options.httpAgent = new http.Agent(httpAgentOptions);
                     }
 
                     if (!options.httpsAgent) {
@@ -542,6 +567,7 @@ class Monitor extends BeanModel {
                         tlsSocket.once("secureConnect", async () => {
                             tlsInfo = checkCertificate(tlsSocket);
                             tlsInfo.valid = tlsSocket.authorized || false;
+                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(tlsInfo.certInfo.raw, this.getUrl()?.hostname);
 
                             await this.handleTlsInfo(tlsInfo);
                         });
@@ -564,12 +590,14 @@ class Monitor extends BeanModel {
                         if (tlsSocket) {
                             tlsInfo = checkCertificate(tlsSocket);
                             tlsInfo.valid = tlsSocket.authorized || false;
+                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(tlsInfo.certInfo.raw, this.getUrl()?.hostname);
 
                             await this.handleTlsInfo(tlsInfo);
                         }
                     }
 
-                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID === this.id) {
+                    // eslint-disable-next-line eqeqeq
+                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID == this.id) {
                         log.info("monitor", res.data);
                     }
 
@@ -611,13 +639,8 @@ class Monitor extends BeanModel {
 
                     }
 
-                } else if (this.type === "port") {
-                    bean.ping = await tcping(this.hostname, this.port);
-                    bean.msg = "";
-                    bean.status = UP;
-
                 } else if (this.type === "ping") {
-                    bean.ping = await ping(this.hostname, this.packetSize);
+                    bean.ping = await ping(this.hostname, this.ping_count, "", this.ping_numeric, this.packetSize, this.timeout, this.ping_per_request_timeout);
                     bean.msg = "";
                     bean.status = UP;
                 } else if (this.type === "push") {      // Type: Push
@@ -689,7 +712,7 @@ class Monitor extends BeanModel {
                         bean.msg = res.data.response.servers[0].name;
 
                         try {
-                            bean.ping = await ping(this.hostname, this.packetSize);
+                            bean.ping = await ping(this.hostname, PING_COUNT_DEFAULT, "", true, this.packetSize, PING_GLOBAL_TIMEOUT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT);
                         } catch (_) { }
                     } else {
                         throw new Error("Server not found on Steam");
@@ -739,7 +762,7 @@ class Monitor extends BeanModel {
                     } else if (dockerHost._dockerType === "tcp") {
                         options.baseURL = DockerHost.patchDockerURL(dockerHost._dockerDaemon);
                         options.httpsAgent = new https.Agent(
-                            DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
+                            await DockerHost.getHttpsAgentOptions(dockerHost._dockerType, options.baseURL)
                         );
                     }
 
@@ -747,12 +770,14 @@ class Monitor extends BeanModel {
                     let res = await axios.request(options);
 
                     if (res.data.State.Running) {
-                        if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
-                            bean.status = PENDING;
-                            bean.msg = res.data.State.Health.Status;
-                        } else {
+                        if (res.data.State.Health.Status === "healthy") {
                             bean.status = UP;
                             bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
+                        } else if (res.data.State.Health.Status === "unhealthy") {
+                            throw Error("Container State is unhealthy");
+                        } else {
+                            bean.status = PENDING;
+                            bean.msg = res.data.State.Health.Status;
                         }
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
@@ -761,45 +786,6 @@ class Monitor extends BeanModel {
                     let startTime = dayjs().valueOf();
 
                     await mssqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
-
-                    bean.msg = "";
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type === "grpc-keyword") {
-                    let startTime = dayjs().valueOf();
-                    const options = {
-                        grpcUrl: this.grpcUrl,
-                        grpcProtobufData: this.grpcProtobuf,
-                        grpcServiceName: this.grpcServiceName,
-                        grpcEnableTls: this.grpcEnableTls,
-                        grpcMethod: this.grpcMethod,
-                        grpcBody: this.grpcBody,
-                    };
-                    const response = await grpcQuery(options);
-                    bean.ping = dayjs().valueOf() - startTime;
-                    log.debug("monitor:", `gRPC response: ${JSON.stringify(response)}`);
-                    let responseData = response.data;
-                    if (responseData.length > 50) {
-                        responseData = responseData.toString().substring(0, 47) + "...";
-                    }
-                    if (response.code !== 1) {
-                        bean.status = DOWN;
-                        bean.msg = `Error in send gRPC ${response.code} ${response.errorMessage}`;
-                    } else {
-                        let keywordFound = response.data.toString().includes(this.keyword);
-                        if (keywordFound === !this.isInvertKeyword()) {
-                            bean.status = UP;
-                            bean.msg = `${responseData}, keyword [${this.keyword}] ${keywordFound ? "is" : "not"} found`;
-                        } else {
-                            log.debug("monitor:", `GRPC response [${response.data}] + ", but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response.data} + "]"`);
-                            bean.status = DOWN;
-                            bean.msg = `, but keyword [${this.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${responseData} + "]`;
-                        }
-                    }
-                } else if (this.type === "postgres") {
-                    let startTime = dayjs().valueOf();
-
-                    await postgresQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
 
                     bean.msg = "";
                     bean.status = UP;
@@ -841,17 +827,15 @@ class Monitor extends BeanModel {
                     bean.msg = resp.code;
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type === "redis") {
-                    let startTime = dayjs().valueOf();
-
-                    bean.msg = await redisPingAsync(this.databaseConnectionString, !this.ignoreTls);
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
-
                 } else if (this.type in UptimeKumaServer.monitorTypeList) {
                     let startTime = dayjs().valueOf();
                     const monitorType = UptimeKumaServer.monitorTypeList[this.type];
                     await monitorType.check(this, bean, UptimeKumaServer.getInstance());
+
+                    if (!monitorType.allowCustomStatus && bean.status !== UP) {
+                        throw new Error("The monitor implementation is incorrect, non-UP error must throw error inside check()");
+                    }
+
                     if (!bean.ping) {
                         bean.ping = dayjs().valueOf() - startTime;
                     }
@@ -949,6 +933,19 @@ class Monitor extends BeanModel {
                         // Reset down count
                         bean.downCount = 0;
                     }
+                }
+            }
+
+            if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
+                try {
+                    const domainExpiryDate = await DomainExpiry.checkExpiry(this);
+                    if (domainExpiryDate) {
+                        DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
+                    } else {
+                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
+                    }
+                } catch (error) {
+                    log.warn("monitor", `Failed to get domain expiry for ${this.name} : ${error.message}`);
                 }
             }
 
@@ -1219,6 +1216,9 @@ class Monitor extends BeanModel {
 
             // Send Cert Info
             await Monitor.sendCertInfo(io, monitorID, userID);
+
+            // Send domain info
+            await Monitor.sendDomainInfo(io, monitorID, userID);
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
         }
@@ -1237,6 +1237,22 @@ class Monitor extends BeanModel {
         ]);
         if (tlsInfo != null) {
             io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
+        }
+    }
+
+    /**
+     * Send domain name information to client
+     * @param {Server} io Socket server instance
+     * @param {number} monitorID ID of monitor to send
+     * @param {number} userID ID of user to send to
+     * @returns {void}
+     */
+    static async sendDomainInfo(io, monitorID, userID) {
+        const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
+
+        const domain = await DomainExpiry.forMonitor(monitor);
+        if (domain?.expiry) {
+            io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
         }
     }
 
@@ -1306,7 +1322,7 @@ class Monitor extends BeanModel {
     /**
      * Send a notification about a monitor
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
-     * @param {Monitor} monitor The monitor to send a notificaton about
+     * @param {Monitor} monitor The monitor to send a notification about
      * @param {Bean} bean Status information about monitor
      * @returns {void}
      */
@@ -1327,7 +1343,8 @@ class Monitor extends BeanModel {
                 try {
                     const heartbeatJSON = bean.toJSON();
                     const monitorData = [{ id: monitor.id,
-                        active: monitor.active
+                        active: monitor.active,
+                        name: monitor.name
                     }];
                     const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
@@ -1434,7 +1451,7 @@ class Monitor extends BeanModel {
         for (let notification of notificationList) {
             try {
                 log.debug("monitor", "Sending to " + notification.name);
-                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will be expired in ${daysRemaining} days`);
+                await Notification.send(JSON.parse(notification.config), `[${this.name}][${this.url}] ${certType} certificate ${certCN} will expire in ${daysRemaining} days`);
                 sent = true;
             } catch (e) {
                 log.error("monitor", "Cannot send cert notification to " + notification.name);
@@ -1499,6 +1516,31 @@ class Monitor extends BeanModel {
         }
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.type === "ping") {
+            // ping parameters validation
+            if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {
+                throw new Error(`Packet size must be between ${PING_PACKET_SIZE_MIN} and ${PING_PACKET_SIZE_MAX} (default: ${PING_PACKET_SIZE_DEFAULT})`);
+            }
+
+            if (this.ping_per_request_timeout && (this.ping_per_request_timeout < PING_PER_REQUEST_TIMEOUT_MIN || this.ping_per_request_timeout > PING_PER_REQUEST_TIMEOUT_MAX)) {
+                throw new Error(`Per-ping timeout must be between ${PING_PER_REQUEST_TIMEOUT_MIN} and ${PING_PER_REQUEST_TIMEOUT_MAX} seconds (default: ${PING_PER_REQUEST_TIMEOUT_DEFAULT})`);
+            }
+
+            if (this.ping_count && (this.ping_count < PING_COUNT_MIN || this.ping_count > PING_COUNT_MAX)) {
+                throw new Error(`Echo requests count must be between ${PING_COUNT_MIN} and ${PING_COUNT_MAX} (default: ${PING_COUNT_DEFAULT})`);
+            }
+
+            if (this.timeout) {
+                const pingGlobalTimeout = Math.round(Number(this.timeout));
+
+                if (pingGlobalTimeout < this.ping_per_request_timeout || pingGlobalTimeout < PING_GLOBAL_TIMEOUT_MIN || pingGlobalTimeout > PING_GLOBAL_TIMEOUT_MAX) {
+                    throw new Error(`Timeout must be between ${PING_GLOBAL_TIMEOUT_MIN} and ${PING_GLOBAL_TIMEOUT_MAX} seconds (default: ${PING_GLOBAL_TIMEOUT_DEFAULT})`);
+                }
+
+                this.timeout = pingGlobalTimeout;
+            }
         }
     }
 
@@ -1625,7 +1667,7 @@ class Monitor extends BeanModel {
     /**
      * Gets all Children of the monitor
      * @param {number} monitorID ID of monitor to get
-     * @returns {Promise<LooseObject<any>>} Children
+     * @returns {Promise<LooseObject<any>[]>} Children
      */
     static async getChildren(monitorID) {
         return await R.getAll(`
@@ -1692,6 +1734,55 @@ class Monitor extends BeanModel {
     }
 
     /**
+     * Delete a monitor from the system
+     * @param {number} monitorID ID of the monitor to delete
+     * @param {number} userID ID of the user who owns the monitor
+     * @returns {Promise<void>}
+     */
+    static async deleteMonitor(monitorID, userID) {
+        const server = UptimeKumaServer.getInstance();
+
+        // Stop the monitor if it's running
+        if (monitorID in server.monitorList) {
+            await server.monitorList[monitorID].stop();
+            delete server.monitorList[monitorID];
+        }
+
+        // Delete from database
+        await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
+            monitorID,
+            userID,
+        ]);
+    }
+
+    /**
+     * Recursively delete a monitor and all its descendants
+     * @param {number} monitorID ID of the monitor to delete
+     * @param {number} userID ID of the user who owns the monitor
+     * @returns {Promise<void>}
+     */
+    static async deleteMonitorRecursively(monitorID, userID) {
+        // Check if this monitor is a group
+        const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
+            monitorID,
+            userID,
+        ]);
+
+        if (monitor && monitor.type === "group") {
+            // Get all children and delete them recursively
+            const children = await Monitor.getChildren(monitorID);
+            if (children && children.length > 0) {
+                for (const child of children) {
+                    await Monitor.deleteMonitorRecursively(child.id, userID);
+                }
+            }
+        }
+
+        // Delete the monitor itself
+        await Monitor.deleteMonitor(monitorID, userID);
+    }
+
+    /**
      * Checks recursive if parent (ancestors) are active
      * @param {number} monitorID ID of the monitor to get
      * @returns {Promise<boolean>} Is the parent monitor active?
@@ -1713,7 +1804,7 @@ class Monitor extends BeanModel {
      */
     async makeOidcTokenClientCredentialsRequest() {
         log.debug("monitor", `[${this.name}] The oauth access-token undefined or expired. Requesting a new token`);
-        const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_auth_method);
+        const oAuthAccessToken = await getOidcTokenClientCredentials(this.oauth_token_url, this.oauth_client_id, this.oauth_client_secret, this.oauth_scopes, this.oauth_audience, this.oauth_auth_method);
         if (this.oauthAccessToken?.expires_at) {
             log.debug("monitor", `[${this.name}] Obtained oauth access-token. Expires at ${new Date(this.oauthAccessToken?.expires_at * 1000)}`);
         } else {

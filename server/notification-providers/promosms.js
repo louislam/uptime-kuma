@@ -15,7 +15,7 @@ class PromoSMS extends NotificationProvider {
             notification.promosmsAllowLongSMS = false;
         }
 
-        //TODO: Add option for enabling special characters. It will decrese message max length from 160 to 70 chars.
+        //TODO: Add option for enabling special characters. It will decrease message max length from 160 to 70 chars.
         //Lets remove non ascii char
         let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "");
 
@@ -27,6 +27,7 @@ class PromoSMS extends NotificationProvider {
                     "Accept": "text/json",
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             let data = {
                 "recipients": [ notification.promosmsPhoneNumber ],
                 //Trim message to maximum length of 1 SMS or 4 if we allowed long messages

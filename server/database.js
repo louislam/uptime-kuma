@@ -1,4 +1,5 @@
 const fs = require("fs");
+const fsAsync = fs.promises;
 const { R } = require("redbean-node");
 const { setSetting, setting } = require("./util-server");
 const { log, sleep } = require("../src/util");
@@ -11,6 +12,7 @@ const { UptimeCalculator } = require("./uptime-calculator");
 const dayjs = require("dayjs");
 const { SimpleMigrationServer } = require("./utils/simple-migration-server");
 const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysql2-columncompiler");
+const SqlString = require("sqlstring");
 
 /**
  * Database & App Data Folder
@@ -18,7 +20,7 @@ const KumaColumnCompiler = require("./utils/knex/lib/dialects/mysql2/schema/mysq
 class Database {
 
     /**
-     * Boostrap database for SQLite
+     * Bootstrap database for SQLite
      * @type {string}
      */
     static templatePath = "./db/kuma.db";
@@ -221,9 +223,24 @@ class Database {
 
         let config = {};
 
+        let parsedMaxPoolConnections = parseInt(process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS);
+
+        if (!process.env.UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS) {
+            parsedMaxPoolConnections = 10;
+        } else if (Number.isNaN(parsedMaxPoolConnections)) {
+            log.warn("db", "Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was invalid.");
+            parsedMaxPoolConnections = 10;
+        } else if (parsedMaxPoolConnections < 1) {
+            log.warn("db", "Max database connections defaulted to 10 because UPTIME_KUMA_DB_POOL_MAX_CONNECTIONS was less than 1.");
+            parsedMaxPoolConnections = 10;
+        } else if (parsedMaxPoolConnections > 100) {
+            log.warn("db", "Max database connections capped to 100 because Mysql/Mariadb connections are heavy. consider using a proxy like ProxySQL or MaxScale.");
+            parsedMaxPoolConnections = 100;
+        }
+
         let mariadbPoolConfig = {
             min: 0,
-            max: 10,
+            max: parsedMaxPoolConnections,
             idleTimeoutMillis: 30000,
         };
 
@@ -255,10 +272,6 @@ class Database {
                 }
             };
         } else if (dbConfig.type === "mariadb") {
-            if (!/^\w+$/.test(dbConfig.dbName)) {
-                throw Error("Invalid database name. A database name can only consist of letters, numbers and underscores");
-            }
-
             const connection = await mysql.createConnection({
                 host: dbConfig.hostname,
                 port: dbConfig.port,
@@ -266,7 +279,11 @@ class Database {
                 password: dbConfig.password,
             });
 
-            await connection.execute("CREATE DATABASE IF NOT EXISTS " + dbConfig.dbName + " CHARACTER SET utf8mb4");
+            // Set to true, so for example "uptime.kuma", becomes `uptime.kuma`, not `uptime`.`kuma`
+            // Doc: https://github.com/mysqljs/sqlstring?tab=readme-ov-file#escaping-query-identifiers
+            const escapedDBName = SqlString.escapeId(dbConfig.dbName, true);
+
+            await connection.execute("CREATE DATABASE IF NOT EXISTS " + escapedDBName + " CHARACTER SET utf8mb4");
             connection.end();
 
             config = {
@@ -707,12 +724,12 @@ class Database {
 
     /**
      * Get the size of the database (SQLite only)
-     * @returns {number} Size of database
+     * @returns {Promise<number>} Size of database
      */
-    static getSize() {
+    static async getSize() {
         if (Database.dbConfig.type === "sqlite") {
             log.debug("db", "Database.getSize()");
-            let stats = fs.statSync(Database.sqlitePath);
+            let stats = await fsAsync.stat(Database.sqlitePath);
             log.debug("db", stats);
             return stats.size;
         }
@@ -736,7 +753,7 @@ class Database {
         if (Database.dbConfig.type === "sqlite") {
             return "DATETIME('now', ? || ' hours')";
         } else {
-            return "DATE_ADD(NOW(), INTERVAL ? HOUR)";
+            return "DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? HOUR)";
         }
     }
 
@@ -809,9 +826,7 @@ class Database {
         await Settings.set("migrateAggregateTableState", "migrating");
 
         let progressPercent = 0;
-        let part = 100 / monitors.length;
-        let i = 1;
-        for (let monitor of monitors) {
+        for (const [ i, monitor ] of monitors.entries()) {
             // Get a list of unique dates from the heartbeat table, using raw sql
             let dates = await R.getAll(`
                 SELECT DISTINCT DATE(time) AS date
@@ -822,7 +837,7 @@ class Database {
                 monitor.monitor_id
             ]);
 
-            for (let date of dates) {
+            for (const [ dateIndex, date ] of dates.entries()) {
                 // New Uptime Calculator
                 let calculator = new UptimeCalculator();
                 calculator.monitorID = monitor.monitor_id;
@@ -838,7 +853,7 @@ class Database {
                 `, [ monitor.monitor_id, date.date ]);
 
                 if (heartbeats.length > 0) {
-                    msg = `[DON'T STOP] Migrating monitor data ${monitor.monitor_id} - ${date.date} [${progressPercent.toFixed(2)}%][${i}/${monitors.length}]`;
+                    msg = `[DON'T STOP] Migrating monitor ${monitor.monitor_id}s' (${i + 1} of ${monitors.length} total) data - ${date.date} - total migration progress ${progressPercent.toFixed(2)}%`;
                     log.info("db", msg);
                     migrationServer?.update(msg);
                 }
@@ -847,15 +862,14 @@ class Database {
                     await calculator.update(heartbeat.status, parseFloat(heartbeat.ping), dayjs(heartbeat.time));
                 }
 
-                progressPercent += (Math.round(part / dates.length * 100) / 100);
+                // Calculate progress: (current_monitor_index + relative_date_progress) / total_monitors
+                progressPercent = (i + (dateIndex + 1) / dates.length) / monitors.length * 100;
 
                 // Lazy to fix the floating point issue, it is acceptable since it is just a progress bar
                 if (progressPercent > 100) {
                     progressPercent = 100;
                 }
             }
-
-            i++;
         }
 
         msg = "Clearing non-important heartbeats";
@@ -892,11 +906,13 @@ class Database {
                 AND important = 0
                 AND time < ${sqlHourOffset}
                 AND id NOT IN (
-                    SELECT id
-                    FROM heartbeat
-                    WHERE monitor_id = ?
-                    ORDER BY time DESC
-                    LIMIT ?
+                    SELECT id FROM ( -- written this way for Maria's support
+                        SELECT id
+                        FROM heartbeat
+                        WHERE monitor_id = ?
+                        ORDER BY time DESC
+                        LIMIT ?
+                    )  AS limited_ids
                 )
             `, [
                 monitor.id,

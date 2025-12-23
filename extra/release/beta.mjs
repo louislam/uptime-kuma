@@ -8,7 +8,7 @@ import {
     checkVersionFormat,
     getRepoNames,
     pressAnyKey,
-    execSync, uploadArtifacts,
+    execSync, uploadArtifacts, checkReleaseBranch,
 } from "./lib.mjs";
 import semver from "semver";
 
@@ -22,6 +22,9 @@ if (!githubToken) {
     console.error("GITHUB_TOKEN is required");
     process.exit(1);
 }
+
+// Check if the current branch is "release"
+checkReleaseBranch();
 
 // Check if the version is a valid semver
 checkVersionFormat(version);

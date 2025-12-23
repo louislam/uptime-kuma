@@ -162,6 +162,10 @@ const routes = [
                         path: "/maintenance/edit/:id",
                         component: EditMaintenance,
                     },
+                    {
+                        path: "/maintenance/clone/:id",
+                        component: EditMaintenance,
+                    }
                 ],
             },
         ],
