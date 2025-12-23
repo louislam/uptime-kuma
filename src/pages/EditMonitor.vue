@@ -772,7 +772,7 @@
                                         </label>
                                     </div>
                                     <div class="form-text">
-                                        <i18n-t key="saveResponseDescription" tag="div" class="form-text">
+                                        <i18n-t keypath="saveResponseDescription" tag="div" class="form-text">
                                             <template #templateVariable>
                                                 <code>heartbeatJSON.response</code>
                                             </template>
