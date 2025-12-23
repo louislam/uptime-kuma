@@ -1283,5 +1283,9 @@
     "Binary IRC Protocol": "Binary IRC Protocol",
     "Penguin Statistics Live Protocol v3": "Penguin Statistics Live Protocol v3 (Protobuf-Kodierung)",
     "minimumIntervalWarning": "Intervalle unter 20 Sekunden können die Leistung beeinträchtigen.",
-    "lowIntervalWarning": "Möchtest du das Intervall wirklich auf unter 20 Sekunden setzen? Die Leistung kann beeinträchtigt werden, insbesondere bei vielen Monitoren."
+    "lowIntervalWarning": "Möchtest du das Intervall wirklich auf unter 20 Sekunden setzen? Die Leistung kann beeinträchtigt werden, insbesondere bei vielen Monitoren.",
+    "labelDomainExpiry": "Ablauf der Domain",
+    "domainExpiryDescription": "Benachrichtigung auslösen, wenn Domainnamen abläuft. In:",
+    "settingsDomainExpiry": "Ablauf der Domain",
+    "labelDomainNameExpiryNotification": "Benachrichtigung zum Ablauf des Domainnamens"
 }
