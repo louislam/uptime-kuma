@@ -50,8 +50,8 @@ class DnsMonitorType extends MonitorType {
                 break;
 
             case "CAA":
-                dnsMessage = dnsRes[0].issue;
-                conditionsResult = handleConditions({ record: dnsRes[0].issue });
+                dnsMessage = `Records: ${dnsRes.map(record => record.issue).filter(Boolean).join(" | ")}`;
+                conditionsResult = dnsRes.some(record => handleConditions({ record: record.issue }));
                 break;
 
             case "MX":
