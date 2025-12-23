@@ -20,7 +20,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
      */
     async function checkAdmin(socket) {
         checkLogin(socket);
-        
+
         const user = await R.findOne("user", " id = ? ", [ socket.userID ]);
         if (!user || user.role !== User.ROLE_ADMIN) {
             throw new Error("Permission denied. Admin access required.");
@@ -68,7 +68,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             user.password = await passwordHash.generate(userData.password);
             user.role = userData.role || User.ROLE_USER;
             user.active = 1;
-            
+
             await R.store(user);
 
             log.info("user-management", `User ${user.username} created by admin ${socket.userID}`);
@@ -108,9 +108,9 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             // Update user fields
             if (userData.username && userData.username.trim() !== user.username) {
                 // Check if new username already exists
-                const existingUser = await R.findOne("user", " username = ? AND id != ? ", [ 
-                    userData.username.trim(), 
-                    userId 
+                const existingUser = await R.findOne("user", " username = ? AND id != ? ", [
+                    userData.username.trim(),
+                    userId
                 ]);
                 if (existingUser) {
                     throw new Error("Username already exists");
@@ -125,9 +125,9 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             if (typeof userData.active !== "undefined") {
                 // Don't allow deactivating the last admin
                 if (user.role === User.ROLE_ADMIN && !userData.active) {
-                    const adminCount = await R.count("user", " role = ? AND active = 1 AND id != ? ", [ 
-                        User.ROLE_ADMIN, 
-                        userId 
+                    const adminCount = await R.count("user", " role = ? AND active = 1 AND id != ? ", [
+                        User.ROLE_ADMIN,
+                        userId
                     ]);
                     if (adminCount < 1) {
                         throw new Error("Cannot deactivate the last admin user");

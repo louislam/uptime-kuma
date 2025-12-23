@@ -1,7 +1,7 @@
 <template>
     <div>
         <h5 class="my-4 settings-subheading">{{ $t("User Management") }}</h5>
-        
+
         <div class="mb-3">
             <button class="btn btn-primary" @click="showAddDialog">
                 <font-awesome-icon icon="plus" /> {{ $t("Add User") }}
@@ -223,7 +223,7 @@ export default {
                     role: this.formData.role,
                     active: this.formData.active,
                 };
-                
+
                 if (this.formData.password) {
                     updateData.password = this.formData.password;
                 }
