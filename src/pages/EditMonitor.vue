@@ -712,7 +712,7 @@
                                                 </summary>
                                                 <div class="p-2 ps-4">
                                                     <code>(Get-Service -Name "{{ monitor.system_service_name || 'nginx' }}").Status</code>
-                                                    <div class="text-secondary small mt-1">{{ $t("systemServiceExpectedOutput") }}: {{ $t("systemServiceActiveResultWindows") }}</div>
+                                                    <div class="text-secondary small mt-1">{{ $t("systemServiceExpectedOutput", ["Running"]) }}</div>
                                                 </div>
                                             </details>
                                         </div>
