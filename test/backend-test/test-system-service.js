@@ -15,7 +15,13 @@ describe("SystemServiceMonitorType", () => {
         };
     });
 
-    it("should handle non-existent service gracefully", async () => {
+    it("should handle non-existent service gracefully", async (t) => {
+        // Skip this test on macOS/Docker runners where systemctl doesn't exist
+        if (process.platform !== "linux" && process.platform !== "win32") {
+            t.skip("Skipping integration test on unsupported platform");
+            return;
+        }
+
         const monitor = { system_service_name: "non-existent-service-12345" };
 
         try {
@@ -30,6 +36,11 @@ describe("SystemServiceMonitorType", () => {
     });
 
     it("should fail gracefully with invalid characters", async () => {
+        Object.defineProperty(process, "platform", {
+            value: "linux",
+            configurable: true
+        });
+
         const monitor = { system_service_name: "invalid&service;name" };
 
         try {
@@ -39,5 +50,23 @@ describe("SystemServiceMonitorType", () => {
         }
 
         assert.strictEqual(heartbeat.status, DOWN);
+    });
+
+    it("should throw error on unsupported platforms", async () => {
+        // Mock the platform to be 'darwin' (macOS)
+        Object.defineProperty(process, "platform", {
+            value: "darwin",
+            configurable: true
+        });
+
+        const monitor = { system_service_name: "test-service" };
+
+        await assert.rejects(
+            async () => await monitorType.check(monitor, heartbeat),
+            (err) => {
+                assert.match(err.message, /not supported on/);
+                return true;
+            }
+        );
     });
 });
