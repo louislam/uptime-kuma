@@ -73,9 +73,12 @@ describe("Database Migration - Optimize Important Indexes", () => {
                     "MYSQL_PASSWORD": "kuma"
                 })
                 .withExposedPorts(3306)
-                .withWaitStrategy(Wait.forLogMessage("ready for connections"))
+                .withWaitStrategy(Wait.forLogMessage("ready for connections", 2))
                 .withStartupTimeout(120000)
                 .start();
+
+            // Wait a bit more to ensure MariaDB is fully ready
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             const knex = require("knex");
             const knexInstance = knex({
@@ -86,6 +89,13 @@ describe("Database Migration - Optimize Important Indexes", () => {
                     user: "kuma",
                     password: "kuma",
                     database: "kuma_test",
+                    connectTimeout: 60000,
+                },
+                pool: {
+                    min: 0,
+                    max: 10,
+                    acquireTimeoutMillis: 60000,
+                    idleTimeoutMillis: 60000,
                 },
             });
 
@@ -107,8 +117,16 @@ describe("Database Migration - Optimize Important Indexes", () => {
 
             } finally {
                 // Clean up
-                await R.knex.destroy();
-                await mariadbContainer.stop();
+                try {
+                    await R.knex.destroy();
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+                try {
+                    await mariadbContainer.stop();
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
             }
         }
     );
