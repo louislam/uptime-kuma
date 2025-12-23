@@ -82,7 +82,7 @@ export default {
         },
 
         subMenus() {
-            return {
+            const menus = {
                 general: {
                     title: this.$t("General"),
                 },
@@ -113,13 +113,23 @@ export default {
                 "api-keys": {
                     title: this.$t("API Keys")
                 },
-                proxies: {
-                    title: this.$t("Proxies"),
-                },
-                about: {
-                    title: this.$t("About"),
-                },
             };
+
+            // Add Users menu only for admin users
+            if (this.$root.info?.isAdmin) {
+                menus.users = {
+                    title: this.$t("Users"),
+                };
+            }
+
+            menus.proxies = {
+                title: this.$t("Proxies"),
+            };
+            menus.about = {
+                title: this.$t("About"),
+            };
+
+            return menus;
         },
     },
 
