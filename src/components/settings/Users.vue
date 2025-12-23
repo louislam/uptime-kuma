@@ -23,7 +23,6 @@
                 <thead>
                     <tr>
                         <th>{{ $t("Username") }}</th>
-                        <th>{{ $t("Role") }}</th>
                         <th>{{ $t("Status") }}</th>
                         <th>{{ $t("Actions") }}</th>
                     </tr>
@@ -31,11 +30,6 @@
                 <tbody>
                     <tr v-for="user in users" :key="user.id">
                         <td>{{ user.username }}</td>
-                        <td>
-                            <span v-if="user.role === 'admin'" class="badge bg-danger">{{ $t("Admin") }}</span>
-                            <span v-else-if="user.role === 'readonly'" class="badge bg-secondary">{{ $t("Read Only") }}</span>
-                            <span v-else class="badge bg-primary">{{ $t("User") }}</span>
-                        </td>
                         <td>
                             <span v-if="user.active" class="badge bg-success">{{ $t("Active") }}</span>
                             <span v-else class="badge bg-secondary">{{ $t("Inactive") }}</span>
@@ -90,20 +84,6 @@
                                 />
                             </div>
 
-                            <div class="mb-3">
-                                <label for="role" class="form-label">{{ $t("Role") }}</label>
-                                <select
-                                    id="role"
-                                    v-model="formData.role"
-                                    class="form-select"
-                                    required
-                                >
-                                    <option value="user">{{ $t("User") }}</option>
-                                    <option value="admin">{{ $t("Admin") }}</option>
-                                    <option value="readonly">{{ $t("Read Only") }}</option>
-                                </select>
-                            </div>
-
                             <div v-if="editMode" class="mb-3 form-check">
                                 <input
                                     id="active"
@@ -144,7 +124,6 @@ export default {
                 id: null,
                 username: "",
                 password: "",
-                role: "user",
                 active: true,
             },
         };
@@ -181,7 +160,6 @@ export default {
                 id: null,
                 username: "",
                 password: "",
-                role: "user",
                 active: true,
             };
             this.showDialog = true;
@@ -198,7 +176,6 @@ export default {
                 id: user.id,
                 username: user.username,
                 password: "",
-                role: user.role,
                 active: user.active === 1,
             };
             this.showDialog = true;
@@ -220,7 +197,6 @@ export default {
             if (this.editMode) {
                 const updateData = {
                     username: this.formData.username,
-                    role: this.formData.role,
                     active: this.formData.active,
                 };
 

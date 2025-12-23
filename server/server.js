@@ -684,7 +684,6 @@ let needSetup = false;
                 let user = R.dispense("user");
                 user.username = username;
                 user.password = await passwordHash.generate(password);
-                user.role = "admin"; // First user is always admin
                 await R.store(user);
 
                 needSetup = false;

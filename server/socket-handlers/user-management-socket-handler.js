@@ -2,7 +2,6 @@ const { checkLogin } = require("../util-server");
 const { R } = require("redbean-node");
 const passwordHash = require("../password-hash");
 const { log } = require("../../src/util");
-const User = require("../model/user");
 
 /**
  * Handlers for user management
@@ -12,30 +11,20 @@ const User = require("../model/user");
  */
 module.exports.userManagementSocketHandler = (socket, server) => {
 
-    /**
-     * Check if the current user is an admin
-     * @param {Socket} socket Socket.io instance
-     * @returns {Promise<boolean>} True if user is admin
-     * @throws {Error} If user is not logged in or not an admin
-     */
-    async function checkAdmin(socket) {
-        checkLogin(socket);
-
-        const user = await R.findOne("user", " id = ? ", [ socket.userID ]);
-        if (!user || user.role !== User.ROLE_ADMIN) {
-            throw new Error("Permission denied. Admin access required.");
-        }
-        return true;
-    }
-
-    // Get all users (admin only)
+    // Get all users
     socket.on("getUsers", async (callback) => {
         try {
-            await checkAdmin(socket);
-            const users = await User.getAll();
+            checkLogin(socket);
+            const users = await R.findAll("user");
+            const userList = users.map(user => ({
+                id: user.id,
+                username: user.username,
+                active: user.active,
+                timezone: user.timezone,
+            }));
             callback({
                 ok: true,
-                users: users,
+                users: userList,
             });
         } catch (e) {
             log.error("user-management", e.message);
@@ -46,10 +35,10 @@ module.exports.userManagementSocketHandler = (socket, server) => {
         }
     });
 
-    // Add a new user (admin only)
+    // Add a new user
     socket.on("addUser", async (userData, callback) => {
         try {
-            await checkAdmin(socket);
+            checkLogin(socket);
 
             // Validate input
             if (!userData.username || !userData.password) {
@@ -66,12 +55,11 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             const user = R.dispense("user");
             user.username = userData.username.trim();
             user.password = await passwordHash.generate(userData.password);
-            user.role = userData.role || User.ROLE_USER;
             user.active = 1;
 
             await R.store(user);
 
-            log.info("user-management", `User ${user.username} created by admin ${socket.userID}`);
+            log.info("user-management", `User ${user.username} created by user ${socket.userID}`);
 
             callback({
                 ok: true,
@@ -87,22 +75,14 @@ module.exports.userManagementSocketHandler = (socket, server) => {
         }
     });
 
-    // Update user (admin only)
+    // Update user
     socket.on("updateUser", async (userId, userData, callback) => {
         try {
-            await checkAdmin(socket);
+            checkLogin(socket);
 
             const user = await R.findOne("user", " id = ? ", [ userId ]);
             if (!user) {
                 throw new Error("User not found");
-            }
-
-            // Don't allow demoting the last admin
-            if (user.role === User.ROLE_ADMIN && userData.role !== User.ROLE_ADMIN) {
-                const adminCount = await R.count("user", " role = ? AND active = 1 ", [ User.ROLE_ADMIN ]);
-                if (adminCount <= 1) {
-                    throw new Error("Cannot change role of the last admin user");
-                }
             }
 
             // Update user fields
@@ -118,21 +98,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
                 user.username = userData.username.trim();
             }
 
-            if (userData.role) {
-                user.role = userData.role;
-            }
-
             if (typeof userData.active !== "undefined") {
-                // Don't allow deactivating the last admin
-                if (user.role === User.ROLE_ADMIN && !userData.active) {
-                    const adminCount = await R.count("user", " role = ? AND active = 1 AND id != ? ", [
-                        User.ROLE_ADMIN,
-                        userId
-                    ]);
-                    if (adminCount < 1) {
-                        throw new Error("Cannot deactivate the last admin user");
-                    }
-                }
                 user.active = userData.active ? 1 : 0;
             }
 
@@ -143,7 +109,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
 
             await R.store(user);
 
-            log.info("user-management", `User ${user.username} updated by admin ${socket.userID}`);
+            log.info("user-management", `User ${user.username} updated by user ${socket.userID}`);
 
             callback({
                 ok: true,
@@ -158,10 +124,10 @@ module.exports.userManagementSocketHandler = (socket, server) => {
         }
     });
 
-    // Delete user (admin only)
+    // Delete user
     socket.on("deleteUser", async (userId, callback) => {
         try {
-            await checkAdmin(socket);
+            checkLogin(socket);
 
             const user = await R.findOne("user", " id = ? ", [ userId ]);
             if (!user) {
@@ -173,14 +139,6 @@ module.exports.userManagementSocketHandler = (socket, server) => {
                 throw new Error("Cannot delete your own account");
             }
 
-            // Don't allow deleting the last admin
-            if (user.role === User.ROLE_ADMIN) {
-                const adminCount = await R.count("user", " role = ? AND active = 1 ", [ User.ROLE_ADMIN ]);
-                if (adminCount <= 1) {
-                    throw new Error("Cannot delete the last admin user");
-                }
-            }
-
             // Instead of deleting, deactivate the user to preserve data integrity
             user.active = 0;
             await R.store(user);
@@ -188,7 +146,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             // Disconnect all socket connections for this user
             server.disconnectAllSocketClients(userId);
 
-            log.info("user-management", `User ${user.username} deactivated by admin ${socket.userID}`);
+            log.info("user-management", `User ${user.username} deactivated by user ${socket.userID}`);
 
             callback({
                 ok: true,

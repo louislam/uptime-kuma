@@ -1243,19 +1243,13 @@
     "Add User": "Add User",
     "Edit User": "Edit User",
     "User": "User",
-    "Role": "Role",
-    "Admin": "Admin",
-    "Read Only": "Read Only",
     "User created successfully": "User created successfully",
     "User updated successfully": "User updated successfully",
     "User deleted successfully": "User deleted successfully",
     "Are you sure you want to delete this user?": "Are you sure you want to delete this user?",
     "Username already exists": "Username already exists",
     "Cannot delete your own account": "Cannot delete your own account",
-    "Cannot delete the last admin user": "Cannot delete the last admin user",
-    "Cannot deactivate the last admin user": "Cannot deactivate the last admin user",
-    "Cannot change role of the last admin user": "Cannot change role of the last admin user",
-    "Permission denied. Admin access required.": "Permission denied. Admin access required.",
     "Active": "Active",
-    "Inactive": "Inactive"
+    "Inactive": "Inactive",
+    "No users": "No users"
 }

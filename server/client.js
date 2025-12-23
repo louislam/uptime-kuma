@@ -158,15 +158,6 @@ async function sendInfo(socket, hideVersion = false) {
         };
     }
 
-    // Add user role information if user is logged in
-    if (socket.userID) {
-        const user = await R.findOne("user", " id = ? ", [ socket.userID ]);
-        if (user) {
-            info.isAdmin = user.role === "admin";
-            info.userRole = user.role || "user";
-        }
-    }
-
     socket.emit("info", info);
 }
 
