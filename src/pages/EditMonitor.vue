@@ -696,7 +696,7 @@
                                                 </summary>
                                                 <div class="p-2 ps-4">
                                                     <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
-                                                    <div class="text-secondary small mt-1">{{ $t("systemServiceExpectedOutput") }}: {{ $t("systemServiceActiveResultLinux") }}</div>
+                                                    <div class="text-secondary small mt-1">{{ $t("systemServiceExpectedOutput", ["active"]) }}</div>
                                                 </div>
                                             </details>
 
