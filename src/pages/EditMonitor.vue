@@ -46,7 +46,7 @@
                                             {{ $t("Docker Container") }}
                                         </option>
                                         <option
-                                            v-if="['linux', 'win32'].includes($root.info.runtime.platform)"
+                                            v-if="['linux', 'win32'].includes($root.info.runtime.platform) && !$root.info.isContainer"
                                             value="system-service"
                                         >
                                             {{ $t("System Service") }}
@@ -672,49 +672,42 @@
                                 <div class="my-3">
                                     <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
                                     <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx">
+                                    
                                     <div class="form-text">
                                         <template v-if="$root.info.runtime.platform === 'linux'">
                                             {{ $t("systemServiceDescriptionLinux", {service_name: monitor.system_service_name || 'nginx'}) }}
                                         </template>
                                         <template v-else-if="$root.info.runtime.platform === 'win32'">
-                                            {{ $t("systemServiceDescriptionWindows", {service_name: monitor.system_service_name || 'nginx'}) }}
+                                            {{ $t("systemServiceDescriptionWindows", {service_name: monitor.system_service_name || 'wuauserv'}) }}
                                         </template>
                                         <template v-else>
                                             {{ $t("systemServiceDescription", {service_name: monitor.system_service_name || 'nginx'}) }}
                                         </template>
-
-                                        <div class="mt-2">
-                                            <details v-if="$root.info.runtime.platform === 'linux'" class="mb-2">
-                                                <summary
-                                                    class="btn btn-outline-primary btn-sm w-100 text-start"
-                                                    style="box-shadow: none !important;
-
-                                                        --bs-btn-focus-box-shadow: none;"
-                                                >
-                                                    <i class="fab fa-linux me-1"></i>
-                                                    {{ $t("systemServiceLinuxLabel") }}
-                                                </summary>
-                                                <div class="p-2 ps-4">
-                                                    <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
-                                                    <div class="text-secondary small mt-1">{{ $t("systemServiceExpectedOutput", ["active"]) }}</div>
-                                                </div>
-                                            </details>
-
-                                            <details v-if="$root.info.runtime.platform === 'win32'">
-                                                <summary
-                                                    class="btn btn-outline-primary btn-sm w-100 text-start"
-                                                    style="box-shadow: none !important;
-
-                                                        --bs-btn-focus-box-shadow: none;"
-                                                >
-                                                    <i class="fab fa-windows me-1"></i>
-                                                    {{ $t("systemServiceWindowsLabel") }}
-                                                </summary>
-                                                <div class="p-2 ps-4">
-                                                    <code>(Get-Service -Name "{{ monitor.system_service_name || 'nginx' }}").Status</code>
-                                                    <div class="text-secondary small mt-1">{{ $t("systemServiceExpectedOutput", ["Running"]) }}</div>
-                                                </div>
-                                            </details>
+                            
+                                        <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
+                                            <div>
+                                                <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                    <template #command>
+                                                        <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
+                                                    </template>
+                                                </i18n-t>
+                                            </div>
+                                            <div class="text-secondary small">
+                                                {{ $t("systemServiceExpectedOutput", ["active"]) }}
+                                            </div>
+                                        </div>
+                            
+                                        <div v-if="$root.info.runtime.platform === 'win32'" class="mt-2">
+                                            <div>
+                                                <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                    <template #command>
+                                                        <code>(Get-Service -Name '{{ monitor.system_service_name || 'wuauserv' }}').Status</code>
+                                                    </template>
+                                                </i18n-t>
+                                            </div>
+                                            <div class="text-secondary small">
+                                                {{ $t("systemServiceExpectedOutput", ["Running"]) }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -24,8 +24,10 @@ class SystemServiceMonitorType extends MonitorType {
 
         if (process.platform === "win32") {
             return this.checkWindows(serviceName, heartbeat);
-        } else {
+        } else if (process.platform === "linux") {
             return this.checkLinux(serviceName, heartbeat);
+        } else {
+            throw new Error(`System Service monitoring is not supported on ${process.platform}`);
         }
     }
 
