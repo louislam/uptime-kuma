@@ -1257,9 +1257,5 @@
     "usernameMinLength": "Username must be at least 3 characters long",
     "usernameMaxLength": "Username must not exceed 50 characters",
     "usernameInvalidCharacters": "Username can only contain letters, numbers, dots, hyphens, and underscores",
-    "usernameReserved": "This username is reserved and cannot be used",
-    "Username must be at least 3 characters long": "Username must be at least 3 characters long",
-    "Username must not exceed 50 characters": "Username must not exceed 50 characters",
-    "Username can only contain letters, numbers, dots, hyphens, and underscores": "Username can only contain letters, numbers, dots, hyphens, and underscores",
-    "This username is reserved and cannot be used": "This username is reserved and cannot be used"
+    "usernameReserved": "This username is reserved and cannot be used"
 }
