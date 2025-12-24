@@ -123,7 +123,7 @@
         "node-cloudflared-tunnel": "~1.0.9",
         "node-radius-utils": "~1.2.0",
         "node-fetch-cache": "^5.1.0",
-        "nodemailer": "~6.9.13",
+        "nodemailer": "~7.0.11",
         "nostr-tools": "^2.10.4",
         "notp": "~2.0.3",
         "openid-client": "^5.4.2",
