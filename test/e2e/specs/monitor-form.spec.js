@@ -53,7 +53,7 @@ test.describe("Monitor Form", () => {
 
         const friendlyName = "Example DNS NS";
         await page.getByTestId("friendly-name-input").fill(friendlyName);
-        await page.getByTestId("hostname-input").fill("example.com");
+        await page.getByTestId("hostname-input").fill("kuma.pet");
 
         const resolveTypeSelect = page.getByTestId("resolve-type-select");
         await resolveTypeSelect.click();
@@ -65,9 +65,9 @@ test.describe("Monitor Form", () => {
         await page.getByTestId("add-condition-button").click();
         expect(await page.getByTestId("condition").count()).toEqual(2); // 2 explicitly added
 
-        await page.getByTestId("condition-value").nth(0).fill("a.iana-servers.net");
+        await page.getByTestId("condition-value").nth(0).fill("carl.ns.cloudflare.com");
         await page.getByTestId("condition-and-or").nth(0).selectOption("or");
-        await page.getByTestId("condition-value").nth(1).fill("b.iana-servers.net");
+        await page.getByTestId("condition-value").nth(1).fill("jean.ns.cloudflare.com");
 
         await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
@@ -86,7 +86,7 @@ test.describe("Monitor Form", () => {
 
         const friendlyName = "Example DNS NS";
         await page.getByTestId("friendly-name-input").fill(friendlyName);
-        await page.getByTestId("hostname-input").fill("example.com");
+        await page.getByTestId("hostname-input").fill("kuma.pet");
 
         const resolveTypeSelect = page.getByTestId("resolve-type-select");
         await resolveTypeSelect.click();

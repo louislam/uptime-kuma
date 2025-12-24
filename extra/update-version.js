@@ -27,10 +27,19 @@ if (! exists) {
 
     // Also update package-lock.json
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    childProcess.spawnSync(npm, [ "install" ]);
-
+    const resultVersion = childProcess.spawnSync(npm, [ "--no-git-tag-version", "version", newVersion ], { shell: true });
+    if (resultVersion.error) {
+        console.error(resultVersion.error);
+        console.error("error npm version!");
+        process.exit(1);
+    }
+    const resultInstall = childProcess.spawnSync(npm, [ "install" ], { shell: true });
+    if (resultInstall.error) {
+        console.error(resultInstall.error);
+        console.error("error update package-lock!");
+        process.exit(1);
+    }
     commit(newVersion);
-    tag(newVersion);
 
 } else {
     console.log("version exists");
@@ -52,16 +61,6 @@ function commit(version) {
     if (stdout.includes("no changes added to commit")) {
         throw new Error("commit error");
     }
-}
-
-/**
- * Create a tag with the specified version
- * @param {string} version Tag to create
- * @returns {void}
- */
-function tag(version) {
-    let res = childProcess.spawnSync("git", [ "tag", version ]);
-    console.log(res.stdout.toString().trim());
 }
 
 /**

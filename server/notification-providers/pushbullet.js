@@ -20,6 +20,7 @@ class Pushbullet extends NotificationProvider {
                     "Content-Type": "application/json"
                 }
             };
+            config = this.getAxiosConfigWithProxy(config);
             if (heartbeatJSON == null) {
                 let data = {
                     "type": "note",

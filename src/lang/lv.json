@@ -1,0 +1,7 @@
+{
+    "languageName": "Latviešu",
+    "setupDatabaseChooseDatabase": "Kuru datubāzi izmantosiet?",
+    "setupDatabaseEmbeddedMariaDB": "Jums nav nekas jādara. Docker imidžā ir iebūvēta un automātiski konfigurēta MariaDB datubāze. Uptime Kuma pieslēgsies šai datubāzei izmantojot unix soketu.",
+    "setupDatabaseSQLite": "Vienkāršs datu bāzes fails, iesakāms maza izmēra risinājumiem. Pirms versijas v2.0.0 SQLite bija noklusējuma datubāze.",
+    "setupDatabaseMariaDB": "Pieslēgties ārējai MariaDB datubāzei. Jums būs jākonfigurē datubāzes pieslēgšanās informācija."
+}
