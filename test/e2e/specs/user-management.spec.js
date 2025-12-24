@@ -51,7 +51,7 @@ test.describe("User Management", () => {
         await page.getByRole("button", { name: "Save" }).click();
 
         // Verify error message about weak password appears (modal should stay visible on error)
-        await expect(page.locator(".toast-body, .alert, .error")).toContainText(/too weak|weak/i);
+        await expect(page.locator(".Vue-Toastification__toast-body, .toast-body, .alert, .error")).toContainText(/too weak|weak/i);
         await screenshot(testInfo, page);
     });
 
@@ -103,7 +103,7 @@ test.describe("User Management", () => {
         await page.getByRole("button", { name: "Save" }).click();
 
         // Verify error message appears (modal should stay visible on error)
-        await expect(page.locator(".toast-body, .alert, .error")).toContainText(/cannot deactivate.*own account/i);
+        await expect(page.locator(".Vue-Toastification__toast-body, .toast-body, .alert, .error")).toContainText(/cannot deactivate.*own account/i);
 
         // Close dialog
         await page.getByRole("button", { name: "Cancel" }).click();
@@ -126,7 +126,7 @@ test.describe("User Management", () => {
         await page.getByRole("button", { name: "Yes" }).click();
 
         // Verify error message appears
-        await expect(page.locator(".toast-body, .alert, .error")).toContainText(/cannot delete.*own account/i);
+        await expect(page.locator(".Vue-Toastification__toast-body, .toast-body, .alert, .error")).toContainText(/cannot delete.*own account/i);
         await screenshot(testInfo, page);
     });
 
@@ -148,7 +148,7 @@ test.describe("User Management", () => {
         await userItem.getByRole("button", { name: "Delete" }).click();
 
         // Verify warning message about cascade deletion
-        await expect(page.locator(".modal, .confirm")).toContainText(/API keys.*orphan.*monitors.*maintenance/i);
+        await expect(page.locator(".modal.show")).toContainText(/API keys.*orphan.*monitors.*maintenance/i);
         await screenshot(testInfo, page);
 
         // Confirm deletion
