@@ -1252,7 +1252,7 @@
     "Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.": "Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.",
     "User not found": "User not found",
     "Username and password are required": "Username and password are required",
-    "deleteUserWarning": "Are you sure you want to delete this user? This will permanently delete all their API keys. Any monitors and maintenance records created by this user will remain but will no longer be associated with them.",
+    "deleteUserWarning": "Are you sure you want to delete this user? This will permanently delete all their API keys. Any monitors and maintenance records created by this user will become orphaned and will no longer be associated with them.",
     "Cannot deactivate your own account": "Cannot deactivate your own account",
     "usernameMinLength": "Username must be at least 3 characters long",
     "usernameMaxLength": "Username must not exceed 50 characters",
