@@ -228,7 +228,7 @@ export default {
                 "user", "users", "public", "private"
             ];
 
-            // Client-side validation
+            // Trim and validate username
             const username = this.formData.username.trim();
 
             if (username.length < MIN_USERNAME_LENGTH) {
@@ -251,9 +251,12 @@ export default {
                 return;
             }
 
+            // Update formData with trimmed username
+            this.formData.username = username;
+
             if (this.editMode) {
                 const updateData = {
-                    username: this.formData.username,
+                    username: username,
                     active: this.formData.active,
                 };
 
