@@ -3,7 +3,7 @@ import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
 
 test.describe("User Management", () => {
     test.beforeEach(async ({ page }) => {
-        await restoreSqliteSnapshot(page);
+        await restoreSqliteSnapshot();
     });
 
     test.afterEach(async ({ page }, testInfo) => {
