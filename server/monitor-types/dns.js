@@ -50,8 +50,10 @@ class DnsMonitorType extends MonitorType {
                 break;
 
             case "CAA":
-                dnsMessage = dnsRes[0].issue;
-                conditionsResult = handleConditions({ record: dnsRes[0].issue });
+                // .filter(Boolean) was added because some CAA records do not contain an issue key, resulting in a blank list item.
+                // Hypothetical dnsRes [{ critical: 0, issuewild: 'letsencrypt.org' }, { critical: 0, issue: 'letsencrypt.org' }]
+                dnsMessage = `Records: ${dnsRes.map(record => record.issue).filter(Boolean).join(" | ")}`;
+                conditionsResult = dnsRes.some(record => handleConditions({ record: record.issue }));
                 break;
 
             case "MX":
