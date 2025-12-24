@@ -75,14 +75,14 @@ test.describe("User Management", () => {
 
         // Change username
         await page.locator("#username").clear();
-        await page.locator("#username").fill("editeduserB");
+        await page.locator("#username").fill("editeduser");
 
         // Save changes
         await page.getByRole("button", { name: "Save" }).click();
         await expect(page.locator(".modal.show")).not.toBeVisible();
 
         // Verify updated username appears
-        await expect(page.getByText("editeduserB")).toBeVisible();
+        await expect(page.getByText("editeduser")).toBeVisible();
         await screenshot(testInfo, page);
     });
 
