@@ -340,7 +340,7 @@ export default {
         flex-direction: row-reverse;
 
         .btn-group {
-            width: 200px;
+            width: auto;
         }
     }
 }
