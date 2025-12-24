@@ -30,7 +30,8 @@
                             monitor.type === 'keyword' ||
                             monitor.type === 'json-query' ||
                             monitor.type === 'mp-health' ||
-                            monitor.type === 'real-browser'
+                            monitor.type === 'real-browser' ||
+                            monitor.type === 'websocket-upgrade'
                     "
                     :href="monitor.url"
                     target="_blank"
