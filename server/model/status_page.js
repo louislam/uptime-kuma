@@ -102,10 +102,9 @@ class StatusPage extends BeanModel {
     static async renderHTML(indexHTML, statusPage) {
         const $ = cheerio.load(indexHTML);
 
-        const description155 = marked(statusPage.description ?? "")
-            .replace(/<[^>]+>/gm, "")
-            .trim()
-            .substring(0, 155);
+        const rawDescription = statusPage.description ?? "";
+        const descriptionText = rawDescription.replace(/<[^>]*>/g, "");
+        const description155 = descriptionText.trim().substring(0, 155);
 
         $("title").text(statusPage.title);
         $("meta[name=description]").attr("content", description155);
