@@ -184,10 +184,10 @@ module.exports.userManagementSocketHandler = (socket, server) => {
                 msg: "User deleted successfully",
                 msgi18n: true,
             });
-        } catch (error) {
+        } catch (e) {
             callback({
                 ok: false,
-                msg: error.message,
+                msg: e.message,
                 msgi18n: true,
             });
         }
