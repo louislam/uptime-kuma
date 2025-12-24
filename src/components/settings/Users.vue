@@ -246,16 +246,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../../assets/vars.scss";
-
 .modal.show {
     display: block;
-}
-
-// Ensure proper text color in dark mode for table cells
-html.dark {
-    .table td {
-        color: $dark-font-color;
-    }
 }
 </style>
