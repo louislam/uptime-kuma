@@ -51,18 +51,18 @@
         </div>
 
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteUser">
-            {{ $t("Are you sure you want to delete this user?") }}
+            {{ $t("deleteUserWarning") }}
         </Confirm>
 
         <!-- Add/Edit User Dialog -->
-        <div class="modal fade" :class="{ show: showDialog }" :style="{ display: showDialog ? 'block' : 'none' }" tabindex="-1">
+        <div ref="userDialog" class="modal fade" tabindex="-1" data-bs-backdrop="static">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
                             {{ editMode ? $t("Edit User") : $t("Add User") }}
                         </h5>
-                        <button type="button" class="btn-close" @click="closeDialog"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form @submit.prevent="saveUser">
@@ -105,7 +105,7 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="closeDialog">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             {{ $t("Cancel") }}
                         </button>
                         <button type="button" class="btn btn-primary" @click="saveUser">
@@ -115,11 +115,11 @@
                 </div>
             </div>
         </div>
-        <div v-if="showDialog" class="modal-backdrop fade show"></div>
     </div>
 </template>
 
 <script>
+import { Modal } from "bootstrap";
 import Confirm from "../Confirm.vue";
 
 export default {
@@ -130,7 +130,7 @@ export default {
         return {
             users: [],
             loading: false,
-            showDialog: false,
+            userDialog: null,
             editMode: false,
             selectedUserID: null,
             formData: {
@@ -143,10 +143,29 @@ export default {
     },
 
     mounted() {
+        this.userDialog = new Modal(this.$refs.userDialog);
         this.loadUsers();
     },
 
+    beforeUnmount() {
+        this.cleanupModal();
+    },
+
     methods: {
+        /**
+         * Cleanup modal instance
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.userDialog) {
+                try {
+                    this.userDialog.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
+        },
+
         /**
          * Load all users from the server
          * @returns {void}
@@ -175,7 +194,7 @@ export default {
                 password: "",
                 active: true,
             };
-            this.showDialog = true;
+            this.userDialog.show();
         },
 
         /**
@@ -191,15 +210,7 @@ export default {
                 password: "",
                 active: user.active === 1,
             };
-            this.showDialog = true;
-        },
-
-        /**
-         * Close the add/edit dialog
-         * @returns {void}
-         */
-        closeDialog() {
-            this.showDialog = false;
+            this.userDialog.show();
         },
 
         /**
@@ -220,7 +231,7 @@ export default {
                 this.$root.getSocket().emit("updateUser", this.formData.id, updateData, (res) => {
                     if (res.ok) {
                         this.$root.toastSuccess(res.msg);
-                        this.closeDialog();
+                        this.userDialog.hide();
                         this.loadUsers();
 
                         // If user edited their own username, they will be logged out
@@ -237,7 +248,7 @@ export default {
                 this.$root.getSocket().emit("addUser", this.formData, (res) => {
                     if (res.ok) {
                         this.$root.toastSuccess(res.msg);
-                        this.closeDialog();
+                        this.userDialog.hide();
                         this.loadUsers();
                     } else {
                         this.$root.toastError(res.msg);
