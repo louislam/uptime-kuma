@@ -5,6 +5,18 @@ const { log } = require("../../src/util");
 const { passwordStrength } = require("check-password-strength");
 
 /**
+ * Validates password strength
+ * @param {string} password Password to validate
+ * @returns {void}
+ * @throws {Error} If password is too weak
+ */
+function validatePasswordStrength(password) {
+    if (passwordStrength(password).value === "Too weak") {
+        throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+    }
+}
+
+/**
  * Handlers for user management
  * @param {Socket} socket Socket.io instance
  * @param {UptimeKumaServer} server Uptime Kuma server
@@ -47,9 +59,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             }
 
             // Validate password strength
-            if (passwordStrength(userData.password).value === "Too weak") {
-                throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
-            }
+            validatePasswordStrength(userData.password);
 
             // Check if username already exists
             const existingUser = await R.findOne("user", " username = ? ", [ userData.username.trim() ]);
@@ -97,6 +107,11 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             const isEditingSelf = Number(userId) === Number(socket.userID);
             const usernameChanged = userData.username && userData.username.trim() !== user.username;
 
+            // Don't allow deactivating yourself
+            if (isEditingSelf && typeof userData.active !== "undefined" && !userData.active) {
+                throw new Error("Cannot deactivate your own account");
+            }
+
             // Update user fields
             if (userData.username && userData.username.trim() !== user.username) {
                 // Check if new username already exists
@@ -117,9 +132,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             // Update password if provided
             if (userData.password) {
                 // Validate password strength
-                if (passwordStrength(userData.password).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
-                }
+                validatePasswordStrength(userData.password);
                 user.password = await passwordHash.generate(userData.password);
             }
 
