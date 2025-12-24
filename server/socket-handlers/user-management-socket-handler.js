@@ -2,6 +2,7 @@ const { checkLogin } = require("../util-server");
 const { R } = require("redbean-node");
 const passwordHash = require("../password-hash");
 const { log } = require("../../src/util");
+const { passwordStrength } = require("check-password-strength");
 
 /**
  * Handlers for user management
@@ -45,6 +46,11 @@ module.exports.userManagementSocketHandler = (socket, server) => {
                 throw new Error("Username and password are required");
             }
 
+            // Validate password strength
+            if (passwordStrength(userData.password).value === "Too weak") {
+                throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+            }
+
             // Check if username already exists
             const existingUser = await R.findOne("user", " username = ? ", [ userData.username.trim() ]);
             if (existingUser) {
@@ -64,6 +70,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             callback({
                 ok: true,
                 msg: "User created successfully",
+                msgi18n: true,
                 userId: user.id,
             });
         } catch (e) {
@@ -71,6 +78,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             callback({
                 ok: false,
                 msg: e.message,
+                msgi18n: true,
             });
         }
     });
@@ -108,6 +116,10 @@ module.exports.userManagementSocketHandler = (socket, server) => {
 
             // Update password if provided
             if (userData.password) {
+                // Validate password strength
+                if (passwordStrength(userData.password).value === "Too weak") {
+                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                }
                 user.password = await passwordHash.generate(userData.password);
             }
 
@@ -118,6 +130,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             callback({
                 ok: true,
                 msg: "User updated successfully",
+                msgi18n: true,
                 requiresLogout: isEditingSelf && usernameChanged,
             });
         } catch (e) {
@@ -125,6 +138,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             callback({
                 ok: false,
                 msg: e.message,
+                msgi18n: true,
             });
         }
     });
@@ -155,11 +169,13 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             callback({
                 ok: true,
                 msg: "User deleted successfully",
+                msgi18n: true,
             });
         } catch (error) {
             callback({
                 ok: false,
                 msg: error.message,
+                msgi18n: true,
             });
         }
     });

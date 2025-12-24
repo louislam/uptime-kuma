@@ -51,7 +51,7 @@
         </div>
 
         <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteUser">
-            {{ $t("Are you sure you want to delete this user?") }}
+            {{ $t("deleteUserWarning") }}
         </Confirm>
 
         <!-- Add/Edit User Dialog -->
