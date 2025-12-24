@@ -202,7 +202,7 @@
         "testcontainers": "^10.13.1",
         "typescript": "~4.4.4",
         "v-pagination-3": "~0.1.7",
-        "vite": "~7.3.0",
+        "vite": "~5.4.15",
         "vite-plugin-compression": "^0.5.1",
         "vite-plugin-pwa": "^1.1.0",
         "vue": "~3.4.2",
