@@ -252,8 +252,8 @@ export default {
             // Only check reserved usernames if:
             // 1. Adding a new user (not in edit mode), OR
             // 2. Editing a user AND the username has changed
-            const usernameChanged = this.editMode && username !== this.originalUsername;
-            if ((!this.editMode || usernameChanged) && RESERVED_USERNAMES.includes(username.toLowerCase())) {
+            const shouldCheckReservedUsername = !this.editMode || (this.editMode && username !== this.originalUsername);
+            if (shouldCheckReservedUsername && RESERVED_USERNAMES.includes(username.toLowerCase())) {
                 this.$root.toastError(this.$t("usernameReserved"));
                 return;
             }
