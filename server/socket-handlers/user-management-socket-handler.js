@@ -17,6 +17,42 @@ function validatePasswordStrength(password) {
 }
 
 /**
+ * Validates username format and constraints
+ * @param {string} username Username to validate
+ * @returns {void}
+ * @throws {Error} If username is invalid
+ */
+function validateUsername(username) {
+    const trimmedUsername = username.trim();
+
+    // Check minimum length
+    if (trimmedUsername.length < 3) {
+        throw new Error("Username must be at least 3 characters long");
+    }
+
+    // Check maximum length
+    if (trimmedUsername.length > 50) {
+        throw new Error("Username must not exceed 50 characters");
+    }
+
+    // Check allowed characters: alphanumeric, underscore, hyphen, dot
+    const usernameRegex = /^[a-zA-Z0-9._-]+$/;
+    if (!usernameRegex.test(trimmedUsername)) {
+        throw new Error("Username can only contain letters, numbers, dots, hyphens, and underscores");
+    }
+
+    // Check reserved usernames (case-insensitive)
+    const reservedUsernames = [
+        "admin", "root", "system", "administrator",
+        "guest", "null", "undefined", "api",
+        "user", "users", "public", "private"
+    ];
+    if (reservedUsernames.includes(trimmedUsername.toLowerCase())) {
+        throw new Error("This username is reserved and cannot be used");
+    }
+}
+
+/**
  * Handlers for user management
  * @param {Socket} socket Socket.io instance
  * @param {UptimeKumaServer} server Uptime Kuma server
@@ -57,6 +93,9 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             if (!userData.username || !userData.password) {
                 throw new Error("Username and password are required");
             }
+
+            // Validate username format
+            validateUsername(userData.username);
 
             // Validate password strength
             validatePasswordStrength(userData.password);
@@ -114,6 +153,9 @@ module.exports.userManagementSocketHandler = (socket, server) => {
 
             // Update user fields
             if (userData.username && userData.username.trim() !== user.username) {
+                // Validate username format
+                validateUsername(userData.username);
+
                 // Check if new username already exists
                 const existingUser = await R.findOne("user", " username = ? AND id != ? ", [
                     userData.username.trim(),
@@ -170,6 +212,16 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             if (Number(user.id) === Number(socket.userID)) {
                 throw new Error("Cannot delete your own account");
             }
+
+            // Explicitly handle related records to ensure database-agnostic behavior
+            // Delete API keys (CASCADE behavior)
+            await R.exec("DELETE FROM api_key WHERE user_id = ?", [ userId ]);
+
+            // Orphan monitors by setting user_id to NULL (SET NULL behavior)
+            await R.exec("UPDATE monitor SET user_id = NULL WHERE user_id = ?", [ userId ]);
+
+            // Orphan maintenance records by setting user_id to NULL (SET NULL behavior)
+            await R.exec("UPDATE maintenance SET user_id = NULL WHERE user_id = ?", [ userId ]);
 
             // Permanently remove the user from the database
             await R.trash(user);

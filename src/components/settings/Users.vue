@@ -218,6 +218,35 @@ export default {
          * @returns {void}
          */
         saveUser() {
+            // Client-side validation
+            const username = this.formData.username.trim();
+
+            if (username.length < 3) {
+                this.$root.toastError(this.$t("usernameMinLength"));
+                return;
+            }
+
+            if (username.length > 50) {
+                this.$root.toastError(this.$t("usernameMaxLength"));
+                return;
+            }
+
+            const usernameRegex = /^[a-zA-Z0-9._-]+$/;
+            if (!usernameRegex.test(username)) {
+                this.$root.toastError(this.$t("usernameInvalidCharacters"));
+                return;
+            }
+
+            const reservedUsernames = [
+                "admin", "root", "system", "administrator",
+                "guest", "null", "undefined", "api",
+                "user", "users", "public", "private"
+            ];
+            if (reservedUsernames.includes(username.toLowerCase())) {
+                this.$root.toastError(this.$t("usernameReserved"));
+                return;
+            }
+
             if (this.editMode) {
                 const updateData = {
                     username: this.formData.username,

@@ -1253,5 +1253,13 @@
     "User not found": "User not found",
     "Username and password are required": "Username and password are required",
     "deleteUserWarning": "Deleting this user will permanently delete all associated API keys and will orphan monitors and maintenance records by setting their user_id to NULL. Are you sure you want to continue?",
-    "Cannot deactivate your own account": "Cannot deactivate your own account"
+    "Cannot deactivate your own account": "Cannot deactivate your own account",
+    "usernameMinLength": "Username must be at least 3 characters long",
+    "usernameMaxLength": "Username must not exceed 50 characters",
+    "usernameInvalidCharacters": "Username can only contain letters, numbers, dots, hyphens, and underscores",
+    "usernameReserved": "This username is reserved and cannot be used",
+    "Username must be at least 3 characters long": "Username must be at least 3 characters long",
+    "Username must not exceed 50 characters": "Username must not exceed 50 characters",
+    "Username can only contain letters, numbers, dots, hyphens, and underscores": "Username can only contain letters, numbers, dots, hyphens, and underscores",
+    "This username is reserved and cannot be used": "This username is reserved and cannot be used"
 }
