@@ -1,7 +1,5 @@
 <template>
     <div>
-        <h5 class="my-4 settings-subheading">{{ $t("User Management") }}</h5>
-
         <div class="mb-3">
             <button class="btn btn-primary" @click="showAddDialog">
                 <font-awesome-icon icon="plus" /> {{ $t("Add User") }}
@@ -248,11 +246,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../../assets/vars.scss";
+
 .modal.show {
     display: block;
 }
 
-.settings-subheading {
-    font-weight: 600;
+// Ensure proper text color in dark mode for table cells
+html.dark {
+    .table td {
+        color: $dark-font-color;
+    }
 }
 </style>
