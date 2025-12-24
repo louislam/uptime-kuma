@@ -148,12 +148,24 @@ export default {
     },
 
     beforeUnmount() {
-        if (this.userDialog) {
-            this.userDialog.dispose();
-        }
+        this.cleanupModal();
     },
 
     methods: {
+        /**
+         * Cleanup modal instance
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.userDialog) {
+                try {
+                    this.userDialog.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
+        },
+
         /**
          * Load all users from the server
          * @returns {void}
