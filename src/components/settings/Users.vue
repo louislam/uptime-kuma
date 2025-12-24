@@ -1,7 +1,7 @@
 <template>
     <div>
-        <div class="mb-3">
-            <button class="btn btn-primary" @click="showAddDialog">
+        <div class="add-btn">
+            <button class="btn btn-primary me-2" type="button" @click="showAddDialog">
                 <font-awesome-icon icon="plus" /> {{ $t("Add User") }}
             </button>
         </div>
@@ -12,38 +12,47 @@
             </div>
         </div>
 
-        <div v-else-if="users.length === 0" class="alert alert-info">
-            {{ $t("No users") }}
+        <div v-else>
+            <span
+                v-if="users.length === 0"
+                class="d-flex align-items-center justify-content-center my-3"
+            >
+                {{ $t("No users") }}
+            </span>
+
+            <div
+                v-for="user in users"
+                :key="user.id"
+                class="item"
+                :class="user.active ? 'active' : 'inactive'"
+            >
+                <div class="left-part">
+                    <div class="circle"></div>
+                    <div class="info">
+                        <div class="title">{{ user.username }}</div>
+                        <div class="status">
+                            {{ user.active ? $t("Active") : $t("Inactive") }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="buttons">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-normal" @click="showEditDialog(user)">
+                            <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
+                        </button>
+
+                        <button class="btn btn-danger" @click="deleteDialog(user.id)">
+                            <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div v-else class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>{{ $t("Username") }}</th>
-                        <th>{{ $t("Status") }}</th>
-                        <th>{{ $t("Actions") }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="user in users" :key="user.id">
-                        <td>{{ user.username }}</td>
-                        <td>
-                            <span v-if="user.active" class="badge bg-success">{{ $t("Active") }}</span>
-                            <span v-else class="badge bg-secondary">{{ $t("Inactive") }}</span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary me-2" @click="showEditDialog(user)">
-                                <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" @click="confirmDelete(user)">
-                                <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteUser">
+            {{ $t("Are you sure you want to delete this user?") }}
+        </Confirm>
 
         <!-- Add/Edit User Dialog -->
         <div class="modal fade" :class="{ show: showDialog }" :style="{ display: showDialog ? 'block' : 'none' }" tabindex="-1">
@@ -111,13 +120,19 @@
 </template>
 
 <script>
+import Confirm from "../Confirm.vue";
+
 export default {
+    components: {
+        Confirm,
+    },
     data() {
         return {
             users: [],
             loading: false,
             showDialog: false,
             editMode: false,
+            selectedUserID: null,
             formData: {
                 id: null,
                 username: "",
@@ -225,27 +240,119 @@ export default {
         },
 
         /**
-         * Confirm and delete a user
-         * @param {object} user User object to delete
+         * Show dialog to confirm deletion
+         * @param {number} userID ID of user that is being deleted
          * @returns {void}
          */
-        confirmDelete(user) {
-            if (confirm(this.$t("Are you sure you want to delete this user?"))) {
-                this.$root.getSocket().emit("deleteUser", user.id, (res) => {
-                    if (res.ok) {
-                        this.$root.toastSuccess(res.msg);
-                        this.loadUsers();
-                    } else {
-                        this.$root.toastError(res.msg);
-                    }
-                });
-            }
+        deleteDialog(userID) {
+            this.selectedUserID = userID;
+            this.$refs.confirmDelete.show();
+        },
+
+        /**
+         * Delete a user
+         * @returns {void}
+         */
+        deleteUser() {
+            this.$root.getSocket().emit("deleteUser", this.selectedUserID, (res) => {
+                if (res.ok) {
+                    this.$root.toastSuccess(res.msg);
+                    this.loadUsers();
+                } else {
+                    this.$root.toastError(res.msg);
+                }
+            });
         },
     },
 };
 </script>
 
 <style lang="scss" scoped>
+@import "../../assets/vars.scss";
+
+.mobile {
+    .item {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+}
+
+.add-btn {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all ease-in-out 0.15s;
+    justify-content: space-between;
+    padding: 10px;
+    min-height: 90px;
+    margin-bottom: 5px;
+
+    &:hover {
+        background-color: $highlight-white;
+    }
+
+    &.active {
+        .circle {
+            background-color: $primary;
+        }
+    }
+
+    &.inactive {
+        .circle {
+            background-color: $danger;
+        }
+    }
+
+    .left-part {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+
+        .circle {
+            width: 25px;
+            height: 25px;
+            border-radius: 50rem;
+        }
+
+        .info {
+            .title {
+                font-weight: bold;
+                font-size: 20px;
+            }
+
+            .status {
+                font-size: 14px;
+            }
+        }
+    }
+
+    .buttons {
+        display: flex;
+        gap: 8px;
+        flex-direction: row-reverse;
+
+        .btn-group {
+            width: 200px;
+        }
+    }
+}
+
+.dark {
+    .item {
+        &:hover {
+            background-color: $dark-bg2;
+        }
+    }
+}
+
 .modal.show {
     display: block;
 }
