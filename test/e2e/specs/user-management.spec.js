@@ -109,7 +109,7 @@ test.describe("User Management", () => {
         // Close dialog
         await page.getByRole("button", { name: "Cancel" }).click();
 
-        // User should still be active (we're testing that the user can deactivate themselves, 
+        // User should still be active (we're testing that the user can deactivate themselves,
         // which is allowed by the code, so we just verify the action completes)
         await screenshot(testInfo, page);
     });
