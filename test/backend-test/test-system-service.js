@@ -50,16 +50,11 @@ describe("SystemServiceMonitorType", () => {
      */
     function createMockCommand(baseName, outputText, exitCode = 0) {
         tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "uptime-kuma-test-"));
-        const fileName = process.platform === "win32" ? baseName + ".cmd" : baseName;
 
-        let content;
-        if (process.platform === "win32") {
-            content = `@echo off\necho ${outputText}\nexit /b ${exitCode}`;
-        } else {
-            content = `#!/bin/sh\necho "${outputText}"\nexit ${exitCode}`;
-        }
+        // Only needed for non-Windows mocks (Linux/Mac)
+        const content = `#!/bin/sh\necho "${outputText}"\nexit ${exitCode}`;
+        const scriptPath = path.join(tempDir, baseName);
 
-        const scriptPath = path.join(tempDir, fileName);
         fs.writeFileSync(scriptPath, content);
         fs.chmodSync(scriptPath, 0o755);
         process.env.PATH = tempDir + path.delimiter + process.env.PATH;
@@ -67,10 +62,18 @@ describe("SystemServiceMonitorType", () => {
 
     it("should detect a running service", async () => {
         const isWin = process.platform === "win32";
-        // We mock the command to output "active", but the Monitor implementation
-        // abstracts this away into a friendly message like "Service ... is running."
-        createMockCommand(isWin ? "powershell" : "systemctl", isWin ? "Running" : "active", 0);
+        let serviceName = "myservice";
 
+        if (isWin) {
+            // Windows CI has real PowerShell and real services.
+            // We test against 'Dnscache', a core service guaranteed to be running.
+            serviceName = "Dnscache";
+        } else {
+            // Linux CI (Docker) lacks systemd. We must mock the tool to pass the test.
+            createMockCommand("systemctl", "active", 0);
+        }
+
+        // If on macOS, mock Linux platform so the code tries to use systemctl
         if (process.platform === "darwin") {
             Object.defineProperty(process, "platform", {
                 value: "linux",
@@ -79,7 +82,7 @@ describe("SystemServiceMonitorType", () => {
         }
 
         const monitor = {
-            system_service_name: "myservice",
+            system_service_name: serviceName,
         };
 
         await monitorType.check(monitor, heartbeat);
@@ -90,7 +93,15 @@ describe("SystemServiceMonitorType", () => {
 
     it("should detect a stopped service", async () => {
         const isWin = process.platform === "win32";
-        createMockCommand(isWin ? "powershell" : "systemctl", isWin ? "Stopped" : "inactive", 1);
+        let serviceName = "myservice";
+
+        if (isWin) {
+            // Real Windows: Query a non-existent service to force an error/down state
+            serviceName = "non-existent-service-12345";
+        } else {
+            // Mocked Linux: Create a mock that returns "inactive" (exit code 1)
+            createMockCommand("systemctl", "inactive", 1);
+        }
 
         if (process.platform === "darwin") {
             Object.defineProperty(process, "platform", {
@@ -100,7 +111,7 @@ describe("SystemServiceMonitorType", () => {
         }
 
         const monitor = {
-            system_service_name: "myservice",
+            system_service_name: serviceName,
         };
 
         try {
