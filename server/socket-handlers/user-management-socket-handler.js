@@ -140,28 +140,26 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             }
 
             // Don't allow deleting yourself
-            if (user.id === socket.userID) {
+            if (Number(user.id) === Number(socket.userID)) {
                 throw new Error("Cannot delete your own account");
             }
 
-            // Instead of deleting, deactivate the user to preserve data integrity
-            user.active = 0;
-            await R.store(user);
+            // Permanently remove the user from the database
+            await R.trash(user);
 
             // Disconnect all socket connections for this user
             server.disconnectAllSocketClients(userId);
 
-            log.info("user-management", `User ${user.username} deactivated by user ${socket.userID}`);
+            log.info("user-management", `User ${user.username} deleted by user ${socket.userID}`);
 
             callback({
                 ok: true,
                 msg: "User deleted successfully",
             });
-        } catch (e) {
-            log.error("user-management", e.message);
+        } catch (error) {
             callback({
                 ok: false,
-                msg: e.message,
+                msg: error.message,
             });
         }
     });
