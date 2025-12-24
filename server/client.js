@@ -142,27 +142,23 @@ async function sendAPIKeyList(socket) {
  * @returns {Promise<void>}
  */
 async function sendInfo(socket, hideVersion = false) {
-    let version;
-    let latestVersion;
-    let isContainer;
-    let dbType;
-
-    if (!hideVersion) {
-        version = checkVersion.version;
-        latestVersion = checkVersion.latestVersion;
-        isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
-        dbType = Database.dbConfig.type;
-    }
-
-    socket.emit("info", {
-        version,
-        latestVersion,
-        isContainer,
-        dbType,
+    const info = {
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
-    });
+    };
+    if (!hideVersion) {
+        info.version = checkVersion.version;
+        info.latestVersion = checkVersion.latestVersion;
+        info.isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
+        info.dbType = Database.dbConfig.type;
+        info.runtime = {
+            platform: process.platform, // linux or win32
+            arch: process.arch, // x86 or arm
+        };
+    }
+
+    socket.emit("info", info);
 }
 
 /**

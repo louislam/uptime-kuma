@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN, PING_GLOBAL_TIMEOUT_DEFAULT: TIMEOUT, log } = require("../../src/util");
+const { UP, PING_GLOBAL_TIMEOUT_DEFAULT: TIMEOUT, log } = require("../../src/util");
 const { checkCertificate } = require("../util-server");
 const tls = require("tls");
 const net = require("net");
@@ -47,21 +47,39 @@ class TCPMonitorType extends MonitorType {
             heartbeat.msg = `${resp} ms`;
             heartbeat.status = UP;
         } catch {
-            heartbeat.status = DOWN;
-            heartbeat.msg = "Connection failed";
-            return;
+            throw new Error("Connection failed");
         }
 
         let socket_;
 
         const preTLS = () =>
             new Promise((resolve, reject) => {
-                let timeout;
+                let dialogTimeout;
+                let bannerTimeout;
                 socket_ = net.connect(monitor.port, monitor.hostname);
 
                 const onTimeout = () => {
                     log.debug(this.name, `[${monitor.name}] Pre-TLS connection timed out`);
-                    reject("Connection timed out");
+                    doReject("Connection timed out");
+                };
+
+                const onBannerTimeout = () => {
+                    log.debug(this.name, `[${monitor.name}] Pre-TLS timed out waiting for banner`);
+                    // No banner. Could be a XMPP server?
+                    socket_.write(`<stream:stream to='${monitor.hostname}' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>`);
+                };
+
+                const doResolve = () => {
+                    dialogTimeout && clearTimeout(dialogTimeout);
+                    bannerTimeout && clearTimeout(bannerTimeout);
+                    resolve({ socket: socket_ });
+                };
+
+                const doReject = (error) => {
+                    dialogTimeout && clearTimeout(dialogTimeout);
+                    bannerTimeout && clearTimeout(bannerTimeout);
+                    socket_.end();
+                    reject(error);
                 };
 
                 socket_.on("connect", () => {
@@ -72,10 +90,10 @@ class TCPMonitorType extends MonitorType {
                     const response = data.toString();
                     const response_ = response.toLowerCase();
                     log.debug(this.name, `[${monitor.name}] Pre-TLS response: ${response}`);
+                    clearTimeout(bannerTimeout);
                     switch (true) {
                         case response_.includes("start tls") || response_.includes("begin tls"):
-                            timeout && clearTimeout(timeout);
-                            resolve({ socket: socket_ });
+                            doResolve();
                             break;
                         case response.startsWith("* OK") || response.match(/CAPABILITY.+STARTTLS/):
                             socket_.write("a001 STARTTLS\r\n");
@@ -86,8 +104,16 @@ class TCPMonitorType extends MonitorType {
                         case response.includes("250-STARTTLS"):
                             socket_.write("STARTTLS\r\n");
                             break;
+                        case response_.includes("<proceed"):
+                            doResolve();
+                            break;
+                        case response_.includes("<starttls"):
+                            socket_.write("<starttls xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>");
+                            break;
+                        case response_.includes("<stream:stream") || response_.includes("</stream:stream>"):
+                            break;
                         default:
-                            reject(`Unexpected response: ${response}`);
+                            doReject(`Unexpected response: ${response}`);
                     }
                 });
                 socket_.on("error", error => {
@@ -95,7 +121,8 @@ class TCPMonitorType extends MonitorType {
                     reject(error);
                 });
                 socket_.setTimeout(1000 * TIMEOUT, onTimeout);
-                timeout = setTimeout(onTimeout, 1000 * TIMEOUT);
+                dialogTimeout = setTimeout(onTimeout, 1000 * TIMEOUT);
+                bannerTimeout = setTimeout(onBannerTimeout, 1000 * 1.5);
             });
 
         const reuseSocket = monitor.smtpSecurity === "starttls" ? await preTLS() : {};
@@ -133,13 +160,11 @@ class TCPMonitorType extends MonitorType {
 
                 await monitor.handleTlsInfo(tlsInfoObject);
                 if (!tlsInfoObject.valid) {
-                    heartbeat.status = DOWN;
-                    heartbeat.msg = "Certificate is invalid";
+                    throw new Error("Certificate is invalid");
                 }
             } catch (error) {
                 const message = error instanceof Error ? error.message : "Unknown error";
-                heartbeat.status = DOWN;
-                heartbeat.msg = `TLS Connection failed: ${message}`;
+                throw new Error(`TLS Connection failed: ${message}`);
             } finally {
                 if (socket && !socket.destroyed) {
                     socket.end();

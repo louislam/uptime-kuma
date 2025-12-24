@@ -44,7 +44,7 @@ export const SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
-export const MIN_INTERVAL_SECOND = 20; // 20 seconds
+export const MIN_INTERVAL_SECOND = 1; // 1 second
 
 // Packet Size limits
 export const PING_PACKET_SIZE_MIN = 1;
@@ -672,6 +672,16 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
 
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+
+        // Check for arrays: JSONata filter expressions like .[predicate] always return arrays
+        if (Array.isArray(response)) {
+            const responseStr = JSON.stringify(response);
+            const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
+            throw new Error(
+                "JSON query returned the array " + truncatedResponse + ", but a primitive value is required. " +
+                "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean()."
+            );
         }
 
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {
