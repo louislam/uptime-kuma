@@ -113,6 +113,9 @@ export default {
                 "api-keys": {
                     title: this.$t("API Keys")
                 },
+                users: {
+                    title: this.$t("Users"),
+                },
                 proxies: {
                     title: this.$t("Proxies"),
                 },

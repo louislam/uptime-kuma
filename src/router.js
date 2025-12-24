@@ -32,6 +32,7 @@ const Security = () => import("./components/settings/Security.vue");
 import Proxies from "./components/settings/Proxies.vue";
 import About from "./components/settings/About.vue";
 import RemoteBrowsers from "./components/settings/RemoteBrowsers.vue";
+import Users from "./components/settings/Users.vue";
 
 const routes = [
     {
@@ -127,6 +128,10 @@ const routes = [
                             {
                                 path: "api-keys",
                                 component: APIKeys,
+                            },
+                            {
+                                path: "users",
+                                component: Users,
                             },
                             {
                                 path: "proxies",
