@@ -222,6 +222,13 @@ export default {
                         this.$root.toastSuccess(res.msg);
                         this.closeDialog();
                         this.loadUsers();
+                        
+                        // If user edited their own username, logout immediately
+                        if (res.requiresLogout) {
+                            setTimeout(() => {
+                                this.$root.logout();
+                            }, 1000);
+                        }
                     } else {
                         this.$root.toastError(res.msg);
                     }

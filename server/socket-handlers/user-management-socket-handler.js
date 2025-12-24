@@ -85,6 +85,10 @@ module.exports.userManagementSocketHandler = (socket, server) => {
                 throw new Error("User not found");
             }
 
+            // Check if user is editing their own username
+            const isEditingSelf = (userId === socket.userID);
+            const usernameChanged = userData.username && userData.username.trim() !== user.username;
+
             // Update user fields
             if (userData.username && userData.username.trim() !== user.username) {
                 // Check if new username already exists
@@ -114,6 +118,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             callback({
                 ok: true,
                 msg: "User updated successfully",
+                requiresLogout: isEditingSelf && usernameChanged,
             });
         } catch (e) {
             log.error("user-management", e.message);
