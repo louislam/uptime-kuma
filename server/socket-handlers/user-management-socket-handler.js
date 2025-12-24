@@ -86,7 +86,7 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             }
 
             // Check if user is editing their own username
-            const isEditingSelf = (userId === socket.userID);
+            const isEditingSelf = Number(userId) === Number(socket.userID);
             const usernameChanged = userData.username && userData.username.trim() !== user.username;
 
             // Update user fields

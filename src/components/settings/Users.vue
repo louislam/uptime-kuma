@@ -223,11 +223,11 @@ export default {
                         this.closeDialog();
                         this.loadUsers();
                         
-                        // If user edited their own username, logout immediately
+                        // If user edited their own username, they will be logged out
                         if (res.requiresLogout) {
                             setTimeout(() => {
                                 this.$root.logout();
-                            }, 1000);
+                            }, 3000);
                         }
                     } else {
                         this.$root.toastError(res.msg);
