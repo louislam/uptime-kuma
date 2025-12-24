@@ -3,6 +3,7 @@ const { R } = require("redbean-node");
 const passwordHash = require("../password-hash");
 const { log } = require("../../src/util");
 const { passwordStrength } = require("check-password-strength");
+const { validateUsername } = require("../user-validator");
 
 /**
  * Validates password strength
@@ -57,6 +58,9 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             if (!userData.username || !userData.password) {
                 throw new Error("Username and password are required");
             }
+
+            // Validate username format
+            validateUsername(userData.username);
 
             // Validate password strength
             validatePasswordStrength(userData.password);
@@ -114,6 +118,9 @@ module.exports.userManagementSocketHandler = (socket, server) => {
 
             // Update user fields
             if (userData.username && userData.username.trim() !== user.username) {
+                // Validate username format
+                validateUsername(userData.username);
+
                 // Check if new username already exists
                 const existingUser = await R.findOne("user", " username = ? AND id != ? ", [
                     userData.username.trim(),
@@ -170,6 +177,16 @@ module.exports.userManagementSocketHandler = (socket, server) => {
             if (Number(user.id) === Number(socket.userID)) {
                 throw new Error("Cannot delete your own account");
             }
+
+            // Explicitly handle related records to ensure database-agnostic behavior
+            // Delete API keys (CASCADE behavior)
+            await R.exec("DELETE FROM api_key WHERE user_id = ?", [ userId ]);
+
+            // Orphan monitors by setting user_id to NULL (SET NULL behavior)
+            await R.exec("UPDATE monitor SET user_id = NULL WHERE user_id = ?", [ userId ]);
+
+            // Orphan maintenance records by setting user_id to NULL (SET NULL behavior)
+            await R.exec("UPDATE maintenance SET user_id = NULL WHERE user_id = ?", [ userId ]);
 
             // Permanently remove the user from the database
             await R.trash(user);

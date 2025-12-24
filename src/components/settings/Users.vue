@@ -218,9 +218,45 @@ export default {
          * @returns {void}
          */
         saveUser() {
+            // Client-side validation constants (must match server-side validation)
+            const MIN_USERNAME_LENGTH = 3;
+            const MAX_USERNAME_LENGTH = 50;
+            const USERNAME_REGEX = /^[a-zA-Z0-9._-]+$/;
+            const RESERVED_USERNAMES = [
+                "admin", "root", "system", "administrator",
+                "guest", "null", "undefined", "api",
+                "user", "users", "public", "private"
+            ];
+
+            // Trim and validate username
+            const username = this.formData.username.trim();
+
+            if (username.length < MIN_USERNAME_LENGTH) {
+                this.$root.toastError(this.$t("usernameMinLength"));
+                return;
+            }
+
+            if (username.length > MAX_USERNAME_LENGTH) {
+                this.$root.toastError(this.$t("usernameMaxLength"));
+                return;
+            }
+
+            if (!USERNAME_REGEX.test(username)) {
+                this.$root.toastError(this.$t("usernameInvalidCharacters"));
+                return;
+            }
+
+            if (RESERVED_USERNAMES.includes(username.toLowerCase())) {
+                this.$root.toastError(this.$t("usernameReserved"));
+                return;
+            }
+
+            // Update formData with trimmed username
+            this.formData.username = username;
+
             if (this.editMode) {
                 const updateData = {
-                    username: this.formData.username,
+                    username: username,
                     active: this.formData.active,
                 };
 
