@@ -133,6 +133,7 @@ export default {
             userDialog: null,
             editMode: false,
             selectedUserID: null,
+            originalUsername: "",
             formData: {
                 id: null,
                 username: "",
@@ -188,6 +189,7 @@ export default {
          */
         showAddDialog() {
             this.editMode = false;
+            this.originalUsername = "";
             this.formData = {
                 id: null,
                 username: "",
@@ -204,6 +206,7 @@ export default {
          */
         showEditDialog(user) {
             this.editMode = true;
+            this.originalUsername = user.username;
             this.formData = {
                 id: user.id,
                 username: user.username,
@@ -246,7 +249,11 @@ export default {
                 return;
             }
 
-            if (RESERVED_USERNAMES.includes(username.toLowerCase())) {
+            // Only check reserved usernames if:
+            // 1. Adding a new user (not in edit mode), OR
+            // 2. Editing a user AND the username has changed
+            const shouldCheckReservedUsername = !this.editMode || username !== this.originalUsername;
+            if (shouldCheckReservedUsername && RESERVED_USERNAMES.includes(username.toLowerCase())) {
                 this.$root.toastError(this.$t("usernameReserved"));
                 return;
             }
