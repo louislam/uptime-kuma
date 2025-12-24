@@ -222,7 +222,7 @@ export default {
                         this.$root.toastSuccess(res.msg);
                         this.closeDialog();
                         this.loadUsers();
-                        
+
                         // If user edited their own username, they will be logged out
                         if (res.requiresLogout) {
                             setTimeout(() => {
