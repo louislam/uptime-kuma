@@ -1262,5 +1262,9 @@
     "Done.best IoT Protocol": "Fatto. Il miglior protocollo IoT",
     "Collection Update": "Sottoprotocollo Websocket di aggiornamento della raccolta",
     "Text IRC Protocol": "Protocollo IRC di testo",
-    "Binary IRC Protocol": "Protocollo IRC binario"
+    "Binary IRC Protocol": "Protocollo IRC binario",
+    "labelDomainExpiry": "Scad. dominio",
+    "labelDomainNameExpiryNotification": "Notifica scadenza del nome di dominio",
+    "settingsDomainExpiry": "Scadenza del dominio",
+    "domainExpiryDescription": "Attiva la notifica quando i nomi di dominio scadono in:"
 }
