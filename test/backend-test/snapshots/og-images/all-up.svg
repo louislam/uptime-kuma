@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <rect width="1200" height="630" fill="#1f2937"/>
+
+    <!-- Status indicator bar at top -->
+    <rect width="1200" height="8" fill="#10b981"/>
+
+    <!-- Title -->
+    <text x="60" y="180" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#ffffff">
+        Production
+    </text>
+
+    <!-- Status circle -->
+    <circle cx="60" cy="320" r="24" fill="#10b981"/>
+
+    <!-- Status text -->
+    <text x="100" y="335" font-family="Arial, sans-serif" font-size="42" fill="#ffffff">
+        All Systems Operational
+    </text>
+
+<!-- Monitor Status Summary -->
+    <circle cx="60" cy="412" r="8" fill="#10b981"/>
+    <text x="80" y="420" font-family="Arial, sans-serif" font-size="22" fill="#d1d5db">
+        6 Up
+    </text>
+    <circle cx="60" cy="447" r="8" fill="#f59e0b"/>
+    <text x="80" y="455" font-family="Arial, sans-serif" font-size="22" fill="#d1d5db">
+        2 Pending
+    </text><!-- Footer -->
+            <text x="60" y="570" font-family="Arial, sans-serif" font-size="18" fill="#6b7280">POWERED BY UPTIME KUMA</text>
+    <text x="1140" y="570" font-family="Arial, sans-serif" font-size="18" fill="#6b7280" text-anchor="end">UPDATED AT 2024-01-01T00:00:00.000Z</text>
+</svg>

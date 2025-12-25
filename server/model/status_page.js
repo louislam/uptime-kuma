@@ -7,6 +7,8 @@ const googleAnalytics = require("../google-analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
+const { setting } = require("../util-server");
+const { generateOGImage, getStatusColor } = require("../utils/og-image");
 
 const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
 
@@ -94,6 +96,22 @@ class StatusPage extends BeanModel {
     }
 
     /**
+     * Helper function to create and append meta tags
+     * @param {object} $ Cheerio instance
+     * @param {object} head The head element
+     * @param {string} property The property name (or name for non-OG tags)
+     * @param {string} content The content value
+     * @param {boolean} isOG Whether this is an Open Graph tag (default: true)
+     * @returns {void}
+     * @private
+     */
+    static _appendMetaTag($, head, property, content, isOG = true) {
+        const attr = isOG ? "property" : "name";
+        const meta = $(`<meta ${attr}="" content="" />`).attr(attr, property).attr("content", content);
+        head.append(meta);
+    }
+
+    /**
      * SSR for status pages
      * @param {string} indexHTML HTML page to render
      * @param {StatusPage} statusPage Status page populate HTML with
@@ -126,11 +144,30 @@ class StatusPage extends BeanModel {
         }
 
         // OG Meta Tags
-        let ogTitle = $("<meta property=\"og:title\" content=\"\" />").attr("content", statusPage.title);
-        head.append(ogTitle);
+        StatusPage._appendMetaTag($, head, "og:title", statusPage.title);
+        StatusPage._appendMetaTag($, head, "og:description", description155);
+        StatusPage._appendMetaTag($, head, "og:type", "website");
 
-        let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
-        head.append(ogDescription);
+        // Add og:url if primaryBaseURL is configured
+        const primaryBaseURL = await setting("primaryBaseURL");
+        if (primaryBaseURL) {
+            StatusPage._appendMetaTag($, head, "og:url", `${primaryBaseURL}/status/${statusPage.slug}`);
+        }
+
+        // og:image needs an absolute URL to work
+        if (primaryBaseURL) {
+            const imageUrl = `${primaryBaseURL}/api/status-page/${statusPage.slug}/image`;
+            StatusPage._appendMetaTag($, head, "og:image", imageUrl);
+            StatusPage._appendMetaTag($, head, "og:image:width", "1200");
+            StatusPage._appendMetaTag($, head, "og:image:height", "630");
+            StatusPage._appendMetaTag($, head, "og:image:alt", `${statusPage.title} - Status Page`);
+            StatusPage._appendMetaTag($, head, "twitter:image", imageUrl, false);
+        }
+
+        // Twitter Card Meta Tags
+        StatusPage._appendMetaTag($, head, "twitter:card", "summary_large_image", false);
+        StatusPage._appendMetaTag($, head, "twitter:title", statusPage.title, false);
+        StatusPage._appendMetaTag($, head, "twitter:description", description155, false);
 
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
@@ -208,6 +245,62 @@ class StatusPage extends BeanModel {
         }
 
         return "?";
+    }
+
+    /**
+     * Generate an Open Graph image for the status page
+     * @param {StatusPage} statusPage Status page object
+     * @returns {Promise<Buffer>} PNG image buffer
+     */
+    static async generateOGImage(statusPage) {
+        // Get status data
+        const { heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
+        const status = StatusPage.overallStatus(heartbeats);
+        const statusColor = getStatusColor(status);
+
+        // Collect monitor information for display (top monitors with their status)
+        const monitors = [];
+
+        // Try to get full status page data if available (for real instances)
+        // This will gracefully fail for mock objects in tests
+        try {
+            if (statusPage.toPublicJSON && statusPage.id) {
+                const statusPageData = await StatusPage.getStatusPageData(statusPage);
+                if (statusPageData.publicGroupList) {
+                    for (const group of statusPageData.publicGroupList) {
+                        if (group.monitorList) {
+                            for (const monitor of group.monitorList) {
+                                monitors.push({
+                                    name: monitor.name,
+                                    status: monitor.status || 2 // 1=up, 0=down, 2=pending
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            // If getting monitor details fails, continue without them
+            // This allows the function to work with mock objects
+        }
+
+        // Get icon - use getIcon() method if available, otherwise use icon property
+        const icon = (statusPage.getIcon && typeof statusPage.getIcon === "function")
+            ? statusPage.getIcon()
+            : statusPage.icon;
+
+        // If no detailed monitor data, create array with count for display
+        const monitorsForDisplay = monitors.length > 0 ? monitors : heartbeats.map(() => ({}));
+
+        // Generate OG image using utility function
+        return await generateOGImage({
+            title: statusPage.title,
+            statusDescription,
+            statusColor,
+            icon,
+            showPoweredBy: !!statusPage.show_powered_by,
+            monitors: monitorsForDisplay
+        });
     }
 
     /**

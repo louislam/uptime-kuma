@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <rect width="1200" height="630" fill="#1f2937"/>
+
+    <!-- Status indicator bar at top -->
+    <rect width="1200" height="8" fill="#10b981"/>
+
+    <!-- Custom Icon -->
+    <g transform="translate(1100, 180) scale(0.125) translate(-320, -320)">
+        
+<g transform="matrix(1 0 0 1 320 320)">
+<linearGradient id="S3" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1 0 0 1 -319.99875 -320.0001577393)"  x1="259.78" y1="261.15" x2="463.85" y2="456.49">
+<stop stop-color="#5CDD8B"/>
+<stop offset="1" stop-color="#86E6A9"/>
+</linearGradient>
+<path style="stroke: rgb(242,242,242); stroke-opacity: 0.51; stroke-width: 200; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: url(#S3); fill-rule: nonzero; opacity: 1;"  transform=" translate(0, 0)" d="M 170.40125 -84.36016 C 224.09125 38.37984 224.09125 115.33984 170.40125 146.49984 C 89.85125000000001 193.23984000000002 -120.03875 207.48984000000002 -180.45875 135.63984 C -220.73875 87.73983999999999 -220.73875 14.399839999999998 -180.45875 -84.36016000000001 C -139.49875 -151.82016 -81.28875000000001 -185.55016 -5.828750000000014 -185.55016 C 69.64124999999999 -185.55016 128.38125 -151.82016000000002 170.40124999999998 -84.36016000000001 z" stroke-linecap="round" />
+</g>
+
+    </g>
+    <!-- Title -->
+    <text x="60" y="180" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#ffffff">
+        Production
+    </text>
+
+    <!-- Status circle -->
+    <circle cx="60" cy="320" r="24" fill="#10b981"/>
+
+    <!-- Status text -->
+    <text x="100" y="335" font-family="Arial, sans-serif" font-size="42" fill="#ffffff">
+        All Systems Operational
+    </text>
+
+<!-- Monitor Status Summary -->
+    <circle cx="60" cy="412" r="8" fill="#10b981"/>
+    <text x="80" y="420" font-family="Arial, sans-serif" font-size="22" fill="#d1d5db">
+        6 Up
+    </text>
+    <circle cx="60" cy="447" r="8" fill="#f59e0b"/>
+    <text x="80" y="455" font-family="Arial, sans-serif" font-size="22" fill="#d1d5db">
+        2 Pending
+    </text><!-- Footer -->
+            <text x="60" y="570" font-family="Arial, sans-serif" font-size="18" fill="#6b7280">POWERED BY UPTIME KUMA</text>
+    <text x="1140" y="570" font-family="Arial, sans-serif" font-size="18" fill="#6b7280" text-anchor="end">UPDATED AT 2024-01-01T00:00:00.000Z</text>
+</svg>

@@ -139,6 +139,7 @@
         "redbean-node": "~0.3.0",
         "redis": "~5.9.0",
         "semver": "~7.5.4",
+        "sharp": "~0.34.5",
         "socket.io": "~4.8.0",
         "socket.io-client": "~4.8.0",
         "socks-proxy-agent": "~8.0.5",
