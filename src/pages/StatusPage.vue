@@ -1,29 +1,3 @@
-<script setup>
-// Analytics options
-const analyticsOptions = [
-    {
-        name: "None",
-        value: null
-    },
-    {
-        name: "Google",
-        value: "google"
-    },
-    {
-        name: "Umami",
-        value: "umami"
-    },
-    {
-        name: "Plausible",
-        value: "plausible"
-    },
-    {
-        name: "Matomo",
-        value: "matomo"
-    }
-];
-</script>
-
 <template>
     <div v-if="loadedTheme" class="container mt-3">
         <!-- Sidebar for edit mode -->
