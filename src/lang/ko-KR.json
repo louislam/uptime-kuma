@@ -781,7 +781,7 @@
     "Monitor Setting": "{0}의 모니터 설정",
     "now": "지금",
     "time ago": "{0} 전",
-    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "연결하려는 서버의 호스트 이름을 입력하거나, {local_mta}를 사용하려는 경우 {localhost}를 입력합니다.",
+    "Either enter the hostname of the server you want to connect to or localhost if you intend to use a locally configured mail transfer agent": "연결하려는 서버의 호스트 이름을 입력하거나, {local_mta}를 사용하려는 경우 {localhost}를 입력합니다",
     "-year": "년",
     "Json Query Expression": "Json 쿼리 표현식",
     "Host URL": "호스트 URL",
@@ -960,5 +960,6 @@
     "SNMP Version": "SNMP 버전",
     "Originator": "발신자",
     "cellsyntOriginator": "수신자의 휴대폰에 메시지 발신자로 표시됩니다. 허용되는 값과 기능은 originatortype 매개변수에 따라 다릅니다.",
-    "Message Template": "메세지 템플릿"
+    "Message Template": "메세지 템플릿",
+    "descriptionHelpText": "내부 대시보드에 표시됩니다. 마크다운 사용이 허용되며, 표시 전에 정제 처리됩니다(공백과 들여쓰기 유지)."
 }
