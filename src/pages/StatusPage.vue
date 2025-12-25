@@ -129,9 +129,11 @@ const analyticsOptions = [
                 <div class="my-3">
                     <label for="analyticsType" class="form-label">{{ $t("Analytics Type") }}</label>
                     <select id="analyticsType" v-model="config.analyticsType" class="form-select" data-testid="analytics-type-select">
-                        <option v-for="(analyticOption, index) in analyticsOptions" :key="index" :value="analyticOption.value">
-                            {{ $t(analyticOption.name) }}
-                        </option>
+                        <option>{{ $t("None") }}</option>
+                        <option value="google">{{ $t("Google") }}</option>
+                        <option value="umami">{{ $t("Umami") }}</option>
+                        <option value="plausible">{{ $t("Plausible") }}</option>
+                        <option value="matomo">{{ $t("Matomo") }}</option>
                     </select>
                 </div>
 
