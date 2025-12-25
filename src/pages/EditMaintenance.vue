@@ -28,9 +28,16 @@
 
                             <!-- Affected Monitors -->
                             <h2 class="mt-5">{{ $t("Affected Monitors") }}</h2>
-                            {{ $t("affectedMonitorsDescription") }}
 
                             <div class="my-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="form-text">{{ $t("affectedMonitorsDescription") }}</div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleSelectAllAffectedMonitors">
+                                        <span v-if="affectedMonitorsAllSelected">{{ $t("Clear") }}</span>
+                                        <span v-else>{{ $t("Select All") }}</span>
+                                    </button>
+                                </div>
+
                                 <VueMultiselect
                                     id="affected_monitors"
                                     v-model="affectedMonitors"
@@ -353,6 +360,10 @@ export default {
             });
         },
 
+        affectedMonitorsAllSelected() {
+            return this.affectedMonitors.length > 0 && this.affectedMonitors.length === this.affectedMonitorsOptions.length;
+        },
+
         pageName() {
             let name = "Schedule Maintenance";
 
@@ -491,6 +502,14 @@ export default {
                         this.$root.toastError(res.msg);
                     }
                 });
+            }
+        },
+
+        toggleSelectAllAffectedMonitors() {
+            if (this.affectedMonitorsAllSelected) {
+                this.affectedMonitors = [];
+            } else {
+                this.affectedMonitors = this.affectedMonitorsOptions.slice();
             }
         },
 
