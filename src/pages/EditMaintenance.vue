@@ -32,16 +32,12 @@
                             <div class="my-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div class="form-text">{{ $t("affectedMonitorsDescription") }}</div>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @click="toggleSelectAllAffectedMonitors">
-                                        <span v-if="affectedMonitorsAllSelected">{{ $t("Clear") }}</span>
-                                        <span v-else>{{ $t("Select All") }}</span>
-                                    </button>
                                 </div>
 
                                 <VueMultiselect
                                     id="affected_monitors"
                                     v-model="affectedMonitors"
-                                    :options="affectedMonitorsOptions"
+                                    :options="affectedMonitorsOptionsWithSelectAll"
                                     track-by="id"
                                     label="pathName"
                                     :multiple="true"
@@ -52,7 +48,16 @@
                                     :preselect-first="false"
                                     :max-height="600"
                                     :taggable="false"
-                                ></VueMultiselect>
+                                    @select="onMonitorSelect"
+                                    @remove="onMonitorRemove"
+                                >
+                                    <template #option="props">
+                                        <span v-if="props.option.id === 'select-all'">
+                                            {{ affectedMonitorsAllSelected ? $t('Deselect All') : $t('Select All') }}
+                                        </span>
+                                        <span v-else>{{ props.option.pathName }}</span>
+                                    </template>
+                                </VueMultiselect>
                             </div>
 
                             <!-- Status pages to display maintenance info on -->
@@ -360,8 +365,19 @@ export default {
             });
         },
 
+        affectedMonitorsOptionsWithSelectAll() {
+            return [
+                {
+                    id: "select-all",
+                    pathName: this.affectedMonitorsAllSelected ? this.$t("Deselect All") : this.$t("Select All")
+                },
+                ...this.affectedMonitorsOptions
+            ];
+        },
+
         affectedMonitorsAllSelected() {
-            return this.affectedMonitors.length > 0 && this.affectedMonitors.length === this.affectedMonitorsOptions.length;
+            return this.affectedMonitors.length > 0 &&
+                   this.affectedMonitors.length === this.affectedMonitorsOptions.length;
         },
 
         pageName() {
@@ -505,11 +521,21 @@ export default {
             }
         },
 
-        toggleSelectAllAffectedMonitors() {
-            if (this.affectedMonitorsAllSelected) {
-                this.affectedMonitors = [];
-            } else {
-                this.affectedMonitors = this.affectedMonitorsOptions.slice();
+        onMonitorSelect(selectedOption) {
+            if (selectedOption.id === "select-all") {
+                this.affectedMonitors = this.affectedMonitors.filter(m => m.id !== "select-all");
+
+                if (this.affectedMonitorsAllSelected) {
+                    this.affectedMonitors = [];
+                } else {
+                    this.affectedMonitors = this.affectedMonitorsOptions.slice();
+                }
+            }
+        },
+
+        onMonitorRemove(removedOption) {
+            if (removedOption.id === "select-all") {
+                this.affectedMonitors = this.affectedMonitors.filter(m => m.id !== "select-all");
             }
         },
 
