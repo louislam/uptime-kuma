@@ -890,12 +890,36 @@
                             </div>
 
                             <!-- HTTP / Keyword only -->
-                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
+                            <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query'">
                                 <div class="my-3">
                                     <label for="maxRedirects" class="form-label">{{ $t("Max. Redirects") }}</label>
                                     <input id="maxRedirects" v-model="monitor.maxredirects" type="number" class="form-control" required min="0" step="1">
                                     <div class="form-text">
                                         {{ $t("maxRedirectDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <div class="form-check">
+                                        <input id="saveResponse" v-model="monitor.saveResponse" class="form-check-input" type="checkbox">
+                                        <label class="form-check-label" for="saveResponse">
+                                            {{ $t("saveResponseForNotifications") }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        <i18n-t keypath="saveResponseDescription" tag="div" class="form-text">
+                                            <template #templateVariable>
+                                                <code>heartbeatJSON.response</code>
+                                            </template>
+                                        </i18n-t>
+                                    </div>
+                                </div>
+
+                                <div v-if="monitor.saveResponse" class="my-3">
+                                    <label for="responseMaxLength" class="form-label">{{ $t("responseMaxLength") }}</label>
+                                    <input id="responseMaxLength" v-model="monitor.responseMaxLength" type="number" class="form-control" required min="0" step="1">
+                                    <div class="form-text">
+                                        {{ $t("responseMaxLengthDescription") }}
                                     </div>
                                 </div>
 
@@ -1342,6 +1366,8 @@ const monitorDefaults = {
     domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
+    saveResponse: false,
+    responseMaxLength: 10240,
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
     docker_container: "",
