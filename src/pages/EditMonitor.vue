@@ -492,7 +492,7 @@
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
-                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
+                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server(s)") }}</label>
                                     <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}

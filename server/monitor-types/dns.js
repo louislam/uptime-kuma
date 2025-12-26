@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP } = require("../../src/util");
+const { UP, log } = require("../../src/util");
 const dayjs = require("dayjs");
 const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
@@ -7,6 +7,7 @@ const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators } = require("../monitor-conditions/operators");
 const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
 const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
+const { Resolver } = require("node:dns/promises");
 
 class DnsMonitorType extends MonitorType {
     name = "dns";
@@ -24,7 +25,43 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        let dnsRes = await dnsResolve(monitor.hostname, monitor.dns_resolve_server, monitor.port, monitor.dns_resolve_type);
+        //Check if user supplied resolver server is an IPv4 or IPv6 address. Regex taken from https://www.ditig.com/validating-ipv4-and-ipv6-addresses-with-regexp
+        let ipRegex = new RegExp("^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])|(([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|([0-9A-Fa-f]{1,4}:){1,7}:|:(:[0-9A-Fa-f]{1,4}){1,7}|([0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}|([0-9A-Fa-f]{1,4}:){1,5}(:[0-9A-Fa-f]{1,4}){1,2}|([0-9A-Fa-f]{1,4}:){1,4}(:[0-9A-Fa-f]{1,4}){1,3}|([0-9A-Fa-f]{1,4}:){1,3}(:[0-9A-Fa-f]{1,4}){1,4}|([0-9A-Fa-f]{1,4}:){1,2}(:[0-9A-Fa-f]{1,4}){1,5}|[0-9A-Fa-f]{1,4}:(:[0-9A-Fa-f]{1,4}){1,6}|:(:[0-9A-Fa-f]{1,4}){1,6}))$");
+        const addresses = monitor.dns_resolve_server.replace(/\s/g, "").split(",");
+        let parsed = [];
+        for (const e of addresses) {
+            if (ipRegex.test(e)) {
+                parsed.push(e);
+            } else { //assume that input is hostname, try to resolve IP address
+                const resolver = new Resolver();
+                let v4 = [];
+                let v6 = [];
+                try { //attempt to resolve A record for resolver server
+                    v4 = await resolver.resolve4(e);
+                } catch (error) {
+                    log.debug("DNS", "No IPv4 address found for: " + e);
+                }
+
+                try { //attempt to resolve AAAA record for resolver server
+                    v6 = await resolver.resolve6(e);
+                } catch (error) {
+                    log.debug("DNS", "No IPv6 address found for: " + e);
+                }
+
+                //Log an error if resolver hostname doesn't resolve in case of upstream failure, continue
+                if (!v4?.length && !v6?.length) {
+                    log.error("DNS", "Invalid Resolver Server: " + e);
+                    continue;
+                }
+                parsed = [ ...parsed, ...v4, ...v6 ];
+            }
+        }
+
+        //If there are no IPs, throw Error
+        if (!parsed?.length) {
+            throw new Error("No Resolver Servers");
+        }
+        let dnsRes = await dnsResolve(monitor.hostname, parsed, monitor.port, monitor.dns_resolve_type);
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
