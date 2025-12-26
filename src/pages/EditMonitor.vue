@@ -109,7 +109,7 @@
                                 </select>
                                 <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
                                     <template #rabitmq_documentation>
-                                        <a href="https://www.rabbitmq.com/management" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://www.rabbitmq.com/docs/manage-rabbitmq" target="_blank" rel="noopener noreferrer">
                                             RabbitMQ documentation
                                         </a>
                                     </template>
