@@ -1287,5 +1287,12 @@
     "domainExpiryDescription": "Déclencher une notification lorsque le nom de domaine expire dans :",
     "settingsDomainExpiry": "Expiration du domaine",
     "labelDomainExpiry": "Expiration du domaine.",
-    "labelDomainNameExpiryNotification": "Notification d’expiration du nom de domaine"
+    "labelDomainNameExpiryNotification": "Notification d’expiration du nom de domaine",
+    "Subprotocol": "Sous-protocole",
+    "Duration (Minutes)": "Durée (minutes)",
+    "SMTP Security": "Sécurité SMTP",
+    "Ignore STARTTLS": "Ignorer STARTTLS",
+    "Use STARTTLS": "Utilisez STARTTLS",
+    "Enter the list of nodes": "Saisissez la liste des nœuds de gestion RabbitMQ",
+    "Press Enter to add node": "Appuyez sur Entrée pour ajouter un nœud"
 }
