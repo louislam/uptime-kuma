@@ -1266,5 +1266,14 @@
     "labelDomainExpiry": "Scad. dominio",
     "labelDomainNameExpiryNotification": "Notifica scadenza del nome di dominio",
     "settingsDomainExpiry": "Scadenza del dominio",
-    "domainExpiryDescription": "Attiva la notifica quando i nomi di dominio scadono in:"
+    "domainExpiryDescription": "Attiva la notifica quando i nomi di dominio scadono in:",
+    "Select All": "Seleziona tutto",
+    "Deselect All": "Deseleziona tutto",
+    "Subprotocol": "Sottoprotocollo",
+    "Duration (Minutes)": "Durata (minuti)",
+    "SMTP Security": "Sicurezza SMTP",
+    "Ignore STARTTLS": "Ignora STARTTLS",
+    "Use STARTTLS": "Utilizza STARTTLS",
+    "Enter the list of nodes": "Inserisci l'elenco dei nodi di gestione RabbitMQ",
+    "Press Enter to add node": "Premi Invio per aggiungere il nodo"
 }
