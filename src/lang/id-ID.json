@@ -1140,5 +1140,11 @@
     "evolutionInstanceName": "Nama Instans",
     "Phone numbers": "Nomor telepon",
     "Sender name": "Nama pengirim",
-    "auto-select": "Pilih Otomatis"
+    "auto-select": "Pilih Otomatis",
+    "ignoreSecWebsocketAcceptHeaderDescription": "Izinkan server untuk tidak menjawab dengan header Sec-WebSocket-Accept, bila peningkatan websocket sukses.",
+    "Ignore Sec-WebSocket-Accept header": "Abaikan header {0}",
+    "wsSubprotocolDescription": "Untuk informasi lebih lanjut tentang sub protokol, silakan lihat {documentation}",
+    "WebSocket Application Messaging Protocol": "WAMP (WebSocket Application Messaging Protocol)",
+    "Session Initiation Protocol": "Transport WebSocket bagi SIP (Session Initiation Protocol)",
+    "Subprotocol": "Sub protokol"
 }
