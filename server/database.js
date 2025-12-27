@@ -166,7 +166,7 @@ class Database {
      * Read the database config
      * @throws {Error} If the config is invalid
      * @typedef {string|undefined} envString
-     * @returns {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} Database config
+     * @returns {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, socketPath:envString}} Database config
      */
     static readDBConfig() {
         let dbConfig;
@@ -186,7 +186,7 @@ class Database {
 
     /**
      * @typedef {string|undefined} envString
-     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString}} dbConfig the database configuration that should be written
+     * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, socketPath:envString}} dbConfig the database configuration that should be written
      * @returns {void}
      */
     static writeDBConfig(dbConfig) {
@@ -277,6 +277,7 @@ class Database {
                 port: dbConfig.port,
                 user: dbConfig.username,
                 password: dbConfig.password,
+                socketPath: dbConfig.socketPath,
             });
 
             // Set to true, so for example "uptime.kuma", becomes `uptime.kuma`, not `uptime`.`kuma`
@@ -294,6 +295,7 @@ class Database {
                     user: dbConfig.username,
                     password: dbConfig.password,
                     database: dbConfig.dbName,
+                    socketPath: dbConfig.socketPath,
                     timezone: "Z",
                     typeCast: function (field, next) {
                         if (field.type === "DATETIME") {

@@ -77,6 +77,7 @@ class SetupDatabase {
             dbConfig.dbName = process.env.UPTIME_KUMA_DB_NAME;
             dbConfig.username = process.env.UPTIME_KUMA_DB_USERNAME;
             dbConfig.password = process.env.UPTIME_KUMA_DB_PASSWORD;
+            dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET;
             Database.writeDBConfig(dbConfig);
         }
 
@@ -176,14 +177,35 @@ class SetupDatabase {
 
                 // External MariaDB
                 if (dbConfig.type === "mariadb") {
-                    if (!dbConfig.hostname) {
-                        response.status(400).json("Hostname is required");
-                        this.runningSetup = false;
-                        return;
-                    }
 
-                    if (!dbConfig.port) {
-                        response.status(400).json("Port is required");
+                    // If socketPath is not provided, hostname and port are required
+                    if(dbConfig.socketPath === undefined || dbConfig.socketPath.length === 0) {
+                        if (!dbConfig.hostname) {
+                            response.status(400).json("Hostname is required");
+                            this.runningSetup = false;
+                            return;
+                        }
+
+                        if (!dbConfig.port) {
+                            response.status(400).json("Port is required");
+                            this.runningSetup = false;
+                            return;
+                        }
+                    } else if (dbConfig.socketPath && dbConfig.socketPath.length > 0) { // Socket path is provided
+                        // Checking if the path exists and is a socket
+                        if (!fs.existsSync(dbConfig.socketPath)) {
+                            response.status(400).json("The path to the Socket does not exist");
+                            this.runningSetup = false;
+                            return;
+                        }
+
+                        if (!fs.lstatSync(dbConfig.socketPath).isSocket()) {
+                            response.status(400).json("The path provided is not a Socket");
+                            this.runningSetup = false;
+                            return;
+                        }
+                    } else {
+                        response.status(400).json("Either a path to the Socket or Hostname and Port are required");
                         this.runningSetup = false;
                         return;
                     }
@@ -215,6 +237,7 @@ class SetupDatabase {
                             user: dbConfig.username,
                             password: dbConfig.password,
                             database: dbConfig.dbName,
+                            socketPath: dbConfig.socketPath,
                         });
                         await connection.execute("SELECT 1");
                         connection.end();

@@ -77,6 +77,11 @@
                     </div>
 
                     <div class="form-floating mt-3 short">
+                        <input id="floatingInput" v-model="dbConfig.socketPath" type="text" class="form-control">
+                        <label for="floatingInput">{{ $t("socketPath") }} ({{ $t("Optional") }})</label>
+                    </div>
+
+                    <div class="form-floating mt-3 short">
                         <input id="floatingInput" v-model="dbConfig.username" type="text" class="form-control" required>
                         <label for="floatingInput">{{ $t("Username") }}</label>
                     </div>
@@ -117,6 +122,7 @@ export default {
                 username: "",
                 password: "",
                 dbName: "kuma",
+                socketPath: undefined,
             },
             info: {
                 needSetup: false,
