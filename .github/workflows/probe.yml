@@ -1,0 +1,36 @@
+name: CI Probe
+
+on: [workflow_dispatch] # Allows you to manually click "Run" in the UI
+
+jobs:
+  investigate:
+    runs-on: ubuntu-22.04 # Change to specific tags if you want to probe others
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 1. Dump Environment Variables
+        run: env | sort
+
+      - name: 2. List Running Processes
+        run: ps -ef
+
+      - name: 3. Check for Systemd (PID 1)
+        run: |
+          echo "PID 1 is:"
+          ps -p 1 -o comm=
+          
+          echo "Checking systemctl:"
+          systemctl status || true
+
+      - name: 4. Check for Docker
+        run: |
+          which docker || echo "Docker executable not found"
+          docker --version || echo "Docker version check failed"
+          docker info || echo "Docker daemon check failed"
+      
+      - name: 5. Kernel & OS Info
+        run: |
+          uname -a
+          cat /etc/os-release
+          cat /proc/cgroups || echo "No cgroups access"
