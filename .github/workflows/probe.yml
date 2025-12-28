@@ -1,6 +1,8 @@
 name: CI Probe
 
-on: [workflow_dispatch] # Allows you to manually click "Run" in the UI
+on:
+  push:
+  workflow_dispatch:
 
 jobs:
   investigate:
