@@ -979,7 +979,6 @@ export default {
             toast.success(this.$t("Image reset to default"));
         },
 
-
         /**
          * Create an incident for this status page
          * @returns {void}
