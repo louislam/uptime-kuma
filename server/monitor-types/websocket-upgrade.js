@@ -46,7 +46,7 @@ class WebSocketMonitorType extends MonitorType {
 
             ws.onclose = (event) => {
                 // Upgrade success, connection closed successfully
-                resolve([ "101 - OK", event.code ]);
+                resolve([ "101 - OK", 1000 ]);
             };
         });
     }
