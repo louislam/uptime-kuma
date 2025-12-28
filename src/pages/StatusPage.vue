@@ -976,7 +976,7 @@ export default {
 
             this.imgDataUrl = "/icon.svg";
             this.config.icon = this.imgDataUrl;
-            toast.success(this.$t("Image reset to default"));
+            toast.success(this.$t("imageResetConfirmation"));
         },
 
         /**
