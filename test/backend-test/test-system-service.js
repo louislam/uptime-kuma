@@ -5,27 +5,31 @@ const { DOWN, UP } = require("../../src/util");
 const process = require("process");
 const { execSync } = require("child_process");
 
-// GUARD CLAUSE: Skip test if not on Systemd (Linux) or Windows
-let shouldRun = false;
+let isSystemd = false;
+let isWindows = process.platform === "win32";
 
-if (process.platform === "win32") {
-    shouldRun = true;
-} else if (process.platform === "linux") {
+if (process.platform === "linux") {
     try {
-        // Check if PID 1 is systemd (or init which maps to systemd in our container)
-        const pid1Comm = execSync("ps -p 1 -o comm=", { encoding: "utf-8" }).trim();
+        // Check if PID 1 is systemd (or init which maps to systemd)
+        const pid1Comm = execSync("ps -p 1 -o comm=").trim();
         if (pid1Comm === "systemd" || pid1Comm === "init") {
-            shouldRun = true;
+            isSystemd = true;
         }
     } catch (e) {
         // Command failed, likely not systemd
     }
 }
 
-if (!shouldRun) {
-    console.log("⚠️ Skipping System Service test: Environment does not support systemd/services.");
-    // We return early or just don't define tests, so the runner sees 0 failures.
-    // In node:test, we can just exit gracefully or simply not call 'test()'.
+// With Linux and no Systemd (AM64), the test is skipped.
+if (process.platform === "linux" && !isSystemd) {
+    console.log("::warning title=Systemd Missing::Linux environment detected without systemd (PID 1).");
+    console.log("Skipping System Service test for ARM&4 runner or containers.");
+    process.exit(0);
+}
+
+// If neither Windows nor Systemd-Linux, skip (e.g. MacOS)
+if (!isWindows && !isSystemd) {
+    console.log("Skipping System Service test: Platform not supported (Mac/BSD).");
     process.exit(0);
 }
 
@@ -49,24 +53,10 @@ describe("SystemServiceMonitorType", () => {
         }
     });
 
-    it("should detect a running service", async (t) => {
-        // Requirement: Use REAL system tools (no mocks).
-        // Therefore, we must skip this test on platforms that lack systemd/PowerShell (like macOS).
-        if (process.platform !== "linux" && process.platform !== "win32") {
-            t.skip("Skipping integration test: Real systemd/PowerShell not available on this platform");
-            return;
-        }
-
-        const isWin = process.platform === "win32";
-        let serviceName = "myservice";
-
-        if (isWin) {
-            // Windows: Test against 'Dnscache' (DNS Client), guaranteed to be running.
-            serviceName = "Dnscache";
-        } else {
-            // Linux: Test against 'systemd-journald', a core service of systemd.
-            serviceName = "systemd-journald";
-        }
+    it("should detect a running service", async () => {
+        // Windows: 'Dnscache' is always running.
+        // Linux: 'dbus' or 'cron' are standard services.
+        const serviceName = isWindows ? "Dnscache" : "dbus";
 
         const monitor = {
             system_service_name: serviceName,
@@ -78,30 +68,23 @@ describe("SystemServiceMonitorType", () => {
         assert.ok(heartbeat.msg.includes("is running"));
     });
 
-    it("should detect a stopped service", async (t) => {
-        if (process.platform !== "linux" && process.platform !== "win32") {
-            t.skip("Skipping integration test: Real systemd/PowerShell not available on this platform");
-            return;
-        }
-
-        // Query a non-existent service to force an error/down state.
-        // This works correctly on both 'systemctl' and 'Get-Service'.
-        const serviceName = "non-existent-service-12345";
-
+    it("should detect a stopped service", async () => {
         const monitor = {
-            system_service_name: serviceName,
+            system_service_name: "non-existent-service-12345",
         };
 
         try {
             await monitorType.check(monitor, heartbeat);
         } catch (e) {
-            // Expected error
+            // Query a non-existent service to force an error/down state.
+            // This works correctly on both 'systemctl' and 'Get-Service'.
         }
 
         assert.strictEqual(heartbeat.status, DOWN);
     });
 
     it("should fail gracefully with invalid characters", async () => {
+        // Mock platform for validation logic test
         Object.defineProperty(process, "platform", {
             value: "linux",
             configurable: true,
