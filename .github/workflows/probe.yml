@@ -6,7 +6,7 @@ on:
 
 jobs:
   investigate:
-    runs-on: ubuntu-22.04 # Change to specific tags if you want to probe others
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,3 +36,21 @@ jobs:
           uname -a
           cat /etc/os-release
           cat /proc/cgroups || echo "No cgroups access"
+
+      - name: 6. Test Monitor Command
+        run: |
+          echo "Testing native systemctl check..."
+          
+          # Check a service we know exists (dbus is visible in your process list)
+          if systemctl is-active dbus; then
+            echo "✅ SUCCESS: systemctl is-active dbus passed!"
+          else
+            echo "❌ FAIL: systemctl is-active dbus failed."
+          fi
+          
+          # Check a non-existent service (should fail gracefully)
+          if systemctl is-active fake-service-xyz; then
+             echo "❌ FAIL: fake-service should not be active."
+          else
+             echo "✅ SUCCESS: fake-service reported inactive."
+          fi
