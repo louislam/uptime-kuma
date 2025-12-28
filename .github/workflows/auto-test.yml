@@ -33,17 +33,6 @@ jobs:
     - run: git config --global core.autocrlf false  # Mainly for Windows
     - uses: actions/checkout@v4
 
-    # Detect if we need to run the Systemd specific tests
-    - name: Detect systemd monitor changes
-      id: systemd-files
-      uses: dorny/paths-filter@v3
-      with:
-        filters: |
-          systemd:
-            - 'server/monitor-types/system-service.js'
-            - 'test/backend-test/test-system-service.js'
-            - '.github/workflows/auto-test.yml'
-
     - name: Cache/Restore node_modules
       uses: actions/cache@v4
       id: node-modules-cache
@@ -57,88 +46,10 @@ jobs:
         node-version: ${{ matrix.node }}
     - run: npm install
     - run: npm run build
-    
-    # Standard backend tests. 
-    # NOTE: Your test-system-service.js has the "Guard Clause" to skip itself here if systemd/docker is missing.
     - run: npm run test-backend
       env:
         HEADLESS_TEST: 1
         JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
-
-    # SYSTEMD CONTAINER INTEGRATION
-    # Runs ONLY on Standard Ubuntu (matrix.os == 'ubuntu-22.04') AND if files changed.
-    # Excludes ARM64/Self-hosted runners which may lack Docker.
-    - name: Build Systemd Docker Image (Linux Only)
-      if: matrix.os == 'ubuntu-22.04' && steps.systemd-files.outputs.systemd == 'true'
-      env:
-        NODE_MAJOR: ${{ matrix.node }}
-      run: |
-        cat <<EOF > Dockerfile.systemd
-        FROM ubuntu:22.04
-        ENV DEBIAN_FRONTEND=noninteractive
-        
-        # 1. Install systemd and dependencies
-        RUN apt-get update && \
-            apt-get install -y systemd systemd-sysv dbus curl gnupg build-essential python3 make g++ ca-certificates
-            
-        # 2. Install the specific Node.js version from the matrix
-        RUN mkdir -p /etc/apt/keyrings && \
-            curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-            echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-            apt-get update && \
-            apt-get install -y nodejs
-            
-        CMD ["/sbin/init"]
-        EOF
-        
-        docker build -t kuma-systemd-image -f Dockerfile.systemd .
-
-    - name: Start Systemd Container
-      if: matrix.os == 'ubuntu-22.04' && steps.systemd-files.outputs.systemd == 'true'
-      run: |
-        docker rm -f kuma-systemd 2>/dev/null || true
-        
-        # Start with critical flags for systemd compatibility on GitHub Runners
-        docker run --privileged --detach --name kuma-systemd \
-          --env container=docker \
-          --cgroupns=host \
-          --security-opt seccomp=unconfined \
-          --security-opt apparmor=unconfined \
-          --tmpfs /run --tmpfs /run/lock \
-          -v /sys/fs/cgroup:/sys/fs/cgroup:rw \
-          -v "$PWD":/workspace \
-          -w /workspace \
-          kuma-systemd-image
-          
-        echo "⏳ Waiting 5 seconds for systemd boot..."
-        sleep 5
-        
-        # Verification check
-        if [ "$(docker inspect -f '{{.State.Running}}' kuma-systemd)" != "true" ]; then
-            echo "❌ Container crashed. Logs:"
-            docker logs kuma-systemd
-            exit 1
-        fi
-
-    - name: Run Systemd Test (Inside Container)
-      if: matrix.os == 'ubuntu-22.04' && steps.systemd-files.outputs.systemd == 'true'
-      env:
-        HEADLESS_TEST: 1
-        JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
-      run: |
-        # Ensure deps are ready inside container
-        docker exec kuma-systemd npm install
-        docker exec kuma-systemd npm run build
-        
-        echo "🧪 Running ONLY the System Service test file..."
-        # We run strictly the specific test file using Node's native test runner
-        docker exec -e HEADLESS_TEST=1 kuma-systemd node --test test/backend-test/test-system-service.js
-
-    - name: Cleanup Systemd Container
-      if: ${{ always() && matrix.os == 'ubuntu-22.04' && steps.systemd-files.outputs.systemd == 'true' }}
-      run: |
-        docker rm -f kuma-systemd
-        rm -f Dockerfile.systemd
 
   # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
   armv7-simple-test:
