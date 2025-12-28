@@ -62,6 +62,17 @@ While users can currently export/import configurations through the UI, this appr
 
 The API follows RESTful conventions with a minimal v1 surface:
 
+### JSON Schema
+
+To ensure consistency and enable tooling support, all API payloads will be validated against published JSON schemas:
+
+- **Schema Location**: `/api/provisioning/v1/schema/{resource}` (GET endpoint)
+- **Validation**: All POST/PUT requests validated against corresponding schema
+- **Versioning**: Schemas versioned alongside API (v1, v2, etc.)
+- **Tooling**: Enables IDE autocompletion, validation, and IaC tool integration
+
+Example schema endpoint: `GET /api/provisioning/v1/schema/monitor` returns the JSON schema for monitor objects.
+
 ### Resources
 - **Monitors**: Core monitoring configurations
 - **Groups**: Monitor grouping for organization
@@ -249,6 +260,8 @@ I'd love to get your thoughts on this direction before investing significant tim
 
 4. Should we consider a different authentication approach (OAuth, API keys, etc.)?
 
-5. Any concerns about maintenance burden or testing complexity?
+5. Would providing JSON schemas for API validation be valuable, and should they be served as API endpoints?
+
+6. Any concerns about maintenance burden or testing complexity?
 
 I'm happy to implement this if it aligns with the project's direction - I just want to make sure we're on the same page before diving in. Would you prefer to discuss this in a GitHub Discussion first, or should I proceed with a more detailed implementation plan?
