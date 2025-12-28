@@ -180,45 +180,6 @@ provisioning:
       scopes: ["provisioning:write"]
 ```
 
-## Pseudocode (Server Side)
-
-### Monitor Upsert Flow
-```
-function upsertMonitor(payload):
-    validatePayload(payload)
-
-    existing = findByExternalId(payload.external_id)
-
-    if existing:
-        # Update existing monitor
-        updateFields(existing, payload)
-        validateMonitor(existing)
-        save(existing)
-        return { id: existing.id, external_id: existing.external_id, ... }
-    else:
-        # Create new monitor
-        monitor = createFromPayload(payload)
-        validateMonitor(monitor)
-        assignInternalId(monitor)
-        save(monitor)
-        return { id: monitor.id, external_id: monitor.external_id, ... }
-```
-
-### Validation Flow
-```
-function validateMonitor(monitor):
-    # Reuse existing validation logic
-    validateUrl(monitor.url)
-    validateInterval(monitor.interval)
-    validateTypeSpecificFields(monitor.type, monitor)
-
-    # Apply safe defaults for optional fields
-    monitor.timeout = monitor.timeout || 30
-    monitor.max_retries = monitor.max_retries || 3
-
-    return monitor
-```
-
 ## Migration & Backwards Compatibility
 
 This proposal ensures **zero impact** on existing users and workflows:
