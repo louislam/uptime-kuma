@@ -106,7 +106,7 @@ function createNTLMv2Response(type2message, username, ntlmhash, nonce, targetNam
 function createPseudoRandomValue(length) {
     var str = '';
     while (str.length < length) {
-        str += Math.floor(crypto.randomBytes() * 16).toString(16);
+        str += crypto.randomInt(16).toString(16);
     }
     return str;
 }
