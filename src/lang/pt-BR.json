@@ -1247,5 +1247,9 @@
     "certHostnameMismatch": "O nome do host do certificado não corresponde ao URL do monitor.",
     "Webpush Helptext": "A notificação push na web funciona apenas com conexões SSL (HTTPS). Em dispositivos iOS, a página da web precisa ser adicionada à tela inicial previamente.",
     "minimumIntervalWarning": "Intervalos abaixo de 20 segundos podem resultar em desempenho ruim.",
-    "lowIntervalWarning": "Tem certeza de que deseja definir o valor do intervalo abaixo de 20 segundos? O desempenho pode ser degradado, especialmente se houver um grande número de monitores."
+    "lowIntervalWarning": "Tem certeza de que deseja definir o valor do intervalo abaixo de 20 segundos? O desempenho pode ser degradado, especialmente se houver um grande número de monitores.",
+    "labelDomainExpiry": "Exp. Domínio",
+    "labelDomainNameExpiryNotification": "Notificação de expiração de nome de domínio",
+    "settingsDomainExpiry": "Expiração do domínio",
+    "domainExpiryDescription": "Acionar notificação quando os nomes de domínio expirarem em:"
 }

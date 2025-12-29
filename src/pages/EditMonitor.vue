@@ -105,7 +105,7 @@
                                 </select>
                                 <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
                                     <template #rabitmq_documentation>
-                                        <a href="https://www.rabbitmq.com/management" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://www.rabbitmq.com/docs/manage-rabbitmq" target="_blank" rel="noopener noreferrer">
                                             RabbitMQ documentation
                                         </a>
                                     </template>
@@ -438,8 +438,8 @@
                                 <label for="smtp_security" class="form-label">{{ $t("SMTP Security") }}</label>
                                 <select id="smtp_security" v-model="monitor.smtpSecurity" class="form-select">
                                     <option value="secure">SMTPS</option>
-                                    <option value="nostarttls">Ignore STARTTLS</option>
-                                    <option value="starttls">Use STARTTLS</option>
+                                    <option value="nostarttls">{{ $t("Ignore STARTTLS") }}</option>
+                                    <option value="starttls">{{ $t("Use STARTTLS") }}</option>
                                 </select>
                                 <div class="form-text">
                                     {{ $t("smtpHelpText") }}
@@ -449,7 +449,7 @@
                             <div v-if="monitor.type === 'port'" class="my-3">
                                 <label for="port_security" class="form-label">{{ $t("SSL/TLS") }}</label>
                                 <select id="port_security" v-model="monitor.smtpSecurity" class="form-select">
-                                    <option value="nostarttls">None</option>
+                                    <option value="nostarttls">{{ $t("None") }}</option>
                                     <option value="secure">SSL</option>
                                     <option value="starttls">STARTTLS</option>
                                 </select>
