@@ -4,7 +4,6 @@ const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
 const googleAnalytics = require("../google-analytics");
-const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
 
