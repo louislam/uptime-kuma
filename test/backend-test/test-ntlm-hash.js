@@ -35,8 +35,8 @@ test("Test createPseudoRandomValue", async (t) => {
             results.add(hash.createPseudoRandomValue(length));
         }
 
-        // Due to randomness, at least some values should be different
-        assert.ok(results.size > 1, "Multiple calls should produce different values");
+        // Stronger uniqueness assertion: expect all values to be unique for cryptographic RNG
+        assert.strictEqual(results.size, iterations, "All generated values should be unique");
     });
 
     await t.test("Should handle length of 0", () => {
