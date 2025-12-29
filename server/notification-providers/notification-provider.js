@@ -109,14 +109,58 @@ class NotificationProvider {
      * @throws {any} The error specified
      */
     throwGeneralAxiosError(error) {
-        let msg = "Error: " + error + " ";
+        // Prefer `.message` to avoid "Error: Error: ..." and noisy "AxiosError: ..." prefixes.
+        let msg = (error && error.message) ? error.message : String(error);
 
-        if (error.response && error.response.data) {
+        // AggregateError's own message is often just "AggregateError" (not useful).
+        // In that case, use a generic message and rely on the expanded causes below.
+        if (msg === "AggregateError") {
+            msg = "Request failed";
+        }
+
+        // Include common network code (ENOTFOUND / ECONNREFUSED / ETIMEDOUT / etc.) when present.
+        if (error && error.code) {
+            msg += ` (code=${error.code})`;
+        }
+
+        // Include HTTP status if available (helps when message is generic).
+        if (error && error.response && error.response.status) {
+            msg += ` (HTTP ${error.response.status}${error.response.statusText ? " " + error.response.statusText : ""})`;
+        }
+
+        // Include response body for HTTP errors if present.
+        if (error && error.response && error.response.data) {
             if (typeof error.response.data === "string") {
-                msg += error.response.data;
+                msg += " " + error.response.data;
             } else {
-                msg += JSON.stringify(error.response.data);
+                try {
+                    msg += " " + JSON.stringify(error.response.data);
+                } catch (_) {
+                    msg += " " + String(error.response.data);
+                }
             }
+        }
+
+        // Expand AggregateError so logs show the real underlying causes.
+        // Some runtimes wrap it under `error.cause`, so check both.
+        const agg = (error && error.name === "AggregateError" && Array.isArray(error.errors))
+            ? error
+            : (error && error.cause && error.cause.name === "AggregateError" && Array.isArray(error.cause.errors))
+                ? error.cause
+                : null;
+
+        if (agg) {
+            const causes = agg.errors.map((e) => {
+                // Message + code is usually enough to diagnose network failures.
+                const m = (e && e.message) ? e.message : String(e);
+                const c = (e && e.code) ? ` (code=${e.code})` : "";
+                return m + c;
+            }).join("; ");
+
+            msg += ` - caused by: ${causes}`;
+        } else if (error && error.cause && error.cause.message) {
+            // If there is a non-aggregate cause, surface it for debugging.
+            msg += ` - cause: ${error.cause.message}`;
         }
 
         throw new Error(msg);
