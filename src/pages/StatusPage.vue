@@ -867,19 +867,6 @@ export default {
         },
 
         /**
-         * Reload heartbeat data with specific maxBeats count
-         * Called by child components when they determine optimal beat count
-         * @param {number} maxBeats Maximum number of beats that fit in container
-         * @returns {void}
-         */
-        reloadHeartbeatData(maxBeats) {
-            // Only reload if we have configured days (not auto mode)
-            if (this.config && this.config.heartbeatBarDays > 0) {
-                this.loadHeartbeatData(maxBeats);
-            }
-        },
-
-        /**
          * Enable editing mode
          * @returns {void}
          */

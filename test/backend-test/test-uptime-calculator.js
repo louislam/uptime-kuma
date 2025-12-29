@@ -531,7 +531,7 @@ test("Test getAggregatedBuckets - Edge cases", async (t) => {
     let smallRange = c.getAggregatedBuckets(0.1, 5); // 0.1 days = 2.4 hours
     assert.strictEqual(smallRange.length, 5);
     smallRange.forEach(bucket => {
-        assert.strictEqual(bucket.end - bucket.start, 2.4 * 60 * 60 / 5); // 2.4 hours / 5 buckets
+        assert.strictEqual(bucket.end - bucket.start, 1728); // 2.4 hours / 5 buckets = 1728 seconds
     });
 });
 
@@ -678,7 +678,7 @@ test("Test getAggregatedBuckets - Daily data includes downtime after uptime", as
     assert.strictEqual(recentDownCount, 5, "Recent 5 buckets should contain all DOWN beats");
 });
 
-test("Test getAggregatedBuckets - Basic functionality", async (t) => {
+test("Test getAggregatedBuckets - Bucket structure validation", async (t) => {
     UptimeCalculator.currentDate = dayjs.utc("2025-08-12 12:00:00");
     let c = new UptimeCalculator();
 
