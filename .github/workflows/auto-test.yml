@@ -123,8 +123,8 @@ jobs:
         node-version: 22
     - run: npm install
 
-    - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
-      run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+    - name: Install Playwright
+      run: npx playwright install
 
     - run: npm run build
     - run: npm run test-e2e
