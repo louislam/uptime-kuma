@@ -168,7 +168,7 @@
         "@types/web-push": "^3.6.4",
         "@typescript-eslint/eslint-plugin": "^6.7.5",
         "@typescript-eslint/parser": "^6.7.5",
-        "@vitejs/plugin-vue": "~5.2.4",
+        "@vitejs/plugin-vue": "~5.0.1",
         "@vue/compiler-sfc": "~3.4.2",
         "@vuepic/vue-datepicker": "~3.4.8",
         "aedes": "^0.46.3",
