@@ -73,7 +73,7 @@ test.describe("Monitor Form", () => {
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*");
 
-        expect(page.getByTestId("monitor-status")).toHaveText("up", { ignoreCase: true });
+        await expect(page.getByTestId("monitor-status")).toHaveText("up", { ignoreCase: true });
 
         await screenshot(testInfo, page);
     });
@@ -101,7 +101,7 @@ test.describe("Monitor Form", () => {
         await page.getByTestId("save-button").click();
         await page.waitForURL("/dashboard/*");
 
-        expect(page.getByTestId("monitor-status")).toHaveText("down", { ignoreCase: true });
+        await expect(page.getByTestId("monitor-status")).toHaveText("down", { ignoreCase: true });
 
         await screenshot(testInfo, page);
     });
