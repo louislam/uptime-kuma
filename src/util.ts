@@ -44,7 +44,7 @@ export const SQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
 export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
-export const MIN_INTERVAL_SECOND = 20; // 20 seconds
+export const MIN_INTERVAL_SECOND = 1; // 1 second
 
 // Packet Size limits
 export const PING_PACKET_SIZE_MIN = 1;
@@ -193,7 +193,7 @@ export function ucfirst(str: string) {
  * @returns {void}
  */
 export function debug(msg: unknown) {
-    log.log("", msg, "debug");
+    log.log("", "debug", msg);
 }
 
 class Logger {
@@ -238,11 +238,11 @@ class Logger {
     /**
      * Write a message to the log
      * @param module The module the log comes from
-     * @param msg Message to write
      * @param level Log level. One of INFO, WARN, ERROR, DEBUG or can be customized.
+     * @param msg Message to write
      * @returns {void}
      */
-    log(module: string, msg: any, level: string) {
+    log(module: string, level: string, ...msg: unknown[]) {
         if (level === "DEBUG" && !isDev) {
             return;
         }
@@ -267,7 +267,6 @@ class Logger {
         let timePart: string;
         let modulePart: string;
         let levelPart: string;
-        let msgPart: string;
 
         if (isNode) {
             // Add console colors
@@ -281,54 +280,33 @@ class Logger {
             }
 
             modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
-
             levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
 
-            switch (level) {
-                case "ERROR":
-                    if (typeof msg === "string") {
-                        msgPart = CONSOLE_STYLE_FgRed + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
-                    }
-                    break;
-                case "DEBUG":
-                    if (typeof msg === "string") {
-                        msgPart = CONSOLE_STYLE_FgGray + msg + CONSOLE_STYLE_Reset;
-                    } else {
-                        msgPart = msg;
-                    }
-                    break;
-                default:
-                    msgPart = msg;
-                    break;
-            }
         } else {
             // No console colors
             timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
-            msgPart = msg;
         }
 
         // Write to console
         switch (level) {
             case "ERROR":
-                console.error(timePart, modulePart, levelPart, msgPart);
+                console.error(timePart, modulePart, levelPart, ...msg);
                 break;
             case "WARN":
-                console.warn(timePart, modulePart, levelPart, msgPart);
+                console.warn(timePart, modulePart, levelPart, ...msg);
                 break;
             case "INFO":
-                console.info(timePart, modulePart, levelPart, msgPart);
+                console.info(timePart, modulePart, levelPart, ...msg);
                 break;
             case "DEBUG":
                 if (isDev) {
-                    console.debug(timePart, modulePart, levelPart, msgPart);
+                    console.debug(timePart, modulePart, levelPart, ...msg);
                 }
                 break;
             default:
-                console.log(timePart, modulePart, levelPart, msgPart);
+                console.log(timePart, modulePart, levelPart, ...msg);
                 break;
         }
     }
@@ -339,8 +317,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    info(module: string, msg: unknown) {
-        this.log(module, msg, "info");
+    info(module: string, ...msg: unknown[]) {
+        this.log(module, "info", ...msg);
     }
 
     /**
@@ -349,8 +327,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    warn(module: string, msg: unknown) {
-        this.log(module, msg, "warn");
+    warn(module: string, ...msg: unknown[]) {
+        this.log(module, "warn", ...msg);
     }
 
     /**
@@ -359,8 +337,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    error(module: string, msg: unknown) {
-        this.log(module, msg, "error");
+    error(module: string, ...msg: unknown[]) {
+        this.log(module, "error", ...msg);
     }
 
     /**
@@ -369,8 +347,8 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    debug(module: string, msg: unknown) {
-        this.log(module, msg, "debug");
+    debug(module: string, ...msg: unknown[]) {
+        this.log(module, "debug", ...msg);
     }
 
     /**
@@ -380,14 +358,8 @@ class Logger {
      * @param msg The message to write
      * @returns {void}
      */
-    exception(module: string, exception: unknown, msg: unknown) {
-        let finalMessage = exception;
-
-        if (msg) {
-            finalMessage = `${msg}: ${exception}`;
-        }
-
-        this.log(module, finalMessage, "error");
+    exception(module: string, exception: unknown, ...msg: unknown[]) {
+        this.log(module, "error", ...msg, exception);
     }
 }
 
@@ -700,6 +672,16 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
 
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
+        }
+
+        // Check for arrays: JSONata filter expressions like .[predicate] always return arrays
+        if (Array.isArray(response)) {
+            const responseStr = JSON.stringify(response);
+            const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
+            throw new Error(
+                "JSON query returned the array " + truncatedResponse + ", but a primitive value is required. " +
+                "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean()."
+            );
         }
 
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {

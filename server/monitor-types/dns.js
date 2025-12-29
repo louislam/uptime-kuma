@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { UP, DOWN } = require("../../src/util");
+const { UP } = require("../../src/util");
 const dayjs = require("dayjs");
 const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
@@ -50,8 +50,10 @@ class DnsMonitorType extends MonitorType {
                 break;
 
             case "CAA":
-                dnsMessage = dnsRes[0].issue;
-                conditionsResult = handleConditions({ record: dnsRes[0].issue });
+                // .filter(Boolean) was added because some CAA records do not contain an issue key, resulting in a blank list item.
+                // Hypothetical dnsRes [{ critical: 0, issuewild: 'letsencrypt.org' }, { critical: 0, issue: 'letsencrypt.org' }]
+                dnsMessage = `Records: ${dnsRes.map(record => record.issue).filter(Boolean).join(" | ")}`;
+                conditionsResult = dnsRes.some(record => handleConditions({ record: record.issue }));
                 break;
 
             case "MX":
@@ -79,8 +81,12 @@ class DnsMonitorType extends MonitorType {
             await R.exec("UPDATE `monitor` SET dns_last_result = ? WHERE id = ? ", [ dnsMessage, monitor.id ]);
         }
 
+        if (!conditionsResult) {
+            throw new Error(dnsMessage);
+        }
+
         heartbeat.msg = dnsMessage;
-        heartbeat.status = conditionsResult ? UP : DOWN;
+        heartbeat.status = UP;
     }
 }
 

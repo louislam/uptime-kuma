@@ -17,14 +17,14 @@
             <option>2</option>
         </select>
 
-        <label for="pushover-sound-down" class="form-label">{{ $t("Notification Sound") }} - Up</label>
+        <label for="pushover-sound-down" class="form-label">{{ $t("Notification Sound") }} - Down</label>
         <select id="pushover-sound-down" v-model="$parent.notification.pushoversounds" class="form-select">
             <option v-for="sound in soundOptions" :key="sound" :value="sound">
                 {{ $t(`pushoversounds ${sound}`) }}
             </option>
         </select>
 
-        <label for="pushover-sound-up" class="form-label">{{ $t("Notification Sound") }} - Down</label>
+        <label for="pushover-sound-up" class="form-label">{{ $t("Notification Sound") }} - Up</label>
         <select id="pushover-sound-up" v-model="$parent.notification.pushoversounds_up" class="form-select">
             <option v-for="sound in soundOptions" :key="sound" :value="sound">
                 {{ $t(`pushoversounds ${sound}`) }}

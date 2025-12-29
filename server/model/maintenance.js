@@ -1,5 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject, log } = require("../../src/util");
+const { parseTimeObject, parseTimeFromTimeObject, log, SQL_DATETIME_FORMAT } = require("../../src/util");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const Cron = require("croner");
@@ -262,8 +262,8 @@ class Maintenance extends BeanModel {
                     }, duration);
 
                     // Set last start date to current time
-                    this.last_start_date = current.toISOString();
-                    R.store(this);
+                    this.last_start_date = current.utc().format(SQL_DATETIME_FORMAT);
+                    await R.store(this);
                 };
 
                 // Create Cron
@@ -272,9 +272,16 @@ class Maintenance extends BeanModel {
                     const startDate = dayjs(this.startDate);
                     const [ hour, minute ] = this.startTime.split(":");
                     const startDateTime = startDate.hour(hour).minute(minute);
+
+                    // Fix #6118, since the startDateTime is optional, it will throw error if the date is null when using toISOString()
+                    let startAt = undefined;
+                    try {
+                        startAt = startDateTime.toISOString();
+                    } catch (_) {}
+
                     this.beanMeta.job = new Cron(this.cron, {
                         timezone: await this.getTimezone(),
-                        startAt: startDateTime.toISOString(),
+                        startAt,
                     }, () => {
                         if (!this.lastStartDate || this.interval_day === 1) {
                             return startEvent();

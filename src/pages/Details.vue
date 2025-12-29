@@ -30,7 +30,8 @@
                             monitor.type === 'keyword' ||
                             monitor.type === 'json-query' ||
                             monitor.type === 'mp-health' ||
-                            monitor.type === 'real-browser'
+                            monitor.type === 'real-browser' ||
+                            monitor.type === 'websocket-upgrade'
                     "
                     :href="monitor.url"
                     target="_blank"
@@ -294,15 +295,23 @@
                             />)
                         </p>
                         <span class="col-4 col-sm-12 num">
-                            <a
-                                href="#"
-                                @click.prevent="
-                                    toggleCertInfoBox = !toggleCertInfoBox
-                                "
-                            >{{ tlsInfo.certInfo.daysRemaining }}
-                                {{
-                                    $tc("day", tlsInfo.certInfo.daysRemaining)
-                                }}</a>
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}</a>
+                            <font-awesome-icon v-if="tlsInfo.hostnameMatchMonitorUrl === false" class="cert-info-warn" icon="exclamation-triangle" :title="$t('certHostnameMismatch')" />
+                        </span>
+                    </div>
+                    <div
+                        v-if="domainInfo"
+                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
+                    >
+                        <h4 class="col-4 col-sm-12">{{ $t("labelDomainExpiry") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
+                            (<Datetime
+                                :value="domainInfo.expiresOn"
+                                date-only
+                            />)
+                        </p>
+                        <span class="col-4 col-sm-12 num">
+                            {{ domainInfo.daysRemaining }} {{ $tc("day", domainInfo.daysRemaining ) }}
                         </span>
                     </div>
                 </div>
@@ -441,7 +450,23 @@
                 :no-text="$t('No')"
                 @yes="deleteMonitor"
             >
-                {{ $t("deleteMonitorMsg") }}
+                <div v-if="monitor && monitor.type === 'group'">
+                    <div>{{ $t("deleteGroupMsg") }}</div>
+                    <div v-if="hasChildren" class="form-check">
+                        <input
+                            id="delete-children-checkbox"
+                            v-model="deleteChildrenMonitors"
+                            class="form-check-input"
+                            type="checkbox"
+                        >
+                        <label class="form-check-label" for="delete-children-checkbox">
+                            {{ $t("deleteChildrenMonitors", childrenCount, { count: childrenCount }) }}
+                        </label>
+                    </div>
+                </div>
+                <div v-else>
+                    {{ $t("deleteMonitorMsg") }}
+                </div>
             </Confirm>
 
             <Confirm
@@ -487,7 +512,7 @@ import { getMonitorRelativeURL } from "../util.ts";
 import { URL } from "whatwg-url";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import { getResBaseURL, relativeTimeFormatter } from "../util-frontend";
+import { getResBaseURL, timeDurationFormatter } from "../util-frontend";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-javascript";
@@ -530,12 +555,33 @@ export default {
                 currentExample: "javascript-fetch",
                 code: "",
             },
+            deleteChildrenMonitors: false,
         };
     },
     computed: {
         monitor() {
             let id = this.$route.params.id;
             return this.$root.monitorList[id];
+        },
+
+        /**
+         * Get the count of children monitors for this group
+         * @returns {number} Number of children monitors
+         */
+        childrenCount() {
+            if (!this.monitor || this.monitor.type !== "group") {
+                return 0;
+            }
+            const children = Object.values(this.$root.monitorList).filter(m => m.parent === this.monitor.id);
+            return children.length;
+        },
+
+        /**
+         * Check if the monitor is a group and has children
+         * @returns {boolean} True if monitor is a group with children
+         */
+        hasChildren() {
+            return this.childrenCount > 0;
         },
 
         lastHeartBeat() {
@@ -594,6 +640,10 @@ export default {
             }
 
             return null;
+        },
+
+        domainInfo() {
+            return this.$root.domainInfoList[this.monitor.id] || null;
         },
 
         showCertInfoBox() {
@@ -752,7 +802,7 @@ export default {
          * @returns {void}
          */
         deleteMonitor() {
-            this.$root.deleteMonitor(this.monitor.id, (res) => {
+            this.$root.deleteMonitor(this.monitor.id, this.deleteChildrenMonitors, (res) => {
                 this.$root.toastRes(res);
                 if (res.ok) {
                     this.$router.push("/dashboard");
@@ -928,7 +978,7 @@ export default {
         },
 
         secondsToHumanReadableFormat(seconds) {
-            return relativeTimeFormatter.secondsToHumanReadableFormat(seconds);
+            return timeDurationFormatter.secondsToHumanReadableFormat(seconds);
         },
     },
 };
@@ -936,6 +986,10 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/vars.scss";
+
+.form-check {
+    margin-top: 16px;
+}
 
 @media (max-width: 767px) {
     .badge {
@@ -1099,4 +1153,14 @@ table {
         opacity: 0.7;
     }
 }
+
+.cert-info-warn {
+    margin-left: 4px;
+    opacity: 0.5;
+
+    .dark & {
+        opacity: 0.7;
+    }
+}
+
 </style>

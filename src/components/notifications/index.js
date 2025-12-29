@@ -2,6 +2,7 @@ import Alerta from "./Alerta.vue";
 import AlertNow from "./AlertNow.vue";
 import AliyunSMS from "./AliyunSms.vue";
 import Apprise from "./Apprise.vue";
+import Bale from "./Bale.vue";
 import Bark from "./Bark.vue";
 import Bitrix24 from "./Bitrix24.vue";
 import Notifery from "./Notifery.vue";
@@ -27,6 +28,7 @@ import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
+import NextcloudTalk from "./NextcloudTalk.vue";
 import Nostr from "./Nostr.vue";
 import Ntfy from "./Ntfy.vue";
 import Octopush from "./Octopush.vue";
@@ -77,6 +79,8 @@ import SendGrid from "./SendGrid.vue";
 import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
 import SMSPlanet from "./SMSPlanet.vue";
+import SMSIR from "./SMSIR.vue";
+import Webpush from "./Webpush.vue";
 
 /**
  * Manage all notification form.
@@ -87,11 +91,13 @@ const NotificationFormList = {
     "AlertNow": AlertNow,
     "AliyunSMS": AliyunSMS,
     "apprise": Apprise,
+    bale: Bale,
     "Bark": Bark,
     "Bitrix24": Bitrix24,
     "clicksendsms": ClickSendSMS,
     "CallMeBot": CallMeBot,
     "smsc": SMSC,
+    "smsir": SMSIR,
     "DingDing": DingDing,
     "discord": Discord,
     "Elks": Elks,
@@ -110,6 +116,7 @@ const NotificationFormList = {
     "lunasea": LunaSea,
     "matrix": Matrix,
     "mattermost": Mattermost,
+    "nextcloudtalk": NextcloudTalk,
     "nostr": Nostr,
     "ntfy": Ntfy,
     "octopush": Octopush,
@@ -162,6 +169,7 @@ const NotificationFormList = {
     "Brevo": Brevo,
     "YZJ": YZJ,
     "SMSPlanet": SMSPlanet,
+    "Webpush": Webpush,
 };
 
 export default NotificationFormList;
