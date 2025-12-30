@@ -48,12 +48,16 @@ describe("Websocket Test", {
     });
 
     test("Insecure Websocket", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8080 });
+        const wss = new WebSocketServer({ port: 0 });
+        t.after(() => wss.close());
+        await new Promise((resolve) => wss.on("listening", resolve));
+
+        const address = wss.address();
+        const port = typeof address === "object" && address ? address.port : 0;
 
         const monitor = {
-            url: "ws://localhost:8080",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
         };
 
