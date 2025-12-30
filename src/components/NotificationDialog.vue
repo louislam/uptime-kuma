@@ -129,7 +129,6 @@ export default {
                 "Keep": "Keep",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
-                "LineNotify": "LINE Notify",
                 "lunasea": "LunaSea",
                 "matrix": "Matrix",
                 "mattermost": "Mattermost",
