@@ -13,7 +13,7 @@ class Resend extends NotificationProvider {
         try {
             let config = {
                 headers: {
-                    Authorization: `Bearer ${notification.longLivedAccessToken}`,
+                    Authorization: `Bearer ${notification.resendApiKey}`,
                     "Content-Type": "application/json",
                 },
             };

@@ -168,7 +168,7 @@ const NotificationFormList = {
     "WPush": WPush,
     "SendGrid": SendGrid,
     "Brevo": Brevo,
-    "Resend":Resend,
+    "Resend": Resend,
     "YZJ": YZJ,
     "SMSPlanet": SMSPlanet,
     "Webpush": Webpush,
