@@ -25,7 +25,6 @@ const HeiiOnCall = require("./notification-providers/heii-oncall");
 const Keep = require("./notification-providers/keep");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
-const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
@@ -124,7 +123,6 @@ class Notification {
             new Keep(),
             new Kook(),
             new Line(),
-            new LineNotify(),
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
