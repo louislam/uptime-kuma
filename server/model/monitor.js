@@ -8,7 +8,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
-const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, mysqlQuery, setSetting, httpNtlm, radius,
+const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mysqlQuery, setSetting, httpNtlm, radius,
     kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, checkCertificateHostname
 } = require("../util-server");
 const { R } = require("redbean-node");
@@ -782,14 +782,6 @@ class Monitor extends BeanModel {
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
                     }
-                } else if (this.type === "sqlserver") {
-                    let startTime = dayjs().valueOf();
-
-                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
-
-                    bean.msg = "";
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
 
