@@ -36,23 +36,13 @@ class WebSocketMonitorType extends MonitorType {
             });
 
             ws.onerror = (error) => {
-                const invalidAcceptCodes = [ "WS_ERR_INVALID_SEC_WEBSOCKET_ACCEPT_HEADER" ];
-                let message = error?.message || "";
-
-                // Some ws versions may not populate the message even for invalid accept headers
-                if (!message && invalidAcceptCodes.includes(error?.code)) {
-                    message = "Invalid Sec-WebSocket-Accept header";
-                } else if (!message) {
-                    message = "Unknown websocket error";
-                }
-
                 // Give user the choice to ignore Sec-WebSocket-Accept header
-                if (monitor.wsIgnoreSecWebsocketAcceptHeader && (message === "Invalid Sec-WebSocket-Accept header" || invalidAcceptCodes.includes(error?.code))) {
+                if (monitor.wsIgnoreSecWebsocketAcceptHeader && error.message === "Invalid Sec-WebSocket-Accept header") {
                     resolve([ "101 - OK", 1000 ]);
                     return;
                 }
                 // Upgrade failed, return message to user
-                resolve([ message, error?.code ]);
+                resolve([ error.message, error.code ]);
             };
 
             ws.onclose = (event) => {
