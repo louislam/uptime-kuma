@@ -39,6 +39,7 @@ class WebSocketMonitorType extends MonitorType {
                 // Give user the choice to ignore Sec-WebSocket-Accept header
                 if (monitor.wsIgnoreSecWebsocketAcceptHeader && error.message === "Invalid Sec-WebSocket-Accept header") {
                     resolve([ "101 - OK", 1000 ]);
+                    return;
                 }
                 // Upgrade failed, return message to user
                 resolve([ error.message, error.code ]);
