@@ -438,7 +438,7 @@
                             </div>
                             <div v-if="monitor.type === 'snmp' && monitor.snmpVersion === '3'" class="my-3">
                                <label for="snmp_v3_username" class="form-label">
-                                      SNMPv3 Username
+                                      {{ $t('snmpV3Username') }}
                                 </label>
 
                                 <input
