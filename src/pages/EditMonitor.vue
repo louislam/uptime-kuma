@@ -702,8 +702,8 @@
                                 </div>
                             </div>
 
-                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
+                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp' || monitor.type === 'websocket-upgrade'" class="my-3">
                                 <label for="timeout" class="form-label">
                                     {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
                                     <span v-if="monitor.type !== 'ping'">({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</span>

@@ -31,19 +31,23 @@ class WebSocketMonitorType extends MonitorType {
     async check(monitor, heartbeat, _server) {
         const [ message, code ] = await this.attemptUpgrade(monitor);
 
+        if (typeof code !== "undefined") {
+            // If returned status code matches user controlled accepted status code(default 1000), return success
+            if (checkStatusCode(code, JSON.parse(monitor.accepted_statuscodes_json))) {
+                heartbeat.status = UP;
+                heartbeat.msg = message;
+                return; //success at this point
+            }
+
+            // Throw an error using friendly name if defined, fallback to generic msg
+            throw new Error(WS_ERR_CODE[code] || `Unexpected status code: ${code}`);
+        }
         // If no close code, then an error has occurred, display to user
-        if (typeof code === "undefined") {
+        if (typeof message !== "undefined") {
             throw new Error(`${message}`);
         }
-        // If returned status code matches user controlled accepted status code(default 1000), return success
-        if (checkStatusCode(code, JSON.parse(monitor.accepted_statuscodes_json))) {
-            heartbeat.status = UP;
-            heartbeat.msg = message;
-            return; //success at this point
-        }
-
-        // Throw an error using friendly name if defined, fallback to generic msg
-        throw new Error(WS_ERR_CODE[code] || `Unexpected status code: ${code}`);
+        // Throw generic error if nothing is defined, should never happen
+        throw new Error("Unknown Websocket Error");
     }
 
     /**
@@ -54,8 +58,8 @@ class WebSocketMonitorType extends MonitorType {
     async attemptUpgrade(monitor) {
         return new Promise((resolve) => {
             let ws;
-            // If user inputs subprotocol(s), convert to array, then set Sec-WebSocket-Protocol header. Subprotocol Identifier column: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name
-            ws = !monitor.wsSubprotocol ? new WebSocket(monitor.url) : new WebSocket(monitor.url, monitor.wsSubprotocol.replace(/\s/g, "").split(","));
+            // If user inputs subprotocol(s), convert to array, set Sec-WebSocket-Protocol header, timeout in ms. Subprotocol Identifier column: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name
+            ws = !monitor.wsSubprotocol ? new WebSocket(monitor.url, { handshakeTimeout: (monitor?.timeout ?? 0) * 1000 }) : new WebSocket(monitor.url, monitor.wsSubprotocol.replace(/\s/g, "").split(","), { handshakeTimeout: (monitor?.timeout ?? 0) * 1000 });
 
             ws.addEventListener("open", (event) => {
                 // Immediately close the connection
