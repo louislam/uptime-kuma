@@ -104,7 +104,6 @@
         "iconv-lite": "~0.6.3",
         "is-url": "^1.2.4",
         "isomorphic-ws": "^5.0.0",
-        "jsdom": "^27.4.0",
         "jsesc": "~3.0.2",
         "jsonata": "^2.0.3",
         "jsonwebtoken": "~9.0.0",
