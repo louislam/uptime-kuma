@@ -91,7 +91,7 @@
     "ignoreSecWebsocketAcceptHeaderDescription": "Allows the server to not reply with Sec-WebSocket-Accept header, if the websocket upgrade succeeds.",
     "Ignore Sec-WebSocket-Accept header": "Ignore {0} header",
     "wsSubprotocolDescription": "Enter a comma delimited list of subprotocols. For more information on subprotocols, please consult the {documentation}",
-    "wsCodeDescription": "For more information on status codes, please consult {documentation}",
+    "wsCodeDescription": "For more information on status codes, please consult {rfc6455}",
     "Subprotocol(s)": "Subprotocol(s)",
     "maxRedirectDescription": "Maximum number of redirects to follow. Set to 0 to disable redirects.",
     "Upside Down Mode": "Upside Down Mode",

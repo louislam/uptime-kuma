@@ -847,7 +847,7 @@
                                         {{ $t("acceptedStatusCodesDescription") }}
                                     </div>
                                     <i18n-t tag="div" class="form-text" keypath="wsCodeDescription">
-                                        <template #documentation>
+                                        <template #rfc6455>
                                             <a href="https://datatracker.ietf.org/doc/html/rfc6455#section-7.4" target="_blank" rel="noopener noreferrer">RFC 6455</a>
                                         </template>
                                     </i18n-t>
