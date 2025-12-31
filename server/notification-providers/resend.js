@@ -1,5 +1,11 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
+const { JSDOM } = require("jsdom");
+const createDOMPurify = require("dompurify");
+
+// Initialize a server-side DOMPurify using JSDOM. Created once per module.
+const window = new JSDOM("").window;
+const DOMPurify = createDOMPurify(window);
 
 class Resend extends NotificationProvider {
     name = "Resend";
@@ -25,7 +31,10 @@ class Resend extends NotificationProvider {
                 from: `${fromName} <${email}>`,
                 to: notification.resendToEmail,
                 subject: notification.resendSubject || "Notification from Your Uptime Kuma",
-                html: `<html><head></head><body><p>${msg.replace(/\n/g, "<br>")}</p></body></html>`
+                // sanitize the message content to avoid injecting unsafe HTML
+                html: `<html><head></head><body>${DOMPurify.sanitize(msg.replace(/\n/g, "<br/>"), {
+                    ALLOWED_TAGS: [ "b", "i", "br" ],
+                })}</body></html>`
             };
 
             let result = await axios.post(
