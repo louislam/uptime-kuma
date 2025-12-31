@@ -387,7 +387,7 @@
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
-                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
+                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : (monitor.type === 'dns' ? dnsHostnameRegexPattern : ipOrHostnameRegexPattern)}`"
                                     required
                                     data-testid="hostname-input"
                                 >
@@ -1402,6 +1402,7 @@ export default {
             kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
+            dnsHostnameRegexPattern: hostNameRegexPattern(false, { allowWildcard: true, allowIP: false }),
             gameList: null,
             connectionStringTemplates: {
                 "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
