@@ -230,7 +230,7 @@ describe("Websocket Test", {
         );
     });
 
-    test("Secure WS no support one subprotocol", async () => {
+    test("Secure WS no subprotocol support", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -305,7 +305,7 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Insecure WS support one subprotocol", async (t) => {
+    test("Insecure WS supports one subprotocol", async (t) => {
         t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
         const wss = new WebSocketServer({ port: 8080,

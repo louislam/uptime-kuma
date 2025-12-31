@@ -36,7 +36,7 @@ class WebSocketMonitorType extends MonitorType {
             if (checkStatusCode(code, JSON.parse(monitor.accepted_statuscodes_json))) {
                 heartbeat.status = UP;
                 heartbeat.msg = message;
-                return; //success at this point
+                return; // success at this point
             }
 
             // Throw an error using friendly name if defined, fallback to generic msg
@@ -57,9 +57,10 @@ class WebSocketMonitorType extends MonitorType {
      */
     async attemptUpgrade(monitor) {
         return new Promise((resolve) => {
-            let ws;
+            const timeoutMs = (monitor.timeout ?? 20) * 1000;
             // If user inputs subprotocol(s), convert to array, set Sec-WebSocket-Protocol header, timeout in ms. Subprotocol Identifier column: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name
-            ws = !monitor.wsSubprotocol ? new WebSocket(monitor.url, { handshakeTimeout: (monitor?.timeout ?? 0) * 1000 }) : new WebSocket(monitor.url, monitor.wsSubprotocol.replace(/\s/g, "").split(","), { handshakeTimeout: (monitor?.timeout ?? 0) * 1000 });
+            const subprotocol = monitor.wsSubprotocol ? monitor.wsSubprotocol.replace(/\s/g, "").split(",") : undefined;
+            const ws = new WebSocket(monitor.url, subprotocol, { handshakeTimeout: timeoutMs });
 
             ws.addEventListener("open", (event) => {
                 // Immediately close the connection

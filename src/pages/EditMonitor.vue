@@ -848,7 +848,7 @@
                                     </div>
                                     <i18n-t tag="div" class="form-text" keypath="wsCodeDescription">
                                         <template #documentation>
-                                            <a href="https://datatracker.ietf.org/doc/html/rfc6455#section-7.4" target="_blank" rel="noopener noreferrer">{{ 'RFC6455' }}</a>
+                                            <a href="https://datatracker.ietf.org/doc/html/rfc6455#section-7.4" target="_blank" rel="noopener noreferrer">RFC 6455</a>
                                         </template>
                                     </i18n-t>
                                 </div>
