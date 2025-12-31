@@ -25,8 +25,8 @@ class Resend extends NotificationProvider {
                 from: `${fromName} <${email}>`,
                 to: notification.resendToEmail,
                 subject: notification.resendSubject || "Notification from Your Uptime Kuma",
-                // supplied text directly instead of html 
-                text:msg,
+                // supplied text directly instead of html
+                text: msg,
             };
 
             let result = await axios.post(
