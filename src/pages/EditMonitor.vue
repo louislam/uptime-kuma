@@ -422,7 +422,7 @@
                                 <div class="form-text">{{ $t('snmpOIDHelptext') }} </div>
                             </div>
 
-                            <div v-if="monitor.type === 'snmp' && monitor.snmpVersion !== '3'" class="my-3"">
+                            <div v-if="monitor.type === 'snmp'" class="my-3">
                                 <label for="snmp_version" class="form-label">{{ $t("SNMP Version") }}</label>
                                 <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
                                     <option value="1">
