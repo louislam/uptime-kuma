@@ -143,7 +143,7 @@
                             <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
                             <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
                                 <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol(s)") }}</label>
-                                <input id="ws_subprotocol" v-model="monitor.wsSubprotocol" type="text" class="form-control" :placeholder="$t('Optional')">
+                                <input id="ws_subprotocol" v-model="monitor.wsSubprotocol" type="text" class="form-control" placeholder="mielecloudconnect,soap">
                                 <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
                                     <template #documentation>
                                         <a href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name" target="_blank" rel="noopener noreferrer">{{ $t('documentationOf', ['IANA']) }}</a>
