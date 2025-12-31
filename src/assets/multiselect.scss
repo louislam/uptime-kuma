@@ -1,6 +1,5 @@
 @import "vars.scss";
-@import "vue-multiselect/dist/vue-multiselect.css";
-
+@import "node_modules/vue-multiselect/dist/vue-multiselect";
 
 .multiselect {
     .dark & {
