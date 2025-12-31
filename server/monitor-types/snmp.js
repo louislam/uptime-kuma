@@ -1,6 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const { UP, log, evaluateJsonQuery } = require("../../src/util");
 const snmp = require("net-snmp");
+const { hostname } = require("os");
 
 class SNMPMonitorType extends MonitorType {
     name = "snmp";
@@ -17,7 +18,22 @@ class SNMPMonitorType extends MonitorType {
                 timeout: monitor.timeout * 1000,
                 version: snmp.Version[monitor.snmpVersion],
             };
-            session = snmp.createSession(monitor.hostname, monitor.radiusPassword, sessionOptions);
+
+            if(monitor.snmpVersion === "3") {
+                if (!monitor.snmp_v3_username) {
+                     throw new Error("SNMPv3 username is required");
+                }
+                sessionOptions.securityLevel = snmp.SecurityLevel.noAuthNoPriv;
+                sessionOptions.username = monitor.snmp_v3_username;
+            session = snmp.createV3Session(
+                monitor.hostname,
+                monitor.snmp_v3_username,
+                sessionOptions
+            )
+            } else {
+                session = snmp.createSession(monitor.hostname, monitor.radiusPassword, sessionOptions);
+            }
+            
 
             // Handle errors during session creation
             session.on("error", (error) => {
