@@ -110,14 +110,15 @@ export function getDevContainerServerHostname() {
 
 /**
  * Regex pattern for identifying hostnames (optionally IP addresses)
- * @param {boolean} mqtt whether or not the regex should take into
- * account the fact that it is an mqtt uri
- * @param {{ allowWildcard?: boolean, allowIP?: boolean }} [options]
+ * @param {boolean} mqtt Whether the regex should account for mqtt/ws schemes.
+ * @param {object} options Options for hostname validation.
+ * @param {boolean} options.allowWildcard Allow a leading "*." wildcard prefix. Default: false.
+ * @param {boolean} options.allowIP Include IP patterns in the returned pattern. Default: true.
  * @returns {string} Regex pattern string for <input pattern="">
  */
 export function hostNameRegexPattern(mqtt = false, options = {}) {
     const {
-        allowWildcard = false, // allow leading "*."
+        allowWildcard = false, // allow leading "*."R
         allowIP = true,        // include IP regex in the returned pattern
     } = options;
 
