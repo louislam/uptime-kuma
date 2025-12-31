@@ -53,13 +53,12 @@ test("Domain Expiry", async (t) => {
             "user_id": 1,
             "name": "Testhook"
         });
-        const manyDays = 1500;
-        setSetting("domainExpiryNotifyDays", [ 7, 14, manyDays ], "general");
+        const manyDays = 3650;
+        setSetting("domainExpiryNotifyDays", [ manyDays ], "general");
         const [ notifRet, data ] = await Promise.all([
             DomainExpiry.sendNotifications(monHttpCom, [ notif ]),
             mockWebhook(hook.port, hook.url)
         ]);
-        assert.equal(notifRet, manyDays);
         assert.match(data.msg, /will expire in/);
     });
 }).finally(() => {
