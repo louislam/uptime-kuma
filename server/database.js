@@ -196,7 +196,7 @@ class Database {
     /**
      * Conditionally generates the MySQL SSL configuration object.
      * @param {{type: "sqlite"} | {type:envString, hostname:envString, port:envString, database:envString, username:envString, password:envString, ssl:boolean, ssl_ca:envString}} dbConfig the database configuration
-     * @returns {object | undefined} An object containing the `ssl` property, or undefined.
+     * @returns {{ssl: object} | undefined} An object containing the ssl configuration, or undefined if SSL is not enabled.
      */
     static getSslConfig(dbConfig) {
         if (!dbConfig.ssl) {
