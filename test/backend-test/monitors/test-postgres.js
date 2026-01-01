@@ -1,8 +1,8 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { PostgreSqlContainer } = require("@testcontainers/postgresql");
-const { PostgresMonitorType } = require("../../server/monitor-types/postgres");
-const { UP, PENDING } = require("../../src/util");
+const { PostgresMonitorType } = require("../../../server/monitor-types/postgres");
+const { UP, PENDING } = require("../../../src/util");
 
 describe(
     "Postgres Single Node",

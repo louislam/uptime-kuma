@@ -1,8 +1,8 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { MSSQLServerContainer } = require("@testcontainers/mssqlserver");
-const { MssqlMonitorType } = require("../../server/monitor-types/mssql");
-const { UP, PENDING } = require("../../src/util");
+const { MssqlMonitorType } = require("../../../server/monitor-types/mssql");
+const { UP, PENDING } = require("../../../src/util");
 
 /**
  * Helper function to create and start a MSSQL container

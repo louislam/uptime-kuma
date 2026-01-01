@@ -2,8 +2,8 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { HiveMQContainer } = require("@testcontainers/hivemq");
 const mqtt = require("mqtt");
-const { MqttMonitorType } = require("../../server/monitor-types/mqtt");
-const { UP, PENDING } = require("../../src/util");
+const { MqttMonitorType } = require("../../../server/monitor-types/mqtt");
+const { UP, PENDING } = require("../../../src/util");
 
 /**
  * Runs an MQTT test with the

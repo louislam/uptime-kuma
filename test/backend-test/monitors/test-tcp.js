@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
-const { TCPMonitorType } = require("../../server/monitor-types/tcp");
-const { UP, PENDING } = require("../../src/util");
+const { TCPMonitorType } = require("../../../server/monitor-types/tcp");
+const { UP, PENDING } = require("../../../src/util");
 const net = require("net");
 
 /**
