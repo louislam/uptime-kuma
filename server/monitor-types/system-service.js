@@ -42,9 +42,7 @@ class SystemServiceMonitorType extends MonitorType {
             // SECURITY: Prevent Argument Injection
             // Only allow alphanumeric, dots, dashes, underscores, and @
             if (!serviceName || !/^[a-zA-Z0-9._\-@]+$/.test(serviceName)) {
-                heartbeat.status = DOWN;
-                heartbeat.msg = "Invalid service name. Please use the internal Service Name (no spaces).";
-                reject(new Error(heartbeat.msg));
+                reject(new Error("Invalid service name. Please use the internal Service Name (no spaces)."));
                 return;
             }
 
