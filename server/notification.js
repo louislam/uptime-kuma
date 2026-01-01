@@ -83,6 +83,7 @@ const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
 const { commandExists } = require("./util-server");
 const Webpush = require("./notification-providers/Webpush");
+const HaloPSA = require("./notification-providers/HaloPSA");
 
 class Notification {
     providerList = {};
@@ -181,6 +182,7 @@ class Notification {
             new SMSIR(),
             new SendGrid(),
             new Webpush(),
+            new HaloPSA(),
         ];
         for (let item of list) {
             if (!item.name) {
