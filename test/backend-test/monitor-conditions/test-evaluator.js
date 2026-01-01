@@ -1,17 +1,17 @@
 
-const test = require("node:test");
+const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { ConditionExpressionGroup, ConditionExpression, LOGICAL } = require("../../../server/monitor-conditions/expression.js");
 const { evaluateExpressionGroup, evaluateExpression } = require("../../../server/monitor-conditions/evaluator.js");
 
-test("Expression Evaluator", async (t) => {
-    await t.test("evaluateExpression() returns true when condition matches and false otherwise", async (t) => {
+describe("Expression Evaluator", () => {
+    test("evaluateExpression() returns true when condition matches and false otherwise", () => {
         const expr = new ConditionExpression("record", "contains", "mx1.example.com");
         assert.strictEqual(true, evaluateExpression(expr, { record: "mx1.example.com" }));
         assert.strictEqual(false, evaluateExpression(expr, { record: "mx2.example.com" }));
     });
 
-    await t.test("evaluateExpressionGroup() with AND logic requires all conditions to be true", async (t) => {
+    test("evaluateExpressionGroup() with AND logic requires all conditions to be true", () => {
         const group = new ConditionExpressionGroup([
             new ConditionExpression("record", "contains", "mx1."),
             new ConditionExpression("record", "contains", "example.com", LOGICAL.AND),
@@ -21,7 +21,7 @@ test("Expression Evaluator", async (t) => {
         assert.strictEqual(false, evaluateExpressionGroup(group, { record: "example.com" }));
     });
 
-    await t.test("evaluateExpressionGroup() with OR logic requires at least one condition to be true", async (t) => {
+    test("evaluateExpressionGroup() with OR logic requires at least one condition to be true", () => {
         const group = new ConditionExpressionGroup([
             new ConditionExpression("record", "contains", "example.com"),
             new ConditionExpression("record", "contains", "example.org", LOGICAL.OR),
@@ -31,7 +31,7 @@ test("Expression Evaluator", async (t) => {
         assert.strictEqual(false, evaluateExpressionGroup(group, { record: "example.net" }));
     });
 
-    await t.test("evaluateExpressionGroup() evaluates nested groups correctly", async (t) => {
+    test("evaluateExpressionGroup() evaluates nested groups correctly", () => {
         const group = new ConditionExpressionGroup([
             new ConditionExpression("record", "contains", "mx1."),
             new ConditionExpressionGroup([
