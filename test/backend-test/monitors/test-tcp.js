@@ -5,6 +5,11 @@ const { UP, PENDING } = require("../../../src/util");
 const net = require("net");
 
 describe("TCP Monitor", () => {
+    /**
+     * Creates a TCP server on a specified port
+     * @param {number} port - The port number to listen on
+     * @returns {Promise<net.Server>} A promise that resolves with the created server
+     */
     async function createTCPServer(port) {
         return new Promise((resolve, reject) => {
             const server = net.createServer();
