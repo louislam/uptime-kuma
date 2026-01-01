@@ -124,11 +124,8 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["port"] = new TCPMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
-<<<<<<< HEAD
         UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
-=======
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
->>>>>>> upstream/master
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
