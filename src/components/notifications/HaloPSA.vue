@@ -4,7 +4,7 @@
             {{ $t("Halo PSA Webhook URL") }}
         </label>
         <HiddenInput
-            v-model="parent.notification.halowebhookurl"
+            v-model="$parent.notification.halowebhookurl"
             :maxlength="500"
             placeholder="https://your-instance.halopsa.com/api/v1/webhook"
         />
@@ -17,12 +17,12 @@
         <div class="form-check">
             <input
                 id="halopsa-apply-existing"
-                v-model="parent.notification.apply_existing"
+                v-model="$parent.notification.apply_existing"
                 type="checkbox"
                 class="form-check-input"
             />
             <label class="form-check-label" for="halopsa-apply-existing">
-                {{ $t("Apply on all exisiting monitors") }}
+                {{ $t("Apply on all existing monitors") }}
             </label>
         </div>
     </div>
@@ -30,33 +30,22 @@
 
 <script>
 /**
- * Halo PSA Notification Provider Vue Componant
+ * Halo PSA Notification Provider Vue Component
  */
 import HiddenInput from "../HiddenInput.vue";
 
 export default {
-    name: "HaloPSA",
     components: {
         HiddenInput,
     },
-    props: {
-        modelValue: {
-            type: Object,
-            default: () => ({}),
-        },
-    },
-    emits: [ "update:modelValue" ],
-    computed: {
-        notification: {
-            get() {
-                return this.modelValue || {};
-            }
-        }
-    },
     mounted() {
         //initialize default value if not set
-        if (typeof this.notification.halowebhookurl === "undefined") {
-            this.notification.halowebhookurl = "";
+        if (typeof this.$parent.notification.halowebhookurl === "undefined") {
+            this.$parent.notification.halowebhookurl = "";
+        }
+        //initialize apply_existing filed
+        if (typeof this.$parent.notification.apply_existing === "undefined") {
+            this.$parent.notification.apply_existing = false;
         }
     }
 };
