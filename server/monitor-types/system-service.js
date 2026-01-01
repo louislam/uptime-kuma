@@ -105,8 +105,7 @@ class SystemServiceMonitorType extends MonitorType {
                     heartbeat.msg = `Service '${serviceName}' is running.`;
                     resolve();
                 } else {
-                    heartbeat.msg = `Service '${serviceName}' is ${output}.`;
-                    reject(new Error(heartbeat.msg));
+                    reject(new Error(`Service '${serviceName}' is ${output}.`));
                 }
             });
         });
