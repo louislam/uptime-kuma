@@ -21,7 +21,7 @@ describe("Maintenance Date Format - MariaDB Compatibility", () => {
         const sqlFormat = current.utc().format(SQL_DATETIME_FORMAT);
 
         assert.strictEqual(sqlFormat, "2025-12-19 01:04:02");
-    });move websokcet
+    });
 
     test("SQL format does not contain ISO markers (T, Z)", () => {
         const current = dayjs.utc("2025-12-19T01:04:02.129Z");

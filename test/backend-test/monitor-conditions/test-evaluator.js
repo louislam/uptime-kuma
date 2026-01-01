@@ -1,4 +1,3 @@
-
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { ConditionExpressionGroup, ConditionExpression, LOGICAL } = require("../../../server/monitor-conditions/expression.js");
