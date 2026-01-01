@@ -137,7 +137,19 @@
                             <!-- URL -->
                             <div v-if="monitor.type === 'websocket-upgrade' || monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="url" v-model="monitor.url" type="url" class="form-control" :pattern="monitor.type !== 'websocket-upgrade' ? 'https?://.+' : 'wss?://.+'" required data-testid="url-input">
+                                <input
+                                    id="url"
+                                    ref="urlInput"
+                                    v-model="monitor.url"
+                                    type="url"
+                                    class="form-control"
+                                    :pattern="monitor.type !== 'websocket-upgrade'
+                                        ? 'https?:\\/\\/[^*\\/\\s]+([\\/?#].*)?'
+                                        : 'wss?:\\/\\/[^*\\/\\s]+([\\/?#].*)?'"
+                                    required
+                                    data-testid="url-input"
+                                    @input="validateUrl"
+                                >
                             </div>
 
                             <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
@@ -384,12 +396,14 @@
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
+                                    ref="hostnameInput"
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
                                     :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : (monitor.type === 'dns' ? dnsHostnameRegexPattern : ipOrHostnameRegexPattern)}`"
                                     required
                                     data-testid="hostname-input"
+                                    @input="validateHostname"
                                 >
                                 <div v-if="monitor.type === 'mqtt'" class="form-text">
                                     <i18n-t tag="p" keypath="mqttHostnameTip">
@@ -1314,7 +1328,12 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
-import { hostNameRegexPattern, timeDurationFormatter } from "../util-frontend";
+import {
+    dnsHostnameRegexPattern,
+    hostNameRegexPattern,
+    ipv4RegexPattern,
+    timeDurationFormatter,
+} from "../util-frontend";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -1402,10 +1421,8 @@ export default {
             kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
             mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
-            dnsHostnameRegexPattern: hostNameRegexPattern(false, {
-                allowWildcard: true,
-                allowIP: false
-            }),
+            dnsHostnameRegexPattern,
+            ipv4RegexPattern,
             gameList: null,
             connectionStringTemplates: {
                 "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
@@ -2001,6 +2018,64 @@ message HealthCheckResponse {
 
             this.draftGroupName = null;
 
+        },
+
+        validateHostname() {
+            const el = this.$refs.hostnameInput;
+            if (!el) {
+                return;
+            }
+            el.setCustomValidity("");
+            if (this.monitor.type !== "dns") {
+                return;
+            }
+            const raw = (this.monitor.hostname || "").trim();
+            if (!raw) {
+                return;
+            }
+            const v = raw.endsWith(".") ? raw.slice(0, -1) : raw;
+
+            // Reject IPv4 & Reject IPv6
+            if (new RegExp(this.ipv4RegexPattern).test(v) || v.includes(":")) {
+                el.setCustomValidity("DNS monitor expects a hostname, not an IP address.");
+            }
+        },
+
+        validateUrl() {
+            const el = this.$refs.urlInput;
+            if (!el) {
+                return;
+            }
+
+            el.setCustomValidity("");
+
+            const urlTypes = new Set([
+                "http",
+                "keyword",
+                "json-query",
+                "real-browser",
+                "websocket-upgrade",
+            ]);
+
+            if (!urlTypes.has(this.monitor.type)) {
+                return;
+            }
+
+            const raw = (this.monitor.url || "").trim();
+            if (!raw) {
+                return;
+            }
+
+            try {
+                const u = new URL(raw);
+
+                // Reject wildcard hostnames like https://*.example.com
+                if (u.hostname.includes("*")) {
+                    el.setCustomValidity("Wildcard hostnames are not supported in URL monitors.");
+                }
+            } catch {
+                // Let built-in URL/pattern validation show its own message
+            }
         },
 
         addKafkaProducerBroker(newBroker) {
