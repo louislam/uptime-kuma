@@ -1,4 +1,4 @@
-const test = require("node:test");
+const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const sharp = require("sharp");
 const StatusPage = require("../../server/model/status_page");
@@ -21,10 +21,6 @@ if (!fs.existsSync(SNAPSHOTS_DIR)) {
 
 // Fixed timestamp for consistent snapshots (2024-01-01 00:00:00 UTC)
 const FIXED_TIMESTAMP = 1704067200000;
-
-// ============================================================================
-// Test Fixtures
-// ============================================================================
 
 const TEST_SCENARIOS = [
     {
@@ -87,10 +83,6 @@ const TEST_SCENARIOS = [
         monitorCount: 5
     }
 ];
-
-// ============================================================================
-// Test Helpers
-// ============================================================================
 
 /**
  * Compare SVG with snapshot, create if doesn't exist
@@ -164,103 +156,94 @@ async function assertValidPNG(buffer) {
     assert.strictEqual(metadata.height, 630, "Should have height 630");
 }
 
-// ============================================================================
-// Unit Tests - Helper Functions
-// ============================================================================
+describe("OG Image Helper Functions", () => {
+    describe("escapeXml()", () => {
+        test("escapes all XML special characters", () => {
+            assert.strictEqual(escapeXml("&"), "&amp;");
+            assert.strictEqual(escapeXml("<"), "&lt;");
+            assert.strictEqual(escapeXml(">"), "&gt;");
+            assert.strictEqual(escapeXml("\""), "&quot;");
+            assert.strictEqual(escapeXml("'"), "&apos;");
+        });
 
-test("escapeXml()", async (t) => {
-
-    await t.test("should escape all XML special characters", () => {
-        assert.strictEqual(escapeXml("&"), "&amp;");
-        assert.strictEqual(escapeXml("<"), "&lt;");
-        assert.strictEqual(escapeXml(">"), "&gt;");
-        assert.strictEqual(escapeXml("\""), "&quot;");
-        assert.strictEqual(escapeXml("'"), "&apos;");
+        test("handles mixed special characters", () => {
+            const input = "Company & Services <Status> \"Test\" 'Quote'";
+            const expected = "Company &amp; Services &lt;Status&gt; &quot;Test&quot; &apos;Quote&apos;";
+            assert.strictEqual(escapeXml(input), expected);
+        });
     });
 
-    await t.test("should handle mixed special characters", () => {
-        const input = "Company & Services <Status> \"Test\" 'Quote'";
-        const expected = "Company &amp; Services &lt;Status&gt; &quot;Test&quot; &apos;Quote&apos;";
-        assert.strictEqual(escapeXml(input), expected);
-    });
-});
+    describe("getStatusColor()", () => {
+        test("returns green for all systems up", () => {
+            assert.strictEqual(getStatusColor(STATUS_PAGE_ALL_UP), "#10b981");
+        });
 
-test("getStatusColor()", async (t) => {
+        test("returns yellow for partial degradation", () => {
+            assert.strictEqual(getStatusColor(STATUS_PAGE_PARTIAL_DOWN), "#f59e0b");
+        });
 
-    await t.test("should return green for all systems up", () => {
-        assert.strictEqual(getStatusColor(STATUS_PAGE_ALL_UP), "#10b981");
-    });
+        test("returns red for all systems down", () => {
+            assert.strictEqual(getStatusColor(STATUS_PAGE_ALL_DOWN), "#ef4444");
+        });
 
-    await t.test("should return yellow for partial degradation", () => {
-        assert.strictEqual(getStatusColor(STATUS_PAGE_PARTIAL_DOWN), "#f59e0b");
-    });
+        test("returns blue for maintenance", () => {
+            assert.strictEqual(getStatusColor(MAINTENANCE), "#3b82f6");
+        });
 
-    await t.test("should return red for all systems down", () => {
-        assert.strictEqual(getStatusColor(STATUS_PAGE_ALL_DOWN), "#ef4444");
-    });
-
-    await t.test("should return blue for maintenance", () => {
-        assert.strictEqual(getStatusColor(MAINTENANCE), "#3b82f6");
-    });
-
-    await t.test("should return gray for no services", () => {
-        assert.strictEqual(getStatusColor(-1), "#6b7280");
+        test("returns gray for no services", () => {
+            assert.strictEqual(getStatusColor(-1), "#6b7280");
+        });
     });
 });
 
-test("StatusPage.overallStatus()", async (t) => {
+describe("StatusPage Model", () => {
+    describe("overallStatus()", () => {
+        test("returns -1 for empty heartbeats", () => {
+            const status = StatusPage.overallStatus([]);
+            assert.strictEqual(status, -1);
+        });
 
-    await t.test("should return -1 for empty heartbeats", () => {
-        const status = StatusPage.overallStatus([]);
-        assert.strictEqual(status, -1);
+        test("returns ALL_UP when all monitors are up", () => {
+            const status = StatusPage.overallStatus([{ status: 1 }, { status: 1 }]);
+            assert.strictEqual(status, STATUS_PAGE_ALL_UP);
+        });
+
+        test("returns PARTIAL_DOWN when monitors are mixed", () => {
+            const status = StatusPage.overallStatus([{ status: 1 }, { status: 0 }]);
+            assert.strictEqual(status, STATUS_PAGE_PARTIAL_DOWN);
+        });
+
+        test("returns ALL_DOWN when all monitors are down", () => {
+            const status = StatusPage.overallStatus([{ status: 0 }, { status: 0 }]);
+            assert.strictEqual(status, STATUS_PAGE_ALL_DOWN);
+        });
     });
 
-    await t.test("should return ALL_UP when all monitors are up", () => {
-        const status = StatusPage.overallStatus([{ status: 1 }, { status: 1 }]);
-        assert.strictEqual(status, STATUS_PAGE_ALL_UP);
-    });
+    describe("getStatusDescription()", () => {
+        test("returns description for no services", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(-1), "No Services");
+        });
 
-    await t.test("should return PARTIAL_DOWN when monitors are mixed", () => {
-        const status = StatusPage.overallStatus([{ status: 1 }, { status: 0 }]);
-        assert.strictEqual(status, STATUS_PAGE_PARTIAL_DOWN);
-    });
+        test("returns description for all systems operational", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_ALL_UP), "All Systems Operational");
+        });
 
-    await t.test("should return ALL_DOWN when all monitors are down", () => {
-        const status = StatusPage.overallStatus([{ status: 0 }, { status: 0 }]);
-        assert.strictEqual(status, STATUS_PAGE_ALL_DOWN);
+        test("returns description for partially degraded", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_PARTIAL_DOWN), "Partially Degraded Service");
+        });
+
+        test("returns description for degraded service", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_ALL_DOWN), "Degraded Service");
+        });
+
+        test("returns description for maintenance", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(MAINTENANCE), "Under maintenance");
+        });
     });
 });
 
-test("StatusPage.getStatusDescription()", async (t) => {
-
-    await t.test("should return description for no services", () => {
-        assert.strictEqual(StatusPage.getStatusDescription(-1), "No Services");
-    });
-
-    await t.test("should return description for all systems operational", () => {
-        assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_ALL_UP), "All Systems Operational");
-    });
-
-    await t.test("should return description for partially degraded", () => {
-        assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_PARTIAL_DOWN), "Partially Degraded Service");
-    });
-
-    await t.test("should return description for degraded service", () => {
-        assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_ALL_DOWN), "Degraded Service");
-    });
-
-    await t.test("should return description for maintenance", () => {
-        assert.strictEqual(StatusPage.getStatusDescription(MAINTENANCE), "Under maintenance");
-    });
-});
-
-// ============================================================================
-// Basic Structure Tests
-// ============================================================================
-
-test("generateOGImageSVG() - basic structure", async (t) => {
-
-    await t.test("should generate valid SVG with required elements", () => {
+describe("generateOGImageSVG()", () => {
+    test("generates valid SVG with required elements", () => {
         const svg = generateOGImageSVG(
             "Test",
             "All OK",
@@ -277,15 +260,8 @@ test("generateOGImageSVG() - basic structure", async (t) => {
         assert.ok(svg.includes("height=\"630\""), "Should have height 630");
         assert.ok(svg.includes("</svg>"), "Should have closing svg tag");
     });
-});
 
-// ============================================================================
-// Snapshot Tests - Comprehensive Scenarios
-// ============================================================================
-
-test("generateOGImageSVG() snapshots - all scenarios", async (t) => {
-
-    await t.test("all test scenarios", () => {
+    test("generates snapshots for all test scenarios", () => {
         TEST_SCENARIOS.forEach((scenario) => {
             const statusDescription = StatusPage.getStatusDescription(scenario.statusCode);
             const statusColor = getStatusColor(scenario.statusCode);
@@ -337,13 +313,8 @@ test("generateOGImageSVG() snapshots - all scenarios", async (t) => {
     });
 });
 
-// ============================================================================
-// Integration Tests - PNG Conversion
-// ============================================================================
-
-test("StatusPage.generateOGImage() - PNG conversion", async (t) => {
-
-    await t.test("should convert SVG to valid PNG", async () => {
+describe("StatusPage.generateOGImage()", () => {
+    test("converts SVG to valid PNG", async () => {
         const { mockPage, cleanup } = createMockStatusPage(
             { title: "Test Page" },
             {
@@ -360,7 +331,7 @@ test("StatusPage.generateOGImage() - PNG conversion", async (t) => {
         }
     });
 
-    await t.test("should generate PNG with reasonable file size", async () => {
+    test("generates PNG with reasonable file size", async () => {
         const { mockPage, cleanup } = createMockStatusPage(
             {},
             {
@@ -378,7 +349,7 @@ test("StatusPage.generateOGImage() - PNG conversion", async (t) => {
         }
     });
 
-    await t.test("should handle different status page configurations", async () => {
+    test("handles different status page configurations", async () => {
         const { mockPage, cleanup } = createMockStatusPage(
             {
                 title: "Production",
