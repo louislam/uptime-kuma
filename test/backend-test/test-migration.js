@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { GenericContainer, Wait } = require("testcontainers");
 
-describe("Database Migration - Optimize Important Indexes", () => {
+describe("Database Migration", () => {
     test("SQLite: All migrations run successfully", async () => {
         const testDbPath = path.join(__dirname, "../../data/test-migration.db");
         const testDbDir = path.dirname(testDbPath);

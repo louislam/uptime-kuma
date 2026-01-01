@@ -26,7 +26,7 @@ describe(
             (process.platform !== "linux" || process.arch !== "x64"),
     },
     () => {
-        test("MSSQL is running", async () => {
+        test("check() sets status to UP when MSSQL server is reachable", async () => {
             let mssqlContainer;
 
             try {
@@ -69,7 +69,7 @@ describe(
             }
         });
 
-        test("MSSQL with custom query returning single value", async () => {
+        test("check() sets status to UP when custom query returns single value", async () => {
             const mssqlContainer = await createAndStartMSSQLContainer();
 
             const mssqlMonitor = new MssqlMonitorType();
@@ -97,7 +97,7 @@ describe(
             }
         });
 
-        test("MSSQL with custom query and condition that passes", async () => {
+        test("check() sets status to UP when custom query result meets condition", async () => {
             const mssqlContainer = await createAndStartMSSQLContainer();
 
             const mssqlMonitor = new MssqlMonitorType();
@@ -133,7 +133,7 @@ describe(
             }
         });
 
-        test("MSSQL with custom query and condition that fails", async () => {
+        test("check() rejects when custom query result does not meet condition", async () => {
             const mssqlContainer = await createAndStartMSSQLContainer();
 
             const mssqlMonitor = new MssqlMonitorType();
@@ -174,7 +174,7 @@ describe(
             }
         });
 
-        test("MSSQL query returns no results", async () => {
+        test("check() rejects when query returns no results", async () => {
             const mssqlContainer = await createAndStartMSSQLContainer();
 
             const mssqlMonitor = new MssqlMonitorType();
@@ -207,7 +207,7 @@ describe(
             }
         });
 
-        test("MSSQL query returns multiple rows", async () => {
+        test("check() rejects when query returns multiple rows", async () => {
             const mssqlContainer = await createAndStartMSSQLContainer();
 
             const mssqlMonitor = new MssqlMonitorType();
@@ -240,7 +240,7 @@ describe(
             }
         });
 
-        test("MSSQL query returns multiple columns", async () => {
+        test("check() rejects when query returns multiple columns", async () => {
             const mssqlContainer = await createAndStartMSSQLContainer();
 
             const mssqlMonitor = new MssqlMonitorType();
@@ -273,7 +273,7 @@ describe(
             }
         });
 
-        test("MSSQL is not running", async () => {
+        test("check() rejects when MSSQL server is not reachable", async () => {
             const mssqlMonitor = new MssqlMonitorType();
             const monitor = {
                 databaseConnectionString:

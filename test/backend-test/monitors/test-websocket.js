@@ -22,9 +22,9 @@ function nonCompliantWS(port = 8080) {
     return new Promise((resolve) => srv.listen(port, () => resolve(srv)));
 }
 
-describe("Websocket Test", {
+describe("WebSocket Monitor", {
 }, () => {
-    test("Non WS Server", {}, async () => {
+    test("check() rejects with unexpected server response when connecting to non-WebSocket server", {}, async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -44,7 +44,7 @@ describe("Websocket Test", {
         );
     });
 
-    test("Secure WS", async () => {
+    test("check() sets status to UP when connecting to secure WebSocket server", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -68,7 +68,7 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Insecure WS", async (t) => {
+    test("check() sets status to UP when connecting to insecure WebSocket server", async (t) => {
         t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
         const wss = new WebSocketServer({ port: 8080 });
@@ -94,7 +94,7 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Non compliant WS Server wrong status code", async () => {
+    test("check() rejects when status code does not match expected value", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -115,7 +115,7 @@ describe("Websocket Test", {
         );
     });
 
-    test("Secure WS Server no status code", async () => {
+    test("check() rejects when expected status code is empty", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -136,7 +136,7 @@ describe("Websocket Test", {
         );
     });
 
-    test("Non compliant WS server without IgnoreSecWebsocket", async (t) => {
+    test("check() rejects when Sec-WebSocket-Accept header is invalid", async (t) => {
         t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
         const wss = await nonCompliantWS();
@@ -159,7 +159,7 @@ describe("Websocket Test", {
         );
     });
 
-    test("Non compliant WS server with IgnoreSecWebsocket", async (t) => {
+    test("check() sets status to UP when ignoring invalid Sec-WebSocket-Accept header", async (t) => {
         t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
         const wss = await nonCompliantWS();
@@ -185,7 +185,7 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Compliant WS server with IgnoreSecWebsocket", async () => {
+    test("check() sets status to UP for compliant WebSocket server when ignoring Sec-WebSocket-Accept", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -209,7 +209,7 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Non WS server with IgnoreSecWebsocket", async () => {
+    test("check() rejects non-WebSocket server even when ignoring Sec-WebSocket-Accept", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -230,7 +230,7 @@ describe("Websocket Test", {
         );
     });
 
-    test("Secure WS no subprotocol support", async () => {
+    test("check() rejects when server does not support requested subprotocol", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -252,7 +252,7 @@ describe("Websocket Test", {
         );
     });
 
-    test("Multiple subprotocols invalid input", async () => {
+    test("check() rejects when multiple subprotocols contain invalid characters", async () => {
         const websocketMonitor = new WebSocketMonitorType();
 
         const monitor = {
@@ -274,7 +274,7 @@ describe("Websocket Test", {
         );
     });
 
-    test("Insecure WS subprotocol multiple spaces", async (t) => {
+    test("check() sets status to UP when subprotocol with multiple spaces is accepted", async (t) => {
         t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
         const wss = new WebSocketServer({ port: 8080,
@@ -305,7 +305,7 @@ describe("Websocket Test", {
         assert.deepStrictEqual(heartbeat, expected);
     });
 
-    test("Insecure WS supports one subprotocol", async (t) => {
+    test("check() sets status to UP when server supports requested subprotocol", async (t) => {
         t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
         const wss = new WebSocketServer({ port: 8080,
