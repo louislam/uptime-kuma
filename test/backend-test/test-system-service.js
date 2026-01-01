@@ -20,10 +20,10 @@ if (process.platform === "linux") {
     }
 }
 
-// With Linux and no Systemd (AM64), the test is skipped.
+// With Linux and no Systemd (ARM64), the test is skipped.
 if (process.platform === "linux" && !isSystemd) {
     console.log("::warning title=Systemd Missing::Linux environment detected without systemd (PID 1).");
-    console.log("Skipping System Service test for ARM&4 runner or containers.");
+    console.log("Skipping System Service test for ARM64 runner or containers.");
     process.exit(0);
 }
 
