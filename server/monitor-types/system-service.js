@@ -76,8 +76,12 @@ class SystemServiceMonitorType extends MonitorType {
      */
     async checkWindows(serviceName, heartbeat) {
         return new Promise((resolve, reject) => {
-            // SECURITY: Proper Escaping.
-            const safeServiceName = serviceName.replaceAll("'", "''");
+            // SECURITY: Validate service name to reduce command-injection risk
+            if (!/^[A-Za-z0-9._-]+$/.test(serviceName)) {
+                throw new Error(
+                    "Invalid service name. Only alphanumeric characters and '.', '_', '-' are allowed."
+                );
+            }
 
             const cmd = "powershell";
             const args = [
