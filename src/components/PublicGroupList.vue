@@ -56,7 +56,7 @@
                                                 @click="$refs.monitorSettingDialog.show(group, monitor)"
                                             />
                                             <Status v-if="showOnlyLastHeartbeat" :status="statusOfLastHeartbeat(monitor.element.id)" />
-                                            <Uptime v-else :monitor="monitor.element" type="24" :pill="true" />
+                                            <Uptime v-else :monitor="monitor.element" :type="uptimeType" :pill="true" />
                                             <a
                                                 v-if="showLink(monitor)"
                                                 :href="monitor.element.url"
@@ -79,7 +79,7 @@
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-6">
-                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
+                                        <HeartbeatBar size="mid" :monitor-id="monitor.element.id" :heartbeat-bar-days="heartbeatBarDays" />
                                     </div>
                                 </div>
                             </div>
@@ -125,6 +125,11 @@ export default {
         showCertificateExpiry: {
             type: Boolean,
         },
+        /** Heartbeat bar days */
+        heartbeatBarDays: {
+            type: [ Number, String ],
+            default: 0
+        },
         /** Should only the last heartbeat be shown? */
         showOnlyLastHeartbeat: {
             type: Boolean,
@@ -137,6 +142,19 @@ export default {
     computed: {
         showGroupDrag() {
             return (this.$root.publicGroupList.length >= 2);
+        },
+        /**
+         * Get the uptime type based on heartbeatBarDays
+         * Returns the exact type for dynamic uptime calculation
+         * @returns {string} The uptime type
+         */
+        uptimeType() {
+            const days = Number(this.heartbeatBarDays);
+            if (days === 0 || days === 1) {
+                return "24"; // 24 hours (for compatibility)
+            } else {
+                return `${days}d`; // Dynamic days format (e.g., "7d", "14d", "30d")
+            }
         }
     },
     watch: {

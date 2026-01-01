@@ -43,6 +43,17 @@
                 </div>
 
                 <div class="my-3">
+                    <label for="heartbeat-bar-days" class="form-label">{{ $t("Heartbeat Bar Days") }}</label>
+                    <input id="heartbeat-bar-days" v-model.number="config.heartbeatBarDays" type="number" class="form-control" min="0" max="365" data-testid="heartbeat-bar-days-input">
+                    <div v-if="config.heartbeatBarDays === 0" class="form-text">
+                        {{ $t("Status page will show last beats", [100]) }}
+                    </div>
+                    <div v-else class="form-text">
+                        {{ $t("Status page shows heartbeat history days", [config.heartbeatBarDays]) }}
+                    </div>
+                </div>
+
+                <div class="my-3">
                     <label for="switch-theme" class="form-label">{{ $t("Theme") }}</label>
                     <select id="switch-theme" v-model="config.theme" class="form-select" data-testid="theme-select">
                         <option value="auto">{{ $t("Auto") }}</option>
@@ -334,7 +345,7 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :show-only-last-heartbeat="config.showOnlyLastHeartbeat" />
+                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :heartbeat-bar-days="config.heartbeatBarDays || 0" :show-only-last-heartbeat="config.showOnlyLastHeartbeat" />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -442,7 +453,9 @@ export default {
             enableEditMode: false,
             enableEditIncidentMode: false,
             hasToken: false,
-            config: {},
+            config: {
+                heartbeatBarDays: 0
+            },
             selectedMonitor: null,
             incident: null,
             previousIncident: null,
@@ -625,6 +638,12 @@ export default {
                     if (res.ok) {
                         this.config = res.config;
 
+                        if (this.config.heartbeatBarDays === undefined || this.config.heartbeatBarDays === null || this.config.heartbeatBarDays === "") {
+                            this.config.heartbeatBarDays = 0;
+                        } else {
+                            this.config.heartbeatBarDays = parseInt(this.config.heartbeatBarDays, 10) || 0;
+                        }
+
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" +
                                 "  \n" +
@@ -706,20 +725,29 @@ export default {
             this.slug = "default";
         }
 
-        this.getData().then((res) => {
-            this.config = res.data.config;
+        Promise.all([
+            this.getData(),
+            this.editMode ? Promise.resolve() : this.loadHeartbeatData()
+        ]).then(([ configRes ]) => {
+            this.config = configRes.data.config;
 
             if (!this.config.domainNameList) {
                 this.config.domainNameList = [];
+            }
+
+            if (this.config.heartbeatBarDays === undefined || this.config.heartbeatBarDays === null || this.config.heartbeatBarDays === "") {
+                this.config.heartbeatBarDays = 0;
+            } else {
+                this.config.heartbeatBarDays = parseInt(this.config.heartbeatBarDays, 10) || 0;
             }
 
             if (this.config.icon) {
                 this.imgDataUrl = this.config.icon;
             }
 
-            this.incident = res.data.incident;
-            this.maintenanceList = res.data.maintenanceList;
-            this.$root.publicGroupList = res.data.publicGroupList;
+            this.incident = configRes.data.incident;
+            this.maintenanceList = configRes.data.maintenanceList;
+            this.$root.publicGroupList = configRes.data.publicGroupList;
 
             this.loading = false;
 
@@ -735,8 +763,6 @@ export default {
             }
             console.log(error);
         });
-
-        this.updateHeartbeatList();
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
@@ -771,36 +797,47 @@ export default {
         },
 
         /**
+         * Load heartbeat data from API
+         * @param {number|null} maxBeats Maximum number of beats to request from server
+         * @returns {Promise} Promise that resolves when data is loaded
+         */
+        loadHeartbeatData(maxBeats = null) {
+            return axios.get("/api/status-page/heartbeat/" + this.slug, {
+                params: { maxBeats }
+            }).then((res) => {
+                const { heartbeatList, uptimeList } = res.data;
+
+                this.$root.heartbeatList = heartbeatList;
+                this.$root.uptimeList = uptimeList;
+
+                const heartbeatIds = Object.keys(heartbeatList);
+                const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
+                    const monitorHeartbeats = heartbeatList[currentId];
+                    const lastHeartbeat = monitorHeartbeats.at(-1);
+
+                    if (lastHeartbeat) {
+                        return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
+                    } else {
+                        return downMonitorsAmount;
+                    }
+                }, 0);
+
+                favicon.badge(downMonitors);
+
+                this.loadedData = true;
+                this.lastUpdateTime = dayjs();
+                this.updateUpdateTimer();
+            });
+        },
+
+        /**
          * Update the heartbeat list and update favicon if necessary
          * @returns {void}
          */
         updateHeartbeatList() {
             // If editMode, it will use the data from websocket.
             if (! this.editMode) {
-                axios.get("/api/status-page/heartbeat/" + this.slug).then((res) => {
-                    const { heartbeatList, uptimeList } = res.data;
-
-                    this.$root.heartbeatList = heartbeatList;
-                    this.$root.uptimeList = uptimeList;
-
-                    const heartbeatIds = Object.keys(heartbeatList);
-                    const downMonitors = heartbeatIds.reduce((downMonitorsAmount, currentId) => {
-                        const monitorHeartbeats = heartbeatList[currentId];
-                        const lastHeartbeat = monitorHeartbeats.at(-1);
-
-                        if (lastHeartbeat) {
-                            return lastHeartbeat.status === 0 ? downMonitorsAmount + 1 : downMonitorsAmount;
-                        } else {
-                            return downMonitorsAmount;
-                        }
-                    }, 0);
-
-                    favicon.badge(downMonitors);
-
-                    this.loadedData = true;
-                    this.lastUpdateTime = dayjs();
-                    this.updateUpdateTimer();
-                });
+                this.loadHeartbeatData();
             }
         },
 

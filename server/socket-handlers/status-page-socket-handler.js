@@ -166,6 +166,11 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.show_powered_by = config.showPoweredBy;
             statusPage.show_only_last_heartbeat = config.showOnlyLastHeartbeat;
             statusPage.show_certificate_expiry = config.showCertificateExpiry;
+
+            // Validate heartbeatBarDays is within allowed range (0-365)
+            let heartbeatBarDays = parseInt(config.heartbeatBarDays, 10) || 0;
+            heartbeatBarDays = Math.max(0, Math.min(365, heartbeatBarDays));
+            statusPage.heartbeat_bar_days = heartbeatBarDays;
             statusPage.modified_date = R.isoDateTime();
             statusPage.google_analytics_tag_id = config.googleAnalyticsId;
 

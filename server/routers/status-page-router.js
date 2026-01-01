@@ -4,9 +4,10 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
-const { badgeConstants } = require("../../src/util");
+const { badgeConstants, UP, DOWN, MAINTENANCE, PENDING } = require("../../src/util");
 const { makeBadge } = require("badge-maker");
 const { UptimeCalculator } = require("../uptime-calculator");
+const dayjs = require("dayjs");
 
 let router = express.Router();
 
@@ -84,21 +85,75 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             statusPageID
         ]);
 
-        for (let monitorID of monitorIDList) {
-            let list = await R.getAll(`
+        // Get the status page to determine the heartbeat range
+        let statusPage = await R.findOne("status_page", " id = ? ", [ statusPageID ]);
+        let heartbeatBarDays = statusPage ? (statusPage.heartbeat_bar_days || 0) : 0;
+
+        // Get max beats parameter from query string (for client-side screen width constraints)
+        const maxBeats = Math.min(parseInt(request.query.maxBeats) || 100, 100);
+
+        // Process all monitors in parallel using Promise.all
+        const monitorPromises = monitorIDList.map(async (monitorID) => {
+            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
+
+            let heartbeats;
+
+            if (heartbeatBarDays === 0) {
+                // Auto mode - use original LIMIT 100 logic
+                let list = await R.getAll(`
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ?
                     ORDER BY time DESC
                     LIMIT 100
-            `, [
+                `, [
+                    monitorID,
+                ]);
+
+                list = R.convertToBeans("heartbeat", list);
+                heartbeats = list.reverse().map(row => row.toPublicJSON());
+            } else {
+                // For configured day ranges, use aggregated data from UptimeCalculator
+                const buckets = uptimeCalculator.getAggregatedBuckets(heartbeatBarDays, maxBeats);
+                heartbeats = buckets.map(bucket => {
+                    // If bucket has no data, return 0 (empty beat) to match original behavior
+                    if (bucket.up === 0 && bucket.down === 0 && bucket.maintenance === 0 && bucket.pending === 0) {
+                        return 0;
+                    }
+
+                    return {
+                        status: bucket.down > 0 ? DOWN :
+                            bucket.maintenance > 0 ? MAINTENANCE :
+                                bucket.pending > 0 ? PENDING :
+                                    bucket.up > 0 ? UP : 0,
+                        time: dayjs.unix(bucket.end).toISOString(),
+                        msg: "",
+                        ping: null
+                    };
+                });
+            }
+
+            // Calculate uptime based on the range
+            let uptime;
+            if (heartbeatBarDays <= 1) {
+                uptime = uptimeCalculator.get24Hour().uptime;
+            } else {
+                uptime = uptimeCalculator.getData(heartbeatBarDays, "day").uptime;
+            }
+
+            return {
                 monitorID,
-            ]);
+                heartbeats,
+                uptime
+            };
+        });
 
-            list = R.convertToBeans("heartbeat", list);
-            heartbeatList[monitorID] = list.reverse().map(row => row.toPublicJSON());
+        // Wait for all monitors to be processed
+        const monitorResults = await Promise.all(monitorPromises);
 
-            const uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
-            uptimeList[`${monitorID}_24`] = uptimeCalculator.get24Hour().uptime;
+        // Populate the response objects
+        for (const result of monitorResults) {
+            heartbeatList[result.monitorID] = result.heartbeats;
+            uptimeList[result.monitorID] = result.uptime;
         }
 
         response.json({

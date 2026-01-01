@@ -318,8 +318,8 @@ export default {
                     } else if (sortKey === "uptime") {
                         // Sort by uptime
                         const uptimeList = this.$root.uptimeList || {};
-                        const uptimeA = a.id ? parseFloat(uptimeList[ `${a.id}_24` ]) || 0 : 0;
-                        const uptimeB = b.id ? parseFloat(uptimeList[ `${b.id}_24` ]) || 0 : 0;
+                        const uptimeA = a.id ? parseFloat(uptimeList[a.id]) || 0 : 0;
+                        const uptimeB = b.id ? parseFloat(uptimeList[b.id]) || 0 : 0;
                         valueA = uptimeA;
                         valueB = uptimeB;
                     } else if (sortKey === "cert") {
