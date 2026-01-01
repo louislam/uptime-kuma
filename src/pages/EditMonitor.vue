@@ -696,8 +696,7 @@
                                                 {{ $t("systemServiceExpectedOutput", ["active"]) }}
                                             </div>
                                         </div>
-
-                                        <div v-if="$root.info.runtime.platform === 'win32'" class="mt-2">
+                                        <div v-else-if="$root.info.runtime.platform === 'win32'" class="mt-2">
                                             <div>
                                                 <i18n-t keypath="systemServiceCommandHint" tag="span">
                                                     <template #command>

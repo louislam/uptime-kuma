@@ -15,7 +15,6 @@ class SystemServiceMonitorType extends MonitorType {
      * @returns {Promise<void>} Resolves when check is complete.
      */
     async check(monitor, heartbeat) {
-        // Use the new variable name 'system_service_name' to match the monitor type change
         const serviceName = monitor.system_service_name;
 
         if (!serviceName) {
