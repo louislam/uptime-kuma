@@ -2,8 +2,8 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { HiveMQContainer } = require("@testcontainers/hivemq");
 const mqtt = require("mqtt");
-const { MqttMonitorType } = require("../../server/monitor-types/mqtt");
-const { UP, PENDING } = require("../../src/util");
+const { MqttMonitorType } = require("../../../server/monitor-types/mqtt");
+const { UP, PENDING } = require("../../../src/util");
 
 /**
  * Runs an MQTT test with the
@@ -58,91 +58,91 @@ describe("MqttMonitorType", {
     concurrency: 4,
     skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64")
 }, () => {
-    test("valid keywords (type=default)", async () => {
+    test("check() sets status to UP when keyword is found in message (type=default)", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: test; Message: -> KEYWORD <-");
     });
 
-    test("valid nested topic", async () => {
+    test("check() sets status to UP when keyword is found in nested topic", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/b/c", "a/b/c");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
     });
 
-    test("valid nested topic (with special chars)", async () => {
+    test("check() sets status to UP when keyword is found in nested topic with special characters", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/'/$/./*/%", "a/'/$/./*/%");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: a/'/$/./*/%; Message: -> KEYWORD <-");
     });
 
-    test("valid wildcard topic (with #)", async () => {
+    test("check() sets status to UP when keyword is found using # wildcard", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/#", "a/b/c");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
     });
 
-    test("valid wildcard topic (with +)", async () => {
+    test("check() sets status to UP when keyword is found using + wildcard", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/+/c", "a/b/c");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: a/b/c; Message: -> KEYWORD <-");
     });
 
-    test("valid wildcard topic (with + and #)", async () => {
+    test("check() sets status to UP when keyword is found using + and # wildcards", async () => {
         const heartbeat = await testMqtt("KEYWORD", null, "-> KEYWORD <-", "a/+/c/#", "a/b/c/d/e");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: a/b/c/d/e; Message: -> KEYWORD <-");
     });
 
-    test("invalid topic", async () => {
+    test("check() rejects with timeout when topic does not match", async () => {
         await assert.rejects(
             testMqtt("keyword will not be checked anyway", null, "message", "x/y/z", "a/b/c"),
             new Error("Timeout, Message not received"),
         );
     });
 
-    test("invalid wildcard topic (with #)", async () => {
+    test("check() rejects with timeout when # wildcard is not last character", async () => {
         await assert.rejects(
             testMqtt("", null, "# should be last character", "#/c", "a/b/c"),
             new Error("Timeout, Message not received"),
         );
     });
 
-    test("invalid wildcard topic (with +)", async () => {
+    test("check() rejects with timeout when + wildcard topic does not match", async () => {
         await assert.rejects(
             testMqtt("", null, "message", "x/+/z", "a/b/c"),
             new Error("Timeout, Message not received"),
         );
     });
 
-    test("valid keywords (type=keyword)", async () => {
+    test("check() sets status to UP when keyword is found in message (type=keyword)", async () => {
         const heartbeat = await testMqtt("KEYWORD", "keyword", "-> KEYWORD <-");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Topic: test; Message: -> KEYWORD <-");
     });
 
-    test("invalid keywords (type=default)", async () => {
+    test("check() rejects when keyword is not found in message (type=default)", async () => {
         await assert.rejects(
             testMqtt("NOT_PRESENT", null, "-> KEYWORD <-"),
             new Error("Message Mismatch - Topic: test; Message: -> KEYWORD <-"),
         );
     });
 
-    test("invalid keyword (type=keyword)", async () => {
+    test("check() rejects when keyword is not found in message (type=keyword)", async () => {
         await assert.rejects(
             testMqtt("NOT_PRESENT", "keyword", "-> KEYWORD <-"),
             new Error("Message Mismatch - Topic: test; Message: -> KEYWORD <-"),
         );
     });
 
-    test("valid json-query", async () => {
+    test("check() sets status to UP when json-query finds expected value", async () => {
         // works because the monitors' jsonPath is hard-coded to "firstProp"
         const heartbeat = await testMqtt("present", "json-query", "{\"firstProp\":\"present\"}");
         assert.strictEqual(heartbeat.status, UP);
         assert.strictEqual(heartbeat.msg, "Message received, expected value is found");
     });
 
-    test("invalid (because query fails) json-query", async () => {
+    test("check() rejects when json-query path returns undefined", async () => {
         // works because the monitors' jsonPath is hard-coded to "firstProp"
         await assert.rejects(
             testMqtt("[not_relevant]", "json-query", "{}"),
@@ -150,7 +150,7 @@ describe("MqttMonitorType", {
         );
     });
 
-    test("invalid (because successMessage fails) json-query", async () => {
+    test("check() rejects when json-query value does not match expected value", async () => {
         // works because the monitors' jsonPath is hard-coded to "firstProp"
         await assert.rejects(
             testMqtt("[wrong_success_messsage]", "json-query", "{\"firstProp\":\"present\"}"),
