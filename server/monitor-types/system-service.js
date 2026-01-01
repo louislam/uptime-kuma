@@ -95,8 +95,7 @@ class SystemServiceMonitorType extends MonitorType {
                 }
 
                 if (error || stderr) {
-                    heartbeat.msg = output || `Service '${serviceName}' is not running/found.`;
-                    reject(new Error(heartbeat.msg));
+                    reject(new Error(`Service '${serviceName}' is not running/found.`));
                     return;
                 }
 
