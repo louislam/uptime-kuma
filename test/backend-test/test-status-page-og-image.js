@@ -95,7 +95,7 @@ function assertMatchesSnapshot(svg, snapshotName) {
 
     if (fs.existsSync(snapshotPath)) {
         const snapshot = fs.readFileSync(snapshotPath, "utf8");
-        assert.strictEqual(svg, snapshot, `SVG should match snapshot: ${snapshotName}`);
+        assert.strictEqual(svg, snapshot, `Expected SVG to match snapshot: ${snapshotName}`);
     } else {
         fs.writeFileSync(snapshotPath, svg, "utf8");
         console.log(`Created snapshot: ${snapshotName}`);
@@ -137,8 +137,8 @@ function createMockStatusPage(overrides = {}, rssData = null) {
  * @returns {Promise<void>}
  */
 async function assertValidPNG(buffer) {
-    assert.ok(buffer instanceof Buffer, "Should return a Buffer");
-    assert.ok(buffer.length > 0, "Buffer should not be empty");
+    assert.ok(buffer instanceof Buffer, "Expected Buffer instance");
+    assert.ok(buffer.length > 0, "Expected non-empty buffer");
 
     // Check PNG signature (first 8 bytes)
     const pngSignature = Buffer.from([ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A ]);
@@ -146,27 +146,39 @@ async function assertValidPNG(buffer) {
     assert.deepStrictEqual(
         actualSignature,
         pngSignature,
-        "Should have valid PNG signature"
+        "Expected valid PNG signature"
     );
 
     // Use sharp to verify metadata
     const metadata = await sharp(buffer).metadata();
-    assert.strictEqual(metadata.format, "png", "Should be PNG format");
-    assert.strictEqual(metadata.width, 1200, "Should have width 1200");
-    assert.strictEqual(metadata.height, 630, "Should have height 630");
+    assert.strictEqual(metadata.format, "png", "Expected PNG format");
+    assert.strictEqual(metadata.width, 1200, "Expected width of 1200");
+    assert.strictEqual(metadata.height, 630, "Expected height of 630");
 }
 
 describe("OG Image Helper Functions", () => {
     describe("escapeXml()", () => {
-        test("escapes all XML special characters", () => {
+        test("escapeXml() replaces ampersand with entity", () => {
             assert.strictEqual(escapeXml("&"), "&amp;");
+        });
+
+        test("escapeXml() replaces less-than with entity", () => {
             assert.strictEqual(escapeXml("<"), "&lt;");
+        });
+
+        test("escapeXml() replaces greater-than with entity", () => {
             assert.strictEqual(escapeXml(">"), "&gt;");
+        });
+
+        test("escapeXml() replaces double quote with entity", () => {
             assert.strictEqual(escapeXml("\""), "&quot;");
+        });
+
+        test("escapeXml() replaces single quote with entity", () => {
             assert.strictEqual(escapeXml("'"), "&apos;");
         });
 
-        test("handles mixed special characters", () => {
+        test("escapeXml() handles multiple special characters in one string", () => {
             const input = "Company & Services <Status> \"Test\" 'Quote'";
             const expected = "Company &amp; Services &lt;Status&gt; &quot;Test&quot; &apos;Quote&apos;";
             assert.strictEqual(escapeXml(input), expected);
@@ -174,76 +186,30 @@ describe("OG Image Helper Functions", () => {
     });
 
     describe("getStatusColor()", () => {
-        test("returns green for all systems up", () => {
+        test("getStatusColor() returns green when all systems are up", () => {
             assert.strictEqual(getStatusColor(STATUS_PAGE_ALL_UP), "#10b981");
         });
 
-        test("returns yellow for partial degradation", () => {
+        test("getStatusColor() returns yellow when service is partially degraded", () => {
             assert.strictEqual(getStatusColor(STATUS_PAGE_PARTIAL_DOWN), "#f59e0b");
         });
 
-        test("returns red for all systems down", () => {
+        test("getStatusColor() returns red when all systems are down", () => {
             assert.strictEqual(getStatusColor(STATUS_PAGE_ALL_DOWN), "#ef4444");
         });
 
-        test("returns blue for maintenance", () => {
+        test("getStatusColor() returns blue when under maintenance", () => {
             assert.strictEqual(getStatusColor(MAINTENANCE), "#3b82f6");
         });
 
-        test("returns gray for no services", () => {
+        test("getStatusColor() returns gray when there are no services", () => {
             assert.strictEqual(getStatusColor(-1), "#6b7280");
         });
     });
 });
 
-describe("StatusPage Model", () => {
-    describe("overallStatus()", () => {
-        test("returns -1 for empty heartbeats", () => {
-            const status = StatusPage.overallStatus([]);
-            assert.strictEqual(status, -1);
-        });
-
-        test("returns ALL_UP when all monitors are up", () => {
-            const status = StatusPage.overallStatus([{ status: 1 }, { status: 1 }]);
-            assert.strictEqual(status, STATUS_PAGE_ALL_UP);
-        });
-
-        test("returns PARTIAL_DOWN when monitors are mixed", () => {
-            const status = StatusPage.overallStatus([{ status: 1 }, { status: 0 }]);
-            assert.strictEqual(status, STATUS_PAGE_PARTIAL_DOWN);
-        });
-
-        test("returns ALL_DOWN when all monitors are down", () => {
-            const status = StatusPage.overallStatus([{ status: 0 }, { status: 0 }]);
-            assert.strictEqual(status, STATUS_PAGE_ALL_DOWN);
-        });
-    });
-
-    describe("getStatusDescription()", () => {
-        test("returns description for no services", () => {
-            assert.strictEqual(StatusPage.getStatusDescription(-1), "No Services");
-        });
-
-        test("returns description for all systems operational", () => {
-            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_ALL_UP), "All Systems Operational");
-        });
-
-        test("returns description for partially degraded", () => {
-            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_PARTIAL_DOWN), "Partially Degraded Service");
-        });
-
-        test("returns description for degraded service", () => {
-            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_ALL_DOWN), "Degraded Service");
-        });
-
-        test("returns description for maintenance", () => {
-            assert.strictEqual(StatusPage.getStatusDescription(MAINTENANCE), "Under maintenance");
-        });
-    });
-});
-
 describe("generateOGImageSVG()", () => {
-    test("generates valid SVG with required elements", () => {
+    test("generateOGImageSVG() starts with XML declaration", () => {
         const svg = generateOGImageSVG(
             "Test",
             "All OK",
@@ -254,14 +220,66 @@ describe("generateOGImageSVG()", () => {
             Array(5).fill({})
         );
 
-        assert.ok(svg.startsWith("<?xml"), "Should start with XML declaration");
-        assert.ok(svg.includes("xmlns=\"http://www.w3.org/2000/svg\""), "Should have SVG namespace");
-        assert.ok(svg.includes("width=\"1200\""), "Should have width 1200");
-        assert.ok(svg.includes("height=\"630\""), "Should have height 630");
-        assert.ok(svg.includes("</svg>"), "Should have closing svg tag");
+        assert.ok(svg.startsWith("<?xml"), "Expected XML declaration at start");
     });
 
-    test("generates snapshots for all test scenarios", () => {
+    test("generateOGImageSVG() includes SVG namespace", () => {
+        const svg = generateOGImageSVG(
+            "Test",
+            "All OK",
+            "#10b981",
+            null,
+            true,
+            FIXED_TIMESTAMP,
+            Array(5).fill({})
+        );
+
+        assert.ok(svg.includes("xmlns=\"http://www.w3.org/2000/svg\""), "Expected SVG namespace");
+    });
+
+    test("generateOGImageSVG() sets width to 1200", () => {
+        const svg = generateOGImageSVG(
+            "Test",
+            "All OK",
+            "#10b981",
+            null,
+            true,
+            FIXED_TIMESTAMP,
+            Array(5).fill({})
+        );
+
+        assert.ok(svg.includes("width=\"1200\""), "Expected width of 1200");
+    });
+
+    test("generateOGImageSVG() sets height to 630", () => {
+        const svg = generateOGImageSVG(
+            "Test",
+            "All OK",
+            "#10b981",
+            null,
+            true,
+            FIXED_TIMESTAMP,
+            Array(5).fill({})
+        );
+
+        assert.ok(svg.includes("height=\"630\""), "Expected height of 630");
+    });
+
+    test("generateOGImageSVG() includes closing SVG tag", () => {
+        const svg = generateOGImageSVG(
+            "Test",
+            "All OK",
+            "#10b981",
+            null,
+            true,
+            FIXED_TIMESTAMP,
+            Array(5).fill({})
+        );
+
+        assert.ok(svg.includes("</svg>"), "Expected closing svg tag");
+    });
+
+    test("generateOGImageSVG() generates matching snapshots for all test scenarios", () => {
         TEST_SCENARIOS.forEach((scenario) => {
             const statusDescription = StatusPage.getStatusDescription(scenario.statusCode);
             const statusColor = getStatusColor(scenario.statusCode);
@@ -313,60 +331,89 @@ describe("generateOGImageSVG()", () => {
     });
 });
 
-describe("StatusPage.generateOGImage()", () => {
-    test("converts SVG to valid PNG", async () => {
-        const { mockPage, cleanup } = createMockStatusPage(
-            { title: "Test Page" },
-            {
-                heartbeats: [{ status: 1 }],
-                statusDescription: "All Systems Operational"
-            }
-        );
+describe("StatusPage Model", () => {
+    describe("overallStatus()", () => {
+        test("overallStatus() returns -1 when heartbeats array is empty", () => {
+            const status = StatusPage.overallStatus([]);
+            assert.strictEqual(status, -1);
+        });
 
-        try {
-            const buffer = await StatusPage.generateOGImage(mockPage);
-            await assertValidPNG(buffer);
-        } finally {
-            cleanup();
-        }
+        test("overallStatus() returns ALL_UP when all monitors are up", () => {
+            const status = StatusPage.overallStatus([{ status: 1 }, { status: 1 }]);
+            assert.strictEqual(status, STATUS_PAGE_ALL_UP);
+        });
+
+        test("overallStatus() returns PARTIAL_DOWN when monitors have mixed statuses", () => {
+            const status = StatusPage.overallStatus([{ status: 1 }, { status: 0 }]);
+            assert.strictEqual(status, STATUS_PAGE_PARTIAL_DOWN);
+        });
+
+        test("overallStatus() returns ALL_DOWN when all monitors are down", () => {
+            const status = StatusPage.overallStatus([{ status: 0 }, { status: 0 }]);
+            assert.strictEqual(status, STATUS_PAGE_ALL_DOWN);
+        });
     });
 
-    test("generates PNG with reasonable file size", async () => {
-        const { mockPage, cleanup } = createMockStatusPage(
-            {},
-            {
-                heartbeats: [{ status: 1 }],
-                statusDescription: "All Systems Operational"
-            }
-        );
+    describe("getStatusDescription()", () => {
+        test("getStatusDescription() returns 'No Services' when status is -1", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(-1), "No Services");
+        });
 
-        try {
-            const buffer = await StatusPage.generateOGImage(mockPage);
-            assert.ok(buffer.length < 100 * 1024, "PNG should be less than 100KB");
-            assert.ok(buffer.length > 1000, "PNG should be more than 1KB");
-        } finally {
-            cleanup();
-        }
+        test("getStatusDescription() returns 'All Systems Operational' when all systems are up", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_ALL_UP), "All Systems Operational");
+        });
+
+        test("getStatusDescription() returns 'Partially Degraded Service' when service is partially down", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_PARTIAL_DOWN), "Partially Degraded Service");
+        });
+
+        test("getStatusDescription() returns 'Degraded Service' when all systems are down", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(STATUS_PAGE_ALL_DOWN), "Degraded Service");
+        });
+
+        test("getStatusDescription() returns 'Under maintenance' when under maintenance", () => {
+            assert.strictEqual(StatusPage.getStatusDescription(MAINTENANCE), "Under maintenance");
+        });
     });
-
-    test("handles different status page configurations", async () => {
-        const { mockPage, cleanup } = createMockStatusPage(
-            {
-                title: "Production",
-                show_powered_by: false,
-                icon: "/icon.svg"
-            },
-            {
-                heartbeats: [{ status: 1 }, { status: 0 }],
-                statusDescription: "Partially Degraded Service"
+    describe("StatusPage.generateOGImage()", () => {
+        test("generateOGImage() generates PNG between 1KB and 100KB", async () => {
+            const { mockPage, cleanup } = createMockStatusPage(
+                {},
+                {
+                    heartbeats: [{ status: 1 }],
+                    statusDescription: "All Systems Operational"
+                }
+            );
+    
+            try {
+                const buffer = await StatusPage.generateOGImage(mockPage);
+                await assertValidPNG(buffer);
+                assert.ok(buffer.length > 1000, "Expected PNG to be greater than 1KB");
+                assert.ok(buffer.length < 100 * 1024, "Expected PNG to be less than 100KB");
+            } finally {
+                cleanup();
             }
-        );
-
-        try {
-            const buffer = await StatusPage.generateOGImage(mockPage);
-            await assertValidPNG(buffer);
-        } finally {
-            cleanup();
-        }
+        });
+    
+        test("generateOGImage() handles status page with custom icon and no branding", async () => {
+            const { mockPage, cleanup } = createMockStatusPage(
+                {
+                    title: "Production",
+                    show_powered_by: false,
+                    icon: "/icon.svg"
+                },
+                {
+                    heartbeats: [{ status: 1 }, { status: 0 }],
+                    statusDescription: "Partially Degraded Service"
+                }
+            );
+    
+            try {
+                const buffer = await StatusPage.generateOGImage(mockPage);
+                await assertValidPNG(buffer);
+            } finally {
+                cleanup();
+            }
+        });
     });
 });
