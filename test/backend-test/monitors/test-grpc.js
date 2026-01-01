@@ -2,8 +2,8 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
-const { GrpcKeywordMonitorType } = require("../../server/monitor-types/grpc");
-const { UP, PENDING } = require("../../src/util");
+const { GrpcKeywordMonitorType } = require("../../../server/monitor-types/grpc");
+const { UP, PENDING } = require("../../../src/util");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
@@ -82,7 +82,7 @@ async function createTestGrpcServer(port, methodHandlers) {
 describe("GrpcKeywordMonitorType", {
     skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
 }, () => {
-    test("gRPC keyword found in response", async () => {
+    test("check() sets status to UP when keyword is found in response", async () => {
         const port = 50051;
         const server = await createTestGrpcServer(port, {
             Echo: (call, callback) => {
@@ -118,7 +118,7 @@ describe("GrpcKeywordMonitorType", {
         }
     });
 
-    test("gRPC keyword not found in response", async () => {
+    test("check() rejects when keyword is not found in response", async () => {
         const port = 50052;
         const server = await createTestGrpcServer(port, {
             Echo: (call, callback) => {
@@ -158,7 +158,7 @@ describe("GrpcKeywordMonitorType", {
         }
     });
 
-    test("gRPC inverted keyword - keyword present (should fail)", async () => {
+    test("check() rejects when inverted keyword is present in response", async () => {
         const port = 50053;
         const server = await createTestGrpcServer(port, {
             Echo: (call, callback) => {
@@ -198,7 +198,7 @@ describe("GrpcKeywordMonitorType", {
         }
     });
 
-    test("gRPC inverted keyword - keyword not present (should pass)", async () => {
+    test("check() sets status to UP when inverted keyword is not present in response", async () => {
         const port = 50054;
         const server = await createTestGrpcServer(port, {
             Echo: (call, callback) => {
@@ -234,7 +234,7 @@ describe("GrpcKeywordMonitorType", {
         }
     });
 
-    test("gRPC connection failure", async () => {
+    test("check() rejects when gRPC server is unreachable", async () => {
         const grpcMonitor = new GrpcKeywordMonitorType();
         const monitor = {
             grpcUrl: "localhost:50099",
@@ -262,7 +262,7 @@ describe("GrpcKeywordMonitorType", {
         );
     });
 
-    test("gRPC response truncation for long messages", async () => {
+    test("check() truncates long response messages in error output", async () => {
         const port = 50055;
         const longMessage = "A".repeat(100) + " with SUCCESS keyword";
 
