@@ -24,7 +24,6 @@ import HeiiOnCall from "./HeiiOnCall.vue";
 import Keep from "./Keep.vue";
 import Kook from "./Kook.vue";
 import Line from "./Line.vue";
-import LineNotify from "./LineNotify.vue";
 import LunaSea from "./LunaSea.vue";
 import Matrix from "./Matrix.vue";
 import Mattermost from "./Mattermost.vue";
@@ -80,6 +79,8 @@ import Brevo from "./Brevo.vue";
 import YZJ from "./YZJ.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 import SMSIR from "./SMSIR.vue";
+import Webpush from "./Webpush.vue";
+import Resend from "./Resend.vue";
 
 /**
  * Manage all notification form.
@@ -111,7 +112,6 @@ const NotificationFormList = {
     "Keep": Keep,
     "Kook": Kook,
     "line": Line,
-    "LineNotify": LineNotify,
     "lunasea": LunaSea,
     "matrix": Matrix,
     "mattermost": Mattermost,
@@ -166,8 +166,10 @@ const NotificationFormList = {
     "WPush": WPush,
     "SendGrid": SendGrid,
     "Brevo": Brevo,
+    "Resend": Resend,
     "YZJ": YZJ,
     "SMSPlanet": SMSPlanet,
+    "Webpush": Webpush,
 };
 
 export default NotificationFormList;

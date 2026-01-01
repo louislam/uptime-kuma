@@ -32,6 +32,17 @@ class SMSIR extends NotificationProvider {
                     return mobile;
                 });
 
+            const MAX_MESSAGE_LENGTH = 20; // This is a limitation placed by SMSIR
+            // Shorten By removing spaces, keeping context is better than cutting off the text
+            // If that does not work, truncate. Still better than not receiving an SMS
+            if (msg.length > MAX_MESSAGE_LENGTH) {
+                msg = msg.replace(/\s/g, "");
+            }
+
+            if (msg.length > MAX_MESSAGE_LENGTH) {
+                msg = msg.substring(0, MAX_MESSAGE_LENGTH - 1 - "...".length) + "...";
+            }
+
             // Run multiple network requests at once
             const requestPromises = formattedMobiles
                 .map(mobile => {

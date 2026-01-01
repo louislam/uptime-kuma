@@ -45,6 +45,7 @@ export default {
             avgPingList: { },
             uptimeList: { },
             tlsInfoList: {},
+            domainInfoList: {},
             notificationList: [],
             dockerHostList: [],
             remoteBrowserList: [],
@@ -248,6 +249,11 @@ export default {
 
             socket.on("certInfo", (monitorID, data) => {
                 this.tlsInfoList[monitorID] = JSON.parse(data);
+            });
+
+            socket.on("domainInfo", (monitorID, daysRemaining, expiresOn) => {
+                this.domainInfoList[monitorID] = { daysRemaining: daysRemaining,
+                    expiresOn: expiresOn };
             });
 
             socket.on("connect_error", (err) => {

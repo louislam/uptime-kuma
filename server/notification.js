@@ -25,7 +25,6 @@ const HeiiOnCall = require("./notification-providers/heii-oncall");
 const Keep = require("./notification-providers/keep");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
-const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
@@ -78,11 +77,13 @@ const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
 const Brevo = require("./notification-providers/brevo");
+const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
 const { commandExists } = require("./util-server");
+const Webpush = require("./notification-providers/Webpush");
 
 class Notification {
     providerList = {};
@@ -123,7 +124,6 @@ class Notification {
             new Keep(),
             new Kook(),
             new Line(),
-            new LineNotify(),
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
@@ -174,13 +174,15 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid(),
             new Brevo(),
+            new Resend(),
             new YZJ(),
             new SMSPlanet(),
             new SpugPush(),
             new Notifery(),
             new SMSIR(),
+            new SendGrid(),
+            new Webpush(),
         ];
         for (let item of list) {
             if (!item.name) {

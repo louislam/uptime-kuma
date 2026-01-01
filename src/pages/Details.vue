@@ -30,7 +30,8 @@
                             monitor.type === 'keyword' ||
                             monitor.type === 'json-query' ||
                             monitor.type === 'mp-health' ||
-                            monitor.type === 'real-browser'
+                            monitor.type === 'real-browser' ||
+                            monitor.type === 'websocket-upgrade'
                     "
                     :href="monitor.url"
                     target="_blank"
@@ -294,15 +295,23 @@
                             />)
                         </p>
                         <span class="col-4 col-sm-12 num">
-                            <a
-                                href="#"
-                                @click.prevent="
-                                    toggleCertInfoBox = !toggleCertInfoBox
-                                "
-                            >{{ tlsInfo.certInfo.daysRemaining }}
-                                {{
-                                    $tc("day", tlsInfo.certInfo.daysRemaining)
-                                }}</a>
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}</a>
+                            <font-awesome-icon v-if="tlsInfo.hostnameMatchMonitorUrl === false" class="cert-info-warn" icon="exclamation-triangle" :title="$t('certHostnameMismatch')" />
+                        </span>
+                    </div>
+                    <div
+                        v-if="domainInfo"
+                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
+                    >
+                        <h4 class="col-4 col-sm-12">{{ $t("labelDomainExpiry") }}</h4>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
+                            (<Datetime
+                                :value="domainInfo.expiresOn"
+                                date-only
+                            />)
+                        </p>
+                        <span class="col-4 col-sm-12 num">
+                            {{ domainInfo.daysRemaining }} {{ $tc("day", domainInfo.daysRemaining ) }}
                         </span>
                     </div>
                 </div>
@@ -631,6 +640,10 @@ export default {
             }
 
             return null;
+        },
+
+        domainInfo() {
+            return this.$root.domainInfoList[this.monitor.id] || null;
         },
 
         showCertInfoBox() {
@@ -1140,4 +1153,14 @@ table {
         opacity: 0.7;
     }
 }
+
+.cert-info-warn {
+    margin-left: 4px;
+    opacity: 0.5;
+
+    .dark & {
+        opacity: 0.7;
+    }
+}
+
 </style>

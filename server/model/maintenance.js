@@ -1,5 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject, log } = require("../../src/util");
+const { parseTimeObject, parseTimeFromTimeObject, log, SQL_DATETIME_FORMAT } = require("../../src/util");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const Cron = require("croner");
@@ -262,7 +262,7 @@ class Maintenance extends BeanModel {
                     }, duration);
 
                     // Set last start date to current time
-                    this.last_start_date = current.toISOString();
+                    this.last_start_date = current.utc().format(SQL_DATETIME_FORMAT);
                     await R.store(this);
                 };
 

@@ -129,7 +129,6 @@ export default {
                 "Keep": "Keep",
                 "Kook": "Kook",
                 "line": "LINE Messenger",
-                "LineNotify": "LINE Notify",
                 "lunasea": "LunaSea",
                 "matrix": "Matrix",
                 "mattermost": "Mattermost",
@@ -173,7 +172,9 @@ export default {
                 "Cellsynt": "Cellsynt",
                 "SendGrid": "SendGrid",
                 "Brevo": "Brevo",
-                "notifery": "Notifery"
+                "Resend": "Resend",
+                "notifery": "Notifery",
+                "Webpush": "Webpush",
             };
 
             // Put notifications here if it's not supported in most regions or its documentation is not in English
