@@ -4,7 +4,7 @@ const path = require("path");
 const { GenericContainer, Wait } = require("testcontainers");
 
 describe("Database Migration", () => {
-    test("SQLite: All migrations run successfully", async () => {
+    test("SQLite migrations run successfully from fresh database", async () => {
         const testDbPath = path.join(__dirname, "../../data/test-migration.db");
         const testDbDir = path.dirname(testDbPath);
 
@@ -57,7 +57,7 @@ describe("Database Migration", () => {
     });
 
     test(
-        "MariaDB: All migrations run successfully",
+        "MariaDB migrations run successfully from fresh database",
         {
             skip:
                 !!process.env.CI &&
