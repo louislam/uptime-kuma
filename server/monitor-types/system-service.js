@@ -85,7 +85,7 @@ class SystemServiceMonitorType extends MonitorType {
                 "-NonInteractive",
                 "-Command",
                 // Single quotes around the service name
-                `(Get-Service -Name '${safeServiceName}').Status`
+                `(Get-Service -Name '${serviceName.replaceAll("'", "''")}').Status`
             ];
 
             execFile(cmd, args, { timeout: 5000 }, (error, stdout, stderr) => {
