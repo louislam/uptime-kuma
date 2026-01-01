@@ -3,7 +3,7 @@ const assert = require("node:assert");
 const { SystemServiceMonitorType } = require("../../server/monitor-types/system-service");
 const { DOWN, UP } = require("../../src/util");
 const process = require("process");
-const { execSync } = require("child_process");
+const { execSync } = require("node:child_process");
 
 let isSystemd = false;
 let isWindows = process.platform === "win32";
@@ -11,7 +11,7 @@ let isWindows = process.platform === "win32";
 if (process.platform === "linux") {
     try {
         // Check if PID 1 is systemd (or init which maps to systemd)
-        const pid1Comm = execSync("ps -p 1 -o comm=").trim();
+        const pid1Comm = execSync("ps -p 1 -o comm=", { encoding: "utf-8" }).trim();
         if (pid1Comm === "systemd" || pid1Comm === "init") {
             isSystemd = true;
         }
@@ -68,12 +68,9 @@ describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
             system_service_name: "non-existent-service-12345",
         };
 
-        try {
-            await monitorType.check(monitor, heartbeat);
-        } catch (e) {
-            // Query a non-existent service to force an error/down state.
-            // This works correctly on both 'systemctl' and 'Get-Service'.
-        }
+        // Query a non-existent service to force an error/down state.
+        // We pass the promise directly to assert.rejects, avoiding unnecessary async wrappers.
+        await assert.rejects(monitorType.check(monitor, heartbeat));
 
         assert.strictEqual(heartbeat.status, DOWN);
     });
@@ -89,11 +86,8 @@ describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
             system_service_name: "invalid&service;name",
         };
 
-        try {
-            await monitorType.check(monitor, heartbeat);
-        } catch (e) {
-            // Expected validation error
-        }
+        // Expected validation error
+        await assert.rejects(monitorType.check(monitor, heartbeat));
 
         assert.strictEqual(heartbeat.status, DOWN);
     });
@@ -109,6 +103,6 @@ describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
             system_service_name: "test-service",
         };
 
-        await assert.rejects(async () => await monitorType.check(monitor, heartbeat), /not supported/);
+        await assert.rejects(monitorType.check(monitor, heartbeat), /not supported/);
     });
 });
