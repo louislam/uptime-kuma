@@ -678,7 +678,7 @@
                                             {{ $t("systemServiceDescriptionLinux", {service_name: monitor.system_service_name || 'nginx'}) }}
                                         </template>
                                         <template v-else-if="$root.info.runtime.platform === 'win32'">
-                                            {{ $t("systemServiceDescriptionWindows", {service_name: monitor.system_service_name || 'wuauserv'}) }}
+                                            {{ $t("systemServiceDescriptionWindows", {service_name: monitor.system_service_name || 'Dnscache'}) }}
                                         </template>
                                         <template v-else>
                                             {{ $t("systemServiceDescription", {service_name: monitor.system_service_name || 'nginx'}) }}
@@ -700,7 +700,7 @@
                                             <div>
                                                 <i18n-t keypath="systemServiceCommandHint" tag="span">
                                                     <template #command>
-                                                        <code>(Get-Service -Name '{{ monitor.system_service_name || 'wuauserv' }}').Status</code>
+                                                        <code>(Get-Service -Name '{{ monitor.system_service_name || 'Dnscache' }}').Status</code>
                                                     </template>
                                                 </i18n-t>
                                             </div>
