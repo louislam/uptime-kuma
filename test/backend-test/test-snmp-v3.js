@@ -1,8 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
-const {SNMPMonitorType} = require('../../server/monitor-types/snmp')
+const { SNMPMonitorType } = require("../../server/monitor-types/snmp");
 const snmp = require("net-snmp");
-
 
 /**
  * Test suite for SNMP Monitor functionality
@@ -11,25 +10,25 @@ const snmp = require("net-snmp");
  */
 
 describe("SNMP Monitor Type", () => {
-    test("SNMPv3 noAuthNoPriv uses createV3Session", async() => {
+    test("SNMPv3 noAuthNoPriv uses createV3Session", async () => {
         const originalCreateV3Session = snmp.createV3Session;
         const originalCreateSession = snmp.createSession;
 
         let createV3Called = false;
         let createSessionCalled = false;
         let receivedOptions = null;
-         // Stub createV3Session
-         snmp.createV3Session = function (host, username, options) {
-                   createV3Called = true;
-                   receivedOptions = options;
-                   // Return a fake session object
+        // Stub createV3Session
+        snmp.createV3Session = function (host, username, options) {
+            createV3Called = true;
+            receivedOptions = options;
+            // Return a fake session object
             return {
                 get: () => {},
                 close: () => {},
             };
-         }
+        };
 
-         // Stub createSession (should NOT be used)
+        // Stub createSession (should NOT be used)
         snmp.createSession = function () {
             createSessionCalled = true;
             return {};
@@ -47,7 +46,7 @@ describe("SNMP Monitor Type", () => {
         };
 
         const snmpMonitor = new SNMPMonitorType();
-         try {
+        try {
             await snmpMonitor.check(monitor); // calls the real snmp  monitor code
         } catch {
             // SNMP request may fail; we only care about session creation
@@ -68,5 +67,5 @@ describe("SNMP Monitor Type", () => {
         // Restore originals
         snmp.createV3Session = originalCreateV3Session;
         snmp.createSession = originalCreateSession;
-    })
-})
+    });
+});
