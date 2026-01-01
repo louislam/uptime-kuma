@@ -55,7 +55,7 @@ test("Domain Expiry", async (t) => {
         });
         const manyDays = 3650;
         setSetting("domainExpiryNotifyDays", [ manyDays ], "general");
-        const [ _notifRet, data ] = await Promise.all([
+        const [ _, data ] = await Promise.all([
             DomainExpiry.sendNotifications(monHttpCom, [ notif ]),
             mockWebhook(hook.port, hook.url)
         ]);
