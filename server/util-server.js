@@ -10,7 +10,6 @@ const { Resolver } = require("dns");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const chroma = require("chroma-js");
-const mssql = require("mssql");
 const mysql = require("mysql2");
 const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
@@ -323,31 +322,6 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
 };
 
 /**
- * Run a query on SQL Server
- * @param {string} connectionString The database connection string
- * @param {string} query The query to validate the database with
- * @returns {Promise<(string[] | object[] | object)>} Response from
- * server
- */
-exports.mssqlQuery = async function (connectionString, query) {
-    let pool;
-    try {
-        pool = new mssql.ConnectionPool(connectionString);
-        await pool.connect();
-        if (!query) {
-            query = "SELECT 1";
-        }
-        await pool.request().query(query);
-        pool.close();
-    } catch (e) {
-        if (pool) {
-            pool.close();
-        }
-        throw e;
-    }
-};
-
-/**
  * Run a query on MySQL/MariaDB
  * @param {string} connectionString The database connection string
  * @param {string} query The query to validate the database with
@@ -483,6 +457,7 @@ exports.setSettings = async function (type, data) {
  */
 const getDaysBetween = (validFrom, validTo) =>
     Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
+exports.getDaysBetween = getDaysBetween;
 
 /**
  * Get days remaining from a time range
@@ -492,11 +467,12 @@ const getDaysBetween = (validFrom, validTo) =>
  */
 const getDaysRemaining = (validFrom, validTo) => {
     const daysRemaining = getDaysBetween(validFrom, validTo);
-    if (new Date(validTo).getTime() < new Date().getTime()) {
+    if (new Date(validTo).getTime() < new Date(validFrom).getTime()) {
         return -daysRemaining;
     }
     return daysRemaining;
 };
+exports.getDaysRemaining = getDaysRemaining;
 
 /**
  * Fix certificate info for display

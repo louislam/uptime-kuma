@@ -843,6 +843,7 @@ let needSetup = false;
                 bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
+                bean.domainExpiryNotification = monitor.domainExpiryNotification;
                 bean.upsideDown = monitor.upsideDown;
                 bean.packetSize = monitor.packetSize;
                 bean.maxredirects = monitor.maxredirects;
@@ -973,6 +974,22 @@ let needSetup = false;
                     monitor: monitor.toJSON(preloadData),
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("checkMointor", async (partial, callback) => {
+            try {
+                checkLogin(socket);
+                const DomainExpiry = require("./model/domain_expiry");
+                callback({
+                    ok: true,
+                    domain: (await DomainExpiry.forMonitor(partial))?.domain || null
+                });
             } catch (e) {
                 callback({
                     ok: false,
@@ -1248,6 +1265,8 @@ let needSetup = false;
                     value,
                 ]);
 
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successAdded",
@@ -1272,6 +1291,8 @@ let needSetup = false;
                     monitorID,
                 ]);
 
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successEdited",
@@ -1295,6 +1316,8 @@ let needSetup = false;
                     monitorID,
                     value,
                 ]);
+
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
                     ok: true,

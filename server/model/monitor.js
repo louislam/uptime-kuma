@@ -8,7 +8,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
-const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mssqlQuery, mysqlQuery, setSetting, httpNtlm, radius,
+const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mysqlQuery, setSetting, httpNtlm, radius,
     kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, checkCertificateHostname
 } = require("../util-server");
 const { R } = require("redbean-node");
@@ -28,6 +28,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -117,6 +118,7 @@ class Monitor extends BeanModel {
             keyword: this.keyword,
             invertKeyword: this.isInvertKeyword(),
             expiryNotification: this.isEnabledExpiryNotification(),
+            domainExpiryNotification: Boolean(this.domainExpiryNotification),
             ignoreTls: this.getIgnoreTls(),
             upsideDown: this.isUpsideDown(),
             packetSize: this.packetSize,
@@ -768,24 +770,18 @@ class Monitor extends BeanModel {
                     let res = await axios.request(options);
 
                     if (res.data.State.Running) {
-                        if (res.data.State.Health && res.data.State.Health.Status !== "healthy") {
-                            bean.status = PENDING;
-                            bean.msg = res.data.State.Health.Status;
-                        } else {
+                        if (res.data.State.Health.Status === "healthy") {
                             bean.status = UP;
                             bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
+                        } else if (res.data.State.Health.Status === "unhealthy") {
+                            throw Error("Container State is unhealthy");
+                        } else {
+                            bean.status = PENDING;
+                            bean.msg = res.data.State.Health.Status;
                         }
                     } else {
                         throw Error("Container State is " + res.data.State.Status);
                     }
-                } else if (this.type === "sqlserver") {
-                    let startTime = dayjs().valueOf();
-
-                    await mssqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1");
-
-                    bean.msg = "";
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
 
@@ -929,6 +925,19 @@ class Monitor extends BeanModel {
                         // Reset down count
                         bean.downCount = 0;
                     }
+                }
+            }
+
+            if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
+                try {
+                    const domainExpiryDate = await DomainExpiry.checkExpiry(this);
+                    if (domainExpiryDate) {
+                        DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
+                    } else {
+                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
+                    }
+                } catch (error) {
+                    log.warn("monitor", `Failed to get domain expiry for ${this.name} : ${error.message}`);
                 }
             }
 
@@ -1199,6 +1208,9 @@ class Monitor extends BeanModel {
 
             // Send Cert Info
             await Monitor.sendCertInfo(io, monitorID, userID);
+
+            // Send domain info
+            await Monitor.sendDomainInfo(io, monitorID, userID);
         } else {
             log.debug("monitor", "No clients in the room, no need to send stats");
         }
@@ -1217,6 +1229,22 @@ class Monitor extends BeanModel {
         ]);
         if (tlsInfo != null) {
             io.to(userID).emit("certInfo", monitorID, tlsInfo.info_json);
+        }
+    }
+
+    /**
+     * Send domain name information to client
+     * @param {Server} io Socket server instance
+     * @param {number} monitorID ID of monitor to send
+     * @param {number} userID ID of user to send to
+     * @returns {void}
+     */
+    static async sendDomainInfo(io, monitorID, userID) {
+        const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
+
+        const domain = await DomainExpiry.forMonitor(monitor);
+        if (domain?.expiry) {
+            io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
         }
     }
 
