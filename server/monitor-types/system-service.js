@@ -1,7 +1,7 @@
 const { MonitorType } = require("./monitor-type");
 const { execFile } = require("child_process");
 const process = require("process");
-const { DOWN, UP } = require("../../src/util");
+const { UP } = require("../../src/util");
 
 class SystemServiceMonitorType extends MonitorType {
     name = "system-service";

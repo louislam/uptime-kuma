@@ -20,20 +20,15 @@ if (process.platform === "linux") {
     }
 }
 
+const shouldRun = isWindows || isSystemd;
+
 // With Linux and no Systemd (ARM64), the test is skipped.
 if (process.platform === "linux" && !isSystemd) {
     console.log("::warning title=Systemd Missing::Linux environment detected without systemd (PID 1).");
     console.log("Skipping System Service test for ARM64 runner or containers.");
-    process.exit(0);
 }
 
-// If neither Windows nor Systemd-Linux, skip (e.g. MacOS)
-if (!isWindows && !isSystemd) {
-    console.log("Skipping System Service test: Platform not supported (Mac/BSD).");
-    process.exit(0);
-}
-
-describe("SystemServiceMonitorType", () => {
+describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
     let monitorType;
     let heartbeat;
     let originalPlatform;
