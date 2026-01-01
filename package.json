@@ -135,7 +135,7 @@
         "prometheus-api-metrics": "~3.2.1",
         "promisify-child-process": "~4.1.2",
         "protobufjs": "~7.2.4",
-        "qs": "~6.10.4",
+        "qs": "~6.14.1",
         "radius": "~1.1.4",
         "redbean-node": "~0.3.0",
         "redis": "~5.9.0",
