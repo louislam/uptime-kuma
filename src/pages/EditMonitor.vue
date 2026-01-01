@@ -146,73 +146,8 @@
 
                             <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
                             <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
-                                <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol") }}</label>
-                                <select id="ws_subprotocol" v-model="monitor.wsSubprotocol" class="form-select">
-                                    <option value="" selected>{{ $t("None") }}</option>
-                                    <option value="MBWS.huawei.com">MBWS</option>
-                                    <option value="MBLWS.huawei.com">MBLWS</option>
-                                    <option value="soap">soap</option>
-                                    <option value="wamp">{{ $t("WebSocket Application Messaging Protocol") }}</option>
-                                    <option value="v10.stomp">STOMP 1.0</option>
-                                    <option value="v11.stomp">STOMP 1.1</option>
-                                    <option value="v12.stomp">STOMP 1.2</option>
-                                    <option value="ocpp1.2">OCPP 1.2</option>
-                                    <option value="ocpp1.5">OCPP 1.5</option>
-                                    <option value="ocpp1.6">OCPP 1.6</option>
-                                    <option value="ocpp2.0">OCPP 2.0</option>
-                                    <option value="ocpp2.0.1">OCPP 2.0.1</option>
-                                    <option value="ocpp2.1">OCPP 2.1</option>
-                                    <option value="rfb">RFB</option>
-                                    <option value="sip">{{ $t("Session Initiation Protocol") }}</option>
-                                    <option value="notificationchannel-netapi-rest.openmobilealliance.org">{{ $t("Network API for Notification Channel") }}</option>
-                                    <option value="wpcp">{{ $t("Web Process Control Protocol") }}</option>
-                                    <option value="amqp">{{ $t("Advanced Message Queuing Protocol") }}</option>
-                                    <option value="mqtt">MQTT</option>
-                                    <option value="jsflow">{{ $t("jsflow") }}</option>
-                                    <option value="rwpcp">{{ $t("Reverse Web Process Control") }}</option>
-                                    <option value="xmpp">{{ $t("Extensible Messaging and Presence Protocol") }}</option>
-                                    <option value="ship">{{ $t("Smart Home IP") }}</option>
-                                    <option value="mielecloudconnect">{{ $t("Miele Cloud Connect Protocol") }}</option>
-                                    <option value="v10.pcp.sap.com">{{ $t("Push Channel Protocol") }}</option>
-                                    <option value="msrp">{{ $t("Message Session Relay Protocol") }}</option>
-                                    <option value="v1.saltyrtc.org">SaltyRTC 1.0</option>
-                                    <option value="TLCP-2.0.0.lightstreamer.com">TLCP 2.0.0</option>
-                                    <option value="bfcp">{{ $t("Binary Floor Control Protocol") }}</option>
-                                    <option value="sldp.softvelum.com">{{ $t("Softvelum Low Delay Protocol") }}</option>
-                                    <option value="opcua+uacp">{{ $t("OPC UA Connection Protocol") }}</option>
-                                    <option value="opcua+uajson">{{ $t("OPC UA JSON Encoding") }}</option>
-                                    <option value="v1.swindon-lattice+json">{{ $t("Swindon Web Server Protocol") }}</option>
-                                    <option value="v1.usp">{{ $t("Broadband Forum User Services Platform") }}</option>
-                                    <option value="mles-websocket">mles-websocket</option>
-                                    <option value="coap">{{ $t("Constrained Application Protocol") }}</option>
-                                    <option value="TLCP-2.1.0.lightstreamer.com">TLCP 2.1.0</option>
-                                    <option value="sqlnet.oracle.com">sqlnet</option>
-                                    <option value="oneM2M.R2.0.json">oneM2M R2.0 JSON</option>
-                                    <option value="oneM2M.R2.0.xml">oneM2M R2.0 XML</option>
-                                    <option value="oneM2M.R2.0.cbor">oneM2M R2.0 CBOR</option>
-                                    <option value="transit">Transit</option>
-                                    <option value="2016.serverpush.dash.mpeg.org">MPEG-DASH-ServerPush-23009-6-2017</option>
-                                    <option value="2018.mmt.mpeg.org">MPEG-MMT-23008-1-2018</option>
-                                    <option value="clue">clue</option>
-                                    <option value="webrtc.softvelum.com">{{ $t("Softvelum WebSocket signaling protocol") }}</option>
-                                    <option value="cobra.v2.json">{{ $t("Cobra Real Time Messaging Protocol") }}</option>
-                                    <option value="drp">{{ $t("Declarative Resource Protocol") }}</option>
-                                    <option value="hub.bsc.bacnet.org">{{ $t("BACnet Secure Connect Hub Connection") }}</option>
-                                    <option value="dc.bsc.bacnet.org">{{ $t("BACnet Secure Connect Direct Connection") }}</option>
-                                    <option value="jmap">{{ $t("WebSocket Transport for JMAP") }}</option>
-                                    <option value="t140">{{ $t("ITU-T T.140 Real-Time Text") }}</option>
-                                    <option value="done">{{ $t("Done.best IoT Protocol") }}</option>
-                                    <option value="TLCP-2.2.0.lightstreamer.com">TLCP 2.2.0</option>
-                                    <option value="collection-update">{{ $t("Collection Update") }}</option>
-                                    <option value="TLCP-2.3.0.lightstreamer.com">TLCP 2.3.0</option>
-                                    <option value="text.ircv3.net">{{ $t("Text IRC Protocol") }}</option>
-                                    <option value="binary.ircv3.net">{{ $t("Binary IRC Protocol") }}</option>
-                                    <option value="v3.penguin-stats.live+proto">{{ $t("Penguin Statistics Live Protocol v3") }}</option>
-                                    <option value="TLCP-2.4.0.lightstreamer.com">TLCP 2.4.0</option>
-                                    <option value="TLCP-2.5.0.lightstreamer.com">TLCP 2.5.0</option>
-                                    <option value="Redfish">Redfish DSP0266</option>
-                                    <option value="bidib">webBiDiB</option>
-                                </select>
+                                <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol(s)") }}</label>
+                                <input id="ws_subprotocol" v-model="monitor.wsSubprotocol" type="text" class="form-control" placeholder="mielecloudconnect,soap">
                                 <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
                                     <template #documentation>
                                         <a href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name" target="_blank" rel="noopener noreferrer">{{ $t('documentationOf', ['IANA']) }}</a>
@@ -815,8 +750,8 @@
                                 </div>
                             </div>
 
-                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
+                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp' || monitor.type === 'websocket-upgrade'" class="my-3">
                                 <label for="timeout" class="form-label">
                                     {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
                                     <span v-if="monitor.type !== 'ping'">({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</span>
@@ -936,6 +871,36 @@
                                     {{ $t("pingPerRequestTimeoutDescription") }}
                                 </div>
                             </div>
+
+                            <!-- Websocket Upgrade only -->
+                            <template v-if="monitor.type === 'websocket-upgrade' ">
+                                <div class="my-3">
+                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
+
+                                    <VueMultiselect
+                                        id="acceptedStatusCodes"
+                                        v-model="monitor.accepted_statuscodes"
+                                        :options="acceptedWebsocketCodeOptions"
+                                        :multiple="true"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="true"
+                                        :placeholder="$t('Pick Accepted Status Codes...')"
+                                        :preselect-first="false"
+                                        :max-height="600"
+                                        :taggable="true"
+                                    ></VueMultiselect>
+
+                                    <div class="form-text">
+                                        {{ $t("acceptedStatusCodesDescription") }}
+                                    </div>
+                                    <i18n-t tag="div" class="form-text" keypath="wsCodeDescription">
+                                        <template #rfc6455>
+                                            <a href="https://datatracker.ietf.org/doc/html/rfc6455#section-7.4" target="_blank" rel="noopener noreferrer">RFC 6455</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+                            </template>
 
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
@@ -1447,6 +1412,7 @@ export default {
             },
             hasDomain: false,
             acceptedStatusCodeOptions: [],
+            acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
             kafkaSaslMechanismOptions: [],
             ipOrHostnameRegexPattern: hostNameRegexPattern(),
@@ -1819,6 +1785,7 @@ message HealthCheckResponse {
         "monitor.type"(newType, oldType) {
             if (oldType && this.monitor.type === "websocket-upgrade") {
                 this.monitor.url = "wss://";
+                this.monitor.accepted_statuscodes = [ "1000" ];
             }
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
@@ -1926,6 +1893,8 @@ message HealthCheckResponse {
             "500-599",
         ];
 
+        let acceptedWebsocketCodeOptions = [];
+
         let dnsresolvetypeOptions = [
             "A",
             "AAAA",
@@ -1951,6 +1920,11 @@ message HealthCheckResponse {
             acceptedStatusCodeOptions.push(i.toString());
         }
 
+        for (let i = 1000; i <= 4999; i++) {
+            acceptedWebsocketCodeOptions.push(i.toString());
+        }
+
+        this.acceptedWebsocketCodeOptions = acceptedWebsocketCodeOptions;
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
