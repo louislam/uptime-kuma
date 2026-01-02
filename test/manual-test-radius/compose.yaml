@@ -1,0 +1,8 @@
+# Start the server:
+#   docker compose up
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    command: redis-server --port 6379

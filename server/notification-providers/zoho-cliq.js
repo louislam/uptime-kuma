@@ -27,7 +27,8 @@ class ZohoCliq extends NotificationProvider {
      * @returns {Promise<void>}
      */
     _sendNotification = async (webhookUrl, payload) => {
-        await axios.post(webhookUrl, { text: payload.join("\n") });
+        let config = this.getAxiosConfigWithProxy({});
+        await axios.post(webhookUrl, { text: payload.join("\n") }, config);
     };
 
     /**

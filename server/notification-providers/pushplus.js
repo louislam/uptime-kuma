@@ -17,11 +17,12 @@ class PushPlus extends NotificationProvider {
         const okMsg = "Sent Successfully.";
         const url = "https://www.pushplus.plus/send";
         try {
-            const config = {
+            let config = {
                 headers: {
                     "Content-Type": "application/json",
                 },
             };
+            config = this.getAxiosConfigWithProxy(config);
             const params = {
                 "token": notification.pushPlusSendKey,
                 "title": this.checkStatus(heartbeatJSON, monitorJSON),

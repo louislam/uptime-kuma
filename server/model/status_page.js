@@ -132,6 +132,9 @@ class StatusPage extends BeanModel {
         let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
         head.append(ogDescription);
 
+        let ogType = $("<meta property=\"og:type\" content=\"website\" />");
+        head.append(ogType);
+
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
         const escapedJSONObject = jsesc(await StatusPage.getStatusPageData(statusPage), {
@@ -409,6 +412,7 @@ class StatusPage extends BeanModel {
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            showOnlyLastHeartbeat: !!this.show_only_last_heartbeat
         };
     }
 
@@ -432,6 +436,7 @@ class StatusPage extends BeanModel {
             showPoweredBy: !!this.show_powered_by,
             googleAnalyticsId: this.google_analytics_tag_id,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            showOnlyLastHeartbeat: !!this.show_only_last_heartbeat
         };
     }
 

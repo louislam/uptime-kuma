@@ -12,6 +12,7 @@ class Discord extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            let config = this.getAxiosConfigWithProxy({});
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
             const webhookUrl = new URL(notification.discordWebhookUrl);
             if (notification.discordChannelType === "postToThread") {
@@ -21,7 +22,7 @@ class Discord extends NotificationProvider {
             // Check if the webhook has an avatar
             let webhookHasAvatar = true;
             try {
-                const webhookInfo = await axios.get(webhookUrl.toString());
+                const webhookInfo = await axios.get(webhookUrl.toString(), config);
                 webhookHasAvatar = !!webhookInfo.data.avatar;
             } catch (e) {
                 // If we can't verify, we assume he has an avatar to avoid forcing the default avatar
@@ -40,11 +41,12 @@ class Discord extends NotificationProvider {
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
                 }
-                await axios.post(webhookUrl.toString(), discordtestdata);
+                await axios.post(webhookUrl.toString(), discordtestdata, config);
                 return okMsg;
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
+            let addess = this.extractAddress(monitorJSON);
             if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
                     username: discordDisplayName,
@@ -57,9 +59,9 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            ...(!notification.disableUrl ? [{
+                            ...((!notification.disableUrl && addess) ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
+                                value: addess,
                             }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
@@ -82,7 +84,7 @@ class Discord extends NotificationProvider {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(webhookUrl.toString(), discorddowndata);
+                await axios.post(webhookUrl.toString(), discorddowndata, config);
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
@@ -97,18 +99,18 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            ...(!notification.disableUrl ? [{
+                            ...((!notification.disableUrl && addess) ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
+                                value: addess,
                             }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],
                             },
-                            {
+                            ...(heartbeatJSON["ping"] != null ? [{
                                 name: "Ping",
-                                value: heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms",
-                            },
+                                value: heartbeatJSON["ping"] + " ms",
+                            }] : []),
                         ],
                     }],
                 };
@@ -124,7 +126,7 @@ class Discord extends NotificationProvider {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
 
-                await axios.post(webhookUrl.toString(), discordupdata);
+                await axios.post(webhookUrl.toString(), discordupdata, config);
                 return okMsg;
             }
         } catch (error) {

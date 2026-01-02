@@ -28,13 +28,16 @@
 
                             <!-- Affected Monitors -->
                             <h2 class="mt-5">{{ $t("Affected Monitors") }}</h2>
-                            {{ $t("affectedMonitorsDescription") }}
 
                             <div class="my-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="form-text">{{ $t("affectedMonitorsDescription") }}</div>
+                                </div>
+
                                 <VueMultiselect
                                     id="affected_monitors"
                                     v-model="affectedMonitors"
-                                    :options="affectedMonitorsOptions"
+                                    :options="affectedMonitorsOptionsWithSelectAll"
                                     track-by="id"
                                     label="pathName"
                                     :multiple="true"
@@ -45,7 +48,16 @@
                                     :preselect-first="false"
                                     :max-height="600"
                                     :taggable="false"
-                                ></VueMultiselect>
+                                    @select="onMonitorSelect"
+                                    @remove="onMonitorRemove"
+                                >
+                                    <template #option="props">
+                                        <span v-if="props.option.id === 'select-all'">
+                                            {{ affectedMonitorsAllSelected ? $t('Deselect All') : $t('Select All') }}
+                                        </span>
+                                        <span v-else>{{ props.option.pathName }}</span>
+                                    </template>
+                                </VueMultiselect>
                             </div>
 
                             <!-- Status pages to display maintenance info on -->
@@ -353,8 +365,30 @@ export default {
             });
         },
 
+        affectedMonitorsOptionsWithSelectAll() {
+            return [
+                {
+                    id: "select-all",
+                    pathName: this.affectedMonitorsAllSelected ? this.$t("Deselect All") : this.$t("Select All")
+                },
+                ...this.affectedMonitorsOptions
+            ];
+        },
+
+        affectedMonitorsAllSelected() {
+            return this.affectedMonitors.length > 0 &&
+                   this.affectedMonitors.length === this.affectedMonitorsOptions.length;
+        },
+
         pageName() {
-            return this.$t((this.isAdd) ? "Schedule Maintenance" : "Edit Maintenance");
+            let name = "Schedule Maintenance";
+
+            if (this.isEdit) {
+                name = "Edit Maintenance";
+            } else if (this.isClone) {
+                name = "Clone Maintenance";
+            }
+            return this.$t(name);
         },
 
         isAdd() {
@@ -365,6 +399,9 @@ export default {
             return this.$route.path.startsWith("/maintenance/edit");
         },
 
+        isClone() {
+            return this.$route.path.startsWith("/maintenance/clone");
+        }
     },
     watch: {
         "$route.fullPath"() {
@@ -443,10 +480,15 @@ export default {
                     daysOfMonth: [],
                     timezoneOption: null,
                 };
-            } else if (this.isEdit) {
+            } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
                     if (res.ok) {
                         this.maintenance = res.maintenance;
+
+                        if (this.isClone) {
+                            this.maintenance.id = undefined; // Remove id when cloning as we want a new id
+                            this.maintenance.title = this.$t("cloneOf", [ this.maintenance.title ]);
+                        }
 
                         this.$root.getSocket().emit("getMonitorMaintenance", this.$route.params.id, (res) => {
                             if (res.ok) {
@@ -479,6 +521,24 @@ export default {
             }
         },
 
+        onMonitorSelect(selectedOption) {
+            if (selectedOption.id === "select-all") {
+                this.affectedMonitors = this.affectedMonitors.filter(m => m.id !== "select-all");
+
+                if (this.affectedMonitorsAllSelected) {
+                    this.affectedMonitors = [];
+                } else {
+                    this.affectedMonitors = this.affectedMonitorsOptions.slice();
+                }
+            }
+        },
+
+        onMonitorRemove(removedOption) {
+            if (removedOption.id === "select-all") {
+                this.affectedMonitors = this.affectedMonitors.filter(m => m.id !== "select-all");
+            }
+        },
+
         /**
          * Create new maintenance
          * @returns {Promise<void>}
@@ -491,7 +551,7 @@ export default {
                 return this.processing = false;
             }
 
-            if (this.isAdd) {
+            if (this.isAdd || this.isClone) {
                 this.$root.addMaintenance(this.maintenance, async (res) => {
                     if (res.ok) {
                         await this.addMonitorMaintenance(res.maintenanceID, async () => {
