@@ -16,7 +16,6 @@ permissions: {}
 
 jobs:
   auto-test:
-    needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     permissions:
@@ -117,7 +116,6 @@ jobs:
     - run: npm run lint:prod
 
   e2e-test:
-    needs: [ check-linters ]
     runs-on: ubuntu-22.04-arm
     permissions:
       contents: read
