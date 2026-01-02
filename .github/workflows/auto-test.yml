@@ -78,14 +78,20 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
         with:
-          platforms: arm/v7
+          platforms: linux/arm/v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+
+      - name: Verify QEMU setup
+        run: docker run --rm --platform linux/arm/v7 arm32v7/alpine uname -m
 
       - name: Test on ARMv7 using Docker with QEMU
         run: |
           docker run --rm --platform linux/arm/v7 \
             -v $PWD:/workspace \
             -w /workspace \
-            node:${{ matrix.node }}-slim \
+            arm32v7/node:${{ matrix.node }}-slim \
             bash -c "npm install --production"
 
   check-linters:
