@@ -109,10 +109,10 @@ export function getDevContainerServerHostname() {
 }
 
 /**
- * Regex pattern fr identifying hostnames and IP addresses
+ * Regex pattern for identifying hostnames and IP addresses
  * @param {boolean} mqtt whether or not the regex should take into
  * account the fact that it is an mqtt uri
- * @returns {RegExp} The requested regex
+ * @returns {string} The requested regex string
  */
 export function hostNameRegexPattern(mqtt = false) {
     // mqtt, mqtts, ws and wss schemes accepted by mqtt.js (https://github.com/mqttjs/MQTT.js/#connect)

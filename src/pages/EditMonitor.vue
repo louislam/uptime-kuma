@@ -326,7 +326,7 @@
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
-                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
+                                    :pattern="monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : (monitor.type === 'dns' ? null : ipOrHostnameRegexPattern)"
                                     required
                                     data-testid="hostname-input"
                                 >
@@ -1330,6 +1330,8 @@ import {
     sleep,
 } from "../util.ts";
 import { hostNameRegexPattern, timeDurationFormatter } from "../util-frontend";
+import isFQDN from "validator/lib/isFQDN";
+import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -2079,6 +2081,48 @@ message HealthCheckResponse {
                 const pattern = /^\/[A-Za-z0-9-_&()*+]*$/;
                 if (!pattern.test(this.monitor.mqttWebsocketPath)) {
                     toast.error(this.$t("mqttWebsocketPathInvalid"));
+                    return false;
+                }
+            }
+
+            // Validate the DNS Monitor hostname input
+            if (this.monitor.type === "dns" && this.monitor.hostname) {
+                let hostname = this.monitor.hostname.trim();
+
+                if (isIP(hostname)) {
+                    toast.error("Hostname cannot be an IP address");
+                    return false;
+                }
+
+                if (!isFQDN(hostname, {
+                    allow_wildcard: true,
+                    require_tld: false,
+                    allow_underscores: true,
+                    allow_trailing_dot: true,
+                })) {
+                    toast.error("Invalid hostname");
+                    return false;
+                }
+            }
+
+            // Validate URL field input
+            if ((this.monitor.type === "http" || this.monitor.type === "keyword" || this.monitor.type === "json-query" || this.monitor.type === "websocket-upgrade" || this.monitor.type === "real-browser") && this.monitor.url) {
+                try {
+                    const url = new URL(this.monitor.url);
+                    if (url.hostname.includes("*")) {
+                        toast.error("Wildcard hostnames are only supported for DNS monitors.");
+                        return false;
+                    }
+                    if (!isFQDN(url.hostname, {
+                        require_tld: false,
+                        allow_underscores: true,
+                        allow_trailing_dot: true,
+                    }) && !isIP(url.hostname)) {
+                        toast.error("Invalid hostname");
+                        return false;
+                    }
+                } catch (err) {
+                    toast.error("Invalid URL");
                     return false;
                 }
             }
