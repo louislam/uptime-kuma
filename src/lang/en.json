@@ -1226,6 +1226,6 @@
     "lowIntervalWarning": "Are you sure want to set the interval value below 20 seconds? Performance may be degraded, particularly if there are a large number of monitors.",
     "Halo PSA": "Halo PSA",
     "Halo PSA Webhook URL": "Halo PSA Webhook URL",
-    "halopsa_webhook_url_desc": "Enter the webhook URL from your Halo PSA Integration Runbook (Configuration > Integrations > Custom Integrations > Integration Runbooks). Select 'Can only be started from Halo and from a public endpoint' when creating the webhook."
+    "halopsa_webhook_url_desc": "Enter the webhook URL from your Halo PSA Integration Runbook (Configuration > Integrations > Custom Integrations > Integration Runbooks). Select 'Can only be started from Halo and from a public endpoint' when creating the webhook.",
     "imageResetConfirmation": "Image reset to default"
 }
