@@ -155,7 +155,7 @@ export default {
                         },
                         callbacks: {
                             label: (context) => {
-                                const label = context.dataset.label || '';
+                                const label = context.dataset.label;
                                 return `${label} ${new Intl.NumberFormat().format(context.parsed.y)} ms`;
                             },
                         }
