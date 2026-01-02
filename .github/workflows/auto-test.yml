@@ -84,6 +84,8 @@ jobs:
 
   check-linters:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
@@ -107,6 +109,8 @@ jobs:
   e2e-test:
     needs: [ check-linters ]
     runs-on: ARM64
+    permissions:
+      contents: read
     env:
       PLAYWRIGHT_VERSION: ~1.39.0
     steps:
