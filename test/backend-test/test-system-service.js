@@ -48,7 +48,7 @@ describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
         }
     });
 
-    it("should detect a running service", async () => {
+    test("check() returns UP for a running service", async () => {
         // Windows: 'Dnscache' is always running.
         // Linux: 'dbus' or 'cron' are standard services.
         const serviceName = isWindows ? "Dnscache" : "dbus";
