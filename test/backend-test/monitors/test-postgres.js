@@ -1,8 +1,8 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { PostgreSqlContainer } = require("@testcontainers/postgresql");
-const { PostgresMonitorType } = require("../../server/monitor-types/postgres");
-const { UP, PENDING } = require("../../src/util");
+const { PostgresMonitorType } = require("../../../server/monitor-types/postgres");
+const { UP, PENDING } = require("../../../src/util");
 
 describe(
     "Postgres Single Node",
@@ -12,7 +12,7 @@ describe(
             (process.platform !== "linux" || process.arch !== "x64"),
     },
     () => {
-        test("Postgres is running", async () => {
+        test("check() sets status to UP when Postgres server is reachable", async () => {
             // The default timeout of 30 seconds might not be enough for the container to start
             const postgresContainer = await new PostgreSqlContainer(
                 "postgres:latest"
@@ -37,7 +37,7 @@ describe(
             }
         });
 
-        test("Postgres is not running", async () => {
+        test("check() rejects when Postgres server is not reachable", async () => {
             const postgresMonitor = new PostgresMonitorType();
             const monitor = {
                 databaseConnectionString: "http://localhost:15432",

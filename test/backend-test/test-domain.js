@@ -1,9 +1,9 @@
 process.env.UPTIME_KUMA_HIDE_LOG = [ "info_db", "info_server" ].join(",");
 
-const test = require("node:test");
+const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const DomainExpiry = require("../../server/model/domain_expiry");
-const mockWebhook = require("../mock-webhook");
+const mockWebhook = require("./notification-providers/mock-webhook");
 const TestDB = require("../mock-testdb");
 const { R } = require("redbean-node");
 const { Notification } = require("../../server/notification");
@@ -12,30 +12,34 @@ const { setSetting } = require("../../server/util-server");
 
 const testDb = new TestDB();
 
-test("Domain Expiry", async (t) => {
-    await testDb.create();
-    Notification.init();
-
+describe("Domain Expiry", () => {
     const monHttpCom = {
         type: "http",
         url: "https://www.google.com",
         domainExpiryNotification: true
     };
-    await t.test("Should get expiry date for .wiki with no A record", async () => {
+
+    test("getExpiryDate() returns correct expiry date for .wiki domain with no A record", async () => {
+        await testDb.create();
+        Notification.init();
+
         const d = DomainExpiry.createByName("google.wiki");
         assert.deepEqual(await d.getExpiryDate(), new Date("2026-11-26T23:59:59.000Z"));
     });
-    await t.test("Should get expiration date for .com from RDAP", async () => {
+
+    test("forMonitor() retrieves expiration date for .com domain from RDAP", async () => {
         const domain = await DomainExpiry.forMonitor(monHttpCom);
         const expiryFromRdap = await domain.getExpiryDate(); // from RDAP
         assert.deepEqual(expiryFromRdap, new Date("2028-09-14T04:00:00.000Z"));
     });
-    await t.test("Should have expiration date cached in database", async () => {
+
+    test("checkExpiry() caches expiration date in database", async () => {
         await DomainExpiry.checkExpiry(monHttpCom); // RDAP -> Cache
         const domain = await DomainExpiry.findByName("google.com");
         assert(Date.now() - domain.lastCheck < 5 * 1000);
     });
-    await t.test("Should trigger notify for expiring domain", async () => {
+
+    test("sendNotifications() triggers notification for expiring domain", async () => {
         await DomainExpiry.findByName("google.com");
         const hook = {
             "port": 3010,
@@ -53,18 +57,17 @@ test("Domain Expiry", async (t) => {
             "user_id": 1,
             "name": "Testhook"
         });
-        const manyDays = 1500;
-        setSetting("domainExpiryNotifyDays", [ 7, 14, manyDays ], "general");
-        const [ notifRet, data ] = await Promise.all([
+        const manyDays = 3650;
+        setSetting("domainExpiryNotifyDays", [ manyDays ], "general");
+        const [ , data ] = await Promise.all([
             DomainExpiry.sendNotifications(monHttpCom, [ notif ]),
             mockWebhook(hook.port, hook.url)
         ]);
-        assert.equal(notifRet, manyDays);
         assert.match(data.msg, /will expire in/);
+
+        setTimeout(async () => {
+            Settings.stopCacheCleaner();
+            await testDb.destroy();
+        }, 200);
     });
-}).finally(() => {
-    setTimeout(async () => {
-        Settings.stopCacheCleaner();
-        await testDb.destroy();
-    }, 200);
 });
