@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-22.04, windows-latest, ARM64]
+        os: [macos-latest, ubuntu-22.04, windows-latest, ubuntu-22.04-arm]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node: [ 20, 24 ]
         # Also test non-LTS, but only on Ubuntu.
@@ -45,6 +45,11 @@ jobs:
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
+    
+    - name: Rebuild native modules for ARM64
+      if: matrix.os == 'ubuntu-22.04-arm'
+      run: npm rebuild @louislam/sqlite3
+    
     - run: npm run build
     - run: npm run test-backend
       env:
@@ -103,7 +108,7 @@ jobs:
 
   e2e-test:
     needs: [ check-linters ]
-    runs-on: ARM64
+    runs-on: ubuntu-22.04-arm
     env:
       PLAYWRIGHT_VERSION: ~1.39.0
     steps:
@@ -122,6 +127,9 @@ jobs:
       with:
         node-version: 22
     - run: npm install
+    
+    - name: Rebuild native modules for ARM64
+      run: npm rebuild @louislam/sqlite3
 
     - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
       run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
