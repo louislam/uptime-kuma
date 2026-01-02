@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 
-const hash = require("../../server/modules/axios-ntlm/lib/hash");
+const hash = require("../../../server/modules/axios-ntlm/lib/hash");
 
 describe("createPseudoRandomValue()", () => {
     test("returns a hexadecimal string with the requested length", () => {
