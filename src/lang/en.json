@@ -1223,5 +1223,6 @@
     "labelDomainNameExpiryNotification": "Domain Name Expiry Notification",
     "domainExpiryDescription": "Trigger notification when domain names expires in:",
     "minimumIntervalWarning": "Intervals below 20 seconds may result in poor performance.",
-    "lowIntervalWarning": "Are you sure want to set the interval value below 20 seconds? Performance may be degraded, particularly if there are a large number of monitors."
+    "lowIntervalWarning": "Are you sure want to set the interval value below 20 seconds? Performance may be degraded, particularly if there are a large number of monitors.",
+    "imageResetConfirmation": "Image reset to default"
 }

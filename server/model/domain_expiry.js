@@ -172,9 +172,9 @@ class DomainExpiry extends BeanModel {
     }
 
     /**
-     * @returns {(Date|null)} Expiry date from RDAP
+     * @returns {Promise<(Date|null)>} Expiry date from RDAP
      */
-    getExpiryDate() {
+    async getExpiryDate() {
         return getRdapDomainExpiryDate(this.domain);
     }
 
