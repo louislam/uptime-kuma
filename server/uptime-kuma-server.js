@@ -113,6 +113,7 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
         UptimeKumaServer.monitorTypeList["websocket-upgrade"] = new WebSocketMonitorType();
         UptimeKumaServer.monitorTypeList["dns"] = new DnsMonitorType();
+        UptimeKumaServer.monitorTypeList["postgres"] = new PostgresMonitorType();
         UptimeKumaServer.monitorTypeList["mqtt"] = new MqttMonitorType();
         UptimeKumaServer.monitorTypeList["smtp"] = new SMTPMonitorType();
         UptimeKumaServer.monitorTypeList["group"] = new GroupMonitorType();
@@ -120,9 +121,11 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["grpc-keyword"] = new GrpcKeywordMonitorType();
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
         UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
+        UptimeKumaServer.monitorTypeList["gamedig"] = new GameDigMonitorType();
         UptimeKumaServer.monitorTypeList["port"] = new TCPMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
+        UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -221,7 +224,9 @@ class UptimeKumaServer {
      */
     async sendUpdateMonitorIntoList(socket, monitorID) {
         let list = await this.getMonitorJSONList(socket.userID, monitorID);
-        this.io.to(socket.userID).emit("updateMonitorIntoList", list);
+        if (list && list[monitorID]) {
+            this.io.to(socket.userID).emit("updateMonitorIntoList", list);
+        }
     }
 
     /**
@@ -558,6 +563,7 @@ const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
 const { WebSocketMonitorType } = require("./monitor-types/websocket-upgrade");
 const { DnsMonitorType } = require("./monitor-types/dns");
+const { PostgresMonitorType } = require("./monitor-types/postgres");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
 const { SMTPMonitorType } = require("./monitor-types/smtp");
 const { GroupMonitorType } = require("./monitor-types/group");
@@ -565,8 +571,10 @@ const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { GrpcKeywordMonitorType } = require("./monitor-types/grpc");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
+const { GameDigMonitorType } = require("./monitor-types/gamedig");
 const { TCPMonitorType } = require("./monitor-types/tcp.js");
 const { ManualMonitorType } = require("./monitor-types/manual");
 const { RedisMonitorType } = require("./monitor-types/redis");
+const { MssqlMonitorType } = require("./monitor-types/mssql");
 const Monitor = require("./model/monitor");
 

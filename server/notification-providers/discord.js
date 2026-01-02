@@ -46,6 +46,7 @@ class Discord extends NotificationProvider {
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
+            let addess = this.extractAddress(monitorJSON);
             if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
                     username: discordDisplayName,
@@ -58,9 +59,9 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            ...(!notification.disableUrl ? [{
+                            ...((!notification.disableUrl && addess) ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
+                                value: addess,
                             }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
@@ -98,18 +99,18 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            ...(!notification.disableUrl ? [{
+                            ...((!notification.disableUrl && addess) ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
+                                value: addess,
                             }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
                                 value: heartbeatJSON["localDateTime"],
                             },
-                            {
+                            ...(heartbeatJSON["ping"] != null ? [{
                                 name: "Ping",
-                                value: heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms",
-                            },
+                                value: heartbeatJSON["ping"] + " ms",
+                            }] : []),
                         ],
                     }],
                 };
