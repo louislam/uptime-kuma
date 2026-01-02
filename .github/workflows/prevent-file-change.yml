@@ -1,12 +1,7 @@
 name: prevent-file-change
 
-# pull_request_target is safe here because:
-# 1. Only uses a pinned trusted action (by SHA)
-# 2. Has minimal permissions (pull-requests: read)
-# 3. Doesn't checkout or execute any untrusted code from PRs
-# 4. Only validates that language files (except en.json) aren't modified
-on: # zizmor: ignore[dangerous-triggers]
-  pull_request_target:
+on:
+  pull_request:
 permissions: {}
 
 jobs:
@@ -16,7 +11,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Prevent file change
-        uses: xalvarez/prevent-file-change-action@8ba6c9f0f3c6c73caea35ae4b13988047f9cd104 # v3.0.0
+        uses: xalvarez/prevent-file-change-action@004d9f17c2e4a7afa037cda5f38dc55a5e9c9c06 # v1.9.1
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           # Regex, /src/lang/*.json is not allowed to be changed, except for /src/lang/en.json
