@@ -62,7 +62,6 @@ jobs:
   # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
   armv7-simple-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     permissions:
       contents: read
     strategy:
