@@ -164,6 +164,17 @@ export default {
                         display: true,
                         position: "top",
                         align: "start",
+                       // Indicates that the legend is clickable (cursor pointer)
+                        onHover: function (event, legendItem, legend) {
+                            if (legend && legend.chart && legend.chart.canvas) {
+                                legend.chart.canvas.style.cursor = "pointer";
+                            }
+                        },
+                        onLeave: function (event, legendItem, legend) {
+                            if (legend && legend.chart && legend.chart.canvas) {
+                                legend.chart.canvas.style.cursor = "";
+                            }
+                        },
                         labels: {
                             color: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
                             // Filter to display only the lines in the legend
