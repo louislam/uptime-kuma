@@ -4,10 +4,14 @@ on:
   schedule:
     - cron: '0 */6 * * *'
 #Run every 6 hours
+permissions: {}
 
 jobs:
   stale:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      issues: write
     steps:
       - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d # v10.1.1
         with:
@@ -18,7 +22,7 @@ jobs:
           days-before-close: 7
           days-before-pr-stale: -1
           days-before-pr-close: -1
-          exempt-issue-labels: 'News,Medium,High,discussion,bug,doc,feature-request'
+          exempt-issue-labels: 'News,discussion,bug,doc,feature-request'
           exempt-issue-assignees: 'louislam'
           operations-per-run: 200
       - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d # v10.1.1
