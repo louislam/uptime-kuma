@@ -135,11 +135,6 @@ class StatusPage extends BeanModel {
         let ogType = $("<meta property=\"og:type\" content=\"website\" />");
         head.append(ogType);
 
-        if (statusPage.icon) {
-            let ogImage = $("<meta property=\"og:image\" content=\"\" />").attr("content", statusPage.icon);
-            head.append(ogImage);
-        }
-
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
         const escapedJSONObject = jsesc(await StatusPage.getStatusPageData(statusPage), {
