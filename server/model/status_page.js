@@ -7,6 +7,7 @@ const googleAnalytics = require("../google-analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
+const { escape } = require("html-escaper");
 
 const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
 
@@ -82,9 +83,10 @@ class StatusPage extends BeanModel {
         });
 
         heartbeats.forEach(heartbeat => {
+            const escapedName = escape(heartbeat.name);
             feed.addItem({
-                title: `${heartbeat.name} is down`,
-                description: `${heartbeat.name} has been down since ${heartbeat.time}`,
+                title: `${escapedName} is down`,
+                description: `${escapedName} has been down since ${heartbeat.time}`,
                 id: heartbeat.monitorID,
                 date: new Date(heartbeat.time),
             });
