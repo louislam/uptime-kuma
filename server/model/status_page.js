@@ -30,6 +30,7 @@ class StatusPage extends BeanModel {
         ]);
 
         if (statusPage) {
+            response.type("application/rss+xml");
             response.send(await StatusPage.renderRSS(statusPage, slug));
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);

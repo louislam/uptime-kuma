@@ -45,11 +45,15 @@
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
-
+                                        <option
+                                            v-if="['linux', 'win32'].includes($root.info.runtime.platform) && !$root.info.isContainer"
+                                            value="system-service"
+                                        >
+                                            {{ $t("System Service") }}
+                                        </option>
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
-
                                         <option value="websocket-upgrade">
                                             Websocket Upgrade
                                         </option>
@@ -596,6 +600,52 @@
                                 <div class="my-3">
                                     <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
                                     <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'system-service'">
+                                <div class="my-3">
+                                    <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
+                                    <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx">
+
+                                    <div class="form-text">
+                                        <template v-if="$root.info.runtime.platform === 'linux'">
+                                            {{ $t("systemServiceDescriptionLinux", {service_name: monitor.system_service_name || 'nginx'}) }}
+                                        </template>
+                                        <template v-else-if="$root.info.runtime.platform === 'win32'">
+                                            {{ $t("systemServiceDescriptionWindows", {service_name: monitor.system_service_name || 'Dnscache'}) }}
+                                        </template>
+                                        <template v-else>
+                                            {{ $t("systemServiceDescription", {service_name: monitor.system_service_name || 'nginx'}) }}
+                                        </template>
+
+                                        <template v-if="!monitor.system_service_name || /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)">
+                                            <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
+                                                <div>
+                                                    <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                        <template #command>
+                                                            <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
+                                                        </template>
+                                                    </i18n-t>
+                                                </div>
+                                                <div class="text-secondary small">
+                                                    {{ $t("systemServiceExpectedOutput", ["active"]) }}
+                                                </div>
+                                            </div>
+                                            <div v-else-if="$root.info.runtime.platform === 'win32'" class="mt-2">
+                                                <div>
+                                                    <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                        <template #command>
+                                                            <code>(Get-Service -Name '{{ (monitor.system_service_name || 'Dnscache').replaceAll("'", "''") }}').Status</code>
+                                                        </template>
+                                                    </i18n-t>
+                                                </div>
+                                                <div class="text-secondary small">
+                                                    {{ $t("systemServiceExpectedOutput", ["Running"]) }}
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
                             </template>
 
@@ -1333,7 +1383,8 @@ const monitorDefaults = {
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
-    conditions: []
+    conditions: [],
+    system_service_name: "",
 };
 
 export default {
@@ -1412,6 +1463,9 @@ export default {
         defaultFriendlyName() {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
+            }
+            if (this.monitor.system_service_name) {
+                return this.monitor.system_service_name;
             }
             if (this.monitor.url) {
                 if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
