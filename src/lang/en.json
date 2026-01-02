@@ -1227,4 +1227,5 @@
     "Halo PSA": "Halo PSA",
     "Halo PSA Webhook URL": "Halo PSA Webhook URL",
     "halopsa_webhook_url_desc": "Enter the webhook URL from your Halo PSA Integration Runbook (Configuration > Integrations > Custom Integrations > Integration Runbooks). Select 'Can only be started from Halo and from a public endpoint' when creating the webhook."
+    "imageResetConfirmation": "Image reset to default"
 }
