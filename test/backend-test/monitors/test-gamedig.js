@@ -3,7 +3,7 @@ const assert = require("node:assert");
 const { GameDigMonitorType } = require("../../../server/monitor-types/gamedig");
 const { UP, DOWN, PENDING } = require("../../../src/util");
 const net = require("net");
-const Gamedig = require("gamedig");
+const { Gamedig } = require("gamedig");
 
 describe("GameDig Monitor", () => {
     test("check() sets status to UP when Gamedig.query returns valid server response", async () => {
