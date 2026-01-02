@@ -75,7 +75,7 @@ describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
         assert.strictEqual(heartbeat.status, DOWN);
     });
 
-    it("should fail gracefully with invalid characters", async () => {
+    test("check() fails gracefully with invalid characters", async () => {
         // Mock platform for validation logic test
         Object.defineProperty(process, "platform", {
             value: "linux",
