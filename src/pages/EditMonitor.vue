@@ -1464,6 +1464,9 @@ export default {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
             }
+            if (this.monitor.system_service_name) {
+                return this.monitor.system_service_name;
+            }
             if (this.monitor.url) {
                 if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
                     // Ensure monitor without a URL is not affected by invisible URL.
