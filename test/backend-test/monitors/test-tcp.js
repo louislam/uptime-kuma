@@ -1,14 +1,9 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
-const { TCPMonitorType } = require("../../server/monitor-types/tcp");
-const { UP, PENDING } = require("../../src/util");
+const { TCPMonitorType } = require("../../../server/monitor-types/tcp");
+const { UP, PENDING } = require("../../../src/util");
 const net = require("net");
 
-/**
- * Test suite for TCP Monitor functionality
- * This test suite checks the behavior of the TCPMonitorType class
- * under different network connection scenarios.
- */
 describe("TCP Monitor", () => {
     /**
      * Creates a TCP server on a specified port
@@ -29,11 +24,7 @@ describe("TCP Monitor", () => {
         });
     }
 
-    /**
-     * Test case to verify TCP monitor works when a server is running
-     * Checks that the monitor correctly identifies an active TCP server
-     */
-    test("TCP server is running", async () => {
+    test("check() sets status to UP when TCP server is reachable", async () => {
         const port = 12345;
         const server = await createTCPServer(port);
 
@@ -59,11 +50,7 @@ describe("TCP Monitor", () => {
         }
     });
 
-    /**
-     * Test case to verify TCP monitor handles non-running servers
-     * Checks that the monitor correctly identifies an inactive TCP server
-     */
-    test("TCP server is not running", async () => {
+    test("check() rejects with connection failed when TCP server is not running", async () => {
         const tcpMonitor = new TCPMonitorType();
 
         const monitor = {
@@ -83,11 +70,7 @@ describe("TCP Monitor", () => {
         );
     });
 
-    /**
-     * Test case to verify TCP monitor handles servers with expired or invalid TLS certificates
-     * Checks that the monitor correctly identifies TLS certificate issues
-     */
-    test("TCP server with expired or invalid TLS certificate", async t => {
+    test("check() rejects when TLS certificate is expired or invalid", async () => {
         const tcpMonitor = new TCPMonitorType();
 
         const monitor = {
@@ -114,7 +97,7 @@ describe("TCP Monitor", () => {
         );
     });
 
-    test("TCP server with valid TLS certificate (SSL)", async t => {
+    test("check() sets status to UP when TLS certificate is valid (SSL)", async () => {
         const tcpMonitor = new TCPMonitorType();
 
         const monitor = {
@@ -137,7 +120,7 @@ describe("TCP Monitor", () => {
         assert.strictEqual(heartbeat.status, UP);
     });
 
-    test("TCP server with valid TLS certificate (STARTTLS)", async t => {
+    test("check() sets status to UP when TLS certificate is valid (STARTTLS)", async () => {
         const tcpMonitor = new TCPMonitorType();
 
         const monitor = {
@@ -160,7 +143,7 @@ describe("TCP Monitor", () => {
         assert.strictEqual(heartbeat.status, UP);
     });
 
-    test("TCP server with valid but name mismatching TLS certificate (STARTTLS)", async t => {
+    test("check() rejects when TLS certificate hostname does not match (STARTTLS)", async () => {
         const tcpMonitor = new TCPMonitorType();
 
         const monitor = {
@@ -185,7 +168,7 @@ describe("TCP Monitor", () => {
             regex
         );
     });
-    test("XMPP server with valid certificate (STARTTLS)", async t => {
+    test("check() sets status to UP for XMPP server with valid certificate (STARTTLS)", async () => {
         const tcpMonitor = new TCPMonitorType();
 
         const monitor = {
