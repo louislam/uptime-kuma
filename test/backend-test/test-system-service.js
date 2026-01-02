@@ -5,30 +5,21 @@ const { DOWN, UP } = require("../../src/util");
 const process = require("process");
 const { execSync } = require("node:child_process");
 
-let isSystemd = false;
-let isWindows = process.platform === "win32";
+function shouldSkip() {
+    if (process.platform === "win32") return false;
+    if (process.platform !== "linux") return true;
 
-if (process.platform === "linux") {
+    // We currently only support systemd as an init system on linux
+    // -> Check if PID 1 is systemd (or init which maps to systemd)
     try {
-        // Check if PID 1 is systemd (or init which maps to systemd)
         const pid1Comm = execSync("ps -p 1 -o comm=", { encoding: "utf-8" }).trim();
-        if (pid1Comm === "systemd" || pid1Comm === "init") {
-            isSystemd = true;
-        }
+        return !["systemd", "init"].includes(pid1);
     } catch (e) {
-        // Command failed, likely not systemd
+        return true;
     }
 }
 
-const shouldRun = isWindows || isSystemd;
-
-// With Linux and no Systemd (ARM64), the test is skipped.
-if (process.platform === "linux" && !isSystemd) {
-    console.log("::warning title=Systemd Missing::Linux environment detected without systemd (PID 1).");
-    console.log("Skipping System Service test for ARM64 runner or containers.");
-}
-
-describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
+describe("SystemServiceMonitorType", { skip: shouldSkip() }, () => {
     let monitorType;
     let heartbeat;
     let originalPlatform;
