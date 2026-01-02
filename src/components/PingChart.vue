@@ -164,7 +164,7 @@ export default {
                         display: true,
                         position: "top",
                         align: "start",
-                       // Indicates that the legend is clickable (cursor pointer)
+                        // Indicates that the legend is clickable (cursor pointer)
                         onHover: function (event, legendItem, legend) {
                             if (legend && legend.chart && legend.chart.canvas) {
                                 legend.chart.canvas.style.cursor = "pointer";
