@@ -159,4 +159,91 @@ test.describe("Status Page", () => {
     // @todo Test certificate expiry
     // @todo Test domain names
 
+    test("RSS feed escapes malicious monitor names", async ({ page }, testInfo) => {
+        test.setTimeout(60000);
+
+        // Test various XSS payloads in monitor names
+        const maliciousMonitorName1 = "<script>alert(1)</script>";
+        const maliciousMonitorName2 = "x</title><script>alert(document.domain)</script><title>";
+        const normalMonitorName = "Production API Server";
+
+        await page.goto("./add");
+        await login(page);
+
+        // Create first monitor with script tag payload
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(maliciousMonitorName1);
+        await page.getByTestId("url-input").fill("https://malicious1.example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create second monitor with title breakout payload
+        await page.goto("./add");
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(maliciousMonitorName2);
+        await page.getByTestId("url-input").fill("https://malicious2.example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create third monitor with normal name
+        await page.goto("./add");
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(normalMonitorName);
+        await page.getByTestId("url-input").fill("https://normal.example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create a status page
+        await page.goto("./add-status-page");
+        await page.getByTestId("name-input").fill("Security Test");
+        await page.getByTestId("slug-input").fill("security-test");
+        await page.getByTestId("submit-button").click();
+        await page.waitForURL("/status/security-test?edit");
+
+        // Add a group and all monitors
+        await page.getByTestId("add-group-button").click();
+        await page.getByTestId("group-name").fill("Test Group");
+
+        // Add all three monitors
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: maliciousMonitorName1 }).click();
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: maliciousMonitorName2 }).click();
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: normalMonitorName }).click();
+
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // Fetch the RSS feed
+        const rssResponse = await page.request.get("/status/security-test/rss");
+        expect(rssResponse.ok()).toBeTruthy();
+
+        const rssContent = await rssResponse.text();
+
+        // Verify XSS payloads are properly escaped
+        expect(rssContent).not.toContain("<script>alert(1)</script>");
+        expect(rssContent).not.toContain("</title><script>");
+        expect(rssContent).not.toContain("<script>alert(document.domain)</script>");
+
+        // Verify escaped versions are present
+        expect(rssContent).toContain("&lt;script&gt;");
+        expect(rssContent).toContain("&lt;/title&gt;");
+
+        // Verify normal monitor name is present and unmodified
+        expect(rssContent).toContain(normalMonitorName);
+
+        // Verify RSS feed structure is valid
+        expect(rssContent).toContain("<?xml version=\"1.0\"");
+        expect(rssContent).toContain("<rss");
+        expect(rssContent).toContain("</rss>");
+
+        // Attach RSS feed content to test report for inspection
+        await testInfo.attach("rss-feed.xml", {
+            body: rssContent,
+            contentType: "application/xml"
+        });
+    });
+
 });
