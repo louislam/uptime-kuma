@@ -1,4 +1,4 @@
-const { describe, it, beforeEach, afterEach } = require("node:test");
+const { describe, test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
 const { SystemServiceMonitorType } = require("../../server/monitor-types/system-service");
 const { DOWN, UP } = require("../../src/util");
