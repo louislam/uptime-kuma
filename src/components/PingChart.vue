@@ -163,7 +163,7 @@ export default {
                         // Enable the legend and display only the non-bar datasets (the lines)
                         display: true,
                         position: "top",
-                        align: "end",
+                        align: "start",
                         labels: {
                             color: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
                             usePointStyle: true,
@@ -502,16 +502,6 @@ export default {
             return {
                 datasets: [
                     {
-                        // average ping chart
-                        data: avgPingData,
-                        fill: "origin",
-                        tension: 0.2,
-                        borderColor: "#5CDD8B",
-                        backgroundColor: "#5CDD8B06",
-                        yAxisID: "y",
-                        label: this.$t("avgPing") || "Avg Ping",
-                    },
-                    {
                         // minimum ping chart
                         data: minPingData,
                         fill: "origin",
@@ -522,11 +512,21 @@ export default {
                         label: this.$t("minPing") || "Min Ping",
                     },
                     {
+                        // average ping chart
+                        data: avgPingData,
+                        fill: "origin",
+                        tension: 0.2,
+                        borderColor: "#5CDD8B",
+                        backgroundColor: "#5CDD8B06",
+                        yAxisID: "y",
+                        label: this.$t("avgPing") || "Avg Ping",
+                    },
+                    {
                         // maximum ping chart
                         data: maxPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#175c32",
+                        borderColor: "#124526",
                         backgroundColor: "#1E7A4214",
                         yAxisID: "y",
                         label: this.$t("maxPing") || "Max Ping",
