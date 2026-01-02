@@ -10,7 +10,6 @@ const { Resolver } = require("dns");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const chroma = require("chroma-js");
-const mssql = require("mssql");
 const mysql = require("mysql2");
 const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
@@ -320,31 +319,6 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
             });
         }
     });
-};
-
-/**
- * Run a query on SQL Server
- * @param {string} connectionString The database connection string
- * @param {string} query The query to validate the database with
- * @returns {Promise<(string[] | object[] | object)>} Response from
- * server
- */
-exports.mssqlQuery = async function (connectionString, query) {
-    let pool;
-    try {
-        pool = new mssql.ConnectionPool(connectionString);
-        await pool.connect();
-        if (!query) {
-            query = "SELECT 1";
-        }
-        await pool.request().query(query);
-        pool.close();
-    } catch (e) {
-        if (pool) {
-            pool.close();
-        }
-        throw e;
-    }
 };
 
 /**

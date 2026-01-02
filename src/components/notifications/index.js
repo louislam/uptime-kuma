@@ -81,6 +81,7 @@ import SMSPlanet from "./SMSPlanet.vue";
 import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
 import HaloPSA from "./HaloPSA.vue";
+import Resend from "./Resend.vue";
 
 /**
  * Manage all notification form.
@@ -166,6 +167,7 @@ const NotificationFormList = {
     "WPush": WPush,
     "SendGrid": SendGrid,
     "Brevo": Brevo,
+    "Resend": Resend,
     "YZJ": YZJ,
     "SMSPlanet": SMSPlanet,
     "Webpush": Webpush,
