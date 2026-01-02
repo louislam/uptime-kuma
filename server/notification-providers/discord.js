@@ -47,6 +47,7 @@ class Discord extends NotificationProvider {
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
+                let addess = this.extractAddress(monitorJSON);
                 let discorddowndata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -58,9 +59,9 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            ...((!notification.disableUrl && this.extractAddress(monitorJSON)) ? [{
+                            ...((!notification.disableUrl && addess) ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
+                                value: addess,
                             }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
@@ -87,6 +88,7 @@ class Discord extends NotificationProvider {
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
+                let addess = this.extractAddress(monitorJSON);
                 let discordupdata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -98,9 +100,9 @@ class Discord extends NotificationProvider {
                                 name: "Service Name",
                                 value: monitorJSON["name"],
                             },
-                            ...((!notification.disableUrl && this.extractAddress(monitorJSON)) ? [{
+                            ...((!notification.disableUrl && addess) ? [{
                                 name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
+                                value: addess,
                             }] : []),
                             {
                                 name: `Time (${heartbeatJSON["timezone"]})`,
