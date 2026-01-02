@@ -31,9 +31,6 @@
 </template>
 
 <script>
-/**
- * Halo PSA Notification Provider Vue Component
- */
 import HiddenInput from "../HiddenInput.vue";
 
 export default {
