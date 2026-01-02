@@ -14,18 +14,18 @@
     </div>
 
     <div class="mb-3">
-        <label for="halopsa-bearer-header" class="form-label">
-            {{ $t("Bearer Header") }}
+        <label for="halopsa-bearer-token" class="form-label">
+            {{ $t("Bearer Token") }}
         </label>
         <input
-            id="halopsa-bearer-header"
-            v-model="$parent.notification.haloBearerHeader"
+            id="halopsa-bearer-token"
+            v-model="$parent.notification.haloBearerToken"
             :maxlength="500"
             autocomplete="off"
-            :placeholder="$t('your-api-token-here')"
+            :placeholder="$t('halopsa_bearer_token_placeholder')"
         />
         <div class="form-text">
-            {{ $t("halopsa_bearer_header_desc") }}
+            {{ $t("halopsa_bearer_token_desc") }}
         </div>
     </div>
 </template>
