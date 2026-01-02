@@ -166,7 +166,6 @@ export default {
                         align: "start",
                         labels: {
                             color: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
-                            usePointStyle: true,
                             // Filter to display only the lines in the legend
                             filter: function (legendItem, data) {
                                 const ds = data.datasets[legendItem.datasetIndex];
@@ -506,7 +505,7 @@ export default {
                         data: minPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#2F9C59",
+                        borderColor: "#126331",
                         backgroundColor: "#2F9C5914",
                         yAxisID: "y",
                         label: this.$t("minPing") || "Min Ping",
@@ -526,7 +525,7 @@ export default {
                         data: maxPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#124526",
+                        borderColor: "#21b55a",
                         backgroundColor: "#1E7A4214",
                         yAxisID: "y",
                         label: this.$t("maxPing") || "Max Ping",
