@@ -155,7 +155,8 @@ export default {
                         },
                         callbacks: {
                             label: (context) => {
-                                return ` ${new Intl.NumberFormat().format(context.parsed.y)} ms`;
+                                const label = context.dataset.label || '';
+                                return `${label} ${new Intl.NumberFormat().format(context.parsed.y)} ms`;
                             },
                         }
                     },
@@ -390,7 +391,7 @@ export default {
                         borderColor: "#4ABF74",
                         backgroundColor: "#4ABF7438",
                         yAxisID: "y",
-                        label: this.$t("avgPing") || "Avg Ping",
+                        label: this.$t("avgPing"),
                     },
                     {
                         // Bar Chart
@@ -519,7 +520,7 @@ export default {
                         borderColor: "#126331",
                         backgroundColor: "#2F9C5914",
                         yAxisID: "y",
-                        label: this.$t("minPing") || "Min Ping",
+                        label: this.$t("minPing"),
                     },
                     {
                         // average ping chart
@@ -529,7 +530,7 @@ export default {
                         borderColor: "#5CDD8B",
                         backgroundColor: "#5CDD8B06",
                         yAxisID: "y",
-                        label: this.$t("avgPing") || "Avg Ping",
+                        label: this.$t("avgPing"),
                     },
                     {
                         // maximum ping chart
@@ -539,7 +540,7 @@ export default {
                         borderColor: "#21b55a",
                         backgroundColor: "#1E7A4214",
                         yAxisID: "y",
-                        label: this.$t("maxPing") || "Max Ping",
+                        label: this.$t("maxPing"),
                     },
                     {
                         // Bar Chart
