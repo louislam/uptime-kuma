@@ -12,12 +12,15 @@ on:
     branches: [ master, 1.23.X ]
     paths-ignore:
       - '*.md'
+permissions: {}
 
 jobs:
   auto-test:
     needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     strategy:
       matrix:
@@ -31,17 +34,18 @@ jobs:
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with: { persist-credentials: false }
 
     - name: Cache/Restore node_modules
-      uses: actions/cache@v4
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
       id: node-modules-cache
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
@@ -61,6 +65,8 @@ jobs:
     needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    permissions:
+      contents: read
     if: ${{ github.repository == 'louislam/uptime-kuma' }}
     strategy:
       matrix:
@@ -70,37 +76,41 @@ jobs:
 
     steps:
       - run: git config --global core.autocrlf false  # Mainly for Windows
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with: { persist-credentials: false }
 
       - name: Cache/Restore node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         id: node-modules-cache
         with:
           path: node_modules
           key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
           node-version: ${{ matrix.node }}
       - run: npm install --production
 
   check-linters:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with: { persist-credentials: false }
 
     - name: Cache/Restore node_modules
-      uses: actions/cache@v4
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
       id: node-modules-cache
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Use Node.js 20
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: 20
     - run: npm install
@@ -109,21 +119,24 @@ jobs:
   e2e-test:
     needs: [ check-linters ]
     runs-on: ubuntu-22.04-arm
+    permissions:
+      contents: read
     env:
       PLAYWRIGHT_VERSION: ~1.39.0
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with: { persist-credentials: false }
 
     - name: Cache/Restore node_modules
-      uses: actions/cache@v4
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
       id: node-modules-cache
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: 22
     - run: npm install
