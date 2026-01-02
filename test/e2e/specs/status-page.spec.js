@@ -218,32 +218,27 @@ test.describe("Status Page", () => {
 
         // Fetch the RSS feed
         const rssResponse = await page.request.get("/status/security-test/rss");
+        expect(rssResponse.status()).toBe(200);
+        expect(rssResponse.headers()["content-type"]).toBe("application/rss+xml; charset=utf-8");
         expect(rssResponse.ok()).toBeTruthy();
 
         const rssContent = await rssResponse.text();
 
-        // Verify XSS payloads are properly escaped
-        expect(rssContent).not.toContain("<script>alert(1)</script>");
-        expect(rssContent).not.toContain("</title><script>");
-        expect(rssContent).not.toContain("<script>alert(document.domain)</script>");
+        // Attach RSS content for inspection
+        await testInfo.attach("rss-feed.xml", {
+            body: rssContent,
+            contentType: "application/xml"
+        });
 
-        // Verify escaped versions are present
-        expect(rssContent).toContain("&lt;script&gt;");
-        expect(rssContent).toContain("&lt;/title&gt;");
-
-        // Verify normal monitor name is present and unmodified
-        expect(rssContent).toContain(normalMonitorName);
+        // Verify all payloads are escaped using CDATA
+        expect(rssContent).toContain(`<title><![CDATA[${maliciousMonitorName1} is down]]></title>`);
+        expect(rssContent).toContain(`<title><![CDATA[${maliciousMonitorName2} is down]]></title>`);
+        expect(rssContent).toContain(`<title><![CDATA[${normalMonitorName} is down]]></title>`);
 
         // Verify RSS feed structure is valid
         expect(rssContent).toContain("<?xml version=\"1.0\"");
         expect(rssContent).toContain("<rss");
         expect(rssContent).toContain("</rss>");
-
-        // Attach RSS feed content to test report for inspection
-        await testInfo.attach("rss-feed.xml", {
-            body: rssContent,
-            contentType: "application/xml"
-        });
     });
 
 });
