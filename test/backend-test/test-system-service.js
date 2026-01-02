@@ -92,7 +92,7 @@ describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
         assert.strictEqual(heartbeat.status, DOWN);
     });
 
-    it("should throw error on unsupported platforms", async () => {
+    test("check() throws on unsupported platforms", async () => {
         // This test mocks the platform, so it can run anywhere.
         Object.defineProperty(process, "platform", {
             value: "darwin",
