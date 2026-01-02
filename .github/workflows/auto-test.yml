@@ -12,12 +12,15 @@ on:
     branches: [ master, 1.23.X ]
     paths-ignore:
       - '*.md'
+permissions: {}
 
 jobs:
   auto-test:
     needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     strategy:
       matrix:
@@ -57,6 +60,8 @@ jobs:
     needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    permissions:
+      contents: read
     if: ${{ github.repository == 'louislam/uptime-kuma' }}
     strategy:
       matrix:
