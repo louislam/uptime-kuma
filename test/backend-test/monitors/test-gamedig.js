@@ -1,7 +1,7 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const { GameDigMonitorType } = require("../../../server/monitor-types/gamedig");
-const { UP, DOWN, PENDING } = require("../../../src/util");
+const { UP, PENDING } = require("../../../src/util");
 const net = require("net");
 const { GameDig } = require("gamedig");
 
