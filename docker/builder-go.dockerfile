@@ -1,6 +1,5 @@
 ############################################
 # Build in Golang
-# Run npm run build-healthcheck-armv7 in the host first, another it will be super slow where it is building the armv7 healthcheck
 ############################################
 FROM golang:1-buster
 WORKDIR /app
@@ -18,5 +17,5 @@ RUN apt update && \
     apt --yes --no-install-recommends install curl && \
     curl -sL https://deb.nodesource.com/setup_18.x | bash && \
     apt --yes --no-install-recommends install nodejs && \
-    node ./extra/build-healthcheck.js $TARGETPLATFORM && \
+    go build -x -o ./extra/healthcheck ./extra/healthcheck.go && \
     apt --yes remove nodejs

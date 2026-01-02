@@ -35,7 +35,6 @@ tsconfig.json
 /extra/uptime-kuma-push
 
 # Comment the following line if you want to rebuild the healthcheck binary
-/extra/healthcheck-armv7
 
 
 ### .gitignore content (commented rules are duplicated)

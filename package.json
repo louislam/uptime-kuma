@@ -60,7 +60,6 @@
         "git-remove-tag": "git tag -d",
         "build-dist-and-restart": "npm run build && npm run start-server-dev",
         "start-pr-test": "node extra/checkout-pr.mjs && npm install && npm run dev",
-        "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go",
         "deploy-demo-server": "node extra/deploy-demo-server.js",
         "sort-contributors": "node extra/sort-contributors.js",
         "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly2",
