@@ -619,30 +619,32 @@
                                             {{ $t("systemServiceDescription", {service_name: monitor.system_service_name || 'nginx'}) }}
                                         </template>
 
-                                        <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
-                                            <div>
-                                                <i18n-t keypath="systemServiceCommandHint" tag="span">
-                                                    <template #command>
-                                                        <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
-                                                    </template>
-                                                </i18n-t>
+                                        <template v-if="!monitor.system_service_name || /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)">
+                                            <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
+                                                <div>
+                                                    <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                        <template #command>
+                                                            <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
+                                                        </template>
+                                                    </i18n-t>
+                                                </div>
+                                                <div class="text-secondary small">
+                                                    {{ $t("systemServiceExpectedOutput", ["active"]) }}
+                                                </div>
                                             </div>
-                                            <div class="text-secondary small">
-                                                {{ $t("systemServiceExpectedOutput", ["active"]) }}
+                                            <div v-else-if="$root.info.runtime.platform === 'win32'" class="mt-2">
+                                                <div>
+                                                    <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                        <template #command>
+                                                            <code>(Get-Service -Name '{{ (monitor.system_service_name || 'Dnscache').replaceAll("'", "''") }}').Status</code>
+                                                        </template>
+                                                    </i18n-t>
+                                                </div>
+                                                <div class="text-secondary small">
+                                                    {{ $t("systemServiceExpectedOutput", ["Running"]) }}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div v-else-if="$root.info.runtime.platform === 'win32'" class="mt-2">
-                                            <div>
-                                                <i18n-t keypath="systemServiceCommandHint" tag="span">
-                                                    <template #command>
-                                                        <code>(Get-Service -Name '{{ monitor.system_service_name || 'Dnscache' }}').Status</code>
-                                                    </template>
-                                                </i18n-t>
-                                            </div>
-                                            <div class="text-secondary small">
-                                                {{ $t("systemServiceExpectedOutput", ["Running"]) }}
-                                            </div>
-                                        </div>
+                                        </template>
                                     </div>
                                 </div>
                             </template>
