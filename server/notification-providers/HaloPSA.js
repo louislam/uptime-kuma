@@ -53,15 +53,8 @@ class HaloPSA extends NotificationProvider {
                 }
             };
 
-            if (notification.haloAuthHeader) {
-                try {
-                    const authHeader = JSON.parse(notification.haloAuthHeader);
-                    config.headers = { ...config.headers,
-                        ...authHeader
-                    };
-                } catch (e) {
-                    throw new Error("Invalid authentication header JSON format");
-                }
+            if (notification.haloBearerToken) {
+                config.headers.Authorization = `Bearer ${notification.haloBearerToken}`;
             }
 
             config = this.getAxiosConfigWithProxy(config);

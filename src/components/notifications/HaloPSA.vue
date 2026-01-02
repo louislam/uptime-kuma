@@ -14,18 +14,18 @@
     </div>
 
     <div class="mb-3">
-        <label for="halopsa-auth-header" class="form-label">
-            {{ $t("Authentication Header") }} ({{ $t("Optional") }})
+        <label for="halopsa-bearer-header" class="form-label">
+            {{ $t("Bearer Header") }}
         </label>
         <input
-            id="halopsa-auth-header"
-            v-model="$parent.notification.haloAuthHeader"
-            type="text"
-            class="form-control"
-            placeholder="{'Authentication': 'Bearer your-token-here'}"
+            id="halopsa-bearer-header"
+            v-model="$parent.notification.haloBearerHeader"
+            :maxlength="500"
+            autocomplete="off"
+            :placeholder="$t('your-api-token-here')"
         />
         <div class="form-text">
-            {{ $t("halopsa_auth_header_desc") }}
+            {{ $t("halopsa_bearer_header_desc") }}
         </div>
     </div>
 </template>
@@ -39,16 +39,6 @@ import HiddenInput from "../HiddenInput.vue";
 export default {
     components: {
         HiddenInput,
-    },
-    mounted() {
-        // initialize default value if not set
-        if (typeof this.$parent.notification.halowebhookurl === "undefined") {
-            this.$parent.notification.halowebhookurl = "";
-        }
-
-        if (typeof this.$parent.notification.haloAuthHeader === "undefined") {
-            this.$parent.notification.haloAuthHeader = "";
-        }
     }
 };
 </script>

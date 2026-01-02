@@ -185,7 +185,6 @@ export default {
                 "Feishu": "Feishu (飞书)",
                 "FlashDuty": "FlashDuty (快猫星云)",
                 "FreeMobile": "FreeMobile (mobile.free.fr)",
-                "HaloPSA": "Halo PSA",
                 "PushDeer": "PushDeer",
                 "promosms": "PromoSMS",
                 "serwersms": "SerwerSMS.pl",
