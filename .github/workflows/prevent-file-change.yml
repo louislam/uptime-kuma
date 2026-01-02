@@ -1,11 +1,14 @@
 name: prevent-file-change
 
 on:
-  pull_request:
+  pull_request_target:
+permissions: {}
 
 jobs:
   check-file-changes:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     steps:
       - name: Prevent file change
         uses: xalvarez/prevent-file-change-action@8ba6c9f0f3c6c73caea35ae4b13988047f9cd104 # v3.0.0
