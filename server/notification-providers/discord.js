@@ -46,8 +46,8 @@ class Discord extends NotificationProvider {
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
+            let addess = this.extractAddress(monitorJSON);
             if (heartbeatJSON["status"] === DOWN) {
-                let addess = this.extractAddress(monitorJSON);
                 let discorddowndata = {
                     username: discordDisplayName,
                     embeds: [{
@@ -88,7 +88,6 @@ class Discord extends NotificationProvider {
                 return okMsg;
 
             } else if (heartbeatJSON["status"] === UP) {
-                let addess = this.extractAddress(monitorJSON);
                 let discordupdata = {
                     username: discordDisplayName,
                     embeds: [{
