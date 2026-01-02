@@ -30,7 +30,7 @@ class HaloPSA extends NotificationProvider {
             } else if (heartbeatJSON?.status === 0) {
                 status = "DOWN";
             } else if (monitorJSON == null && heartbeatJSON != null) {
-                status = "CERTIFICATE_EXPIRY";
+                status = "NOTIFICATION";
             }
 
             /**
@@ -40,23 +40,26 @@ class HaloPSA extends NotificationProvider {
             const payload = {
                 title: "Uptime Kuma Alert",
                 status: status,
-                monitor: monitorJSON?.name || "Unknown Monitor",
+                monitor: monitorJSON?.name || "No Monitor",
                 message: msg,
                 timestamp: new Date().toISOString(),
                 uptime_kuma_version: process.env.npm_package_version || "unknown"
             };
 
             // Send POST request to Halo PSA webhook
+            let config = {
+                timeout: 10000,
+                headers: {
+                    "Content-Type": "application/json",
+                    "User-Agent": "Uptime-Kuma/HaloPSA"
+                }
+            };
+            config = this.getAxiosConfigWithProxy(config);
+
             const result = await axios.post(
                 notification.halowebhookurl,
                 payload,
-                {
-                    timeout: 10000,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "User-Agent": "Uptime-Kuma/HaloPSA"
-                    }
-                }
+                config
             );
 
             // Check for successful HTTP response
