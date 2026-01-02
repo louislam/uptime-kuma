@@ -1,11 +1,12 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { setSettings, setting } = require("../util-server");
-const { getMonitorRelativeURL, UP, log } = require("../../src/util");
+const { getMonitorRelativeURL, UP, DOWN, NOMINAL, SLOW, log } = require("../../src/util");
 const isUrl = require("is-url");
 
 class Slack extends NotificationProvider {
     name = "slack";
+    supportSlowNotifications = true;
 
     /**
      * Deprecated property notification.slackbutton
@@ -146,6 +147,23 @@ class Slack extends NotificationProvider {
             const baseURL = await setting("primaryBaseURL");
 
             const title = "Uptime Kuma Alert";
+
+            let color;
+            switch (heartbeatJSON["status"]) {
+                case UP:
+                case NOMINAL:
+                    color = "#2eb886";
+                    break;
+                case SLOW:
+                    color = "#ffc107";
+                    break;
+                case DOWN:
+                    color = "#e01e5a";
+                    break;
+                default:
+                    color = "#0dcaf0";
+            }
+
             let data = {
                 "text": msg,
                 "channel": notification.slackchannel,
@@ -157,7 +175,7 @@ class Slack extends NotificationProvider {
             if (notification.slackrichmessage) {
                 data.attachments.push(
                     {
-                        "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
+                        "color": color,
                         "blocks": this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
                     }
                 );
