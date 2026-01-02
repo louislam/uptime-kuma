@@ -82,9 +82,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
 
-      - name: Verify QEMU setup
-        run: docker run --rm --platform linux/arm/v7 arm32v7/alpine uname -m
-
       - name: Test on ARMv7 using Docker with QEMU
         run: |
           docker run --rm --platform linux/arm/v7 \
