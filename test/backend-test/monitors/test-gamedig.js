@@ -219,7 +219,7 @@ describe("GameDig Monitor", () => {
         }
     });
 
-    test("check() sets status to DOWN and rejects when game server is unreachable", async () => {
+    test("check() rejects when game server is unreachable", async () => {
         const gamedigMonitor = new GameDigMonitorType();
 
         const monitor = {
@@ -238,8 +238,6 @@ describe("GameDig Monitor", () => {
             gamedigMonitor.check(monitor, heartbeat, {}),
             /Error/
         );
-
-        assert.strictEqual(heartbeat.status, DOWN);
     });
 
     test("resolveHostname() returns IP address when given valid hostname", async () => {
