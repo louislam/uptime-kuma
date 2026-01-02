@@ -133,6 +133,9 @@ class StatusPage extends BeanModel {
         let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
         head.append(ogDescription);
 
+        let ogType = $("<meta property=\"og:type\" content=\"website\" />");
+        head.append(ogType);
+
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
         const escapedJSONObject = jsesc(await StatusPage.getStatusPageData(statusPage), {
