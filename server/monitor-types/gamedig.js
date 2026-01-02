@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { UP, DOWN } = require("../../src/util");
-const Gamedig = require("gamedig");
+const { GameDig } = require("gamedig");
 const dns = require("dns").promises;
 const net = require("net");
 
@@ -19,7 +19,7 @@ class GameDigMonitorType extends MonitorType {
         }
 
         try {
-            const state = await Gamedig.query({
+            const state = await GameDig.query({
                 type: monitor.game,
                 host: host,
                 port: monitor.port,
