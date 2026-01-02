@@ -63,7 +63,7 @@ describe("SystemServiceMonitorType", { skip: !shouldRun }, () => {
         assert.ok(heartbeat.msg.includes("is running"));
     });
 
-    it("should detect a stopped service", async () => {
+    test("check() returns DOWN for a stopped service", async () => {
         const monitor = {
             system_service_name: "non-existent-service-12345",
         };
