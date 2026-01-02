@@ -86,8 +86,8 @@ class StatusPage extends BeanModel {
         heartbeats.forEach(heartbeat => {
             const escapedName = escape(heartbeat.name);
             feed.addItem({
-                title: `${escapedName} is down`,
-                description: `${escapedName} has been down since ${heartbeat.time}`,
+                title: `${heartbeat.name} is down`,
+                description: `${heartbeat.name} has been down since ${heartbeat.time}`,
                 id: heartbeat.monitorID,
                 date: new Date(heartbeat.time),
             });
