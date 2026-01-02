@@ -1,6 +1,11 @@
 name: prevent-file-change
 
-on:
+# pull_request_target is safe here because:
+# 1. Only uses a pinned trusted action (by SHA)
+# 2. Has minimal permissions (pull-requests: read)
+# 3. Doesn't checkout or execute any untrusted code from PRs
+# 4. Only validates that language files (except en.json) aren't modified
+on: # zizmor: ignore[dangerous-triggers]
   pull_request_target:
 permissions: {}
 

@@ -3,10 +3,13 @@ name: Close Incorrect Issue
 on:
   issues:
     types: [opened]
+permissions: {}
 
 jobs:
   close-incorrect-issue:
     runs-on: ${{ matrix.os }}
+    permissions:
+      issues: write
 
     strategy:
       matrix:
@@ -22,4 +25,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    - run: node extra/close-incorrect-issue.js ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} ${{ github.event.issue.user.login }}
+    - name: Close incorrect issue
+      run: node extra/close-incorrect-issue.js ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} "$ISSUE_USER_LOGIN"
+      env:
+        ISSUE_USER_LOGIN: ${{ github.event.issue.user.login }}
