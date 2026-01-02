@@ -1237,5 +1237,5 @@
     "imageResetConfirmation": "Image reset to default",
     "Bearer Token": "Bearer Token",
     "halopsa_bearer_token_placeholder": "your-api-token-here",
-    "halopsa_bearer_token_desc": "Leave blank if authentication is not required"
+    "halopsa_bearer_token_desc": "Bearer token for authenticating with Halo PSA webhook"
 }
