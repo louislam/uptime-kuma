@@ -48,12 +48,22 @@ class HaloPSA extends NotificationProvider {
 
             // Send POST request to Halo PSA webhook
             let config = {
-                timeout: 10000,
                 headers: {
                     "Content-Type": "application/json",
-                    "User-Agent": "Uptime-Kuma/HaloPSA"
                 }
             };
+
+            if (notification.haloAuthHeader) {
+                try {
+                    const authHeader = JSON.parse(notification.haloAuthHeader);
+                    config.headers = { ...config.headers,
+                        ...authHeader
+                    };
+                } catch (e) {
+                    throw new Error("Invalid authentication header JSON format");
+                }
+            }
+
             config = this.getAxiosConfigWithProxy(config);
 
             const result = await axios.post(
@@ -67,10 +77,8 @@ class HaloPSA extends NotificationProvider {
                 return okMsg;
             }
 
-            // Handle unexpected status codes
-            this.throwGeneralAxiosError(result);
+            throw new Error(`Received unexpected status code ${result.status} from notification provider HaloPSA`);
         } catch (error) {
-            // Wrap all axios errors properly as required by CONTRIBUTING.md
             this.throwGeneralAxiosError(error);
         }
     }

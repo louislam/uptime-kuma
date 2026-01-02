@@ -14,16 +14,18 @@
     </div>
 
     <div class="mb-3">
-        <div class="form-check">
-            <input
-                id="halopsa-apply-existing"
-                v-model="$parent.notification.apply_existing"
-                type="checkbox"
-                class="form-check-input"
-            />
-            <label class="form-check-label" for="halopsa-apply-existing">
-                {{ $t("Apply on all existing monitors") }}
-            </label>
+        <label for="halopsa-auth-header" class="form-label">
+            {{ $t("Authentication Header") }} ({{ $t("Optional") }})
+        </label>
+        <input
+            id="halopsa-auth-header"
+            v-model="$parent.notification.haloAuthHeader"
+            type="text"
+            class="form-control"
+            placeholder="{'Authentication': 'Bearer your-token-here'}"
+        />
+        <div class="form-text">
+            {{ $t("halopsa_auth_header_desc") }}
         </div>
     </div>
 </template>
@@ -39,13 +41,13 @@ export default {
         HiddenInput,
     },
     mounted() {
-        //initialize default value if not set
+        // initialize default value if not set
         if (typeof this.$parent.notification.halowebhookurl === "undefined") {
             this.$parent.notification.halowebhookurl = "";
         }
-        //initialize apply_existing filed
-        if (typeof this.$parent.notification.apply_existing === "undefined") {
-            this.$parent.notification.apply_existing = false;
+
+        if (typeof this.$parent.notification.haloAuthHeader === "undefined") {
+            this.$parent.notification.haloAuthHeader = "";
         }
     }
 };
