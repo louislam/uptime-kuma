@@ -5,15 +5,23 @@ const { DOWN, UP } = require("../../src/util");
 const process = require("process");
 const { execSync } = require("node:child_process");
 
+/**
+ * Check if the test should be skipped.
+ * @returns {boolean} True if the test should be skipped
+ */
 function shouldSkip() {
-    if (process.platform === "win32") return false;
-    if (process.platform !== "linux") return true;
+    if (process.platform === "win32") {
+        return false;
+    }
+    if (process.platform !== "linux") {
+        return true;
+    }
 
     // We currently only support systemd as an init system on linux
     // -> Check if PID 1 is systemd (or init which maps to systemd)
     try {
         const pid1Comm = execSync("ps -p 1 -o comm=", { encoding: "utf-8" }).trim();
-        return !["systemd", "init"].includes(pid1);
+        return ![ "systemd", "init" ].includes(pid1Comm);
     } catch (e) {
         return true;
     }
