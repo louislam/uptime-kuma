@@ -121,9 +121,12 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["grpc-keyword"] = new GrpcKeywordMonitorType();
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
         UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
+        UptimeKumaServer.monitorTypeList["gamedig"] = new GameDigMonitorType();
         UptimeKumaServer.monitorTypeList["port"] = new TCPMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
         UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
+        UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
+        UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -569,8 +572,11 @@ const { SNMPMonitorType } = require("./monitor-types/snmp");
 const { GrpcKeywordMonitorType } = require("./monitor-types/grpc");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
+const { GameDigMonitorType } = require("./monitor-types/gamedig");
 const { TCPMonitorType } = require("./monitor-types/tcp.js");
 const { ManualMonitorType } = require("./monitor-types/manual");
 const { RedisMonitorType } = require("./monitor-types/redis");
+const { SystemServiceMonitorType } = require("./monitor-types/system-service");
+const { MssqlMonitorType } = require("./monitor-types/mssql");
 const Monitor = require("./model/monitor");
 

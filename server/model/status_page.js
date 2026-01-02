@@ -30,6 +30,7 @@ class StatusPage extends BeanModel {
         ]);
 
         if (statusPage) {
+            response.type("application/rss+xml");
             response.send(await StatusPage.renderRSS(statusPage, slug));
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
@@ -131,6 +132,9 @@ class StatusPage extends BeanModel {
 
         let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
         head.append(ogDescription);
+
+        let ogType = $("<meta property=\"og:type\" content=\"website\" />");
+        head.append(ogType);
 
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
