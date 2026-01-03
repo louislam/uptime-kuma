@@ -6,6 +6,8 @@ Because of this, I also never thought that other people would actually read and
 edit my code. Parts of the code are not very well-structured or commented, sorry
 about that.
 
+Before you start, please read our [Code of Conduct](CODE_OF_CONDUCT.md) to understand our community standards.
+
 The project was created with `vite` and is written in `vue3`. Our backend
 lives in the `server`-directory and mostly communicates via websockets.
 Both frontend and backend share the same `package.json`.
@@ -206,6 +208,7 @@ to review the appropriate one for your contribution.
   be sure to **create an empty draft pull request or open an issue, so we can
   have a discussion first**.
   This is especially important for large pull requests or when you don't know if it will be merged or not.
+  When adding new features, please also add tests to ensure your changes work as expected and to prevent future regressions.
 
   <sub>Because of the large impact of this work, only senior maintainers may
   merge PRs in this area. </sub>
@@ -218,29 +221,15 @@ to review the appropriate one for your contribution.
 
   Contributing is easy and fun. We will guide you through the process:
 
-  1. **Fork** the [Uptime-Kuma repository](https://github.com/louislam/uptime-kuma/)
-  2. **Clone** your forked repository to your local machine.
-  3. **Create a new branch** for your changes (e.g., `signal-notification-provider`)
-  4. (large changes or big features only)
-  
-     Please discuss all major changes or big features with maintainers before making them.
-     This will save us all time and effort.
-     You can do this by:
-
-     ```sh
-     git commit -m "<YOUR TASK NAME>" --allow-empty
-     git push origin <YOUR BRANCH NAME>
-     ```
-  5. **Open a pull request** using this link: [Compare & Pull Request](https://github.com/louislam/uptime-kuma/compare/)
-  6. **Select the correct source and target branches**.
-  7. **Link to related issues** for context.
-  8. **Provide a clear and concise description** of the changes you've made.
-  9. **When publishing your PR, set it as a** `Draft pull request` to allow you to self-review and address any issues before a public review.
-  10. **Complete the PR checklist**, ensuring that:
-      - Documentation is updated if necessary.
-      - Tests are written or updated.
-      - CI/CD checks pass successfully.
-  11. **Request feedback** from team/community members to refine your changes before the final review.
+  1. **Fork** the [Uptime-Kuma repository](https://github.com/louislam/uptime-kuma/) and **clone** it to your local machine.
+  2. **Create a new branch** for your changes (e.g., `signal-notification-provider`).
+  3. **Make your changes** and **commit** them with a clear message.
+  4. **Push** your changes to your forked repository.
+  5. **Open a pull request** to the `master` branch of the Uptime Kuma repository.
+     - For large changes, please open a **draft pull request** first to discuss the changes with the maintainers.
+  6. **Provide a clear and concise description** of the changes you've made and link any related issues.
+  7. **Complete the PR checklist** and make sure all CI checks pass.
+  8. **Request a review** when your pull request is ready.
 
   ## When Can You Change the PR Status to "Ready for Review"?
 
@@ -276,6 +265,12 @@ to review the appropriate one for your contribution.
   the functionality.
 - Don't modify or delete existing logic without a valid reason.
 - Don't convert existing code into other programming languages for no reason.
+
+### Continuous Integration
+
+All pull requests must pass our continuous integration checks. These checks include:
+- **Linting**: We use ESLint and Stylelint to enforce code style. You can run the linter locally with `npm run lint`.
+- **Testing**: We use Playwright for end-to-end tests and have a suite of backend tests. You can run the tests locally with `npm test`.
 
 I ([@louislam](https://github.com/louislam)) have the final say.
 If your pull request does not meet my expectations, I will reject it, no matter how much time
@@ -331,7 +326,7 @@ as easy as installing a mobile app.
 
 ## Tools
 
-- [`Node.js`](https://nodejs.org/) >= 18
+- [`Node.js`](https://nodejs.org/) >= 20.4.0
 - [`npm`](https://www.npmjs.com/) >= 9.3
 - [`git`](https://git-scm.com/)
 - IDE that supports [`ESLint`](https://eslint.org/) and EditorConfig (I am using
