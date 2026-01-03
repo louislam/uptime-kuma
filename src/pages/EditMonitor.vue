@@ -2100,7 +2100,7 @@ message HealthCheckResponse {
                     allow_underscores: true,
                     allow_trailing_dot: true,
                 })) {
-                    toast.error("Invalid hostname");
+                    toast.error("Invalid hostname. Must be a FQDN, wildcard, underscore, or end with a dot.");
                     return false;
                 }
             }
