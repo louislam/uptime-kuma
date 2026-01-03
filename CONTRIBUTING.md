@@ -451,7 +451,7 @@ changes need to be checked by the person proposing the change.
 ## Spelling & Grammar
 
 Feel free to correct the spelling and grammar in the documentation or code.
-English is not the native language of any maintainer.
+English is not the native language of the maintainers.
 
 ## Wiki
 
