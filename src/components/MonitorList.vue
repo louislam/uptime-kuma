@@ -326,7 +326,7 @@ export default {
             if (this.searchText !== "") {
                 try {
                     // Escape special characters for use in the regular expression
-                    const const escapedSearchText = this.searchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    const escapedSearchText = this.searchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
                     const regex = new RegExp(escapedSearchText, "i");
 
                     const safeRegexTest = (str) => str && regex.test(str);
