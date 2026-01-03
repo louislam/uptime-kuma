@@ -25,12 +25,12 @@
 </template>
 
 <script lang="js">
-import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip } from "chart.js";
+import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip, Legend } from "chart.js";
 import "chartjs-adapter-dayjs-4";
 import { Line } from "vue-chartjs";
 import { UP, DOWN, PENDING, MAINTENANCE } from "../util.ts";
 
-Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler);
+Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler, Legend);
 
 export default {
     components: { Line },
@@ -148,17 +148,42 @@ export default {
                         backgroundColor: this.$root.theme === "light" ? "rgba(212,232,222,1.0)" : "rgba(32,42,38,1.0)",
                         bodyColor: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
                         titleColor: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
+                        // No longer rely solely on datasetIndex === 0; we want to hide tooltips only for the bars
                         filter: function (tooltipItem) {
-                            return tooltipItem.datasetIndex === 0;  // Hide tooltip on Bar Chart
+                            const ds = tooltipItem?.chart?.data?.datasets?.[tooltipItem.datasetIndex];
+                            return ds && ds.type !== "bar";
                         },
                         callbacks: {
                             label: (context) => {
-                                return ` ${new Intl.NumberFormat().format(context.parsed.y)} ms`;
+                                const label = context.dataset.label;
+                                return `${label} ${new Intl.NumberFormat().format(context.parsed.y)} ms`;
                             },
                         }
                     },
                     legend: {
-                        display: false,
+                        // Enable the legend and display only the non-bar datasets (the lines)
+                        display: true,
+                        position: "top",
+                        align: "start",
+                        // Indicates that the legend is clickable (cursor pointer)
+                        onHover: function (event, legendItem, legend) {
+                            if (legend && legend.chart && legend.chart.canvas) {
+                                legend.chart.canvas.style.cursor = "pointer";
+                            }
+                        },
+                        onLeave: function (event, legendItem, legend) {
+                            if (legend && legend.chart && legend.chart.canvas) {
+                                legend.chart.canvas.style.cursor = "";
+                            }
+                        },
+                        labels: {
+                            color: this.$root.theme === "light" ? "rgba(12,12,18,1.0)" : "rgba(220,220,220,1.0)",
+                            // Filter to display only the lines in the legend
+                            filter: function (legendItem, data) {
+                                const ds = data.datasets[legendItem.datasetIndex];
+                                return ds && ds.type !== "bar";
+                            },
+                        },
                     },
                 },
             };
@@ -363,10 +388,10 @@ export default {
                         data: pingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#5CDD8B",
-                        backgroundColor: "#5CDD8B38",
+                        borderColor: "#4ABF74",
+                        backgroundColor: "#4ABF7438",
                         yAxisID: "y",
-                        label: "ping",
+                        label: this.$t("avgPing"),
                     },
                     {
                         // Bar Chart
@@ -488,6 +513,16 @@ export default {
             return {
                 datasets: [
                     {
+                        // minimum ping chart
+                        data: minPingData,
+                        fill: "origin",
+                        tension: 0.2,
+                        borderColor: "#126331",
+                        backgroundColor: "#2F9C5914",
+                        yAxisID: "y",
+                        label: this.$t("minPing"),
+                    },
+                    {
                         // average ping chart
                         data: avgPingData,
                         fill: "origin",
@@ -495,27 +530,17 @@ export default {
                         borderColor: "#5CDD8B",
                         backgroundColor: "#5CDD8B06",
                         yAxisID: "y",
-                        label: "avg-ping",
-                    },
-                    {
-                        // minimum ping chart
-                        data: minPingData,
-                        fill: "origin",
-                        tension: 0.2,
-                        borderColor: "#3CBD6B38",
-                        backgroundColor: "#5CDD8B06",
-                        yAxisID: "y",
-                        label: "min-ping",
+                        label: this.$t("avgPing"),
                     },
                     {
                         // maximum ping chart
                         data: maxPingData,
                         fill: "origin",
                         tension: 0.2,
-                        borderColor: "#7CBD6B38",
-                        backgroundColor: "#5CDD8B06",
+                        borderColor: "#21b55a",
+                        backgroundColor: "#1E7A4214",
                         yAxisID: "y",
-                        label: "max-ping",
+                        label: this.$t("maxPing"),
                     },
                     {
                         // Bar Chart
