@@ -14,18 +14,37 @@
     </div>
 
     <div class="mb-3">
-        <label for="halopsa-bearer-token" class="form-label">
-            {{ $t("Bearer Token") }}
+        <label for="halopsa-username" class="form-label">
+            {{ $t("Username") }}
         </label>
         <input
-            id="halopsa-bearer-token"
-            v-model="$parent.notification.haloBearerToken"
-            :maxlength="500"
+            id="halopsa-username"
+            v-model="$parent.notification.haloUsername"
+            type="text"
+            class="form-control"
             autocomplete="off"
-            :placeholder="$t('halopsa_bearer_token_placeholder')"
+            :placeholder="$t('Username')"
         />
         <div class="form-text">
-            {{ $t("halopsa_bearer_token_desc") }}
+            {{ $t("halopsa_username_desc") }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="halopsa-password" class="form-label">
+            {{ $t("Password") }}
+        </label>
+        <input
+            id="halopsa-password"
+            v-model="$parent.notification.haloPassword"
+            type="text"
+            class="form-control"
+            :maxlength="500"
+            autocomplete="off"
+            :placeholder="$t('Password')"
+        />
+        <div class="form-text">
+            {{ $t("halopsa_password_desc") }}
         </div>
     </div>
 </template>

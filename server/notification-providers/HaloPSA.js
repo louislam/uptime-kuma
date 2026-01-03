@@ -53,8 +53,11 @@ class HaloPSA extends NotificationProvider {
                 }
             };
 
-            if (notification.haloBearerToken) {
-                config.headers.Authorization = `Bearer ${notification.haloBearerToken}`;
+            if (notification.haloUsername && notification.haloPassword) {
+                const data = notification.haloUsername + ":" + notification.haloPassword;
+                const base64data = Buffer.from(data).toString("base64");
+
+                config.headers.Authorization = `Basic ${base64data}`;
             }
 
             config = this.getAxiosConfigWithProxy(config);
