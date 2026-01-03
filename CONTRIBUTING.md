@@ -469,7 +469,7 @@ changes need to be checked by the person proposing the change.
 ## Spelling & Grammar
 
 Feel free to correct the spelling and grammar in the documentation or code.
-None of our mother languages are English.
+English is not the native language of any maintainer.
 
 ## Wiki
 
