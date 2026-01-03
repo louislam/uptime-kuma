@@ -1,13 +1,13 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const { RabbitMQContainer } = require("@testcontainers/rabbitmq");
-const { RabbitMqMonitorType } = require("../../server/monitor-types/rabbitmq");
-const { UP, PENDING } = require("../../src/util");
+const { RabbitMqMonitorType } = require("../../../server/monitor-types/rabbitmq");
+const { UP, PENDING } = require("../../../src/util");
 
 describe("RabbitMQ Single Node", {
     skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
 }, () => {
-    test("RabbitMQ is running", async () => {
+    test("check() sets status to UP when RabbitMQ server is reachable", async () => {
         // The default timeout of 30 seconds might not be enough for the container to start
         const rabbitMQContainer = await new RabbitMQContainer().withStartupTimeout(60000).start();
         const rabbitMQMonitor = new RabbitMqMonitorType();
@@ -33,7 +33,7 @@ describe("RabbitMQ Single Node", {
         }
     });
 
-    test("RabbitMQ is not running", async () => {
+    test("check() rejects when RabbitMQ server is not reachable", async () => {
         const rabbitMQMonitor = new RabbitMqMonitorType();
         const monitor = {
             rabbitmqNodes: JSON.stringify([ "http://localhost:15672" ]),
