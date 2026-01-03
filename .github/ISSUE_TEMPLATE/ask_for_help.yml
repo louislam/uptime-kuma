@@ -42,7 +42,7 @@ body:
       label: 📝 Describe your problem
       description: |
         Please walk us through it step by step.
-        Include all important details and add screenshots where appropriate
+        Include all important details and add screenshots where appropriate.
       placeholder: |
         Describe what are you asking for ...
 
