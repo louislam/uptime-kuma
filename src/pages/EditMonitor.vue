@@ -2090,7 +2090,7 @@ message HealthCheckResponse {
                 let hostname = this.monitor.hostname.trim();
 
                 if (isIP(hostname)) {
-                    toast.error("Hostname cannot be an IP address");
+                    toast.error("DNS hostname cannot be an IP. Did you mean to use the resolver field?");
                     return false;
                 }
 
