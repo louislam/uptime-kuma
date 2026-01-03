@@ -216,7 +216,7 @@ to review the appropriate one for your contribution.
   </p>
   </details>
 
-- <details><summary><b>As a first time contributor</b> (click to expand)</summary>
+- <details><summary><b>As a First-Time Contributor</b> (click to expand)</summary>
   <p>
 
   Contributing is easy and fun. We will guide you through the process:
