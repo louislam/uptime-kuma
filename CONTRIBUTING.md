@@ -5,7 +5,6 @@ requests for Uptime Kuma. I never thought the GitHub community would be so nice!
 Because of this, I also never thought that other people would actually read and
 edit my code. Parts of the code are not very well-structured or commented, sorry
 about that.
-If you have ideas or suggestions, please feel free to open an issue or submit a pull request.
 
 The project was created with `vite` and is written in `vue3`. Our backend
 lives in the `server`-directory and mostly communicates via websockets.
