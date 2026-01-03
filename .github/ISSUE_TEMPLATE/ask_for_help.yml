@@ -65,7 +65,7 @@ body:
         What version of Uptime-Kuma are you running?
         Please do not provide Docker tags like `latest` or `1`.
       placeholder: |
-        e.g. 1.23.16 or 2.0.0-beta.2
+        e.g., 1.23.16 or 2.0.0-beta.2
     validations:
       required: true
 
