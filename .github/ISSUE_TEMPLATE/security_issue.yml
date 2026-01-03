@@ -11,9 +11,12 @@ body:
       value: |
         ## ❗ IMPORTANT: DO NOT SHARE VULNERABILITY DETAILS HERE
 
-        ## Do not report any upstream dependency issues / scan results by any tools.
-
-        It will be closed immediately without explanation, unless you have a PoC to prove that the upstream issue affects Uptime Kuma.
+        ## Please do not open issues for upstream dependency scan results.
+        
+        Automated security tools often report false-positive issues that are not exploitable in the context of Uptime Kuma.
+        Reviewing these without concrete impact does not scale for us.
+        
+        If you can demonstrate that an upstream issue is actually exploitable in Uptime Kuma (e.g. with a PoC or reproducible steps), we’re happy to take a look.
 
         ### ⚠️ Report a Security Vulnerability
 
@@ -30,13 +33,15 @@ body:
 
         ## **Step 1: Submit a GitHub Security Advisory**
 
-        Right-click the link below and select `Open link in new tab` to access the page. This will keep the security issue open, allowing you to easily return and paste the Advisory URL here later.
+        Right-click the link below and select `Open link in new tab` to access the page.
+        This will keep the security issue open, allowing you to easily return and paste the Advisory URL here later.
 
         ➡️ [Create a New Security Advisory](https://github.com/louislam/uptime-kuma/security/advisories/new)
 
         ## **Step 2: Share the Advisory URL**
 
-        Once you've created your advisory, please share the URL below. This will notify Louis Lam and enable them to take the appropriate action.
+        Once you've created your advisory, please share the URL below.
+        This will notify Louis Lam and enable them to take the appropriate action.
 
   - type: textarea
     id: github-advisory-url
