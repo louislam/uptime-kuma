@@ -426,8 +426,7 @@ by Vue Router.
 
 The router is in `src/router.js`
 
-Most data in the frontend is stored at the root level, even
-though you changed the current router to any other pages.
+Most data in the frontend is stored at the root level, even though the router can navigate to different pages.
 
 The data and socket logic are in `src/mixins/socket.js`.
 
