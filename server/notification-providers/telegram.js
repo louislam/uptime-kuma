@@ -1,7 +1,5 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
-const { Liquid } = require("liquidjs");
-const { DOWN } = require("../../src/util");
 
 class Telegram extends NotificationProvider {
     name = "telegram";
@@ -22,61 +20,29 @@ class Telegram extends NotificationProvider {
     }
 
     /**
-     * Renders template with optional MarkdownV2 escaping
-     * @param {string} template The template
-     * @param {string} msg Base message
-     * @param {?object} monitorJSON Monitor details
-     * @param {?object} heartbeatJSON Heartbeat details
-     * @param {boolean} escapeMarkdown Whether to escape for MarkdownV2
-     * @returns {Promise<string>} Rendered template
+     * Recursively escapes string properties of an object for Telegram MarkdownV2
+     * @param {object|string} obj Object or string to escape
+     * @returns {object|string} Escaped object or string
      */
-    async renderTemplate(template, msg, monitorJSON, heartbeatJSON, escapeMarkdown = false) {
-        const engine = new Liquid({
-            root: "./no-such-directory-uptime-kuma",
-            relativeReference: false,
-            dynamicPartials: false,
-        });
-
-        const parsedTpl = engine.parse(template);
-
-        // Defaults
-        let monitorName = "Monitor Name not available";
-        let monitorHostnameOrURL = "testing.hostname";
-
-        if (monitorJSON !== null) {
-            monitorName = monitorJSON.name;
-            monitorHostnameOrURL = this.extractAddress(monitorJSON);
+    escapeObjectRecursive(obj) {
+        if (typeof obj === "string") {
+            return this.escapeMarkdownV2(obj);
         }
+        if (typeof obj === "object" && obj !== null) {
+            // Check if array
+            if (Array.isArray(obj)) {
+                return obj.map(item => this.escapeObjectRecursive(item));
+            }
 
-        let serviceStatus = "⚠️ Test";
-        if (heartbeatJSON !== null) {
-            serviceStatus = heartbeatJSON.status === DOWN ? "🔴 Down" : "✅ Up";
+            const newObj = {};
+            for (const key in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                    newObj[key] = this.escapeObjectRecursive(obj[key]);
+                }
+            }
+            return newObj;
         }
-
-        // Escape values only when MarkdownV2 is enabled
-        if (escapeMarkdown) {
-            msg = this.escapeMarkdownV2(msg);
-            monitorName = this.escapeMarkdownV2(monitorName);
-            monitorHostnameOrURL = this.escapeMarkdownV2(monitorHostnameOrURL);
-            serviceStatus = this.escapeMarkdownV2(serviceStatus);
-        }
-
-        const context = {
-            // v1 compatibility (remove in v3)
-            STATUS: serviceStatus,
-            NAME: monitorName,
-            HOSTNAME_OR_URL: monitorHostnameOrURL,
-
-            // Official variables
-            status: serviceStatus,
-            name: monitorName,
-            hostnameOrURL: monitorHostnameOrURL,
-            monitorJSON,
-            heartbeatJSON,
-            msg,
-        };
-
-        return engine.render(parsedTpl, context);
+        return obj;
     }
 
     /**
@@ -99,8 +65,29 @@ class Telegram extends NotificationProvider {
             }
 
             if (notification.telegramUseTemplate) {
-                const escapeMarkdown = notification.telegramTemplateParseMode === "MarkdownV2";
-                params.text = await this.renderTemplate(notification.telegramTemplate, msg, monitorJSON, heartbeatJSON, escapeMarkdown);
+                let monitorJSONCopy = monitorJSON;
+                let heartbeatJSONCopy = heartbeatJSON;
+
+                if (notification.telegramTemplateParseMode === "MarkdownV2") {
+                    msg = this.escapeMarkdownV2(msg);
+
+                    if (monitorJSONCopy) {
+                        monitorJSONCopy = this.escapeObjectRecursive(monitorJSONCopy);
+                    } else {
+                        // for testing monitorJSON is null, provide escaped defaults
+                        monitorJSONCopy = {
+                            name: this.escapeMarkdownV2("Monitor Name not available"),
+                            hostname: this.escapeMarkdownV2("testing.hostname"),
+                            url: this.escapeMarkdownV2("testing.hostname"),
+                        };
+                    }
+
+                    if (heartbeatJSONCopy) {
+                        heartbeatJSONCopy = this.escapeObjectRecursive(heartbeatJSONCopy);
+                    }
+                }
+
+                params.text = await this.renderTemplate(notification.telegramTemplate, msg, monitorJSONCopy, heartbeatJSONCopy);
 
                 if (notification.telegramTemplateParseMode !== "plain") {
                     params.parse_mode = notification.telegramTemplateParseMode;
