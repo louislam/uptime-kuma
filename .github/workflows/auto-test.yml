@@ -12,16 +12,18 @@ on:
     branches: [ master, 1.23.X ]
     paths-ignore:
       - '*.md'
+permissions: {}
 
 jobs:
   auto-test:
-    needs: [ e2e-test ]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-22.04, windows-latest, ARM64]
+        os: [macos-latest, ubuntu-22.04, windows-latest, ubuntu-22.04-arm]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node: [ 20, 24 ]
         # Also test non-LTS, but only on Ubuntu.
@@ -31,20 +33,26 @@ jobs:
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with: { persist-credentials: false }
 
     - name: Cache/Restore node_modules
-      uses: actions/cache@v4
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
       id: node-modules-cache
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: ${{ matrix.node }}
     - run: npm install
+    
+    - name: Rebuild native modules for ARM64
+      if: matrix.os == 'ubuntu-22.04-arm'
+      run: npm rebuild @louislam/sqlite3
+    
     - run: npm run build
     - run: npm run test-backend
       env:
@@ -53,75 +61,84 @@ jobs:
 
   # As a lot of dev dependencies are not supported on ARMv7, we have to test it separately and just test if `npm ci --production` works
   armv7-simple-test:
-    needs: [ e2e-test ]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
-    if: ${{ github.repository == 'louislam/uptime-kuma' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
-        os: [ ARMv7 ]
         node: [ 20, 22 ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-      - run: git config --global core.autocrlf false  # Mainly for Windows
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with: { persist-credentials: false }
 
-      - name: Cache/Restore node_modules
-        uses: actions/cache@v4
-        id: node-modules-cache
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
         with:
-          path: node_modules
-          key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          platforms: linux/arm/v7
 
-      - name: Use Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node }}
-      - run: npm install --production
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+
+      - name: Test on ARMv7 using Docker with QEMU
+        run: |
+          docker run --rm --platform linux/arm/v7 \
+            -v $PWD:/workspace \
+            -w /workspace \
+            arm32v7/node:${{ matrix.node }}-slim \
+            bash -c "npm install --production"
 
   check-linters:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with: { persist-credentials: false }
 
     - name: Cache/Restore node_modules
-      uses: actions/cache@v4
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
       id: node-modules-cache
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Use Node.js 20
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: 20
     - run: npm install
     - run: npm run lint:prod
 
   e2e-test:
-    needs: [ check-linters ]
-    runs-on: ARM64
+    runs-on: ubuntu-22.04-arm
+    permissions:
+      contents: read
     env:
       PLAYWRIGHT_VERSION: ~1.39.0
     steps:
     - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with: { persist-credentials: false }
 
     - name: Cache/Restore node_modules
-      uses: actions/cache@v4
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
       id: node-modules-cache
       with:
         path: node_modules
         key: node-modules-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
 
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: 22
     - run: npm install
+    
+    - name: Rebuild native modules for ARM64
+      run: npm rebuild @louislam/sqlite3
 
     - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
       run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install

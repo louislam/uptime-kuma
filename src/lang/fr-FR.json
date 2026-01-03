@@ -1283,5 +1283,9 @@
     "Unable to get permission to notify": "Impossible d’obtenir l’autorisation de notification (la demande a été refusée ou ignorée).",
     "showOnlyLastHeartbeat": "Afficher uniquement la dernière vérification",
     "minimumIntervalWarning": "Des intervalles inférieurs à 20 secondes peuvent entraîner de mauvaises performances.",
-    "lowIntervalWarning": "Êtes-vous sûr de vouloir définir l’intervalle en dessous de 20 secondes ? Les performances pourraient être dégradées, en particulier s’il y a un grand nombre de sondes."
+    "lowIntervalWarning": "Êtes-vous sûr de vouloir définir l’intervalle en dessous de 20 secondes ? Les performances pourraient être dégradées, en particulier s’il y a un grand nombre de sondes.",
+    "domainExpiryDescription": "Déclencher une notification lorsque le nom de domaine expire dans :",
+    "settingsDomainExpiry": "Expiration du domaine",
+    "labelDomainExpiry": "Expiration du domaine.",
+    "labelDomainNameExpiryNotification": "Notification d’expiration du nom de domaine"
 }

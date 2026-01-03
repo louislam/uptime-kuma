@@ -1280,5 +1280,9 @@
     "Penguin Statistics Live Protocol v3": "Penguin Statistics Live Protokoll v3 (Protobuf encoding)",
     "Webpush Helptext": "Web-Push funktioniert nur mit SSL-Verbindungen (HTTPS). Bei iOS-Geräten muss die Webseite zuvor zum Startbildschirm hinzugefügt werden.",
     "minimumIntervalWarning": "Intervalle unter 20 Sekunden können zu einer schlechten Leistung führen.",
-    "lowIntervalWarning": "Möchtest du den Intervallwert wirklich auf unter 20 Sekunden einstellen? Dies kann zu Leistungseinbussen führen, insbesondere wenn eine grosse Anzahl von Monitoren vorhanden ist."
+    "lowIntervalWarning": "Möchtest du den Intervallwert wirklich auf unter 20 Sekunden einstellen? Dies kann zu Leistungseinbussen führen, insbesondere wenn eine grosse Anzahl von Monitoren vorhanden ist.",
+    "settingsDomainExpiry": "Ablauf der Domain",
+    "labelDomainExpiry": "Ablauf der Domain",
+    "labelDomainNameExpiryNotification": "Benachrichtigung zum Ablauf des Domainnamens",
+    "domainExpiryDescription": "Benachrichtigung auslösen, wenn Domainnamen abläuft. In:"
 }

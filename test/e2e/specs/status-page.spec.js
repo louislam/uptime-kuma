@@ -24,6 +24,12 @@ test.describe("Status Page", () => {
         const refreshInterval = 30;
         const theme = "dark";
         const googleAnalyticsId = "G-123";
+        const umamiAnalyticsScriptUrl = "https://umami.example.com/script.js";
+        const umamiAnalyticsWebsiteId = "606487e2-bc25-45f9-9132-fa8b065aad46";
+        const plausibleAnalyticsScriptUrl = "https://plausible.example.com/js/script.js";
+        const plausibleAnalyticsDomainsUrls = "one.com,two.com";
+        const matomoUrl = "https://matomoto.example.com";
+        const matomoSiteId = "123456789";
         const customCss = "body { background: rgb(0, 128, 128) !important; }";
         const descriptionText = "This is an example status page.";
         const incidentTitle = "Example Outage Incident";
@@ -77,7 +83,8 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-tags-checkbox").uncheck();
         await page.getByTestId("show-powered-by-checkbox").uncheck();
         await page.getByTestId("show-certificate-expiry-checkbox").uncheck();
-        await page.getByTestId("google-analytics-input").fill(googleAnalyticsId);
+        await page.getByTestId("analytics-type-select").selectOption("google");
+        await page.getByTestId("analytics-id-input").fill(googleAnalyticsId);
         await page.getByTestId("custom-css-input").getByTestId("textarea").fill(customCss); // Prism
 
         // Add an incident
@@ -136,6 +143,7 @@ test.describe("Status Page", () => {
         expect(backgroundColor).toEqual("rgb(0, 128, 128)");
 
         await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(googleAnalyticsId);
 
         // Flip the "Show Tags" and "Show Powered By" switches:
         await page.getByTestId("edit-button").click();
@@ -144,6 +152,11 @@ test.describe("Status Page", () => {
         await page.getByTestId("show-powered-by-checkbox").setChecked(true);
 
         await screenshot(testInfo, page);
+
+        // Fill in umami analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("umami");
+        await page.getByTestId("analytics-script-url-input").fill(umamiAnalyticsScriptUrl);
+        await page.getByTestId("analytics-id-input").fill(umamiAnalyticsWebsiteId);
         await page.getByTestId("save-button").click();
 
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
@@ -154,9 +167,114 @@ test.describe("Status Page", () => {
         await expect(page.getByTestId("monitor-tag").filter({ hasText: tagValue2 })).toBeVisible();
 
         await screenshot(testInfo, page);
+
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsScriptUrl);
+        expect(await page.locator("head").innerHTML()).toContain(umamiAnalyticsWebsiteId);
+
+        await page.getByTestId("edit-button").click();
+        // Fill in plausible analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("plausible");
+        await page.getByTestId("analytics-script-url-input").fill(plausibleAnalyticsScriptUrl);
+        await page.getByTestId("analytics-id-input").fill(plausibleAnalyticsDomainsUrls);
+        await page.getByTestId("save-button").click();
+        await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsScriptUrl);
+        expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainsUrls);
+
+        await page.getByTestId("edit-button").click();
+        // Fill in matomo analytics after editing
+        await page.getByTestId("analytics-type-select").selectOption("matomo");
+        await page.getByTestId("analytics-script-url-input").fill(matomoUrl);
+        await page.getByTestId("analytics-id-input").fill(matomoSiteId);
+        await page.getByTestId("save-button").click();
+        await screenshot(testInfo, page);
+        expect(await page.locator("head").innerHTML()).toContain(matomoUrl);
+        expect(await page.locator("head").innerHTML()).toContain(matomoSiteId);
     });
 
     // @todo Test certificate expiry
     // @todo Test domain names
+
+    test("RSS feed escapes malicious monitor names", async ({ page }, testInfo) => {
+        test.setTimeout(60000);
+
+        // Test various XSS payloads in monitor names
+        const maliciousMonitorName1 = "<script>alert(1)</script>";
+        const maliciousMonitorName2 = "x</title><script>alert(document.domain)</script><title>";
+        const normalMonitorName = "Production API Server";
+
+        await page.goto("./add");
+        await login(page);
+
+        // Create first monitor with script tag payload
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(maliciousMonitorName1);
+        await page.getByTestId("url-input").fill("https://malicious1.example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create second monitor with title breakout payload
+        await page.goto("./add");
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(maliciousMonitorName2);
+        await page.getByTestId("url-input").fill("https://malicious2.example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create third monitor with normal name
+        await page.goto("./add");
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill(normalMonitorName);
+        await page.getByTestId("url-input").fill("https://normal.example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create a status page
+        await page.goto("./add-status-page");
+        await page.getByTestId("name-input").fill("Security Test");
+        await page.getByTestId("slug-input").fill("security-test");
+        await page.getByTestId("submit-button").click();
+        await page.waitForURL("/status/security-test?edit");
+
+        // Add a group and all monitors
+        await page.getByTestId("add-group-button").click();
+        await page.getByTestId("group-name").fill("Test Group");
+
+        // Add all three monitors
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: maliciousMonitorName1 }).click();
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: maliciousMonitorName2 }).click();
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: normalMonitorName }).click();
+
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // Fetch the RSS feed
+        const rssResponse = await page.request.get("/status/security-test/rss");
+        expect(rssResponse.status()).toBe(200);
+        expect(rssResponse.headers()["content-type"]).toBe("application/rss+xml; charset=utf-8");
+        expect(rssResponse.ok()).toBeTruthy();
+
+        const rssContent = await rssResponse.text();
+
+        // Attach RSS content for inspection
+        await testInfo.attach("rss-feed.xml", {
+            body: rssContent,
+            contentType: "application/xml"
+        });
+
+        // Verify all payloads are escaped using CDATA
+        expect(rssContent).toContain(`<title><![CDATA[${maliciousMonitorName1} is down]]></title>`);
+        expect(rssContent).toContain(`<title><![CDATA[${maliciousMonitorName2} is down]]></title>`);
+        expect(rssContent).toContain(`<title><![CDATA[${normalMonitorName} is down]]></title>`);
+
+        // Verify RSS feed structure is valid
+        expect(rssContent).toContain("<?xml version=\"1.0\"");
+        expect(rssContent).toContain("<rss");
+        expect(rssContent).toContain("</rss>");
+    });
 
 });

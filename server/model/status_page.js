@@ -3,7 +3,7 @@ const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
-const googleAnalytics = require("../google-analytics");
+const analytics = require("../analytics/analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
@@ -30,6 +30,7 @@ class StatusPage extends BeanModel {
         ]);
 
         if (statusPage) {
+            response.type("application/rss+xml");
             response.send(await StatusPage.renderRSS(statusPage, slug));
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
@@ -120,9 +121,9 @@ class StatusPage extends BeanModel {
 
         const head = $("head");
 
-        if (statusPage.google_analytics_tag_id) {
-            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.google_analytics_tag_id);
-            head.append($(escapedGoogleAnalyticsScript));
+        if (analytics.isValidAnalyticsConfig(statusPage)) {
+            let escapedAnalyticsScript = analytics.getAnalyticsScript(statusPage);
+            head.append($(escapedAnalyticsScript));
         }
 
         // OG Meta Tags
@@ -131,6 +132,9 @@ class StatusPage extends BeanModel {
 
         let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
         head.append(ogDescription);
+
+        let ogType = $("<meta property=\"og:type\" content=\"website\" />");
+        head.append(ogType);
 
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
@@ -407,7 +411,9 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
-            googleAnalyticsId: this.google_analytics_tag_id,
+            analyticsId: this.analytics_id,
+            analyticsScriptUrl: this.analytics_script_url,
+            analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat
         };
@@ -431,7 +437,9 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
-            googleAnalyticsId: this.google_analytics_tag_id,
+            analyticsId: this.analytics_id,
+            analyticsScriptUrl: this.analytics_script_url,
+            analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat
         };
