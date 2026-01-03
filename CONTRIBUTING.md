@@ -287,7 +287,7 @@ We have found that assigning people to issues is unnecessary management
 overhead. Instead, a short comment stating that you want to work on an issue is
 appreciated, as it saves time for other developers. If you encounter any
 problems during development, feel free to leave a comment describing what you
-are stuck on, we are here to help.
+are stuck on. We are here to help.
 
 ## Project Style
 
