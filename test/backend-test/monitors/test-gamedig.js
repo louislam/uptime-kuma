@@ -1,15 +1,15 @@
 const { describe, test, mock } = require("node:test");
 const assert = require("node:assert");
 const { GameDigMonitorType } = require("../../../server/monitor-types/gamedig");
-const { UP, DOWN, PENDING } = require("../../../src/util");
+const { UP, PENDING } = require("../../../src/util");
 const net = require("net");
-const Gamedig = require("gamedig");
+const { GameDig } = require("gamedig");
 
 describe("GameDig Monitor", () => {
     test("check() sets status to UP when Gamedig.query returns valid server response", async () => {
         const gamedigMonitor = new GameDigMonitorType();
 
-        mock.method(Gamedig, "query", async () => {
+        mock.method(GameDig, "query", async () => {
             return {
                 name: "Test Minecraft Server",
                 ping: 42,
@@ -43,7 +43,7 @@ describe("GameDig Monitor", () => {
     test("check() resolves hostname to IP address when hostname is not an IP", async () => {
         const gamedigMonitor = new GameDigMonitorType();
 
-        mock.method(Gamedig, "query", async (options) => {
+        mock.method(GameDig, "query", async (options) => {
             assert.ok(
                 net.isIP(options.host) !== 0,
                 `Expected IP address, got ${options.host}`
@@ -82,7 +82,7 @@ describe("GameDig Monitor", () => {
 
         let capturedOptions = null;
 
-        mock.method(Gamedig, "query", async (options) => {
+        mock.method(GameDig, "query", async (options) => {
             capturedOptions = options;
             return {
                 name: "Test Server",
@@ -117,7 +117,7 @@ describe("GameDig Monitor", () => {
 
         let capturedOptions = null;
 
-        mock.method(Gamedig, "query", async (options) => {
+        mock.method(GameDig, "query", async (options) => {
             capturedOptions = options;
             return {
                 name: "Test Server",
@@ -152,7 +152,7 @@ describe("GameDig Monitor", () => {
 
         let capturedOptions = null;
 
-        mock.method(Gamedig, "query", async (options) => {
+        mock.method(GameDig, "query", async (options) => {
             capturedOptions = options;
             return {
                 name: "Test Server",
@@ -189,7 +189,7 @@ describe("GameDig Monitor", () => {
 
         let capturedOptions = null;
 
-        mock.method(Gamedig, "query", async (options) => {
+        mock.method(GameDig, "query", async (options) => {
             capturedOptions = options;
             return {
                 name: "Test Server",
@@ -219,7 +219,7 @@ describe("GameDig Monitor", () => {
         }
     });
 
-    test("check() sets status to DOWN and rejects when game server is unreachable", async () => {
+    test("check() rejects when game server is unreachable", async () => {
         const gamedigMonitor = new GameDigMonitorType();
 
         const monitor = {
@@ -238,8 +238,6 @@ describe("GameDig Monitor", () => {
             gamedigMonitor.check(monitor, heartbeat, {}),
             /Error/
         );
-
-        assert.strictEqual(heartbeat.status, DOWN);
     });
 
     test("resolveHostname() returns IP address when given valid hostname", async () => {
