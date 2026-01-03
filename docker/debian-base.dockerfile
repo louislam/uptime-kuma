@@ -1,5 +1,5 @@
 # Download Apprise deb package
-FROM node:20-bookworm-slim AS download-apprise
+FROM node:22-bookworm-slim AS download-apprise
 WORKDIR /app
 COPY ./extra/download-apprise.mjs ./download-apprise.mjs
 RUN apt update && \
@@ -9,7 +9,7 @@ RUN apt update && \
 
 # Base Image (Slim)
 # If the image changed, the second stage image should be changed too
-FROM node:20-bookworm-slim AS base2-slim
+FROM node:22-bookworm-slim AS base2-slim
 ARG TARGETPLATFORM
 
 # Specify --no-install-recommends to skip unused dependencies, make the base much smaller!
@@ -47,9 +47,9 @@ RUN apt update && \
 
 # Install cloudflared
 RUN curl https://pkg.cloudflare.com/cloudflare-main.gpg --output /usr/share/keyrings/cloudflare-main.gpg && \
-    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bullseye main' | tee /etc/apt/sources.list.d/cloudflared.list && \
+    echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared bookworm main' | tee /etc/apt/sources.list.d/cloudflared.list && \
     apt update && \
-    apt install --yes --no-install-recommends -t stable cloudflared && \
+    apt install --yes --no-install-recommends cloudflared && \
     cloudflared version && \
     rm -rf /var/lib/apt/lists/* && \
     apt --yes autoremove
