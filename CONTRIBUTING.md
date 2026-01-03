@@ -176,11 +176,11 @@ to review the appropriate one for your contribution.
 
   To set up a new notification provider these files need to be modified/created:
 
-  - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor. the
-    `async check(...)`-function should:
+  - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor.
+    The `async check(...)`-function should:
     - in the happy-path: set `heartbeat.msg` to a successful message and set `heartbeat.status = UP`
     - in the unhappy-path: throw an `Error` for each fault that is detected with an actionable error message.
-      `heartbeat.status = DOWN` should NOT be set, unless you want to ignore retries.
+    - NEVER set `heartbeat.status = DOWN` unless you want to explicitly ignore retries.
 
   - `server/uptime-kuma-server.js` is where the monitoring backend needs to be
     registered. _If you have an idea how we can skip this step, we would love to
@@ -213,48 +213,39 @@ to review the appropriate one for your contribution.
   </p>
   </details>
 
-- <details><summary><b>Pull Request Guidelines</b> (click to expand)</summary>
+- <details><summary><b>As a first time contributor</b> (click to expand)</summary>
   <p>
 
-  ## Steps to Submit a Pull Request
+  Contributing is easy and fun. We will guide you through the process:
 
-  1. **Fork** the [Uptime-Kuma repository].
-
-  [Uptime-Kuma repository]: https://github.com/louislam/uptime-kuma/
-
+  1. **Fork** the [Uptime-Kuma repository](https://github.com/louislam/uptime-kuma/)
   2. **Clone** your forked repository to your local machine.
-  3. **Create a new branch** for your changes (e.g.,
-     `feature/add-new-notification-provider-signal`).
-  4. **Initiate a discussion before making major changes** by creating an empty
-     commit:
+  3. **Create a new branch** for your changes (e.g., `signal-notification-provider`)
+  4. (large changes or big features only)
+  
+     Please discuss all major changes or big features with maintainers before making them.
+     This will save us all time and effort.
+     You can do this by:
 
      ```sh
      git commit -m "<YOUR TASK NAME>" --allow-empty
+     git push origin <YOUR BRANCH NAME>
      ```
-
-  5. **Push** your branch to your forked repository.
-  6. **Open a pull request** using this link: [Compare & Pull Request].
-
-  [Compare & Pull Request]: https://github.com/louislam/uptime-kuma/compare/
-
-  7. **Select the correct source and target branches**.
-  8. **Link to related issues** for context.
-  9. **Provide a clear and concise description** of the changes you've made.
-  10. **When publishing your PR, set it as a** `Draft pull request` to allow you to self-review and address any issues before a public review.
-  11. **Maintainers will assign relevant labels** (e.g., `pr:needs-review`, `pr:needs-testing`, `pr:please address review comments`).
-  12. **Complete the PR checklist**, ensuring that:
-
+  5. **Open a pull request** using this link: [Compare & Pull Request](https://github.com/louislam/uptime-kuma/compare/)
+  6. **Select the correct source and target branches**.
+  7. **Link to related issues** for context.
+  8. **Provide a clear and concise description** of the changes you've made.
+  9. **When publishing your PR, set it as a** `Draft pull request` to allow you to self-review and address any issues before a public review.
+  10. **Complete the PR checklist**, ensuring that:
       - Documentation is updated if necessary.
       - Tests are written or updated.
       - CI/CD checks pass successfully.
-
-  13. **Request feedback** from team members to refine your changes before the
-      final review.
+  11. **Request feedback** from team/community members to refine your changes before the final review.
 
   ## When Can You Change the PR Status to "Ready for Review"?
 
-  A PR should remain in **draft status** until all tasks are completed. Only
-  change the status to **Ready for Review** when:
+  A PR should remain in **draft status** until all tasks are completed.
+  Only change the status to **Ready for Review** when:
 
   - You have implemented all planned changes.
   - Your code is fully tested and ready for review.
@@ -262,10 +253,7 @@ to review the appropriate one for your contribution.
   - You have verified that CI/CD checks pass successfully.
 
   A volunteer maintainer will review your PR as soon as possible.
-  You can also help by reviewing other PRs or taking a look at open issues.
-
-  </p>
-  </details>
+  You can help us by reviewing other PRs or taking a look at open issues.
 
 ## The following rules are essential for making your PR mergable
 
