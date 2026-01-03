@@ -244,7 +244,7 @@ to review the appropriate one for your contribution.
   A volunteer maintainer will review your PR as soon as possible.
   You can help us by reviewing other PRs or taking a look at open issues.
 
-## The following rules are essential for making your PR mergable
+## The following rules are essential for making your PR mergeable
 
 - Merging multiple issues by a huge PR is more difficult to review and causes
   conflicts with other PRs. Please
