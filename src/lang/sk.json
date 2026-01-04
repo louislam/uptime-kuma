@@ -1268,5 +1268,16 @@
     "systemServiceDescriptionLinux": "Kontroluje či je Linoxová systemd služba {service_name} aktívna",
     "systemServiceDescriptionWindows": "Kontroluje či je Windows Service Manager {service_name} spustený",
     "systemServiceCommandHint": "Použitý príkaz: {command}",
-    "systemServiceExpectedOutput": "Očakávaný Výstup: \"{0}\""
+    "systemServiceExpectedOutput": "Očakávaný Výstup: \"{0}\"",
+    "Analytics Type": "Typ štatistiky",
+    "Analytics ID": "ID štatistiky",
+    "Analytics Script URL": "URL skriptu pre štatistiky",
+    "Plausible": "Plausible",
+    "Matomo": "Matomo",
+    "Umami": "Umami",
+    "Google": "Google",
+    "imageResetConfirmation": "Obrázok bol obnovený na predvolený",
+    "maxPing": "Maximálny ping",
+    "minPing": "Minimálny ping",
+    "avgPing": "Priemerný ping"
 }
