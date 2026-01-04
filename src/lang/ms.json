@@ -85,5 +85,6 @@
     "URL": "URL",
     "Expected Value": "Nilai Sepatutnya",
     "Friendly Name": "Nama Mudah",
-    "Hostname": "Nama Host"
+    "Hostname": "Nama Host",
+    "setupDatabaseEmbeddedMariaDB": "Kamu tidak perlu"
 }
