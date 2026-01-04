@@ -1230,5 +1230,7 @@
     "ariaResumeMaintenance": "Pokračovat v tomto plánu údržby",
     "ariaCloneMaintenance": "Vytvořit kopii tohoto plánu údržby",
     "ariaEditMaintenance": "Upravit tento plán údržby",
-    "ariaDeleteMaintenance": "Odstranit tento plán údržby"
+    "ariaDeleteMaintenance": "Odstranit tento plán údržby",
+    "ignoreSecWebsocketAcceptHeaderDescription": "Při úspěšném websocket upgrade se po aktivování této možnosti se nebude v odpovědi používat hlavička Sec-WebSocket-Accept.",
+    "Ignore Sec-WebSocket-Accept header": "Ignorovat hlavičku {0}"
 }
