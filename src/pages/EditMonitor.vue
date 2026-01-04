@@ -326,7 +326,6 @@
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
-                                    :pattern="monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : (monitor.type === 'dns' ? null : ipOrHostnameRegexPattern)"
                                     required
                                     data-testid="hostname-input"
                                 >
@@ -1329,7 +1328,7 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
-import { hostNameRegexPattern, timeDurationFormatter } from "../util-frontend";
+import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
@@ -1419,8 +1418,6 @@ export default {
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
             kafkaSaslMechanismOptions: [],
-            ipOrHostnameRegexPattern: hostNameRegexPattern(),
-            mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             gameList: null,
             connectionStringTemplates: {
                 "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
@@ -2085,32 +2082,42 @@ message HealthCheckResponse {
                 }
             }
 
-            // Validate the DNS Monitor hostname input
-            if (this.monitor.type === "dns" && this.monitor.hostname) {
+            // Validate hostname field input for various monitors
+            if (this.monitor.hostname && [ "mqtt", "dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp" ].includes(this.monitor.type)) {
                 let hostname = this.monitor.hostname.trim();
 
-                if (isIP(hostname)) {
-                    toast.error("DNS hostname cannot be an IP. Did you mean to use the resolver field?");
+                if (this.monitor.type === "mqtt") {
+                    hostname = hostname.replace(/^(mqtt|ws)s?:\/\//, "");
+                }
+
+                if (this.monitor.type === "dns" && isIP(hostname)) {
+                    toast.error(this.$t("hostnameCannotBeIP"));
                     return false;
                 }
 
+                // Wildcard is allowed only for DNS
                 if (!isFQDN(hostname, {
-                    allow_wildcard: true,
+                    allow_wildcard: this.monitor.type === "dns",
                     require_tld: false,
                     allow_underscores: true,
                     allow_trailing_dot: true,
-                })) {
-                    toast.error("Invalid hostname. Must be a FQDN, wildcard, underscore, or end with a dot.");
+                }) && !isIP(hostname)) {
+                    if(this.monitor.type === "dns") {
+                        toast.error(this.$t("invalidDNSHostname"));
+                    } else {
+                        toast.error(this.$t("invalidHostnameOrIP"));
+                    }
                     return false;
                 }
             }
 
-            // Validate URL field input
+            // Validate URL field input for various monitors
             if ((this.monitor.type === "http" || this.monitor.type === "keyword" || this.monitor.type === "json-query" || this.monitor.type === "websocket-upgrade" || this.monitor.type === "real-browser") && this.monitor.url) {
                 try {
                     const url = new URL(this.monitor.url);
-                    if (url.hostname.includes("*")) {
-                        toast.error("Wildcard hostnames are only supported for DNS monitors.");
+                    // Browser can encode *.hostname.com to %2A.hostname.com
+                    if (url.hostname.includes("*") || url.hostname.includes("%2A")) {
+                        toast.error(this.$t("wildcardOnlyForDNS"));
                         return false;
                     }
                     if (!isFQDN(url.hostname, {
@@ -2118,11 +2125,11 @@ message HealthCheckResponse {
                         allow_underscores: true,
                         allow_trailing_dot: true,
                     }) && !isIP(url.hostname)) {
-                        toast.error("Invalid hostname");
+                        toast.error(this.$t("invalidHostnameOrIP"));
                         return false;
                     }
                 } catch (err) {
-                    toast.error("Invalid URL");
+                    toast.error(this.$t("invalidURL"));
                     return false;
                 }
             }
