@@ -856,6 +856,9 @@
     "wayToGetClickSendSMSToken": "You can get API Username and API Key from {here}.",
     "Custom Monitor Type": "Custom Monitor Type",
     "Google Analytics ID": "Google Analytics ID",
+    "Analytics Type": "Analytics Type",
+    "Analytics ID": "Analytics ID",
+    "Analytics Script URL": "Analytics Script URL",
     "Edit Tag": "Edit Tag",
     "Server Address": "Server Address",
     "Learn More": "Learn More",
@@ -1205,6 +1208,10 @@
     "Phone numbers": "Phone numbers",
     "Sender name": "Sender name",
     "smsplanetNeedToApproveName": "Needs to be approved in the client panel",
+    "Google": "Google",
+    "Plausible": "Plausible",
+    "Matomo": "Matomo",
+    "Umami": "Umami",
     "Disable URL in Notification": "Disable URL in Notification",
     "Ip Family": "IP Family",
     "ipFamilyDescriptionAutoSelect": "Uses the {happyEyeballs} for determining the IP family.",
@@ -1236,5 +1243,8 @@
     "domainExpiryDescription": "Trigger notification when domain names expires in:",
     "minimumIntervalWarning": "Intervals below 20 seconds may result in poor performance.",
     "lowIntervalWarning": "Are you sure want to set the interval value below 20 seconds? Performance may be degraded, particularly if there are a large number of monitors.",
-    "imageResetConfirmation": "Image reset to default"
+    "imageResetConfirmation": "Image reset to default",
+    "avgPing": "Avg Ping",
+    "maxPing": "Max Ping",
+    "minPing": "Min Ping"
 }
