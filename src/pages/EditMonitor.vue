@@ -2083,7 +2083,7 @@ message HealthCheckResponse {
             }
 
             // Validate hostname field input for various monitors
-            if (this.monitor.hostname && [ "mqtt", "dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp" ].includes(this.monitor.type)) {
+            if ([ "mqtt", "dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp" ].includes(this.monitor.type) && this.monitor.hostname) {
                 let hostname = this.monitor.hostname.trim();
 
                 if (this.monitor.type === "mqtt") {
@@ -2112,7 +2112,7 @@ message HealthCheckResponse {
             }
 
             // Validate URL field input for various monitors
-            if ((this.monitor.type === "http" || this.monitor.type === "keyword" || this.monitor.type === "json-query" || this.monitor.type === "websocket-upgrade" || this.monitor.type === "real-browser") && this.monitor.url) {
+            if (["http", "keyword", "json-query", "websocket-upgrade", "real-browser"].includes(this.monitor.type) && this.monitor.url) {
                 try {
                     const url = new URL(this.monitor.url);
                     // Browser can encode *.hostname.com to %2A.hostname.com
