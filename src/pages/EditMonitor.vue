@@ -2112,7 +2112,7 @@ message HealthCheckResponse {
             }
 
             // Validate URL field input for various monitors
-            if (["http", "keyword", "json-query", "websocket-upgrade", "real-browser"].includes(this.monitor.type) && this.monitor.url) {
+            if ([ "http", "keyword", "json-query", "websocket-upgrade", "real-browser" ].includes(this.monitor.type) && this.monitor.url) {
                 try {
                     const url = new URL(this.monitor.url);
                     // Browser can encode *.hostname.com to %2A.hostname.com
