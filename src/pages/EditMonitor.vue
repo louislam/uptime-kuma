@@ -2102,7 +2102,7 @@ message HealthCheckResponse {
                     allow_underscores: true,
                     allow_trailing_dot: true,
                 }) && !isIP(hostname)) {
-                    if(this.monitor.type === "dns") {
+                    if (this.monitor.type === "dns") {
                         toast.error(this.$t("invalidDNSHostname"));
                     } else {
                         toast.error(this.$t("invalidHostnameOrIP"));
