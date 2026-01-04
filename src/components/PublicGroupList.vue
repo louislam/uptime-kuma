@@ -7,7 +7,7 @@
         :animation="100"
     >
         <template #item="group">
-            <div class="mb-5" data-testid="group">
+            <div v-if="shouldShowGroup(group.element)" class="mb-5" data-testid="group">
                 <!-- Group Title -->
                 <h2 class="group-title">
                     <div class="title-section">
@@ -40,7 +40,7 @@
                         item-key="id"
                     >
                         <template #item="monitor">
-                            <div class="item" data-testid="monitor">
+                            <div v-if="shouldShowMonitor(monitor.element)" class="item" data-testid="monitor">
                                 <div class="row">
                                     <div class="col-6 small-padding">
                                         <div class="info">
@@ -129,6 +129,11 @@ export default {
         showOnlyLastHeartbeat: {
             type: Boolean,
         },
+        /** Search text for filtering monitors */
+        searchText: {
+            type: String,
+            default: "",
+        },
     },
     data() {
         return {
@@ -137,7 +142,7 @@ export default {
     computed: {
         showGroupDrag() {
             return (this.$root.publicGroupList.length >= 2);
-        }
+        },
     },
     watch: {
         // No watchers needed - sorting is handled by GroupSortDropdown component
@@ -153,6 +158,43 @@ export default {
          */
         removeGroup(index) {
             this.$root.publicGroupList.splice(index, 1);
+        },
+
+        /**
+         * Check if a monitor should be shown based on search text
+         * @param {object} monitor Monitor to check
+         * @returns {boolean} Whether the monitor should be shown
+         */
+        shouldShowMonitor(monitor) {
+            if (!this.searchText || this.searchText.trim() === "") {
+                return true;
+            }
+            const loweredSearchText = this.searchText.toLowerCase().trim();
+            // Match by monitor name
+            if (monitor.name && monitor.name.toLowerCase().includes(loweredSearchText)) {
+                return true;
+            }
+            // Match by tags (name or value)
+            if (monitor.tags && monitor.tags.length > 0) {
+                return monitor.tags.some(tag =>
+                    (tag.name && tag.name.toLowerCase().includes(loweredSearchText)) ||
+                    (tag.value && tag.value.toLowerCase().includes(loweredSearchText))
+                );
+            }
+            return false;
+        },
+
+        /**
+         * Check if a group should be shown (has at least one matching monitor)
+         * @param {object} group Group to check
+         * @returns {boolean} Whether the group should be shown
+         */
+        shouldShowGroup(group) {
+            if (!this.searchText || this.searchText.trim() === "") {
+                return true;
+            }
+            // Show group if at least one monitor matches
+            return group.monitorList && group.monitorList.some(monitor => this.shouldShowMonitor(monitor));
         },
 
         /**
