@@ -244,4 +244,34 @@ router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, r
     }
 });
 
+// Status page Open Graph image
+router.get("/api/status-page/:slug/image", cache("5 minutes"), async (request, response) => {
+    allowDevAllOrigin(response);
+    let slug = request.params.slug;
+    slug = slug.toLowerCase();
+
+    try {
+        // Get Status Page
+        let statusPage = await R.findOne("status_page", " slug = ? ", [
+            slug
+        ]);
+
+        if (!statusPage) {
+            sendHttpError(response, "Status Page Not Found");
+            return;
+        }
+
+        // Generate PNG image
+        const pngBuffer = await StatusPage.generateOGImage(statusPage);
+
+        // Set appropriate headers
+        response.type("image/png");
+        response.setHeader("Cache-Control", "public, max-age=300"); // 5 minutes
+        response.send(pngBuffer);
+
+    } catch (error) {
+        sendHttpError(response, error.message);
+    }
+});
+
 module.exports = router;
