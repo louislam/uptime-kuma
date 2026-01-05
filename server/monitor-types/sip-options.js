@@ -32,7 +32,16 @@ class SIPMonitorType extends MonitorType {
      * @throws Will throw an error if the command execution encounters any error.
      */
     async runSipSak(hostname, port, timeout) {
-        const { stdout, stderr } = await exec(`sipsak -s sip:${hostname}:${port} --from sip:sipsak@${hostname} -v`, { timeout: timeout });
+        const { stdout, stderr } = await execFile(
+            "sipsak",
+            [
+                "-s", `sip:${hostname}:${port}`,
+                "--from", `sip:sipsak@${hostname}`,
+                "-v",
+            ],
+            { timeout }
+        );
+
         if (!stdout && stderr && stderr.toString()) {
             throw new Error(`Error in output: ${stderr.toString()}`);
         }
