@@ -15,12 +15,8 @@ class SIPMonitorType extends MonitorType {
      * @throws Will throw an error if the command execution encounters any error.
      */
     async check(monitor, heartbeat, _server) {
-        try {
-            let sipsakOutput = await this.runSipSak(monitor.hostname, monitor.port, 3000);
-            this.parseSipsakResponse(sipsakOutput, heartbeat);
-        } catch (err) {
-            throw new Error(`Error checking Sipsak: ${err} ${err.message} ${err.stack}`);
-        }
+        let sipsakOutput = await this.runSipSak(monitor.hostname, monitor.port, 3000);
+        this.parseSipsakResponse(sipsakOutput, heartbeat);
     }
 
     /**
