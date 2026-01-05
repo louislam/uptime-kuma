@@ -24,6 +24,8 @@ describe("Check Translations", () => {
     it("should not have missing translation keys", () => {
         const enTranslations = JSON.parse(fs.readFileSync("src/lang/en.json", "utf-8"));
 
+        // this is a resonably crude check, you can get around this trivially
+        /// this check is just to save on maintainer energy to explain this on every review ^^
         const translationRegex = /\$t\(['"](?<key1>.*?)['"]\s*[,)]|i18n-t\s+keypath=\x22(?<key2>[^\x22]+)\x22/g;
 
         const missingKeys = [];
