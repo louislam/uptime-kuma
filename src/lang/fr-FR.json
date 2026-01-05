@@ -421,7 +421,7 @@
     "auto resolve": "résolution automatique",
     "gorush": "Gorush",
     "alerta": "Alerta",
-    "alertaApiEndpoint": "API Endpoint",
+    "alertaApiEndpoint": "Endpoint API",
     "alertaEnvironment": "Environnement",
     "alertaApiKey": "Clé de l'API",
     "alertaAlertState": "État de l'alerte",
@@ -1058,7 +1058,7 @@
     "Notification Channel": "Canal de notification",
     "Alphanumerical string and hyphens only": "Chaîne alphanumérique et tirets uniquement",
     "Custom sound to override default notification sound": "Son personnalisé pour remplacer le son de notification par défaut",
-    "Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.": "Les notifications urgentes seront envoyées immédiatement, même si l'appareil est en mode Ne pas déranger.",
+    "Time sensitive notifications will be delivered immediately, even if the device is in do not disturb mode.": "Les notifications urgentes seront envoyées immédiatement, même si l'appareil est en mode \"Ne pas déranger\".",
     "Debug": "Déboguer",
     "Copy": "Copie",
     "CopyToClipboardSuccess": "Copié !",
@@ -1294,5 +1294,7 @@
     "Ignore STARTTLS": "Ignorer STARTTLS",
     "Use STARTTLS": "Utilisez STARTTLS",
     "Enter the list of nodes": "Saisissez la liste des nœuds de gestion RabbitMQ",
-    "Press Enter to add node": "Appuyez sur Entrée pour ajouter un nœud"
+    "Press Enter to add node": "Appuyez sur Entrée pour ajouter un nœud",
+    "Deselect All": "Désélectionner tout",
+    "Select All": "Tout sélectionner"
 }
