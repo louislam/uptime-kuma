@@ -20,7 +20,7 @@
                 <div
                     class="btn-group"
                     role="group"
-                    aria-label="Basic checkbox toggle button group"
+                    :aria-label="$t('Basic checkbox toggle button group')"
                 >
                     <input
                         id="btncheck1"
@@ -69,7 +69,7 @@
                 <div
                     class="btn-group"
                     role="group"
-                    aria-label="Basic checkbox toggle button group"
+                    :aria-label="$t('Basic checkbox toggle button group')"
                 >
                     <input
                         id="btncheck4"

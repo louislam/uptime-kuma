@@ -1246,6 +1246,7 @@
     "lowIntervalWarning": "Are you sure want to set the interval value below 20 seconds? Performance may be degraded, particularly if there are a large number of monitors.",
     "imageResetConfirmation": "Image reset to default",
     "screenshot of the website": "Screenshot of the website",
+    "Basic checkbox toggle button group": "Basic checkbox toggle button group",
     "avgPing": "Avg Ping",
     "maxPing": "Max Ping",
     "minPing": "Min Ping"
