@@ -772,7 +772,7 @@ class Monitor extends BeanModel {
                             bean.status = UP;
                             bean.msg = "healthy";
                         } else if (res.data.State.Health.Status === "unhealthy") {
-                            throw Error("Container State is unhealthy due according to its healthcheck");
+                            throw Error("Container State is unhealthy according to its healthcheck");
                         } else {
                             bean.status = PENDING;
                             bean.msg = res.data.State.Health.Status;
