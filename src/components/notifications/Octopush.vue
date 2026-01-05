@@ -2,7 +2,7 @@
     <div class="mb-3">
         <label for="octopush-version" class="form-label">{{ $t("Octopush API Version") }}</label>
         <select id="octopush-version" v-model="$parent.notification.octopushVersion" class="form-select">
-            <option value="2">{{ $t("octopush") }} ({{ $t("endpoint") }}: api.octopush.com)</option>
+            <option value="2">{{ "octopush" }} ({{ $t("endpoint") }}: api.octopush.com)</option>
             <option value="1">{{ $t("Legacy Octopush-DM") }} ({{ $t("endpoint") }}: www.octopush-dm.com)</option>
         </select>
         <div class="form-text">
