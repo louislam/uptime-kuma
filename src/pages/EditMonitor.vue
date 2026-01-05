@@ -1455,17 +1455,6 @@ export default {
             return this.monitor.type === "ping" ? 60 : undefined;
         },
 
-        timeoutLabel() {
-            return this.monitor.type === "ping" ? this.$t("pingTimeoutLabel") : this.$t("Request Timeout");
-        },
-
-        timeoutDescription() {
-            if (this.monitor.type === "ping") {
-                return this.$t("pingTimeoutDescription");
-            }
-            return "";
-        },
-
         defaultFriendlyName() {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
