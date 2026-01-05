@@ -4,7 +4,10 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * @param dir
+ * Recursively walks a directory and yields file paths.
+ * @param {string} dir The directory to walk.
+ * @yields {string} The path to a file.
+ * @returns {Generator<string>} A generator that yields file paths.
  */
 function* walk(dir) {
     const files = fs.readdirSync(dir, { withFileTypes: true });
@@ -21,7 +24,7 @@ describe("Check Translations", () => {
     it("should not have missing translation keys", () => {
         const enTranslations = JSON.parse(fs.readFileSync("src/lang/en.json", "utf-8"));
 
-        const translationRegex = /\$t\(['"](?<key1>.*?)['"]\s*[,)]|i18n-t\s+keypath=\"(?<key2>[^\"]+)\"/g;
+        const translationRegex = /\$t\(['"](?<key1>.*?)['"]\s*[,)]|i18n-t\s+keypath=\x22(?<key2>[^\x22]+)\x22/g;
 
         const missingKeys = [];
 
