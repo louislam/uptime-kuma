@@ -1281,7 +1281,6 @@
     "Service Name": "Service Name",
     "GRPC Options": "GRPC Options",
     "Metadata": "Metadata",
-    "pingTimeoutLabel": "pingTimeoutLabel",
     "End": "End",
     "Show this Maintenance Message on which Status Pages": "Show this Maintenance Message on which Status Pages",
     "Endpoint": "Endpoint",
