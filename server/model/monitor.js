@@ -754,18 +754,32 @@ class Monitor extends BeanModel {
                     log.debug("monitor", `[${this.name}] Axios Request`);
                     let res = await axios.request(options);
 
-                    if (res.data.State.Running) {
+                    if (!res.data.State) {
+                        throw Error("Container state is not available");
+                    }
+                    if (!res.data.State.Running) {
+                        throw Error("Container State is " + res.data.State.Status);
+                    }
+                    if (res.data.State.Paused) {
+                        throw Error("Container is in a paused state");
+                    }
+                    if (res.data.State.Restarting) {
+                        bean.status = PENDING;
+                        bean.msg = "Container is reporting it is currently restarting";
+                    } else if (res.data.State.Health && res.data.State.Health.Status !== "none") {
+                        // if healthchecks are disabled (?), Health MAY not be present
                         if (res.data.State.Health.Status === "healthy") {
                             bean.status = UP;
-                            bean.msg = res.data.State.Health ? res.data.State.Health.Status : res.data.State.Status;
+                            bean.msg = "healthy";
                         } else if (res.data.State.Health.Status === "unhealthy") {
-                            throw Error("Container State is unhealthy");
+                            throw Error("Container State is unhealthy according to its healthcheck");
                         } else {
                             bean.status = PENDING;
                             bean.msg = res.data.State.Health.Status;
                         }
                     } else {
-                        throw Error("Container State is " + res.data.State.Status);
+                        bean.status = UP;
+                        bean.msg = `Container has not reported health and is currently ${res.data.State.Status}. As it is running, it is considered UP. Consider adding a health check for better service visibility`;
                     }
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
