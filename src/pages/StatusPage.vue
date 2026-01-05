@@ -74,11 +74,6 @@
                     <label class="form-check-label" for="show-only-last-heartbeat">{{ $t("showOnlyLastHeartbeat") }}</label>
                 </div>
 
-                <div v-if="false" class="my-3">
-                    <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
-                    <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
-                </div>
-
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">

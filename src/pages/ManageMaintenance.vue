@@ -28,7 +28,6 @@
                         ></div>
                         <div class="info">
                             <div class="title">{{ item.title }}</div>
-                            <div v-if="false">{{ item.description }}</div>
                             <div class="status">
                                 {{ $t("maintenanceStatus-" + item.status) }}
                             </div>
