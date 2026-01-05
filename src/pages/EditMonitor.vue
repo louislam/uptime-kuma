@@ -57,6 +57,9 @@
                                         <option value="websocket-upgrade">
                                             Websocket Upgrade
                                         </option>
+                                        <option value="tls">
+                                            {{ $t("TLS") }}
+                                        </option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -326,7 +329,7 @@
 
                             <!-- Hostname -->
                             <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP / SIP Options only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type ==='sip-options'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type ==='sip-options' || monitor.type === 'tls'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
@@ -347,7 +350,7 @@
 
                             <!-- Port -->
                             <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type === 'sip-options'" class="my-3">
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type === 'sip-options' || monitor.type === 'tls'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -399,6 +402,36 @@
                                     <option value="starttls">STARTTLS</option>
                                 </select>
                             </div>
+
+                            <!-- TLS Monitor Type -->
+                            <template v-if="monitor.type === 'tls'">
+                                <div class="my-3">
+                                    <label for="expected_tls_alert" class="form-label">{{ $t("Expected TLS Alert") }}</label>
+                                    <select id="expected_tls_alert" v-model="monitor.expectedTlsAlert" class="form-select">
+                                        <option value="none">{{ $t("None (Successful Connection)") }}</option>
+                                        <optgroup :label="$t('TLS Alerts')">
+                                            <option value="certificate_required">certificate_required (116)</option>
+                                            <option value="bad_certificate">bad_certificate (42)</option>
+                                            <option value="certificate_unknown">certificate_unknown (46)</option>
+                                            <option value="unknown_ca">unknown_ca (48)</option>
+                                            <option value="access_denied">access_denied (49)</option>
+                                            <option value="handshake_failure">handshake_failure (40)</option>
+                                            <option value="certificate_expired">certificate_expired (45)</option>
+                                            <option value="certificate_revoked">certificate_revoked (44)</option>
+                                        </optgroup>
+                                    </select>
+                                    <div class="form-text">
+                                        {{ $t("expectedTlsAlertDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3 form-check">
+                                    <input id="tls-ignore-tls" v-model="monitor.ignoreTls" class="form-check-input" type="checkbox">
+                                    <label class="form-check-label" for="tls-ignore-tls">
+                                        {{ $t("ignoreTLSErrorGeneral") }}
+                                    </label>
+                                </div>
+                            </template>
 
                             <!-- Json Query -->
                             <!-- For Json Query / SNMP -->
