@@ -28,7 +28,6 @@
                         ></div>
                         <div class="info">
                             <div class="title">{{ item.title }}</div>
-                            <div v-if="false">{{ item.description }}</div>
                             <div class="status">
                                 {{ $t("maintenanceStatus-" + item.status) }}
                             </div>
@@ -38,8 +37,6 @@
                     </div>
 
                     <div class="buttons">
-                        <router-link v-if="false" :to="maintenanceURL(item.id)" class="btn btn-light">{{ $t("Details") }}</router-link>
-
                         <div class="btn-group" role="group">
                             <button v-if="item.active" class="btn btn-normal" :aria-label="$t('ariaPauseMaintenance')" @click="pauseDialog(item.id)">
                                 <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
@@ -82,7 +79,6 @@
 
 <script>
 import { getResBaseURL } from "../util-frontend";
-import { getMaintenanceRelativeURL } from "../util.ts";
 import Confirm from "../components/Confirm.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
 
@@ -133,15 +129,6 @@ export default {
             } else {
                 return getResBaseURL() + icon;
             }
-        },
-
-        /**
-         * Get maintenance URL
-         * @param {number} id ID of maintenance to read
-         * @returns {string} Relative URL
-         */
-        maintenanceURL(id) {
-            return getMaintenanceRelativeURL(id);
         },
 
         /**
