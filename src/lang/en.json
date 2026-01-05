@@ -1174,6 +1174,7 @@
     "resendFromName": "From Name",
     "resendFromEmail": "From Email",
     "resendLeaveBlankForDefaultName": "leave blank for default name",
+    "resendLeaveBlankForDefaultSubject": "Leave blank for default subject",
     "resendToEmail": "To Email",
     "resendSubject": "Subject",
     "pingCountLabel": "Max Packets",
