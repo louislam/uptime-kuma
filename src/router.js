@@ -151,10 +151,6 @@ const routes = [
                         component: ManageMaintenance,
                     },
                     {
-                        path: "/maintenance/:id",
-                        component: MaintenanceDetails,
-                    },
-                    {
                         path: "/add-maintenance",
                         component: EditMaintenance,
                     },
