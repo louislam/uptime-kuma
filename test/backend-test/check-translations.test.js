@@ -38,7 +38,7 @@ describe("Check Translations", () => {
                     while ((match = translationRegex.exec(line)) !== null) {
                         const key = match.groups.key1 || match.groups.key2;
                         if (key && !enTranslations[key]) {
-                            const [start, end] = match.groups.key1 ? match.indices.groups.key1 : match.indices.groups.key2;
+                            const [ start, end ] = match.groups.key1 ? match.indices.groups.key1 : match.indices.groups.key2;
                             missingKeys.push({
                                 filePath,
                                 lineNum: lineNum + 1,
