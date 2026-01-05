@@ -80,6 +80,15 @@ class GoogleChat extends NotificationProvider {
                 });
             }
 
+            // add monitor URL if available
+            if (monitorJSON && monitorJSON["url"]) {
+                sectionWidgets.push({
+                    textParagraph: {
+                        text: `<b>URL:</b>\n<a href="${monitorJSON["url"]}">${monitorJSON["url"]}</a>`,
+                    },
+                });
+            }
+
             // add button for monitor link if available
             const baseURL = await setting("primaryBaseURL");
             if (baseURL) {
