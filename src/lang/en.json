@@ -1255,5 +1255,6 @@
     "avgPing": "Avg Ping",
     "Uptime Kuma": "Uptime Kuma",
     "maxPing": "Max Ping",
-    "minPing": "Min Ping"
+    "minPing": "Min Ping",
+    "Clear current filters": "Clear current filters"
 }
