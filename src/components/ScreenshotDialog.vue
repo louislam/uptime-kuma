@@ -9,7 +9,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                 </div>
                 <div class="modal-body"></div>
-                <img :src="imageURL" alt="screenshot of the website">
+                <img :src="imageURL" :alt="$t('screenshot of the website')">
             </div>
         </div>
     </div>
