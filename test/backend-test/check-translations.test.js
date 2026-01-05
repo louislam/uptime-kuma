@@ -26,36 +26,30 @@ describe("Check Translations", () => {
 
         // this is a resonably crude check, you can get around this trivially
         /// this check is just to save on maintainer energy to explain this on every review ^^
-        const translationRegex = /\$t\(['"](?<key1>.*?)['"]\s*[,)]|i18n-t\s+keypath=\x22(?<key2>[^\x22]+)\x22/g;
+        const translationRegex = /\$t\(['"](?<key1>.*?)['"]\s*[,)]|i18n-t[^>]*\s+keypath="(?<key2>[^"]+)"/gd;
 
         const missingKeys = [];
 
         for (const filePath of walk("src")) {
             if (filePath.endsWith(".vue") || filePath.endsWith(".js")) {
-                try {
-                    const lines = fs.readFileSync(filePath, "utf-8").split("\n");
-                    lines.forEach((line, lineNum) => {
-                        let match;
-                        while ((match = translationRegex.exec(line)) !== null) {
-                            const key = match.groups.key1 || match.groups.key2;
-                            if (key && !enTranslations[key]) {
-                                const start = match.index;
-                                const end = start + key.length;
-                                missingKeys.push({
-                                    filePath,
-                                    lineNum: lineNum + 1,
-                                    key,
-                                    line: line.trim(),
-                                    start,
-                                    end,
-                                });
-                            }
+                const lines = fs.readFileSync(filePath, "utf-8").split("\n");
+                lines.forEach((line, lineNum) => {
+                    let match;
+                    while ((match = translationRegex.exec(line)) !== null) {
+                        const key = match.groups.key1 || match.groups.key2;
+                        if (key && !enTranslations[key]) {
+                            const [start, end] = match.groups.key1 ? match.indices.groups.key1 : match.indices.groups.key2;
+                            missingKeys.push({
+                                filePath,
+                                lineNum: lineNum + 1,
+                                key,
+                                line: line,
+                                start,
+                                end,
+                            });
                         }
-                    });
-                } catch (e) {
-                    console.error(`Error processing file: ${filePath}`, e);
-                    throw e;
-                }
+                    }
+                });
             }
         }
 
@@ -70,7 +64,7 @@ describe("Check Translations", () => {
                 report += `\n     | ${arrow} unrecognized translation key`;
                 report += "\n     |";
                 report += `\n     = note: please register the translation key '${key}' in en.json so that our awesome team of translators can translate them`;
-                report += "\n     = tip: if you want to contribute translations, please visit our https://weblate.kuma.pet\n";
+                report += "\n     = tip: if you want to contribute translations, please visit https://weblate.kuma.pet\n";
             });
             report += "\n===============================";
             const fileCount = new Set(missingKeys.map(item => item.filePath)).size;
