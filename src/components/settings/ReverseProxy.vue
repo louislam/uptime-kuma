@@ -15,10 +15,6 @@
                 <span v-else-if="!running" class="text-danger">{{ $t("Not running") }}</span>
             </div>
 
-            <div v-if="false">
-                {{ message }}
-            </div>
-
             <div v-if="errorMessage" class="mt-3">
                 {{ $t("Message:") }}
                 <textarea v-model="errorMessage" class="form-control" readonly></textarea>
