@@ -1246,6 +1246,12 @@
     "minimumIntervalWarning": "Intervals below 20 seconds may result in poor performance.",
     "lowIntervalWarning": "Are you sure want to set the interval value below 20 seconds? Performance may be degraded, particularly if there are a large number of monitors.",
     "imageResetConfirmation": "Image reset to default",
+    "mtls-auth-server-cert-label": "Cert",
+    "mtls-auth-server-cert-placeholder": "Cert body",
+    "mtls-auth-server-key-label": "Key",
+    "mtls-auth-server-key-placeholder": "Key body",
+    "mtls-auth-server-ca-label": "CA",
+    "mtls-auth-server-ca-placeholder": "Server CA",
     "avgPing": "Avg Ping",
     "maxPing": "Max Ping",
     "minPing": "Min Ping"
