@@ -3,6 +3,9 @@ const assert = require("node:assert");
 const fs = require("fs");
 const path = require("path");
 
+/**
+ * @param dir
+ */
 function* walk(dir) {
     const files = fs.readdirSync(dir, { withFileTypes: true });
     for (const file of files) {
@@ -67,7 +70,7 @@ describe("Check Translations", () => {
                 report += `\n     = note: please register the translation key '${key}' in en.json so that our awesome team of translators can translate them`;
                 report += "\n     = tip: if you want to contribute translations, please visit our https://weblate.kuma.pet\n";
             });
-            report += `\n===============================`;
+            report += "\n===============================";
             const fileCount = new Set(missingKeys.map(item => item.filePath)).size;
             report += `\nFound a total of ${missingKeys.length} missing keys in ${fileCount} files.`;
             assert.fail(report);
