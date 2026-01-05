@@ -80,11 +80,12 @@ class GoogleChat extends NotificationProvider {
                 });
             }
 
-            // add monitor URL if available
-            if (monitorJSON && monitorJSON["url"]) {
+            // add monitor address if available
+            const address = this.extractAddress(monitorJSON);
+            if (address) {
                 sectionWidgets.push({
                     textParagraph: {
-                        text: `<b>URL:</b>\n<a href="${monitorJSON["url"]}">${monitorJSON["url"]}</a>`,
+                        text: `<b>Address:</b>\n${address}`,
                     },
                 });
             }
