@@ -1,6 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
-const { exec } = require("promisify-child-process");
+const { execFile } = require("promisify-child-process");
 
 class SIPMonitorType extends MonitorType {
     name = "sip-options";
