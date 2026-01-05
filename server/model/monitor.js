@@ -778,8 +778,8 @@ class Monitor extends BeanModel {
                             bean.msg = res.data.State.Health.Status;
                         }
                     } else {
-                        bean.status = PENDING;
-                        bean.msg = "Container has not reported its health and is currently " + res.data.State.Status;
+                        bean.status = UP;
+                        bean.msg = `Container has not reported health and is currently ${res.data.State.Status}. As it is running, it is considered UP. Consider adding a health check for better service visibility`;
                     }
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
