@@ -100,7 +100,7 @@
             </i18n-t>
             <i18n-t tag="p" keypath="disableauth.message2">
                 <template #intendThirdPartyAuth>
-                    <strong>{{ $t('intend to implement third-party authentication') }}</strong>
+                    <strong>{{ $t('where you intend to implement third-party authentication') }}</strong>
                 </template>
             </i18n-t>
             <p>{{ $t("Please use this option carefully!") }}</p>
