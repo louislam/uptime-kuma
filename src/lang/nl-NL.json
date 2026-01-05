@@ -1285,5 +1285,7 @@
     "Optional: The audience to request the JWT for": "Optioneel: het publiek om de JWT voor aan te vragen",
     "Enter the list of nodes": "Voer de lijst met RabbitMQ-beheer­nodes in",
     "Press Enter to add node": "Druk op Enter om node toe te voegen",
-    "brevoApiHelp": "Maak hier een API sleutel: {0}"
+    "brevoApiHelp": "Maak hier een API sleutel: {0}",
+    "mqttWebSocketPath": "Pad voor MQTT WebSocket",
+    "Use HTML for custom E-mail body": "Gebruik HTML voor een aangepaste E-mailtekst"
 }
