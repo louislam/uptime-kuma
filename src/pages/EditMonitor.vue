@@ -102,6 +102,9 @@
                                         <option value="redis">
                                             Redis
                                         </option>
+                                        <option v-if="!$root.info.isContainer" value="sip-options">
+                                            SIP Options Ping
+                                        </option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
@@ -118,6 +121,10 @@
 
                             <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
                                 {{ $t("tailscalePingWarning") }}
+                            </div>
+
+                            <div v-if="monitor.type === 'sip-options'" class="alert alert-warning" role="alert">
+                                {{ $t("sipsakPingWarning") }}
                             </div>
 
                             <!-- Friendly Name -->
@@ -318,15 +325,14 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP / SIP Options only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type ==='sip-options'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
-                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
                                     required
                                     data-testid="hostname-input"
                                 >
@@ -340,8 +346,8 @@
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type === 'sip-options'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -1329,7 +1335,9 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
-import { hostNameRegexPattern, timeDurationFormatter } from "../util-frontend";
+import { timeDurationFormatter } from "../util-frontend";
+import isFQDN from "validator/lib/isFQDN";
+import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -1417,8 +1425,6 @@ export default {
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
             kafkaSaslMechanismOptions: [],
-            ipOrHostnameRegexPattern: hostNameRegexPattern(),
-            mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             gameList: null,
             connectionStringTemplates: {
                 "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
@@ -2079,6 +2085,58 @@ message HealthCheckResponse {
                 const pattern = /^\/[A-Za-z0-9-_&()*+]*$/;
                 if (!pattern.test(this.monitor.mqttWebsocketPath)) {
                     toast.error(this.$t("mqttWebsocketPathInvalid"));
+                    return false;
+                }
+            }
+
+            // Validate hostname field input for various monitors
+            if ([ "mqtt", "dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp" ].includes(this.monitor.type) && this.monitor.hostname) {
+                let hostname = this.monitor.hostname.trim();
+
+                if (this.monitor.type === "mqtt") {
+                    hostname = hostname.replace(/^(mqtt|ws)s?:\/\//, "");
+                }
+
+                if (this.monitor.type === "dns" && isIP(hostname)) {
+                    toast.error(this.$t("hostnameCannotBeIP"));
+                    return false;
+                }
+
+                // Wildcard is allowed only for DNS
+                if (!isFQDN(hostname, {
+                    allow_wildcard: this.monitor.type === "dns",
+                    require_tld: false,
+                    allow_underscores: true,
+                    allow_trailing_dot: true,
+                }) && !isIP(hostname)) {
+                    if (this.monitor.type === "dns") {
+                        toast.error(this.$t("invalidDNSHostname"));
+                    } else {
+                        toast.error(this.$t("invalidHostnameOrIP"));
+                    }
+                    return false;
+                }
+            }
+
+            // Validate URL field input for various monitors
+            if ([ "http", "keyword", "json-query", "websocket-upgrade", "real-browser" ].includes(this.monitor.type) && this.monitor.url) {
+                try {
+                    const url = new URL(this.monitor.url);
+                    // Browser can encode *.hostname.com to %2A.hostname.com
+                    if (url.hostname.includes("*") || url.hostname.includes("%2A")) {
+                        toast.error(this.$t("wildcardOnlyForDNS"));
+                        return false;
+                    }
+                    if (!isFQDN(url.hostname, {
+                        require_tld: false,
+                        allow_underscores: true,
+                        allow_trailing_dot: true,
+                    }) && !isIP(url.hostname)) {
+                        toast.error(this.$t("invalidHostnameOrIP"));
+                        return false;
+                    }
+                } catch (err) {
+                    toast.error(this.$t("invalidURL"));
                     return false;
                 }
             }
