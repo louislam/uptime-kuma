@@ -37,12 +37,16 @@ export default {
         /** Text to use as yes */
         yesText: {
             type: String,
-            default: "Yes",     // TODO: No idea what to translate this
+            default() {
+                return this.$t("Yes");
+            }
         },
         /** Text to use as no */
         noText: {
             type: String,
-            default: "No",
+            default() {
+                return this.$t("No");
+            }
         },
         /** Title to show on modal. Defaults to translated version of "Config" */
         title: {
