@@ -1261,5 +1261,12 @@
     "resendToEmail": "Email komu",
     "resendSubject": "Predmet",
     "wsCodeDescription": "Ďalšie informácie o stavových kódoch nájdete v {rfc6455}",
-    "Subprotocol(s)": "Podprotokol(y)"
+    "Subprotocol(s)": "Podprotokol(y)",
+    "systemService": "Systémová Služba",
+    "systemServiceName": "Názov Služby",
+    "systemServiceDescription": "Kontroluje či je systémová služba {service_name} aktívna",
+    "systemServiceDescriptionLinux": "Kontroluje či je Linoxová systemd služba {service_name} aktívna",
+    "systemServiceDescriptionWindows": "Kontroluje či je Windows Service Manager {service_name} spustený",
+    "systemServiceCommandHint": "Použitý príkaz: {command}",
+    "systemServiceExpectedOutput": "Očakávaný Výstup: \"{0}\""
 }
