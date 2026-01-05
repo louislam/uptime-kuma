@@ -535,15 +535,6 @@ export function getMonitorRelativeURL(id: string) {
 }
 
 /**
- * Get relative path for maintenance
- * @param id ID of maintenance
- * @returns Formatted relative path
- */
-export function getMaintenanceRelativeURL(id: string) {
-    return "/maintenance/" + id;
-}
-
-/**
  * Parse to Time Object that used in VueDatePicker
  * @param {string} time E.g. 12:00
  * @returns object

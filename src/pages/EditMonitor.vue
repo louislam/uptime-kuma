@@ -1277,14 +1277,6 @@
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
                                     <textarea id="body" v-model="monitor.grpcBody" class="form-control" :placeholder="bodyPlaceholder"></textarea>
                                 </div>
-
-                                <!-- Metadata: temporary disable waiting for next PR allow to send gRPC with metadata -->
-                                <template v-if="false">
-                                    <div class="my-3">
-                                        <label for="metadata" class="form-label">{{ $t("Metadata") }}</label>
-                                        <textarea id="metadata" v-model="monitor.grpcMetadata" class="form-control" :placeholder="headersPlaceholder"></textarea>
-                                    </div>
-                                </template>
                             </template>
                         </div>
                     </div>
