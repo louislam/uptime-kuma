@@ -51,11 +51,8 @@ describe("Check Translations", () => {
                         }
                     });
                 } catch (e) {
-                    if (e instanceof TypeError && e.message.includes("is not a function")) {
-                        // Ignore errors from binary files
-                    } else {
-                        console.error(`Error processing file: ${filePath}`, e);
-                    }
+                    console.error(`Error processing file: ${filePath}`, e);
+                    throw e;
                 }
             }
         }
