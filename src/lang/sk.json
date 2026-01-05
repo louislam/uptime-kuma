@@ -1268,5 +1268,22 @@
     "systemServiceDescriptionLinux": "Kontroluje či je Linoxová systemd služba {service_name} aktívna",
     "systemServiceDescriptionWindows": "Kontroluje či je Windows Service Manager {service_name} spustený",
     "systemServiceCommandHint": "Použitý príkaz: {command}",
-    "systemServiceExpectedOutput": "Očakávaný Výstup: \"{0}\""
+    "systemServiceExpectedOutput": "Očakávaný Výstup: \"{0}\"",
+    "Analytics Type": "Typ štatistiky",
+    "Analytics ID": "ID štatistiky",
+    "Analytics Script URL": "URL skriptu pre štatistiky",
+    "Plausible": "Plausible",
+    "Matomo": "Matomo",
+    "Umami": "Umami",
+    "Google": "Google",
+    "imageResetConfirmation": "Obrázok bol obnovený na predvolený",
+    "maxPing": "Maximálny ping",
+    "minPing": "Minimálny ping",
+    "avgPing": "Priemerný ping",
+    "sipsakPingWarning": "Aby ste mohli používať monitor SIP Options Ping, musíte nainštalovať Uptime Kuma bez Dockeru a tiež nainštalovať klienta Sipsak na svoj server.",
+    "invalidHostnameOrIP": "Neplatný názov hostiteľa alebo IP adresa. Názov hostiteľa musí byť platné FQDN (presne stanovené meno domény). Nie je možné použiť zástupný znak. Môže obsahovať podčiarkovník alebo končiť bodkou.",
+    "hostnameCannotBeIP": "DNS názov hostiteľa nemôže byť IP adresa. Chceli ste použiť pole resolver?",
+    "invalidDNSHostname": "Neplatný názov hostiteľa. Názov hostiteľa musí byť platné FQDN. Môže obsahovať zástupný znak, podčiarkovník alebo končiť bodkou.",
+    "wildcardOnlyForDNS": "Názvy hostiteľov so zástupnými symbolmi sú podporované iba pre DNS monitory.",
+    "invalidURL": "Neplatná URL adresa"
 }
