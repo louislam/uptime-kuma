@@ -766,7 +766,7 @@ class Monitor extends BeanModel {
                     if (res.data.State.Restarting) {
                         bean.status = PENDING;
                         bean.msg = "Container is reporting it is currently restarting";
-                    } else if (res.data.State.Health && res.data.State.Health !== "none") {
+                    } else if (res.data.State.Health && res.data.State.Health.Status !== "none") {
                         // if healthchecks are disabled (?), Health MAY not be present
                         if (res.data.State.Health.Status === "healthy") {
                             bean.status = UP;
