@@ -779,7 +779,7 @@ class Monitor extends BeanModel {
                         }
                     } else {
                         bean.status = PENDING;
-                        bean.msg = "Container has not reported its health and is currentlty " + res.data.State.Status;
+                        bean.msg = "Container has not reported its health and is currently " + res.data.State.Status;
                     }
                 } else if (this.type === "mysql") {
                     let startTime = dayjs().valueOf();
