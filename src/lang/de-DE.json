@@ -1245,7 +1245,7 @@
     "Softvelum WebSocket signaling protocol": "Softvelum WebSocket Signaling Protocol",
     "ignoreSecWebsocketAcceptHeaderDescription": "Erlaubt dem Server, nicht mit dem Sec-WebSocket-Accept-Header zu antworten, wenn das WebSocket-Upgrade erfolgreich ist.",
     "Ignore Sec-WebSocket-Accept header": "{0}-Header ignorieren",
-    "wsSubprotocolDescription": "Weitere Informationen zu Subprotokollen findest du in der {documentation}",
+    "wsSubprotocolDescription": "Kommagetrennte Liste von Subprotokollen eingeben. Weitere Informationen zu Subprotokollen findest du in der {documentation}",
     "Session Initiation Protocol": "WebSocket-Transport für SIP (Session Initiation Protocol)",
     "WebSocket Application Messaging Protocol": "WAMP (WebSocket Application Messaging Protocol)",
     "Network API for Notification Channel": "OMA RESTful Network API für Benachrichtigungskanal",
@@ -1312,5 +1312,6 @@
     "Use STARTTLS": "STARTTLS verwenden",
     "Enter the list of nodes": "Liste der RabbitMQ-Management-Knoten eingeben",
     "Press Enter to add node": "Enter drücken, um Knoten hinzuzufügen",
-    "SMTP Security": "SMTP-Sicherheit"
+    "SMTP Security": "SMTP-Sicherheit",
+    "hostnameCannotBeIP": "Der DNS-Hostname darf keine IP-Adresse sein. Resolver-Feld verwenden?"
 }
