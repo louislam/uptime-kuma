@@ -762,7 +762,7 @@ class Monitor extends BeanModel {
                     }
                     if (res.data.State.Paused) {
                         throw Error("Container is paused");
-                    } 
+                    }
                     if (res.data.State.Restarting) {
                         bean.status = PENDING;
                         bean.msg = "Container is reporting it is currently restarting";
