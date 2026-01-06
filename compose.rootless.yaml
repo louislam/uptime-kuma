@@ -1,0 +1,22 @@
+# Docker Compose for Uptime Kuma Rootless Image
+#
+# The rootless image (louislam/uptime-kuma:2-rootless) runs as a non-root user
+# for improved security. This requires proper permission configuration.
+#
+# IMPORTANT: Before starting, ensure your data directory has correct ownership:
+#   mkdir -p ./data
+#   chown -R 1000:1000 ./data
+#
+# Or use your own UID:GID and update the 'user' field below accordingly.
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2-rootless
+    restart: unless-stopped
+    # Run as specific user (UID:GID) - must match data directory ownership
+    user: "1000:1000"
+    volumes:
+      - ./data:/app/data
+    ports:
+      # <Host Port>:<Container Port>
+      - "3001:3001"

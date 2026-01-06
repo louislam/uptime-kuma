@@ -47,6 +47,22 @@ docker compose up -d
 ```
 Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
+#### Rootless Docker
+
+For improved security, you can use the rootless image which runs as a non-root user:
+
+```bash
+mkdir uptime-kuma
+cd uptime-kuma
+curl -o compose.yaml https://raw.githubusercontent.com/louislam/uptime-kuma/master/compose.rootless.yaml
+mkdir -p ./data
+chown -R 1000:1000 ./data
+docker compose up -d
+```
+
+> [!NOTE]
+> The rootless image requires the data directory to be owned by the same UID:GID specified in the compose file. Adjust the `user` field and `chown` command if using a different UID:GID.
+
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
 
