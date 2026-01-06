@@ -1296,5 +1296,5 @@
     "Show this Maintenance Message on which Status Pages": "Show this Maintenance Message on which Status Pages",
     "Endpoint": "Endpoint",
     "Details": "Details",
-    "passwordTooWeak": "Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.111"
+    "passwordTooWeak": "Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length."
 }
