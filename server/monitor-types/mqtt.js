@@ -35,8 +35,8 @@ class MqttMonitorType extends MonitorType {
             monitor.mqttCheckType = "keyword";
         }
 
-        // Prepare conditions evaluation
-        const conditions = ConditionExpressionGroup.fromMonitor(monitor);
+        // Prepare conditions evaluation (only if monitor has conditions defined)
+        const conditions = monitor.conditions ? ConditionExpressionGroup.fromMonitor(monitor) : null;
         const hasConditions = conditions && conditions.children && conditions.children.length > 0;
 
         // Parse JSON if needed for conditions
