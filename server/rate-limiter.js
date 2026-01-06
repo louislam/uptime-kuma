@@ -68,8 +68,16 @@ const twoFaRateLimiter = new KumaRateLimiter({
     errorMessage: "Too frequently, try again later."
 });
 
+const pushRateLimiter = new KumaRateLimiter({
+    tokensPerInterval: 120,
+    interval: "minute",
+    fireImmediately: true,
+    errorMessage: "Too many push requests. Please try again later."
+});
+
 module.exports = {
     loginRateLimiter,
     apiRateLimiter,
     twoFaRateLimiter,
+    pushRateLimiter,
 };

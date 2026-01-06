@@ -18,6 +18,7 @@ const { makeBadge } = require("badge-maker");
 const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
+const { pushRateLimiter } = require("../rate-limiter");
 
 let router = express.Router();
 
@@ -46,6 +47,16 @@ router.get("/api/entry-page", async (request, response) => {
 
 router.all("/api/push/:pushToken", async (request, response) => {
     try {
+        // Apply rate limiting to prevent abuse
+        const rateLimitPassed = await pushRateLimiter.pass();
+        if (!rateLimitPassed) {
+            response.status(429).json({
+                ok: false,
+                msg: "Too many push requests. Please try again later."
+            });
+            return;
+        }
+
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
         let ping = parseFloat(request.query.ping) || null;
