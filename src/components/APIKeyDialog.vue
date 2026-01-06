@@ -7,7 +7,7 @@
                         <h5 class="modal-title">
                             {{ $t("Add API Key") }}
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                     </div>
                     <div class="modal-body">
                         <!-- Name -->
@@ -67,7 +67,7 @@
                         <h5 class="modal-title">
                             {{ $t("Key Added") }}
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                     </div>
 
                     <div class="modal-body">
