@@ -5,13 +5,8 @@ name: Auto Test
 
 on:
   push:
-    branches: [ master, 1.23.X ]
-    paths-ignore:
-      - '*.md'
+    branches: [ master, 1.23.X, 3.0.0 ]
   pull_request:
-    branches: [ master, 1.23.X ]
-    paths-ignore:
-      - '*.md'
 permissions: {}
 
 jobs:
