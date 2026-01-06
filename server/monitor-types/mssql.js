@@ -43,7 +43,7 @@ class MssqlMonitorType extends MonitorType {
                 const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
 
                 if (!conditionsResult) {
-                    throw new Error(`Query result (${result}) did not meet the specified conditions`);
+                    throw new Error(`Query result did not meet the specified conditions (${result})`);
                 }
 
                 heartbeat.status = UP;
@@ -60,6 +60,10 @@ class MssqlMonitorType extends MonitorType {
             }
         } catch (error) {
             heartbeat.ping = dayjs().valueOf() - startTime;
+            // Re-throw condition errors as-is, wrap database errors
+            if (error.message.includes("did not meet the specified conditions")) {
+                throw error;
+            }
             throw new Error(`Database connection/query failed: ${error.message}`);
         }
     }

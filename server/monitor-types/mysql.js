@@ -41,11 +41,11 @@ class MysqlMonitorType extends MonitorType {
                 const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
 
                 if (!conditionsResult) {
-                    throw new Error(`Query result (${result}) did not meet the specified conditions`);
+                    throw new Error(`Query result did not meet the specified conditions (${result})`);
                 }
 
                 heartbeat.status = UP;
-                heartbeat.msg = "query did meet specified conditions";
+                heartbeat.msg = "Query did meet specified conditions";
             } else {
                 // Backwards compatible: just check connection and return row count
                 const result = await this.mysqlQuery(monitor.databaseConnectionString, query, password);
@@ -55,6 +55,10 @@ class MysqlMonitorType extends MonitorType {
             }
         } catch (error) {
             heartbeat.ping = dayjs().valueOf() - startTime;
+            // Re-throw condition errors as-is, wrap database errors
+            if (error.message.includes("did not meet the specified conditions")) {
+                throw error;
+            }
             throw new Error(`Database connection/query failed: ${error.message}`);
         }
     }
