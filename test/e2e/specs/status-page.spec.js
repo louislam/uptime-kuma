@@ -283,4 +283,78 @@ test.describe("Status Page", () => {
         expect(rssContent).toContain("</rss>");
     });
 
+    test("RSS feed uses custom title and status page title", async ({ page }, testInfo) => {
+        test.setTimeout(60000);
+
+        const statusPageTitle = "My Service Status";
+        const customRssTitle = "Custom RSS Feed Title";
+
+        await page.goto("./add");
+        await login(page);
+
+        // Create a monitor
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
+        await page.getByTestId("monitor-type-select").selectOption("http");
+        await page.getByTestId("friendly-name-input").fill("Test Monitor");
+        await page.getByTestId("url-input").fill("https://example.com");
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        // Create a status page with a title
+        await page.goto("./add-status-page");
+        await page.getByTestId("name-input").fill(statusPageTitle);
+        await page.getByTestId("slug-input").fill("rss-test");
+        await page.getByTestId("submit-button").click();
+        await page.waitForURL("/status/rss-test?edit");
+
+        // Add a group and monitor
+        await page.getByTestId("add-group-button").click();
+        await page.getByTestId("group-name").fill("Test Group");
+        await page.getByTestId("monitor-select").click();
+        await page.getByTestId("monitor-select").getByRole("option", { name: "Test Monitor" }).click();
+
+        // Save without custom RSS title first
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // Fetch RSS feed - should use status page title
+        let rssResponse = await page.request.get("/status/rss-test/rss");
+        expect(rssResponse.status()).toBe(200);
+        let rssContent = await rssResponse.text();
+
+        // Verify RSS feed uses status page title as fallback
+        expect(rssContent).toContain(`<title><![CDATA[${statusPageTitle} RSS Feed]]></title>`);
+
+        // Verify RSS link uses the correct domain (not localhost hardcoded)
+        expect(rssContent).toContain("<link>http://");
+        expect(rssContent).toContain("/status/rss-test</link>");
+
+        await testInfo.attach("rss-feed-default-title.xml", {
+            body: rssContent,
+            contentType: "application/xml"
+        });
+
+        // Now set a custom RSS title
+        await page.getByTestId("edit-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(1);
+        await page.getByTestId("rss-title-input").fill(customRssTitle);
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // Fetch RSS feed again - should use custom RSS title
+        rssResponse = await page.request.get("/status/rss-test/rss");
+        expect(rssResponse.status()).toBe(200);
+        rssContent = await rssResponse.text();
+
+        // Verify RSS feed uses custom title
+        expect(rssContent).toContain(`<title><![CDATA[${customRssTitle}]]></title>`);
+
+        await testInfo.attach("rss-feed-custom-title.xml", {
+            body: rssContent,
+            contentType: "application/xml"
+        });
+
+        await screenshot(testInfo, page);
+    });
+
 });
