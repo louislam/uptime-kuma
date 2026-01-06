@@ -51,15 +51,13 @@ class MysqlMonitorType extends MonitorType {
                 // Backwards compatible: just check connection and return row count
                 const result = await this.mysqlQuery(monitor.databaseConnectionString, query, password);
                 heartbeat.ping = dayjs().valueOf() - startTime;
+                heartbeat.status = UP;
                 heartbeat.msg = result;
             }
         } catch (error) {
             heartbeat.ping = dayjs().valueOf() - startTime;
-            log.error("mysql", "Database query failed:", error.message);
             throw new Error(`Database connection/query failed: ${error.message}`);
         }
-
-        heartbeat.status = UP;
     }
 
     /**
