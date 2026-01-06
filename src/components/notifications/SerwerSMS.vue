@@ -21,6 +21,7 @@
     <div v-if="$parent.notification.serwersmsRecipientType === 'group'" class="mb-3">
         <label for="serwersms-group-id" class="form-label">{{ $t("serwersmsGroupId") }}</label>
         <input id="serwersms-group-id" v-model="$parent.notification.serwersmsGroupId" type="text" class="form-control" required>
+        <div class="form-text">{{ $t("serwersmsGroupIdHelptext") }}</div>
     </div>
     <div class="mb-3">
         <label for="serwersms-sender-name" class="form-label">{{ $t("serwersmsSenderName") }}</label>

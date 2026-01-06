@@ -812,6 +812,7 @@
     "serwersmsRecipientTypePhone": "Phone number",
     "serwersmsRecipientTypeGroup": "Group",
     "serwersmsGroupId": "Group ID",
+    "serwersmsGroupIdHelptext": "ID or group IDs in the Customer Panel. These identifiers can be downloaded using action groups / index or by copying them from the editing group in the Customer Panel.",
     "serwersmsSenderName": "SMS Sender Name (registered via customer portal)",
     "smseagleTo": "Phone number(s)",
     "smseagleGroup": "Phonebook group name(s)",
