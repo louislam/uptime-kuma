@@ -147,3 +147,52 @@ jobs:
 
     - run: npm run build
     - run: npm run test-e2e
+
+  e2e-test-rootless:
+    runs-on: ubuntu-22.04-arm
+    permissions:
+      contents: read
+    env:
+      PLAYWRIGHT_VERSION: ~1.39.0
+    steps:
+    - run: git config --global core.autocrlf false
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with: { persist-credentials: false }
+
+    - name: Cache/Restore node_modules
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+      id: node-modules-cache
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-node22-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+      with:
+        node-version: 22
+    - run: npm clean-install --no-fund
+
+    - name: Rebuild native modules for ARM64
+      run: npm rebuild @louislam/sqlite3
+
+    - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
+      run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+
+    - name: Setup rootless data directory
+      run: |
+        mkdir -p ./data
+        chown -R 1000:1000 ./data
+
+    - name: Start Uptime Kuma (rootless)
+      run: |
+        docker compose -f compose.rootless.yaml up -d
+        sleep 10  # Wait for container to be ready
+
+    - run: npm run build
+    - run: npm run test-e2e
+      env:
+        UPTIME_KUMA_URL: http://localhost:3001
+
+    - name: Stop Uptime Kuma (rootless)
+      if: always()
+      run: docker compose -f compose.rootless.yaml down
