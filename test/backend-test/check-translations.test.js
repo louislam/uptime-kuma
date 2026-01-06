@@ -21,17 +21,17 @@ function* walk(dir) {
 }
 
 /**
- * Fallback to retrieve clues from a key in a row.
- * @param {string} line
- * @param {string} key
- * @returns {[number, number]}
+ * Fallback to get start/end indices of a key within a line.
+ * @param {string} line - Line of text to search in.
+ * @param {string} key - Key to find.
+ * @returns {[number, number]} Array [start, end] representing the indices of the key in the line.
  */
 function getStartEnd(line, key) {
     let start = line.indexOf(key);
     if (start === -1) {
         start = 0;
     }
-    return [ start, start + key.length ];
+    return [start, start + key.length];
 }
 
 describe("Check Translations", () => {

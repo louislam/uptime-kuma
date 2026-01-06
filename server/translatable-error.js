@@ -1,6 +1,11 @@
 class TranslatableError extends Error {
     /**
-     * @param key
+     * Error whose message is a translation key.
+     * @extends Error
+     */
+    /**
+     * Create a TranslatableError.
+     * @param {string} key - Translation key present in src/lang/en.json
      */
     constructor(key) {
         super(key);
