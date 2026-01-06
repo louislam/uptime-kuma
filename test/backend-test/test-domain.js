@@ -82,42 +82,46 @@ describe("Domain Expiry", () => {
 
         mock.method(DomainExpiry, "forMonitor", async () => mockDomain);
 
-        const hook = {
-            "port": 3012,
-            "url": "should-not-be-called-null"
-        };
+        try {
+            const hook = {
+                "port": 3012,
+                "url": "should-not-be-called-null"
+            };
 
-        const monTest = {
-            type: "http",
-            url: "https://test-null.com",
-            domainExpiryNotification: true
-        };
+            const monTest = {
+                type: "http",
+                url: "https://test-null.com",
+                domainExpiryNotification: true
+            };
 
-        const notif = {
-            name: "TestNullExpiry",
-            config: JSON.stringify({
-                type: "webhook",
-                httpMethod: "post",
-                webhookContentType: "json",
-                webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`
-            })
-        };
+            const notif = {
+                name: "TestNullExpiry",
+                config: JSON.stringify({
+                    type: "webhook",
+                    httpMethod: "post",
+                    webhookContentType: "json",
+                    webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`
+                })
+            };
 
-        // Race between sendNotifications and mockWebhook timeout
-        // If webhook is called, we fail. If it times out, we pass.
-        const result = await Promise.race([
-            DomainExpiry.sendNotifications(monTest, [ notif ]),
-            mockWebhook(hook.port, hook.url, 500).then(() => {
-                throw new Error("Webhook was called but should not have been for null expiry");
-            }).catch((e) => {
-                if (e.reason === "Timeout") {
-                    return "timeout"; // Expected - webhook was not called
-                }
-                throw e;
-            })
-        ]);
+            // Race between sendNotifications and mockWebhook timeout
+            // If webhook is called, we fail. If it times out, we pass.
+            const result = await Promise.race([
+                DomainExpiry.sendNotifications(monTest, [ notif ]),
+                mockWebhook(hook.port, hook.url, 500).then(() => {
+                    throw new Error("Webhook was called but should not have been for null expiry");
+                }).catch((e) => {
+                    if (e.reason === "Timeout") {
+                        return "timeout"; // Expected - webhook was not called
+                    }
+                    throw e;
+                })
+            ]);
 
-        assert.ok(result === undefined || result === "timeout", "Should not send notification for null expiry");
+            assert.ok(result === undefined || result === "timeout", "Should not send notification for null expiry");
+        } finally {
+            mock.restoreAll();
+        }
     });
 
     test("sendNotifications() handles domain with undefined expiry without sending NaN", async () => {
