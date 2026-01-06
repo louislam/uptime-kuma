@@ -222,6 +222,11 @@ class DomainExpiry extends BeanModel {
             log.debug("domain_expiry", "No notification, no need to send domain notification");
             return;
         }
+        // sanity check if expiry date is valid before calculating days remaining. Should not happen and likely indicates a bug in the code.
+        if (!domain.expiry || isNaN(new Date(domain.expiry).getTime())) {
+            log.warn("domain_expiry", `No valid expiry date passed to sendNotifications for ${name} (expiry: ${domain.expiry}), skipping notification`);
+            return;
+        }
 
         const daysRemaining = getDaysRemaining(new Date(), domain.expiry);
         const lastSent = domain.lastExpiryNotificationSent;
