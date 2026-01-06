@@ -133,7 +133,7 @@ Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective spo
 
 Light Mode:
 
-<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="Uptime Kuma Light Mode Screenshot" />
+<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="Uptime Kuma Light Mode Screenshot of how the Dashboard looks" />
 
 Status Page:
 
