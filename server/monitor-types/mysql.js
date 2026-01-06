@@ -28,8 +28,8 @@ class MysqlMonitorType extends MonitorType {
         // TODO: rename `radius_password` to `password` later for general use
         const password = monitor.radiusPassword;
 
-        const conditions = ConditionExpressionGroup.fromMonitor(monitor);
-        const hasConditions = conditions !== null;
+        const conditions = monitor.conditions ? ConditionExpressionGroup.fromMonitor(monitor) : null;
+        const hasConditions = conditions && conditions.children && conditions.children.length > 0;
 
         const startTime = dayjs().valueOf();
         try {

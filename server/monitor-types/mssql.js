@@ -27,8 +27,8 @@ class MssqlMonitorType extends MonitorType {
             query = "SELECT 1";
         }
 
-        const conditions = ConditionExpressionGroup.fromMonitor(monitor);
-        const hasConditions = conditions !== null;
+        const conditions = monitor.conditions ? ConditionExpressionGroup.fromMonitor(monitor) : null;
+        const hasConditions = conditions && conditions.children && conditions.children.length > 0;
 
         const startTime = dayjs().valueOf();
         try {
