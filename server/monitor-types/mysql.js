@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { log, UP } = require("../../src/util");
+const { UP } = require("../../src/util");
 const dayjs = require("dayjs");
 const mysql = require("mysql2");
 const { ConditionVariable } = require("../monitor-conditions/variables");
@@ -19,8 +19,6 @@ class MysqlMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        let startTime = dayjs().valueOf();
-
         let query = monitor.databaseQuery;
         if (!query || (typeof query === "string" && query.trim() === "")) {
             query = "SELECT 1";
@@ -33,6 +31,7 @@ class MysqlMonitorType extends MonitorType {
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
         const hasConditions = conditions && conditions.length > 0;
 
+        const startTime = dayjs().valueOf();
         try {
             if (hasConditions) {
                 // When conditions are enabled, expect a single value result
