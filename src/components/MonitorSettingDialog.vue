@@ -34,7 +34,7 @@
                         @click="$refs.badgeGeneratorDialog.show(monitor.id, monitor.name)"
                     >
                         <font-awesome-icon icon="certificate" />
-                        {{ $t("Open Badge Generator") }}
+                        {{ $t("Open Badge Link Generator") }}
                     </button>
                 </div>
 
