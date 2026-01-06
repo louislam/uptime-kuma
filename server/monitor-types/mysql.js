@@ -45,7 +45,8 @@ class MysqlMonitorType extends MonitorType {
                     throw new Error(`Query result did not meet the specified conditions (${result})`);
                 }
 
-                heartbeat.msg = "";
+                heartbeat.status = UP;
+                heartbeat.msg = "query did meet specified conditions";
             } else {
                 // Backwards compatible: just check connection and return row count
                 const result = await this.mysqlQuery(monitor.databaseConnectionString, query, password);
