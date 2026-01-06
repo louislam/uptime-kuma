@@ -21,7 +21,7 @@ function* walk(dir) {
 }
 
 /**
- * Fallback pour récupérer les indices d'une clé dans une ligne.
+ * Fallback to retrieve clues from a key in a row.
  * @param {string} line
  * @param {string} key
  * @returns {[number, number]}
