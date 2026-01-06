@@ -2,6 +2,7 @@ const { describe, test } = require("node:test");
 const fs = require("fs");
 const path = require("path");
 const { GenericContainer, Wait } = require("testcontainers");
+const { MySqlContainer } = require("@testcontainers/mysql");
 
 describe("Database Migration", () => {
     test("SQLite migrations run successfully from fresh database", async () => {
@@ -124,6 +125,70 @@ describe("Database Migration", () => {
                 }
                 try {
                     await mariadbContainer.stop();
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+            }
+        }
+    );
+
+    test(
+        "MySQL migrations run successfully from fresh database",
+        {
+            skip:
+                !!process.env.CI &&
+                (process.platform !== "linux" || process.arch !== "x64"),
+        },
+        async () => {
+            // Start MySQL 8.0 container (the version mentioned in the issue)
+            const mysqlContainer = await new MySqlContainer("mysql:8.0")
+                .withStartupTimeout(120000)
+                .start();
+
+            const knex = require("knex");
+            const knexInstance = knex({
+                client: "mysql2",
+                connection: {
+                    host: mysqlContainer.getHost(),
+                    port: mysqlContainer.getPort(),
+                    user: mysqlContainer.getUsername(),
+                    password: mysqlContainer.getUserPassword(),
+                    database: mysqlContainer.getDatabase(),
+                    connectTimeout: 60000,
+                },
+                pool: {
+                    min: 0,
+                    max: 10,
+                    acquireTimeoutMillis: 60000,
+                    idleTimeoutMillis: 60000,
+                },
+            });
+
+            // Setup R (redbean) with knex instance like production code does
+            const { R } = require("redbean-node");
+            R.setup(knexInstance);
+
+            try {
+                // Use production code to initialize MySQL tables
+                const { createTables } = require("../../db/knex_init_db.js");
+                await createTables();
+
+                // Run all migrations like production code does
+                await R.knex.migrate.latest({
+                    directory: path.join(__dirname, "../../db/knex_migrations")
+                });
+
+                // Test passes if migrations complete successfully without errors
+
+            } finally {
+                // Clean up
+                try {
+                    await R.knex.destroy();
+                } catch (e) {
+                    // Ignore cleanup errors
+                }
+                try {
+                    await mysqlContainer.stop();
                 } catch (e) {
                     // Ignore cleanup errors
                 }
