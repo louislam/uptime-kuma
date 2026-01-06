@@ -2,9 +2,7 @@ const { describe, test } = require("node:test");
 const fs = require("fs");
 const path = require("path");
 const { GenericContainer, Wait } = require("testcontainers");
-
-/** Time to wait after container reports ready before running migrations */
-const DB_READY_DELAY_MS = 5000;
+const { MySqlContainer } = require("@testcontainers/mysql");
 
 describe("Database Migration", () => {
     test("SQLite migrations run successfully from fresh database", async () => {
@@ -143,30 +141,19 @@ describe("Database Migration", () => {
         },
         async () => {
             // Start MySQL 8.0 container (the version mentioned in the issue)
-            const mysqlContainer = await new GenericContainer("mysql:8.0")
-                .withEnvironment({
-                    "MYSQL_ROOT_PASSWORD": "root",
-                    "MYSQL_DATABASE": "kuma_test",
-                    "MYSQL_USER": "kuma",
-                    "MYSQL_PASSWORD": "kuma"
-                })
-                .withExposedPorts(3306)
-                .withWaitStrategy(Wait.forLogMessage("ready for connections", 2))
+            const mysqlContainer = await new MySqlContainer("mysql:8.0")
                 .withStartupTimeout(120000)
                 .start();
-
-            // Wait a bit more to ensure MySQL is fully ready
-            await new Promise(resolve => setTimeout(resolve, DB_READY_DELAY_MS));
 
             const knex = require("knex");
             const knexInstance = knex({
                 client: "mysql2",
                 connection: {
                     host: mysqlContainer.getHost(),
-                    port: mysqlContainer.getMappedPort(3306),
-                    user: "kuma",
-                    password: "kuma",
-                    database: "kuma_test",
+                    port: mysqlContainer.getPort(),
+                    user: mysqlContainer.getUsername(),
+                    password: mysqlContainer.getUserPassword(),
+                    database: mysqlContainer.getDatabase(),
                     connectTimeout: 60000,
                 },
                 pool: {
