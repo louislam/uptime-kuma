@@ -6,6 +6,33 @@ const net = require("net");
 
 describe("TCP Monitor", () => {
     /**
+     * Retries a test function with exponential backoff for external service reliability
+     * @param {Function} testFn - Async function to retry
+     * @param {object} heartbeat - Heartbeat object to reset between attempts
+     * @param {number} maxAttempts - Maximum number of retry attempts (default: 5)
+     * @returns {Promise<void>}
+     */
+    async function retryExternalService(testFn, heartbeat, maxAttempts = 5) {
+        let lastError;
+        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                await testFn();
+                return; // Success, exit retry loop
+            } catch (error) {
+                lastError = error;
+                // Reset heartbeat for next attempt
+                heartbeat.msg = "";
+                heartbeat.status = PENDING;
+                // Wait a bit before retrying with exponential backoff
+                if (attempt < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 500 * 2 ** (attempt - 1)));
+                }
+            }
+        }
+        // If all retries failed, throw the last error
+        throw lastError;
+    }
+    /**
      * Creates a TCP server on a specified port
      * @param {number} port - The port number to listen on
      * @returns {Promise<net.Server>} A promise that resolves with the created server
@@ -115,8 +142,9 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        await tcpMonitor.check(monitor, heartbeat, {});
-
+        await retryExternalService(async () => {
+            await tcpMonitor.check(monitor, heartbeat, {});
+        }, heartbeat);
         assert.strictEqual(heartbeat.status, UP);
     });
 
@@ -138,8 +166,9 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        await tcpMonitor.check(monitor, heartbeat, {});
-
+        await retryExternalService(async () => {
+            await tcpMonitor.check(monitor, heartbeat, {});
+        }, heartbeat);
         assert.strictEqual(heartbeat.status, UP);
     });
 
@@ -186,23 +215,9 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        // Retry up to 5 times for external service reliability
-        let lastError;
-        for (let attempt = 1; attempt <= 5; attempt++) {
-            try {
-                await tcpMonitor.check(monitor, heartbeat, {});
-                assert.strictEqual(heartbeat.status, UP);
-                return; // Success, exit test
-            } catch (error) {
-                lastError = error;
-                // Reset heartbeat for next attempt
-                heartbeat.msg = "";
-                heartbeat.status = PENDING;
-                // Wait a bit before retrying
-                await new Promise(resolve => setTimeout(resolve, 500 * 2 ** (attempt - 1)));
-            }
-        }
-        // If all retries failed, throw the last error
-        throw lastError;
+        await retryExternalService(async () => {
+            await tcpMonitor.check(monitor, heartbeat, {});
+        }, heartbeat);
+        assert.strictEqual(heartbeat.status, UP);
     });
 });
