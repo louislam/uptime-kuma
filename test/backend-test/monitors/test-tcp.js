@@ -239,10 +239,13 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        await assert.rejects(
-            tcpMonitor.check(monitor, heartbeat, {}),
-            /Expected TLS alert 'certificate_required' but connection succeeded/
-        );
+        // Retry with backoff for external service reliability, expecting rejection
+        await retryExternalService(async () => {
+            await assert.rejects(
+                tcpMonitor.check(monitor, heartbeat, {}),
+                /Expected TLS alert 'certificate_required' but connection succeeded/
+            );
+        }, heartbeat);
     });
 
     test("parseTlsAlertNumber() extracts alert number from error message", async () => {
