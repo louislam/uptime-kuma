@@ -2083,10 +2083,9 @@ message HealthCheckResponse {
                     return false;
                 }
 
-                // Wildcard is allowed only for DNS
-                if (this.monitor.type === "dns" && hostname === ".") {
-                    // the root zone is not a isFQDN or IP adress, but still valid to call using dns
-                } else if (!isFQDN(hostname, {
+                // Root zone "." is valid for DNS but not recognized by isFQDN
+                const isRootZone = this.monitor.type === "dns" && hostname === ".";
+                if (!isRootZone && !isFQDN(hostname, {
                     allow_wildcard: this.monitor.type === "dns",
                     require_tld: false,
                     allow_underscores: true,
