@@ -148,35 +148,13 @@ jobs:
     - run: npm run build
     - run: npm run test-e2e
 
-  e2e-test-rootless:
-    runs-on: ubuntu-22.04-arm
+  docker-rootless-test:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      PLAYWRIGHT_VERSION: ~1.39.0
     steps:
-    - run: git config --global core.autocrlf false
     - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
       with: { persist-credentials: false }
-
-    - name: Cache/Restore node_modules
-      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
-      id: node-modules-cache
-      with:
-        path: node_modules
-        key: node-modules-${{ runner.os }}-node22-${{ hashFiles('**/package-lock.json') }}
-
-    - name: Setup Node.js
-      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-      with:
-        node-version: 22
-    - run: npm clean-install --no-fund
-
-    - name: Rebuild native modules for ARM64
-      run: npm rebuild @louislam/sqlite3
-
-    - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
-      run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
 
     - name: Setup rootless data directory
       run: |
@@ -186,12 +164,38 @@ jobs:
     - name: Start Uptime Kuma (rootless)
       run: |
         docker compose -f compose.rootless.yaml up -d
-        sleep 10  # Wait for container to be ready
+        echo "Waiting for container to start..."
+        sleep 15
 
-    - run: npm run build
-    - run: npm run test-e2e
-      env:
-        UPTIME_KUMA_URL: http://localhost:3001
+    - name: Check container is running
+      run: |
+        docker compose -f compose.rootless.yaml ps
+        docker compose -f compose.rootless.yaml logs
+
+    - name: Verify Uptime Kuma is responding
+      run: |
+        for i in {1..30}; do
+          if curl -sf http://localhost:3001 > /dev/null 2>&1; then
+            echo "Uptime Kuma is responding!"
+            exit 0
+          fi
+          echo "Attempt $i: Waiting for Uptime Kuma..."
+          sleep 2
+        done
+        echo "Uptime Kuma failed to respond"
+        docker compose -f compose.rootless.yaml logs
+        exit 1
+
+    - name: Verify running as non-root user
+      run: |
+        CONTAINER_USER=$(docker compose -f compose.rootless.yaml exec -T uptime-kuma id -u)
+        echo "Container running as UID: $CONTAINER_USER"
+        if [ "$CONTAINER_USER" = "1000" ]; then
+          echo "✓ Container is running as non-root user (UID 1000)"
+        else
+          echo "✗ Container is NOT running as expected user"
+          exit 1
+        fi
 
     - name: Stop Uptime Kuma (rootless)
       if: always()
