@@ -178,6 +178,9 @@ test.describe("Status Page", () => {
         await page.getByTestId("analytics-id-input").fill(plausibleAnalyticsDomainsUrls);
         await page.getByTestId("save-button").click();
         await screenshot(testInfo, page);
+        await page.waitForFunction((scriptUrl) => {
+            return document.head.innerHTML.includes(scriptUrl);
+        }, plausibleAnalyticsScriptUrl, { timeout: 5000 });
         expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsScriptUrl);
         expect(await page.locator("head").innerHTML()).toContain(plausibleAnalyticsDomainsUrls);
 
@@ -188,6 +191,9 @@ test.describe("Status Page", () => {
         await page.getByTestId("analytics-id-input").fill(matomoSiteId);
         await page.getByTestId("save-button").click();
         await screenshot(testInfo, page);
+        await page.waitForFunction((url) => {
+            return document.head.innerHTML.includes(url);
+        }, matomoUrl, { timeout: 5000 });
         expect(await page.locator("head").innerHTML()).toContain(matomoUrl);
         expect(await page.locator("head").innerHTML()).toContain(matomoSiteId);
     });
