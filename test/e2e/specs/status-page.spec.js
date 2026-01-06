@@ -323,7 +323,7 @@ test.describe("Status Page", () => {
         let rssContent = await rssResponse.text();
 
         // Verify RSS feed uses status page title as fallback
-        expect(rssContent).toContain(`<title><![CDATA[${statusPageTitle} RSS Feed]]></title>`);
+        expect(rssContent).toContain(`<title>${statusPageTitle} RSS Feed</title>`);
 
         // Verify RSS link uses the correct domain (not localhost hardcoded)
         expect(rssContent).toContain("<link>http://");
@@ -347,7 +347,7 @@ test.describe("Status Page", () => {
         rssContent = await rssResponse.text();
 
         // Verify RSS feed uses custom title
-        expect(rssContent).toContain(`<title><![CDATA[${customRssTitle}]]></title>`);
+        expect(rssContent).toContain(`<title>${customRssTitle}</title>`);
 
         await testInfo.attach("rss-feed-custom-title.xml", {
             body: rssContent,
