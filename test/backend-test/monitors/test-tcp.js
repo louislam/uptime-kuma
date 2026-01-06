@@ -220,4 +220,52 @@ describe("TCP Monitor", () => {
         }, heartbeat);
         assert.strictEqual(heartbeat.status, UP);
     });
+
+    // TLS Alert checking tests
+    test("check() rejects when expecting TLS alert but connection succeeds", async () => {
+        const tcpMonitor = new TCPMonitorType();
+
+        const monitor = {
+            hostname: "google.com",
+            port: 443,
+            expected_tls_alert: "certificate_required",
+            timeout: 10,
+            isEnabledExpiryNotification: () => false,
+            getIgnoreTls: () => false,
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        // Retry with backoff for external service reliability, expecting rejection
+        await retryExternalService(async () => {
+            await assert.rejects(
+                tcpMonitor.check(monitor, heartbeat, {}),
+                /Expected TLS alert 'certificate_required' but connection succeeded/
+            );
+        }, heartbeat);
+    });
+
+    test("parseTlsAlertNumber() extracts alert number from error message", async () => {
+        const { parseTlsAlertNumber } = require("../../../server/monitor-types/tcp");
+
+        // Test various error message formats
+        assert.strictEqual(parseTlsAlertNumber("alert number 116"), 116);
+        assert.strictEqual(parseTlsAlertNumber("SSL alert number 42"), 42);
+        assert.strictEqual(parseTlsAlertNumber("TLS alert number 48"), 48);
+        assert.strictEqual(parseTlsAlertNumber("no alert here"), null);
+        assert.strictEqual(parseTlsAlertNumber(""), null);
+    });
+
+    test("getTlsAlertName() returns correct alert name for known codes", async () => {
+        const { getTlsAlertName } = require("../../../server/monitor-types/tcp");
+
+        assert.strictEqual(getTlsAlertName(116), "certificate_required");
+        assert.strictEqual(getTlsAlertName(42), "bad_certificate");
+        assert.strictEqual(getTlsAlertName(48), "unknown_ca");
+        assert.strictEqual(getTlsAlertName(40), "handshake_failure");
+        assert.strictEqual(getTlsAlertName(999), "unknown_alert_999");
+    });
 });
