@@ -220,4 +220,76 @@ describe("TCP Monitor", () => {
         }, heartbeat);
         assert.strictEqual(heartbeat.status, UP);
     });
+
+    // TLS Alert checking tests
+    test("check() rejects when expecting TLS alert but connection succeeds", async () => {
+        const tcpMonitor = new TCPMonitorType();
+
+        const monitor = {
+            hostname: "google.com",
+            port: 443,
+            expected_tls_alert: "certificate_required",
+            timeout: 10,
+            isEnabledExpiryNotification: () => false,
+            getIgnoreTls: () => false,
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        await assert.rejects(
+            tcpMonitor.check(monitor, heartbeat, {}),
+            /Expected TLS alert 'certificate_required' but connection succeeded/
+        );
+    });
+
+    test("check() sets status to UP when expected TLS alert is received", async () => {
+        const tcpMonitor = new TCPMonitorType();
+
+        // client.badssl.com:443 requires client certificate and returns certificate_required alert
+        const monitor = {
+            hostname: "client.badssl.com",
+            port: 443,
+            expected_tls_alert: "handshake_failure",
+            timeout: 10,
+            isEnabledExpiryNotification: () => false,
+            getIgnoreTls: () => true,
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        await tcpMonitor.check(monitor, heartbeat, {});
+
+        assert.strictEqual(heartbeat.status, UP);
+        assert.ok(heartbeat.msg.includes("TLS alert received as expected"));
+    });
+
+    test("check() rejects when different TLS alert is received than expected", async () => {
+        const tcpMonitor = new TCPMonitorType();
+
+        // client.badssl.com returns handshake_failure, but we expect certificate_required
+        const monitor = {
+            hostname: "client.badssl.com",
+            port: 443,
+            expected_tls_alert: "certificate_required",
+            timeout: 10,
+            isEnabledExpiryNotification: () => false,
+            getIgnoreTls: () => true,
+        };
+
+        const heartbeat = {
+            msg: "",
+            status: PENDING,
+        };
+
+        await assert.rejects(
+            tcpMonitor.check(monitor, heartbeat, {}),
+            /Expected TLS alert 'certificate_required' but received/
+        );
+    });
 });
