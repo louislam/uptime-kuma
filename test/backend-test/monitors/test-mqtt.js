@@ -12,9 +12,10 @@ const { UP, PENDING } = require("../../../src/util");
  * @param {string} receivedMessage what message is received from the mqtt channel
  * @param {string} monitorTopic which MQTT topic is monitored (wildcards are allowed)
  * @param {string} publishTopic to which MQTT topic the message is sent
+ * @param {string|null} conditions JSON string of conditions or null
  * @returns {Promise<Heartbeat>} the heartbeat produced by the check
  */
-async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage, monitorTopic = "test", publishTopic = "test") {
+async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage, monitorTopic = "test", publishTopic = "test", conditions = null) {
     const hiveMQContainer = await new HiveMQContainer().start();
     const connectionString = hiveMQContainer.getConnectionString();
     const mqttMonitorType = new MqttMonitorType();
@@ -30,6 +31,7 @@ async function testMqtt(mqttSuccessMessage, mqttCheckType, receivedMessage, moni
         mqttSuccessMessage: mqttSuccessMessage, // for keywords
         expectedValue: mqttSuccessMessage, // for json-query
         mqttCheckType: mqttCheckType,
+        conditions: conditions, // for conditions system
     };
     const heartbeat = {
         msg: "",
@@ -156,5 +158,63 @@ describe("MqttMonitorType", {
             testMqtt("[wrong_success_messsage]", "json-query", "{\"firstProp\":\"present\"}"),
             new Error("Message received but value is not equal to expected value, value was: [present]")
         );
+    });
+
+    // Conditions system tests
+    test("check() sets status to UP when message condition matches (contains)", async () => {
+        const conditions = JSON.stringify([
+            {
+                variable: "message",
+                operator: "contains",
+                value: "KEYWORD"
+            }
+        ]);
+        const heartbeat = await testMqtt("", null, "-> KEYWORD <-", "test", "test", conditions);
+        assert.strictEqual(heartbeat.status, UP);
+        assert.strictEqual(heartbeat.msg, "Topic: test; Message: -> KEYWORD <-");
+    });
+
+    test("check() sets status to UP when topic condition matches (equals)", async () => {
+        const conditions = JSON.stringify([
+            {
+                variable: "topic",
+                operator: "equals",
+                value: "sensors/temp"
+            }
+        ]);
+        const heartbeat = await testMqtt("", null, "any message", "sensors/temp", "sensors/temp", conditions);
+        assert.strictEqual(heartbeat.status, UP);
+    });
+
+    test("check() rejects when message condition does not match", async () => {
+        const conditions = JSON.stringify([
+            {
+                variable: "message",
+                operator: "contains",
+                value: "EXPECTED"
+            }
+        ]);
+        await assert.rejects(
+            testMqtt("", null, "actual message without keyword", "test", "test", conditions),
+            new Error("Conditions not met - Topic: test; Message: actual message without keyword")
+        );
+    });
+
+    test("check() sets status to UP with multiple conditions (AND)", async () => {
+        const conditions = JSON.stringify([
+            {
+                variable: "topic",
+                operator: "equals",
+                value: "test"
+            },
+            {
+                variable: "message",
+                operator: "contains",
+                value: "success",
+                andOr: "and"
+            }
+        ]);
+        const heartbeat = await testMqtt("", null, "operation success", "test", "test", conditions);
+        assert.strictEqual(heartbeat.status, UP);
     });
 });
