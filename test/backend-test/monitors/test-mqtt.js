@@ -164,6 +164,7 @@ describe("MqttMonitorType", {
     test("check() sets status to UP when message condition matches (contains)", async () => {
         const conditions = JSON.stringify([
             {
+                type: "expression",
                 variable: "message",
                 operator: "contains",
                 value: "KEYWORD"
@@ -177,6 +178,7 @@ describe("MqttMonitorType", {
     test("check() sets status to UP when topic condition matches (equals)", async () => {
         const conditions = JSON.stringify([
             {
+                type: "expression",
                 variable: "topic",
                 operator: "equals",
                 value: "sensors/temp"
@@ -189,6 +191,7 @@ describe("MqttMonitorType", {
     test("check() rejects when message condition does not match", async () => {
         const conditions = JSON.stringify([
             {
+                type: "expression",
                 variable: "message",
                 operator: "contains",
                 value: "EXPECTED"
@@ -203,11 +206,13 @@ describe("MqttMonitorType", {
     test("check() sets status to UP with multiple conditions (AND)", async () => {
         const conditions = JSON.stringify([
             {
+                type: "expression",
                 variable: "topic",
                 operator: "equals",
                 value: "test"
             },
             {
+                type: "expression",
                 variable: "message",
                 operator: "contains",
                 value: "success",
