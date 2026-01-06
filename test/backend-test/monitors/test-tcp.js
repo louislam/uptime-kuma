@@ -142,7 +142,7 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        await retryExternalService(async () => { 
+        await retryExternalService(async () => {
             await tcpMonitor.check(monitor, heartbeat, {});
         }, heartbeat);
         assert.strictEqual(heartbeat.status, UP);
