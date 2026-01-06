@@ -673,7 +673,9 @@ let needSetup = false;
         socket.on("setup", async (username, password, callback) => {
             try {
                 if (passwordStrength(password).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                    let err = new Error("passwordTooWeak");
+                    err.msgi18n = true;
+                    throw err;
                 }
 
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
@@ -697,6 +699,7 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n,
                 });
             }
         });
@@ -1409,7 +1412,9 @@ let needSetup = false;
                 }
 
                 if (passwordStrength(password.newPassword).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                    let err = new Error("passwordTooWeak");
+                    err.msgi18n = true;
+                    throw err;
                 }
 
                 let user = await doubleCheckPassword(socket, password.currentPassword);
@@ -1428,6 +1433,7 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n,
                 });
             }
         });
