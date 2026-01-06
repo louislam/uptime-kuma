@@ -21,10 +21,15 @@ class SerwerSMS extends NotificationProvider {
             let data = {
                 "username": notification.serwersmsUsername,
                 "password": notification.serwersmsPassword,
-                "phone": notification.serwersmsPhoneNumber,
                 "text": msg.replace(/[^\x00-\x7F]/g, ""),
                 "sender": notification.serwersmsSenderName,
             };
+
+            if (notification.serwersmsRecipientType === "group") {
+                data.group = notification.serwersmsGroupId;
+            } else {
+                data.phone = notification.serwersmsPhoneNumber;
+            }
 
             let resp = await axios.post(url, data, config);
 
