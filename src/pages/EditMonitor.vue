@@ -1166,16 +1166,16 @@
                                 <template v-if="monitor.authMethod && monitor.authMethod !== null ">
                                     <template v-if="monitor.authMethod === 'mtls' ">
                                         <div class="my-3">
-                                            <label for="tls-cert" class="form-label">{{ $t("Cert") }}</label>
-                                            <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('Cert body')" required></textarea>
+                                            <label for="tls-cert" class="form-label">{{ $t("mtls-auth-server-cert-label") }}</label>
+                                            <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('mtls-auth-server-cert-placeholder')" required></textarea>
                                         </div>
                                         <div class="my-3">
-                                            <label for="tls-key" class="form-label">{{ $t("Key") }}</label>
-                                            <textarea id="tls-key" v-model="monitor.tlsKey" class="form-control" :placeholder="$t('Key body')" required></textarea>
+                                            <label for="tls-key" class="form-label">{{ $t("mtls-auth-server-key-label") }}</label>
+                                            <textarea id="tls-key" v-model="monitor.tlsKey" class="form-control" :placeholder="$t('mtls-auth-server-key-placeholder')" required></textarea>
                                         </div>
                                         <div class="my-3">
-                                            <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
-                                            <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
+                                            <label for="tls-ca" class="form-label">{{ $t("mtls-auth-server-ca-label") }}</label>
+                                            <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('mtls-auth-server-ca-placeholder')"></textarea>
                                         </div>
                                     </template>
                                     <template v-else-if="monitor.authMethod === 'oauth2-cc' ">
@@ -1445,17 +1445,6 @@ export default {
 
         timeoutMax() {
             return this.monitor.type === "ping" ? 60 : undefined;
-        },
-
-        timeoutLabel() {
-            return this.monitor.type === "ping" ? this.$t("pingTimeoutLabel") : this.$t("Request Timeout");
-        },
-
-        timeoutDescription() {
-            if (this.monitor.type === "ping") {
-                return this.$t("pingTimeoutDescription");
-            }
-            return "";
         },
 
         defaultFriendlyName() {
