@@ -21,53 +21,88 @@ class MssqlMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        let startTime = dayjs().valueOf();
-
         let query = monitor.databaseQuery;
         // No query provided by user, use SELECT 1
         if (!query || (typeof query === "string" && query.trim() === "")) {
             query = "SELECT 1";
         }
 
-        let result;
-        try {
-            result = await this.mssqlQuery(
-                monitor.databaseConnectionString,
-                query
-            );
-        } catch (error) {
-            log.error("sqlserver", "Database query failed:", error.message);
-            throw new Error(
-                `Database connection/query failed: ${error.message}`
-            );
-        } finally {
-            heartbeat.ping = dayjs().valueOf() - startTime;
-        }
-
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
-        const handleConditions = (data) =>
-            conditions ? evaluateExpressionGroup(conditions, data) : true;
+        const hasConditions = conditions && conditions.length > 0;
 
-        // Since result is now a single value, pass it directly to conditions
-        const conditionsResult = handleConditions({ result: String(result) });
+        const startTime = dayjs().valueOf();
+        try {
+            if (hasConditions) {
+                // When conditions are enabled, expect a single value result
+                const result = await this.mssqlQuerySingleValue(
+                    monitor.databaseConnectionString,
+                    query
+                );
+                heartbeat.ping = dayjs().valueOf() - startTime;
 
-        if (!conditionsResult) {
-            throw new Error(
-                `Query result did not meet the specified conditions (${result})`
-            );
+                const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
+
+                if (!conditionsResult) {
+                    throw new Error(`Query result (${result}) did not meet the specified conditions`);
+                }
+
+                heartbeat.status = UP;
+                heartbeat.msg = "Query did meet specified conditions";
+            } else {
+                // Backwards compatible: just check connection and return row count
+                const result = await this.mssqlQuery(
+                    monitor.databaseConnectionString,
+                    query
+                );
+                heartbeat.ping = dayjs().valueOf() - startTime;
+                heartbeat.status = UP;
+                heartbeat.msg = result;
+            }
+        } catch (error) {
+            heartbeat.ping = dayjs().valueOf() - startTime;
+            throw new Error(`Database connection/query failed: ${error.message}`);
         }
-
-        heartbeat.msg = "";
-        heartbeat.status = UP;
     }
 
     /**
-     * Run a query on MSSQL server
+     * Run a query on MSSQL server (backwards compatible - returns row count)
+     * @param {string} connectionString The database connection string
+     * @param {string} query The query to validate the database with
+     * @returns {Promise<string>} Row count message
+     */
+    async mssqlQuery(connectionString, query) {
+        let pool;
+        try {
+            pool = new mssql.ConnectionPool(connectionString);
+            await pool.connect();
+            const result = await pool.request().query(query);
+
+            if (result.recordset) {
+                return "Rows: " + result.recordset.length;
+            } else {
+                return "No Error, but the result is not an array. Type: " + typeof result.recordset;
+            }
+        } catch (err) {
+            log.debug(
+                "sqlserver",
+                "Error caught in the query execution.",
+                err.message
+            );
+            throw err;
+        } finally {
+            if (pool) {
+                await pool.close();
+            }
+        }
+    }
+
+    /**
+     * Run a query on MSSQL server expecting a single value result
      * @param {string} connectionString The database connection string
      * @param {string} query The query to validate the database with
      * @returns {Promise<any>} Single value from the first column of the first row
      */
-    async mssqlQuery(connectionString, query) {
+    async mssqlQuerySingleValue(connectionString, query) {
         let pool;
         try {
             pool = new mssql.ConnectionPool(connectionString);
