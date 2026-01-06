@@ -22,7 +22,7 @@ router.get("/status/:slug", cache("5 minutes"), async (request, response) => {
 router.get("/status/:slug/rss", cache("5 minutes"), async (request, response) => {
     let slug = request.params.slug;
     slug = slug.toLowerCase();
-    await StatusPage.handleStatusPageRSSResponse(response, slug);
+    await StatusPage.handleStatusPageRSSResponse(response, slug, request);
 });
 
 router.get("/status", cache("5 minutes"), async (request, response) => {

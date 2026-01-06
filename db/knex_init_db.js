@@ -202,6 +202,7 @@ async function createTables() {
         table.text("footer_text");
         table.text("custom_css");
         table.boolean("show_powered_by").notNullable().defaultTo(true);
+        table.string("rss_title", 255);
         table.string("google_analytics_tag_id");
     });
 
