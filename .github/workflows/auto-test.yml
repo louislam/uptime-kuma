@@ -86,8 +86,8 @@ jobs:
           docker run --rm --platform linux/arm/v7 \
             -v $PWD:/workspace \
             -w /workspace \
-            arm32v7/node:${{ matrix.node }}-slim \
-            bash -c "npm install --production"
+            arm32v7/node:${{ matrix.node }} \
+            bash -c "npm clean-install --production"
 
   check-linters:
     runs-on: ubuntu-latest
