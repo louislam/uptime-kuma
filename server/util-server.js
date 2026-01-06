@@ -296,10 +296,6 @@ exports.httpNtlm = function (options, ntlmOptions) {
  */
 exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
     const resolver = new Resolver();
-    // Remove brackets from IPv6 addresses so we can re-add them to
-    // prevent issues with ::1:5300 (::1 port 5300)
-    // resolverServer = resolverServer.replace("[", "").replace("]", "");
-    // resolver.setServers([ `[${resolverServer}]:${resolverPort}` ]);
     resolver.setServers(resolverServer.map(server => `[${server}]:${resolverPort}`));
     return new Promise((resolve, reject) => {
         if (rrtype === "PTR") {
