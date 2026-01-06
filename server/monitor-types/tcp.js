@@ -400,4 +400,6 @@ class TCPMonitorType extends MonitorType {
 module.exports = {
     TCPMonitorType,
     TLS_ALERT_CODES,
+    parseTlsAlertNumber,
+    getTlsAlertName,
 };
