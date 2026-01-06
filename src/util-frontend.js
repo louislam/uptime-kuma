@@ -62,12 +62,13 @@ export function timezoneList() {
 
 /**
  * Set the locale of the HTML page
+ * @param {string} locale The locale to use
  * @returns {void}
  */
-export function setPageLocale() {
+export function setPageLocale(locale = currentLocale()) {
     const html = document.documentElement;
-    html.setAttribute("lang", currentLocale() );
-    html.setAttribute("dir", localeDirection() );
+    html.setAttribute("lang", locale);
+    html.setAttribute("dir", localeDirection(locale));
 }
 
 /**
@@ -289,4 +290,3 @@ class TimeDurationFormatter {
 }
 
 export const timeDurationFormatter = new TimeDurationFormatter();
-

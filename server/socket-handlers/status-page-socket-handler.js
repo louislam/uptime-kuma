@@ -171,6 +171,11 @@ module.exports.statusPageSocketHandler = (socket) => {
             statusPage.analytics_id = config.analyticsId;
             statusPage.analytics_script_url = config.analyticsScriptUrl;
             statusPage.analytics_type = config.analyticsType;
+            if (typeof config.language === "string" && config.language.trim() !== "") {
+                statusPage.language = config.language.trim();
+            } else {
+                statusPage.language = null;
+            }
 
             await R.store(statusPage);
 

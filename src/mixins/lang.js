@@ -6,6 +6,7 @@ export default {
     data() {
         return {
             language: currentLocale(),
+            persistLanguage: true,
         };
     },
 
@@ -17,23 +18,41 @@ export default {
 
     watch: {
         async language(lang) {
-            await this.changeLang(lang);
+            await this.changeLang(lang, {
+                persist: this.persistLanguage,
+            });
+            this.persistLanguage = true;
         },
     },
 
     methods: {
         /**
+         * Set the application language
+         * @param {string} lang Language code to switch to
+         * @param {{ persist?: boolean }} options Options for language change
+         * @returns {void}
+         */
+        setLanguage(lang, options = {}) {
+            this.persistLanguage = options.persist !== false;
+            this.language = lang;
+        },
+
+        /**
          * Change the application language
          * @param {string} lang Language code to switch to
+         * @param {{ persist?: boolean }} options Options for language change
          * @returns {Promise<void>}
          */
-        async changeLang(lang) {
+        async changeLang(lang, options = {}) {
+            const persist = options.persist !== false;
             let message = (await langModules["../lang/" + lang + ".json"]())
                 .default;
             this.$i18n.setLocaleMessage(lang, message);
             this.$i18n.locale = lang;
-            localStorage.locale = lang;
-            setPageLocale();
+            if (persist) {
+                localStorage.locale = lang;
+            }
+            setPageLocale(lang);
             timeDurationFormatter.updateLocale(lang);
         },
     },

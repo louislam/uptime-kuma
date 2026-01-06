@@ -458,6 +458,7 @@ class StatusPage extends BeanModel {
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
+            language: this.language,
         };
     }
 
@@ -485,6 +486,7 @@ class StatusPage extends BeanModel {
             showCertificateExpiry: !!this.show_certificate_expiry,
             showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
             rssTitle: this.rss_title,
+            language: this.language,
         };
     }
 
