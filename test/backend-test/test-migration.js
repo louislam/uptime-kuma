@@ -3,6 +3,9 @@ const fs = require("fs");
 const path = require("path");
 const { GenericContainer, Wait } = require("testcontainers");
 
+/** Time to wait after container reports ready before running migrations */
+const DB_READY_DELAY_MS = 5000;
+
 describe("Database Migration", () => {
     test("SQLite migrations run successfully from fresh database", async () => {
         const testDbPath = path.join(__dirname, "../../data/test-migration.db");
@@ -148,12 +151,12 @@ describe("Database Migration", () => {
                     "MYSQL_PASSWORD": "kuma"
                 })
                 .withExposedPorts(3306)
-                .withWaitStrategy(Wait.forLogMessage("/usr/sbin/mysqld: ready for connections", 2))
+                .withWaitStrategy(Wait.forLogMessage("ready for connections", 2))
                 .withStartupTimeout(120000)
                 .start();
 
             // Wait a bit more to ensure MySQL is fully ready
-            await new Promise(resolve => setTimeout(resolve, 5000));
+            await new Promise(resolve => setTimeout(resolve, DB_READY_DELAY_MS));
 
             const knex = require("knex");
             const knexInstance = knex({

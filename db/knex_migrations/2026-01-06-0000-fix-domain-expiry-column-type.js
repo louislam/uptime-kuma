@@ -34,7 +34,7 @@ exports.up = async function (knex) {
     } else {
         // For MySQL/MariaDB
         // Check if column is TEXT type and alter to VARCHAR(255) if needed
-        const dbName = knex.client.database();
+        const dbName = knex.client.config.connection.database;
         const columnInfo = await knex.raw(`
             SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'domain_expiry' AND COLUMN_NAME = 'domain'
