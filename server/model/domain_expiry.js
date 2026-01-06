@@ -97,7 +97,7 @@ async function sendDomainNotificationByTargetDays(domain, daysRemaining, targetD
             );
             sent = true;
         } catch (e) {
-            log.error("domain_expiry", `Cannot send domain notification to ${notification.name} because`, e);
+            log.error("domain_expiry", `Cannot send domain notification to ${notification.name}:`, e);
         }
     }
 
