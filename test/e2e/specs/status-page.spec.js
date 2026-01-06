@@ -281,6 +281,35 @@ test.describe("Status Page", () => {
         expect(rssContent).toContain("<?xml version=\"1.0\"");
         expect(rssContent).toContain("<rss");
         expect(rssContent).toContain("</rss>");
+
+        // Verify RSS feed uses status page title as fallback (from issue #6217)
+        expect(rssContent).toContain("<title>Security Test RSS Feed</title>");
+
+        // Verify RSS link uses the correct domain (not localhost hardcoded)
+        expect(rssContent).toMatch(/<link>https?:\/\/[^<]+\/status\/security-test<\/link>/);
+
+        // Test custom RSS title functionality
+        const customRssTitle = "Custom RSS Feed Title";
+        await page.getByTestId("edit-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(1);
+        await page.getByTestId("rss-title-input").fill(customRssTitle);
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        // Fetch RSS feed again - should use custom RSS title
+        const rssResponseCustom = await page.request.get("/status/security-test/rss");
+        expect(rssResponseCustom.status()).toBe(200);
+        const rssContentCustom = await rssResponseCustom.text();
+
+        // Verify RSS feed uses custom title
+        expect(rssContentCustom).toContain(`<title>${customRssTitle}</title>`);
+
+        await testInfo.attach("rss-feed-custom-title.xml", {
+            body: rssContentCustom,
+            contentType: "application/xml"
+        });
+
+        await screenshot(testInfo, page);
     });
 
 });
