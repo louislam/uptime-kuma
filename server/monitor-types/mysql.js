@@ -42,7 +42,7 @@ class MysqlMonitorType extends MonitorType {
                 const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
 
                 if (!conditionsResult) {
-                    throw new Error(`Query result did not meet the specified conditions (${result})`);
+                    throw new Error(`Query result (${result}) did not meet the specified conditions`);
                 }
 
                 heartbeat.status = UP;
