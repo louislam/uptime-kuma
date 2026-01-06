@@ -17,7 +17,7 @@ describe("TCP Monitor", () => {
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 await testFn();
-                return; // Success, exit
+                return; // Success, exit retry loop
             } catch (error) {
                 lastError = error;
                 // Reset heartbeat for next attempt
