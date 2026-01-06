@@ -7,7 +7,7 @@
                         <h5 id="exampleModalLabel" class="modal-title">
                             {{ $t("Setup Notification") }}
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">

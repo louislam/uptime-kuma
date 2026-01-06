@@ -6,10 +6,10 @@
                     <h5 class="modal-title">
                         {{ $t("Browser Screenshot") }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                 </div>
                 <div class="modal-body"></div>
-                <img :src="imageURL" alt="screenshot of the website">
+                <img :src="imageURL" :alt="$t('screenshot of the website')">
             </div>
         </div>
     </div>

@@ -237,7 +237,7 @@
                     >
                         <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (24{{ $t("-hour") }})
+                            ({{ 24 }} {{ $tc("hour", 24) }})
                         </p>
                         <span class="col-4 col-sm-12 num">
                             <CountUp :value="avgPing" />
@@ -250,7 +250,7 @@
                     >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (24{{ $t("-hour") }})
+                            ({{ 24 }} {{ $tc("hour", 24) }})
                         </p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="24" />
@@ -263,7 +263,7 @@
                     >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (30{{ $t("-day") }})
+                            ({{ 30 }} {{ $tc("day", 30) }})
                         </p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="720" />
@@ -276,7 +276,7 @@
                     >
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (1{{ $t("-year") }})
+                            ({{ 1 }} {{ $tc("year", 1) }})
                         </p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="1y" />

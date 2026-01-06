@@ -33,7 +33,7 @@
                     {{ $t("setupDatabaseChooseDatabase") }}
                 </p>
 
-                <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                <div class="btn-group" role="group" :aria-label="$t('Basic radio toggle button group')">
                     <template v-if="info.isEnabledEmbeddedMariaDB">
                         <input id="btnradio3" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="embedded-mariadb">
 
