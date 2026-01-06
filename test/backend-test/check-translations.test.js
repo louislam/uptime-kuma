@@ -20,6 +20,20 @@ function* walk(dir) {
     }
 }
 
+/**
+ * Fallback to get start/end indices of a key within a line.
+ * @param {string} line - Line of text to search in.
+ * @param {string} key - Key to find.
+ * @returns {[number, number]} Array [start, end] representing the indices of the key in the line.
+ */
+function getStartEnd(line, key) {
+    let start = line.indexOf(key);
+    if (start === -1) {
+        start = 0;
+    }
+    return [ start, start + key.length ];
+}
+
 describe("Check Translations", () => {
     it("should not have missing translation keys", () => {
         const enTranslations = JSON.parse(fs.readFileSync("src/lang/en.json", "utf-8"));
@@ -28,28 +42,53 @@ describe("Check Translations", () => {
         /// this check is just to save on maintainer energy to explain this on every review ^^
         const translationRegex = /\$t\(['"](?<key1>.*?)['"]\s*[,)]|i18n-t[^>]*\s+keypath="(?<key2>[^"]+)"/gd;
 
+        // detect server-side TranslatableError usage: new TranslatableError("key")
+        const translatableErrorRegex = /new\s+TranslatableError\(\s*['"](?<key3>[^'"]+)['"]\s*\)/g;
+
         const missingKeys = [];
 
-        for (const filePath of walk("src")) {
-            if (filePath.endsWith(".vue") || filePath.endsWith(".js")) {
-                const lines = fs.readFileSync(filePath, "utf-8").split("\n");
-                lines.forEach((line, lineNum) => {
-                    let match;
-                    while ((match = translationRegex.exec(line)) !== null) {
-                        const key = match.groups.key1 || match.groups.key2;
-                        if (key && !enTranslations[key]) {
-                            const [ start, end ] = match.groups.key1 ? match.indices.groups.key1 : match.indices.groups.key2;
-                            missingKeys.push({
-                                filePath,
-                                lineNum: lineNum + 1,
-                                key,
-                                line: line,
-                                start,
-                                end,
-                            });
+        const roots = [ "src", "server" ];
+
+        for (const root of roots) {
+            for (const filePath of walk(root)) {
+                if (filePath.endsWith(".vue") || filePath.endsWith(".js")) {
+                    const lines = fs.readFileSync(filePath, "utf-8").split("\n");
+                    lines.forEach((line, lineNum) => {
+                        let match;
+                        // front-end style keys ($t / i18n-t)
+                        while ((match = translationRegex.exec(line)) !== null) {
+                            const key = match.groups.key1 || match.groups.key2;
+                            if (key && !enTranslations[key]) {
+                                const [ start, end ] = getStartEnd(line, key);
+                                missingKeys.push({
+                                    filePath,
+                                    lineNum: lineNum + 1,
+                                    key,
+                                    line: line,
+                                    start,
+                                    end,
+                                });
+                            }
                         }
-                    }
-                });
+
+                        // server-side TranslatableError usage
+                        let m;
+                        while ((m = translatableErrorRegex.exec(line)) !== null) {
+                            const key3 = m.groups.key3;
+                            if (key3 && !enTranslations[key3]) {
+                                const [ start, end ] = getStartEnd(line, key3);
+                                missingKeys.push({
+                                    filePath,
+                                    lineNum: lineNum + 1,
+                                    key: key3,
+                                    line: line,
+                                    start,
+                                    end,
+                                });
+                            }
+                        }
+                    });
+                }
             }
         }
 

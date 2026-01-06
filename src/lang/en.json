@@ -1304,6 +1304,7 @@
     "Show this Maintenance Message on which Status Pages": "Show this Maintenance Message on which Status Pages",
     "Endpoint": "Endpoint",
     "Details": "Details",
+    "passwordTooWeak": "Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.",
     "TLS Alerts": "TLS Alerts",
     "Expected TLS Alert": "Expected TLS Alert",
     "None (Successful Connection)": "None (Successful Connection)",
