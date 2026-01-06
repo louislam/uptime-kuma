@@ -8,8 +8,20 @@
         <HiddenInput id="serwersms-key" v-model="$parent.notification.serwersmsPassword" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <div class="mb-3">
+        <label for="serwersms-recipient-type" class="form-label">{{ $t("serwersmsRecipientType") }}</label>
+        <select id="serwersms-recipient-type" v-model="$parent.notification.serwersmsRecipientType" class="form-select">
+            <option value="phone">{{ $t("serwersmsRecipientTypePhone") }}</option>
+            <option value="group">{{ $t("serwersmsRecipientTypeGroup") }}</option>
+        </select>
+    </div>
+    <div v-if="$parent.notification.serwersmsRecipientType !== 'group'" class="mb-3">
         <label for="serwersms-phone-number" class="form-label">{{ $t("serwersmsPhoneNumber") }}</label>
         <input id="serwersms-phone-number" v-model="$parent.notification.serwersmsPhoneNumber" type="text" class="form-control" required>
+    </div>
+    <div v-if="$parent.notification.serwersmsRecipientType === 'group'" class="mb-3">
+        <label for="serwersms-group-id" class="form-label">{{ $t("serwersmsGroupId") }}</label>
+        <input id="serwersms-group-id" v-model="$parent.notification.serwersmsGroupId" type="text" class="form-control" required>
+        <div class="form-text">{{ $t("serwersmsGroupIdHelptext") }}</div>
     </div>
     <div class="mb-3">
         <label for="serwersms-sender-name" class="form-label">{{ $t("serwersmsSenderName") }}</label>
