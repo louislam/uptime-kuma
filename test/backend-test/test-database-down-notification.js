@@ -10,10 +10,10 @@ describe("Database Down Notification", () => {
     before(async () => {
         // Initialize data directory first (required before connecting)
         Database.initDataDir({});
-        
+
         // Ensure database is connected (this copies template DB which has basic tables)
         await Database.connect(true); // testMode = true
-        
+
         // Ensure notification table exists with required columns
         const hasNotificationTable = await R.hasTable("notification");
         if (!hasNotificationTable) {
@@ -65,10 +65,10 @@ describe("Database Down Notification", () => {
 
     test("refreshCache() loads notifications into cache", async () => {
         await Notification.refreshCache();
-        
+
         assert.ok(Notification.notificationCache.length > 0, "Cache should contain notifications");
         assert.ok(Notification.cacheLastRefresh > 0, "Cache refresh time should be set");
-        
+
         // Verify test notification is in cache
         const cached = Notification.notificationCache.find(n => n.id === testNotification.id);
         assert.ok(cached, "Test notification should be in cache");
@@ -97,7 +97,7 @@ describe("Database Down Notification", () => {
 
         try {
             await Notification.sendDatabaseDownNotification("Test database error: ECONNREFUSED");
-            
+
             // Should have been called for each notification in cache
             assert.ok(sendCallCount > 0, "send() should have been called");
             assert.strictEqual(Notification.databaseDownNotificationSent, true, "Flag should be set");
@@ -109,7 +109,7 @@ describe("Database Down Notification", () => {
 
     test("sendDatabaseDownNotification() only sends once per database down event", async () => {
         Notification.resetDatabaseDownFlag();
-        
+
         // Mock the send method
         let sendCallCount = 0;
         const originalSend = Notification.send;
@@ -122,7 +122,7 @@ describe("Database Down Notification", () => {
             // First call
             await Notification.sendDatabaseDownNotification("Test error 1");
             const firstCallCount = sendCallCount;
-            
+
             // Second call should not send again
             await Notification.sendDatabaseDownNotification("Test error 2");
             assert.strictEqual(sendCallCount, firstCallCount, "Should not send again");
@@ -139,7 +139,7 @@ describe("Database Down Notification", () => {
 
         // Should not throw
         await Notification.sendDatabaseDownNotification("Test error");
-        
+
         // Flag should remain false since cache is empty
         assert.strictEqual(Notification.databaseDownNotificationSent, false);
     });
@@ -160,7 +160,7 @@ describe("Database Down Notification", () => {
         try {
             // Should not throw
             await Notification.refreshCache();
-            
+
             // Cache should remain unchanged (not cleared)
             assert.ok(Array.isArray(Notification.notificationCache), "Cache should still be an array");
         } finally {

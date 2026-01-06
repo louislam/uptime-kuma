@@ -2029,7 +2029,7 @@ let unexpectedErrorHandler = async (error, promise) => {
     if (isDatabaseError) {
         const errorMessage = error.message || `${error.code || "Unknown error"}`;
         log.error("server", `Database connection error detected: ${errorMessage}`);
-        
+
         // Try to send notification using cached notifications
         try {
             await Notification.sendDatabaseDownNotification(errorMessage);

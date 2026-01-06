@@ -1023,7 +1023,7 @@ class Monitor extends BeanModel {
                 if (isDatabaseError) {
                     const errorMessage = e.message || `${e.code || "Unknown error"}`;
                     log.error("monitor", `Database connection error detected in monitor: ${errorMessage}`);
-                    
+
                     // Try to send notification using cached notifications
                     try {
                         const { Notification } = require("../notification");
