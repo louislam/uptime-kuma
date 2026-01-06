@@ -314,6 +314,8 @@ class TCPMonitorType extends MonitorType {
         }
 
         // Check if we got the expected alert
+        // Note: Error messages below could be translated, but alert names (e.g., certificate_required)
+        // are from RFC 8446 spec and should remain in English for consistency with the spec.
         if (result.alertName === expectedTlsAlert) {
             heartbeat.status = UP;
             heartbeat.msg = `TLS alert received as expected: ${result.alertName} (${result.alertNumber})`;
