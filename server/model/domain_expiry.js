@@ -152,7 +152,7 @@ class DomainExpiry extends BeanModel {
         const tld = parseTld(urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname);
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
-            log.warn("domain", `${tld.publicSuffix} is not supported. File a bug report if you believe it should be.`);
+            log.warn("domain", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
             return false;
         }
         const existing = await DomainExpiry.findByName(tld.domain);
