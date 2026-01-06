@@ -6,12 +6,19 @@ const { UP, PENDING } = require("../../../src/util");
 
 /**
  * Helper function to create and start a MariaDB container
- * @returns {Promise<MariaDbContainer>} The started MariaDB container
+ * @returns {Promise<{container: MariaDbContainer, connectionString: string}>} The started container and connection string
  */
 async function createAndStartMariaDBContainer() {
-    return await new MariaDbContainer("mariadb:10.11")
+    const container = await new MariaDbContainer("mariadb:10.11")
         .withStartupTimeout(90000)
         .start();
+
+    const connectionString = `mysql://${container.getUsername()}:${container.getUserPassword()}@${container.getHost()}:${container.getPort()}/${container.getDatabase()}`;
+
+    return {
+        container,
+        connectionString
+    };
 }
 
 describe(
@@ -23,11 +30,11 @@ describe(
     },
     () => {
         test("check() sets status to UP when MariaDB server is reachable", async () => {
-            const mariadbContainer = await createAndStartMariaDBContainer();
+            const { container, connectionString } = await createAndStartMariaDBContainer();
 
             const mysqlMonitor = new MysqlMonitorType();
             const monitor = {
-                databaseConnectionString: `mysql://${mariadbContainer.getUsername()}:${mariadbContainer.getUserPassword()}@${mariadbContainer.getHost()}:${mariadbContainer.getPort()}/${mariadbContainer.getDatabase()}`,
+                databaseConnectionString: connectionString,
                 conditions: "[]",
             };
 
@@ -44,7 +51,7 @@ describe(
                     `Expected status ${UP} but got ${heartbeat.status}`
                 );
             } finally {
-                await mariadbContainer.stop();
+                await container.stop();
             }
         });
 
@@ -79,11 +86,11 @@ describe(
         });
 
         test("check() sets status to UP when custom query result meets condition", async () => {
-            const mariadbContainer = await createAndStartMariaDBContainer();
+            const { container, connectionString } = await createAndStartMariaDBContainer();
 
             const mysqlMonitor = new MysqlMonitorType();
             const monitor = {
-                databaseConnectionString: `mysql://${mariadbContainer.getUsername()}:${mariadbContainer.getUserPassword()}@${mariadbContainer.getHost()}:${mariadbContainer.getPort()}/${mariadbContainer.getDatabase()}`,
+                databaseConnectionString: connectionString,
                 databaseQuery: "SELECT 42 AS value",
                 conditions: JSON.stringify([
                     {
@@ -109,16 +116,16 @@ describe(
                     `Expected status ${UP} but got ${heartbeat.status}`
                 );
             } finally {
-                await mariadbContainer.stop();
+                await container.stop();
             }
         });
 
         test("check() rejects when custom query result does not meet condition", async () => {
-            const mariadbContainer = await createAndStartMariaDBContainer();
+            const { container, connectionString } = await createAndStartMariaDBContainer();
 
             const mysqlMonitor = new MysqlMonitorType();
             const monitor = {
-                databaseConnectionString: `mysql://${mariadbContainer.getUsername()}:${mariadbContainer.getUserPassword()}@${mariadbContainer.getHost()}:${mariadbContainer.getPort()}/${mariadbContainer.getDatabase()}`,
+                databaseConnectionString: connectionString,
                 databaseQuery: "SELECT 99 AS value",
                 conditions: JSON.stringify([
                     {
@@ -149,7 +156,7 @@ describe(
                     `Expected status should not be ${heartbeat.status}`
                 );
             } finally {
-                await mariadbContainer.stop();
+                await container.stop();
             }
         });
     }

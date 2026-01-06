@@ -30,39 +30,84 @@ class MysqlMonitorType extends MonitorType {
         // TODO: rename `radius_password` to `password` later for general use
         const password = monitor.radiusPassword;
 
-        let result;
+        const conditions = ConditionExpressionGroup.fromMonitor(monitor);
+        const hasConditions = conditions && conditions.length > 0;
+
         try {
-            result = await this.mysqlQuery(monitor.databaseConnectionString, query, password);
+            if (hasConditions) {
+                // When conditions are enabled, expect a single value result
+                const result = await this.mysqlQuerySingleValue(monitor.databaseConnectionString, query, password);
+                heartbeat.ping = dayjs().valueOf() - startTime;
+
+                const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
+
+                if (!conditionsResult) {
+                    throw new Error(`Query result did not meet the specified conditions (${result})`);
+                }
+
+                heartbeat.msg = "";
+            } else {
+                // Backwards compatible: just check connection and return row count
+                const result = await this.mysqlQuery(monitor.databaseConnectionString, query, password);
+                heartbeat.ping = dayjs().valueOf() - startTime;
+                heartbeat.msg = result;
+            }
         } catch (error) {
+            heartbeat.ping = dayjs().valueOf() - startTime;
             log.error("mysql", "Database query failed:", error.message);
             throw new Error(`Database connection/query failed: ${error.message}`);
-        } finally {
-            heartbeat.ping = dayjs().valueOf() - startTime;
         }
 
-        const conditions = ConditionExpressionGroup.fromMonitor(monitor);
-        const handleConditions = (data) =>
-            conditions ? evaluateExpressionGroup(conditions, data) : true;
-
-        // Since result is now a single value, pass it directly to conditions
-        const conditionsResult = handleConditions({ result: String(result) });
-
-        if (!conditionsResult) {
-            throw new Error(`Query result did not meet the specified conditions (${result})`);
-        }
-
-        heartbeat.msg = "";
         heartbeat.status = UP;
     }
 
     /**
-     * Run a query on MySQL/MariaDB
+     * Run a query on MySQL/MariaDB (backwards compatible - returns row count)
+     * @param {string} connectionString The database connection string
+     * @param {string} query The query to execute
+     * @param {string} password Optional password override
+     * @returns {Promise<string>} Row count message
+     */
+    mysqlQuery(connectionString, query, password = undefined) {
+        return new Promise((resolve, reject) => {
+            const connection = mysql.createConnection({
+                uri: connectionString,
+                password
+            });
+
+            connection.on("error", (err) => {
+                reject(err);
+            });
+
+            connection.query(query, (err, res) => {
+                try {
+                    connection.end();
+                } catch (_) {
+                    connection.destroy();
+                }
+
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                if (Array.isArray(res)) {
+                    resolve("Rows: " + res.length);
+                } else {
+                    resolve("No Error, but the result is not an array. Type: " + typeof res);
+                }
+            });
+        });
+    }
+
+    /**
+     * Run a query on MySQL/MariaDB expecting a single value result
      * @param {string} connectionString The database connection string
      * @param {string} query The query to execute
      * @param {string} password Optional password override
      * @returns {Promise<any>} Single value from the first column of the first row
      */
-    mysqlQuery(connectionString, query, password = undefined) {
+    mysqlQuerySingleValue(connectionString, query, password = undefined) {
         return new Promise((resolve, reject) => {
             const connection = mysql.createConnection({
                 uri: connectionString,
