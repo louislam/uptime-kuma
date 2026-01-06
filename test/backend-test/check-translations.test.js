@@ -31,7 +31,7 @@ function getStartEnd(line, key) {
     if (start === -1) {
         start = 0;
     }
-    return [start, start + key.length];
+    return [ start, start + key.length ];
 }
 
 describe("Check Translations", () => {

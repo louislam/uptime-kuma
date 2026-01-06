@@ -1,4 +1,7 @@
 class TranslatableError extends Error {
+    /**
+     * @param key
+     */
     constructor(key) {
         super(key);
         this.msgi18n = true;
