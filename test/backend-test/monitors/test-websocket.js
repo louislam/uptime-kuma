@@ -21,7 +21,8 @@ function nonCompliantWS() {
     });
     return new Promise((resolve) => {
         srv.listen(0, () => {
-            resolve({ server: srv, port: srv.address().port });
+            resolve({ server: srv,
+                port: srv.address().port });
         });
     });
 }
@@ -37,7 +38,8 @@ function httpServer() {
     });
     return new Promise((resolve) => {
         srv.listen(0, () => {
-            resolve({ server: srv, port: srv.address().port });
+            resolve({ server: srv,
+                port: srv.address().port });
         });
     });
 }
@@ -49,9 +51,11 @@ function httpServer() {
  */
 function createWebSocketServer(options = {}) {
     return new Promise((resolve) => {
-        const wss = new WebSocketServer({ port: 0, ...options });
+        const wss = new WebSocketServer({ port: 0,
+            ...options });
         wss.on("listening", () => {
-            resolve({ server: wss, port: wss.address().port });
+            resolve({ server: wss,
+                port: wss.address().port });
         });
     });
 }
