@@ -10,14 +10,13 @@ body:
       value: |
         🚫 **We kindly ask you to refrain from pinging maintainers unless absolutely necessary. Pings are reserved for critical/urgent issues that require immediate attention.**
 
-        **Why**: Reserving pings for urgent matters ensures maintainers can prioritize critical tasks effectively
-
   - type: checkboxes
     id: no-duplicate-question
     attributes:
       label: ⚠️ Please verify that your question has not already been reported
       description: |
-        To avoid duplicate reports, please search for any existing issues before submitting a new one. You can find the list of existing issues **[HERE](https://github.com/louislam/uptime-kuma/issues?q=is%3Aissue%20sort%3Acreated-desc%20)**.
+        To avoid duplicate reports, please search for any existing issues before submitting a new one.
+        You can find the list of existing issues **[HERE](https://github.com/louislam/uptime-kuma/issues?q=is%3Aissue%20sort%3Acreated-desc%20)**.
       options:
         - label: |
             I have searched the [existing issues](https://github.com/louislam/uptime-kuma/issues?q=is%3Aissue%20sort%3Acreated-desc%20) and found no similar reports.
@@ -28,7 +27,8 @@ body:
     attributes:
       label: 🛡️ Security Policy
       description: |
-        Please review and acknowledge the Security Policy before reporting any security-related issues or bugs. You can find the full Security Policy **[HERE](https://github.com/louislam/uptime-kuma/security/policy)**.
+        Please review and acknowledge the Security Policy before reporting any security-related issues or bugs.
+        You can find the full Security Policy **[HERE](https://github.com/louislam/uptime-kuma/security/policy)**.
       options:
         - label: |
             I have read and agree to Uptime Kuma's [Security Policy](https://github.com/louislam/uptime-kuma/security/policy).
@@ -41,7 +41,8 @@ body:
     attributes:
       label: 📝 Describe your problem
       description: |
-        Please walk us through it step by step. Include all important details and add screenshots where appropriate
+        Please walk us through it step by step.
+        Include all important details and add screenshots where appropriate.
       placeholder: |
         Describe what are you asking for ...
 
@@ -50,7 +51,8 @@ body:
     attributes:
       label: 📝 Error Message(s) or Log
       description: |
-        Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+        Please copy and paste any relevant log output.
+        This will be automatically formatted into code, so no need for backticks.
       render: bash session
     validations:
       required: false
@@ -60,7 +62,8 @@ body:
     attributes:
       label: 🐻 Uptime-Kuma Version
       description: |
-        What version of Uptime-Kuma are you running? Please do not provide Docker tags like `latest` or `1`.
+        What version of Uptime-Kuma are you running?
+        Please do not provide Docker tags like `latest` or `1`.
       placeholder: |
         e.g., 1.23.16 or 2.0.0-beta.2
     validations:

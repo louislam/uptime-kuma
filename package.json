@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "2.1.0-beta.0",
+    "version": "2.1.0-beta.1",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -95,7 +95,7 @@
         "express-static-gzip": "~2.1.7",
         "feed": "^4.2.2",
         "form-data": "~4.0.0",
-        "gamedig": "^4.2.0",
+        "gamedig": "^5.0.1",
         "html-escaper": "^3.0.3",
         "http-cookie-agent": "~5.0.4",
         "http-graceful-shutdown": "~3.1.7",
@@ -122,8 +122,8 @@
         "net-snmp": "^3.11.2",
         "node-cloudflared-tunnel": "~1.0.9",
         "node-fetch-cache": "^5.1.0",
-        "nodemailer": "~7.0.12",
         "node-radius-utils": "~1.2.0",
+        "nodemailer": "~7.0.12",
         "nostr-tools": "^2.10.4",
         "notp": "~2.0.3",
         "openid-client": "^5.4.2",
@@ -149,6 +149,7 @@
         "thirty-two": "~1.0.2",
         "tldts": "^7.0.19",
         "tough-cookie": "~4.1.3",
+        "validator": "^13.15.26",
         "web-push": "^3.6.7",
         "ws": "^8.13.0"
     },

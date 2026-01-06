@@ -74,11 +74,6 @@
                     <label class="form-check-label" for="show-only-last-heartbeat">{{ $t("showOnlyLastHeartbeat") }}</label>
                 </div>
 
-                <div v-if="false" class="my-3">
-                    <label for="password" class="form-label">{{ $t("Password") }} <sup>{{ $t("Coming Soon") }}</sup></label>
-                    <input id="password" v-model="config.password" disabled type="password" autocomplete="new-password" class="form-control">
-                </div>
-
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
@@ -98,10 +93,27 @@
                     </ul>
                 </div>
 
-                <!-- Google Analytics -->
+                <!-- Analytics -->
+
                 <div class="my-3">
-                    <label for="googleAnalyticsTag" class="form-label">{{ $t("Google Analytics ID") }}</label>
-                    <input id="googleAnalyticsTag" v-model="config.googleAnalyticsId" type="text" class="form-control" data-testid="google-analytics-input">
+                    <label for="analyticsType" class="form-label">{{ $t("Analytics Type") }}</label>
+                    <select id="analyticsType" v-model="config.analyticsType" class="form-select" data-testid="analytics-type-select">
+                        <option>{{ $t("None") }}</option>
+                        <option value="google">{{ $t("Google") }}</option>
+                        <option value="umami">{{ $t("Umami") }}</option>
+                        <option value="plausible">{{ $t("Plausible") }}</option>
+                        <option value="matomo">{{ $t("Matomo") }}</option>
+                    </select>
+                </div>
+
+                <div v-if="!!config.analyticsType" class="my-3">
+                    <label for="analyticsId" class="form-label">{{ $t("Analytics ID") }}</label>
+                    <input id="analyticsId" v-model="config.analyticsId" type="text" class="form-control" data-testid="analytics-id-input">
+                </div>
+
+                <div v-if="!!config.analyticsType && config.analyticsType !== 'google'" class="my-3">
+                    <label for="analyticsScriptUrl" class="form-label">{{ $t("Analytics Script URL") }}</label>
+                    <input id="analyticsScriptUrl" v-model="config.analyticsScriptUrl" type="url" class="form-control" data-testid="analytics-script-url-input">
                 </div>
 
                 <!-- Custom CSS -->

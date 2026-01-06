@@ -1098,7 +1098,7 @@
     "smseagleMsgTtsAdvanced": "Panggilan teks-ke-ucapan (Lanjutan)",
     "smseagleDocs": "Dokumentasi dan Ketersediaan APIv2: {0}",
     "SpugPush Template Code": "Kode Templat",
-    "ntfyPriorityHelptextPriorityHigherThanDown": "Prioritas biasa harus lebih tinggi daripada prioritas {0}. Prioritas {1} lebih tinggi daripada {0} prioritas {2}",
+    "ntfyPriorityHelptextPriorityHigherThanDown": "Prioritas reguler harus lebih tinggi daripada prioritas {0}. Prioritas {1} lebih tinggi daripada {0} prioritas {2}",
     "defaultFriendlyName": "Monitor Baru",
     "telegramServerUrl": "(Opsional) Url Server",
     "Path": "Path",
@@ -1140,5 +1140,13 @@
     "evolutionInstanceName": "Nama Instans",
     "Phone numbers": "Nomor telepon",
     "Sender name": "Nama pengirim",
-    "auto-select": "Pilih Otomatis"
+    "auto-select": "Pilih Otomatis",
+    "ignoreSecWebsocketAcceptHeaderDescription": "Izinkan server untuk tidak menjawab dengan header Sec-WebSocket-Accept, bila peningkatan websocket sukses.",
+    "Ignore Sec-WebSocket-Accept header": "Abaikan header {0}",
+    "wsSubprotocolDescription": "Masukkan daftar yang dipisah koma dari sub protokol. Untuk informasi lebih lanjut tentang sub protokol, silakan lihat {documentation}",
+    "WebSocket Application Messaging Protocol": "WAMP (WebSocket Application Messaging Protocol)",
+    "Session Initiation Protocol": "Transport WebSocket bagi SIP (Session Initiation Protocol)",
+    "Subprotocol": "Sub protokol",
+    "wsCodeDescription": "Untuk informasi lebih lanjut tentang kode status, silakan lihat {rfc6455}",
+    "Subprotocol(s)": "Sub protokol"
 }
