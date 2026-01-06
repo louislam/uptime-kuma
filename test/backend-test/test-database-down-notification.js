@@ -18,13 +18,13 @@ describe("Database Down Notification", () => {
         // The template database already has basic tables, so we just need to run migrations
         const path = require("path");
         const hasNotificationTable = await R.hasTable("notification");
-        
+
         if (!hasNotificationTable) {
             // If notification table doesn't exist, create all tables first
             const { createTables } = require("../../db/knex_init_db.js");
             await createTables();
         }
-        
+
         // Run migrations to ensure schema is current
         try {
             await R.knex.migrate.latest({
@@ -102,7 +102,7 @@ describe("Database Down Notification", () => {
             await Notification.sendDatabaseDownNotification("Test database error: ECONNREFUSED");
             assert.ok(sendCallCount > 0, "send() should have been called");
             assert.strictEqual(Notification.databaseDownNotificationSent, true, "Flag should be set");
-            
+
             const firstCallCount = sendCallCount;
 
             // Second call should not send again (duplicate prevention)
