@@ -1,7 +1,7 @@
 class TranslatableError extends Error {
     /**
      * Error whose message is a translation key.
-     * @extends Error
+     * @augments Error
      */
     /**
      * Create a TranslatableError.
