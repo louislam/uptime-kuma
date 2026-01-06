@@ -121,50 +121,54 @@ describe("Domain Expiry", () => {
     });
 
     test("sendNotifications() handles domain with undefined expiry without sending NaN", async () => {
-        // Mock forMonitor to return a bean with undefined expiry (newly created bean scenario)
-        const mockDomain = {
-            domain: "test-undefined.com",
-            expiry: undefined,
-            lastExpiryNotificationSent: null
-        };
+        try {
+            // Mock forMonitor to return a bean with undefined expiry (newly created bean scenario)
+            const mockDomain = {
+                domain: "test-undefined.com",
+                expiry: undefined,
+                lastExpiryNotificationSent: null
+            };
 
-        mock.method(DomainExpiry, "forMonitor", async () => mockDomain);
+            mock.method(DomainExpiry, "forMonitor", async () => mockDomain);
 
-        const hook = {
-            "port": 3013,
-            "url": "should-not-be-called-undefined"
-        };
+            const hook = {
+                "port": 3013,
+                "url": "should-not-be-called-undefined"
+            };
 
-        const monTest = {
-            type: "http",
-            url: "https://test-undefined.com",
-            domainExpiryNotification: true
-        };
+            const monTest = {
+                type: "http",
+                url: "https://test-undefined.com",
+                domainExpiryNotification: true
+            };
 
-        const notif = {
-            name: "TestUndefinedExpiry",
-            config: JSON.stringify({
-                type: "webhook",
-                httpMethod: "post",
-                webhookContentType: "json",
-                webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`
-            })
-        };
+            const notif = {
+                name: "TestUndefinedExpiry",
+                config: JSON.stringify({
+                    type: "webhook",
+                    httpMethod: "post",
+                    webhookContentType: "json",
+                    webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`
+                })
+            };
 
-        // Race between sendNotifications and mockWebhook timeout
-        // If webhook is called, we fail. If it times out, we pass.
-        const result = await Promise.race([
-            DomainExpiry.sendNotifications(monTest, [ notif ]),
-            mockWebhook(hook.port, hook.url, 500).then(() => {
-                throw new Error("Webhook was called but should not have been for undefined expiry");
-            }).catch((e) => {
-                if (e.reason === "Timeout") {
-                    return "timeout"; // Expected - webhook was not called
-                }
-                throw e;
-            })
-        ]);
+            // Race between sendNotifications and mockWebhook timeout
+            // If webhook is called, we fail. If it times out, we pass.
+            const result = await Promise.race([
+                DomainExpiry.sendNotifications(monTest, [ notif ]),
+                mockWebhook(hook.port, hook.url, 500).then(() => {
+                    throw new Error("Webhook was called but should not have been for undefined expiry");
+                }).catch((e) => {
+                    if (e.reason === "Timeout") {
+                        return "timeout"; // Expected - webhook was not called
+                    }
+                    throw e;
+                })
+            ]);
 
-        assert.ok(result === undefined || result === "timeout", "Should not send notification for undefined expiry");
+            assert.ok(result === undefined || result === "timeout", "Should not send notification for undefined expiry");
+        } finally {
+            mock.restoreAll();
+        }
     });
 });
