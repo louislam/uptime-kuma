@@ -26,7 +26,7 @@ class SerwerSMS extends NotificationProvider {
             };
 
             if (notification.serwersmsRecipientType === "group") {
-                data.group = notification.serwersmsGroupId;
+                data.group_id = notification.serwersmsGroupId;
             } else {
                 data.phone = notification.serwersmsPhoneNumber;
             }
