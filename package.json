@@ -162,6 +162,7 @@
         "@playwright/test": "~1.39.0",
         "@popperjs/core": "~2.10.2",
         "@testcontainers/hivemq": "^10.13.1",
+        "@testcontainers/mariadb": "^10.13.0",
         "@testcontainers/mssqlserver": "^10.28.0",
         "@testcontainers/postgresql": "^11.9.0",
         "@testcontainers/rabbitmq": "^10.13.2",
