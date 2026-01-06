@@ -640,11 +640,6 @@ export default {
         async submit() {
             this.processing = true;
 
-            if (this.affectedMonitors.length === 0) {
-                this.$root.toastError(this.$t("atLeastOneMonitor"));
-                return (this.processing = false);
-            }
-
             if (this.isAdd || this.isClone) {
                 this.$root.addMaintenance(this.maintenance, async (res) => {
                     if (res.ok) {
