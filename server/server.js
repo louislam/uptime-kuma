@@ -904,6 +904,7 @@ let needSetup = false;
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
+                bean.expected_tls_alert = monitor.expectedTlsAlert;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;

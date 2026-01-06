@@ -165,6 +165,7 @@ class Monitor extends BeanModel {
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
+            expectedTlsAlert: this.expected_tls_alert,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
