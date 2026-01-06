@@ -75,6 +75,7 @@ const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 const { passwordStrength } = require("check-password-strength");
+const TranslatableError = require("./translatable-error");
 
 log.debug("server", "Importing 2FA Modules");
 const notp = require("notp");
@@ -673,9 +674,7 @@ let needSetup = false;
         socket.on("setup", async (username, password, callback) => {
             try {
                 if (passwordStrength(password).value === "Too weak") {
-                    let err = new Error("passwordTooWeak");
-                    err.msgi18n = true;
-                    throw err;
+                    throw new TranslatableError("passwordTooWeak");
                 }
 
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
@@ -1412,9 +1411,7 @@ let needSetup = false;
                 }
 
                 if (passwordStrength(password.newPassword).value === "Too weak") {
-                    let err = new Error("passwordTooWeak");
-                    err.msgi18n = true;
-                    throw err;
+                    throw new TranslatableError("passwordTooWeak");
                 }
 
                 let user = await doubleCheckPassword(socket, password.currentPassword);
