@@ -181,7 +181,7 @@ jobs:
     - name: Setup rootless data directory
       run: |
         mkdir -p ./data
-        chown -R 1000:1000 ./data
+        sudo chown -R 1000:1000 ./data
 
     - name: Start Uptime Kuma (rootless)
       run: |
