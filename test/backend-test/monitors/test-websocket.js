@@ -8,10 +8,9 @@ const http = require("node:http");
 
 /**
  * Simulates non compliant WS Server, doesnt send Sec-WebSocket-Accept header
- * @param {number} port Port the server listens on. Defaults to 8080
- * @returns {Promise} Promise that resolves to the created server once listening
+ * @returns {Promise<{server: net.Server, port: number}>} Promise that resolves to the created server and its port
  */
-function nonCompliantWS(port = 8080) {
+function nonCompliantWS() {
     const srv = net.createServer((socket) => {
         socket.once("data", (buf) => {
             socket.write("HTTP/1.1 101 Switching Protocols\r\n" +
@@ -20,31 +19,52 @@ function nonCompliantWS(port = 8080) {
             socket.destroy();
         });
     });
-    return new Promise((resolve) => srv.listen(port, () => resolve(srv)));
+    return new Promise((resolve) => {
+        srv.listen(0, () => {
+            resolve({ server: srv, port: srv.address().port });
+        });
+    });
 }
 
 /**
  * Creates a regular HTTP server (non-WebSocket) for testing WebSocket rejection
- * @param {number} port Port the server listens on. Defaults to 8081
- * @returns {Promise} Promise that resolves to the created server once listening
+ * @returns {Promise<{server: http.Server, port: number}>} Promise that resolves to the created server and its port
  */
-function httpServer(port = 8081) {
+function httpServer() {
     const srv = http.createServer((req, res) => {
         res.writeHead(200, { "Content-Type": "text/plain" });
         res.end("This is not a WebSocket server");
     });
-    return new Promise((resolve) => srv.listen(port, () => resolve(srv)));
+    return new Promise((resolve) => {
+        srv.listen(0, () => {
+            resolve({ server: srv, port: srv.address().port });
+        });
+    });
+}
+
+/**
+ * Creates a WebSocket server for testing
+ * @param {object} options Options to pass to WebSocketServer
+ * @returns {Promise<{server: WebSocketServer, port: number}>} Promise that resolves to the created server and its port
+ */
+function createWebSocketServer(options = {}) {
+    return new Promise((resolve) => {
+        const wss = new WebSocketServer({ port: 0, ...options });
+        wss.on("listening", () => {
+            resolve({ server: wss, port: wss.address().port });
+        });
+    });
 }
 
 describe("WebSocket Monitor", {
 }, () => {
     test("check() rejects with unexpected server response when connecting to non-WebSocket server", {}, async (t) => {
-        t.after(() => srv.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const srv = await httpServer(8081);
+        const { server: srv, port } = await httpServer();
+        t.after(() => srv.close());
 
         const monitor = {
-            url: "ws://localhost:8081",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             timeout: 30,
         };
@@ -61,12 +81,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() sets status to UP when connecting to WebSocket server", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8082 });
+        const { server: wss, port } = await createWebSocketServer();
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8082",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
             timeout: 30,
@@ -87,12 +107,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() sets status to UP when connecting to insecure WebSocket server", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8089 });
+        const { server: wss, port } = await createWebSocketServer();
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8089",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
             timeout: 30,
@@ -113,12 +133,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() rejects when status code does not match expected value", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8083 });
+        const { server: wss, port } = await createWebSocketServer();
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8083",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             accepted_statuscodes_json: JSON.stringify([ "1001" ]),
             timeout: 30,
@@ -136,12 +156,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() rejects when expected status code is empty", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8084 });
+        const { server: wss, port } = await createWebSocketServer();
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8084",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             accepted_statuscodes_json: JSON.stringify([ "" ]),
             timeout: 30,
@@ -159,12 +179,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() rejects when Sec-WebSocket-Accept header is invalid", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = await nonCompliantWS(8090);
+        const { server: wss, port } = await nonCompliantWS();
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8090",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
             timeout: 30,
@@ -182,12 +202,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() sets status to UP when ignoring invalid Sec-WebSocket-Accept header", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = await nonCompliantWS(8091);
+        const { server: wss, port } = await nonCompliantWS();
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8091",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: true,
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
             timeout: 30,
@@ -208,12 +228,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() sets status to UP for compliant WebSocket server when ignoring Sec-WebSocket-Accept", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8085 });
+        const { server: wss, port } = await createWebSocketServer();
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8085",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: true,
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
             timeout: 30,
@@ -234,12 +254,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() rejects non-WebSocket server even when ignoring Sec-WebSocket-Accept", async (t) => {
-        t.after(() => srv.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const srv = await httpServer(8086);
+        const { server: srv, port } = await httpServer();
+        t.after(() => srv.close());
 
         const monitor = {
-            url: "ws://localhost:8086",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: true,
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
             timeout: 30,
@@ -257,17 +277,17 @@ describe("WebSocket Monitor", {
     });
 
     test("check() rejects when server does not support requested subprotocol", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8087,
+        const { server: wss, port } = await createWebSocketServer({
             handleProtocols: (protocols) => {
                 // Explicitly reject all subprotocols
                 return null;
             }
         });
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8087",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             wsSubprotocol: "ocpp1.6",
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
@@ -286,12 +306,12 @@ describe("WebSocket Monitor", {
     });
 
     test("check() rejects when multiple subprotocols contain invalid characters", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8088 });
+        const { server: wss, port } = await createWebSocketServer();
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8088",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             wsSubprotocol: "  # &  ,ocpp2.0   []  ,     ocpp1.6 ,  ,,     ;      ",
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
@@ -310,16 +330,16 @@ describe("WebSocket Monitor", {
     });
 
     test("check() sets status to UP when subprotocol with multiple spaces is accepted", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8092,
+        const { server: wss, port } = await createWebSocketServer({
             handleProtocols: (protocols) => {
                 return Array.from(protocols).includes("test") ? "test" : null;
             }
         });
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8092",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             wsSubprotocol: "invalid                        ,              test  ",
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
@@ -341,16 +361,16 @@ describe("WebSocket Monitor", {
     });
 
     test("check() sets status to UP when server supports requested subprotocol", async (t) => {
-        t.after(() => wss.close());
         const websocketMonitor = new WebSocketMonitorType();
-        const wss = new WebSocketServer({ port: 8093,
+        const { server: wss, port } = await createWebSocketServer({
             handleProtocols: (protocols) => {
                 return Array.from(protocols).includes("test") ? "test" : null;
             }
         });
+        t.after(() => wss.close());
 
         const monitor = {
-            url: "ws://localhost:8093",
+            url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             wsSubprotocol: "invalid,test",
             accepted_statuscodes_json: JSON.stringify([ "1000" ]),
