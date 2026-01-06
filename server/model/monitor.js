@@ -1004,23 +1004,9 @@ class Monitor extends BeanModel {
                 UptimeKumaServer.errorLog(e, false);
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
 
-                // Check if this is a database connection error
-                const isDatabaseError = e && (
-                    e.code === "EHOSTUNREACH" ||
-                    e.code === "ECONNREFUSED" ||
-                    e.code === "ETIMEDOUT" ||
-                    e.code === "ENOTFOUND" ||
-                    e.code === "ER_ACCESS_DENIED_ERROR" ||
-                    e.code === "ER_BAD_DB_ERROR" ||
-                    e.code === "ER_DBACCESS_DENIED_ERROR" ||
-                    e.message?.includes("database") ||
-                    e.message?.includes("Database") ||
-                    e.message?.includes("Connection lost") ||
-                    e.message?.includes("connect") ||
-                    (e.syscall === "connect" && (e.address || e.port))
-                );
-
-                if (isDatabaseError) {
+                // Check if this is a database connection error (only if error is from database operations)
+                const { isDatabaseError } = require("../database-error-detector");
+                if (isDatabaseError(e)) {
                     const errorMessage = e.message || `${e.code || "Unknown error"}`;
                     log.error("monitor", `Database connection error detected in monitor: ${errorMessage}`);
 

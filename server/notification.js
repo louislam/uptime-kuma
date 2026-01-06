@@ -102,6 +102,11 @@ class Notification {
      * @type {boolean}
      */
     static databaseDownNotificationSent = false;
+    /**
+     * Timestamp of when we last sent a database down notification
+     * @type {number}
+     */
+    static lastDatabaseDownNotificationTime = 0;
 
     /**
      * Initialize the notification providers
@@ -271,12 +276,7 @@ class Notification {
             await applyNotificationEveryMonitor(bean.id, userID);
         }
 
-        // Refresh cache after saving
-        try {
-            await Notification.refreshCache();
-        } catch (e) {
-            // Silently fail - cache refresh is not critical
-        }
+        await this.refreshCacheSafely();
 
         return bean;
     }
@@ -299,12 +299,7 @@ class Notification {
 
         await R.trash(bean);
 
-        // Refresh cache after deleting
-        try {
-            await Notification.refreshCache();
-        } catch (e) {
-            // Silently fail - cache refresh is not critical
-        }
+        await this.refreshCacheSafely();
     }
 
     /**
@@ -316,34 +311,35 @@ class Notification {
     }
 
     /**
+     * Refresh cache safely, silently handling any errors
+     * @returns {Promise<void>}
+     */
+    static async refreshCacheSafely() {
+        try {
+            await this.refreshCache();
+        } catch (e) {
+            // Silently fail - cache refresh is not critical
+        }
+    }
+
+    /**
      * Load all notifications into cache for use when database is down
      * @returns {Promise<void>}
      */
     static async refreshCache() {
         try {
             // Get all notifications (including default ones)
-            const notifications = await R.getAll(`
-                SELECT notification.* 
-                FROM notification 
-                WHERE active = 1
-            `);
+            const notifications = await R.find("notification", " active = 1 ");
 
             this.notificationCache = notifications.map(bean => {
-                try {
-                    const config = JSON.parse(bean.config || "{}");
-                    return {
-                        id: bean.id,
-                        name: bean.name,
-                        type: config.type,
-                        config: config,
-                        is_default: bean.is_default === 1,
-                        user_id: bean.user_id,
-                    };
-                } catch (e) {
-                    log.warn("notification", `Failed to parse notification config for ${bean.id}: ${e.message}`);
-                    return null;
-                }
-            }).filter(n => n !== null);
+                return {
+                    id: bean.id,
+                    name: bean.name,
+                    config: bean.config, // Store raw config string, parse when needed
+                    is_default: bean.is_default === 1,
+                    user_id: bean.user_id,
+                };
+            });
 
             this.cacheLastRefresh = Date.now();
             log.debug("notification", `Refreshed notification cache with ${this.notificationCache.length} notifications`);
@@ -359,42 +355,36 @@ class Notification {
      * @returns {Promise<void>}
      */
     static async sendDatabaseDownNotification(errorMessage) {
-        // Only send once per database down event
-        if (this.databaseDownNotificationSent) {
-            return;
+        const now = Date.now();
+        const COOLDOWN_PERIOD = 24 * 60 * 60 * 1000; // 24 hours cooldown between notifications
+
+        // Check cooldown period - don't spam notifications (especially important for SMS)
+        if (this.lastDatabaseDownNotificationTime > 0) {
+            const timeSinceLastNotification = now - this.lastDatabaseDownNotificationTime;
+            if (timeSinceLastNotification < COOLDOWN_PERIOD) {
+                log.debug("notification", `Skipping database down notification - cooldown period active (${Math.round(timeSinceLastNotification / 3600000)}h / 24h)`);
+                return;
+            }
         }
 
         // Check if cache is empty or too old (older than 1 hour)
-        const cacheAge = Date.now() - this.cacheLastRefresh;
+        const cacheAge = now - this.cacheLastRefresh;
         if (this.notificationCache.length === 0 || cacheAge > 60 * 60 * 1000) {
             log.warn("notification", "Notification cache is empty or too old, cannot send database down notification");
             return;
         }
 
         this.databaseDownNotificationSent = true;
+        this.lastDatabaseDownNotificationTime = now;
 
         const msg = `🔴 Uptime Kuma Database Connection Failed\n\nError: ${errorMessage}\n\nUptime Kuma is unable to connect to its database. Monitoring may be affected.`;
 
         // Send to all cached notifications
         for (const notification of this.notificationCache) {
             try {
-                await this.send(
-                    notification.config,
-                    msg,
-                    {
-                        id: 0,
-                        name: "Uptime Kuma System",
-                        type: "system",
-                        active: true,
-                    },
-                    {
-                        status: "down",
-                        msg: errorMessage,
-                        time: new Date().toISOString(),
-                        ping: null,
-                    }
-                );
-                log.info("notification", `Sent database down notification via ${notification.name} (${notification.type})`);
+                const config = JSON.parse(notification.config || "{}");
+                await this.send(config, msg);
+                log.info("notification", `Sent database down notification via ${notification.name} (${config.type})`);
             } catch (e) {
                 log.error("notification", `Failed to send database down notification via ${notification.name}: ${e.message}`);
             }
@@ -403,10 +393,13 @@ class Notification {
 
     /**
      * Reset the database down notification flag (call when database is back up)
+     * Only resets the flag, not the timestamp, to maintain cooldown period
      * @returns {void}
      */
     static resetDatabaseDownFlag() {
         this.databaseDownNotificationSent = false;
+        // Note: We don't reset lastDatabaseDownNotificationTime here to maintain
+        // the cooldown period even if database recovers and fails again
     }
 }
 

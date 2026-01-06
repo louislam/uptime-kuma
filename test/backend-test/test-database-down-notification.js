@@ -14,26 +14,27 @@ describe("Database Down Notification", () => {
         // Ensure database is connected (this copies template DB which has basic tables)
         await Database.connect(true); // testMode = true
 
-        // Ensure notification table exists with required columns
+        // Run migrations to ensure schema is current
+        // The template database already has basic tables, so we just need to run migrations
+        const path = require("path");
         const hasNotificationTable = await R.hasTable("notification");
+        
         if (!hasNotificationTable) {
-            // Create notification table manually for testing
-            await R.exec(`
-                CREATE TABLE IF NOT EXISTS notification (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name VARCHAR(255),
-                    active BOOLEAN NOT NULL DEFAULT 1,
-                    user_id INTEGER,
-                    is_default BOOLEAN NOT NULL DEFAULT 0,
-                    config TEXT
-                )
-            `);
-        } else {
-            // Ensure is_default column exists
-            try {
-                await R.exec("ALTER TABLE notification ADD COLUMN is_default BOOLEAN NOT NULL DEFAULT 0");
-            } catch (e) {
-                // Column might already exist, ignore
+            // If notification table doesn't exist, create all tables first
+            const { createTables } = require("../../db/knex_init_db.js");
+            await createTables();
+        }
+        
+        // Run migrations to ensure schema is current
+        try {
+            await R.knex.migrate.latest({
+                directory: path.join(__dirname, "../../db/knex_migrations")
+            });
+        } catch (e) {
+            // For migration errors, log but continue - test might still work
+            // Some migrations may fail if they reference tables that don't exist in test DB
+            if (!e.message.includes("the following files are missing:")) {
+                console.warn("Migration warning (may be expected):", e.message);
             }
         }
 
@@ -73,10 +74,12 @@ describe("Database Down Notification", () => {
         const cached = Notification.notificationCache.find(n => n.id === testNotification.id);
         assert.ok(cached, "Test notification should be in cache");
         assert.strictEqual(cached.name, "Test Notification");
-        assert.strictEqual(cached.config.type, "webhook");
+        // Config is stored as raw string, parse to verify
+        const config = JSON.parse(cached.config);
+        assert.strictEqual(config.type, "webhook");
     });
 
-    test("sendDatabaseDownNotification() uses cached notifications", async () => {
+    test("sendDatabaseDownNotification() uses cached notifications and prevents duplicates", async () => {
         // Ensure cache is populated
         await Notification.refreshCache();
         assert.ok(Notification.notificationCache.length > 0, "Cache should be populated");
@@ -88,45 +91,25 @@ describe("Database Down Notification", () => {
         // Mock the send method to track calls
         let sendCallCount = 0;
         const originalSend = Notification.send;
-        Notification.send = async (notification, msg, monitorJSON, heartbeatJSON) => {
+        Notification.send = async (notification, msg) => {
             sendCallCount++;
             assert.ok(msg.includes("Database Connection Failed"), "Message should mention database failure");
-            assert.ok(monitorJSON.name === "Uptime Kuma System", "Monitor JSON should be system monitor");
             return "OK";
         };
 
         try {
+            // First call should send
             await Notification.sendDatabaseDownNotification("Test database error: ECONNREFUSED");
-
-            // Should have been called for each notification in cache
             assert.ok(sendCallCount > 0, "send() should have been called");
             assert.strictEqual(Notification.databaseDownNotificationSent, true, "Flag should be set");
-        } finally {
-            // Restore original send method
-            Notification.send = originalSend;
-        }
-    });
-
-    test("sendDatabaseDownNotification() only sends once per database down event", async () => {
-        Notification.resetDatabaseDownFlag();
-
-        // Mock the send method
-        let sendCallCount = 0;
-        const originalSend = Notification.send;
-        Notification.send = async () => {
-            sendCallCount++;
-            return "OK";
-        };
-
-        try {
-            // First call
-            await Notification.sendDatabaseDownNotification("Test error 1");
+            
             const firstCallCount = sendCallCount;
 
-            // Second call should not send again
+            // Second call should not send again (duplicate prevention)
             await Notification.sendDatabaseDownNotification("Test error 2");
-            assert.strictEqual(sendCallCount, firstCallCount, "Should not send again");
+            assert.strictEqual(sendCallCount, firstCallCount, "Should not send again on second call");
         } finally {
+            // Restore original send method
             Notification.send = originalSend;
         }
     });
@@ -151,9 +134,14 @@ describe("Database Down Notification", () => {
     });
 
     test("refreshCache() handles database errors gracefully", async () => {
-        // Temporarily close database connection
-        const originalGetAll = R.getAll;
-        R.getAll = async () => {
+        // Ensure cache is populated first
+        await Notification.refreshCache();
+        const originalCacheLength = Notification.notificationCache.length;
+        const originalCacheItems = JSON.parse(JSON.stringify(Notification.notificationCache)); // Deep copy
+
+        // Temporarily mock R.find to throw an error
+        const originalFind = R.find;
+        R.find = async () => {
             throw new Error("Database connection lost");
         };
 
@@ -163,8 +151,10 @@ describe("Database Down Notification", () => {
 
             // Cache should remain unchanged (not cleared)
             assert.ok(Array.isArray(Notification.notificationCache), "Cache should still be an array");
+            assert.strictEqual(Notification.notificationCache.length, originalCacheLength, "Cache should have same length");
+            assert.deepStrictEqual(Notification.notificationCache, originalCacheItems, "Cache should contain same items");
         } finally {
-            R.getAll = originalGetAll;
+            R.find = originalFind;
         }
     });
 });

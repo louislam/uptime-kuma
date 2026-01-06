@@ -2010,23 +2010,9 @@ let unexpectedErrorHandler = async (error, promise) => {
     UptimeKumaServer.errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
 
-    // Check if this is a database connection error
-    const isDatabaseError = error && (
-        error.code === "EHOSTUNREACH" ||
-        error.code === "ECONNREFUSED" ||
-        error.code === "ETIMEDOUT" ||
-        error.code === "ENOTFOUND" ||
-        error.code === "ER_ACCESS_DENIED_ERROR" ||
-        error.code === "ER_BAD_DB_ERROR" ||
-        error.code === "ER_DBACCESS_DENIED_ERROR" ||
-        error.message?.includes("database") ||
-        error.message?.includes("Database") ||
-        error.message?.includes("Connection lost") ||
-        error.message?.includes("connect") ||
-        (error.syscall === "connect" && (error.address || error.port))
-    );
-
-    if (isDatabaseError) {
+    // Check if this is a database connection error (only if error is from database operations)
+    const { isDatabaseError } = require("./database-error-detector");
+    if (isDatabaseError(error)) {
         const errorMessage = error.message || `${error.code || "Unknown error"}`;
         log.error("server", `Database connection error detected: ${errorMessage}`);
 
