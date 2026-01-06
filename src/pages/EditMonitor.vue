@@ -400,6 +400,35 @@
                                 </select>
                             </div>
 
+                            <!-- Expected TLS Alert (for TCP monitor mTLS verification) -->
+                            <template v-if="monitor.type === 'port'">
+                                <div class="my-3">
+                                    <label for="expected_tls_alert" class="form-label">{{ $t("Expected TLS Alert") }}</label>
+                                    <select id="expected_tls_alert" v-model="monitor.expectedTlsAlert" class="form-select">
+                                        <option value="none">{{ $t("None (Successful Connection)") }}</option>
+                                        <!-- TLS alert names are from RFC 8446 spec and should NOT be translated -->
+                                        <optgroup :label="$t('TLS Alerts')">
+                                            <option value="certificate_required">certificate_required (116)</option>
+                                            <option value="bad_certificate">bad_certificate (42)</option>
+                                            <option value="certificate_unknown">certificate_unknown (46)</option>
+                                            <option value="unknown_ca">unknown_ca (48)</option>
+                                            <option value="access_denied">access_denied (49)</option>
+                                            <option value="handshake_failure">handshake_failure (40)</option>
+                                            <option value="certificate_expired">certificate_expired (45)</option>
+                                            <option value="certificate_revoked">certificate_revoked (44)</option>
+                                        </optgroup>
+                                    </select>
+                                    <i18n-t tag="div" class="form-text" keypath="expectedTlsAlertDescription">
+                                        <template #code>
+                                            <code>certificate_required</code>
+                                        </template>
+                                        <template #link>
+                                            <a href="https://www.rfc-editor.org/rfc/rfc8446#section-6.2" target="_blank" rel="noopener noreferrer">{{ $t("TLS Alert Spec") }}</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+                            </template>
+
                             <!-- Json Query -->
                             <!-- For Json Query / SNMP -->
                             <div v-if="monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
