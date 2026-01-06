@@ -13,6 +13,9 @@
                         <div class="mb-3">
                             <label for="notification-type" class="form-label">{{ $t("Notification Type") }}</label>
                             <select id="notification-type" v-model="notification.type" class="form-select">
+                                <optgroup :label="$t('notificationUniversal')">
+                                    <option v-for="(name, type) in notificationNameList.universal" :key="type" :value="type">{{ name }}</option>
+                                </optgroup>
                                 <optgroup :label="$t('notificationChatPlatforms')">
                                     <option v-for="(name, type) in notificationNameList.chatPlatforms" :key="type" :value="type">{{ name }}</option>
                                 </optgroup>
@@ -22,8 +25,8 @@
                                 <optgroup :label="$t('notificationSmsServices')">
                                     <option v-for="(name, type) in notificationNameList.smsServices" :key="type" :value="type">{{ name }}</option>
                                 </optgroup>
-                                <optgroup :label="$t('notificationEmailWebhooks')">
-                                    <option v-for="(name, type) in notificationNameList.emailWebhooks" :key="type" :value="type">{{ name }}</option>
+                                <optgroup :label="$t('notificationEmail')">
+                                    <option v-for="(name, type) in notificationNameList.email" :key="type" :value="type">{{ name }}</option>
                                 </optgroup>
                                 <optgroup :label="$t('notificationIncidentManagement')">
                                     <option v-for="(name, type) in notificationNameList.incidentManagement" :key="type" :value="type">{{ name }}</option>
@@ -129,6 +132,12 @@ export default {
         },
 
         notificationNameList() {
+            // Universal - Adapters and multi-service wrapper libraries
+            let universal = {
+                "apprise": this.$t("apprise"),
+                "webhook": "Webhook",
+            };
+
             // Chat Platforms - Messaging apps and team communication tools
             let chatPlatforms = {
                 "bale": "Bale",
@@ -160,7 +169,6 @@ export default {
 
             // Push Services - Push notification services
             let pushServices = {
-                "apprise": this.$t("apprise"),
                 "Bark": "Bark",
                 "gorush": "Gorush",
                 "gotify": "Gotify",
@@ -188,13 +196,12 @@ export default {
                 "twilio": "Twilio",
             };
 
-            // Email & Webhooks - Email services and generic webhooks
-            let emailWebhooks = {
+            // Email - Email services
+            let email = {
                 "Brevo": "Brevo",
                 "Resend": "Resend",
                 "SendGrid": "SendGrid",
                 "smtp": this.$t("smtp"),
-                "webhook": "Webhook",
             };
 
             // Incident Management - On-call and alerting platforms
@@ -256,10 +263,11 @@ export default {
             };
 
             return {
+                universal: sort(universal),
                 chatPlatforms: sort(chatPlatforms),
                 pushServices: sort(pushServices),
                 smsServices: sort(smsServices),
-                emailWebhooks: sort(emailWebhooks),
+                email: sort(email),
                 incidentManagement: sort(incidentManagement),
                 homeAutomation: sort(homeAutomation),
                 other: sort(other),
