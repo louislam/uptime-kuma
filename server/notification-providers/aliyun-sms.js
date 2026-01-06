@@ -147,24 +147,26 @@ class AliyunSMS extends NotificationProvider {
      * @returns {string} Message with IP addresses and domains removed
      */
     removeIpAndDomain(message) {
-        if (!message) return message;
-        
+        if (!message) {
+            return message;
+        }
+
         // 1. Remove URLs first to avoid domain being matched separately
-        message = message.replace(/(?:https?|ftp|ws|wss):\/\/[^\s]+/gi, '[URL]');
-        
+        message = message.replace(/(?:https?|ftp|ws|wss):\/\/[^\s]+/gi, "[URL]");
+
         // 2. Remove IPv4 addresses (with or without port)
-        message = message.replace(/\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b/g, '[IP]');
-        
+        message = message.replace(/\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b/g, "[IP]");
+
         // 3. Remove IPv6 addresses (with or without port)
-        message = message.replace(/\[?(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\]?(?::\d+)?/g, '[IP]');
-        
+        message = message.replace(/\[?(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\]?(?::\d+)?/g, "[IP]");
+
         // 4. Remove domain names (including subdomains and ports)
         // Matches example.com, www.example.com, sub.example.com:8080, etc.
-        message = message.replace(/\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d+)?\b/g, '[Domain]');
-        
+        message = message.replace(/\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d+)?\b/g, "[Domain]");
+
         // 5. Remove CIDR notation (e.g., 192.168.0.0/24)
-        message = message.replace(/\b(?:\d{1,3}\.){3}\d{1,3}\/\d{1,2}\b/g, '[CIDR]');
-        
+        message = message.replace(/\b(?:\d{1,3}\.){3}\d{1,3}\/\d{1,2}\b/g, "[CIDR]");
+
         return message;
     }
 }
