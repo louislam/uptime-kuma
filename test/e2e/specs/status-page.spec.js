@@ -326,8 +326,7 @@ test.describe("Status Page", () => {
         expect(rssContent).toContain(`<title>${statusPageTitle} RSS Feed</title>`);
 
         // Verify RSS link uses the correct domain (not localhost hardcoded)
-        expect(rssContent).toContain("<link>http://");
-        expect(rssContent).toContain("/status/rss-test</link>");
+        expect(rssContent).toMatch(/<link>https?:\/\/[^<]+\/status\/rss-test<\/link>/);
 
         await testInfo.attach("rss-feed-default-title.xml", {
             body: rssContent,

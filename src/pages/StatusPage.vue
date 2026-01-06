@@ -34,15 +34,6 @@
                     </div>
                 </div>
 
-                <!-- RSS Title -->
-                <div class="my-3">
-                    <label for="rss-title" class="form-label">{{ $t("RSS Title") }}</label>
-                    <input id="rss-title" v-model="config.rssTitle" type="text" class="form-control" data-testid="rss-title-input">
-                    <div class="form-text">
-                        {{ $t("Leave blank to use status page title") }}
-                    </div>
-                </div>
-
                 <div class="my-3">
                     <label for="auto-refresh-interval" class="form-label">{{ $t("Refresh Interval") }}</label>
                     <input id="auto-refresh-interval" v-model="config.autoRefreshInterval" type="number" class="form-control" :min="5" data-testid="refresh-interval-input">
@@ -123,6 +114,15 @@
                 <div v-if="!!config.analyticsType && config.analyticsType !== 'google'" class="my-3">
                     <label for="analyticsScriptUrl" class="form-label">{{ $t("Analytics Script URL") }}</label>
                     <input id="analyticsScriptUrl" v-model="config.analyticsScriptUrl" type="url" class="form-control" data-testid="analytics-script-url-input">
+                </div>
+
+                <!-- RSS Title -->
+                <div class="my-3">
+                    <label for="rss-title" class="form-label">{{ $t("RSS Title") }}</label>
+                    <input id="rss-title" v-model="config.rssTitle" type="text" class="form-control" data-testid="rss-title-input">
+                    <div class="form-text">
+                        {{ $t("Leave blank to use status page title") }}
+                    </div>
                 </div>
 
                 <!-- Custom CSS -->

@@ -32,8 +32,9 @@ class StatusPage extends BeanModel {
         ]);
 
         if (statusPage) {
+            const feedUrl = await StatusPage.buildRSSUrl(slug, request);
             response.type("application/rss+xml");
-            response.send(await StatusPage.renderRSS(statusPage, slug, request));
+            response.send(await StatusPage.renderRSS(statusPage, feedUrl));
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
         }
@@ -67,15 +68,11 @@ class StatusPage extends BeanModel {
     /**
      * SSR for RSS feed
      * @param {StatusPage} statusPage Status page object
-     * @param {string} slug Status page slug
-     * @param {Request} request Express request object
+     * @param {string} feedUrl The URL for the RSS feed
      * @returns {Promise<string>} The rendered RSS XML
      */
-    static async renderRSS(statusPage, slug, request) {
+    static async renderRSS(statusPage, feedUrl) {
         const { heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
-
-        // Build the feed URL, respecting proxy headers if trustProxy is enabled
-        const feedUrl = await StatusPage.buildRSSUrl(slug, request);
 
         // Use custom RSS title if set, otherwise fall back to status page title
         let feedTitle = "Uptime Kuma RSS Feed";
