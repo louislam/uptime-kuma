@@ -990,16 +990,48 @@ class Monitor extends BeanModel {
         };
 
         /**
-         * Get a heartbeat and handle errors7
+         * Get a heartbeat and handle errors
          * @returns {void}
          */
         const safeBeat = async () => {
             try {
                 await beat();
+                // If beat succeeds, database is likely back up, reset the flag
+                const { Notification } = require("../notification");
+                Notification.resetDatabaseDownFlag();
             } catch (e) {
                 console.trace(e);
                 UptimeKumaServer.errorLog(e, false);
                 log.error("monitor", "Please report to https://github.com/louislam/uptime-kuma/issues");
+
+                // Check if this is a database connection error
+                const isDatabaseError = e && (
+                    e.code === "EHOSTUNREACH" ||
+                    e.code === "ECONNREFUSED" ||
+                    e.code === "ETIMEDOUT" ||
+                    e.code === "ENOTFOUND" ||
+                    e.code === "ER_ACCESS_DENIED_ERROR" ||
+                    e.code === "ER_BAD_DB_ERROR" ||
+                    e.code === "ER_DBACCESS_DENIED_ERROR" ||
+                    e.message?.includes("database") ||
+                    e.message?.includes("Database") ||
+                    e.message?.includes("Connection lost") ||
+                    e.message?.includes("connect") ||
+                    (e.syscall === "connect" && (e.address || e.port))
+                );
+
+                if (isDatabaseError) {
+                    const errorMessage = e.message || `${e.code || "Unknown error"}`;
+                    log.error("monitor", `Database connection error detected in monitor: ${errorMessage}`);
+                    
+                    // Try to send notification using cached notifications
+                    try {
+                        const { Notification } = require("../notification");
+                        await Notification.sendDatabaseDownNotification(errorMessage);
+                    } catch (notifError) {
+                        log.error("monitor", `Failed to send database down notification: ${notifError.message}`);
+                    }
+                }
 
                 if (! this.isStop) {
                     log.info("monitor", "Try to restart the monitor");

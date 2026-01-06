@@ -197,6 +197,15 @@ let needSetup = false;
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
 
+    // Refresh notification cache after database is ready
+    try {
+        await Notification.refreshCache();
+        Notification.resetDatabaseDownFlag();
+        log.info("server", "Notification cache refreshed");
+    } catch (e) {
+        log.warn("server", `Failed to refresh notification cache on startup: ${e.message}`);
+    }
+
     log.debug("server", "Initializing Prometheus");
     await Prometheus.init();
 
@@ -1996,10 +2005,38 @@ gracefulShutdown(server.httpServer, {
 });
 
 // Catch unexpected errors here
-let unexpectedErrorHandler = (error, promise) => {
+let unexpectedErrorHandler = async (error, promise) => {
     console.trace(error);
     UptimeKumaServer.errorLog(error, false);
     console.error("If you keep encountering errors, please report to https://github.com/louislam/uptime-kuma/issues");
+
+    // Check if this is a database connection error
+    const isDatabaseError = error && (
+        error.code === "EHOSTUNREACH" ||
+        error.code === "ECONNREFUSED" ||
+        error.code === "ETIMEDOUT" ||
+        error.code === "ENOTFOUND" ||
+        error.code === "ER_ACCESS_DENIED_ERROR" ||
+        error.code === "ER_BAD_DB_ERROR" ||
+        error.code === "ER_DBACCESS_DENIED_ERROR" ||
+        error.message?.includes("database") ||
+        error.message?.includes("Database") ||
+        error.message?.includes("Connection lost") ||
+        error.message?.includes("connect") ||
+        (error.syscall === "connect" && (error.address || error.port))
+    );
+
+    if (isDatabaseError) {
+        const errorMessage = error.message || `${error.code || "Unknown error"}`;
+        log.error("server", `Database connection error detected: ${errorMessage}`);
+        
+        // Try to send notification using cached notifications
+        try {
+            await Notification.sendDatabaseDownNotification(errorMessage);
+        } catch (e) {
+            log.error("server", `Failed to send database down notification: ${e.message}`);
+        }
+    }
 };
 process.addListener("unhandledRejection", unexpectedErrorHandler);
 process.addListener("uncaughtException", unexpectedErrorHandler);

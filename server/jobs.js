@@ -1,7 +1,21 @@
 const { UptimeKumaServer } = require("./uptime-kuma-server");
 const { clearOldData } = require("./jobs/clear-old-data");
 const { incrementalVacuum } = require("./jobs/incremental-vacuum");
+const { Notification } = require("./notification");
 const Cron = require("croner");
+
+/**
+ * Refresh notification cache periodically
+ * @returns {Promise<void>}
+ */
+async function refreshNotificationCache() {
+    try {
+        await Notification.refreshCache();
+        Notification.resetDatabaseDownFlag();
+    } catch (e) {
+        // Silently fail - cache refresh is not critical
+    }
+}
 
 const jobs = [
     {
@@ -14,6 +28,12 @@ const jobs = [
         name: "incremental-vacuum",
         interval: "*/5 * * * *",
         jobFunc: incrementalVacuum,
+        croner: null,
+    },
+    {
+        name: "refresh-notification-cache",
+        interval: "*/30 * * * *", // Every 30 minutes
+        jobFunc: refreshNotificationCache,
         croner: null,
     }
 ];

@@ -87,6 +87,21 @@ const Webpush = require("./notification-providers/Webpush");
 
 class Notification {
     providerList = {};
+    /**
+     * Cache for all notifications to use when database is down
+     * @type {Array<object>}
+     */
+    static notificationCache = [];
+    /**
+     * Last time the cache was refreshed
+     * @type {number}
+     */
+    static cacheLastRefresh = 0;
+    /**
+     * Flag to track if we've already sent a database down notification
+     * @type {boolean}
+     */
+    static databaseDownNotificationSent = false;
 
     /**
      * Initialize the notification providers
@@ -256,6 +271,13 @@ class Notification {
             await applyNotificationEveryMonitor(bean.id, userID);
         }
 
+        // Refresh cache after saving
+        try {
+            await Notification.refreshCache();
+        } catch (e) {
+            // Silently fail - cache refresh is not critical
+        }
+
         return bean;
     }
 
@@ -276,6 +298,13 @@ class Notification {
         }
 
         await R.trash(bean);
+
+        // Refresh cache after deleting
+        try {
+            await Notification.refreshCache();
+        } catch (e) {
+            // Silently fail - cache refresh is not critical
+        }
     }
 
     /**
@@ -284,6 +313,100 @@ class Notification {
      */
     static async checkApprise() {
         return await commandExists("apprise");
+    }
+
+    /**
+     * Load all notifications into cache for use when database is down
+     * @returns {Promise<void>}
+     */
+    static async refreshCache() {
+        try {
+            // Get all notifications (including default ones)
+            const notifications = await R.getAll(`
+                SELECT notification.* 
+                FROM notification 
+                WHERE active = 1
+            `);
+
+            this.notificationCache = notifications.map(bean => {
+                try {
+                    const config = JSON.parse(bean.config || "{}");
+                    return {
+                        id: bean.id,
+                        name: bean.name,
+                        type: config.type,
+                        config: config,
+                        is_default: bean.is_default === 1,
+                        user_id: bean.user_id,
+                    };
+                } catch (e) {
+                    log.warn("notification", `Failed to parse notification config for ${bean.id}: ${e.message}`);
+                    return null;
+                }
+            }).filter(n => n !== null);
+
+            this.cacheLastRefresh = Date.now();
+            log.debug("notification", `Refreshed notification cache with ${this.notificationCache.length} notifications`);
+        } catch (e) {
+            log.error("notification", `Failed to refresh notification cache: ${e.message}`);
+            // Don't clear the cache if refresh fails, keep using old cache
+        }
+    }
+
+    /**
+     * Send notification about database being down using cached notifications
+     * @param {string} errorMessage Error message from database connection failure
+     * @returns {Promise<void>}
+     */
+    static async sendDatabaseDownNotification(errorMessage) {
+        // Only send once per database down event
+        if (this.databaseDownNotificationSent) {
+            return;
+        }
+
+        // Check if cache is empty or too old (older than 1 hour)
+        const cacheAge = Date.now() - this.cacheLastRefresh;
+        if (this.notificationCache.length === 0 || cacheAge > 60 * 60 * 1000) {
+            log.warn("notification", "Notification cache is empty or too old, cannot send database down notification");
+            return;
+        }
+
+        this.databaseDownNotificationSent = true;
+
+        const msg = `🔴 Uptime Kuma Database Connection Failed\n\nError: ${errorMessage}\n\nUptime Kuma is unable to connect to its database. Monitoring may be affected.`;
+
+        // Send to all cached notifications
+        for (const notification of this.notificationCache) {
+            try {
+                await this.send(
+                    notification.config,
+                    msg,
+                    {
+                        id: 0,
+                        name: "Uptime Kuma System",
+                        type: "system",
+                        active: true,
+                    },
+                    {
+                        status: "down",
+                        msg: errorMessage,
+                        time: new Date().toISOString(),
+                        ping: null,
+                    }
+                );
+                log.info("notification", `Sent database down notification via ${notification.name} (${notification.type})`);
+            } catch (e) {
+                log.error("notification", `Failed to send database down notification via ${notification.name}: ${e.message}`);
+            }
+        }
+    }
+
+    /**
+     * Reset the database down notification flag (call when database is back up)
+     * @returns {void}
+     */
+    static resetDatabaseDownFlag() {
+        this.databaseDownNotificationSent = false;
     }
 }
 
