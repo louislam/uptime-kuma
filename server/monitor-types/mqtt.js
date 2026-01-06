@@ -2,9 +2,21 @@ const { MonitorType } = require("./monitor-type");
 const { log, UP } = require("../../src/util");
 const mqtt = require("mqtt");
 const jsonata = require("jsonata");
+const { ConditionVariable } = require("../monitor-conditions/variables");
+const { defaultStringOperators, defaultNumberOperators } = require("../monitor-conditions/operators");
+const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
+const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
 
 class MqttMonitorType extends MonitorType {
     name = "mqtt";
+
+    supportsConditions = true;
+
+    conditionVariables = [
+        new ConditionVariable("topic", defaultStringOperators),
+        new ConditionVariable("message", defaultStringOperators),
+        new ConditionVariable("json_value", defaultStringOperators.concat(defaultNumberOperators)),
+    ];
 
     /**
      * @inheritdoc
@@ -23,7 +35,46 @@ class MqttMonitorType extends MonitorType {
             monitor.mqttCheckType = "keyword";
         }
 
-        if (monitor.mqttCheckType === "keyword") {
+        // Prepare conditions evaluation
+        const conditions = ConditionExpressionGroup.fromMonitor(monitor);
+        const hasConditions = conditions && conditions.children && conditions.children.length > 0;
+
+        // Parse JSON if needed for conditions
+        let parsedMessage = null;
+        let jsonValue = null;
+        if (hasConditions || monitor.mqttCheckType === "json-query") {
+            try {
+                parsedMessage = JSON.parse(receivedMessage);
+                if (monitor.jsonPath) {
+                    let expression = jsonata(monitor.jsonPath);
+                    jsonValue = await expression.evaluate(parsedMessage);
+                }
+            } catch (e) {
+                // Not valid JSON, that's okay for keyword check
+                if (monitor.mqttCheckType === "json-query") {
+                    throw new Error("Invalid JSON in MQTT message: " + e.message);
+                }
+            }
+        }
+
+        // If conditions are defined, use them
+        if (hasConditions) {
+            const conditionData = {
+                topic: messageTopic,
+                message: receivedMessage,
+                json_value: jsonValue?.toString() ?? "",
+            };
+
+            const conditionsResult = evaluateExpressionGroup(conditions, conditionData);
+
+            if (conditionsResult) {
+                heartbeat.msg = `Topic: ${messageTopic}; Message: ${receivedMessage}`;
+                heartbeat.status = UP;
+            } else {
+                throw new Error(`Conditions not met - Topic: ${messageTopic}; Message: ${receivedMessage}`);
+            }
+        } else if (monitor.mqttCheckType === "keyword") {
+            // Legacy keyword check
             if (receivedMessage != null && receivedMessage.includes(monitor.mqttSuccessMessage)) {
                 heartbeat.msg = `Topic: ${messageTopic}; Message: ${receivedMessage}`;
                 heartbeat.status = UP;
@@ -31,17 +82,12 @@ class MqttMonitorType extends MonitorType {
                 throw Error(`Message Mismatch - Topic: ${monitor.mqttTopic}; Message: ${receivedMessage}`);
             }
         } else if (monitor.mqttCheckType === "json-query") {
-            const parsedMessage = JSON.parse(receivedMessage);
-
-            let expression = jsonata(monitor.jsonPath);
-
-            let result = await expression.evaluate(parsedMessage);
-
-            if (result?.toString() === monitor.expectedValue) {
+            // Legacy json-query check
+            if (jsonValue?.toString() === monitor.expectedValue) {
                 heartbeat.msg = "Message received, expected value is found";
                 heartbeat.status = UP;
             } else {
-                throw new Error("Message received but value is not equal to expected value, value was: [" + result + "]");
+                throw new Error("Message received but value is not equal to expected value, value was: [" + jsonValue + "]");
             }
         } else {
             throw Error("Unknown MQTT Check Type");
