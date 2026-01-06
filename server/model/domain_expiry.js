@@ -86,19 +86,18 @@ async function getRdapDomainExpiryDate(domain) {
  */
 async function sendDomainNotificationByTargetDays(domain, daysRemaining, targetDays, notificationList) {
     let sent = false;
-    log.debug("domain", `Send domain expiry notification for ${targetDays} deadline.`);
+    log.debug("domain_expiry", `Send domain expiry notification for ${targetDays} deadline.`);
 
     for (let notification of notificationList) {
         try {
-            log.debug("domain", `Sending to ${notification.name}`);
+            log.debug("domain_expiry", `Sending to ${notification.name}`);
             await Notification.send(
                 JSON.parse(notification.config),
                 `Domain name ${domain} will expire in ${daysRemaining} days`
             );
             sent = true;
         } catch (e) {
-            log.error("domain", `Cannot send domain notification to ${notification.name}`);
-            log.error("domain", e);
+            log.error("domain_expiry", `Cannot send domain notification to ${notification.name} because`, e);
         }
     }
 
@@ -152,7 +151,7 @@ class DomainExpiry extends BeanModel {
         const tld = parseTld(urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname);
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
-            log.warn("domain", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
+            log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
             return false;
         }
         const existing = await DomainExpiry.findByName(tld.domain);
@@ -188,7 +187,7 @@ class DomainExpiry extends BeanModel {
 
         let expiryDate;
         if (bean?.lastCheck && getDaysBetween(new Date(bean.lastCheck), new Date()) < 1) {
-            log.debug("domain", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
+            log.debug("domain_expiry", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
             return bean.expiry;
         } else if (bean) {
             expiryDate = await bean.getExpiryDate();
@@ -220,13 +219,13 @@ class DomainExpiry extends BeanModel {
 
         if (!notificationList.length > 0) {
             // fail fast. If no notification is set, all the following checks can be skipped.
-            log.debug("domain", "No notification, no need to send domain notification");
+            log.debug("domain_expiry", "No notification, no need to send domain notification");
             return;
         }
 
         const daysRemaining = getDaysRemaining(new Date(), domain.expiry);
         const lastSent = domain.lastExpiryNotificationSent;
-        log.debug("domain", `${name} expires in ${daysRemaining} days`);
+        log.debug("domain_expiry", `${name} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
         if (notifyDays == null || !Array.isArray(notifyDays)) {
