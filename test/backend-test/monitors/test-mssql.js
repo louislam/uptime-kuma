@@ -172,7 +172,7 @@ describe(
                 await assert.rejects(
                     mssqlMonitor.check(monitor, heartbeat, {}),
                     new Error(
-                        "Query result (99) did not meet the specified conditions"
+                        "Query result did not meet the specified conditions (99)"
                     )
                 );
                 assert.strictEqual(
