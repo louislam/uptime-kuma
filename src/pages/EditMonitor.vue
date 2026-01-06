@@ -2084,7 +2084,10 @@ message HealthCheckResponse {
                 }
 
                 // Wildcard is allowed only for DNS
-                if (!isFQDN(hostname, {
+                // Hostnames starting with "." are valid for DNS (e.g., "." for root zone)
+                if (this.monitor.type === "dns" && hostname.startsWith(".")) {
+                    // Root zone and dot-prefixed hostnames are valid for DNS queries
+                } else if (!isFQDN(hostname, {
                     allow_wildcard: this.monitor.type === "dns",
                     require_tld: false,
                     allow_underscores: true,

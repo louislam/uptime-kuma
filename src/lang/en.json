@@ -276,7 +276,7 @@
     "mqttHostnameTip": "Please use this format {hostnameFormat}",
     "hostnameCannotBeIP": "DNS hostname cannot be an IP. Did you mean to use the resolver field?",
     "invalidHostnameOrIP": "Invalid hostname or IP. Hostname must be a valid FQDN. Cannot use wildcard. Can have underscore, or end with a dot.",
-    "invalidDNSHostname": "Invalid hostname. Hostname must be a valid FQDN. Can be a wildcard, have underscore or end with a dot.",
+    "invalidDNSHostname": "Invalid hostname. Hostname must be a valid FQDN or start with a dot (e.g., . for root zone). Can be a wildcard, have underscore or end with a dot.",
     "wildcardOnlyForDNS": "Wildcard hostnames are only supported for DNS monitors.",
     "invalidURL": "Invalid URL",
     "successKeyword": "Success Keyword",
