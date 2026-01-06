@@ -47,7 +47,7 @@ jobs:
       uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: ${{ matrix.node }}
-    - run: npm install
+    - run: npm clean-install --no-fund
     
     - name: Rebuild native modules for ARM64
       if: matrix.os == 'ubuntu-22.04-arm'
@@ -87,7 +87,7 @@ jobs:
             -v $PWD:/workspace \
             -w /workspace \
             arm32v7/node:${{ matrix.node }} \
-            bash -c "npm clean-install --production"
+            npm clean-install --no-fund --production
 
   check-linters:
     runs-on: ubuntu-latest
@@ -110,7 +110,7 @@ jobs:
       uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: 20
-    - run: npm install
+    - run: npm clean-install --no-fund
     - run: npm run lint:prod
 
   e2e-test:
@@ -135,7 +135,7 @@ jobs:
       uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
       with:
         node-version: 22
-    - run: npm install
+    - run: npm clean-install --no-fund
     
     - name: Rebuild native modules for ARM64
       run: npm rebuild @louislam/sqlite3
