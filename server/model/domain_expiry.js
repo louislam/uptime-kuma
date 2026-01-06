@@ -222,6 +222,10 @@ class DomainExpiry extends BeanModel {
             log.debug("domain_expiry", "No notification, no need to send domain notification");
             return;
         }
+        if (!domain.expiry) {
+            log.debug("domain_expiry", `No previous expiry date available for ${name}, skipping notification`);
+            return;
+        }
 
         const daysRemaining = getDaysRemaining(new Date(), domain.expiry);
         const lastSent = domain.lastExpiryNotificationSent;
