@@ -116,6 +116,15 @@
                     <input id="analyticsScriptUrl" v-model="config.analyticsScriptUrl" type="url" class="form-control" data-testid="analytics-script-url-input">
                 </div>
 
+                <!-- RSS Title -->
+                <div class="my-3">
+                    <label for="rss-title" class="form-label">{{ $t("RSS Title") }}</label>
+                    <input id="rss-title" v-model="config.rssTitle" type="text" class="form-control" data-testid="rss-title-input">
+                    <div class="form-text">
+                        {{ $t("Leave blank to use status page title") }}
+                    </div>
+                </div>
+
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
