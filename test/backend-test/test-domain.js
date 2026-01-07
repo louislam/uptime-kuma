@@ -35,17 +35,19 @@ describe("Domain Expiry", () => {
 
     test("checkExpiry() caches expiration date in database", async () => {
         await DomainExpiry.checkExpiry(monHttpCom); // RDAP -> Cache
-        const domain = await DomainExpiry.findByName("google.com");
-        assert(Date.now() - domain.lastCheck < 5 * 1000);
+        const domain = await DomainExpiry.forMonitor(monHttpCom);
+        const diff = Date.now() - domain.lastCheck;
+        assert(diff < 5 * 1000);
     });
 
     test("sendNotifications() triggers notification for expiring domain", async () => {
-        await DomainExpiry.findByName("google.com");
+        await DomainExpiry.forMonitor(monHttpCom);
         const hook = {
             "port": 3010,
             "url": "capture"
         };
-        await setSetting("domainExpiryNotifyDays", [ 1, 2, 1500 ], "general");
+        const manyDays = 3650;
+        await setSetting("domainExpiryNotifyDays", [ manyDays ], "general");
         const notif = R.convertToBean("notification", {
             "config": JSON.stringify({
                 type: "webhook",
@@ -57,8 +59,6 @@ describe("Domain Expiry", () => {
             "user_id": 1,
             "name": "Testhook"
         });
-        const manyDays = 3650;
-        setSetting("domainExpiryNotifyDays", [ manyDays ], "general");
         const [ , data ] = await Promise.all([
             DomainExpiry.sendNotifications(monHttpCom, [ notif ]),
             mockWebhook(hook.port, hook.url)

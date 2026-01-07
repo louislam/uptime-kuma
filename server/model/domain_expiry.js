@@ -154,13 +154,18 @@ class DomainExpiry extends BeanModel {
             log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
             return false;
         }
-        const existing = await DomainExpiry.findByName(tld.domain);
-        if (existing) {
-            return existing;
+        let domain = await DomainExpiry.findByName(tld.domain);
+        if (!domain && tld.domain) {
+            domain = await DomainExpiry.createByName(tld.domain);
         }
-        if (tld.domain) {
-            return await DomainExpiry.createByName(tld.domain);
-        }
+        [ "expiry", "lastCheck" ].forEach((key) => {
+            if (typeof domain[key] === "string") {
+                domain[key] = new Date(domain[key].replace(" ", "T"));
+            } else if (typeof domain[key] === "number") {
+                domain[key] = new Date(domain[key]);
+            }
+        });
+        return domain;
     }
 
     /**
@@ -186,13 +191,13 @@ class DomainExpiry extends BeanModel {
         let bean = await DomainExpiry.forMonitor(monitor);
 
         let expiryDate;
-        if (bean?.lastCheck && getDaysBetween(new Date(bean.lastCheck), new Date()) < 1) {
+        if (bean?.lastCheck && getDaysBetween(bean.lastCheck, new Date()) < 1) {
             log.debug("domain_expiry", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
             return bean.expiry;
         } else if (bean) {
             expiryDate = await bean.getExpiryDate();
 
-            if (new Date(expiryDate) > new Date(bean.expiry)) {
+            if (new Date(expiryDate) > bean.expiry) {
                 bean.lastExpiryNotificationSent = null;
             }
 
