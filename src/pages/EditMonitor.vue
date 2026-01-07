@@ -400,6 +400,35 @@
                                 </select>
                             </div>
 
+                            <!-- Expected TLS Alert (for TCP monitor mTLS verification) -->
+                            <template v-if="monitor.type === 'port'">
+                                <div class="my-3">
+                                    <label for="expected_tls_alert" class="form-label">{{ $t("Expected TLS Alert") }}</label>
+                                    <select id="expected_tls_alert" v-model="monitor.expectedTlsAlert" class="form-select">
+                                        <option value="none">{{ $t("None (Successful Connection)") }}</option>
+                                        <!-- TLS alert names are from RFC 8446 spec and should NOT be translated -->
+                                        <optgroup :label="$t('TLS Alerts')">
+                                            <option value="certificate_required">certificate_required (116)</option>
+                                            <option value="bad_certificate">bad_certificate (42)</option>
+                                            <option value="certificate_unknown">certificate_unknown (46)</option>
+                                            <option value="unknown_ca">unknown_ca (48)</option>
+                                            <option value="access_denied">access_denied (49)</option>
+                                            <option value="handshake_failure">handshake_failure (40)</option>
+                                            <option value="certificate_expired">certificate_expired (45)</option>
+                                            <option value="certificate_revoked">certificate_revoked (44)</option>
+                                        </optgroup>
+                                    </select>
+                                    <i18n-t tag="div" class="form-text" keypath="expectedTlsAlertDescription">
+                                        <template #code>
+                                            <code>certificate_required</code>
+                                        </template>
+                                        <template #link>
+                                            <a href="https://www.rfc-editor.org/rfc/rfc8446#section-6.2" target="_blank" rel="noopener noreferrer">{{ $t("TLS Alert Spec") }}</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+                            </template>
+
                             <!-- Json Query -->
                             <!-- For Json Query / SNMP -->
                             <div v-if="monitor.type === 'json-query' || monitor.type === 'snmp'" class="my-3">
@@ -513,7 +542,7 @@
 
                                 <div class="my-3">
                                     <label for="mqttPassword" class="form-label">MQTT {{ $t("Password") }}</label>
-                                    <input id="mqttPassword" v-model="monitor.mqttPassword" type="password" class="form-control">
+                                    <HiddenInput id="mqttPassword" v-model="monitor.mqttPassword" autocomplete="new-password" />
                                 </div>
 
                                 <div class="my-3">
@@ -579,12 +608,12 @@
 
                                 <div class="my-3">
                                     <label for="radius_password" class="form-label">Radius {{ $t("Password") }}</label>
-                                    <input id="radius_password" v-model="monitor.radiusPassword" type="password" class="form-control" required />
+                                    <HiddenInput id="radius_password" v-model="monitor.radiusPassword" autocomplete="new-password" :required="true" />
                                 </div>
 
                                 <div class="my-3">
                                     <label for="radius_secret" class="form-label">{{ $t("RadiusSecret") }}</label>
-                                    <input id="radius_secret" v-model="monitor.radiusSecret" type="password" class="form-control" required />
+                                    <HiddenInput id="radius_secret" v-model="monitor.radiusSecret" autocomplete="new-password" :required="true" />
                                     <div class="form-text"> {{ $t( "RadiusSecretDescription") }} </div>
                                 </div>
 
@@ -1064,7 +1093,7 @@
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslPassword" class="form-label">{{ $t("Password") }}</label>
-                                        <input id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" type="password" autocomplete="kafkaProducerSaslPassword" class="form-control">
+                                        <HiddenInput id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" autocomplete="kafkaProducerSaslPassword" />
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslAuthorizationIdentity" class="form-label">{{ $t("Authorization Identity") }}</label>
@@ -1076,11 +1105,11 @@
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslSecretAccessKey" class="form-label">{{ $t("Secret AccessKey") }}</label>
-                                        <input id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" type="password" autocomplete="kafkaProducerSaslSecretAccessKey" class="form-control" required>
+                                        <HiddenInput id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" autocomplete="kafkaProducerSaslSecretAccessKey" :required="true" />
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslSessionToken" class="form-label">{{ $t("Session Token") }}</label>
-                                        <input id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" type="password" autocomplete="kafkaProducerSaslSessionToken" class="form-control">
+                                        <HiddenInput id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" autocomplete="kafkaProducerSaslSessionToken" />
                                     </div>
                                 </div>
                             </template>
@@ -1201,7 +1230,7 @@
                                         <template v-if="monitor.oauth_auth_method === 'client_secret_post' || monitor.oauth_auth_method === 'client_secret_basic'">
                                             <div class="my-3">
                                                 <label for="oauth_client_secret" class="form-label">{{ $t("Client Secret") }}</label>
-                                                <input id="oauth_client_secret" v-model="monitor.oauth_client_secret" type="password" class="form-control" :placeholder="$t('Client Secret')" required>
+                                                <HiddenInput id="oauth_client_secret" v-model="monitor.oauth_client_secret" :placeholder="$t('Client Secret')" :required="true" />
                                             </div>
                                             <div class="my-3">
                                                 <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
@@ -1221,7 +1250,7 @@
 
                                         <div class="my-3">
                                             <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
-                                            <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
+                                            <HiddenInput id="basicauth-pass" v-model="monitor.basic_auth_pass" autocomplete="new-password" :placeholder="$t('Password')" />
                                         </div>
                                         <template v-if="monitor.authMethod === 'ntlm' ">
                                             <div class="my-3">
@@ -2083,8 +2112,9 @@ message HealthCheckResponse {
                     return false;
                 }
 
-                // Wildcard is allowed only for DNS
-                if (!isFQDN(hostname, {
+                // Root zone "." is valid for DNS but not recognized by isFQDN
+                const isRootZone = this.monitor.type === "dns" && hostname === ".";
+                if (!isRootZone && !isFQDN(hostname, {
                     allow_wildcard: this.monitor.type === "dns",
                     require_tld: false,
                     allow_underscores: true,

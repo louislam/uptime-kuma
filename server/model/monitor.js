@@ -8,7 +8,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
-const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mysqlQuery, setSetting, httpNtlm, radius,
+const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, setSetting, httpNtlm, radius,
     kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, checkCertificateHostname
 } = require("../util-server");
 const { R } = require("redbean-node");
@@ -165,6 +165,7 @@ class Monitor extends BeanModel {
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
+            expectedTlsAlert: this.expected_tls_alert,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -781,16 +782,6 @@ class Monitor extends BeanModel {
                         bean.status = UP;
                         bean.msg = `Container has not reported health and is currently ${res.data.State.Status}. As it is running, it is considered UP. Consider adding a health check for better service visibility`;
                     }
-                } else if (this.type === "mysql") {
-                    let startTime = dayjs().valueOf();
-
-                    // Use `radius_password` as `password` field, since there are too many unnecessary fields
-                    // TODO: rename `radius_password` to `password` later for general use
-                    let mysqlPassword = this.radiusPassword;
-
-                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1", mysqlPassword);
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
@@ -1507,6 +1498,13 @@ class Monitor extends BeanModel {
         }
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.retryInterval > MAX_INTERVAL_SECOND) {
+            throw new Error(`Retry interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
+        }
+        if (this.retryInterval < MIN_INTERVAL_SECOND) {
+            throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
         if (this.type === "ping") {
