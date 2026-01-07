@@ -45,6 +45,7 @@ export default {
             avgPingList: { },
             uptimeList: { },
             tlsInfoList: {},
+            domainInfoList: {},
             notificationList: [],
             dockerHostList: [],
             remoteBrowserList: [],
@@ -248,6 +249,11 @@ export default {
 
             socket.on("certInfo", (monitorID, data) => {
                 this.tlsInfoList[monitorID] = JSON.parse(data);
+            });
+
+            socket.on("domainInfo", (monitorID, daysRemaining, expiresOn) => {
+                this.domainInfoList[monitorID] = { daysRemaining: daysRemaining,
+                    expiresOn: expiresOn };
             });
 
             socket.on("connect_error", (err) => {
@@ -602,11 +608,12 @@ export default {
         /**
          * Delete monitor by ID
          * @param {number} monitorID ID of monitor to delete
+         * @param {boolean} deleteChildren Whether to delete child monitors (for groups)
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */
-        deleteMonitor(monitorID, callback) {
-            socket.emit("deleteMonitor", monitorID, callback);
+        deleteMonitor(monitorID, deleteChildren, callback) {
+            socket.emit("deleteMonitor", monitorID, deleteChildren, callback);
         },
 
         /**

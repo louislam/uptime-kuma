@@ -24,7 +24,7 @@
                 <a href="https://api.slack.com/messaging/webhooks" target="_blank">https://api.slack.com/messaging/webhooks</a>
             </i18n-t>
             <p style="margin-top: 8px;">
-                {{ $t("aboutChannelName", [$t("slack")]) }}
+                {{ $t("aboutChannelName", ["slack"]) }}
             </p>
             <p style="margin-top: 8px;">
                 {{ $t("aboutKumaURL") }}

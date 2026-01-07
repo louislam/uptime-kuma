@@ -109,23 +109,6 @@ export function getDevContainerServerHostname() {
 }
 
 /**
- * Regex pattern fr identifying hostnames and IP addresses
- * @param {boolean} mqtt whether or not the regex should take into
- * account the fact that it is an mqtt uri
- * @returns {RegExp} The requested regex
- */
-export function hostNameRegexPattern(mqtt = false) {
-    // mqtt, mqtts, ws and wss schemes accepted by mqtt.js (https://github.com/mqttjs/MQTT.js/#connect)
-    const mqttSchemeRegexPattern = "((mqtt|ws)s?:\\/\\/)?";
-    // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
-    const ipRegexPattern = `((^${mqtt ? mqttSchemeRegexPattern : ""}((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))$)|(^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?$))`;
-    // Source: https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
-    const hostNameRegexPattern = `^${mqtt ? mqttSchemeRegexPattern : ""}([a-zA-Z0-9])?(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\\-_]*[a-zA-Z0-9_])\\.)*([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\\-_]*[A-Za-z0-9_])(\\.)?$`;
-
-    return `${ipRegexPattern}|${hostNameRegexPattern}`;
-}
-
-/**
  * Get the tag color options
  * Shared between components
  * @param {any} self Component
@@ -214,13 +197,18 @@ export function getToastErrorTimeout() {
     return errorTimeout;
 }
 
-class RelativeTimeFormatter {
+class TimeDurationFormatter {
     /**
-     * Default locale and options for Relative Time Formatter
+     * Default locale and options for Time Duration Formatter (supports both DurationFormat and RelativeTimeFormat)
      */
     constructor() {
-        this.options = { numeric: "always" };
-        this.instance = new Intl.RelativeTimeFormat(currentLocale(), this.options);
+        this.durationFormatOptions = { style: "long" };
+        this.relativeTimeFormatOptions = { numeric: "always" };
+        if (Intl.DurationFormat !== undefined) {
+            this.durationFormatInstance = new Intl.DurationFormat(currentLocale(), this.durationFormatOptions);
+        } else {
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(currentLocale(), this.relativeTimeFormatOptions);
+        }
     }
 
     /**
@@ -229,7 +217,11 @@ class RelativeTimeFormatter {
      * @returns {void} No return value.
      */
     updateLocale(locale) {
-        this.instance = new Intl.RelativeTimeFormat(locale, this.options);
+        if (Intl.DurationFormat !== undefined) {
+            this.durationFormatInstance = new Intl.DurationFormat(locale, this.durationFormatOptions);
+        } else {
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(locale, this.relativeTimeFormatOptions);
+        }
     }
 
     /**
@@ -242,6 +234,17 @@ class RelativeTimeFormatter {
         const hours = Math.floor((seconds % 86400) / 3600);
         const minutes = Math.floor(((seconds % 86400) % 3600) / 60);
         const secs = ((seconds % 86400) % 3600) % 60;
+
+        if (this.durationFormatInstance !== undefined) {
+            // use Intl.DurationFormat if available
+            return this.durationFormatInstance.format({
+                days,
+                hours,
+                minutes,
+                seconds: secs
+            });
+        }
+
         const parts = [];
         /**
          * Build the formatted string from parts
@@ -253,12 +256,11 @@ class RelativeTimeFormatter {
          * @returns {void}
          */
         const toFormattedPart = (value, unitOfTime) => {
-            const partsArray = this.instance.formatToParts(value, unitOfTime);
+            const partsArray = this.relativeTimeFormatInstance.formatToParts(value, unitOfTime);
             const filteredParts = partsArray
                 .filter(
                     (part, index) =>
-                        (part.type === "literal" || part.type === "integer") &&
-                        index > 0
+                        part.type === "integer" || (part.type === "literal" && index > 0)
                 )
                 .map((part) => part.value);
 
@@ -282,9 +284,9 @@ class RelativeTimeFormatter {
         if (parts.length > 0) {
             return `${parts.join(" ")}`;
         }
-        return this.instance.format(0, "second"); // Handle case for 0 seconds
+        return this.relativeTimeFormatInstance.format(0, "second"); // Handle case for 0 seconds
     }
 }
 
-export const relativeTimeFormatter = new RelativeTimeFormatter();
+export const timeDurationFormatter = new TimeDurationFormatter();
 

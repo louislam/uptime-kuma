@@ -45,9 +45,17 @@
                                         <option value="docker">
                                             {{ $t("Docker Container") }}
                                         </option>
-
+                                        <option
+                                            v-if="['linux', 'win32'].includes($root.info.runtime.platform) && !$root.info.isContainer"
+                                            value="system-service"
+                                        >
+                                            {{ $t("System Service") }}
+                                        </option>
                                         <option value="real-browser">
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
+                                        </option>
+                                        <option value="websocket-upgrade">
+                                            Websocket Upgrade
                                         </option>
                                     </optgroup>
 
@@ -94,6 +102,9 @@
                                         <option value="redis">
                                             Redis
                                         </option>
+                                        <option v-if="!$root.info.isContainer" value="sip-options">
+                                            SIP Options Ping
+                                        </option>
                                         <option v-if="!$root.info.isContainer" value="tailscale-ping">
                                             Tailscale Ping
                                         </option>
@@ -101,7 +112,7 @@
                                 </select>
                                 <i18n-t v-if="monitor.type === 'rabbitmq'" keypath="rabbitmqHelpText" tag="div" class="form-text">
                                     <template #rabitmq_documentation>
-                                        <a href="https://www.rabbitmq.com/management" target="_blank" rel="noopener noreferrer">
+                                        <a href="https://www.rabbitmq.com/docs/manage-rabbitmq" target="_blank" rel="noopener noreferrer">
                                             RabbitMQ documentation
                                         </a>
                                     </template>
@@ -110,6 +121,10 @@
 
                             <div v-if="monitor.type === 'tailscale-ping'" class="alert alert-warning" role="alert">
                                 {{ $t("tailscalePingWarning") }}
+                            </div>
+
+                            <div v-if="monitor.type === 'sip-options'" class="alert alert-warning" role="alert">
+                                {{ $t("sipsakPingWarning") }}
                             </div>
 
                             <!-- Friendly Name -->
@@ -131,9 +146,20 @@
                             </div>
 
                             <!-- URL -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
+                            <div v-if="monitor.type === 'websocket-upgrade' || monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'real-browser' " class="my-3">
                                 <label for="url" class="form-label">{{ $t("URL") }}</label>
-                                <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
+                                <input id="url" v-model="monitor.url" type="url" class="form-control" :pattern="monitor.type !== 'websocket-upgrade' ? 'https?://.+' : 'wss?://.+'" required data-testid="url-input">
+                            </div>
+
+                            <!-- Websocket Subprotocol Docs: https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name -->
+                            <div v-if="monitor.type === 'websocket-upgrade'" class="my-3">
+                                <label for="ws_subprotocol" class="form-label">{{ $t("Subprotocol(s)") }}</label>
+                                <input id="ws_subprotocol" v-model="monitor.wsSubprotocol" type="text" class="form-control" placeholder="mielecloudconnect,soap">
+                                <i18n-t tag="div" class="form-text" keypath="wsSubprotocolDescription">
+                                    <template #documentation>
+                                        <a href="https://www.iana.org/assignments/websocket/websocket.xml#subprotocol-name" target="_blank" rel="noopener noreferrer">{{ $t('documentationOf', ['IANA']) }}</a>
+                                    </template>
+                                </i18n-t>
                             </div>
 
                             <!-- gRPC URL -->
@@ -299,15 +325,14 @@
                             </template>
 
                             <!-- Hostname -->
-                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP only -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <!-- TCP Port / Ping / DNS / Steam / MQTT / Radius / Tailscale Ping / SNMP / SMTP / SIP Options only -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'ping' || monitor.type === 'dns' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'tailscale-ping' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type ==='sip-options'" class="my-3">
                                 <label for="hostname" class="form-label">{{ $t("Hostname") }}</label>
                                 <input
                                     id="hostname"
                                     v-model="monitor.hostname"
                                     type="text"
                                     class="form-control"
-                                    :pattern="`${monitor.type === 'mqtt' ? mqttIpOrHostnameRegexPattern : ipOrHostnameRegexPattern}`"
                                     required
                                     data-testid="hostname-input"
                                 >
@@ -321,8 +346,8 @@
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP -->
-                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp'" class="my-3">
+                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options -->
+                            <div v-if="monitor.type === 'port' || monitor.type === 'steam' || monitor.type === 'gamedig' || monitor.type === 'mqtt' || monitor.type === 'radius' || monitor.type === 'smtp' || monitor.type === 'snmp' || monitor.type === 'sip-options'" class="my-3">
                                 <label for="port" class="form-label">{{ $t("Port") }}</label>
                                 <input id="port" v-model="monitor.port" type="number" class="form-control" required min="0" max="65535" step="1">
                             </div>
@@ -358,13 +383,51 @@
                                 <label for="smtp_security" class="form-label">{{ $t("SMTP Security") }}</label>
                                 <select id="smtp_security" v-model="monitor.smtpSecurity" class="form-select">
                                     <option value="secure">SMTPS</option>
-                                    <option value="nostarttls">Ignore STARTTLS</option>
-                                    <option value="starttls">Use STARTTLS</option>
+                                    <option value="nostarttls">{{ $t("Ignore STARTTLS") }}</option>
+                                    <option value="starttls">{{ $t("Use STARTTLS") }}</option>
                                 </select>
                                 <div class="form-text">
                                     {{ $t("smtpHelpText") }}
                                 </div>
                             </div>
+
+                            <div v-if="monitor.type === 'port'" class="my-3">
+                                <label for="port_security" class="form-label">{{ $t("SSL/TLS") }}</label>
+                                <select id="port_security" v-model="monitor.smtpSecurity" class="form-select">
+                                    <option value="nostarttls">{{ $t("None") }}</option>
+                                    <option value="secure">SSL</option>
+                                    <option value="starttls">STARTTLS</option>
+                                </select>
+                            </div>
+
+                            <!-- Expected TLS Alert (for TCP monitor mTLS verification) -->
+                            <template v-if="monitor.type === 'port'">
+                                <div class="my-3">
+                                    <label for="expected_tls_alert" class="form-label">{{ $t("Expected TLS Alert") }}</label>
+                                    <select id="expected_tls_alert" v-model="monitor.expectedTlsAlert" class="form-select">
+                                        <option value="none">{{ $t("None (Successful Connection)") }}</option>
+                                        <!-- TLS alert names are from RFC 8446 spec and should NOT be translated -->
+                                        <optgroup :label="$t('TLS Alerts')">
+                                            <option value="certificate_required">certificate_required (116)</option>
+                                            <option value="bad_certificate">bad_certificate (42)</option>
+                                            <option value="certificate_unknown">certificate_unknown (46)</option>
+                                            <option value="unknown_ca">unknown_ca (48)</option>
+                                            <option value="access_denied">access_denied (49)</option>
+                                            <option value="handshake_failure">handshake_failure (40)</option>
+                                            <option value="certificate_expired">certificate_expired (45)</option>
+                                            <option value="certificate_revoked">certificate_revoked (44)</option>
+                                        </optgroup>
+                                    </select>
+                                    <i18n-t tag="div" class="form-text" keypath="expectedTlsAlertDescription">
+                                        <template #code>
+                                            <code>certificate_required</code>
+                                        </template>
+                                        <template #link>
+                                            <a href="https://www.rfc-editor.org/rfc/rfc8446#section-6.2" target="_blank" rel="noopener noreferrer">{{ $t("TLS Alert Spec") }}</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+                            </template>
 
                             <!-- Json Query -->
                             <!-- For Json Query / SNMP -->
@@ -372,8 +435,8 @@
                                 <div class="my-2">
                                     <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
                                     <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('playground') }}</a>
                                     </i18n-t>
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
                                 </div>
@@ -479,7 +542,7 @@
 
                                 <div class="my-3">
                                     <label for="mqttPassword" class="form-label">MQTT {{ $t("Password") }}</label>
-                                    <input id="mqttPassword" v-model="monitor.mqttPassword" type="password" class="form-control">
+                                    <HiddenInput id="mqttPassword" v-model="monitor.mqttPassword" autocomplete="new-password" />
                                 </div>
 
                                 <div class="my-3">
@@ -527,8 +590,8 @@
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" required>
 
                                     <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('here') }}</a>
                                     </i18n-t>
                                     <br>
 
@@ -545,12 +608,12 @@
 
                                 <div class="my-3">
                                     <label for="radius_password" class="form-label">Radius {{ $t("Password") }}</label>
-                                    <input id="radius_password" v-model="monitor.radiusPassword" type="password" class="form-control" required />
+                                    <HiddenInput id="radius_password" v-model="monitor.radiusPassword" autocomplete="new-password" :required="true" />
                                 </div>
 
                                 <div class="my-3">
                                     <label for="radius_secret" class="form-label">{{ $t("RadiusSecret") }}</label>
-                                    <input id="radius_secret" v-model="monitor.radiusSecret" type="password" class="form-control" required />
+                                    <HiddenInput id="radius_secret" v-model="monitor.radiusSecret" autocomplete="new-password" :required="true" />
                                     <div class="form-text"> {{ $t( "RadiusSecretDescription") }} </div>
                                 </div>
 
@@ -572,6 +635,52 @@
                                 <div class="my-3">
                                     <label for="connectionString" class="form-label">{{ $t("Connection String") }}</label>
                                     <input id="connectionString" v-model="monitor.databaseConnectionString" type="text" class="form-control" required>
+                                </div>
+                            </template>
+
+                            <template v-if="monitor.type === 'system-service'">
+                                <div class="my-3">
+                                    <label for="system-service-name" class="form-label">{{ $t("Service Name") }}</label>
+                                    <input id="system-service-name" v-model="monitor.system_service_name" type="text" class="form-control" required placeholder="nginx">
+
+                                    <div class="form-text">
+                                        <template v-if="$root.info.runtime.platform === 'linux'">
+                                            {{ $t("systemServiceDescriptionLinux", {service_name: monitor.system_service_name || 'nginx'}) }}
+                                        </template>
+                                        <template v-else-if="$root.info.runtime.platform === 'win32'">
+                                            {{ $t("systemServiceDescriptionWindows", {service_name: monitor.system_service_name || 'Dnscache'}) }}
+                                        </template>
+                                        <template v-else>
+                                            {{ $t("systemServiceDescription", {service_name: monitor.system_service_name || 'nginx'}) }}
+                                        </template>
+
+                                        <template v-if="!monitor.system_service_name || /^[a-zA-Z0-9_\-\.\@\ ]+$/.test(monitor.system_service_name)">
+                                            <div v-if="$root.info.runtime.platform === 'linux'" class="mt-2">
+                                                <div>
+                                                    <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                        <template #command>
+                                                            <code>systemctl is-active {{ monitor.system_service_name || 'nginx' }}</code>
+                                                        </template>
+                                                    </i18n-t>
+                                                </div>
+                                                <div class="text-secondary small">
+                                                    {{ $t("systemServiceExpectedOutput", ["active"]) }}
+                                                </div>
+                                            </div>
+                                            <div v-else-if="$root.info.runtime.platform === 'win32'" class="mt-2">
+                                                <div>
+                                                    <i18n-t keypath="systemServiceCommandHint" tag="span">
+                                                        <template #command>
+                                                            <code>(Get-Service -Name '{{ (monitor.system_service_name || 'Dnscache').replaceAll("'", "''") }}').Status</code>
+                                                        </template>
+                                                    </i18n-t>
+                                                </div>
+                                                <div class="text-secondary small">
+                                                    {{ $t("systemServiceExpectedOutput", ["Running"]) }}
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
                                 </div>
                             </template>
 
@@ -598,7 +707,7 @@
                                     <textarea id="mongodbCommand" v-model="monitor.databaseQuery" class="form-control" :placeholder="$t('Example:', [ '{ &quot;ping&quot;: 1 }' ])"></textarea>
                                     <i18n-t tag="div" class="form-text" keypath="mongodbCommandDescription">
                                         <template #documentation>
-                                            <a href="https://www.mongodb.com/docs/manual/reference/command/">{{ $t('documentationOf', ['MongoDB']) }}</a>
+                                            <a href="https://www.mongodb.com/docs/manual/reference/command/" target="_blank" rel="noopener noreferrer">{{ $t('documentationOf', ['MongoDB']) }}</a>
                                         </template>
                                     </i18n-t>
                                 </div>
@@ -607,8 +716,8 @@
                                     <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control">
 
                                     <i18n-t tag="div" class="form-text" keypath="jsonQueryDescription">
-                                        <a href="https://jsonata.org/">jsonata.org</a>
-                                        <a href="https://try.jsonata.org/">{{ $t('here') }}</a>
+                                        <a href="https://jsonata.org/" target="_blank" rel="noopener noreferrer">jsonata.org</a>
+                                        <a href="https://try.jsonata.org/" target="_blank" rel="noopener noreferrer">{{ $t('here') }}</a>
                                     </i18n-t>
                                 </div>
                                 <div class="my-3">
@@ -628,9 +737,25 @@
                             <!-- Interval -->
                             <div class="my-3">
                                 <label for="interval" class="form-label">{{ $t("Heartbeat Interval") }} ({{ $t("checkEverySecond", [ monitor.interval ]) }})</label>
-                                <input id="interval" v-model="monitor.interval" type="number" class="form-control" required :min="minInterval" step="1" :max="maxInterval" @blur="finishUpdateInterval">
+                                <input
+                                    id="interval"
+                                    v-model="monitor.interval"
+                                    type="number"
+                                    class="form-control"
+                                    required
+                                    :min="minInterval"
+                                    :max="maxInterval"
+                                    step="1"
+                                    @focus="lowIntervalConfirmation.editedValue=true"
+                                    @blur="checkIntervalValue"
+                                >
+
                                 <div class="form-text">
                                     {{ monitor.humanReadableInterval }}
+                                </div>
+
+                                <div v-if="monitor.interval < 20" class="form-text">
+                                    {{ $t("minimumIntervalWarning") }}
                                 </div>
                             </div>
 
@@ -647,11 +772,23 @@
                                     {{ $t("Heartbeat Retry Interval") }}
                                     <span>({{ $t("retryCheckEverySecond", [ monitor.retryInterval ]) }})</span>
                                 </label>
-                                <input id="retry-interval" v-model="monitor.retryInterval" type="number" class="form-control" required :min="minInterval" step="1">
+                                <input
+                                    id="retry-interval"
+                                    v-model="monitor.retryInterval"
+                                    type="number"
+                                    class="form-control"
+                                    required
+                                    :min="minInterval"
+                                    step="1"
+                                    @focus="lowIntervalConfirmation.editedValue=true"
+                                >
+                                <div v-if="monitor.retryInterval < 20" class="form-text">
+                                    {{ $t("minimumIntervalWarning") }}
+                                </div>
                             </div>
 
-                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP only -->
-                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp'" class="my-3">
+                            <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
+                            <div v-if="monitor.type === 'http' || monitor.type === 'json-query' || monitor.type === 'keyword' || monitor.type === 'ping' || monitor.type === 'rabbitmq' || monitor.type === 'snmp' || monitor.type === 'websocket-upgrade'" class="my-3">
                                 <label for="timeout" class="form-label">
                                     {{ monitor.type === 'ping' ? $t("pingGlobalTimeoutLabel") : $t("Request Timeout") }}
                                     <span v-if="monitor.type !== 'ping'">({{ $t("timeoutAfter", [monitor.timeout || clampTimeout(monitor.interval)]) }})</span>
@@ -671,12 +808,30 @@
 
                             <h2 v-if="monitor.type !== 'push'" class="mt-5 mb-2">{{ $t("Advanced") }}</h2>
 
-                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' " class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
+                            <div v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || (monitor.type === 'port' && ['starttls', 'secure'].includes(monitor.smtpSecurity))" class="my-3 form-check" :title="monitor.ignoreTls ? $t('ignoredTLSError') : ''">
                                 <input id="expiry-notification" v-model="monitor.expiryNotification" class="form-check-input" type="checkbox" :disabled="monitor.ignoreTls">
                                 <label class="form-check-label" for="expiry-notification">
                                     {{ $t("Certificate Expiry Notification") }}
                                 </label>
                                 <div class="form-text">
+                                </div>
+                            </div>
+
+                            <div v-if="hasDomain" class="my-3 form-check">
+                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox">
+                                <label class="form-check-label" for="domain-expiry-notification">
+                                    {{ $t("labelDomainNameExpiryNotification") }}
+                                </label>
+                                <div class="form-text">
+                                </div>
+                            </div>
+                            <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
+                                <input id="wsIgnoreSecWebsocketAcceptHeader" v-model="monitor.wsIgnoreSecWebsocketAcceptHeader" class="form-check-input" type="checkbox">
+                                <i18n-t tag="label" keypath="Ignore Sec-WebSocket-Accept header" class="form-check-label" for="wsIgnoreSecWebsocketAcceptHeader">
+                                    <code>Sec-Websocket-Accept</code>
+                                </i18n-t>
+                                <div class="form-text">
+                                    {{ $t("ignoreSecWebsocketAcceptHeaderDescription") }}
                                 </div>
                             </div>
 
@@ -753,6 +908,36 @@
                                     {{ $t("pingPerRequestTimeoutDescription") }}
                                 </div>
                             </div>
+
+                            <!-- Websocket Upgrade only -->
+                            <template v-if="monitor.type === 'websocket-upgrade' ">
+                                <div class="my-3">
+                                    <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
+
+                                    <VueMultiselect
+                                        id="acceptedStatusCodes"
+                                        v-model="monitor.accepted_statuscodes"
+                                        :options="acceptedWebsocketCodeOptions"
+                                        :multiple="true"
+                                        :close-on-select="false"
+                                        :clear-on-select="false"
+                                        :preserve-search="true"
+                                        :placeholder="$t('Pick Accepted Status Codes...')"
+                                        :preselect-first="false"
+                                        :max-height="600"
+                                        :taggable="true"
+                                    ></VueMultiselect>
+
+                                    <div class="form-text">
+                                        {{ $t("acceptedStatusCodesDescription") }}
+                                    </div>
+                                    <i18n-t tag="div" class="form-text" keypath="wsCodeDescription">
+                                        <template #rfc6455>
+                                            <a href="https://datatracker.ietf.org/doc/html/rfc6455#section-7.4" target="_blank" rel="noopener noreferrer">RFC 6455</a>
+                                        </template>
+                                    </i18n-t>
+                                </div>
+                            </template>
 
                             <!-- HTTP / Keyword only -->
                             <template v-if="monitor.type === 'http' || monitor.type === 'keyword' || monitor.type === 'json-query' || monitor.type === 'grpc-keyword' ">
@@ -908,7 +1093,7 @@
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslPassword" class="form-label">{{ $t("Password") }}</label>
-                                        <input id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" type="password" autocomplete="kafkaProducerSaslPassword" class="form-control">
+                                        <HiddenInput id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" autocomplete="kafkaProducerSaslPassword" />
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslAuthorizationIdentity" class="form-label">{{ $t("Authorization Identity") }}</label>
@@ -920,11 +1105,11 @@
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslSecretAccessKey" class="form-label">{{ $t("Secret AccessKey") }}</label>
-                                        <input id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" type="password" autocomplete="kafkaProducerSaslSecretAccessKey" class="form-control" required>
+                                        <HiddenInput id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" autocomplete="kafkaProducerSaslSecretAccessKey" :required="true" />
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslSessionToken" class="form-label">{{ $t("Session Token") }}</label>
-                                        <input id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" type="password" autocomplete="kafkaProducerSaslSessionToken" class="form-control">
+                                        <HiddenInput id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" autocomplete="kafkaProducerSaslSessionToken" />
                                     </div>
                                 </div>
                             </template>
@@ -1010,16 +1195,16 @@
                                 <template v-if="monitor.authMethod && monitor.authMethod !== null ">
                                     <template v-if="monitor.authMethod === 'mtls' ">
                                         <div class="my-3">
-                                            <label for="tls-cert" class="form-label">{{ $t("Cert") }}</label>
-                                            <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('Cert body')" required></textarea>
+                                            <label for="tls-cert" class="form-label">{{ $t("mtls-auth-server-cert-label") }}</label>
+                                            <textarea id="tls-cert" v-model="monitor.tlsCert" class="form-control" :placeholder="$t('mtls-auth-server-cert-placeholder')" required></textarea>
                                         </div>
                                         <div class="my-3">
-                                            <label for="tls-key" class="form-label">{{ $t("Key") }}</label>
-                                            <textarea id="tls-key" v-model="monitor.tlsKey" class="form-control" :placeholder="$t('Key body')" required></textarea>
+                                            <label for="tls-key" class="form-label">{{ $t("mtls-auth-server-key-label") }}</label>
+                                            <textarea id="tls-key" v-model="monitor.tlsKey" class="form-control" :placeholder="$t('mtls-auth-server-key-placeholder')" required></textarea>
                                         </div>
                                         <div class="my-3">
-                                            <label for="tls-ca" class="form-label">{{ $t("CA") }}</label>
-                                            <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('Server CA')"></textarea>
+                                            <label for="tls-ca" class="form-label">{{ $t("mtls-auth-server-ca-label") }}</label>
+                                            <textarea id="tls-ca" v-model="monitor.tlsCa" class="form-control" :placeholder="$t('mtls-auth-server-ca-placeholder')"></textarea>
                                         </div>
                                     </template>
                                     <template v-else-if="monitor.authMethod === 'oauth2-cc' ">
@@ -1045,7 +1230,7 @@
                                         <template v-if="monitor.oauth_auth_method === 'client_secret_post' || monitor.oauth_auth_method === 'client_secret_basic'">
                                             <div class="my-3">
                                                 <label for="oauth_client_secret" class="form-label">{{ $t("Client Secret") }}</label>
-                                                <input id="oauth_client_secret" v-model="monitor.oauth_client_secret" type="password" class="form-control" :placeholder="$t('Client Secret')" required>
+                                                <HiddenInput id="oauth_client_secret" v-model="monitor.oauth_client_secret" :placeholder="$t('Client Secret')" :required="true" />
                                             </div>
                                             <div class="my-3">
                                                 <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
@@ -1065,7 +1250,7 @@
 
                                         <div class="my-3">
                                             <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
-                                            <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
+                                            <HiddenInput id="basicauth-pass" v-model="monitor.basic_auth_pass" autocomplete="new-password" :placeholder="$t('Password')" />
                                         </div>
                                         <template v-if="monitor.authMethod === 'ntlm' ">
                                             <div class="my-3">
@@ -1121,14 +1306,6 @@
                                     <label for="body" class="form-label">{{ $t("Body") }}</label>
                                     <textarea id="body" v-model="monitor.grpcBody" class="form-control" :placeholder="bodyPlaceholder"></textarea>
                                 </div>
-
-                                <!-- Metadata: temporary disable waiting for next PR allow to send gRPC with metadata -->
-                                <template v-if="false">
-                                    <div class="my-3">
-                                        <label for="metadata" class="form-label">{{ $t("Metadata") }}</label>
-                                        <textarea id="metadata" v-model="monitor.grpcMetadata" class="form-control" :placeholder="headersPlaceholder"></textarea>
-                                    </div>
-                                </template>
                             </template>
                         </div>
                     </div>
@@ -1152,6 +1329,10 @@
             <ProxyDialog ref="proxyDialog" @added="addedProxy" />
             <CreateGroupDialog ref="createGroupDialog" @added="addedDraftGroup" />
             <RemoteBrowserDialog ref="remoteBrowserDialog" />
+            <Confirm ref="confirmLowIntervalValue" btn-style="btn-danger" :yes-text="$t('Confirm')" :no-text="$t('Cancel')" @yes="handleIntervalConfirm">
+                <p>{{ $t("lowIntervalWarning") }}</p>
+                <p>{{ $t("Please use this option carefully!") }}</p>
+            </Confirm>
         </div>
     </transition>
 </template>
@@ -1162,6 +1343,7 @@ import { useToast } from "vue-toastification";
 import ActionSelect from "../components/ActionSelect.vue";
 import CopyableInput from "../components/CopyableInput.vue";
 import CreateGroupDialog from "../components/CreateGroupDialog.vue";
+import Confirm from "../components/Confirm.vue";
 import NotificationDialog from "../components/NotificationDialog.vue";
 import DockerHostDialog from "../components/DockerHostDialog.vue";
 import RemoteBrowserDialog from "../components/RemoteBrowserDialog.vue";
@@ -1174,7 +1356,9 @@ import {
     MIN_INTERVAL_SECOND,
     sleep,
 } from "../util.ts";
-import { hostNameRegexPattern, relativeTimeFormatter } from "../util-frontend";
+import { timeDurationFormatter } from "../util-frontend";
+import isFQDN from "validator/lib/isFQDN";
+import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
 
@@ -1187,10 +1371,11 @@ const monitorDefaults = {
     name: "",
     parent: null,
     url: "https://",
+    wsSubprotocol: "",
     method: "GET",
     ipFamily: null,
     interval: 60,
-    humanReadableInterval: relativeTimeFormatter.secondsToHumanReadableFormat(60),
+    humanReadableInterval: timeDurationFormatter.secondsToHumanReadableFormat(60),
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
@@ -1198,6 +1383,7 @@ const monitorDefaults = {
     ignoreTls: false,
     upsideDown: false,
     expiryNotification: false,
+    domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: [ "200-299" ],
     dns_resolve_type: "A",
@@ -1226,7 +1412,8 @@ const monitorDefaults = {
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
-    conditions: []
+    conditions: [],
+    system_service_name: "",
 };
 
 export default {
@@ -1236,6 +1423,7 @@ export default {
         ProxyDialog,
         CopyableInput,
         CreateGroupDialog,
+        Confirm,
         NotificationDialog,
         DockerHostDialog,
         RemoteBrowserDialog,
@@ -1253,11 +1441,11 @@ export default {
                 notificationIDList: {},
                 // Do not add default value here, please check init() method
             },
+            hasDomain: false,
             acceptedStatusCodeOptions: [],
+            acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
             kafkaSaslMechanismOptions: [],
-            ipOrHostnameRegexPattern: hostNameRegexPattern(),
-            mqttIpOrHostnameRegexPattern: hostNameRegexPattern(true),
             gameList: null,
             connectionStringTemplates: {
                 "sqlserver": "Server=<hostname>,<port>;Database=<your database>;User Id=<your user id>;Password=<your password>;Encrypt=<true/false>;TrustServerCertificate=<Yes/No>;Connection Timeout=<int>",
@@ -1268,6 +1456,10 @@ export default {
             },
             draftGroupName: null,
             remoteBrowsersEnabled: false,
+            lowIntervalConfirmation: {
+                confirmed: false,
+                editedValue: false,
+            },
         };
     },
 
@@ -1284,20 +1476,12 @@ export default {
             return this.monitor.type === "ping" ? 60 : undefined;
         },
 
-        timeoutLabel() {
-            return this.monitor.type === "ping" ? this.$t("pingTimeoutLabel") : this.$t("Request Timeout");
-        },
-
-        timeoutDescription() {
-            if (this.monitor.type === "ping") {
-                return this.$t("pingTimeoutDescription");
-            }
-            return "";
-        },
-
         defaultFriendlyName() {
             if (this.monitor.hostname) {
                 return this.monitor.hostname;
+            }
+            if (this.monitor.system_service_name) {
+                return this.monitor.system_service_name;
             }
             if (this.monitor.url) {
                 if (this.monitor.url !== "http://" && this.monitor.url !== "https://") {
@@ -1321,6 +1505,16 @@ export default {
                 return this.ipRegexPattern;
             }
             return null;
+        },
+
+        monitorTypeUrlHost() {
+            const { type, url, hostname, grpcUrl } = this.monitor;
+            return {
+                type,
+                url,
+                hostname,
+                grpcUrl
+            };
         },
 
         pageName() {
@@ -1574,7 +1768,7 @@ message HealthCheckResponse {
                 this.monitor.retryInterval = value;
             }
             // Converting monitor.interval to human readable format.
-            this.monitor.humanReadableInterval = relativeTimeFormatter.secondsToHumanReadableFormat(value);
+            this.monitor.humanReadableInterval = timeDurationFormatter.secondsToHumanReadableFormat(value);
         },
 
         "monitor.timeout"(value, oldValue) {
@@ -1600,7 +1794,20 @@ message HealthCheckResponse {
             }
         },
 
+        "monitorTypeUrlHost"(data) {
+            this.$root.getSocket().emit("checkMointor", data, (res) => {
+                this.hasDomain = !!res?.domain;
+                if (!res?.domain) {
+                    this.monitor.domainExpiryNotification = false;
+                }
+            });
+        },
+
         "monitor.type"(newType, oldType) {
+            if (oldType && this.monitor.type === "websocket-upgrade") {
+                this.monitor.url = "wss://";
+                this.monitor.accepted_statuscodes = [ "1000" ];
+            }
             if (this.monitor.type === "push") {
                 if (! this.monitor.pushToken) {
                     // ideally this would require checking if the generated token is already used
@@ -1707,6 +1914,8 @@ message HealthCheckResponse {
             "500-599",
         ];
 
+        let acceptedWebsocketCodeOptions = [];
+
         let dnsresolvetypeOptions = [
             "A",
             "AAAA",
@@ -1732,6 +1941,11 @@ message HealthCheckResponse {
             acceptedStatusCodeOptions.push(i.toString());
         }
 
+        for (let i = 1000; i <= 4999; i++) {
+            acceptedWebsocketCodeOptions.push(i.toString());
+        }
+
+        this.acceptedWebsocketCodeOptions = acceptedWebsocketCodeOptions;
         this.acceptedStatusCodeOptions = acceptedStatusCodeOptions;
         this.dnsresolvetypeOptions = dnsresolvetypeOptions;
         this.kafkaSaslMechanismOptions = kafkaSaslMechanismOptions;
@@ -1885,11 +2099,69 @@ message HealthCheckResponse {
                 }
             }
 
+            // Validate hostname field input for various monitors
+            if ([ "mqtt", "dns", "port", "ping", "steam", "gamedig", "radius", "tailscale-ping", "smtp", "snmp" ].includes(this.monitor.type) && this.monitor.hostname) {
+                let hostname = this.monitor.hostname.trim();
+
+                if (this.monitor.type === "mqtt") {
+                    hostname = hostname.replace(/^(mqtt|ws)s?:\/\//, "");
+                }
+
+                if (this.monitor.type === "dns" && isIP(hostname)) {
+                    toast.error(this.$t("hostnameCannotBeIP"));
+                    return false;
+                }
+
+                // Root zone "." is valid for DNS but not recognized by isFQDN
+                const isRootZone = this.monitor.type === "dns" && hostname === ".";
+                if (!isRootZone && !isFQDN(hostname, {
+                    allow_wildcard: this.monitor.type === "dns",
+                    require_tld: false,
+                    allow_underscores: true,
+                    allow_trailing_dot: true,
+                }) && !isIP(hostname)) {
+                    if (this.monitor.type === "dns") {
+                        toast.error(this.$t("invalidDNSHostname"));
+                    } else {
+                        toast.error(this.$t("invalidHostnameOrIP"));
+                    }
+                    return false;
+                }
+            }
+
+            // Validate URL field input for various monitors
+            if ([ "http", "keyword", "json-query", "websocket-upgrade", "real-browser" ].includes(this.monitor.type) && this.monitor.url) {
+                try {
+                    const url = new URL(this.monitor.url);
+                    // Browser can encode *.hostname.com to %2A.hostname.com
+                    if (url.hostname.includes("*") || url.hostname.includes("%2A")) {
+                        toast.error(this.$t("wildcardOnlyForDNS"));
+                        return false;
+                    }
+                    if (!isFQDN(url.hostname, {
+                        require_tld: false,
+                        allow_underscores: true,
+                        allow_trailing_dot: true,
+                    }) && !isIP(url.hostname)) {
+                        toast.error(this.$t("invalidHostnameOrIP"));
+                        return false;
+                    }
+                } catch (err) {
+                    toast.error(this.$t("invalidURL"));
+                    return false;
+                }
+            }
+
             return true;
         },
 
         resetToken() {
             this.monitor.pushToken = genSecret(pushTokenLength);
+        },
+
+        handleIntervalConfirm() {
+            this.lowIntervalConfirmation.confirmed = true;
+            this.submit();
         },
 
         /**
@@ -1900,6 +2172,15 @@ message HealthCheckResponse {
 
             this.processing = true;
 
+            // Check user has confirmed use of low interval value. Only
+            // do this if the interval value has changed since last save.
+            if (this.lowIntervalConfirmation.editedValue && (this.monitor.interval < 20 || this.monitor.retryInterval < 20) && !this.lowIntervalConfirmation.confirmed) {
+                // The dialog will then re-call submit
+                this.$refs.confirmLowIntervalValue.show();
+                this.processing = false;
+                return;
+            }
+
             if (!this.monitor.name) {
                 this.monitor.name = this.defaultFriendlyName;
             }
@@ -1908,6 +2189,9 @@ message HealthCheckResponse {
                 this.processing = false;
                 return;
             }
+
+            this.lowIntervalConfirmation.confirmed = false;
+            this.lowIntervalConfirmation.editedValue = false;
 
             // Beautify the JSON format (only if httpBodyEncoding is not set or === json)
             if (this.monitor.body && (!this.monitor.httpBodyEncoding || this.monitor.httpBodyEncoding === "json")) {

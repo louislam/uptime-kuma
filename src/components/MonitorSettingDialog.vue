@@ -6,7 +6,7 @@
                     <h5 class="modal-title">
                         {{ $t("Monitor Setting", [monitor.name]) }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                 </div>
                 <div class="modal-body">
                     <div class="my-3 form-check">
@@ -31,10 +31,10 @@
 
                     <button
                         class="btn btn-primary btn-add-group me-2"
-                        @click="$refs.badgeGeneratorDialog.show(monitor.id, monitor.name)"
+                        @click="$refs.badgeLinkGeneratorDialog.show(monitor.id, monitor.name)"
                     >
                         <font-awesome-icon icon="certificate" />
-                        {{ $t("Open Badge Generator") }}
+                        {{ $t("Open Badge Link Generator") }}
                     </button>
                 </div>
 
@@ -46,16 +46,16 @@
             </div>
         </div>
     </div>
-    <BadgeGeneratorDialog ref="badgeGeneratorDialog" />
+    <BadgeLinkGeneratorDialog ref="badgeLinkGeneratorDialog" />
 </template>
 
 <script lang="ts">
 import { Modal } from "bootstrap";
-import BadgeGeneratorDialog from "./BadgeGeneratorDialog.vue";
+import BadgeLinkGeneratorDialog from "./BadgeLinkGeneratorDialog.vue";
 
 export default {
     components: {
-        BadgeGeneratorDialog
+        BadgeLinkGeneratorDialog
     },
     props: {},
     emits: [],

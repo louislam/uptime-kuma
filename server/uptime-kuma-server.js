@@ -111,14 +111,24 @@ class UptimeKumaServer {
         // Set Monitor Types
         UptimeKumaServer.monitorTypeList["real-browser"] = new RealBrowserMonitorType();
         UptimeKumaServer.monitorTypeList["tailscale-ping"] = new TailscalePing();
+        UptimeKumaServer.monitorTypeList["websocket-upgrade"] = new WebSocketMonitorType();
         UptimeKumaServer.monitorTypeList["dns"] = new DnsMonitorType();
+        UptimeKumaServer.monitorTypeList["postgres"] = new PostgresMonitorType();
         UptimeKumaServer.monitorTypeList["mqtt"] = new MqttMonitorType();
         UptimeKumaServer.monitorTypeList["smtp"] = new SMTPMonitorType();
         UptimeKumaServer.monitorTypeList["group"] = new GroupMonitorType();
         UptimeKumaServer.monitorTypeList["snmp"] = new SNMPMonitorType();
+        UptimeKumaServer.monitorTypeList["grpc-keyword"] = new GrpcKeywordMonitorType();
         UptimeKumaServer.monitorTypeList["mongodb"] = new MongodbMonitorType();
         UptimeKumaServer.monitorTypeList["rabbitmq"] = new RabbitMqMonitorType();
+        UptimeKumaServer.monitorTypeList["sip-options"] = new SIPMonitorType();
+        UptimeKumaServer.monitorTypeList["gamedig"] = new GameDigMonitorType();
+        UptimeKumaServer.monitorTypeList["port"] = new TCPMonitorType();
         UptimeKumaServer.monitorTypeList["manual"] = new ManualMonitorType();
+        UptimeKumaServer.monitorTypeList["redis"] = new RedisMonitorType();
+        UptimeKumaServer.monitorTypeList["system-service"] = new SystemServiceMonitorType();
+        UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
+        UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
 
         // Allow all CORS origins (polling) in development
         let cors = undefined;
@@ -217,7 +227,9 @@ class UptimeKumaServer {
      */
     async sendUpdateMonitorIntoList(socket, monitorID) {
         let list = await this.getMonitorJSONList(socket.userID, monitorID);
-        this.io.to(socket.userID).emit("updateMonitorIntoList", list);
+        if (list && list[monitorID]) {
+            this.io.to(socket.userID).emit("updateMonitorIntoList", list);
+        }
     }
 
     /**
@@ -552,12 +564,23 @@ module.exports = {
 // Must be at the end to avoid circular dependencies
 const { RealBrowserMonitorType } = require("./monitor-types/real-browser-monitor-type");
 const { TailscalePing } = require("./monitor-types/tailscale-ping");
+const { WebSocketMonitorType } = require("./monitor-types/websocket-upgrade");
 const { DnsMonitorType } = require("./monitor-types/dns");
+const { PostgresMonitorType } = require("./monitor-types/postgres");
 const { MqttMonitorType } = require("./monitor-types/mqtt");
 const { SMTPMonitorType } = require("./monitor-types/smtp");
 const { GroupMonitorType } = require("./monitor-types/group");
 const { SNMPMonitorType } = require("./monitor-types/snmp");
+const { GrpcKeywordMonitorType } = require("./monitor-types/grpc");
 const { MongodbMonitorType } = require("./monitor-types/mongodb");
 const { RabbitMqMonitorType } = require("./monitor-types/rabbitmq");
+const { SIPMonitorType } = require("./monitor-types/sip-options");
+const { GameDigMonitorType } = require("./monitor-types/gamedig");
+const { TCPMonitorType } = require("./monitor-types/tcp.js");
 const { ManualMonitorType } = require("./monitor-types/manual");
+const { RedisMonitorType } = require("./monitor-types/redis");
+const { SystemServiceMonitorType } = require("./monitor-types/system-service");
+const { MssqlMonitorType } = require("./monitor-types/mssql");
+const { MysqlMonitorType } = require("./monitor-types/mysql");
 const Monitor = require("./model/monitor");
+

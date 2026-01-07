@@ -842,7 +842,7 @@
     "enableNSCD": "Włącz NSCD (Name Service Cache Daemon) do buforowania wszystkich żądań DNS",
     "Saved.": "Zapisano.",
     "setupDatabaseChooseDatabase": "Której bazy danych chcesz używać?",
-    "setupDatabaseEmbeddedMariaDB": "Nie musisz niczego ustawiać. Ten obraz docker automatycznie osadził i skonfigurował MariaDB. Uptime Kuma połączy się z tą bazą danych za pośrednictwem gniazda Unix.",
+    "setupDatabaseEmbeddedMariaDB": "Nie musisz niczego ustawiać. Ten obraz Docker automatycznie osadził i skonfigurował MariaDB. Uptime Kuma połączy się z tą bazą danych za pośrednictwem gniazda Unix.",
     "setupDatabaseMariaDB": "Połącz z zewnętrzną bazą danych MariaDB. Należy ustawić informacje o połączeniu z bazą danych.",
     "setupDatabaseSQLite": "Prosty plik bazy danych, zalecany do wdrożeń na małą skalę. Przed wersją 2.0.0 Uptime Kuma używała SQLite jako domyślnej bazy danych.",
     "dbName": "Nazwa bazy danych",
@@ -1220,5 +1220,10 @@
     "tagNameExists": "Tag systemowy o tej nazwie już istnieje. Wybierz go z listy lub użyj innej nazwy.",
     "auto-select": "Wybór automatyczny",
     "issueWithGoogleChatOnAndroidHelptext": "Pozwala to również ominąć błędy upstream, takie jak {issuetackerURL}",
-    "ipFamilyDescriptionAutoSelect": "Używa {happyEyeballs} do określania rodziny adresów IP."
+    "ipFamilyDescriptionAutoSelect": "Używa {happyEyeballs} do określania rodziny adresów IP.",
+    "Ignore Sec-WebSocket-Accept header": "Ignoruj nagłówek {0}",
+    "Web Process Control Protocol": "Web Process Control Protocol (WPCP)",
+    "Advanced Message Queuing Protocol": "Advanced Message Queuing Protocol (AMQP) 1.0+",
+    "WebSocket Application Messaging Protocol": "WAMP (The WebSocket Application Messaging Protocol)",
+    "Reverse Web Process Control": "Reverse Web Process Control Protocol (RWPCP)"
 }
