@@ -990,9 +990,13 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 const DomainExpiry = require("./model/domain_expiry");
+                const supportInfo = await DomainExpiry.checkSupport(partial);
                 callback({
                     ok: true,
-                    domain: (await DomainExpiry.forMonitor(partial))?.domain || null
+                    supported: Boolean(supportInfo.supported),
+                    domain: supportInfo.domain ?? null,
+                    tld: supportInfo.tld ?? null,
+                    reason: supportInfo.reason ?? null,
                 });
             } catch (e) {
                 callback({

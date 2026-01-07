@@ -823,6 +823,7 @@
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
                                 <div class="form-text">
+                                    <span v-if="!hasDomain">{{ domainExpiryHelptext }}</span>
                                 </div>
                             </div>
                             <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
@@ -1442,6 +1443,8 @@ export default {
                 // Do not add default value here, please check init() method
             },
             hasDomain: false,
+            domainExpirySupportReason: null,
+            domainExpirySupportTld: null,
             checkMonitorDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
@@ -1519,6 +1522,7 @@ export default {
         },
 
         showDomainExpiryNotification() {
+            // NOTE: Keep this list in sync with `excludeTypes` in `server/model/domain_expiry.js`.
             const excludedTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
             const type = this.monitor.type;
 
@@ -1527,6 +1531,13 @@ export default {
             }
 
             return !excludedTypes.includes(type) && !type.match(/sql$/);
+        },
+
+        domainExpiryHelptext() {
+            if (this.domainExpirySupportReason === "unsupported_tld" && this.domainExpirySupportTld) {
+                return this.$t("domainExpiryHelptextUnsupportedTld", [ `.${this.domainExpirySupportTld}` ]);
+            }
+            return this.$t("domainExpiryHelptextNoDomain");
         },
 
         pageName() {
@@ -1813,12 +1824,23 @@ message HealthCheckResponse {
 
             if (!this.showDomainExpiryNotification) {
                 this.hasDomain = false;
+                this.domainExpirySupportReason = null;
+                this.domainExpirySupportTld = null;
                 return;
             }
 
             this.checkMonitorDebounce = setTimeout(() => {
                 this.$root.getSocket().emit("checkMointor", data, (res) => {
-                    this.hasDomain = !!res?.domain;
+                    if (!res?.ok) {
+                        this.hasDomain = false;
+                        this.domainExpirySupportReason = null;
+                        this.domainExpirySupportTld = null;
+                        return;
+                    }
+
+                    this.hasDomain = Boolean(res.supported);
+                    this.domainExpirySupportReason = res.reason ?? null;
+                    this.domainExpirySupportTld = res.tld ?? null;
                 });
             }, 500);
         },

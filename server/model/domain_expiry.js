@@ -7,6 +7,7 @@ const { Notification } = require("../notification");
 const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 
 const TABLE = "domain_expiry";
+// NOTE: Keep these type filters in sync with `showDomainExpiryNotification` in `src/pages/EditMonitor.vue`.
 const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
 const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
 
@@ -141,42 +142,81 @@ class DomainExpiry extends BeanModel {
 
     /**
      * @param {Monitor} monitor Monitor object
-     * @returns {Promise<DomainExpiry>} Domain expiry bean
+     * @returns {Promise<{ supported: boolean, domain?: string, tld?: string, reason?: string }>} Domain expiry support info
      */
-    static async forMonitor(monitor) {
+    static async checkSupport(monitor) {
         const m = monitor;
+
         if (excludeTypes.includes(m.type) || m.type?.match(/sql$/)) {
-            return false;
+            return {
+                supported: false,
+                reason: "unsupported_type",
+            };
         }
 
-        const target = urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname;
+        let target;
+        if (urlTypes.includes(m.type)) {
+            target = m.url;
+        } else if (m.type === "grpc-keyword") {
+            target = m.grpcUrl;
+        } else {
+            target = m.hostname;
+        }
+
         if (typeof target !== "string" || target.length === 0) {
-            return false;
+            return {
+                supported: false,
+                reason: "missing_target",
+            };
         }
 
         const tld = parseTld(target);
 
         // Avoid logging for incomplete/invalid input while editing monitors.
         if (!tld.domain || !tld.publicSuffix || tld.isIp) {
-            return false;
+            return {
+                supported: false,
+                reason: "invalid_domain",
+            };
         }
 
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
+            return {
+                supported: false,
+                reason: "unsupported_tld",
+                tld: tld.publicSuffix,
+            };
+        }
+
+        return {
+            supported: true,
+            domain: tld.domain,
+            tld: tld.publicSuffix,
+        };
+    }
+
+    /**
+     * @param {Monitor} monitor Monitor object
+     * @returns {Promise<DomainExpiry>} Domain expiry bean
+     */
+    static async forMonitor(monitor) {
+        const m = monitor;
+        const supportInfo = await DomainExpiry.checkSupport(m);
+        if (!supportInfo.supported) {
             // Only warn when the monitor actually has domain expiry notifications enabled.
             // The edit monitor page calls this method frequently while the user is typing.
-            if (Boolean(m.domainExpiryNotification)) {
-                log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
+            if (supportInfo.reason === "unsupported_tld" && Boolean(m.domainExpiryNotification) && supportInfo.tld) {
+                log.warn("domain_expiry", `Domain expiry unsupported for '.${supportInfo.tld}' because its RDAP endpoint is not listed in the IANA database.`);
             }
             return false;
         }
-        const existing = await DomainExpiry.findByName(tld.domain);
+
+        const existing = await DomainExpiry.findByName(supportInfo.domain);
         if (existing) {
             return existing;
         }
-        if (tld.domain) {
-            return await DomainExpiry.createByName(tld.domain);
-        }
+        return await DomainExpiry.createByName(supportInfo.domain);
     }
 
     /**
