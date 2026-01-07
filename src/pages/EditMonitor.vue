@@ -542,7 +542,7 @@
 
                                 <div class="my-3">
                                     <label for="mqttPassword" class="form-label">MQTT {{ $t("Password") }}</label>
-                                    <input id="mqttPassword" v-model="monitor.mqttPassword" type="password" class="form-control">
+                                    <HiddenInput id="mqttPassword" v-model="monitor.mqttPassword" autocomplete="new-password" />
                                 </div>
 
                                 <div class="my-3">
@@ -608,12 +608,12 @@
 
                                 <div class="my-3">
                                     <label for="radius_password" class="form-label">Radius {{ $t("Password") }}</label>
-                                    <input id="radius_password" v-model="monitor.radiusPassword" type="password" class="form-control" required />
+                                    <HiddenInput id="radius_password" v-model="monitor.radiusPassword" autocomplete="new-password" :required="true" />
                                 </div>
 
                                 <div class="my-3">
                                     <label for="radius_secret" class="form-label">{{ $t("RadiusSecret") }}</label>
-                                    <input id="radius_secret" v-model="monitor.radiusSecret" type="password" class="form-control" required />
+                                    <HiddenInput id="radius_secret" v-model="monitor.radiusSecret" autocomplete="new-password" :required="true" />
                                     <div class="form-text"> {{ $t( "RadiusSecretDescription") }} </div>
                                 </div>
 
@@ -1093,7 +1093,7 @@
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism !== 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslPassword" class="form-label">{{ $t("Password") }}</label>
-                                        <input id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" type="password" autocomplete="kafkaProducerSaslPassword" class="form-control">
+                                        <HiddenInput id="kafkaProducerSaslPassword" v-model="monitor.kafkaProducerSaslOptions.password" autocomplete="kafkaProducerSaslPassword" />
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslAuthorizationIdentity" class="form-label">{{ $t("Authorization Identity") }}</label>
@@ -1105,11 +1105,11 @@
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslSecretAccessKey" class="form-label">{{ $t("Secret AccessKey") }}</label>
-                                        <input id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" type="password" autocomplete="kafkaProducerSaslSecretAccessKey" class="form-control" required>
+                                        <HiddenInput id="kafkaProducerSaslSecretAccessKey" v-model="monitor.kafkaProducerSaslOptions.secretAccessKey" autocomplete="kafkaProducerSaslSecretAccessKey" :required="true" />
                                     </div>
                                     <div v-if="monitor.kafkaProducerSaslOptions.mechanism === 'aws'" class="my-3">
                                         <label for="kafkaProducerSaslSessionToken" class="form-label">{{ $t("Session Token") }}</label>
-                                        <input id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" type="password" autocomplete="kafkaProducerSaslSessionToken" class="form-control">
+                                        <HiddenInput id="kafkaProducerSaslSessionToken" v-model="monitor.kafkaProducerSaslOptions.sessionToken" autocomplete="kafkaProducerSaslSessionToken" />
                                     </div>
                                 </div>
                             </template>
@@ -1230,7 +1230,7 @@
                                         <template v-if="monitor.oauth_auth_method === 'client_secret_post' || monitor.oauth_auth_method === 'client_secret_basic'">
                                             <div class="my-3">
                                                 <label for="oauth_client_secret" class="form-label">{{ $t("Client Secret") }}</label>
-                                                <input id="oauth_client_secret" v-model="monitor.oauth_client_secret" type="password" class="form-control" :placeholder="$t('Client Secret')" required>
+                                                <HiddenInput id="oauth_client_secret" v-model="monitor.oauth_client_secret" :placeholder="$t('Client Secret')" :required="true" />
                                             </div>
                                             <div class="my-3">
                                                 <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
@@ -1250,7 +1250,7 @@
 
                                         <div class="my-3">
                                             <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
-                                            <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
+                                            <HiddenInput id="basicauth-pass" v-model="monitor.basic_auth_pass" autocomplete="new-password" :placeholder="$t('Password')" />
                                         </div>
                                         <template v-if="monitor.authMethod === 'ntlm' ">
                                             <div class="my-3">
