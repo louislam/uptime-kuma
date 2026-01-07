@@ -817,8 +817,8 @@
                                 </div>
                             </div>
 
-                            <div v-if="hasDomain" class="my-3 form-check">
-                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox">
+                            <div v-if="showDomainExpiryNotification" class="my-3 form-check">
+                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox" :disabled="!hasDomain">
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
@@ -1442,6 +1442,7 @@ export default {
                 // Do not add default value here, please check init() method
             },
             hasDomain: false,
+            checkMonitorDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
@@ -1515,6 +1516,17 @@ export default {
                 hostname,
                 grpcUrl
             };
+        },
+
+        showDomainExpiryNotification() {
+            const excludedTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
+            const type = this.monitor.type;
+
+            if (!type) {
+                return false;
+            }
+
+            return !excludedTypes.includes(type) && !type.match(/sql$/);
         },
 
         pageName() {
@@ -1795,12 +1807,20 @@ message HealthCheckResponse {
         },
 
         "monitorTypeUrlHost"(data) {
-            this.$root.getSocket().emit("checkMointor", data, (res) => {
-                this.hasDomain = !!res?.domain;
-                if (!res?.domain) {
-                    this.monitor.domainExpiryNotification = false;
-                }
-            });
+            if (this.checkMonitorDebounce != null) {
+                clearTimeout(this.checkMonitorDebounce);
+            }
+
+            if (!this.showDomainExpiryNotification) {
+                this.hasDomain = false;
+                return;
+            }
+
+            this.checkMonitorDebounce = setTimeout(() => {
+                this.$root.getSocket().emit("checkMointor", data, (res) => {
+                    this.hasDomain = !!res?.domain;
+                });
+            }, 500);
         },
 
         "monitor.type"(newType, oldType) {

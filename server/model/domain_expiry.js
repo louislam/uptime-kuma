@@ -148,10 +148,26 @@ class DomainExpiry extends BeanModel {
         if (excludeTypes.includes(m.type) || m.type?.match(/sql$/)) {
             return false;
         }
-        const tld = parseTld(urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname);
+
+        const target = urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname;
+        if (typeof target !== "string" || target.length === 0) {
+            return false;
+        }
+
+        const tld = parseTld(target);
+
+        // Avoid logging for incomplete/invalid input while editing monitors.
+        if (!tld.domain || !tld.publicSuffix || tld.isIp) {
+            return false;
+        }
+
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
-            log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
+            // Only warn when the monitor actually has domain expiry notifications enabled.
+            // The edit monitor page calls this method frequently while the user is typing.
+            if (Boolean(m.domainExpiryNotification)) {
+                log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
+            }
             return false;
         }
         const existing = await DomainExpiry.findByName(tld.domain);
