@@ -1500,6 +1500,13 @@ class Monitor extends BeanModel {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
+        if (this.retryInterval > MAX_INTERVAL_SECOND) {
+            throw new Error(`Retry interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
+        }
+        if (this.retryInterval < MIN_INTERVAL_SECOND) {
+            throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
         if (this.type === "ping") {
             // ping parameters validation
             if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {
