@@ -180,6 +180,14 @@ class DomainExpiry extends BeanModel {
             };
         }
 
+        // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
+        if (tld.publicSuffix.length < 2) {
+            return {
+                supported: false,
+                reason: "invalid_domain",
+            };
+        }
+
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
             return {
