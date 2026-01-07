@@ -1,18 +1,18 @@
 BEGIN TRANSACTION;
 
-PRAGMA writable_schema = TRUE;
+-- Create new table with foreign key constraint
+CREATE TABLE monitor_tls_info_new (
+    monitor_id INTEGER NOT NULL REFERENCES [monitor] ([id]) ON DELETE CASCADE ON UPDATE CASCADE,
+    info_json TEXT
+);
 
-UPDATE
-	SQLITE_MASTER
-SET
-	sql = replace(sql,
-	'monitor_id INTEGER NOT NULL',
-	'monitor_id INTEGER NOT NULL REFERENCES [monitor] ([id]) ON DELETE CASCADE ON UPDATE CASCADE'
-)
-WHERE
-	name = 'monitor_tls_info'
-	AND type = 'table';
+-- Copy data from old table
+INSERT INTO monitor_tls_info_new SELECT * FROM monitor_tls_info;
 
-PRAGMA writable_schema = RESET;
+-- Drop old table
+DROP TABLE monitor_tls_info;
+
+-- Rename new table
+ALTER TABLE monitor_tls_info_new RENAME TO monitor_tls_info;
 
 COMMIT;
