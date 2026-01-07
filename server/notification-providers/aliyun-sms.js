@@ -21,8 +21,8 @@ class AliyunSMS extends NotificationProvider {
                     status: this.statusToString(heartbeatJSON["status"]),
                     ...(notification.optionalParameters && {
                         msg: this.removeIpAndDomain(heartbeatJSON["msg"])
-                        })
-                    });
+                    })
+                });
                 if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
                 }
