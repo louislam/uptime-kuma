@@ -76,6 +76,7 @@ const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 const { passwordStrength } = require("check-password-strength");
+const TranslatableError = require("./translatable-error");
 
 log.debug("server", "Importing 2FA Modules");
 const notp = require("notp");
@@ -97,6 +98,8 @@ const { getSettings, setSettings, setting, initJWTSecret, checkLogin, doubleChec
 log.debug("server", "Importing Notification");
 const { Notification } = require("./notification");
 Notification.init();
+log.debug("server", "Importing Web-Push");
+const webpush = require("web-push");
 
 log.debug("server", "Importing Database");
 const Database = require("./database");
@@ -108,6 +111,9 @@ const { loginRateLimiter, twoFaRateLimiter } = require("./rate-limiter");
 const { apiAuth } = require("./auth");
 const { login } = require("./auth");
 const passwordHash = require("./password-hash");
+
+const { Prometheus } = require("./prometheus");
+const { UptimeCalculator } = require("./uptime-calculator");
 
 const hostname = config.hostname;
 
@@ -192,6 +198,9 @@ let needSetup = false;
     await server.initAfterDatabaseReady();
     server.entryPage = await Settings.get("entryPage");
     await StatusPage.loadDomainMappingList();
+
+    log.debug("server", "Initializing Prometheus");
+    await Prometheus.init();
 
     log.debug("server", "Adding route");
 
@@ -666,7 +675,7 @@ let needSetup = false;
         socket.on("setup", async (username, password, callback) => {
             try {
                 if (passwordStrength(password).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                    throw new TranslatableError("passwordTooWeak");
                 }
 
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
@@ -690,6 +699,7 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n,
                 });
             }
         });
@@ -802,6 +812,8 @@ let needSetup = false;
                 bean.parent = monitor.parent;
                 bean.type = monitor.type;
                 bean.url = monitor.url;
+                bean.wsIgnoreSecWebsocketAcceptHeader = monitor.wsIgnoreSecWebsocketAcceptHeader;
+                bean.wsSubprotocol = monitor.wsSubprotocol;
                 bean.method = monitor.method;
                 bean.body = monitor.body;
                 bean.ipFamily = monitor.ipFamily;
@@ -834,6 +846,7 @@ let needSetup = false;
                 bean.invertKeyword = monitor.invertKeyword;
                 bean.ignoreTls = monitor.ignoreTls;
                 bean.expiryNotification = monitor.expiryNotification;
+                bean.domainExpiryNotification = monitor.domainExpiryNotification;
                 bean.upsideDown = monitor.upsideDown;
                 bean.packetSize = monitor.packetSize;
                 bean.maxredirects = monitor.maxredirects;
@@ -891,6 +904,8 @@ let needSetup = false;
                 bean.rabbitmqPassword = monitor.rabbitmqPassword;
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
+                bean.system_service_name = monitor.system_service_name;
+                bean.expected_tls_alert = monitor.expectedTlsAlert;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
@@ -964,6 +979,22 @@ let needSetup = false;
                     monitor: monitor.toJSON(preloadData),
                 });
 
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
+        socket.on("checkMointor", async (partial, callback) => {
+            try {
+                checkLogin(socket);
+                const DomainExpiry = require("./model/domain_expiry");
+                callback({
+                    ok: true,
+                    domain: (await DomainExpiry.forMonitor(partial))?.domain || null
+                });
             } catch (e) {
                 callback({
                     ok: false,
@@ -1048,51 +1079,78 @@ let needSetup = false;
             }
         });
 
-        socket.on("deleteMonitor", async (monitorID, callback) => {
+        socket.on("deleteMonitor", async (monitorID, deleteChildren, callback) => {
             try {
-                checkLogin(socket);
-
-                log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
-
-                if (monitorID in server.monitorList) {
-                    await server.monitorList[monitorID].stop();
-                    delete server.monitorList[monitorID];
+                // Backward compatibility: if deleteChildren is omitted, the second parameter is the callback
+                if (typeof deleteChildren === "function") {
+                    callback = deleteChildren;
+                    deleteChildren = false;
                 }
+
+                checkLogin(socket);
 
                 const startTime = Date.now();
 
-                // Check if this is a group monitor and unlink children before deletion
+                // Check if this is a group monitor
                 const monitor = await R.findOne("monitor", " id = ? AND user_id = ? ", [
                     monitorID,
                     socket.userID,
                 ]);
 
+                // Log with context about deletion type
                 if (monitor && monitor.type === "group") {
-                    // Get all children before unlinking them
+                    if (deleteChildren) {
+                        log.info("manage", `Delete Group and Children: ${monitorID} User ID: ${socket.userID}`);
+                    } else {
+                        log.info("manage", `Delete Group (unlink children): ${monitorID} User ID: ${socket.userID}`);
+                    }
+                } else {
+                    log.info("manage", `Delete Monitor: ${monitorID} User ID: ${socket.userID}`);
+                }
+
+                if (monitor && monitor.type === "group") {
+                    // Get all children before processing
                     const children = await Monitor.getChildren(monitorID);
 
-                    // Unlink all children from the group
-                    await Monitor.unlinkAllChildren(monitorID);
+                    if (deleteChildren) {
+                        // Delete all child monitors recursively
+                        if (children && children.length > 0) {
+                            for (const child of children) {
+                                await Monitor.deleteMonitorRecursively(child.id, socket.userID);
+                                await server.sendDeleteMonitorFromList(socket, child.id);
+                            }
+                        }
+                    } else {
+                        // Unlink all children from the group (set parent to null)
+                        await Monitor.unlinkAllChildren(monitorID);
 
-                    // Notify frontend to update each child monitor's parent to null
-                    if (children && children.length > 0) {
-                        for (const child of children) {
-                            await server.sendUpdateMonitorIntoList(socket, child.id);
+                        // Notify frontend to update each child monitor's parent to null
+                        if (children && children.length > 0) {
+                            for (const child of children) {
+                                await server.sendUpdateMonitorIntoList(socket, child.id);
+                            }
                         }
                     }
                 }
 
-                await R.exec("DELETE FROM monitor WHERE id = ? AND user_id = ? ", [
-                    monitorID,
-                    socket.userID,
-                ]);
+                // Delete the monitor itself
+                await Monitor.deleteMonitor(monitorID, socket.userID);
 
                 // Fix #2880
                 apicache.clear();
 
                 const endTime = Date.now();
 
-                log.info("DB", `Delete Monitor completed in : ${endTime - startTime} ms`);
+                // Log completion with context about children handling
+                if (monitor && monitor.type === "group") {
+                    if (deleteChildren) {
+                        log.info("DB", `Delete Monitor completed (group and children deleted) in: ${endTime - startTime} ms`);
+                    } else {
+                        log.info("DB", `Delete Monitor completed (group deleted, children unlinked) in: ${endTime - startTime} ms`);
+                    }
+                } else {
+                    log.info("DB", `Delete Monitor completed in: ${endTime - startTime} ms`);
+                }
 
                 callback({
                     ok: true,
@@ -1212,6 +1270,8 @@ let needSetup = false;
                     value,
                 ]);
 
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successAdded",
@@ -1236,6 +1296,8 @@ let needSetup = false;
                     monitorID,
                 ]);
 
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
+
                 callback({
                     ok: true,
                     msg: "successEdited",
@@ -1259,6 +1321,8 @@ let needSetup = false;
                     monitorID,
                     value,
                 ]);
+
+                await server.sendUpdateMonitorIntoList(socket, monitorID);
 
                 callback({
                     ok: true,
@@ -1349,7 +1413,7 @@ let needSetup = false;
                 }
 
                 if (passwordStrength(password.newPassword).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                    throw new TranslatableError("passwordTooWeak");
                 }
 
                 let user = await doubleCheckPassword(socket, password.currentPassword);
@@ -1368,6 +1432,7 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n,
                 });
             }
         });
@@ -1531,6 +1596,32 @@ let needSetup = false;
             }
         });
 
+        socket.on("getWebpushVapidPublicKey", async (callback) => {
+            try {
+                let publicVapidKey = await Settings.get("webpushPublicVapidKey");
+
+                if (!publicVapidKey) {
+                    log.debug("webpush", "Generating new VAPID keys");
+                    const vapidKeys = webpush.generateVAPIDKeys();
+
+                    await Settings.set("webpushPublicVapidKey", vapidKeys.publicKey);
+                    await Settings.set("webpushPrivateVapidKey", vapidKeys.privateKey);
+
+                    publicVapidKey = vapidKeys.publicKey;
+                }
+
+                callback({
+                    ok: true,
+                    msg: publicVapidKey,
+                });
+            } catch (e) {
+                callback({
+                    ok: false,
+                    msg: e.message,
+                });
+            }
+        });
+
         socket.on("clearEvents", async (monitorID, callback) => {
             try {
                 checkLogin(socket);
@@ -1561,9 +1652,11 @@ let needSetup = false;
 
                 log.info("manage", `Clear Heartbeats Monitor: ${monitorID} User ID: ${socket.userID}`);
 
-                await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [
-                    monitorID
-                ]);
+                await UptimeCalculator.clearStatistics(monitorID);
+
+                if (monitorID in server.monitorList) {
+                    await restartMonitor(socket.userID, monitorID);
+                }
 
                 await sendHeartbeatList(socket, monitorID, true, true);
 
@@ -1585,10 +1678,7 @@ let needSetup = false;
 
                 log.info("manage", `Clear Statistics User ID: ${socket.userID}`);
 
-                await R.exec("DELETE FROM heartbeat");
-                await R.exec("DELETE FROM stat_daily");
-                await R.exec("DELETE FROM stat_hourly");
-                await R.exec("DELETE FROM stat_minutely");
+                await UptimeCalculator.clearAllStatistics();
 
                 // Restart all monitors to reset the stats
                 for (let monitorID in server.monitorList) {

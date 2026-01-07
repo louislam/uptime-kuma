@@ -10,7 +10,7 @@
     </div>
     <div class="mb-3">
         <div class="form-text">
-            {{ $t("checkPrice", [$t("clicksendsms")]) }}
+            {{ $t("checkPrice", ["clicksendsms"]) }}
             <a href="https://www.clicksend.com/us/pricing" target="_blank">https://clicksend.com/us/pricing</a>
         </div>
     </div>

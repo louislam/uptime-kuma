@@ -4,11 +4,16 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        {{ $t("Badge Generator", [monitor.name]) }}
+                        {{ $t("Badge Link Generator", [monitor.name]) }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                 </div>
                 <div class="modal-body">
+                    <i18n-t keypath="Badge Link Generator Helptext" tag="p" class="form-text mb-3">
+                        <template #documentation>
+                            <a href="https://github.com/louislam/uptime-kuma/wiki/Badge" target="_blank" rel="noopener noreferrer">{{ $t("documentation") }}</a>
+                        </template>
+                    </i18n-t>
                     <div class="mb-3">
                         <label for="type" class="form-label">{{ $t("Badge Type") }}</label>
                         <select id="type" v-model="badge.type" class="form-select">

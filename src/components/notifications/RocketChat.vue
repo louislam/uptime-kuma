@@ -14,7 +14,7 @@
                 <a href="https://docs.rocket.chat/guides/administration/administration/integrations" target="_blank">https://docs.rocket.chat/guides/administration/administration/integrations</a>
             </i18n-t>
             <p style="margin-top: 8px;">
-                {{ $t("aboutChannelName", [$t("rocket.chat")]) }}
+                {{ $t("aboutChannelName", ["rocket.chat"]) }}
             </p>
             <p style="margin-top: 8px;">
                 {{ $t("aboutKumaURL") }}

@@ -3,10 +3,11 @@ const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
-const googleAnalytics = require("../google-analytics");
+const analytics = require("../analytics/analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
+const { setting } = require("../util-server");
 
 const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
 
@@ -22,15 +23,18 @@ class StatusPage extends BeanModel {
      * Handle responses to RSS pages
      * @param {Response} response Response object
      * @param {string} slug Status page slug
+     * @param {Request} request Request object
      * @returns {Promise<void>}
      */
-    static async handleStatusPageRSSResponse(response, slug) {
+    static async handleStatusPageRSSResponse(response, slug, request) {
         let statusPage = await R.findOne("status_page", " slug = ? ", [
             slug
         ]);
 
         if (statusPage) {
-            response.send(await StatusPage.renderRSS(statusPage, slug));
+            const feedUrl = await StatusPage.buildRSSUrl(slug, request);
+            response.type("application/rss+xml");
+            response.send(await StatusPage.renderRSS(statusPage, feedUrl));
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
         }
@@ -63,20 +67,25 @@ class StatusPage extends BeanModel {
 
     /**
      * SSR for RSS feed
-     * @param {statusPage} statusPage object
-     * @param {slug} slug from router
-     * @returns {Promise<string>} the rendered html
+     * @param {StatusPage} statusPage Status page object
+     * @param {string} feedUrl The URL for the RSS feed
+     * @returns {Promise<string>} The rendered RSS XML
      */
-    static async renderRSS(statusPage, slug) {
+    static async renderRSS(statusPage, feedUrl) {
         const { heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
 
-        let proto = config.isSSL ? "https" : "http";
-        let host = `${proto}://${config.hostname || "localhost"}:${config.port}/status/${slug}`;
+        // Use custom RSS title if set, otherwise fall back to status page title
+        let feedTitle = "Uptime Kuma RSS Feed";
+        if (statusPage.rss_title) {
+            feedTitle = statusPage.rss_title;
+        } else if (statusPage.title) {
+            feedTitle = `${statusPage.title} RSS Feed`;
+        }
 
         const feed = new Feed({
-            title: "uptime kuma rss feed",
-            description: `current status: ${statusDescription}`,
-            link: host,
+            title: feedTitle,
+            description: `Current status: ${statusDescription}`,
+            link: feedUrl,
             language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
             updated: new Date(), // optional, default = today
         });
@@ -84,13 +93,46 @@ class StatusPage extends BeanModel {
         heartbeats.forEach(heartbeat => {
             feed.addItem({
                 title: `${heartbeat.name} is down`,
-                description: `${heartbeat.name} has been down since ${heartbeat.time}`,
-                id: heartbeat.monitorID,
+                description: `${heartbeat.name} has been down since ${heartbeat.time} UTC`,
+                id: `${heartbeat.monitorID}-${heartbeat.time}`,
+                link: feedUrl,
                 date: new Date(heartbeat.time),
             });
         });
 
         return feed.rss2();
+    }
+
+    /**
+     * Build RSS feed URL, handling proxy headers
+     * @param {string} slug Status page slug
+     * @param {Request} request Express request object
+     * @returns {Promise<string>} The full URL for the RSS feed
+     */
+    static async buildRSSUrl(slug, request) {
+        if (request) {
+            const trustProxy = await setting("trustProxy");
+
+            // Determine protocol (check X-Forwarded-Proto if behind proxy)
+            let proto = request.protocol;
+            if (trustProxy && request.headers["x-forwarded-proto"]) {
+                proto = request.headers["x-forwarded-proto"].split(",")[0].trim();
+            }
+
+            // Determine host (check X-Forwarded-Host if behind proxy)
+            let host = request.get("host");
+            if (trustProxy && request.headers["x-forwarded-host"]) {
+                host = request.headers["x-forwarded-host"];
+            }
+
+            return `${proto}://${host}/status/${slug}`;
+        }
+
+        // Fallback to config values
+        const proto = config.isSSL ? "https" : "http";
+        const host = config.hostname || "localhost";
+        const port = config.port;
+        return `${proto}://${host}:${port}/status/${slug}`;
     }
 
     /**
@@ -120,9 +162,9 @@ class StatusPage extends BeanModel {
 
         const head = $("head");
 
-        if (statusPage.google_analytics_tag_id) {
-            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.google_analytics_tag_id);
-            head.append($(escapedGoogleAnalyticsScript));
+        if (analytics.isValidAnalyticsConfig(statusPage)) {
+            let escapedAnalyticsScript = analytics.getAnalyticsScript(statusPage);
+            head.append($(escapedAnalyticsScript));
         }
 
         // OG Meta Tags
@@ -131,6 +173,9 @@ class StatusPage extends BeanModel {
 
         let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
         head.append(ogDescription);
+
+        let ogType = $("<meta property=\"og:type\" content=\"website\" />");
+        head.append(ogType);
 
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
@@ -407,8 +452,12 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
-            googleAnalyticsId: this.google_analytics_tag_id,
+            analyticsId: this.analytics_id,
+            analyticsScriptUrl: this.analytics_script_url,
+            analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
+            rssTitle: this.rss_title,
         };
     }
 
@@ -430,8 +479,12 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
-            googleAnalyticsId: this.google_analytics_tag_id,
+            analyticsId: this.analytics_id,
+            analyticsScriptUrl: this.analytics_script_url,
+            analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
+            rssTitle: this.rss_title,
         };
     }
 
