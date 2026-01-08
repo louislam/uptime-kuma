@@ -2085,15 +2085,15 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
-                    toast.error(this.$t("BodyInvalidFormat") + err.message);
+                    toast.error(this.$t("BodyInvalidFormat", {error: err.message}));
                     return false;
                 }
             }
             if (this.monitor.headers) {
                 try {
-                    JSON.parse(this.monitor.headers);
+                    JSON.parHeadersInvalidFormatse(this.monitor.headers);
                 } catch (err) {
-                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    toast.error(this.$t("HeadersInvalidFormat", {error: err.message}));
                     return false;
                 }
             }

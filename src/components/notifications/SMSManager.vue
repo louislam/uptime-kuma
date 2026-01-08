@@ -9,9 +9,14 @@
     </div>
     <div class="mb-3">
         <label for="smsmanager-numbers" class="form-label"> {{ $t("Recipients") }}</label>
-        <div class="form-text">
-            {{ $t("You can divide numbers with") }} <b>,</b> {{ $t("or") }} <b>;</b>
-        </div>
+        <i18n-t tag="div" keypath="smsmanager-recipients-helptext" class="form-text">
+            <template #comma>
+                <code>,</code>
+            </template>
+            <template #semicolon>
+                <code>;</code>
+            </template>
+        </i18n-t>
         <input id="smsmanager-numbers" v-model="$parent.notification.numbers" type="text" class="form-control">
     </div>
     <div class="mb-3">
@@ -23,9 +28,13 @@
         </select>
     </div>
     <div class="mb-3">
-        <div class="form-text">
-            {{ $t("checkPrice", [$t("SMSManager")]) }}
+        <i18n-t tag="div" keypath="checkPrice" class="form-text">
+            <template #comma>
+                SMSManager
+            </template>
+            <template #url>
             <a href="https://smsmanager.cz/rozesilani-sms/ceny/ceska-republika/" target="_blank">{{ $t("here") }}</a>
-        </div>
+            </template>
+        </i18n-t>
     </div>
 </template>

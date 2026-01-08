@@ -142,12 +142,13 @@
                     v-model="settings.steamAPIKey"
                     autocomplete="new-password"
                 />
-                <div class="form-text">
-                    {{ $t("steamApiKeyDescription") }}
-                    <a href="https://steamcommunity.com/dev" target="_blank">
-                        https://steamcommunity.com/dev
-                    </a>
-                </div>
+                <i18n-t tag="div" keypath="steamApiKeyDescription" class="form-text">
+                    <template #url>
+                        <a href="https://steamcommunity.com/dev" target="_blank">
+                            https://steamcommunity.com/dev
+                        </a>
+                    </template>
+                </i18n-t>
             </div>
 
             <!-- DNS Cache (nscd) -->
