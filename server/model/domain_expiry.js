@@ -38,6 +38,7 @@ async function getRdapServer(tld) {
             return urls[0];
         }
     }
+    log.debug("rdap", `No RDAP server found for TLD ${tld}`);
     return null;
 }
 
@@ -190,7 +191,7 @@ class DomainExpiry extends BeanModel {
             if (Boolean(monitor.domainExpiryNotification)) {
                 log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
             }
-            throw new TranslatableError("domain_expiry_unsupported_unsupported_tld");
+            throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint");
         }
 
         return {
