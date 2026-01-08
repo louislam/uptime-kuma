@@ -913,6 +913,8 @@
     "ntfyPriorityHelptextPriorityHigherThanDown": "Regular priority should be higher than {0} priority. Priority {1} is higher than {0} priority {2}",
     "ntfyPriorityDown": "Priority for DOWN-events",
     "ntfyUsernameAndPassword": "Username and Password",
+    "ntfyCall": "Phone Call",
+    "ntfyCallHelptext": "Make a phone call when alert fires. Set to 'yes' to use your first verified number, or enter a specific phone number (e.g. +12223334444). Requires ntfy Pro and a verified phone number.",
     "twilioAccountSID": "Account SID",
     "twilioApiKey": "Api Key (optional)",
     "twilioApiKeyHelptext": "The API key is optional but recommended. You can provide either Account SID and AuthToken from the may TwilioConsole page or Account SID and the pair of Api Key and Api Key secret",
