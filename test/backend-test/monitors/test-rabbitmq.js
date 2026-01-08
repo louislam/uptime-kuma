@@ -118,7 +118,7 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
 
         await rabbitMQMonitor.check(monitor, heartbeat, {});
         assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, "OK");
+        assert.strictEqual(heartbeat.msg, "One of the 2 nodes is reachable and there are no alerts in the cluster");
         assert.strictEqual(callCount, 1, "Should only check first node");
     });
 
@@ -148,7 +148,7 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
 
         await rabbitMQMonitor.check(monitor, heartbeat, {});
         assert.strictEqual(heartbeat.status, UP);
-        assert.strictEqual(heartbeat.msg, "OK");
+        assert.strictEqual(heartbeat.msg, "One of the 2 nodes is reachable and there are no alerts in the cluster");
         assert.strictEqual(callCount, 2, "Should check both nodes");
     });
 
