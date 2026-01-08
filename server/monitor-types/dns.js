@@ -26,7 +26,8 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        const addresses = monitor.dns_resolve_server.replace(/\s/g, "").split(",");
+        // Remove all spaces, split into array, remove all elements that are empty
+        const addresses = monitor.dns_resolve_server.replace(/\s/g, "").split(",").filter((x) => x !== "");
         const resolver = new Resolver();
         const parsed = new Set();
 

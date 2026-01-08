@@ -438,7 +438,7 @@
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
                                     <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server(s)") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
                                     </div>
@@ -1322,7 +1322,6 @@ import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import {
     genSecret,
-    isDev,
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     sleep,
@@ -1467,15 +1466,6 @@ export default {
             }
             // Default placeholder if neither hostname nor URL is available
             return this.$t("defaultFriendlyName");
-        },
-
-        ipRegex() {
-
-            // Allow to test with simple dns server with port (127.0.0.1:5300)
-            if (! isDev) {
-                return this.ipRegexPattern;
-            }
-            return null;
         },
 
         monitorTypeUrlHost() {
