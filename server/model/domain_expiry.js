@@ -1,16 +1,11 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
-const { log } = require("../../src/util");
+const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
 const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
 const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 const TranslatableError = require("../translatable-error");
-
-const TABLE = "domain_expiry";
-// NOTE: Keep these type filters in sync with `showDomainExpiryNotification` in `src/pages/EditMonitor.vue`.
-const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
-const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
 
 const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
     // cache for 8h
@@ -113,7 +108,7 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<DomainExpiry>} Domain bean
      */
     static async findByName(domain) {
-        return R.findOne(TABLE, "domain = ?", [ domain ]);
+        return R.findOne("domain_expiry", "domain = ?", [ domain ]);
     }
 
     /**
@@ -121,7 +116,7 @@ class DomainExpiry extends BeanModel {
      * @returns {DomainExpiry} Domain bean
      */
     static createByName(domain) {
-        const d = R.dispense(TABLE);
+        const d = R.dispense("domain_expiry");
         d.domain = domain;
         return d;
     }
@@ -149,19 +144,11 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<{ domain: string, tld: string }>} Domain expiry support info
      */
     static async checkSupport(monitor) {
-        if (excludeTypes.includes(monitor.type) || monitor.type?.match(/sql$/)) {
+        if (!(monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD)) {
             throw new TranslatableError("domain_expiry_unsupported_monitor_type");
         }
-
-        let target;
-        if (urlTypes.includes(monitor.type)) {
-            target = monitor.url;
-        } else if (monitor.type === "grpc-keyword") {
-            target = monitor.grpcUrl;
-        } else {
-            target = monitor.hostname;
-        }
-
+        const targetField = TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD[monitor.type];
+        const target = monitor[targetField];
         if (typeof target !== "string" || target.length === 0) {
             throw new TranslatableError("domain_expiry_unsupported_missing_target");
         }
