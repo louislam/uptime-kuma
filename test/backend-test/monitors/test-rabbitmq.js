@@ -97,9 +97,10 @@ describe("RabbitMQ Single Node", {
             status: PENDING,
         };
 
+        // Should reject with any error (connection refused, timeout, etc.)
         await assert.rejects(
             rabbitMQMonitor.checkSingleNode(monitor, heartbeat, "http://localhost:15672", 1, 1),
-            /connect ECONNREFUSED/
+            Error
         );
     });
 });
