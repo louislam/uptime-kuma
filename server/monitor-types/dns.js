@@ -25,7 +25,7 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        const resolverServers = this.resolveDnsResolverServers(monitor.dns_resolve_server);
+        const resolverServers = await this.resolveDnsResolverServers(monitor.dns_resolve_server);
         let dnsRes = await this.dnsResolve(monitor.hostname, resolverServers, monitor.port, monitor.dns_resolve_type);
         heartbeat.ping = dayjs().valueOf() - startTime;
 
@@ -103,7 +103,7 @@ class DnsMonitorType extends MonitorType {
      * - Hostnames are resolved to both A and AAAA records in parallel
      * - Invalid or unresolvable entries are logged and skipped
      * @param {string} dnsResolveServer - Comma-separated list of resolver servers (IPs or hostnames)
-     * @returns {Promise<Array<string>>} A set of resolved IP addresses
+     * @returns {Promise<Array<string>>} Array of resolved IP addresses
      * @throws {Error} If no valid resolver servers could be parsed or resolved
      */
     async resolveDnsResolverServers(dnsResolveServer) {
@@ -113,12 +113,11 @@ class DnsMonitorType extends MonitorType {
             throw new Error("No Resolver Servers specified. Please specifiy at least one resolver server like 1.1.1.1 or a hostname");
         }
         const resolver = new Resolver();
-        const parsed = new Set();
 
-        for (const e of addresses) {
-            if (net.isIP(e)) { // If IPv4 or IPv6 addr, just add and go to next element
-                parsed.add(e);
-                continue;
+        // Make promises to be resolved in parallel
+        const promises = addresses.map(async (e) => {
+            if (net.isIP(e)) { // If IPv4 or IPv6 addr, immediately return
+                return [ e ];
             }
 
             // Otherwise, attempt to resolve hostname
@@ -134,18 +133,21 @@ class DnsMonitorType extends MonitorType {
 
             if (!addrs.length) {
                 log.error("DNS", `Invalid resolver server ${e}`);
-                continue;
             }
+            return addrs;
+        });
 
-            addrs.forEach(ip => parsed.add(ip));
-        }
+        // [[ips of hostname1],[ips hostname2],...]
+        const ips = await Promise.all(promises);
+        // Append all the ips in [[]] to a single []
+        const parsed = ips.flat();
 
-        // only the resolver resolution can discard an adress
-        // -> no special error message for only the net.isIP case is nessesary
-        if (!parsed.size) {
+        // only the resolver resolution can discard an address
+        // -> no special error message for only the net.isIP case is necessary
+        if (!parsed.length) {
             throw new Error("None of the configured resolver servers could be resolved to an IP address. Please provide a comma-separated list of valid resolver hostnames or IP addresses.");
         }
-        return Array.from(parsed);
+        return parsed;
     }
 
     /**
@@ -161,9 +163,8 @@ class DnsMonitorType extends MonitorType {
         resolver.setServers(resolverServer.map(server => `[${server}]:${resolverPort}`));
         if (rrtype === "PTR") {
             return await resolver.reverse(hostname);
-        } else {
-            resolver.resolve(hostname, rrtype);
         }
+        return await resolver.resolve(hostname, rrtype);
     }
 }
 
