@@ -271,13 +271,13 @@ class DomainExpiry extends BeanModel {
         }
         // sanity check if expiry date is valid before calculating days remaining. Should not happen and likely indicates a bug in the code.
         if (!domain.expiry || isNaN(new Date(domain.expiry).getTime())) {
-            log.warn("domain_expiry", `No valid expiry date passed to sendNotifications for ${domain.domain} (expiry: ${domain.expiry}), skipping notification`);
+            log.warn("domain_expiry", `No valid expiry date passed to sendNotifications for ${domainName} (expiry: ${domain.expiry}), skipping notification`);
             return;
         }
 
         const daysRemaining = getDaysRemaining(new Date(), domain.expiry);
         const lastSent = domain.lastExpiryNotificationSent;
-        log.debug("domain_expiry", `${domain.domain} expires in ${daysRemaining} days`);
+        log.debug("domain_expiry", `${domainName} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
         if (notifyDays == null || !Array.isArray(notifyDays)) {
@@ -292,18 +292,18 @@ class DomainExpiry extends BeanModel {
                 if (daysRemaining > targetDays) {
                     log.debug(
                         "domain",
-                        `No need to send domain notification for ${name} (${daysRemaining} days valid) on ${targetDays} deadline.`
+                        `No need to send domain notification for ${domainName} (${daysRemaining} days valid) on ${targetDays} deadline.`
                     );
                     continue;
                 } else if (lastSent && lastSent <= targetDays) {
                     log.debug(
                         "domain",
-                        `Notification for ${domain.domain} on ${targetDays} deadline sent already, no need to send again.`
+                        `Notification for ${domainName} on ${targetDays} deadline sent already, no need to send again.`
                     );
                     continue;
                 }
                 const sent = await sendDomainNotificationByTargetDays(
-                    domain.domain,
+                    domainName,
                     daysRemaining,
                     targetDays,
                     notificationList
