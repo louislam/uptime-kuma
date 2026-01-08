@@ -38,9 +38,8 @@ jobs:
         run: npm run lint-fix:style
         continue-on-error: true
 
-      # TODO: disabled until we have agreed that this is the formatting that we want to enforce
-      # - name: Auto-format code with Prettier
-      #   run: npm run fmt
-      #   continue-on-error: true
+      - name: Auto-format code with Prettier
+        run: npm run fmt
+        continue-on-error: true
       
       - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
