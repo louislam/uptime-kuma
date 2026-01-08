@@ -699,6 +699,7 @@ let needSetup = false;
                     ok: false,
                     msg: e.message,
                     msgi18n: !!e.msgi18n,
+                    meta: e.meta ?? {}
                 });
             }
         });

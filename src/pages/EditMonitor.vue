@@ -1823,7 +1823,7 @@ message HealthCheckResponse {
             this.checkMonitorDebounce = setTimeout(() => {
                 this.$root.getSocket().emit("checkMointor", data, (res) => {
                     this.hasDomain = !!res?.ok;
-                    this.domainExpiryUnsupportedReason = this.msgi18n ? this.$t(res.msg, { tld: res.tld }) : res.msg;
+                    this.domainExpiryUnsupportedReason = this.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
                 });
             }, 500);
         },

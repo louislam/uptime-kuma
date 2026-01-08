@@ -11,9 +11,11 @@ class TranslatableError extends Error {
     /**
      * Create a TranslatableError.
      * @param {string} key - Translation key present in src/lang/en.json
+     * @param {object} [meta] Arbitrary metadata
      */
-    constructor(key) {
+    constructor(key, meta = {}) {
         super(key);
+        this.meta = meta;
         Error.captureStackTrace(this, this.constructor);
     }
 }
