@@ -675,9 +675,6 @@ class Monitor extends BeanModel {
                         bean.duration = beatInterval;
                         throw new Error("No heartbeat in the time window");
                     }
-
-                } else if (this.type === "steam") {
-                    
                 } else if (this.type === "docker") {
                     log.debug("monitor", `[${this.name}] Prepare Options for Axios`);
 
