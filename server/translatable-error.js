@@ -11,7 +11,7 @@ class TranslatableError extends Error {
     /**
      * Create a TranslatableError.
      * @param {string} key - Translation key present in src/lang/en.json
-     * @param {object} [meta] Arbitrary metadata
+     * @param {object} meta Arbitrary metadata
      */
     constructor(key, meta = {}) {
         super(key);
