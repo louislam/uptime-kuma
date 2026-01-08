@@ -16,7 +16,7 @@
         <input id="signName" v-model="$parent.notification.signName" type="text" class="form-control" required>
         <br>
         <div class="form-check form-switch">
-            <label class="form-check-label">{{ $t("OptionalParameters") }} &nbsp;&nbsp;</label>
+            <label class="form-check-label">{{ $t("OptionalParameters") }}</label>
             <input id="optionalParameters" v-model="$parent.notification.optionalParameters" class="form-check-input" type="checkbox">
         </div>
         <div class="form-text">{{ $t("aliyun_enable_optional_variables_at_the_risk_of_non_delivery") }} </div>
