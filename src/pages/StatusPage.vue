@@ -216,8 +216,9 @@
                 <div v-if="editIncidentMode" class="form-text">
                     {{ $t("markdownSupported") }}
                 </div>
-                <!-- eslint-disable-next-line vue/no-v-html-->
+                <!-- eslint-disable vue/no-v-html-->
                 <div v-if="! editIncidentMode" class="content" data-testid="incident-content" v-html="incidentHTML"></div>
+                <!-- eslint-enable vue/no-v-html-->
 
                 <!-- Incident Date -->
                 <div class="date mt-3">
@@ -314,8 +315,9 @@
             <!-- Description -->
             <strong v-if="editMode">{{ $t("Description") }}:</strong>
             <Editable v-if="enableEditMode" v-model="config.description" :contenteditable="editMode" tag="div" class="mb-4 description" data-testid="description-editable" />
-            <!-- eslint-disable-next-line vue/no-v-html-->
+            <!-- eslint-disable vue/no-v-html-->
             <div v-if="! enableEditMode" class="alert-heading p-2" data-testid="description" v-html="descriptionHTML"></div>
+            <!-- eslint-enable vue/no-v-html-->
 
             <div v-if="editMode" class="mb-4">
                 <div>
@@ -366,8 +368,9 @@
                     <strong v-if="enableEditMode">{{ $t("Custom Footer") }}:</strong>
                 </div>
                 <Editable v-if="enableEditMode" v-model="config.footerText" tag="div" :contenteditable="enableEditMode" :noNL="false" class="alert-heading p-2" data-testid="custom-footer-editable" />
-                <!-- eslint-disable-next-line vue/no-v-html-->
+                <!-- eslint-disable vue/no-v-html-->
                 <div v-if="! enableEditMode" class="alert-heading p-2" data-testid="footer-text" v-html="footerHTML"></div>
+                <!-- eslint-enable vue/no-v-html-->
 
                 <p v-if="config.showPoweredBy" data-testid="powered-by">
                     {{ $t("Powered by") }} <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">{{ $t("Uptime Kuma" ) }}</a>
