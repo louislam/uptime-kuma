@@ -148,7 +148,7 @@ class DomainExpiry extends BeanModel {
             throw new TranslatableError("domain_expiry_unsupported_monitor_type");
         }
         const target_field = TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD[monitor.type];
-        const target = monitor.type[target_field];
+        const target = monitor[target_field];
         if (typeof target !== "string" || target.length === 0) {
             throw new TranslatableError("domain_expiry_unsupported_missing_target");
         }
