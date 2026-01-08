@@ -1,6 +1,6 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
-const { log } = require("../../src/util");
+const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
 const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
@@ -8,9 +8,7 @@ const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 const TranslatableError = require("../translatable-error");
 
 const TABLE = "domain_expiry";
-// NOTE: Keep these type filters in sync with `showDomainExpiryNotification` in `src/pages/EditMonitor.vue`.
 const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
-const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis", "mysql", "system-service" ];
 
 const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
     // cache for 8h
@@ -149,7 +147,7 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<{ domain: string, tld: string }>} Domain expiry support info
      */
     static async checkSupport(monitor) {
-        if (excludeTypes.includes(monitor.type)) {
+        if (!TYPES_WITH_DOMAIN_EXPIRY_SUPPORT.includes(monitor.type)) {
             throw new TranslatableError("domain_expiry_unsupported_monitor_type");
         }
 

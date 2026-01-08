@@ -441,3 +441,4 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
     }
 }
 exports.evaluateJsonQuery = evaluateJsonQuery;
+const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT = ['dns', 'gamedig', 'grpc-keyword', 'http', 'json-query', 'keyword', 'mqtt', 'ping', 'port', 'radius', 'real-browser', 'sip-options', 'smtp', 'snmp', 'steam', 'tailscale-ping', 'websocket-upgrade'];

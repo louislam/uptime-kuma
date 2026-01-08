@@ -722,3 +722,5 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }
+
+const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT = ['dns', 'gamedig', 'grpc-keyword', 'http', 'json-query', 'keyword', 'mqtt', 'ping', 'port', 'radius', 'real-browser', 'sip-options', 'smtp', 'snmp', 'steam', 'tailscale-ping', 'websocket-upgrade'];
