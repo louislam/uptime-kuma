@@ -26,10 +26,9 @@ class RabbitMqMonitorType extends MonitorType {
         for (let i = 0; i < baseUrls.length; i++) {
             const baseUrl = baseUrls[i];
             const nodeIndex = i + 1;
-            const totalNodes = baseUrls.length;
 
             try {
-                await this.checkSingleNode(monitor, baseUrls[i], `${i + 1}/${baseUrls.length}`);
+                await this.checkSingleNode(monitor, baseUrl, `${nodeIndex}/${baseUrls.length}`);
                 // If checkSingleNode succeeds (doesn't throw), set heartbeat to UP
                 heartbeat.status = UP;
                 heartbeat.msg = "OK";
