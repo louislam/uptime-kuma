@@ -466,8 +466,8 @@
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
-                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
+                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server(s)") }}</label>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
                                     </div>
@@ -1352,10 +1352,10 @@ import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import {
     genSecret,
-    isDev,
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     sleep,
+    TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
 } from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
@@ -1501,15 +1501,6 @@ export default {
             return this.$t("defaultFriendlyName");
         },
 
-        ipRegex() {
-
-            // Allow to test with simple dns server with port (127.0.0.1:5300)
-            if (! isDev) {
-                return this.ipRegexPattern;
-            }
-            return null;
-        },
-
         monitorTypeUrlHost() {
             const { type, url, hostname, grpcUrl } = this.monitor;
             return {
@@ -1521,15 +1512,7 @@ export default {
         },
 
         showDomainExpiryNotification() {
-            // NOTE: Keep this list in sync with `excludeTypes` in `server/model/domain_expiry.js`.
-            const excludedTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
-            const type = this.monitor.type;
-
-            if (!type) {
-                return false;
-            }
-
-            return !excludedTypes.includes(type) && !type.match(/sql$/);
+            return this.monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD;
         },
 
         pageName() {
@@ -2085,7 +2068,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
-                    toast.error(this.$t("BodyInvalidFormat") + err.message);
+                    toast.error(this.$t("BodyInvalidFormatBecause", {error: err.message}));
                     return false;
                 }
             }
@@ -2093,7 +2076,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.headers);
                 } catch (err) {
-                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    toast.error(this.$t("HeadersInvalidFormatBecause", {error: err.message}));
                     return false;
                 }
             }

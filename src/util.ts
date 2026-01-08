@@ -722,3 +722,24 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }
+
+// these types will have domain expiry support via the specified field
+export const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
+    'http': 'url',
+    'keyword': 'url',
+    'json-query': 'url',
+    'real-browser': 'url',
+    'websocket-upgrade': 'url',
+    'port': 'hostname',
+    'ping': 'hostname',
+    'grpc-keyword': 'grpcUrl',
+    'dns': 'hostname',
+    'smtp': 'hostname',
+    'snmp': 'hostname',
+    'gamedig': 'hostname',
+    'steam': 'hostname',
+    'mqtt': 'hostname',
+    'radius': 'hostname',
+    'tailscale-ping': 'hostname',
+    'sip-options': 'hostname'
+} as const;
