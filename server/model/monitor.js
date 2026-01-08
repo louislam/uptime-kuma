@@ -920,11 +920,12 @@ class Monitor extends BeanModel {
 
             if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
                 try {
-                    const domainExpiryDate = await DomainExpiry.checkExpiry(this);
+                    const supportInfo = await DomainExpiry.checkSupport(monitor);
+                    const domainExpiryDate = await DomainExpiry.checkExpiry(supportInfo.domain);
                     if (domainExpiryDate) {
-                        DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
+                        DomainExpiry.sendNotifications(supportInfo.domain, await Monitor.getNotificationList(this) || []);
                     } else {
-                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
+                        log.debug("monitor", `Failed getting expiration date for domain ${supportInfo.domain}`);
                     }
                 } catch (error) {
                     // purposely not logged due to noise. Is accessible via checkMointor
@@ -1232,7 +1233,7 @@ class Monitor extends BeanModel {
     static async sendDomainInfo(io, monitorID, userID) {
         const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
 
-        const domain = await DomainExpiry.forMonitor(monitor);
+        const domain = await DomainExpiry.findByDomainNameOrCreate(monitor);
         if (domain?.expiry) {
             io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
         }

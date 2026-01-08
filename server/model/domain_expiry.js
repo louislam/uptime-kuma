@@ -201,15 +201,15 @@ class DomainExpiry extends BeanModel {
     }
 
     /**
-     * @param {string} domain Domain name
+     * @param {string} domainName Domain name
      * @returns {Promise<DomainExpiry>} Domain expiry bean
      */
-    static async forMonitor(domain) {
-        const existing = await DomainExpiry.findByName(domain);
+    static async findByDomainNameOrCreate(domainName) {
+        const existing = await DomainExpiry.findByName(domainName);
         if (existing) {
             return existing;
         }
-        return DomainExpiry.createByName(domain);
+        return DomainExpiry.createByName(domainName);
     }
 
     /**
@@ -227,13 +227,12 @@ class DomainExpiry extends BeanModel {
     }
 
     /**
-     * @param {(Monitor)} monitor Monitor object
+     * @param {string} domainName Monitor object
      * @throws {TranslatableError} If the domain is not supported
      * @returns {Promise<Date | undefined>} the expiry date
      */
-    static async checkExpiry(monitor) {
-        const supportInfo = await DomainExpiry.checkSupport(monitor);
-        let bean = await DomainExpiry.forMonitor(supportInfo.domain);
+    static async checkExpiry(domainName) {
+        let bean = await DomainExpiry.findByDomainNameOrCreate(domainName);
 
         let expiryDate;
         if (bean?.lastCheck && getDaysBetween(new Date(bean.lastCheck), new Date()) < 1) {
@@ -259,14 +258,12 @@ class DomainExpiry extends BeanModel {
     }
 
     /**
-     * @param {Monitor} monitor Monitor instance
+     * @param {string} domainName the domain name to send notifications for
      * @param {LooseObject<any>[]} notificationList notification List
      * @returns {Promise<void>}
      */
-    static async sendNotifications(monitor, notificationList) {
-        const domain = await DomainExpiry.forMonitor(domain);
-        const name = domain.domain;
-
+    static async sendNotifications(domainName, notificationList) {
+        const domain = await DomainExpiry.findByDomainNameOrCreate(domainName);
         if (!notificationList.length > 0) {
             // fail fast. If no notification is set, all the following checks can be skipped.
             log.debug("domain_expiry", "No notification, no need to send domain notification");
@@ -274,13 +271,13 @@ class DomainExpiry extends BeanModel {
         }
         // sanity check if expiry date is valid before calculating days remaining. Should not happen and likely indicates a bug in the code.
         if (!domain.expiry || isNaN(new Date(domain.expiry).getTime())) {
-            log.warn("domain_expiry", `No valid expiry date passed to sendNotifications for ${name} (expiry: ${domain.expiry}), skipping notification`);
+            log.warn("domain_expiry", `No valid expiry date passed to sendNotifications for ${domain.domain} (expiry: ${domain.expiry}), skipping notification`);
             return;
         }
 
         const daysRemaining = getDaysRemaining(new Date(), domain.expiry);
         const lastSent = domain.lastExpiryNotificationSent;
-        log.debug("domain_expiry", `${name} expires in ${daysRemaining} days`);
+        log.debug("domain_expiry", `${domain.domain} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
         if (notifyDays == null || !Array.isArray(notifyDays)) {
@@ -301,12 +298,12 @@ class DomainExpiry extends BeanModel {
                 } else if (lastSent && lastSent <= targetDays) {
                     log.debug(
                         "domain",
-                        `Notification for ${name} on ${targetDays} deadline sent already, no need to send again.`
+                        `Notification for ${domain.domain} on ${targetDays} deadline sent already, no need to send again.`
                     );
                     continue;
                 }
                 const sent = await sendDomainNotificationByTargetDays(
-                    name,
+                    domain.domain,
                     daysRemaining,
                     targetDays,
                     notificationList
