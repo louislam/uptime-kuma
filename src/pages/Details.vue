@@ -29,7 +29,6 @@
                         monitor.type === 'http' ||
                             monitor.type === 'keyword' ||
                             monitor.type === 'json-query' ||
-                            monitor.type === 'mp-health' ||
                             monitor.type === 'real-browser' ||
                             monitor.type === 'websocket-upgrade'
                     "

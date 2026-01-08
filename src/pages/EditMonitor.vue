@@ -466,8 +466,8 @@
                             <!-- For DNS Type -->
                             <template v-if="monitor.type === 'dns'">
                                 <div class="my-3">
-                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" :pattern="ipRegex" required>
+                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server(s)") }}</label>
+                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control" required>
                                     <div class="form-text">
                                         {{ $t("resolverserverDescription") }}
                                     </div>
@@ -817,12 +817,13 @@
                                 </div>
                             </div>
 
-                            <div v-if="hasDomain" class="my-3 form-check">
-                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox">
+                            <div v-if="showDomainExpiryNotification" class="my-3 form-check">
+                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox" :disabled="!hasDomain">
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div class="form-text">
+                                <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
+                                    {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
                             <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
@@ -1351,10 +1352,10 @@ import ProxyDialog from "../components/ProxyDialog.vue";
 import TagsManager from "../components/TagsManager.vue";
 import {
     genSecret,
-    isDev,
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     sleep,
+    TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
 } from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
@@ -1442,6 +1443,8 @@ export default {
                 // Do not add default value here, please check init() method
             },
             hasDomain: false,
+            domainExpiryUnsupportedReason: null,
+            checkMonitorDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
@@ -1498,15 +1501,6 @@ export default {
             return this.$t("defaultFriendlyName");
         },
 
-        ipRegex() {
-
-            // Allow to test with simple dns server with port (127.0.0.1:5300)
-            if (! isDev) {
-                return this.ipRegexPattern;
-            }
-            return null;
-        },
-
         monitorTypeUrlHost() {
             const { type, url, hostname, grpcUrl } = this.monitor;
             return {
@@ -1515,6 +1509,10 @@ export default {
                 hostname,
                 grpcUrl
             };
+        },
+
+        showDomainExpiryNotification() {
+            return this.monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD;
         },
 
         pageName() {
@@ -1795,12 +1793,22 @@ message HealthCheckResponse {
         },
 
         "monitorTypeUrlHost"(data) {
-            this.$root.getSocket().emit("checkMointor", data, (res) => {
-                this.hasDomain = !!res?.domain;
-                if (!res?.domain) {
-                    this.monitor.domainExpiryNotification = false;
-                }
-            });
+            if (this.checkMonitorDebounce != null) {
+                clearTimeout(this.checkMonitorDebounce);
+            }
+
+            if (!this.showDomainExpiryNotification) {
+                this.hasDomain = false;
+                this.domainExpiryUnsupportedReason = null;
+                return;
+            }
+
+            this.checkMonitorDebounce = setTimeout(() => {
+                this.$root.getSocket().emit("checkMointor", data, (res) => {
+                    this.hasDomain = !!res?.ok;
+                    this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
+                });
+            }, 500);
         },
 
         "monitor.type"(newType, oldType) {
@@ -2060,7 +2068,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
-                    toast.error(this.$t("BodyInvalidFormat") + err.message);
+                    toast.error(this.$t("BodyInvalidFormatBecause", {error: err.message}));
                     return false;
                 }
             }
@@ -2068,7 +2076,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.headers);
                 } catch (err) {
-                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    toast.error(this.$t("HeadersInvalidFormatBecause", {error: err.message}));
                     return false;
                 }
             }

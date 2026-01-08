@@ -698,7 +698,7 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
-                    msgi18n: !!e.msgi18n,
+                    msgi18n: !!e.msgi18n
                 });
             }
         });
@@ -990,14 +990,18 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 const DomainExpiry = require("./model/domain_expiry");
+                const supportInfo = await DomainExpiry.checkSupport(partial);
                 callback({
                     ok: true,
-                    domain: (await DomainExpiry.forMonitor(partial))?.domain || null
+                    domain: supportInfo.domain,
+                    tld: supportInfo.tld
                 });
             } catch (e) {
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n,
+                    meta: e.meta ?? {}
                 });
             }
         });

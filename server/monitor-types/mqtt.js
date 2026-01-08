@@ -144,7 +144,7 @@ class MqttMonitorType extends MonitorType {
             }
 
             const timeoutID = setTimeout(() => {
-                log.debug("mqtt", "MQTT timeout triggered");
+                log.debug(this.name, "MQTT timeout triggered");
                 client.end();
                 reject(new Error("Timeout, Message not received"));
             }, interval * 1000 * 0.8);
@@ -159,7 +159,7 @@ class MqttMonitorType extends MonitorType {
                 }
             }
 
-            log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
+            log.debug(this.name, `MQTT connecting to ${mqttUrl}`);
 
             let client = mqtt.connect(mqttUrl, {
                 username,
@@ -168,11 +168,11 @@ class MqttMonitorType extends MonitorType {
             });
 
             client.on("connect", () => {
-                log.debug("mqtt", "MQTT connected");
+                log.debug(this.name, "MQTT connected");
 
                 try {
                     client.subscribe(topic, () => {
-                        log.debug("mqtt", "MQTT subscribed to topic");
+                        log.debug(this.name, "MQTT subscribed to topic");
                     });
                 } catch (e) {
                     client.end();
