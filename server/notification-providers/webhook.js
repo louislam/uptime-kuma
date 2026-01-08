@@ -12,7 +12,7 @@ class Webhook extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            const httpMethod = notification.httpMethod.toLowerCase() || "post";
+            const httpMethod = notification.httpMethod?.toLowerCase() || "post";
 
             let data = {
                 heartbeat: heartbeatJSON,
