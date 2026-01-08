@@ -1239,7 +1239,7 @@ class Monitor extends BeanModel {
             if (domain?.expiry) {
                 io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
             }
-        } catch (e){}
+        } catch (e) {}
     }
 
     /**
