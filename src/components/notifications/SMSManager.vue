@@ -9,7 +9,7 @@
     </div>
     <div class="mb-3">
         <label for="smsmanager-numbers" class="form-label"> {{ $t("Recipients") }}</label>
-        <i18n-t tag="div" keypath="smsmanager-recipients-helptext" class="form-text">
+        <i18n-t tag="div" keypath="You can divide numbers with" class="form-text">
             <template #comma>
                 <code>,</code>
             </template>
