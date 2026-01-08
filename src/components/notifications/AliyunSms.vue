@@ -14,7 +14,6 @@
 
         <label for="signName" class="form-label">{{ $t("SignName") }}<span style="color: red;"><sup>*</sup></span></label>
         <input id="signName" v-model="$parent.notification.signName" type="text" class="form-control" required>
-        <br>
         <div class="form-check form-switch">
             <label class="form-check-label">{{ $t("OptionalParameters") }}</label>
             <input id="optionalParameters" v-model="$parent.notification.optionalParameters" class="form-check-input" type="checkbox">
