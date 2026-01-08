@@ -48,7 +48,7 @@ module.exports = {
             },
         },
         {
-            files: ["package.json", "package-lock.json"],
+            files: ["package.json"],
             options: {
                 tabWidth: 2,
             },
