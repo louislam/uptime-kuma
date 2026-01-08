@@ -11,10 +11,14 @@
         <HiddenInput id="smsc-key" v-model="$parent.notification.smscPassword" :required="true" autocomplete="new-password"></HiddenInput>
     </div>
     <div class="mb-3">
-        <div class="form-text">
-            {{ $t("checkPrice", ['СМСЦ']) }}
-            <a href="https://smsc.kz/tariffs/" target="_blank">https://smsc.kz/tariffs/</a>
-        </div>
+        <i18n-t tag="div" keypath="checkPriceAt" class="form-text">
+            <template #service>
+                СМСЦ
+            </template>
+            <template #url>
+                <a href="https://smsc.kz/tariffs/" target="_blank">https://smsc.kz/tariffs/</a>
+            </template>
+        </i18n-t>
     </div>
     <div class="mb-3">
         <label for="smsc-to-number" class="form-label">{{ $t("Recipient Number") }}</label>
