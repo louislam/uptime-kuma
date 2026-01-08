@@ -291,13 +291,13 @@ class DomainExpiry extends BeanModel {
             for (const targetDays of notifyDays) {
                 if (daysRemaining > targetDays) {
                     log.debug(
-                        "domain",
+                        "domain_expiry",
                         `No need to send domain notification for ${domainName} (${daysRemaining} days valid) on ${targetDays} deadline.`
                     );
                     continue;
                 } else if (lastSent && lastSent <= targetDays) {
                     log.debug(
-                        "domain",
+                        "domain_expiry",
                         `Notification for ${domainName} on ${targetDays} deadline sent already, no need to send again.`
                     );
                     continue;
