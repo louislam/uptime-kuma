@@ -109,6 +109,9 @@ class DnsMonitorType extends MonitorType {
     async resolveDnsResolverServers(dnsResolveServer) {
         // Remove all spaces, split into array, remove all elements that are empty
         const addresses = dnsResolveServer.replace(/\s/g, "").split(",").filter((x) => x !== "");
+        if (!addresses.length) {
+            throw new Error("No Resolver Servers specified. Please specifiy at least one resolver server like 1.1.1.1 or a hostname");
+        }
         const resolver = new Resolver();
         const parsed = new Set();
 
