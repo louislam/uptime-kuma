@@ -26,25 +26,20 @@ class RabbitMqMonitorType extends MonitorType {
         for (let i = 0; i < baseUrls.length; i++) {
             const baseUrl = baseUrls[i];
             const nodeIndex = i + 1;
-            const totalNodes = baseUrls.length;
 
             try {
-                await this.checkSingleNode(monitor, heartbeat, baseUrl, nodeIndex, totalNodes);
+                await this.checkSingleNode(monitor, heartbeat, baseUrl, nodeIndex, baseUrls.length);
                 // If checkSingleNode succeeds, heartbeat is set to UP and we can return
                 return;
             } catch (error) {
                 const errorMsg = `Node ${nodeIndex}: ${error.message}`;
-                log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
+                log.warn(this.name, errorMsg);
                 errors.push(errorMsg);
             }
         }
 
         // If we reach here, all nodes failed
-        const consolidatedError = errors.length > 1 
-            ? `All ${errors.length} nodes failed: ${errors.join("; ")}`
-            : errors[0] || "All RabbitMQ nodes are unavailable";
-        log.error("monitor", `[${monitor.name}] ${consolidatedError}`);
-        throw new Error(consolidatedError);
+        throw new Error(`All ${errors.length} nodes failed because ${errors.join("; ")}`);
     }
 
     /**
