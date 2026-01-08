@@ -2068,7 +2068,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.body);
                 } catch (err) {
-                    toast.error(this.$t("BodyInvalidFormat") + err.message);
+                    toast.error(this.$t("BodyInvalidFormatBecause", {error: err.message}));
                     return false;
                 }
             }
@@ -2076,7 +2076,7 @@ message HealthCheckResponse {
                 try {
                     JSON.parse(this.monitor.headers);
                 } catch (err) {
-                    toast.error(this.$t("HeadersInvalidFormat") + err.message);
+                    toast.error(this.$t("HeadersInvalidFormatBecause", {error: err.message}));
                     return false;
                 }
             }
