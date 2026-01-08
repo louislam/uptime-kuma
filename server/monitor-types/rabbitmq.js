@@ -17,7 +17,15 @@ class RabbitMqMonitorType extends MonitorType {
             throw new Error("Invalid RabbitMQ Nodes");
         }
 
-        for (let baseUrl of baseUrls) {
+        if (baseUrls.length === 0) {
+            throw new Error("No RabbitMQ nodes configured");
+        }
+
+        const errors = [];
+        let lastError = null;
+
+        for (let i = 0; i < baseUrls.length; i++) {
+            let baseUrl = baseUrls[i];
             try {
                 // Without a trailing slash, path in baseUrl will be removed. https://example.com/api -> https://example.com
                 if ( !baseUrl.endsWith("/") ) {
@@ -36,28 +44,46 @@ class RabbitMqMonitorType extends MonitorType {
                     // Capture reason for 503 status
                     validateStatus: (status) => status === 200 || status === 503,
                 };
-                log.debug("monitor", `[${monitor.name}] Axios Request: ${JSON.stringify(options)}`);
+                log.debug("monitor", `[${monitor.name}] Checking node ${i + 1}/${baseUrls.length}: ${baseUrl}`);
                 const res = await axios.request(options);
                 log.debug("monitor", `[${monitor.name}] Axios Response: status=${res.status} body=${JSON.stringify(res.data)}`);
                 if (res.status === 200) {
                     heartbeat.status = UP;
                     heartbeat.msg = "OK";
-                    break;
+                    log.info("monitor", `[${monitor.name}] Node ${i + 1}/${baseUrls.length} is healthy`);
+                    return;
                 } else if (res.status === 503) {
-                    throw new Error(res.data.reason);
+                    const errorMsg = `Node ${i + 1}: ${res.data.reason}`;
+                    log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
+                    errors.push(errorMsg);
+                    lastError = new Error(res.data.reason);
                 } else {
-                    throw new Error(`${res.status} - ${res.statusText}`);
+                    const errorMsg = `Node ${i + 1}: ${res.status} - ${res.statusText}`;
+                    log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
+                    errors.push(errorMsg);
+                    lastError = new Error(`${res.status} - ${res.statusText}`);
                 }
             } catch (error) {
                 if (axios.isCancel(error)) {
-                    log.debug("monitor", `[${monitor.name}] Request timed out`);
-                    throw new Error("Request timed out");
+                    const errorMsg = `Node ${i + 1}: Request timed out`;
+                    log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
+                    errors.push(errorMsg);
+                    lastError = new Error("Request timed out");
                 } else {
-                    log.debug("monitor", `[${monitor.name}] Axios Error: ${JSON.stringify(error.message)}`);
-                    throw new Error(error.message);
+                    const errorMsg = `Node ${i + 1}: ${error.message}`;
+                    log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
+                    errors.push(errorMsg);
+                    lastError = error;
                 }
             }
         }
+
+        // If we reach here, all nodes failed
+        const consolidatedError = errors.length > 1 
+            ? `All ${errors.length} nodes failed: ${errors.join("; ")}`
+            : errors[0] || "All RabbitMQ nodes are unavailable";
+        log.error("monitor", `[${monitor.name}] ${consolidatedError}`);
+        throw new Error(consolidatedError);
     }
 }
 
