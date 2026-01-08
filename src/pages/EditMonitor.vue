@@ -822,8 +822,8 @@
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div v-if="!hasDomain && domainExpirySupportReason" class="form-text">
-                                    {{ domainExpirySupportReason }}
+                                <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
+                                    {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
                             <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
