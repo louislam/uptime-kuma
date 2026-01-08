@@ -2091,7 +2091,7 @@ message HealthCheckResponse {
             }
             if (this.monitor.headers) {
                 try {
-                    JSON.parHeadersInvalidFormatse(this.monitor.headers);
+                    JSON.parse(this.monitor.headers);
                 } catch (err) {
                     toast.error(this.$t("HeadersInvalidFormat", {error: err.message}));
                     return false;
