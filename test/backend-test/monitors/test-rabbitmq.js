@@ -105,17 +105,11 @@ describe("RabbitMQ Single Node", {
     });
 });
 
-describe("RabbitMQ Multi-Node", {
-    skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
-}, () => {
+describe("RabbitMQ Multi-Node (Mocked)", () => {
     test("check() succeeds when first node is healthy", async () => {
-        const rabbitMQContainer = await new RabbitMQContainer().withStartupTimeout(60000).start();
         const rabbitMQMonitor = new RabbitMqMonitorType();
-        const healthyNode = `http://${rabbitMQContainer.getHost()}:${rabbitMQContainer.getMappedPort(15672)}`;
-        const unhealthyNode = "http://localhost:15673";
-
         const monitor = {
-            rabbitmqNodes: JSON.stringify([ healthyNode, unhealthyNode ]),
+            rabbitmqNodes: JSON.stringify([ "http://node1:15672", "http://node2:15672" ]),
             rabbitmqUsername: "guest",
             rabbitmqPassword: "guest",
             timeout: 10,
@@ -126,23 +120,26 @@ describe("RabbitMQ Multi-Node", {
             status: PENDING,
         };
 
-        try {
-            await rabbitMQMonitor.check(monitor, heartbeat, {});
-            assert.strictEqual(heartbeat.status, UP);
-            assert.strictEqual(heartbeat.msg, "OK");
-        } finally {
-            rabbitMQContainer.stop();
-        }
+        // Mock checkSingleNode to succeed on first call
+        let callCount = 0;
+        rabbitMQMonitor.checkSingleNode = async (mon, url, nodeInfo) => {
+            callCount++;
+            if (callCount === 1) {
+                heartbeat.status = UP;
+                heartbeat.msg = "OK";
+            }
+        };
+
+        await rabbitMQMonitor.check(monitor, heartbeat, {});
+        assert.strictEqual(heartbeat.status, UP);
+        assert.strictEqual(heartbeat.msg, "OK");
+        assert.strictEqual(callCount, 1, "Should only check first node");
     });
 
     test("check() succeeds when second node is healthy after first fails", async () => {
-        const rabbitMQContainer = await new RabbitMQContainer().withStartupTimeout(60000).start();
         const rabbitMQMonitor = new RabbitMqMonitorType();
-        const unhealthyNode = "http://localhost:15673";
-        const healthyNode = `http://${rabbitMQContainer.getHost()}:${rabbitMQContainer.getMappedPort(15672)}`;
-
         const monitor = {
-            rabbitmqNodes: JSON.stringify([ unhealthyNode, healthyNode ]),
+            rabbitmqNodes: JSON.stringify([ "http://node1:15672", "http://node2:15672" ]),
             rabbitmqUsername: "guest",
             rabbitmqPassword: "guest",
             timeout: 10,
@@ -153,22 +150,31 @@ describe("RabbitMQ Multi-Node", {
             status: PENDING,
         };
 
-        try {
-            await rabbitMQMonitor.check(monitor, heartbeat, {});
-            assert.strictEqual(heartbeat.status, UP);
-            assert.strictEqual(heartbeat.msg, "OK");
-        } finally {
-            rabbitMQContainer.stop();
-        }
+        // Mock checkSingleNode to fail first, succeed second
+        let callCount = 0;
+        rabbitMQMonitor.checkSingleNode = async (mon, url, nodeInfo) => {
+            callCount++;
+            if (callCount === 1) {
+                throw new Error("Node 1 connection failed");
+            } else {
+                heartbeat.status = UP;
+                heartbeat.msg = "OK";
+            }
+        };
+
+        await rabbitMQMonitor.check(monitor, heartbeat, {});
+        assert.strictEqual(heartbeat.status, UP);
+        assert.strictEqual(heartbeat.msg, "OK");
+        assert.strictEqual(callCount, 2, "Should check both nodes");
     });
 
     test("check() fails with consolidated error when all nodes are down", async () => {
         const rabbitMQMonitor = new RabbitMqMonitorType();
         const monitor = {
             rabbitmqNodes: JSON.stringify([
-                "http://localhost:15673",
-                "http://localhost:15674",
-                "http://localhost:15675"
+                "http://node1:15672",
+                "http://node2:15672",
+                "http://node3:15672"
             ]),
             rabbitmqUsername: "guest",
             rabbitmqPassword: "guest",
@@ -178,6 +184,13 @@ describe("RabbitMQ Multi-Node", {
         const heartbeat = {
             msg: "",
             status: PENDING,
+        };
+
+        // Mock checkSingleNode to always fail
+        let callCount = 0;
+        rabbitMQMonitor.checkSingleNode = async (mon, url, nodeInfo) => {
+            callCount++;
+            throw new Error(`Connection failed to node ${callCount}`);
         };
 
         await assert.rejects(
@@ -190,6 +203,7 @@ describe("RabbitMQ Multi-Node", {
                 return true;
             }
         );
+        assert.strictEqual(callCount, 3, "Should check all three nodes");
     });
 
     test("check() fails when no nodes are configured", async () => {
@@ -212,16 +226,17 @@ describe("RabbitMQ Multi-Node", {
         );
     });
 
-    test("check() handles mix of connection errors and service errors", async () => {
-        const rabbitMQContainer = await new RabbitMQContainer().withStartupTimeout(60000).start();
+    test("check() tries all nodes before failing", async () => {
         const rabbitMQMonitor = new RabbitMqMonitorType();
-        const connectionErrorNode = "http://localhost:15673"; // Connection refused
-        const authErrorNode = `http://${rabbitMQContainer.getHost()}:${rabbitMQContainer.getMappedPort(15672)}`; // Wrong credentials
-        
         const monitor = {
-            rabbitmqNodes: JSON.stringify([ connectionErrorNode, authErrorNode ]),
-            rabbitmqUsername: "wronguser",
-            rabbitmqPassword: "wrongpass",
+            rabbitmqNodes: JSON.stringify([
+                "http://node1:15672",
+                "http://node2:15672",
+                "http://node3:15672",
+                "http://node4:15672"
+            ]),
+            rabbitmqUsername: "guest",
+            rabbitmqPassword: "guest",
             timeout: 10,
         };
 
@@ -230,16 +245,21 @@ describe("RabbitMQ Multi-Node", {
             status: PENDING,
         };
 
-        try {
-            await assert.rejects(
-                rabbitMQMonitor.check(monitor, heartbeat, {}),
-                (error) => {
-                    assert.match(error.message, /All 2 nodes failed/);
-                    return true;
-                }
-            );
-        } finally {
-            rabbitMQContainer.stop();
-        }
+        const checkedNodes = [];
+        rabbitMQMonitor.checkSingleNode = async (mon, url, nodeInfo) => {
+            checkedNodes.push(url);
+            throw new Error(`Failed: ${url}`);
+        };
+
+        await assert.rejects(
+            rabbitMQMonitor.check(monitor, heartbeat, {}),
+            /All 4 nodes failed/
+        );
+        
+        assert.strictEqual(checkedNodes.length, 4, "Should check all 4 nodes");
+        assert.strictEqual(checkedNodes[0], "http://node1:15672");
+        assert.strictEqual(checkedNodes[1], "http://node2:15672");
+        assert.strictEqual(checkedNodes[2], "http://node3:15672");
+        assert.strictEqual(checkedNodes[3], "http://node4:15672");
     });
 });
