@@ -993,15 +993,14 @@ let needSetup = false;
                 const supportInfo = await DomainExpiry.checkSupport(partial);
                 callback({
                     ok: true,
-                    supported: Boolean(supportInfo.supported),
-                    domain: supportInfo.domain ?? null,
-                    tld: supportInfo.tld ?? null,
-                    reason: supportInfo.reason ?? null,
+                    domain: supportInfo.domain,
+                    tld: supportInfo.tld
                 });
             } catch (e) {
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n,
                 });
             }
         });

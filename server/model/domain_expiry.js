@@ -5,6 +5,7 @@ const { parse: parseTld } = require("tldts");
 const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
 const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
+const TranslatableError = require("../translatable-error");
 
 const TABLE = "domain_expiry";
 // NOTE: Keep these type filters in sync with `showDomainExpiryNotification` in `src/pages/EditMonitor.vue`.
@@ -127,7 +128,8 @@ class DomainExpiry extends BeanModel {
     static parseTld = parseTld;
 
     /**
-     * @returns {(object)} parsed domain components
+     * @typedef {import("tldts-core").IResult} DomainComponents
+     * @returns {DomainComponents} parsed domain components
      */
     parseName() {
         return parseTld(this.domain);
@@ -142,89 +144,65 @@ class DomainExpiry extends BeanModel {
 
     /**
      * @param {Monitor} monitor Monitor object
-     * @returns {Promise<{ supported: boolean, domain?: string, tld?: string, reason?: string }>} Domain expiry support info
+     * @throws {TranslatableError} Throws an error if the monitor type is unsupported or missing target.
+     * @returns {Promise<{ domain: string, tld: string }>} Domain expiry support info
      */
     static async checkSupport(monitor) {
-        const m = monitor;
-
-        if (excludeTypes.includes(m.type) || m.type?.match(/sql$/)) {
-            return {
-                supported: false,
-                reason: "unsupported_type",
-            };
+        if (excludeTypes.includes(monitor.type) || monitor.type?.match(/sql$/)) {
+            throw new TranslatableError("unsupported_type");
         }
 
         let target;
-        if (urlTypes.includes(m.type)) {
-            target = m.url;
-        } else if (m.type === "grpc-keyword") {
-            target = m.grpcUrl;
+        if (urlTypes.includes(monitor.type)) {
+            target = monitor.url;
+        } else if (monitor.type === "grpc-keyword") {
+            target = monitor.grpcUrl;
         } else {
-            target = m.hostname;
+            target = monitor.hostname;
         }
 
         if (typeof target !== "string" || target.length === 0) {
-            return {
-                supported: false,
-                reason: "missing_target",
-            };
+            throw new TranslatableError("missing_target");
         }
 
         const tld = parseTld(target);
 
         // Avoid logging for incomplete/invalid input while editing monitors.
         if (!tld.domain || !tld.publicSuffix || tld.isIp) {
-            return {
-                supported: false,
-                reason: "invalid_domain",
-            };
+            throw new TranslatableError("invalid_domain");
         }
 
         // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
         if (tld.publicSuffix.length < 2) {
-            return {
-                supported: false,
-                reason: "invalid_domain",
-            };
+            throw new TranslatableError("invalid_domain");
         }
 
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
-            return {
-                supported: false,
-                reason: "unsupported_tld",
-                tld: tld.publicSuffix,
-            };
+            // Only warn when the monitor actually has domain expiry notifications enabled.
+            // The edit monitor page calls this method frequently while the user is typing.
+            if (Boolean(monitor.domainExpiryNotification)) {
+                log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
+            }
+            throw new TranslatableError("unsupported_tld");
         }
 
         return {
-            supported: true,
             domain: tld.domain,
             tld: tld.publicSuffix,
         };
     }
 
     /**
-     * @param {Monitor} monitor Monitor object
+     * @param {string} domain Domain name
      * @returns {Promise<DomainExpiry>} Domain expiry bean
      */
-    static async forMonitor(monitor) {
-        const m = monitor;
-        const supportInfo = await DomainExpiry.checkSupport(m);
-        if (!supportInfo.supported) {
-            // Only warn when the monitor actually has domain expiry notifications enabled.
-            // The edit monitor page calls this method frequently while the user is typing.
-            if (supportInfo.reason === "unsupported_tld" && Boolean(m.domainExpiryNotification) && supportInfo.tld) {
-                log.warn("domain_expiry", `Domain expiry unsupported for '.${supportInfo.tld}' because its RDAP endpoint is not listed in the IANA database.`);
-            }
-            return false;
-        }
-
-        const existing = await DomainExpiry.findByName(supportInfo.domain);
+    static async forMonitor(domain) {
+        const existing = await DomainExpiry.findByName(domain);
         if (existing) {
             return existing;
         }
-        return await DomainExpiry.createByName(supportInfo.domain);
+        return DomainExpiry.createByName(domain);
     }
 
     /**
@@ -243,11 +221,12 @@ class DomainExpiry extends BeanModel {
 
     /**
      * @param {(Monitor)} monitor Monitor object
-     * @returns {Promise<void>}
+     * @throws {TranslatableError} If the domain is not supported
+     * @returns {Promise<Date | undefined>} the expiry date
      */
     static async checkExpiry(monitor) {
-
-        let bean = await DomainExpiry.forMonitor(monitor);
+        const supportInfo = await DomainExpiry.checkSupport(monitor);
+        let bean = await DomainExpiry.forMonitor(supportInfo.domain);
 
         let expiryDate;
         if (bean?.lastCheck && getDaysBetween(new Date(bean.lastCheck), new Date()) < 1) {
@@ -278,7 +257,7 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<void>}
      */
     static async sendNotifications(monitor, notificationList) {
-        const domain = await DomainExpiry.forMonitor(monitor);
+        const domain = await DomainExpiry.forMonitor(domain);
         const name = domain.domain;
 
         if (!notificationList.length > 0) {

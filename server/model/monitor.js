@@ -927,7 +927,7 @@ class Monitor extends BeanModel {
                         log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
                     }
                 } catch (error) {
-                    log.warn("monitor", `Failed to get domain expiry for ${this.name}: ${error.message}`);
+                    // purposely not logged due to noise. Is accessible via checkMointor
                 }
             }
 

@@ -822,8 +822,8 @@
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div class="form-text">
-                                    <span v-if="!hasDomain">{{ domainExpiryHelptext }}</span>
+                                <div class="form-text" v-if="!hasDomain && domainExpirySupportReason">
+                                    {{ $t(domainExpirySupportReason, { tld: `.${domainExpirySupportTld}` }) }}
                                 </div>
                             </div>
                             <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
@@ -1533,13 +1533,6 @@ export default {
             return !excludedTypes.includes(type) && !type.match(/sql$/);
         },
 
-        domainExpiryHelptext() {
-            if (this.domainExpirySupportReason === "unsupported_tld" && this.domainExpirySupportTld) {
-                return this.$t("domainExpiryHelptextUnsupportedTld", [ `.${this.domainExpirySupportTld}` ]);
-            }
-            return this.$t("domainExpiryHelptextNoDomain");
-        },
-
         pageName() {
             let name = "Add New Monitor";
             if (this.isClone) {
@@ -1831,15 +1824,8 @@ message HealthCheckResponse {
 
             this.checkMonitorDebounce = setTimeout(() => {
                 this.$root.getSocket().emit("checkMointor", data, (res) => {
-                    if (!res?.ok) {
-                        this.hasDomain = false;
-                        this.domainExpirySupportReason = null;
-                        this.domainExpirySupportTld = null;
-                        return;
-                    }
-
-                    this.hasDomain = Boolean(res.supported);
-                    this.domainExpirySupportReason = res.reason ?? null;
+                    this.hasDomain = !!res?.ok;
+                    this.domainExpirySupportReason = res.msg ?? null;
                     this.domainExpirySupportTld = res.tld ?? null;
                 });
             }, 500);
