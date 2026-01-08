@@ -487,7 +487,7 @@ const parseCertificateInfo = function (info) {
 /**
  * Check if certificate is valid
  * @param {tls.TLSSocket} socket TLSSocket, which may or may not be connected
- * @returns {object} Object containing certificate information
+ * @returns {null | {valid: boolean, certInfo: object}} Object containing certificate information
  */
 exports.checkCertificate = function (socket) {
     let certInfoStartTime = dayjs().valueOf();

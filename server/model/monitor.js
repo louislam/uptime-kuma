@@ -927,7 +927,7 @@ class Monitor extends BeanModel {
                         log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
                     }
                 } catch (error) {
-                    log.warn("monitor", `Failed to get domain expiry for ${this.name} : ${error.message}`);
+                    log.warn("monitor", `Failed to get domain expiry for ${this.name}: ${error.message}`);
                 }
             }
 
@@ -1306,7 +1306,7 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
      * @param {Monitor} monitor The monitor to send a notification about
      * @param {Bean} bean Status information about monitor
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async sendNotification(isFirstBeat, monitor, bean) {
         if (!isFirstBeat || bean.status === DOWN) {
@@ -1363,7 +1363,7 @@ class Monitor extends BeanModel {
     /**
      * checks certificate chain for expiring certificates
      * @param {object} tlsInfoObject Information about certificate
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     async checkCertExpiryNotifications(tlsInfoObject) {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
