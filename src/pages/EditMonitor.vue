@@ -817,12 +817,13 @@
                                 </div>
                             </div>
 
-                            <div v-if="hasDomain" class="my-3 form-check">
-                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox">
+                            <div v-if="showDomainExpiryNotification" class="my-3 form-check">
+                                <input id="domain-expiry-notification" v-model="monitor.domainExpiryNotification" class="form-check-input" type="checkbox" :disabled="!hasDomain">
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div class="form-text">
+                                <div v-if="!hasDomain && domainExpiryUnsupportedReason" class="form-text">
+                                    {{ domainExpiryUnsupportedReason }}
                                 </div>
                             </div>
                             <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
@@ -1442,6 +1443,8 @@ export default {
                 // Do not add default value here, please check init() method
             },
             hasDomain: false,
+            domainExpiryUnsupportedReason: null,
+            checkMonitorDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
             dnsresolvetypeOptions: [],
@@ -1515,6 +1518,18 @@ export default {
                 hostname,
                 grpcUrl
             };
+        },
+
+        showDomainExpiryNotification() {
+            // NOTE: Keep this list in sync with `excludeTypes` in `server/model/domain_expiry.js`.
+            const excludedTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
+            const type = this.monitor.type;
+
+            if (!type) {
+                return false;
+            }
+
+            return !excludedTypes.includes(type) && !type.match(/sql$/);
         },
 
         pageName() {
@@ -1795,12 +1810,22 @@ message HealthCheckResponse {
         },
 
         "monitorTypeUrlHost"(data) {
-            this.$root.getSocket().emit("checkMointor", data, (res) => {
-                this.hasDomain = !!res?.domain;
-                if (!res?.domain) {
-                    this.monitor.domainExpiryNotification = false;
-                }
-            });
+            if (this.checkMonitorDebounce != null) {
+                clearTimeout(this.checkMonitorDebounce);
+            }
+
+            if (!this.showDomainExpiryNotification) {
+                this.hasDomain = false;
+                this.domainExpiryUnsupportedReason = null;
+                return;
+            }
+
+            this.checkMonitorDebounce = setTimeout(() => {
+                this.$root.getSocket().emit("checkMointor", data, (res) => {
+                    this.hasDomain = !!res?.ok;
+                    this.domainExpiryUnsupportedReason = res.msgi18n ? this.$t(res.msg, res.meta) : res.msg;
+                });
+            }, 500);
         },
 
         "monitor.type"(newType, oldType) {

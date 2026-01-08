@@ -920,14 +920,15 @@ class Monitor extends BeanModel {
 
             if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
                 try {
-                    const domainExpiryDate = await DomainExpiry.checkExpiry(this);
+                    const supportInfo = await DomainExpiry.checkSupport(this);
+                    const domainExpiryDate = await DomainExpiry.checkExpiry(supportInfo.domain);
                     if (domainExpiryDate) {
-                        DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
+                        DomainExpiry.sendNotifications(supportInfo.domain, await Monitor.getNotificationList(this) || []);
                     } else {
-                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
+                        log.debug("monitor", `Failed getting expiration date for domain ${supportInfo.domain}`);
                     }
                 } catch (error) {
-                    log.warn("monitor", `Failed to get domain expiry for ${this.name} : ${error.message}`);
+                    // purposely not logged due to noise. Is accessible via checkMointor
                 }
             }
 
@@ -1232,10 +1233,13 @@ class Monitor extends BeanModel {
     static async sendDomainInfo(io, monitorID, userID) {
         const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
 
-        const domain = await DomainExpiry.forMonitor(monitor);
-        if (domain?.expiry) {
-            io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
-        }
+        try {
+            const supportInfo = await DomainExpiry.checkSupport(monitor);
+            const domain = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
+            if (domain?.expiry) {
+                io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
+            }
+        } catch (e) {}
     }
 
     /**
@@ -1306,7 +1310,7 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
      * @param {Monitor} monitor The monitor to send a notification about
      * @param {Bean} bean Status information about monitor
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async sendNotification(isFirstBeat, monitor, bean) {
         if (!isFirstBeat || bean.status === DOWN) {
@@ -1363,7 +1367,7 @@ class Monitor extends BeanModel {
     /**
      * checks certificate chain for expiring certificates
      * @param {object} tlsInfoObject Information about certificate
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     async checkCertExpiryNotifications(tlsInfoObject) {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {

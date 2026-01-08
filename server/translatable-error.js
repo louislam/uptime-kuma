@@ -1,16 +1,21 @@
+/**
+ * Error whose message is a translation key.
+ * @augments Error
+ */
 class TranslatableError extends Error {
     /**
-     * Error whose message is a translation key.
-     * @augments Error
+     * Indicates that the error message is a translation key.
      */
+    msgi18n = true;
+
     /**
      * Create a TranslatableError.
      * @param {string} key - Translation key present in src/lang/en.json
+     * @param {object} meta Arbitrary metadata
      */
-    constructor(key) {
+    constructor(key, meta = {}) {
         super(key);
-        this.msgi18n = true;
-        this.key = key;
+        this.meta = meta;
         Error.captureStackTrace(this, this.constructor);
     }
 }
