@@ -1355,6 +1355,7 @@ import {
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     sleep,
+    TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
 } from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
@@ -1511,15 +1512,7 @@ export default {
         },
 
         showDomainExpiryNotification() {
-            // NOTE: Keep this list in sync with `excludeTypes` in `server/model/domain_expiry.js`.
-            const excludedTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
-            const type = this.monitor.type;
-
-            if (!type) {
-                return false;
-            }
-
-            return !excludedTypes.includes(type) && !type.match(/sql$/);
+            return this.monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD;
         },
 
         pageName() {
