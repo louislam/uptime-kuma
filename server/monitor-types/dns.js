@@ -173,7 +173,7 @@ class DnsMonitorType extends MonitorType {
                 });
             }
         });
-    };
+    }
 }
 
 module.exports = {
