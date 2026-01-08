@@ -920,7 +920,7 @@ class Monitor extends BeanModel {
 
             if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
                 try {
-                    const supportInfo = await DomainExpiry.checkSupport(monitor);
+                    const supportInfo = await DomainExpiry.checkSupport(this);
                     const domainExpiryDate = await DomainExpiry.checkExpiry(supportInfo.domain);
                     if (domainExpiryDate) {
                         DomainExpiry.sendNotifications(supportInfo.domain, await Monitor.getNotificationList(this) || []);
@@ -1233,10 +1233,13 @@ class Monitor extends BeanModel {
     static async sendDomainInfo(io, monitorID, userID) {
         const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
 
-        const domain = await DomainExpiry.findByDomainNameOrCreate(monitor);
-        if (domain?.expiry) {
-            io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
-        }
+        try {
+            const supportInfo = await DomainExpiry.checkSupport(monitor);
+            const domain = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
+            if (domain?.expiry) {
+                io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
+            }
+        } catch (e){}
     }
 
     /**
