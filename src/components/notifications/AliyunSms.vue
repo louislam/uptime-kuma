@@ -1,5 +1,3 @@
-<script setup lang="ts">
-</script>
 <template>
     <div class="mb-3">
         <label for="accessKeyId" class="form-label">{{ $t("AccessKeyId") }}<span style="color: red;"><sup>*</sup></span></label>
