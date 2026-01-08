@@ -19,7 +19,7 @@
             <label class="form-check-label">{{ $t("OptionalParameters") }} &nbsp;&nbsp;</label>
             <input id="optionalParameters" v-model="$parent.notification.optionalParameters" class="form-check-input" type="checkbox">
         </div>
-        <div data-v-1e7297ef="" class="form-text">{{ $t("If not enabled, optional variables will not be sent (due to carrier restrictions, the content contained in variables may be rejected, therefore an option is provided to disable certain variables).") }} </div>
+        <div class="form-text">{{ $t("aliyun_enable_optional_variables_at_the_risk_of_non_delivery") }} </div>
         <br>
         <div class="form-text">
             <p>{{ $t("Sms template must contain parameters: ") }}<br> <code>${name} ${time} ${status}</code><br><br> {{ $t("following parameters are optional: ") }}<br> <code>${msg}</code></p>
