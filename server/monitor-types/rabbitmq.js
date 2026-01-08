@@ -22,7 +22,6 @@ class RabbitMqMonitorType extends MonitorType {
         }
 
         const errors = [];
-        let lastError = null;
 
         for (let i = 0; i < baseUrls.length; i++) {
             let baseUrl = baseUrls[i];
@@ -56,24 +55,20 @@ class RabbitMqMonitorType extends MonitorType {
                     const errorMsg = `Node ${i + 1}: ${res.data.reason}`;
                     log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
                     errors.push(errorMsg);
-                    lastError = new Error(res.data.reason);
                 } else {
                     const errorMsg = `Node ${i + 1}: ${res.status} - ${res.statusText}`;
                     log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
                     errors.push(errorMsg);
-                    lastError = new Error(`${res.status} - ${res.statusText}`);
                 }
             } catch (error) {
                 if (axios.isCancel(error)) {
                     const errorMsg = `Node ${i + 1}: Request timed out`;
                     log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
                     errors.push(errorMsg);
-                    lastError = new Error("Request timed out");
                 } else {
                     const errorMsg = `Node ${i + 1}: ${error.message}`;
                     log.warn("monitor", `[${monitor.name}] ${errorMsg}`);
                     errors.push(errorMsg);
-                    lastError = error;
                 }
             }
         }
