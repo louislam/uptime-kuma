@@ -136,7 +136,6 @@ async function prepareChromeExecutable(executablePath) {
 /**
  * Installs Chromium and required font packages via APT if the Chromium executable
  * is not already available.
- *
  * @async
  * @param {string} executablePath - Path to the Chromium executable used to check
  * whether Chromium is available and to query its version after installation.
