@@ -8,6 +8,7 @@ const crypto = require("crypto");
 
 class SteamMonitorType extends MonitorType {
     name = "steam";
+    steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
 
     /**
      * @inheritdoc
@@ -33,7 +34,6 @@ class SteamMonitorType extends MonitorType {
     * @throws {Error} If Steam API Key is not configured
     */
     async getServerList(monitor) {
-        const steamApiUrl = "https://api.steampowered.com/IGameServersService/GetServerList/v1/";
         const steamAPIKey = await setting("steamAPIKey");
         const filter = `addr\\${monitor.hostname}:${monitor.port}`;
 
@@ -62,7 +62,7 @@ class SteamMonitorType extends MonitorType {
                 key: steamAPIKey,
             }
         };
-        return await axios.get(steamApiUrl, options);
+        return await axios.get(this.steamApiUrl, options);
     }
 }
 
