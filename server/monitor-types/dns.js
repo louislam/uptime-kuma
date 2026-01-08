@@ -140,8 +140,10 @@ class DnsMonitorType extends MonitorType {
             addrs.forEach(ip => parsed.add(ip));
         }
 
+        // only the resolver resolution can discard an adress
+        // -> no special error message for only the net.isIP case is nessesary
         if (!parsed.size) {
-            throw new Error("No Resolver Servers");
+            throw new Error("None of the configured resolver servers could be resolved to an IP address. Please provide a comma-separated list of valid resolver hostnames or IP addresses.");
         }
         return Array.from(parsed);
     }
