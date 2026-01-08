@@ -236,7 +236,7 @@ describe("Domain Expiry", () => {
     });
 
     test("sendNotifications() triggers notification for expiring domain", async () => {
-        await DomainExpiry.forMonitor(monHttpCom);
+        await DomainExpiry.findByName("google.com");
         const hook = {
             "port": 3010,
             "url": "capture"
