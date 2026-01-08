@@ -28,12 +28,12 @@
         </select>
     </div>
     <div class="mb-3">
-        <i18n-t tag="div" keypath="checkPrice" class="form-text">
+        <i18n-t tag="div" keypath="checkPriceAt" class="form-text">
             <template #service>
                 SMSManager
             </template>
             <template #url>
-            <a href="https://smsmanager.cz/rozesilani-sms/ceny/ceska-republika/" target="_blank">{{ $t("here") }}</a>
+                <a href="https://smsmanager.cz/rozesilani-sms/ceny/ceska-republika/" target="_blank">{{ $t("here") }}</a>
             </template>
         </i18n-t>
     </div>

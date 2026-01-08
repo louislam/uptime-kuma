@@ -142,7 +142,7 @@
                     v-model="settings.steamAPIKey"
                     autocomplete="new-password"
                 />
-                <i18n-t tag="div" keypath="steamApiKeyDescription" class="form-text">
+                <i18n-t tag="div" keypath="steamApiKeyDescriptionAt" class="form-text">
                     <template #url>
                         <a href="https://steamcommunity.com/dev" target="_blank">
                             https://steamcommunity.com/dev
