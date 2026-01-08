@@ -36,3 +36,6 @@ yarn.lock
 
 # Docker
 docker/
+
+# language files
+src/lang/*.json
