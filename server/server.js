@@ -75,6 +75,7 @@ const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
 const { passwordStrength } = require("check-password-strength");
+const TranslatableError = require("./translatable-error");
 
 log.debug("server", "Importing 2FA Modules");
 const notp = require("notp");
@@ -673,7 +674,7 @@ let needSetup = false;
         socket.on("setup", async (username, password, callback) => {
             try {
                 if (passwordStrength(password).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                    throw new TranslatableError("passwordTooWeak");
                 }
 
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
@@ -697,6 +698,7 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n
                 });
             }
         });
@@ -902,6 +904,7 @@ let needSetup = false;
                 bean.conditions = JSON.stringify(monitor.conditions);
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
+                bean.expected_tls_alert = monitor.expectedTlsAlert;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
@@ -987,14 +990,18 @@ let needSetup = false;
             try {
                 checkLogin(socket);
                 const DomainExpiry = require("./model/domain_expiry");
+                const supportInfo = await DomainExpiry.checkSupport(partial);
                 callback({
                     ok: true,
-                    domain: (await DomainExpiry.forMonitor(partial))?.domain || null
+                    domain: supportInfo.domain,
+                    tld: supportInfo.tld
                 });
             } catch (e) {
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n,
+                    meta: e.meta ?? {}
                 });
             }
         });
@@ -1409,7 +1416,7 @@ let needSetup = false;
                 }
 
                 if (passwordStrength(password.newPassword).value === "Too weak") {
-                    throw new Error("Password is too weak. It should contain alphabetic and numeric characters. It must be at least 6 characters in length.");
+                    throw new TranslatableError("passwordTooWeak");
                 }
 
                 let user = await doubleCheckPassword(socket, password.currentPassword);
@@ -1428,6 +1435,7 @@ let needSetup = false;
                 callback({
                     ok: false,
                     msg: e.message,
+                    msgi18n: !!e.msgi18n,
                 });
             }
         });

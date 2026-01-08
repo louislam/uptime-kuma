@@ -52,6 +52,13 @@
         <label for="ntfy-icon" class="form-label">{{ $t("IconUrl") }}</label>
         <input id="ntfy-icon" v-model="$parent.notification.ntfyIcon" type="text" class="form-control">
     </div>
+    <div class="mb-3">
+        <label for="ntfy-call" class="form-label">{{ $t("ntfyCall") }}</label>
+        <input id="ntfy-call" v-model="$parent.notification.ntfyCall" type="text" class="form-control" placeholder="yes or +12223334444">
+        <div class="form-text">
+            {{ $t("ntfyCallHelptext") }}
+        </div>
+    </div>
 </template>
 
 <script>

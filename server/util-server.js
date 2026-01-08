@@ -10,7 +10,6 @@ const { Resolver } = require("dns");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const chroma = require("chroma-js");
-const mysql = require("mysql2");
 const { NtlmClient } = require("./modules/axios-ntlm/lib/ntlmClient.js");
 const { Settings } = require("./settings");
 const RadiusClient = require("./radius-client");
@@ -319,44 +318,6 @@ exports.dnsResolve = function (hostname, resolverServer, resolverPort, rrtype) {
 };
 
 /**
- * Run a query on MySQL/MariaDB
- * @param {string} connectionString The database connection string
- * @param {string} query The query to validate the database with
- * @param {?string} password The password to use
- * @returns {Promise<(string)>} Response from server
- */
-exports.mysqlQuery = function (connectionString, query, password = undefined) {
-    return new Promise((resolve, reject) => {
-        const connection = mysql.createConnection({
-            uri: connectionString,
-            password
-        });
-
-        connection.on("error", (err) => {
-            reject(err);
-        });
-
-        connection.query(query, (err, res) => {
-            if (err) {
-                reject(err);
-            } else {
-                if (Array.isArray(res)) {
-                    resolve("Rows: " + res.length);
-                } else {
-                    resolve("No Error, but the result is not an array. Type: " + typeof res);
-                }
-            }
-
-            try {
-                connection.end();
-            } catch (_) {
-                connection.destroy();
-            }
-        });
-    });
-};
-
-/**
  * Query radius server
  * @param {string} hostname Hostname of radius server
  * @param {string} username Username to use
@@ -523,7 +484,7 @@ const parseCertificateInfo = function (info) {
 /**
  * Check if certificate is valid
  * @param {tls.TLSSocket} socket TLSSocket, which may or may not be connected
- * @returns {object} Object containing certificate information
+ * @returns {null | {valid: boolean, certInfo: object}} Object containing certificate information
  */
 exports.checkCertificate = function (socket) {
     let certInfoStartTime = dayjs().valueOf();

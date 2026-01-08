@@ -8,7 +8,7 @@ const { log, UP, DOWN, PENDING, MAINTENANCE, flipStatus, MAX_INTERVAL_SECOND, MI
     PING_COUNT_MIN, PING_COUNT_MAX, PING_COUNT_DEFAULT,
     PING_PER_REQUEST_TIMEOUT_MIN, PING_PER_REQUEST_TIMEOUT_MAX, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../../src/util");
-const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, mysqlQuery, setSetting, httpNtlm, radius,
+const { ping, checkCertificate, checkStatusCode, getTotalClientInRoom, setting, setSetting, httpNtlm, radius,
     kafkaProducerAsync, getOidcTokenClientCredentials, rootCertificatesFingerprints, axiosAbortSignal, checkCertificateHostname
 } = require("../util-server");
 const { R } = require("redbean-node");
@@ -165,6 +165,7 @@ class Monitor extends BeanModel {
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
+            expectedTlsAlert: this.expected_tls_alert,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),
@@ -781,16 +782,6 @@ class Monitor extends BeanModel {
                         bean.status = UP;
                         bean.msg = `Container has not reported health and is currently ${res.data.State.Status}. As it is running, it is considered UP. Consider adding a health check for better service visibility`;
                     }
-                } else if (this.type === "mysql") {
-                    let startTime = dayjs().valueOf();
-
-                    // Use `radius_password` as `password` field, since there are too many unnecessary fields
-                    // TODO: rename `radius_password` to `password` later for general use
-                    let mysqlPassword = this.radiusPassword;
-
-                    bean.msg = await mysqlQuery(this.databaseConnectionString, this.databaseQuery || "SELECT 1", mysqlPassword);
-                    bean.status = UP;
-                    bean.ping = dayjs().valueOf() - startTime;
                 } else if (this.type === "radius") {
                     let startTime = dayjs().valueOf();
 
@@ -929,14 +920,15 @@ class Monitor extends BeanModel {
 
             if (bean.status !== MAINTENANCE && Boolean(this.domainExpiryNotification)) {
                 try {
-                    const domainExpiryDate = await DomainExpiry.checkExpiry(this);
+                    const supportInfo = await DomainExpiry.checkSupport(this);
+                    const domainExpiryDate = await DomainExpiry.checkExpiry(supportInfo.domain);
                     if (domainExpiryDate) {
-                        DomainExpiry.sendNotifications(this, await Monitor.getNotificationList(this) || []);
+                        DomainExpiry.sendNotifications(supportInfo.domain, await Monitor.getNotificationList(this) || []);
                     } else {
-                        log.debug("monitor", `Failed getting expiration date for domain ${this.name}`);
+                        log.debug("monitor", `Failed getting expiration date for domain ${supportInfo.domain}`);
                     }
                 } catch (error) {
-                    log.warn("monitor", `Failed to get domain expiry for ${this.name} : ${error.message}`);
+                    // purposely not logged due to noise. Is accessible via checkMointor
                 }
             }
 
@@ -1241,10 +1233,13 @@ class Monitor extends BeanModel {
     static async sendDomainInfo(io, monitorID, userID) {
         const monitor = await R.findOne("monitor", "id = ?", [ monitorID ]);
 
-        const domain = await DomainExpiry.forMonitor(monitor);
-        if (domain?.expiry) {
-            io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
-        }
+        try {
+            const supportInfo = await DomainExpiry.checkSupport(monitor);
+            const domain = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
+            if (domain?.expiry) {
+                io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
+            }
+        } catch (e) {}
     }
 
     /**
@@ -1315,7 +1310,7 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
      * @param {Monitor} monitor The monitor to send a notification about
      * @param {Bean} bean Status information about monitor
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     static async sendNotification(isFirstBeat, monitor, bean) {
         if (!isFirstBeat || bean.status === DOWN) {
@@ -1372,7 +1367,7 @@ class Monitor extends BeanModel {
     /**
      * checks certificate chain for expiring certificates
      * @param {object} tlsInfoObject Information about certificate
-     * @returns {void}
+     * @returns {Promise<void>}
      */
     async checkCertExpiryNotifications(tlsInfoObject) {
         if (tlsInfoObject && tlsInfoObject.certInfo && tlsInfoObject.certInfo.daysRemaining) {
@@ -1507,6 +1502,13 @@ class Monitor extends BeanModel {
         }
         if (this.interval < MIN_INTERVAL_SECOND) {
             throw new Error(`Interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.retryInterval > MAX_INTERVAL_SECOND) {
+            throw new Error(`Retry interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
+        }
+        if (this.retryInterval < MIN_INTERVAL_SECOND) {
+            throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
         if (this.type === "ping") {

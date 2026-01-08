@@ -53,7 +53,7 @@ class WebSocketMonitorType extends MonitorType {
     /**
      * Uses the ws Node.js library to establish a connection to target server
      * @param {object} monitor The monitor object for input parameters.
-     * @returns {[ string, int ]} Array containing a status message and response code
+     * @returns {Promise<[ string, int ]>} Array containing a status message and response code
      */
     async attemptUpgrade(monitor) {
         return new Promise((resolve) => {
