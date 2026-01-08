@@ -7,8 +7,6 @@ const { Notification } = require("../notification");
 const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 const TranslatableError = require("../translatable-error");
 
-const TABLE = "domain_expiry";
-
 const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
     // cache for 8h
     cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 })
@@ -110,7 +108,7 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<DomainExpiry>} Domain bean
      */
     static async findByName(domain) {
-        return R.findOne(TABLE, "domain = ?", [ domain ]);
+        return R.findOne("domain_expiry", "domain = ?", [ domain ]);
     }
 
     /**
@@ -118,7 +116,7 @@ class DomainExpiry extends BeanModel {
      * @returns {DomainExpiry} Domain bean
      */
     static createByName(domain) {
-        const d = R.dispense(TABLE);
+        const d = R.dispense("domain_expiry");
         d.domain = domain;
         return d;
     }
