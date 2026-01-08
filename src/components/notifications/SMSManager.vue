@@ -29,7 +29,7 @@
     </div>
     <div class="mb-3">
         <i18n-t tag="div" keypath="checkPrice" class="form-text">
-            <template #comma>
+            <template #service>
                 SMSManager
             </template>
             <template #url>
