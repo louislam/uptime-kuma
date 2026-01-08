@@ -1,6 +1,6 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
-const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT } = require("../../src/util");
+const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
 const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
@@ -8,7 +8,6 @@ const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 const TranslatableError = require("../translatable-error");
 
 const TABLE = "domain_expiry";
-const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
 
 const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
     // cache for 8h
@@ -147,19 +146,11 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<{ domain: string, tld: string }>} Domain expiry support info
      */
     static async checkSupport(monitor) {
-        if (!TYPES_WITH_DOMAIN_EXPIRY_SUPPORT.includes(monitor.type)) {
+        if (!(monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD)) {
             throw new TranslatableError("domain_expiry_unsupported_monitor_type");
         }
-
-        let target;
-        if (urlTypes.includes(monitor.type)) {
-            target = monitor.url;
-        } else if (monitor.type === "grpc-keyword") {
-            target = monitor.grpcUrl;
-        } else {
-            target = monitor.hostname;
-        }
-
+        const target_field = TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD[monitor.type];
+        const target = monitor.type[target_field];
         if (typeof target !== "string" || target.length === 0) {
             throw new TranslatableError("domain_expiry_unsupported_missing_target");
         }

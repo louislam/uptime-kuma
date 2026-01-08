@@ -723,4 +723,23 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
     }
 }
 
-const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT = ['dns', 'gamedig', 'grpc-keyword', 'http', 'json-query', 'keyword', 'mqtt', 'ping', 'port', 'radius', 'real-browser', 'sip-options', 'smtp', 'snmp', 'steam', 'tailscale-ping', 'websocket-upgrade'];
+// these types will have domain expiry support via the specified field
+export const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
+    'http': 'url',
+    'keyword': 'url',
+    'json-query': 'url',
+    'real-browser': 'url',
+    'websocket-upgrade': 'url',
+    'port': 'hostname',
+    'ping': 'hostname',
+    'grpc-keyword': 'grpcUrl',
+    'dns': 'hostname',
+    'smtp': 'hostname',
+    'snmp': 'hostname',
+    'gamedig': 'hostname',
+    'steam': 'hostname',
+    'mqtt': 'hostname',
+    'radius': 'hostname',
+    'tailscale-ping': 'hostname',
+    'sip-options': 'hostname'
+} as const;

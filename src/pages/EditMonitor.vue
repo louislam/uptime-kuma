@@ -1356,7 +1356,7 @@ import {
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     sleep,
-    TYPES_WITH_DOMAIN_EXPIRY_SUPPORT,
+    TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD,
 } from "../util.ts";
 import { timeDurationFormatter } from "../util-frontend";
 import isFQDN from "validator/lib/isFQDN";
@@ -1522,7 +1522,7 @@ export default {
         },
 
         showDomainExpiryNotification() {
-            return TYPES_WITH_DOMAIN_EXPIRY_SUPPORT.includes(this.monitor.type);
+            return this.monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD;
         },
 
         pageName() {
