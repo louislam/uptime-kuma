@@ -31,12 +31,11 @@ class RabbitMqMonitorType extends MonitorType {
                 await this.checkSingleNode(monitor, baseUrl, `${nodeIndex}/${baseUrls.length}`);
                 // If checkSingleNode succeeds (doesn't throw), set heartbeat to UP
                 heartbeat.status = UP;
-                heartbeat.msg = "OK";
+                heartbeat.msg = baseUrls.length == 1 ? "Node is reachable and there are no alerts in the cluster" : `One of the ${baseUrls.length} nodes is reachable and there are no alerts in the cluster`;
                 return;
             } catch (error) {
-                const errorMsg = `Node ${nodeIndex}: ${error.message}`;
-                log.warn(this.name, errorMsg);
-                errors.push(errorMsg);
+                log.warn(this.name, `Node ${nodeIndex}: ${error.message}`);
+                errors.push(`Node ${nodeIndex}: ${error.message}`);
             }
         }
 
