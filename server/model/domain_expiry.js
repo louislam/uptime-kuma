@@ -10,7 +10,7 @@ const TranslatableError = require("../translatable-error");
 const TABLE = "domain_expiry";
 // NOTE: Keep these type filters in sync with `showDomainExpiryNotification` in `src/pages/EditMonitor.vue`.
 const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
-const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
+const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis", "system-service" ];
 
 const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
     // cache for 8h

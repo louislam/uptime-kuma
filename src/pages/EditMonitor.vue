@@ -1522,7 +1522,7 @@ export default {
 
         showDomainExpiryNotification() {
             // NOTE: Keep this list in sync with `excludeTypes` in `server/model/domain_expiry.js`.
-            const excludedTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
+            const excludedTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis", "system-service" ];
             const type = this.monitor.type;
 
             if (!type) {
