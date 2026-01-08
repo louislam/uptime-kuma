@@ -822,8 +822,8 @@
                                 <label class="form-check-label" for="domain-expiry-notification">
                                     {{ $t("labelDomainNameExpiryNotification") }}
                                 </label>
-                                <div class="form-text" v-if="!hasDomain && domainExpirySupportReason">
-                                    {{ $t(domainExpirySupportReason, { tld: `.${domainExpirySupportTld}` }) }}
+                                <div v-if="!hasDomain && domainExpirySupportReason" class="form-text">
+                                    {{ domainExpirySupportReason }}
                                 </div>
                             </div>
                             <div v-if="monitor.type === 'websocket-upgrade' " class="my-3 form-check">
@@ -1443,8 +1443,7 @@ export default {
                 // Do not add default value here, please check init() method
             },
             hasDomain: false,
-            domainExpirySupportReason: null,
-            domainExpirySupportTld: null,
+            domainExpiryUnsupportedReason: null,
             checkMonitorDebounce: null,
             acceptedStatusCodeOptions: [],
             acceptedWebsocketCodeOptions: [],
@@ -1817,16 +1816,14 @@ message HealthCheckResponse {
 
             if (!this.showDomainExpiryNotification) {
                 this.hasDomain = false;
-                this.domainExpirySupportReason = null;
-                this.domainExpirySupportTld = null;
+                this.domainExpiryUnsupportedReason = null;
                 return;
             }
 
             this.checkMonitorDebounce = setTimeout(() => {
                 this.$root.getSocket().emit("checkMointor", data, (res) => {
                     this.hasDomain = !!res?.ok;
-                    this.domainExpirySupportReason = res.msg ?? null;
-                    this.domainExpirySupportTld = res.tld ?? null;
+                    this.domainExpiryUnsupportedReason = this.msgi18n ? this.$t(res.msg, { tld: res.tld }) : res.msg;
                 });
             }, 500);
         },
