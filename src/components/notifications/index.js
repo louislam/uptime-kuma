@@ -80,6 +80,7 @@ import YZJ from "./YZJ.vue";
 import SMSPlanet from "./SMSPlanet.vue";
 import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
+import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
 
 /**
@@ -170,6 +171,7 @@ const NotificationFormList = {
     "YZJ": YZJ,
     "SMSPlanet": SMSPlanet,
     "Webpush": Webpush,
+    "HaloPSA": HaloPSA,
 };
 
 export default NotificationFormList;
