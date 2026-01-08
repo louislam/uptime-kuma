@@ -6,7 +6,7 @@ class TranslatableError extends Error {
     /**
      * Indicates that the error message is a translation key.
      */
-    static msgi18n = true;
+    msgi18n = true;
 
     /**
      * Create a TranslatableError.
