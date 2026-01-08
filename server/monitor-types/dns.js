@@ -1,7 +1,6 @@
 const { MonitorType } = require("./monitor-type");
 const { UP, log } = require("../../src/util");
 const dayjs = require("dayjs");
-const { dnsResolve } = require("../util-server");
 const { R } = require("redbean-node");
 const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators } = require("../monitor-conditions/operators");
@@ -26,8 +25,8 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        const resolverServers = resolveDnsResolverServers(monitor.dns_resolve_server);
-        let dnsRes = await dnsResolve(monitor.hostname, resolverServers, monitor.port, monitor.dns_resolve_type);
+        const resolverServers = this.resolveDnsResolverServers(monitor.dns_resolve_server);
+        let dnsRes = await this.dnsResolve(monitor.hostname, resolverServers, monitor.port, monitor.dns_resolve_type);
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
@@ -143,6 +142,38 @@ class DnsMonitorType extends MonitorType {
         }
         return Array.from(parsed);
     }
+
+    /**
+     * Resolves a given record using the specified DNS server
+     * @param {string} hostname The hostname of the record to lookup
+     * @param {string[]} resolverServer Array of DNS server IP addresses to use
+     * @param {string} resolverPort Port the DNS server is listening on
+     * @param {string} rrtype The type of record to request
+     * @returns {Promise<(string[] | object[] | object)>} DNS response
+     */
+    async dnsResolve(hostname, resolverServer, resolverPort, rrtype) {
+        const resolver = new Resolver();
+        resolver.setServers(resolverServer.map(server => `[${server}]:${resolverPort}`));
+        return new Promise((resolve, reject) => {
+            if (rrtype === "PTR") {
+                resolver.reverse(hostname, (err, records) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(records);
+                    }
+                });
+            } else {
+                resolver.resolve(hostname, rrtype, (err, records) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(records);
+                    }
+                });
+            }
+        });
+    };
 }
 
 module.exports = {
