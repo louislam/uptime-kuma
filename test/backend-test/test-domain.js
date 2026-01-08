@@ -29,7 +29,6 @@ describe("Domain Expiry", () => {
         await testDb.destroy();
     });
 
-
     test("getExpiryDate() returns correct expiry date for .wiki domain with no A record", async () => {
         const d = DomainExpiry.createByName("google.wiki");
         assert.deepEqual(await d.getExpiryDate(), new Date("2026-11-26T23:59:59.000Z"));
