@@ -207,7 +207,7 @@ class DomainExpiry extends BeanModel {
     static async findByDomainNameOrCreate(domainName) {
         const domain = await DomainExpiry.findByName(domainName);
         if (!domain && domainName) {
-            domain = await DomainExpiry.createByName(tld.domain);
+            domain = await DomainExpiry.createByName(domainName);
         }
         [ "expiry", "lastCheck" ].forEach((key) => {
             if (typeof domain[key] === "string") {
