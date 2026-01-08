@@ -26,41 +26,8 @@ class DnsMonitorType extends MonitorType {
         let startTime = dayjs().valueOf();
         let dnsMessage = "";
 
-        // Remove all spaces, split into array, remove all elements that are empty
-        const addresses = monitor.dns_resolve_server.replace(/\s/g, "").split(",").filter((x) => x !== "");
-        const resolver = new Resolver();
-        const parsed = new Set();
-
-        for (const e of addresses) {
-            if (net.isIP(e)) { // If IPv4 or IPv6 addr, just add and go to next element
-                parsed.add(e);
-                continue;
-            }
-
-            // Otherwise, attempt to resolve hostname
-            const [ v4, v6 ] = await Promise.allSettled([
-                resolver.resolve4(e),
-                resolver.resolve6(e),
-            ]);
-
-            const addrs = [
-                ...(v4.status === "fulfilled" ? v4.value : []),
-                ...(v6.status === "fulfilled" ? v6.value : []),
-            ];
-
-            if (!addrs.length) {
-                log.error("DNS", `Invalid resolver server: ${e}`);
-                continue;
-            }
-
-            addrs.forEach(ip => parsed.add(ip));
-        }
-
-        if (!parsed.size) {
-            throw new Error("No Resolver Servers");
-        }
-
-        let dnsRes = await dnsResolve(monitor.hostname, Array.from(parsed), monitor.port, monitor.dns_resolve_type);
+        const resolverServers = resolveDnsResolverServers(monitor.dns_resolve_server)
+        let dnsRes = await dnsResolve(monitor.hostname, resolverServers, monitor.port, monitor.dns_resolve_type);
         heartbeat.ping = dayjs().valueOf() - startTime;
 
         const conditions = ConditionExpressionGroup.fromMonitor(monitor);
@@ -123,6 +90,59 @@ class DnsMonitorType extends MonitorType {
 
         heartbeat.msg = dnsMessage;
         heartbeat.status = UP;
+    }
+    
+    /**
+     * Parses a comma-separated list of DNS resolver servers and resolves any hostnames
+     * to their corresponding IPv4 and/or IPv6 addresses.
+     * 
+     * We are primarily doing this to support hostnames of docker containers like adguard.
+     *
+     * - Whitespace is removed from the input string
+     * - Empty entries are ignored
+     * - IP literals (IPv4 / IPv6) are accepted as-is
+     * - Hostnames are resolved to both A and AAAA records in parallel
+     * - Invalid or unresolvable entries are logged and skipped
+     *
+     * @param {string} dnsResolveServer - Comma-separated list of resolver servers (IPs or hostnames)
+     * @returns {Promise<Array<string>>} A set of resolved IP addresses
+     * @throws {Error} If no valid resolver servers could be parsed or resolved
+     */
+    async resolveDnsResolverServers(dnsResolveServer) {
+        // Remove all spaces, split into array, remove all elements that are empty
+        const addresses = dnsResolveServer.replace(/\s/g, "").split(",").filter((x) => x !== "");
+        const resolver = new Resolver();
+        const parsed = new Set();
+
+        for (const e of addresses) {
+            if (net.isIP(e)) { // If IPv4 or IPv6 addr, just add and go to next element
+                parsed.add(e);
+                continue;
+            }
+
+            // Otherwise, attempt to resolve hostname
+            const [ v4, v6 ] = await Promise.allSettled([
+                resolver.resolve4(e),
+                resolver.resolve6(e),
+            ]);
+
+            const addrs = [
+                ...(v4.status === "fulfilled" ? v4.value : []),
+                ...(v6.status === "fulfilled" ? v6.value : []),
+            ];
+
+            if (!addrs.length) {
+                log.error("DNS", `Invalid resolver server ${e}`);
+                continue;
+            }
+
+            addrs.forEach(ip => parsed.add(ip));
+        }
+
+        if (!parsed.size) {
+            throw new Error("No Resolver Servers");
+        }
+        return Array.from(parsed);
     }
 }
 
