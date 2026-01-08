@@ -28,7 +28,7 @@ describe("RabbitMQ Single Node", {
         try {
             await rabbitMQMonitor.check(monitor, heartbeat, {});
             assert.strictEqual(heartbeat.status, UP);
-            assert.strictEqual(heartbeat.msg, "OK");
+            assert.strictEqual(heartbeat.msg, "Node is reachable and there are no alerts in the cluster");
         } finally {
             rabbitMQContainer.stop();
         }
