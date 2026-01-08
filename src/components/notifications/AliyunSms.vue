@@ -21,7 +21,16 @@
         <div class="form-text">{{ $t("aliyun_enable_optional_variables_at_the_risk_of_non_delivery") }} </div>
         <br>
         <div class="form-text">
-            <p>{{ $t("Sms template must contain parameters: ") }}<br> <code>${name} ${time} ${status}</code><br><br> {{ $t("following parameters are optional: ") }}<br> <code>${msg}</code></p>
+            <i18n-t tag="p" keypath="aliun-template-requirements-and-parameters">
+                <template #parameters>
+                     <code>${name} ${time} ${status}</code>
+                 </template>
+            </i18n-t>
+            <i18n-t tag="p" keypath="aliun-template-optional-parameters">
+                <template #parameters>
+                     <code>${msg}</code>
+                 </template>
+            </i18n-t>
             <i18n-t tag="p" keypath="Read more:">
                 <a href="https://help.aliyun.com/document_detail/101414.html" target="_blank">https://help.aliyun.com/document_detail/101414.html</a>
             </i18n-t>
