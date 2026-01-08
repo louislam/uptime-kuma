@@ -114,7 +114,7 @@ class DnsMonitorType extends MonitorType {
         }
         const resolver = new Resolver();
 
-        // Make promises to be resolved in parallel
+        // Make promises to be resolved concurrently
         const promises = addresses.map(async (e) => {
             if (net.isIP(e)) { // If IPv4 or IPv6 addr, immediately return
                 return [ e ];
