@@ -63,7 +63,6 @@ if (process.platform === "win32") {
  * @returns {Promise<boolean>} The executable is allowed?
  */
 async function isAllowedChromeExecutable(executablePath) {
-    console.log(config.args);
     if (config.args["allow-all-chrome-exec"] || process.env.UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC === "1") {
         return true;
     }
@@ -102,7 +101,7 @@ async function getBrowser() {
  */
 async function getRemoteBrowser(remoteBrowserID, userId) {
     let remoteBrowser = await RemoteBrowser.get(remoteBrowserID, userId);
-    log.debug("MONITOR", `Using remote browser: ${remoteBrowser.name} (${remoteBrowser.id})`);
+    log.debug("chromium", `Using remote browser: ${remoteBrowser.name} (${remoteBrowser.id})`);
     browser = await chromium.connect(remoteBrowser.url);
     return browser;
 }
@@ -120,31 +119,7 @@ async function prepareChromeExecutable(executablePath) {
     } else if (!executablePath) {
         if (process.env.UPTIME_KUMA_IS_CONTAINER) {
             executablePath = "/usr/bin/chromium";
-
-            // Install chromium in container via apt install
-            if (! await commandExists(executablePath)) {
-                await new Promise((resolve, reject) => {
-                    log.info("Chromium", "Installing Chromium...");
-                    let child = childProcess.exec("apt update && apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk");
-
-                    // On exit
-                    child.on("exit", (code) => {
-                        log.info("Chromium", "apt install chromium exited with code " + code);
-
-                        if (code === 0) {
-                            log.info("Chromium", "Installed Chromium");
-                            let version = childProcess.execSync(executablePath + " --version").toString("utf8");
-                            log.info("Chromium", "Chromium version: " + version);
-                            resolve();
-                        } else if (code === 100) {
-                            reject(new Error("Installing Chromium, please wait..."));
-                        } else {
-                            reject(new Error("apt install chromium failed with code " + code));
-                        }
-                    });
-                });
-            }
-
+            await installChromiumViaApt(executablePath);
         } else {
             executablePath = await findChrome(allowedList);
         }
@@ -156,6 +131,44 @@ async function prepareChromeExecutable(executablePath) {
         }
     }
     return executablePath;
+}
+
+/**
+ * Installs Chromium and required font packages via APT if the Chromium executable
+ * is not already available.
+ *
+ * @async
+ * @param {string} executablePath - Path to the Chromium executable used to check
+ * whether Chromium is available and to query its version after installation.
+ * @returns {Promise<void>} Resolves when Chromium is successfully installed or
+ * when no installation is required.
+ * @throws {Error} If the APT installation fails or exits with an unexpected
+ * exit code.
+ */
+async function installChromiumViaApt(executablePath) {
+    if (await commandExists(executablePath)) {
+        return
+    }
+    await new Promise((resolve, reject) => {
+        log.info("chromium", "Installing Chromium...");
+        let child = childProcess.exec("apt update && apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk");
+
+        // On exit
+        child.on("exit", (code) => {
+            log.info("chromium", "apt install chromium exited with code " + code);
+
+            if (code === 0) {
+                log.info("chromium", "Installed Chromium");
+                let version = childProcess.execSync(executablePath + " --version").toString("utf8");
+                log.info("chromium", "Chromium version: " + version);
+                resolve();
+            } else if (code === 100) {
+                reject(new Error("Installing Chromium, please wait..."));
+            } else {
+                reject(new Error("apt install chromium failed with code " + code));
+            }
+        });
+    });
 }
 
 /**
@@ -201,7 +214,7 @@ async function testChrome(executablePath) {
     try {
         executablePath = await prepareChromeExecutable(executablePath);
 
-        log.info("Chromium", "Testing Chromium executable: " + executablePath);
+        log.info("chromium", "Testing Chromium executable: " + executablePath);
 
         const browser = await chromium.launch({
             executablePath,
