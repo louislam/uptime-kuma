@@ -149,7 +149,7 @@ class DomainExpiry extends BeanModel {
      */
     static async checkSupport(monitor) {
         if (excludeTypes.includes(monitor.type) || monitor.type?.match(/sql$/)) {
-            throw new TranslatableError("unsupported_type");
+            throw new TranslatableError("domain_expiry_unsupported_monitor_type");
         }
 
         let target;
@@ -162,19 +162,25 @@ class DomainExpiry extends BeanModel {
         }
 
         if (typeof target !== "string" || target.length === 0) {
-            throw new TranslatableError("missing_target");
+            throw new TranslatableError("domain_expiry_unsupported_missing_target");
         }
 
         const tld = parseTld(target);
 
         // Avoid logging for incomplete/invalid input while editing monitors.
-        if (!tld.domain || !tld.publicSuffix || tld.isIp) {
-            throw new TranslatableError("invalid_domain");
+        if (!tld.domain) {
+            throw new TranslatableError("domain_expiry_unsupported_invalid_domain");
+        }
+        if ( !tld.publicSuffix) {
+            throw new TranslatableError("domain_expiry_unsupported_public_suffix");
+        }
+        if (tld.isIp) {
+            throw new TranslatableError("domain_expiry_unsupported_is_ip");
         }
 
         // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
         if (tld.publicSuffix.length < 2) {
-            throw new TranslatableError("invalid_domain");
+            throw new TranslatableError("domain_expiry_unsupported_invalid_domain");
         }
 
         const rdap = await getRdapServer(tld.publicSuffix);
@@ -184,7 +190,7 @@ class DomainExpiry extends BeanModel {
             if (Boolean(monitor.domainExpiryNotification)) {
                 log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
             }
-            throw new TranslatableError("unsupported_tld");
+            throw new TranslatableError("domain_expiry_unsupported_unsupported_tld");
         }
 
         return {
