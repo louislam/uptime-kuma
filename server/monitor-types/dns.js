@@ -154,25 +154,11 @@ class DnsMonitorType extends MonitorType {
     async dnsResolve(hostname, resolverServer, resolverPort, rrtype) {
         const resolver = new Resolver();
         resolver.setServers(resolverServer.map(server => `[${server}]:${resolverPort}`));
-        return new Promise((resolve, reject) => {
-            if (rrtype === "PTR") {
-                resolver.reverse(hostname, (err, records) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(records);
-                    }
-                });
-            } else {
-                resolver.resolve(hostname, rrtype, (err, records) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(records);
-                    }
-                });
-            }
-        });
+        if (rrtype === "PTR") {
+            return await resolver.reverse(hostname);
+        } else {
+            resolver.resolve(hostname, rrtype);
+        }
     }
 }
 

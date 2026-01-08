@@ -6,7 +6,6 @@ const {
     PING_COUNT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT
 } = require("../src/util");
 const passwordHash = require("./password-hash");
-const { Resolver } = require("dns");
 const iconv = require("iconv-lite");
 const chardet = require("chardet");
 const chroma = require("chroma-js");
