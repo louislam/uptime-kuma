@@ -57,7 +57,7 @@ describe("RabbitMQ Single Node", {
         );
     });
 
-    test("checkSingleNode() sets status to UP when node is healthy", async () => {
+    test("checkSingleNode() succeeds when node is healthy", async () => {
         const rabbitMQContainer = await new RabbitMQContainer().withStartupTimeout(60000).start();
         const rabbitMQMonitor = new RabbitMqMonitorType();
         const connectionString = `http://${rabbitMQContainer.getHost()}:${rabbitMQContainer.getMappedPort(15672)}`;
@@ -69,15 +69,9 @@ describe("RabbitMQ Single Node", {
             timeout: 10,
         };
 
-        const heartbeat = {
-            msg: "",
-            status: PENDING,
-        };
-
         try {
-            await rabbitMQMonitor.checkSingleNode(monitor, heartbeat, connectionString, 1, 1);
-            assert.strictEqual(heartbeat.status, UP);
-            assert.strictEqual(heartbeat.msg, "OK");
+            // Should not throw - just validates the node is healthy
+            await rabbitMQMonitor.checkSingleNode(monitor, connectionString, "1/1");
         } finally {
             rabbitMQContainer.stop();
         }
@@ -92,14 +86,9 @@ describe("RabbitMQ Single Node", {
             timeout: 10,
         };
 
-        const heartbeat = {
-            msg: "",
-            status: PENDING,
-        };
-
         // Should reject with any error (connection refused, timeout, etc.)
         await assert.rejects(
-            rabbitMQMonitor.checkSingleNode(monitor, heartbeat, "http://localhost:15672", 1, 1),
+            rabbitMQMonitor.checkSingleNode(monitor, "http://localhost:15672", "1/1"),
             Error
         );
     });
@@ -120,14 +109,11 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
             status: PENDING,
         };
 
-        // Mock checkSingleNode to succeed on first call
+        // Mock checkSingleNode to succeed on first call (just don't throw)
         let callCount = 0;
         rabbitMQMonitor.checkSingleNode = async (mon, url, nodeInfo) => {
             callCount++;
-            if (callCount === 1) {
-                heartbeat.status = UP;
-                heartbeat.msg = "OK";
-            }
+            // Success - don't throw
         };
 
         await rabbitMQMonitor.check(monitor, heartbeat, {});
@@ -156,10 +142,8 @@ describe("RabbitMQ Multi-Node (Mocked)", () => {
             callCount++;
             if (callCount === 1) {
                 throw new Error("Node 1 connection failed");
-            } else {
-                heartbeat.status = UP;
-                heartbeat.msg = "OK";
             }
+            // Second call succeeds - don't throw
         };
 
         await rabbitMQMonitor.check(monitor, heartbeat, {});

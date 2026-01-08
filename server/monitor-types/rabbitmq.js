@@ -26,10 +26,13 @@ class RabbitMqMonitorType extends MonitorType {
         for (let i = 0; i < baseUrls.length; i++) {
             const baseUrl = baseUrls[i];
             const nodeIndex = i + 1;
+            const totalNodes = baseUrls.length;
 
             try {
-                await this.checkSingleNode(monitor, heartbeat, baseUrl, nodeIndex, baseUrls.length);
-                // If checkSingleNode succeeds, heartbeat is set to UP and we can return
+                await this.checkSingleNode(monitor, baseUrls[i], `${i + 1}/${baseUrls.length}`);
+                // If checkSingleNode succeeds (doesn't throw), set heartbeat to UP
+                heartbeat.status = UP;
+                heartbeat.msg = "OK";
                 return;
             } catch (error) {
                 const errorMsg = `Node ${nodeIndex}: ${error.message}`;
@@ -45,14 +48,12 @@ class RabbitMqMonitorType extends MonitorType {
     /**
      * Check a single RabbitMQ node
      * @param {object} monitor Monitor configuration
-     * @param {object} heartbeat Heartbeat object to update
      * @param {string} baseUrl Base URL of the RabbitMQ node
-     * @param {number} nodeIndex Index of the current node (1-based for logging)
-     * @param {number} totalNodes Total number of nodes configured
+     * @param {string} nodeInfo Node index info for logging (e.g., "1/3")
      * @returns {Promise<void>}
      * @throws {Error} If the node check fails
      */
-    async checkSingleNode(monitor, heartbeat, baseUrl, nodeIndex, totalNodes) {
+    async checkSingleNode(monitor, baseUrl, nodeInfo) {
         // Without a trailing slash, path in baseUrl will be removed. https://example.com/api -> https://example.com
         let normalizedUrl = baseUrl;
         if (!normalizedUrl.endsWith("/")) {
@@ -73,16 +74,15 @@ class RabbitMqMonitorType extends MonitorType {
             validateStatus: (status) => status === 200 || status === 503,
         };
 
-        log.debug("monitor", `[${monitor.name}] Checking node ${nodeIndex}/${totalNodes}: ${baseUrl}`);
+        log.debug("monitor", `[${monitor.name}] Checking node ${nodeInfo}: ${baseUrl}`);
 
         try {
             const res = await axios.request(options);
             log.debug("monitor", `[${monitor.name}] Axios Response: status=${res.status} body=${JSON.stringify(res.data)}`);
 
             if (res.status === 200) {
-                heartbeat.status = UP;
-                heartbeat.msg = "OK";
-                log.info("monitor", `[${monitor.name}] Node ${nodeIndex}/${totalNodes} is healthy`);
+                log.debug("monitor", `[${monitor.name}] Node ${nodeInfo} is healthy`);
+                // Success - return without error
             } else if (res.status === 503) {
                 throw new Error(res.data.reason);
             } else {
