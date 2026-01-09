@@ -121,9 +121,7 @@ exports.ping = async (
     timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT
 ) => {
     try {
-        const result = await exports.pingAsync(destAddr, false, count, sourceAddr, numeric, size, deadline, timeout);
-        console.log("Ping result:", destAddr, result);
-        return result;
+        return = await exports.pingAsync(destAddr, false, count, sourceAddr, numeric, size, deadline, timeout);
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
         log.debug("ping", "IPv6 error message: " + e.message);
@@ -160,11 +158,13 @@ exports.pingAsync = function (
     timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT
 ) {
     try {
+        // Convert IDN to punycode, then keep hostname
         const url = new URL(`http://${destAddr}`);
         destAddr = url.hostname;
-        if (destAddr.startsWith("[") && destAddr.endsWith("]")) {
-            destAddr = destAddr.slice(1, -1);
-        }
+        // Enforce valid IPv6 address
+        //if (destAddr.startsWith("[") && destAddr.endsWith("]")) {
+        //    destAddr = destAddr.slice(1, -1);
+        //}
     } catch (e) {
         // ignore
     }
