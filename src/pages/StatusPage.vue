@@ -534,7 +534,13 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
-                <PublicGroupList :edit-mode="enableEditMode" :show-tags="config.showTags" :show-certificate-expiry="config.showCertificateExpiry" :show-only-last-heartbeat="config.showOnlyLastHeartbeat" :search-text="searchText" />
+                <PublicGroupList
+                    :edit-mode="enableEditMode"
+                    :show-tags="config.showTags"
+                    :show-certificate-expiry="config.showCertificateExpiry"
+                    :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
+                    :search-text="searchText"
+                />
             </div>
 
             <footer class="mt-5 mb-4">
@@ -1315,8 +1321,7 @@ export default {
         clearSearchText() {
             this.searchText = "";
         },
-
-    }
+    },
 };
 </script>
 
@@ -1360,24 +1365,10 @@ export default {
     .search-divider {
         width: 1px;
         height: 30px;
-        background:
-            linear-gradient(
-                to bottom,
-                transparent 0%,
-                #d0d0d0 20%,
-                #d0d0d0 80%,
-                transparent 100%
-            );
+        background: linear-gradient(to bottom, transparent 0%, #d0d0d0 20%, #d0d0d0 80%, transparent 100%);
 
         .dark & {
-            background:
-                linear-gradient(
-                    to bottom,
-                    transparent 0%,
-                    #3a4450 20%,
-                    #3a4450 80%,
-                    transparent 100%
-                );
+            background: linear-gradient(to bottom, transparent 0%, #3a4450 20%, #3a4450 80%, transparent 100%);
         }
     }
 

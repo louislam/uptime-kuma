@@ -213,9 +213,10 @@ export default {
             }
             // Match by tags (name or value)
             if (monitor.tags && monitor.tags.length > 0) {
-                return monitor.tags.some(tag =>
-                    (tag.name && tag.name.toLowerCase().includes(loweredSearchText)) ||
-                    (tag.value && tag.value.toLowerCase().includes(loweredSearchText))
+                return monitor.tags.some(
+                    (tag) =>
+                        (tag.name && tag.name.toLowerCase().includes(loweredSearchText)) ||
+                        (tag.value && tag.value.toLowerCase().includes(loweredSearchText))
                 );
             }
             return false;
@@ -231,7 +232,7 @@ export default {
                 return true;
             }
             // Show group if at least one monitor matches
-            return group.monitorList && group.monitorList.some(monitor => this.shouldShowMonitor(monitor));
+            return group.monitorList && group.monitorList.some((monitor) => this.shouldShowMonitor(monitor));
         },
 
         /**
