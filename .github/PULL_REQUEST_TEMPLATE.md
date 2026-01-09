@@ -4,10 +4,10 @@
 
 <!-- Provide a clear summary of the purpose and scope of this pull request-->
 
-
 ## 📋 Related issues
 
 <!--Please link any GitHub issues or tasks that this pull request addresses-->
+
 - Relates to #issue-number <!--this links related the issue-->
 - Resolves #issue-number <!--this auto-closes the issue-->
 
