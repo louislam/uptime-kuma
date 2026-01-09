@@ -407,34 +407,6 @@ exports.setSettings = async function (type, data) {
     await Settings.setSettings(type, data);
 };
 
-// ssl-checker by @dyaa
-//https://github.com/dyaa/ssl-checker/blob/master/src/index.ts
-
-/**
- * Get number of days between two dates
- * @param {Date} validFrom Start date
- * @param {Date} validTo End date
- * @returns {number} Number of days
- */
-const getDaysBetween = (validFrom, validTo) =>
-    Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
-exports.getDaysBetween = getDaysBetween;
-
-/**
- * Get days remaining from a time range
- * @param {Date} validFrom Start date
- * @param {Date} validTo End date
- * @returns {number} Number of days remaining
- */
-const getDaysRemaining = (validFrom, validTo) => {
-    const daysRemaining = getDaysBetween(validFrom, validTo);
-    if (new Date(validTo).getTime() < new Date(validFrom).getTime()) {
-        return -daysRemaining;
-    }
-    return daysRemaining;
-};
-exports.getDaysRemaining = getDaysRemaining;
-
 /**
  * Fix certificate info for display
  * @param {object} info The chain obtained from getPeerCertificate()
@@ -455,7 +427,7 @@ const parseCertificateInfo = function (info) {
         }
         link.validTo = new Date(link.valid_to);
         link.validFor = link.subjectaltname?.replace(/DNS:|IP Address:/g, "").split(", ");
-        link.daysRemaining = getDaysRemaining(new Date(), link.validTo);
+        link.daysRemaining = dayjs.utc(link.validTo).diff(dayjs.utc(), "day");
 
         existingList[link.fingerprint] = true;
 

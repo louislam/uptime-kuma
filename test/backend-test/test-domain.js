@@ -9,6 +9,8 @@ const { R } = require("redbean-node");
 const { Notification } = require("../../server/notification");
 const { Settings } = require("../../server/settings");
 const { setSetting } = require("../../server/util-server");
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
 
 const testDb = new TestDB();
 
@@ -231,8 +233,7 @@ describe("Domain Expiry", () => {
     test("checkExpiry() caches expiration date in database", async () => {
         await DomainExpiry.checkExpiry("google.com"); // RDAP -> Cache
         const domain = await DomainExpiry.findByName("google.com");
-        const diff = Date.now() - domain.lastCheck;
-        assert(diff < 5 * 1000);
+        assert(dayjs.utc().diff(dayjs.utc(domain.lastCheck), "second") < 5);
     });
 
     test("sendNotifications() triggers notification for expiring domain", async () => {
