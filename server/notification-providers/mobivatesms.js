@@ -16,18 +16,22 @@ class MobivateSMS extends NotificationProvider {
             let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "").substring(0, 639);
 
             let data = {
-                "originator": notification.mobivateOriginator.substring(0, 15),
-                "recipients": notification.mobivateRecipients.split(",").map(n => n.replace(/[^0-9]/g, "")).filter(n => n.length >= 9).map(recipient => ({recipient})),
-                "text": cleanMsg
+                originator: notification.mobivateOriginator.substring(0, 15),
+                recipients: notification.mobivateRecipients
+                    .split(",")
+                    .map((n) => n.replace(/[^0-9]/g, ""))
+                    .filter((n) => n.length >= 9)
+                    .map((recipient) => ({ recipient })),
+                text: cleanMsg,
             };
 
             let config = {
                 headers: {
                     "Content-Type": "application/json",
                     "cache-control": "no-cache",
-                    "Accept": "application/json",
-                    "Authorization": "Bearer " + notification.mobivateApikey
-                }
+                    Accept: "application/json",
+                    Authorization: "Bearer " + notification.mobivateApikey,
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
 
