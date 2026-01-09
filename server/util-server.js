@@ -26,6 +26,7 @@ const {
     },
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
 
 // SASLOptions used in JSDoc
 // eslint-disable-next-line no-unused-vars
