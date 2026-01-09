@@ -15,24 +15,28 @@ class HomeAssistant extends NotificationProvider {
         const notificationService = notification?.notificationService || defaultNotificationService;
 
         try {
+            let config = {
+                headers: {
+                    Authorization: `Bearer ${notification.longLivedAccessToken}`,
+                    "Content-Type": "application/json",
+                },
+            };
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(
                 `${notification.homeAssistantUrl.trim().replace(/\/*$/, "")}/api/services/notify/${notificationService}`,
                 {
                     title: "Uptime Kuma",
                     message: msg,
-                    ...(notificationService !== "persistent_notification" && { data: {
-                        name: monitorJSON?.name,
-                        status: heartbeatJSON?.status,
-                        channel: "Uptime Kuma",
-                        icon_url: "https://github.com/louislam/uptime-kuma/blob/master/public/icon.png?raw=true",
-                    } }),
+                    ...(notificationService !== "persistent_notification" && {
+                        data: {
+                            name: monitorJSON?.name,
+                            status: heartbeatJSON?.status,
+                            channel: "Uptime Kuma",
+                            icon_url: "https://github.com/louislam/uptime-kuma/blob/master/public/icon.png?raw=true",
+                        },
+                    }),
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${notification.longLivedAccessToken}`,
-                        "Content-Type": "application/json",
-                    },
-                }
+                config
             );
 
             return okMsg;

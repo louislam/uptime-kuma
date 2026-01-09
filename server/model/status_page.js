@@ -3,34 +3,43 @@ const { R } = require("redbean-node");
 const cheerio = require("cheerio");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const jsesc = require("jsesc");
-const googleAnalytics = require("../google-analytics");
+const analytics = require("../analytics/analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
+const { setting } = require("../util-server");
 
-const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN } = require("../../src/util");
+const {
+    STATUS_PAGE_ALL_DOWN,
+    STATUS_PAGE_ALL_UP,
+    STATUS_PAGE_MAINTENANCE,
+    STATUS_PAGE_PARTIAL_DOWN,
+    UP,
+    MAINTENANCE,
+    DOWN,
+} = require("../../src/util");
 
 class StatusPage extends BeanModel {
-
     /**
      * Like this: { "test-uptime.kuma.pet": "default" }
      * @type {{}}
      */
-    static domainMappingList = { };
+    static domainMappingList = {};
 
     /**
      * Handle responses to RSS pages
      * @param {Response} response Response object
      * @param {string} slug Status page slug
+     * @param {Request} request Request object
      * @returns {Promise<void>}
      */
-    static async handleStatusPageRSSResponse(response, slug) {
-        let statusPage = await R.findOne("status_page", " slug = ? ", [
-            slug
-        ]);
+    static async handleStatusPageRSSResponse(response, slug, request) {
+        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
 
         if (statusPage) {
-            response.send(await StatusPage.renderRSS(statusPage, slug));
+            const feedUrl = await StatusPage.buildRSSUrl(slug, request);
+            response.type("application/rss+xml");
+            response.send(await StatusPage.renderRSS(statusPage, feedUrl));
         } else {
             response.status(404).send(UptimeKumaServer.getInstance().indexHTML);
         }
@@ -50,9 +59,7 @@ class StatusPage extends BeanModel {
             slug = "default";
         }
 
-        let statusPage = await R.findOne("status_page", " slug = ? ", [
-            slug
-        ]);
+        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
 
         if (statusPage) {
             response.send(await StatusPage.renderHTML(indexHTML, statusPage));
@@ -63,34 +70,72 @@ class StatusPage extends BeanModel {
 
     /**
      * SSR for RSS feed
-     * @param {statusPage} statusPage object
-     * @param {slug} slug from router
-     * @returns {Promise<string>} the rendered html
+     * @param {StatusPage} statusPage Status page object
+     * @param {string} feedUrl The URL for the RSS feed
+     * @returns {Promise<string>} The rendered RSS XML
      */
-    static async renderRSS(statusPage, slug) {
+    static async renderRSS(statusPage, feedUrl) {
         const { heartbeats, statusDescription } = await StatusPage.getRSSPageData(statusPage);
 
-        let proto = config.isSSL ? "https" : "http";
-        let host = `${proto}://${config.hostname || "localhost"}:${config.port}/status/${slug}`;
+        // Use custom RSS title if set, otherwise fall back to status page title
+        let feedTitle = "Uptime Kuma RSS Feed";
+        if (statusPage.rss_title) {
+            feedTitle = statusPage.rss_title;
+        } else if (statusPage.title) {
+            feedTitle = `${statusPage.title} RSS Feed`;
+        }
 
         const feed = new Feed({
-            title: "uptime kuma rss feed",
-            description: `current status: ${statusDescription}`,
-            link: host,
+            title: feedTitle,
+            description: `Current status: ${statusDescription}`,
+            link: feedUrl,
             language: "en", // optional, used only in RSS 2.0, possible values: http://www.w3.org/TR/REC-html40/struct/dirlang.html#langcodes
             updated: new Date(), // optional, default = today
         });
 
-        heartbeats.forEach(heartbeat => {
+        heartbeats.forEach((heartbeat) => {
             feed.addItem({
                 title: `${heartbeat.name} is down`,
-                description: `${heartbeat.name} has been down since ${heartbeat.time}`,
-                id: heartbeat.monitorID,
+                description: `${heartbeat.name} has been down since ${heartbeat.time} UTC`,
+                id: `${heartbeat.monitorID}-${heartbeat.time}`,
+                link: feedUrl,
                 date: new Date(heartbeat.time),
             });
         });
 
         return feed.rss2();
+    }
+
+    /**
+     * Build RSS feed URL, handling proxy headers
+     * @param {string} slug Status page slug
+     * @param {Request} request Express request object
+     * @returns {Promise<string>} The full URL for the RSS feed
+     */
+    static async buildRSSUrl(slug, request) {
+        if (request) {
+            const trustProxy = await setting("trustProxy");
+
+            // Determine protocol (check X-Forwarded-Proto if behind proxy)
+            let proto = request.protocol;
+            if (trustProxy && request.headers["x-forwarded-proto"]) {
+                proto = request.headers["x-forwarded-proto"].split(",")[0].trim();
+            }
+
+            // Determine host (check X-Forwarded-Host if behind proxy)
+            let host = request.get("host");
+            if (trustProxy && request.headers["x-forwarded-host"]) {
+                host = request.headers["x-forwarded-host"];
+            }
+
+            return `${proto}://${host}/status/${slug}`;
+        }
+
+        // Fallback to config values
+        const proto = config.isSSL ? "https" : "http";
+        const host = config.hostname || "localhost";
+        const port = config.port;
+        return `${proto}://${host}:${port}/status/${slug}`;
     }
 
     /**
@@ -111,31 +156,32 @@ class StatusPage extends BeanModel {
         $("meta[name=description]").attr("content", description155);
 
         if (statusPage.icon) {
-            $("link[rel=icon]")
-                .attr("href", statusPage.icon)
-                .removeAttr("type");
+            $("link[rel=icon]").attr("href", statusPage.icon).removeAttr("type");
 
             $("link[rel=apple-touch-icon]").remove();
         }
 
         const head = $("head");
 
-        if (statusPage.googleAnalyticsTagId) {
-            let escapedGoogleAnalyticsScript = googleAnalytics.getGoogleAnalyticsScript(statusPage.googleAnalyticsTagId);
-            head.append($(escapedGoogleAnalyticsScript));
+        if (analytics.isValidAnalyticsConfig(statusPage)) {
+            let escapedAnalyticsScript = analytics.getAnalyticsScript(statusPage);
+            head.append($(escapedAnalyticsScript));
         }
 
         // OG Meta Tags
-        let ogTitle = $("<meta property=\"og:title\" content=\"\" />").attr("content", statusPage.title);
+        let ogTitle = $('<meta property="og:title" content="" />').attr("content", statusPage.title);
         head.append(ogTitle);
 
-        let ogDescription = $("<meta property=\"og:description\" content=\"\" />").attr("content", description155);
+        let ogDescription = $('<meta property="og:description" content="" />').attr("content", description155);
         head.append(ogDescription);
+
+        let ogType = $('<meta property="og:type" content="website" />');
+        head.append(ogType);
 
         // Preload data
         // Add jsesc, fix https://github.com/louislam/uptime-kuma/issues/2186
         const escapedJSONObject = jsesc(await StatusPage.getStatusPageData(statusPage), {
-            "isScriptContext": true
+            isScriptContext: true,
         });
 
         const script = $(`
@@ -174,7 +220,7 @@ class StatusPage extends BeanModel {
             }
         }
 
-        if (! hasUp) {
+        if (!hasUp) {
             status = STATUS_PAGE_ALL_DOWN;
         }
 
@@ -222,21 +268,19 @@ class StatusPage extends BeanModel {
         // Public Group List
         const showTags = !!statusPage.show_tags;
 
-        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
-            statusPage.id
-        ]);
+        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [statusPage.id]);
 
         let heartbeats = [];
 
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
             for (const monitor of monitorGroup.monitorList) {
-                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [ monitor.id ]);
+                const heartbeat = await R.findOne("heartbeat", "monitor_id = ? ORDER BY time DESC", [monitor.id]);
                 if (heartbeat) {
                     heartbeats.push({
                         ...monitor,
                         status: heartbeat.status,
-                        time: heartbeat.time
+                        time: heartbeat.time,
                     });
                 }
             }
@@ -247,11 +291,11 @@ class StatusPage extends BeanModel {
         let statusDescription = StatusPage.getStatusDescription(status);
 
         // keep only DOWN heartbeats in the RSS feed
-        heartbeats = heartbeats.filter(heartbeat => heartbeat.status === DOWN);
+        heartbeats = heartbeats.filter((heartbeat) => heartbeat.status === DOWN);
 
         return {
             heartbeats,
-            statusDescription
+            statusDescription,
         };
     }
 
@@ -264,9 +308,7 @@ class StatusPage extends BeanModel {
         const config = await statusPage.toPublicJSON();
 
         // Incident
-        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [
-            statusPage.id,
-        ]);
+        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [statusPage.id]);
 
         if (incident) {
             incident = incident.toPublicJSON();
@@ -278,9 +320,7 @@ class StatusPage extends BeanModel {
         const publicGroupList = [];
         const showTags = !!statusPage.show_tags;
 
-        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [
-            statusPage.id
-        ]);
+        const list = await R.find("group", " public = 1 AND status_page_id = ? ORDER BY weight ", [statusPage.id]);
 
         for (let groupBean of list) {
             let monitorGroup = await groupBean.toPublicJSON(showTags, config?.showCertificateExpiry);
@@ -334,16 +374,13 @@ class StatusPage extends BeanModel {
      * @returns {Promise<void>}
      */
     async updateDomainNameList(domainNameList) {
-
         if (!Array.isArray(domainNameList)) {
             throw new Error("Invalid array");
         }
 
         let trx = await R.begin();
 
-        await trx.exec("DELETE FROM status_page_cname WHERE status_page_id = ?", [
-            this.id,
-        ]);
+        await trx.exec("DELETE FROM status_page_cname WHERE status_page_id = ?", [this.id]);
 
         try {
             for (let domain of domainNameList) {
@@ -356,9 +393,7 @@ class StatusPage extends BeanModel {
                 }
 
                 // If the domain name is used in another status page, delete it
-                await trx.exec("DELETE FROM status_page_cname WHERE domain = ?", [
-                    domain,
-                ]);
+                await trx.exec("DELETE FROM status_page_cname WHERE domain = ?", [domain]);
 
                 let mapping = trx.dispense("status_page_cname");
                 mapping.status_page_id = this.id;
@@ -407,8 +442,12 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
-            googleAnalyticsId: this.google_analytics_tag_id,
+            analyticsId: this.analytics_id,
+            analyticsScriptUrl: this.analytics_script_url,
+            analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
+            rssTitle: this.rss_title,
         };
     }
 
@@ -430,8 +469,12 @@ class StatusPage extends BeanModel {
             customCSS: this.custom_css,
             footerText: this.footer_text,
             showPoweredBy: !!this.show_powered_by,
-            googleAnalyticsId: this.google_analytics_tag_id,
+            analyticsId: this.analytics_id,
+            analyticsScriptUrl: this.analytics_script_url,
+            analyticsType: this.analytics_type,
             showCertificateExpiry: !!this.show_certificate_expiry,
+            showOnlyLastHeartbeat: !!this.show_only_last_heartbeat,
+            rssTitle: this.rss_title,
         };
     }
 
@@ -441,9 +484,7 @@ class StatusPage extends BeanModel {
      * @returns {Promise<number>} ID of status page
      */
     static async slugToID(slug) {
-        return await R.getCell("SELECT id FROM status_page WHERE slug = ? ", [
-            slug
-        ]);
+        return await R.getCell("SELECT id FROM status_page WHERE slug = ? ", [slug]);
     }
 
     /**
@@ -467,21 +508,23 @@ class StatusPage extends BeanModel {
         try {
             const publicMaintenanceList = [];
 
-            let maintenanceIDList = await R.getCol(`
+            let maintenanceIDList = await R.getCol(
+                `
                 SELECT DISTINCT maintenance_id
                 FROM maintenance_status_page
                 WHERE status_page_id = ?
-            `, [ statusPageId ]);
+            `,
+                [statusPageId]
+            );
 
             for (const maintenanceID of maintenanceIDList) {
                 let maintenance = UptimeKumaServer.getInstance().getMaintenance(maintenanceID);
-                if (maintenance && await maintenance.isUnderMaintenance()) {
+                if (maintenance && (await maintenance.isUnderMaintenance())) {
                     publicMaintenanceList.push(await maintenance.toPublicJSON());
                 }
             }
 
             return publicMaintenanceList;
-
         } catch (error) {
             return [];
         }

@@ -22,12 +22,17 @@ class GoAlert extends NotificationProvider {
                 "Content-Type": "multipart/form-data",
             };
             let config = {
-                headers: headers
+                headers: headers,
             };
-            await axios.post(`${notification.goAlertBaseURL}/api/v2/generic/incoming?token=${notification.goAlertToken}`, data, config);
+            config = this.getAxiosConfigWithProxy(config);
+            await axios.post(
+                `${notification.goAlertBaseURL}/api/v2/generic/incoming?token=${notification.goAlertToken}`,
+                data,
+                config
+            );
             return okMsg;
         } catch (error) {
-            let msg = (error.response.data) ? error.response.data : "Error without response";
+            let msg = error.response.data ? error.response.data : "Error without response";
             throw new Error(msg);
         }
     }

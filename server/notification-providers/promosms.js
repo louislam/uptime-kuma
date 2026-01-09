@@ -15,7 +15,7 @@ class PromoSMS extends NotificationProvider {
             notification.promosmsAllowLongSMS = false;
         }
 
-        //TODO: Add option for enabling special characters. It will decrese message max length from 160 to 70 chars.
+        //TODO: Add option for enabling special characters. It will decrease message max length from 160 to 70 chars.
         //Lets remove non ascii char
         let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "");
 
@@ -23,17 +23,22 @@ class PromoSMS extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Basic " + Buffer.from(notification.promosmsLogin + ":" + notification.promosmsPassword).toString("base64"),
-                    "Accept": "text/json",
-                }
+                    Authorization:
+                        "Basic " +
+                        Buffer.from(notification.promosmsLogin + ":" + notification.promosmsPassword).toString(
+                            "base64"
+                        ),
+                    Accept: "text/json",
+                },
             };
+            config = this.getAxiosConfigWithProxy(config);
             let data = {
-                "recipients": [ notification.promosmsPhoneNumber ],
+                recipients: [notification.promosmsPhoneNumber],
                 //Trim message to maximum length of 1 SMS or 4 if we allowed long messages
-                "text": notification.promosmsAllowLongSMS ? cleanMsg.substring(0, 639) : cleanMsg.substring(0, 159),
+                text: notification.promosmsAllowLongSMS ? cleanMsg.substring(0, 639) : cleanMsg.substring(0, 159),
                 "long-sms": notification.promosmsAllowLongSMS,
-                "type": Number(notification.promosmsSMSType),
-                "sender": notification.promosmsSenderName
+                type: Number(notification.promosmsSMSType),
+                sender: notification.promosmsSenderName,
             };
 
             let resp = await axios.post(url, data, config);

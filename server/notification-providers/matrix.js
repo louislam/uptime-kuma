@@ -13,12 +13,7 @@ class Matrix extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         const size = 20;
-        const randomString = encodeURIComponent(
-            Crypto
-                .randomBytes(size)
-                .toString("base64")
-                .slice(0, size)
-        );
+        const randomString = encodeURIComponent(Crypto.randomBytes(size).toString("base64").slice(0, size));
 
         log.debug("notification", "Random String: " + randomString);
 
@@ -29,15 +24,20 @@ class Matrix extends NotificationProvider {
         try {
             let config = {
                 headers: {
-                    "Authorization": `Bearer ${notification.accessToken}`,
-                }
+                    Authorization: `Bearer ${notification.accessToken}`,
+                },
             };
             let data = {
-                "msgtype": "m.text",
-                "body": msg
+                msgtype: "m.text",
+                body: msg,
             };
 
-            await axios.put(`${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`, data, config);
+            config = this.getAxiosConfigWithProxy(config);
+            await axios.put(
+                `${notification.homeserverUrl}/_matrix/client/r0/rooms/${roomId}/send/m.room.message/${randomString}`,
+                data,
+                config
+            );
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

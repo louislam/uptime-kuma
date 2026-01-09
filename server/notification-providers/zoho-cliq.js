@@ -27,7 +27,8 @@ class ZohoCliq extends NotificationProvider {
      * @returns {Promise<void>}
      */
     _sendNotification = async (webhookUrl, payload) => {
-        await axios.post(webhookUrl, { text: payload.join("\n") });
+        let config = this.getAxiosConfigWithProxy({});
+        await axios.post(webhookUrl, { text: payload.join("\n") }, config);
     };
 
     /**
@@ -39,12 +40,7 @@ class ZohoCliq extends NotificationProvider {
      * @param {string} args.monitorUrl URL of monitor affected
      * @returns {Array} Notification payload
      */
-    _notificationPayloadFactory = ({
-        status,
-        monitorMessage,
-        monitorName,
-        monitorUrl,
-    }) => {
+    _notificationPayloadFactory = ({ status, monitorMessage, monitorName, monitorUrl }) => {
         const payload = [];
         payload.push(this._statusMessageFactory(status, monitorName));
         payload.push(`*Description:* ${monitorMessage}`);
@@ -64,7 +60,7 @@ class ZohoCliq extends NotificationProvider {
      */
     _handleGeneralNotification = (webhookUrl, msg) => {
         const payload = this._notificationPayloadFactory({
-            monitorMessage: msg
+            monitorMessage: msg,
         });
 
         return this._sendNotification(webhookUrl, payload);
@@ -86,12 +82,11 @@ class ZohoCliq extends NotificationProvider {
                 monitorMessage: heartbeatJSON.msg,
                 monitorName: monitorJSON.name,
                 monitorUrl: this.extractAddress(monitorJSON),
-                status: heartbeatJSON.status
+                status: heartbeatJSON.status,
             });
 
             await this._sendNotification(notification.webhookUrl, payload);
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

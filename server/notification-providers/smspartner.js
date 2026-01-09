@@ -16,19 +16,20 @@ class SMSPartner extends NotificationProvider {
             let cleanMsg = msg.replace(/[^\x00-\x7F]/g, "").substring(0, 639);
 
             let data = {
-                "apiKey": notification.smspartnerApikey,
-                "sender": notification.smspartnerSenderName.substring(0, 11),
-                "phoneNumbers": notification.smspartnerPhoneNumber,
-                "message": cleanMsg,
+                apiKey: notification.smspartnerApikey,
+                sender: notification.smspartnerSenderName.substring(0, 11),
+                phoneNumbers: notification.smspartnerPhoneNumber,
+                message: cleanMsg,
             };
 
             let config = {
                 headers: {
                     "Content-Type": "application/json",
                     "cache-control": "no-cache",
-                    "Accept": "application/json",
-                }
+                    Accept: "application/json",
+                },
             };
+            config = this.getAxiosConfigWithProxy(config);
 
             let resp = await axios.post(url, data, config);
 

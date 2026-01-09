@@ -14,11 +14,16 @@ class WeCom extends NotificationProvider {
         try {
             let config = {
                 headers: {
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             };
+            config = this.getAxiosConfigWithProxy(config);
             let body = this.composeMessage(heartbeatJSON, msg);
-            await axios.post(`https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${notification.weComBotKey}`, body, config);
+            await axios.post(
+                `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${notification.weComBotKey}`,
+                body,
+                config
+            );
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
@@ -42,8 +47,8 @@ class WeCom extends NotificationProvider {
         return {
             msgtype: "text",
             text: {
-                content: title + "\n" + msg
-            }
+                content: title + "\n" + msg,
+            },
         };
     }
 }

@@ -9,28 +9,19 @@
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.up === 0 && 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.up === 0 && 'text-secondary'">
                             {{ $root.stats.up }}
                         </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'">
                             {{ $root.stats.down }}
                         </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'">
                             {{ $root.stats.maintenance }}
                         </span>
                     </div>
@@ -45,7 +36,16 @@
                 </div>
             </div>
 
-            <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
+            <div class="shadow-box table-shadow-box" style="overflow-x: hidden">
+                <div class="mb-3 text-end">
+                    <button
+                        class="btn btn-sm btn-outline-danger"
+                        :disabled="clearingAllEvents"
+                        @click="clearAllEventsDialog"
+                    >
+                        {{ $t("Clear All Events") }}
+                    </button>
+                </div>
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
@@ -56,10 +56,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
+                        <tr
+                            v-for="(beat, index) in displayedRecords"
+                            :key="index"
+                            :class="{ 'shadow-box': $root.windowWidth <= 550 }"
+                        >
+                            <td class="name-column">
+                                <router-link :to="`/dashboard/${beat.monitorID}`">
+                                    {{ $root.monitorList[beat.monitorID]?.name }}
+                                </router-link>
+                            </td>
                             <td><Status :status="beat.status" /></td>
-                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
@@ -82,6 +90,15 @@
             </div>
         </div>
     </transition>
+    <Confirm
+        ref="confirmClearEvents"
+        btn-style="btn-danger"
+        :yes-text="$t('Yes')"
+        :no-text="$t('No')"
+        @yes="clearAllEvents"
+    >
+        {{ $t("clearAllEventsMsg") }}
+    </Confirm>
     <router-view ref="child" />
 </template>
 
@@ -89,18 +106,20 @@
 import Status from "../components/Status.vue";
 import Datetime from "../components/Datetime.vue";
 import Pagination from "v-pagination-3";
+import Confirm from "../components/Confirm.vue";
 
 export default {
     components: {
         Datetime,
         Status,
         Pagination,
+        Confirm,
     },
     props: {
         calculatedHeight: {
             type: Number,
-            default: 0
-        }
+            default: 0,
+        },
     },
     data() {
         return {
@@ -113,6 +132,7 @@ export default {
             },
             importantHeartBeatListLength: 0,
             displayedRecords: [],
+            clearingAllEvents: false,
         };
     },
     watch: {
@@ -201,7 +221,43 @@ export default {
             } else {
                 this.perPage = this.initialPerPage;
             }
+        },
 
+        clearAllEventsDialog() {
+            this.$refs.confirmClearEvents.show();
+        },
+        clearAllEvents() {
+            this.clearingAllEvents = true;
+            const monitorIDs = Object.keys(this.$root.monitorList);
+            let failed = 0;
+            const total = monitorIDs.length;
+
+            if (total === 0) {
+                this.clearingAllEvents = false;
+                this.$root.toastError(this.$t("No monitors found"));
+                return;
+            }
+
+            monitorIDs.forEach((monitorID) => {
+                this.$root.getSocket().emit("clearEvents", monitorID, (res) => {
+                    if (!res || !res.ok) {
+                        failed++;
+                    }
+                });
+            });
+            this.clearingAllEvents = false;
+            this.page = 1;
+            this.getImportantHeartbeatListLength();
+            if (failed === 0) {
+                this.$root.toastSuccess(this.$t("Events cleared successfully"));
+            } else {
+                this.$root.toastError(
+                    this.$t("Could not clear events", {
+                        failed,
+                        total,
+                    })
+                );
+            }
         },
     },
 };

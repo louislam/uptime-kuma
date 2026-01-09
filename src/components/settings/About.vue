@@ -10,16 +10,37 @@
                 ⚠️ {{ $t("Frontend Version do not match backend version!") }}
             </div>
 
-            <div class="my-3 update-link"><a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">{{ $t("Check Update On GitHub") }}</a></div>
+            <div class="my-3 update-link">
+                <a href="https://github.com/louislam/uptime-kuma/releases" target="_blank" rel="noopener">
+                    {{ $t("Check Update On GitHub") }}
+                </a>
+            </div>
 
             <div class="mt-1">
                 <div class="form-check">
-                    <label><input v-model="settings.checkUpdate" type="checkbox" @change="saveSettings()" /> {{ $t("Show update if available") }}</label>
+                    <label>
+                        <input v-model="settings.checkUpdate" type="checkbox" @change="saveSettings()" />
+                        {{ $t("Show update if available") }}
+                    </label>
                 </div>
 
                 <div class="form-check">
-                    <label><input v-model="settings.checkBeta" type="checkbox" :disabled="!settings.checkUpdate" @change="saveSettings()" /> {{ $t("Also check beta release") }}</label>
+                    <label>
+                        <input
+                            v-model="settings.checkBeta"
+                            type="checkbox"
+                            :disabled="!settings.checkUpdate"
+                            @change="saveSettings()"
+                        />
+                        {{ $t("Also check beta release") }}
+                    </label>
                 </div>
+            </div>
+            <div class="mt-5">
+                <p>
+                    {{ $t("Font Twemoji by Twitter licensed under") }}
+                    <a href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0</a>
+                </p>
             </div>
         </div>
     </div>
@@ -39,9 +60,7 @@ export default {
         },
     },
 
-    watch: {
-
-    }
+    watch: {},
 };
 </script>
 
@@ -62,5 +81,4 @@ export default {
         color: #333333;
     }
 }
-
 </style>

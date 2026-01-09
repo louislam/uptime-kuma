@@ -1,5 +1,5 @@
 import { currentLocale } from "../i18n";
-import { setPageLocale } from "../util-frontend";
+import { setPageLocale, timeDurationFormatter } from "../util-frontend";
 const langModules = import.meta.glob("../lang/*.json");
 
 export default {
@@ -33,6 +33,7 @@ export default {
             this.$i18n.locale = lang;
             localStorage.locale = lang;
             setPageLocale();
-        }
-    }
+            timeDurationFormatter.updateLocale(lang);
+        },
+    },
 };

@@ -7,7 +7,7 @@
                         <h5 id="exampleModalLabel" class="modal-title">
                             {{ $t("Setup Proxy") }}
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
@@ -25,33 +25,68 @@
                         <div class="mb-3">
                             <label for="proxy-host" class="form-label">{{ $t("Proxy Server") }}</label>
                             <div class="d-flex">
-                                <input id="proxy-host" v-model="proxy.host" type="text" class="form-control" required :placeholder="$t('Server Address')">
-                                <input v-model="proxy.port" type="number" class="form-control ms-2" style="width: 100px;" required min="1" max="65535" :placeholder="$t('Port')">
+                                <input
+                                    id="proxy-host"
+                                    v-model="proxy.host"
+                                    type="text"
+                                    class="form-control"
+                                    required
+                                    :placeholder="$t('Server Address')"
+                                />
+                                <input
+                                    v-model="proxy.port"
+                                    type="number"
+                                    class="form-control ms-2"
+                                    style="width: 100px"
+                                    required
+                                    min="1"
+                                    max="65535"
+                                    :placeholder="$t('Port')"
+                                />
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <div class="form-check form-switch">
-                                <input id="mark-auth" v-model="proxy.auth" class="form-check-input" type="checkbox">
-                                <label for="mark-auth" class="form-check-label">{{ $t("Proxy server has authentication") }}</label>
+                                <input id="mark-auth" v-model="proxy.auth" class="form-check-input" type="checkbox" />
+                                <label for="mark-auth" class="form-check-label">
+                                    {{ $t("Proxy server has authentication") }}
+                                </label>
                             </div>
                         </div>
 
                         <div v-if="proxy.auth" class="mb-3">
                             <label for="proxy-username" class="form-label">{{ $t("User") }}</label>
-                            <input id="proxy-username" v-model="proxy.username" type="text" class="form-control" required>
+                            <input
+                                id="proxy-username"
+                                v-model="proxy.username"
+                                type="text"
+                                class="form-control"
+                                required
+                            />
                         </div>
 
                         <div v-if="proxy.auth" class="mb-3">
                             <label for="proxy-password" class="form-label">{{ $t("Password") }}</label>
-                            <input id="proxy-password" v-model="proxy.password" type="password" class="form-control" required>
+                            <input
+                                id="proxy-password"
+                                v-model="proxy.password"
+                                type="password"
+                                class="form-control"
+                                required
+                            />
                         </div>
 
                         <div class="mb-3 mt-4">
-                            <hr class="dropdown-divider mb-4">
+                            <hr class="dropdown-divider mb-4" />
 
                             <div class="form-check form-switch">
-                                <input id="mark-active" v-model="proxy.active" class="form-check-input" type="checkbox">
+                                <input
+                                    id="mark-active"
+                                    v-model="proxy.active"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
                                 <label for="mark-active" class="form-check-label">{{ $t("enabled") }}</label>
                             </div>
                             <div class="form-text">
@@ -61,7 +96,12 @@
                             <br />
 
                             <div class="form-check form-switch">
-                                <input id="mark-default" v-model="proxy.default" class="form-check-input" type="checkbox">
+                                <input
+                                    id="mark-default"
+                                    v-model="proxy.default"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
                                 <label for="mark-default" class="form-check-label">{{ $t("setAsDefault") }}</label>
                             </div>
                             <div class="form-text">
@@ -71,14 +111,27 @@
                             <br />
 
                             <div class="form-check form-switch">
-                                <input id="apply-existing" v-model="proxy.applyExisting" class="form-check-input" type="checkbox">
-                                <label class="form-check-label" for="apply-existing">{{ $t("Apply on all existing monitors") }}</label>
+                                <input
+                                    id="apply-existing"
+                                    v-model="proxy.applyExisting"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                />
+                                <label class="form-check-label" for="apply-existing">
+                                    {{ $t("Apply on all existing monitors") }}
+                                </label>
                             </div>
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <button v-if="id" type="button" class="btn btn-danger" :disabled="processing" @click="deleteConfirm">
+                        <button
+                            v-if="id"
+                            type="button"
+                            class="btn btn-danger"
+                            :disabled="processing"
+                            @click="deleteConfirm"
+                        >
                             {{ $t("Delete") }}
                         </button>
                         <button type="submit" class="btn btn-primary" :disabled="processing">
@@ -106,7 +159,7 @@ export default {
         Confirm,
     },
     props: {},
-    emits: [ "added" ],
+    emits: ["added"],
     data() {
         return {
             model: null,
@@ -122,14 +175,15 @@ export default {
                 active: false,
                 default: false,
                 applyExisting: false,
-            }
+            },
         };
     },
-
     mounted() {
         this.modal = new Modal(this.$refs.modal);
     },
-
+    beforeUnmount() {
+        this.cleanupModal();
+    },
     methods: {
         /**
          * Show dialog to confirm deletion
@@ -174,6 +228,38 @@ export default {
         },
 
         /**
+         * Show dialog to clone a proxy
+         * @param {number} proxyID ID of proxy to clone
+         * @returns {void}
+         */
+        showClone(proxyID) {
+            if (proxyID) {
+                for (let proxy of this.$root.proxyList) {
+                    if (proxy.id === proxyID) {
+                        // Create a clone of the proxy data
+                        this.proxy = {
+                            protocol: proxy.protocol,
+                            host: proxy.host,
+                            port: proxy.port,
+                            auth: proxy.auth,
+                            username: proxy.username,
+                            password: proxy.password,
+                            active: proxy.active,
+                            default: false, // Cloned proxy should not be default
+                            applyExisting: false,
+                        };
+                        break;
+                    }
+                }
+            }
+
+            // Set id to null to indicate this is a new proxy (clone)
+            this.id = null;
+
+            this.modal.show();
+        },
+
+        /**
          * Submit form data for saving
          * @returns {void}
          */
@@ -187,7 +273,7 @@ export default {
                     this.modal.hide();
 
                     // Emit added event, doesn't emit edit.
-                    if (! this.id) {
+                    if (!this.id) {
                         this.$emit("added", res.id);
                     }
                 }
@@ -209,6 +295,20 @@ export default {
                 }
             });
         },
+
+        /**
+         * Clean up modal and restore scroll behavior
+         * @returns {void}
+         */
+        cleanupModal() {
+            if (this.modal) {
+                try {
+                    this.modal.hide();
+                } catch (e) {
+                    console.warn("Modal hide failed:", e);
+                }
+            }
+        },
     },
 };
 </script>
@@ -217,7 +317,8 @@ export default {
 @import "../assets/vars.scss";
 
 .dark {
-    .modal-dialog .form-text, .modal-dialog p {
+    .modal-dialog .form-text,
+    .modal-dialog p {
         color: $dark-font-color;
     }
 }

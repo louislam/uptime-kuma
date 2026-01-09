@@ -22,13 +22,14 @@ class OneBot extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + notification.accessToken,
-                }
+                    Authorization: "Bearer " + notification.accessToken,
+                },
             };
+            config = this.getAxiosConfigWithProxy(config);
             let pushText = "UptimeKuma Alert: " + msg;
             let data = {
-                "auto_escape": true,
-                "message": pushText,
+                auto_escape: true,
+                message: pushText,
             };
             if (notification.msgType === "group") {
                 data["message_type"] = "group";

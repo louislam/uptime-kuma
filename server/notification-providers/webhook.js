@@ -1,7 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const FormData = require("form-data");
-const { Liquid } = require("liquidjs");
 
 class Webhook extends NotificationProvider {
     name = "webhook";
@@ -13,54 +12,62 @@ class Webhook extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
+            const httpMethod = notification.httpMethod?.toLowerCase() || "post";
+
             let data = {
                 heartbeat: heartbeatJSON,
                 monitor: monitorJSON,
                 msg,
             };
             let config = {
-                headers: {}
+                headers: {},
             };
 
-            if (notification.webhookContentType === "form-data") {
+            if (httpMethod === "get") {
+                config.params = {
+                    msg: msg,
+                };
+
+                if (heartbeatJSON) {
+                    config.params.heartbeat = JSON.stringify(heartbeatJSON);
+                }
+
+                if (monitorJSON) {
+                    config.params.monitor = JSON.stringify(monitorJSON);
+                }
+            } else if (notification.webhookContentType === "form-data") {
                 const formData = new FormData();
                 formData.append("data", JSON.stringify(data));
                 config.headers = formData.getHeaders();
                 data = formData;
             } else if (notification.webhookContentType === "custom") {
-                // Initialize LiquidJS and parse the custom Body Template
-                const engine = new Liquid();
-                const tpl = engine.parse(notification.webhookCustomBody);
-
-                // Insert templated values into Body
-                data = await engine.render(tpl,
-                    {
-                        msg,
-                        heartbeatJSON,
-                        monitorJSON
-                    });
+                data = await this.renderTemplate(notification.webhookCustomBody, msg, monitorJSON, heartbeatJSON);
             }
 
             if (notification.webhookAdditionalHeaders) {
                 try {
                     config.headers = {
                         ...config.headers,
-                        ...JSON.parse(notification.webhookAdditionalHeaders)
+                        ...JSON.parse(notification.webhookAdditionalHeaders),
                     };
                 } catch (err) {
-                    throw "Additional Headers is not a valid JSON";
+                    throw new Error("Additional Headers is not a valid JSON");
                 }
             }
 
-            await axios.post(notification.webhookURL, data, config);
-            return okMsg;
+            config = this.getAxiosConfigWithProxy(config);
 
+            if (httpMethod === "get") {
+                await axios.get(notification.webhookURL, config);
+            } else {
+                await axios.post(notification.webhookURL, data, config);
+            }
+
+            return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
-
 }
 
 module.exports = Webhook;

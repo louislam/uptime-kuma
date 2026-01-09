@@ -11,28 +11,27 @@ class Gorush extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         let platformMapping = {
-            "ios": 1,
-            "android": 2,
-            "huawei": 3,
+            ios: 1,
+            android: 2,
+            huawei: 3,
         };
 
         try {
             let data = {
-                "notifications": [
+                notifications: [
                     {
-                        "tokens": [ notification.gorushDeviceToken ],
-                        "platform": platformMapping[notification.gorushPlatform],
-                        "message": msg,
+                        tokens: [notification.gorushDeviceToken],
+                        platform: platformMapping[notification.gorushPlatform],
+                        message: msg,
                         // Optional
-                        "title": notification.gorushTitle,
-                        "priority": notification.gorushPriority,
-                        "retry": parseInt(notification.gorushRetry) || 0,
-                        "topic": notification.gorushTopic,
-                    }
-                ]
+                        title: notification.gorushTitle,
+                        priority: notification.gorushPriority,
+                        retry: parseInt(notification.gorushRetry) || 0,
+                        topic: notification.gorushTopic,
+                    },
+                ],
             };
-            let config = {};
-
+            let config = this.getAxiosConfigWithProxy({});
             await axios.post(`${notification.gorushServerURL}/api/push`, data, config);
             return okMsg;
         } catch (error) {

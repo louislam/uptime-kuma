@@ -1,34 +1,48 @@
 <template>
     <div :class="classes">
-        <div v-if="! $root.socket.connected && ! $root.socket.firstConnect" class="lost-connection">
+        <div v-if="!$root.socket.connected && !$root.socket.firstConnect" class="lost-connection">
             <div class="container-fluid">
                 {{ $root.connectionErrorMsg }}
                 <div v-if="$root.showReverseProxyGuide">
-                    {{ $t("Using a Reverse Proxy?") }} <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">{{ $t("Check how to config it for WebSocket") }}</a>
+                    {{ $t("Using a Reverse Proxy?") }}
+                    <a href="https://github.com/louislam/uptime-kuma/wiki/Reverse-Proxy" target="_blank">
+                        {{ $t("Check how to config it for WebSocket") }}
+                    </a>
                 </div>
             </div>
         </div>
 
         <!-- Desktop header -->
-        <header v-if="! $root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
-            <router-link to="/dashboard" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <header v-if="!$root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
+            <router-link
+                to="/dashboard"
+                class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+            >
                 <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
                 <span class="fs-4 title">{{ $t("Uptime Kuma") }}</span>
             </router-link>
 
-            <a v-if="hasNewVersion" target="_blank" href="https://github.com/louislam/uptime-kuma/releases" class="btn btn-info me-3">
-                <font-awesome-icon icon="arrow-alt-circle-up" /> {{ $t("New Update") }}
+            <a
+                v-if="hasNewVersion"
+                target="_blank"
+                href="https://github.com/louislam/uptime-kuma/releases"
+                class="btn btn-primary me-3"
+            >
+                <font-awesome-icon icon="arrow-alt-circle-up" />
+                {{ $t("New Update") }}
             </a>
 
             <ul class="nav nav-pills">
                 <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/manage-status-page" class="nav-link">
-                        <font-awesome-icon icon="stream" /> {{ $t("Status Pages") }}
+                        <font-awesome-icon icon="stream" />
+                        {{ $t("Status Pages") }}
                     </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item me-2">
                     <router-link to="/dashboard" class="nav-link">
-                        <font-awesome-icon icon="tachometer-alt" /> {{ $t("Dashboard") }}
+                        <font-awesome-icon icon="tachometer-alt" />
+                        {{ $t("Dashboard") }}
                     </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item">
@@ -42,30 +56,52 @@
                         <ul class="dropdown-menu">
                             <!-- Username -->
                             <li>
-                                <i18n-t v-if="$root.username != null" tag="span" keypath="signedInDisp" class="dropdown-item-text">
+                                <i18n-t
+                                    v-if="$root.username != null"
+                                    tag="span"
+                                    keypath="signedInDisp"
+                                    class="dropdown-item-text"
+                                >
                                     <strong>{{ $root.username }}</strong>
                                 </i18n-t>
-                                <span v-if="$root.username == null" class="dropdown-item-text">{{ $t("signedInDispDisabled") }}</span>
+                                <span v-if="$root.username == null" class="dropdown-item-text">
+                                    {{ $t("signedInDispDisabled") }}
+                                </span>
                             </li>
 
-                            <li><hr class="dropdown-divider"></li>
+                            <li><hr class="dropdown-divider" /></li>
 
                             <!-- Functions -->
                             <li>
-                                <router-link to="/maintenance" class="dropdown-item" :class="{ active: $route.path.includes('manage-maintenance') }">
-                                    <font-awesome-icon icon="wrench" /> {{ $t("Maintenance") }}
+                                <router-link
+                                    to="/maintenance"
+                                    class="dropdown-item"
+                                    :class="{ active: $route.path.includes('manage-maintenance') }"
+                                >
+                                    <font-awesome-icon icon="wrench" />
+                                    {{ $t("Maintenance") }}
                                 </router-link>
                             </li>
 
                             <li>
-                                <router-link to="/settings/general" class="dropdown-item" :class="{ active: $route.path.includes('settings') }">
-                                    <font-awesome-icon icon="cog" /> {{ $t("Settings") }}
+                                <router-link
+                                    to="/settings/general"
+                                    class="dropdown-item"
+                                    :class="{ active: $route.path.includes('settings') }"
+                                >
+                                    <font-awesome-icon icon="cog" />
+                                    {{ $t("Settings") }}
                                 </router-link>
                             </li>
 
                             <li>
-                                <a href="https://github.com/louislam/uptime-kuma/wiki" class="dropdown-item" target="_blank">
-                                    <font-awesome-icon icon="info-circle" /> {{ $t("Help") }}
+                                <a
+                                    href="https://github.com/louislam/uptime-kuma/wiki"
+                                    class="dropdown-item"
+                                    target="_blank"
+                                >
+                                    <font-awesome-icon icon="info-circle" />
+                                    {{ $t("Help") }}
                                 </a>
                             </li>
 
@@ -91,11 +127,11 @@
 
         <main>
             <router-view v-if="$root.loggedIn" />
-            <Login v-if="! $root.loggedIn && $root.allowLoginDialog" />
+            <Login v-if="!$root.loggedIn && $root.allowLoginDialog" />
         </main>
 
         <!-- Mobile Only -->
-        <div v-if="$root.isMobile" style="width: 100%; height: calc(60px + env(safe-area-inset-bottom));" />
+        <div v-if="$root.isMobile" style="width: 100%; height: calc(60px + env(safe-area-inset-bottom))" />
         <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav">
             <router-link to="/dashboard" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
@@ -136,7 +172,6 @@ import { useToast } from "vue-toastification";
 const toast = useToast();
 
 export default {
-
     components: {
         Login,
     },
@@ -150,7 +185,6 @@ export default {
     },
 
     computed: {
-
         // Theme or Mobile
         classes() {
             const classes = {};
@@ -166,12 +200,9 @@ export default {
                 return false;
             }
         },
-
     },
 
-    watch: {
-
-    },
+    watch: {},
 
     mounted() {
         this.toastContainer = document.querySelector(".bottom-right.toast-container");
@@ -201,9 +232,8 @@ export default {
          */
         clearToasts() {
             toast.clear();
-        }
+        },
     },
-
 };
 </script>
 
@@ -238,7 +268,9 @@ export default {
     width: 100%;
     left: 0;
     background-color: #fff;
-    box-shadow: 0 15px 47px 0 rgba(0, 0, 0, 0.05), 0 5px 14px 0 rgba(0, 0, 0, 0.05);
+    box-shadow:
+        0 15px 47px 0 rgba(0, 0, 0, 0.05),
+        0 5px 14px 0 rgba(0, 0, 0, 0.05);
     text-align: center;
     white-space: nowrap;
     padding: 0 10px env(safe-area-inset-bottom);
@@ -254,7 +286,8 @@ export default {
         overflow: hidden;
         text-decoration: none;
 
-        &.router-link-exact-active, &.active {
+        &.router-link-exact-active,
+        &.active {
             color: $primary;
             font-weight: bold;
         }
@@ -396,5 +429,4 @@ main {
         bottom: 72px;
     }
 }
-
 </style>

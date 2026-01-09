@@ -4,6 +4,7 @@ const Alerta = require("./notification-providers/alerta");
 const AlertNow = require("./notification-providers/alertnow");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
+const Bale = require("./notification-providers/bale");
 const Bark = require("./notification-providers/bark");
 const Bitrix24 = require("./notification-providers/bitrix24");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
@@ -13,6 +14,7 @@ const DingDing = require("./notification-providers/dingding");
 const Discord = require("./notification-providers/discord");
 const Elks = require("./notification-providers/46elks");
 const Feishu = require("./notification-providers/feishu");
+const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
 const Gorush = require("./notification-providers/gorush");
@@ -23,22 +25,25 @@ const HeiiOnCall = require("./notification-providers/heii-oncall");
 const Keep = require("./notification-providers/keep");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
-const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
+const NextcloudTalk = require("./notification-providers/nextcloudtalk");
 const Nostr = require("./notification-providers/nostr");
 const Ntfy = require("./notification-providers/ntfy");
 const Octopush = require("./notification-providers/octopush");
+const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
 const PagerDuty = require("./notification-providers/pagerduty");
+const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
 const PagerTree = require("./notification-providers/pagertree");
 const PromoSMS = require("./notification-providers/promosms");
 const Pushbullet = require("./notification-providers/pushbullet");
 const PushDeer = require("./notification-providers/pushdeer");
 const Pushover = require("./notification-providers/pushover");
+const PushPlus = require("./notification-providers/pushplus");
 const Pushy = require("./notification-providers/pushy");
 const RocketChat = require("./notification-providers/rocket-chat");
 const SerwerSMS = require("./notification-providers/serwersms");
@@ -64,14 +69,24 @@ const ServerChan = require("./notification-providers/serverchan");
 const ZohoCliq = require("./notification-providers/zoho-cliq");
 const SevenIO = require("./notification-providers/sevenio");
 const Whapi = require("./notification-providers/whapi");
+const WAHA = require("./notification-providers/waha");
+const Evolution = require("./notification-providers/evolution");
 const GtxMessaging = require("./notification-providers/gtx-messaging");
 const Cellsynt = require("./notification-providers/cellsynt");
 const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
+const Brevo = require("./notification-providers/brevo");
+const Resend = require("./notification-providers/resend");
+const YZJ = require("./notification-providers/yzj");
+const SMSPlanet = require("./notification-providers/sms-planet");
+const SpugPush = require("./notification-providers/spugpush");
+const SMSIR = require("./notification-providers/smsir");
+const { commandExists } = require("./util-server");
+const Webpush = require("./notification-providers/Webpush");
+const HaloPSA = require("./notification-providers/HaloPSA");
 
 class Notification {
-
     providerList = {};
 
     /**
@@ -90,6 +105,7 @@ class Notification {
             new AlertNow(),
             new AliyunSms(),
             new Apprise(),
+            new Bale(),
             new Bark(),
             new Bitrix24(),
             new ClickSendSMS(),
@@ -109,13 +125,14 @@ class Notification {
             new Keep(),
             new Kook(),
             new Line(),
-            new LineNotify(),
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
+            new NextcloudTalk(),
             new Nostr(),
             new Ntfy(),
             new Octopush(),
+            new OneChat(),
             new OneBot(),
             new Onesender(),
             new Opsgenie(),
@@ -123,9 +140,11 @@ class Notification {
             new FlashDuty(),
             new PagerTree(),
             new PromoSMS(),
+            new Pumble(),
             new Pushbullet(),
             new PushDeer(),
             new Pushover(),
+            new PushPlus(),
             new Pushy(),
             new RocketChat(),
             new ServerChan(),
@@ -151,13 +170,24 @@ class Notification {
             new ZohoCliq(),
             new SevenIO(),
             new Whapi(),
+            new WAHA(),
+            new Evolution(),
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid()
+            new Brevo(),
+            new Resend(),
+            new YZJ(),
+            new SMSPlanet(),
+            new SpugPush(),
+            new Notifery(),
+            new SMSIR(),
+            new SendGrid(),
+            new Webpush(),
+            new HaloPSA(),
         ];
         for (let item of list) {
-            if (! item.name) {
+            if (!item.name) {
                 throw new Error("Notification provider without name");
             }
 
@@ -196,15 +226,11 @@ class Notification {
         let bean;
 
         if (notificationID) {
-            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
-                notificationID,
-                userID,
-            ]);
+            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
 
-            if (! bean) {
+            if (!bean) {
                 throw new Error("notification not found");
             }
-
         } else {
             bean = R.dispense("notification");
         }
@@ -229,12 +255,9 @@ class Notification {
      * @returns {Promise<void>}
      */
     static async delete(notificationID, userID) {
-        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
-            notificationID,
-            userID,
-        ]);
+        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
 
-        if (! bean) {
+        if (!bean) {
             throw new Error("notification not found");
         }
 
@@ -243,14 +266,11 @@ class Notification {
 
     /**
      * Check if apprise exists
-     * @returns {boolean} Does the command apprise exist?
+     * @returns {Promise<boolean>} Does the command apprise exist?
      */
-    static checkApprise() {
-        let commandExistsSync = require("command-exists").sync;
-        let exists = commandExistsSync("apprise");
-        return exists;
+    static async checkApprise() {
+        return await commandExists("apprise");
     }
-
 }
 
 /**
@@ -260,9 +280,7 @@ class Notification {
  * @returns {Promise<void>}
  */
 async function applyNotificationEveryMonitor(notificationID, userID) {
-    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
-        userID
-    ]);
+    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [userID]);
 
     for (let i = 0; i < monitors.length; i++) {
         let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
@@ -270,7 +288,7 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
             notificationID,
         ]);
 
-        if (! checkNotification) {
+        if (!checkNotification) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;

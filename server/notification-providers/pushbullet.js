@@ -17,30 +17,33 @@ class Pushbullet extends NotificationProvider {
             let config = {
                 headers: {
                     "Access-Token": notification.pushbulletAccessToken,
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             };
+            config = this.getAxiosConfigWithProxy(config);
             if (heartbeatJSON == null) {
                 let data = {
-                    "type": "note",
-                    "title": "Uptime Kuma Alert",
-                    "body": msg,
+                    type: "note",
+                    title: "Uptime Kuma Alert",
+                    body: msg,
                 };
                 await axios.post(url, data, config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downData = {
-                    "type": "note",
-                    "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[🔴 Down] " +
+                    type: "note",
+                    title: "UptimeKuma Alert: " + monitorJSON["name"],
+                    body:
+                        "[🔴 Down] " +
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };
                 await axios.post(url, downData, config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upData = {
-                    "type": "note",
-                    "title": "UptimeKuma Alert: " + monitorJSON["name"],
-                    "body": "[✅ Up] " +
+                    type: "note",
+                    title: "UptimeKuma Alert: " + monitorJSON["name"],
+                    body:
+                        "[✅ Up] " +
                         heartbeatJSON["msg"] +
                         `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
                 };

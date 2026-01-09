@@ -11,7 +11,8 @@ class PushDeer extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
         const serverUrl = notification.pushdeerServer || "https://api2.pushdeer.com";
-        const url = `${serverUrl.trim().replace(/\/*$/, "")}/message/push`;
+        // capture group below is necessary to prevent an ReDOS-attack
+        const url = `${serverUrl.trim().replace(/([^/])\/+$/, "$1")}/message/push`;
 
         let valid = msg != null && monitorJSON != null && heartbeatJSON != null;
 
@@ -25,14 +26,15 @@ class PushDeer extends NotificationProvider {
         }
 
         let data = {
-            "pushkey": notification.pushdeerKey,
-            "text": title,
-            "desp": msg.replace(/\n/g, "\n\n"),
-            "type": "markdown",
+            pushkey: notification.pushdeerKey,
+            text: title,
+            desp: msg.replace(/\n/g, "\n\n"),
+            type: "markdown",
         };
 
         try {
-            let res = await axios.post(url, data);
+            let config = this.getAxiosConfigWithProxy({});
+            let res = await axios.post(url, data, config);
 
             if ("error" in res.data) {
                 let error = res.data.error;

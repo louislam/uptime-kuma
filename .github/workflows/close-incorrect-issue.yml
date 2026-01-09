@@ -3,23 +3,29 @@ name: Close Incorrect Issue
 on:
   issues:
     types: [opened]
+permissions: {}
 
 jobs:
   close-incorrect-issue:
     runs-on: ${{ matrix.os }}
+    permissions:
+      issues: write
 
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node-version: [18]
+        node-version: [20]
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with: { persist-credentials: false }
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: node extra/close-incorrect-issue.js ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} ${{ github.event.issue.user.login }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - name: Close incorrect issue
+        run: node extra/close-incorrect-issue.js ${{ secrets.GITHUB_TOKEN }} ${{ github.event.issue.number }} "$ISSUE_USER_LOGIN"
+        env:
+          ISSUE_USER_LOGIN: ${{ github.event.issue.user.login }}
