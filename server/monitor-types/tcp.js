@@ -135,7 +135,7 @@ class TCPMonitorType extends MonitorType {
         let socket_;
 
         // Handle TLS certificate checking for secure/starttls connections
-        if ([ "secure", "starttls" ].includes(monitor.smtpSecurity) && monitor.isEnabledExpiryNotification()) {
+        if (["secure", "starttls"].includes(monitor.smtpSecurity) && monitor.isEnabledExpiryNotification()) {
             const reuseSocket = monitor.smtpSecurity === "starttls" ? await this.performStartTls(monitor) : {};
             socket_ = reuseSocket.socket;
             await this.checkTlsCertificate(monitor, reuseSocket);
@@ -165,7 +165,9 @@ class TCPMonitorType extends MonitorType {
             const onBannerTimeout = () => {
                 log.debug(this.name, `[${monitor.name}] Pre-TLS timed out waiting for banner`);
                 // No banner. Could be a XMPP server?
-                socket_.write(`<stream:stream to='${monitor.hostname}' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>`);
+                socket_.write(
+                    `<stream:stream to='${monitor.hostname}' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>`
+                );
             };
 
             const doResolve = () => {
@@ -185,7 +187,7 @@ class TCPMonitorType extends MonitorType {
                 log.debug(this.name, `[${monitor.name}] Pre-TLS connection: ${JSON.stringify(socket_)}`);
             });
 
-            socket_.on("data", data => {
+            socket_.on("data", (data) => {
                 const response = data.toString();
                 const response_ = response.toLowerCase();
                 log.debug(this.name, `[${monitor.name}] Pre-TLS response: ${response}`);
@@ -207,7 +209,7 @@ class TCPMonitorType extends MonitorType {
                         doResolve();
                         break;
                     case response_.includes("<starttls"):
-                        socket_.write("<starttls xmlns=\"urn:ietf:params:xml:ns:xmpp-tls\"/>");
+                        socket_.write('<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
                         break;
                     case response_.includes("<stream:stream") || response_.includes("</stream:stream>"):
                         break;
@@ -215,7 +217,7 @@ class TCPMonitorType extends MonitorType {
                         doReject(`Unexpected response: ${response}`);
                 }
             });
-            socket_.on("error", error => {
+            socket_.on("error", (error) => {
                 log.debug(this.name, `[${monitor.name}] ${error.toString()}`);
                 reject(error);
             });
@@ -253,7 +255,7 @@ class TCPMonitorType extends MonitorType {
                     }
                 });
 
-                socket.on("error", error => {
+                socket.on("error", (error) => {
                     reject(error);
                 });
 
@@ -320,11 +322,17 @@ class TCPMonitorType extends MonitorType {
             heartbeat.status = UP;
             heartbeat.msg = `TLS alert received as expected: ${result.alertName} (${result.alertNumber})`;
         } else if (result.success) {
-            throw new Error(`Expected TLS alert '${expectedTlsAlert}' but connection succeeded. The server accepted the connection without requiring a client certificate.`);
+            throw new Error(
+                `Expected TLS alert '${expectedTlsAlert}' but connection succeeded. The server accepted the connection without requiring a client certificate.`
+            );
         } else if (result.alertNumber !== null) {
-            throw new Error(`Expected TLS alert '${expectedTlsAlert}' but received '${result.alertName}' (${result.alertNumber})`);
+            throw new Error(
+                `Expected TLS alert '${expectedTlsAlert}' but received '${result.alertName}' (${result.alertNumber})`
+            );
         } else {
-            throw new Error(`Expected TLS alert '${expectedTlsAlert}' but got unexpected error: ${result.errorMessage}`);
+            throw new Error(
+                `Expected TLS alert '${expectedTlsAlert}' but got unexpected error: ${result.errorMessage}`
+            );
         }
     }
 
@@ -376,7 +384,10 @@ class TCPMonitorType extends MonitorType {
                 const alertNumber = parseTlsAlertNumber(errorMessage);
                 const alertName = alertNumber !== null ? getTlsAlertName(alertNumber) : null;
 
-                log.debug(this.name, `[${monitor.name}] TLS error: ${errorMessage}, alert: ${alertNumber} (${alertName})`);
+                log.debug(
+                    this.name,
+                    `[${monitor.name}] TLS error: ${errorMessage}, alert: ${alertNumber} (${alertName})`
+                );
 
                 resolve({
                     success: false,

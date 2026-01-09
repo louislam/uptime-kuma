@@ -15,14 +15,14 @@ class SerwerSMS extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                }
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
             let data = {
-                "username": notification.serwersmsUsername,
-                "password": notification.serwersmsPassword,
-                "text": msg.replace(/[^\x00-\x7F]/g, ""),
-                "sender": notification.serwersmsSenderName,
+                username: notification.serwersmsUsername,
+                password: notification.serwersmsPassword,
+                text: msg.replace(/[^\x00-\x7F]/g, ""),
+                sender: notification.serwersmsSenderName,
             };
 
             if (notification.serwersmsRecipientType === "group") {

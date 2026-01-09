@@ -43,7 +43,6 @@ module.exports.apiKeySocketHandler = (socket) => {
                 key: formattedKey,
                 keyID: bean.id,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -74,10 +73,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             log.debug("apikeys", `Deleted API Key: ${keyID} User ID: ${socket.userID}`);
 
-            await R.exec("DELETE FROM api_key WHERE id = ? AND user_id = ? ", [
-                keyID,
-                socket.userID,
-            ]);
+            await R.exec("DELETE FROM api_key WHERE id = ? AND user_id = ? ", [keyID, socket.userID]);
 
             apicache.clear();
 
@@ -88,7 +84,6 @@ module.exports.apiKeySocketHandler = (socket) => {
             });
 
             await sendAPIKeyList(socket);
-
         } catch (e) {
             callback({
                 ok: false,
@@ -103,9 +98,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             log.debug("apikeys", `Disabled Key: ${keyID} User ID: ${socket.userID}`);
 
-            await R.exec("UPDATE api_key SET active = 0 WHERE id = ? ", [
-                keyID,
-            ]);
+            await R.exec("UPDATE api_key SET active = 0 WHERE id = ? ", [keyID]);
 
             apicache.clear();
 
@@ -116,7 +109,6 @@ module.exports.apiKeySocketHandler = (socket) => {
             });
 
             await sendAPIKeyList(socket);
-
         } catch (e) {
             callback({
                 ok: false,
@@ -131,9 +123,7 @@ module.exports.apiKeySocketHandler = (socket) => {
 
             log.debug("apikeys", `Enabled Key: ${keyID} User ID: ${socket.userID}`);
 
-            await R.exec("UPDATE api_key SET active = 1 WHERE id = ? ", [
-                keyID,
-            ]);
+            await R.exec("UPDATE api_key SET active = 1 WHERE id = ? ", [keyID]);
 
             apicache.clear();
 
@@ -144,7 +134,6 @@ module.exports.apiKeySocketHandler = (socket) => {
             });
 
             await sendAPIKeyList(socket);
-
         } catch (e) {
             callback({
                 ok: false,

@@ -32,5 +32,5 @@ function getPlausibleAnalyticsScript(scriptUrl, domainsToMonitor) {
 }
 
 module.exports = {
-    getPlausibleAnalyticsScript
+    getPlausibleAnalyticsScript,
 };

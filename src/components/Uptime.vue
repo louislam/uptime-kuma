@@ -91,7 +91,7 @@ export default {
                 return `30 ${this.$tc("day", 30)}`;
             }
             return `24 ${this.$tc("hour", 24)}`;
-        }
+        },
     },
 };
 </script>

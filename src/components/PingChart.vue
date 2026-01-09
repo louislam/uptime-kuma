@@ -2,7 +2,9 @@
     <div>
         <div class="period-options">
             <button
-                type="button" class="btn btn-light dropdown-toggle btn-period-toggle" data-bs-toggle="dropdown"
+                type="button"
+                class="btn btn-light dropdown-toggle btn-period-toggle"
+                data-bs-toggle="dropdown"
                 aria-expanded="false"
             >
                 {{ chartPeriodOptions[chartPeriodHrs] }}&nbsp;
@@ -10,7 +12,9 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <li v-for="(item, key) in chartPeriodOptions" :key="key">
                     <button
-                        type="button" class="dropdown-item" :class="{ active: chartPeriodHrs == key }"
+                        type="button"
+                        class="dropdown-item"
+                        :class="{ active: chartPeriodHrs == key }"
                         @click="chartPeriodHrs = key"
                     >
                         {{ item }}
@@ -25,12 +29,35 @@
 </template>
 
 <script lang="js">
-import { BarController, BarElement, Chart, Filler, LinearScale, LineController, LineElement, PointElement, TimeScale, Tooltip, Legend } from "chart.js";
+import {
+    BarController,
+    BarElement,
+    Chart,
+    Filler,
+    LinearScale,
+    LineController,
+    LineElement,
+    PointElement,
+    TimeScale,
+    Tooltip,
+    Legend,
+} from "chart.js";
 import "chartjs-adapter-dayjs-4";
 import { Line } from "vue-chartjs";
 import { UP, DOWN, PENDING, MAINTENANCE } from "../util.ts";
 
-Chart.register(LineController, BarController, LineElement, PointElement, TimeScale, BarElement, LinearScale, Tooltip, Filler, Legend);
+Chart.register(
+    LineController,
+    BarController,
+    LineElement,
+    PointElement,
+    TimeScale,
+    BarElement,
+    LinearScale,
+    Tooltip,
+    Filler,
+    Legend
+);
 
 export default {
     components: { Line },
@@ -43,7 +70,6 @@ export default {
     },
     data() {
         return {
-
             loading: false,
 
             // Time period for the chart to display, in hours
@@ -105,7 +131,7 @@ export default {
                             displayFormats: {
                                 minute: "HH:mm",
                                 hour: "MM-DD HH:mm",
-                            }
+                            },
                         },
                         ticks: {
                             sampleSize: 3,
@@ -158,7 +184,7 @@ export default {
                                 const label = context.dataset.label;
                                 return `${label} ${new Intl.NumberFormat().format(context.parsed.y)} ms`;
                             },
-                        }
+                        },
                     },
                     legend: {
                         // Enable the legend and display only the non-bar datasets (the lines)
@@ -229,15 +255,18 @@ export default {
                     this.loading = false;
                 });
 
-                this.chartDataFetchInterval = setInterval(() => {
-                    this.$root.getMonitorChartData(this.monitorId, period, (res) => {
-                        if (res.ok) {
-                            this.chartRawData = res.data;
-                        }
-                    });
-                }, 5 * 60 * 1000);
+                this.chartDataFetchInterval = setInterval(
+                    () => {
+                        this.$root.getMonitorChartData(this.monitorId, period, (res) => {
+                            if (res.ok) {
+                                this.chartRawData = res.data;
+                            }
+                        });
+                    },
+                    5 * 60 * 1000
+                );
             }
-        }
+        },
     },
     created() {
         // Load chart period from storage if saved
@@ -324,11 +353,12 @@ export default {
             // Render chart using heartbeatList
             let lastHeartbeatTime;
             const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
-            let pingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-            let downData = [];  // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
+            let pingData = []; // Ping Data for Line Chart, y-axis contains ping time
+            let downData = []; // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
             let colorData = []; // Color Data for Bar Chart
 
-            let heartbeatList = (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
+            let heartbeatList =
+                (this.monitorId in this.$root.heartbeatList && this.$root.heartbeatList[this.monitorId]) || [];
 
             for (const beat of heartbeatList) {
                 const beatTime = this.$root.toDayjs(beat.time);
@@ -341,7 +371,7 @@ export default {
                         // Big gap detected
                         const gapX = [
                             lastHeartbeatTime.add(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
-                            beatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss")
+                            beatTime.subtract(monitorInterval, "second").format("YYYY-MM-DD HH:mm:ss"),
                         ];
 
                         for (const x of gapX) {
@@ -355,7 +385,6 @@ export default {
                             });
                             colorData.push("#000");
                         }
-
                     }
                 }
 
@@ -365,7 +394,7 @@ export default {
                 });
                 downData.push({
                     x,
-                    y: (beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING) ? 1 : 0,
+                    y: beat.status === DOWN || beat.status === MAINTENANCE || beat.status === PENDING ? 1 : 0,
                 });
                 switch (beat.status) {
                     case MAINTENANCE:
@@ -414,10 +443,10 @@ export default {
             let lastHeartbeatTime;
             const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
 
-            let avgPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-            let minPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-            let maxPingData = [];  // Ping Data for Line Chart, y-axis contains ping time
-            let downData = [];  // Down Data for Bar Chart, y-axis is number of down datapoints in this period
+            let avgPingData = []; // Ping Data for Line Chart, y-axis contains ping time
+            let minPingData = []; // Ping Data for Line Chart, y-axis contains ping time
+            let maxPingData = []; // Ping Data for Line Chart, y-axis contains ping time
+            let downData = []; // Down Data for Bar Chart, y-axis is number of down datapoints in this period
             let colorData = []; // Color Data for Bar Chart
 
             const period = parseInt(this.chartPeriodHrs);
@@ -440,8 +469,10 @@ export default {
                         const oneSecond = 1000;
                         const oneMinute = oneSecond * 60;
                         const oneHour = oneMinute * 60;
-                        if ((period <= 24 && diff > Math.max(oneMinute * 10, monitorInterval * oneSecond * 10)) ||
-                            (period > 24 && diff > Math.max(oneHour * 10, monitorInterval * oneSecond * 10))) {
+                        if (
+                            (period <= 24 && diff > Math.max(oneMinute * 10, monitorInterval * oneSecond * 10)) ||
+                            (period > 24 && diff > Math.max(oneHour * 10, monitorInterval * oneSecond * 10))
+                        ) {
                             // Big gap detected
                             // Clear the aggregate buffer
                             if (aggregateBuffer.length > 0) {
@@ -474,7 +505,6 @@ export default {
                                 });
                                 colorData.push("#000");
                             }
-
                         }
                     }
 
@@ -558,7 +588,7 @@ export default {
                 ],
             };
         },
-    }
+    },
 };
 </script>
 

@@ -54,8 +54,7 @@ to review the appropriate one for your contribution.
   [**PLEASE SEE OUR SECURITY POLICY.**](SECURITY.md)
 
   [advisory]: https://github.com/louislam/uptime-kuma/security/advisories/new
-  [issue]:
-    https://github.com/louislam/uptime-kuma/issues/new?template=security_issue.yml
+  [issue]: https://github.com/louislam/uptime-kuma/issues/new?template=security_issue.yml
 
   </p>
   </details>
@@ -65,7 +64,6 @@ to review the appropriate one for your contribution.
 
   If you come across a bug and think you can solve, we appreciate your work.
   Please make sure that you follow these rules:
-
   - keep the PR as small as possible, fix only one thing at a time => keeping it
     reviewable
   - test that your code does what you claim it does.
@@ -79,16 +77,15 @@ to review the appropriate one for your contribution.
 - <details><summary><b>Translations / Internationalisation (i18n)</b> (click to expand)</summary>
   <p>
 
-  Please add **all** strings that are translatable to `src/lang/en.json`. If translation keys are omitted, they cannot be translated. **Do not include any other languages in your initial pull request** (even if it is your mother tongue) to avoid merge conflicts between Weblate and `master`. Once your PR is merged into `master`, the strings can be translated by awesome people donating their language skills.  
-  
-  We use Weblate to localise this project into many languages. If you want to help translate Uptime Kuma into your language, please see [these instructions on how to translate using Weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).  
-  
+  Please add **all** strings that are translatable to `src/lang/en.json`. If translation keys are omitted, they cannot be translated. **Do not include any other languages in your initial pull request** (even if it is your mother tongue) to avoid merge conflicts between Weblate and `master`. Once your PR is merged into `master`, the strings can be translated by awesome people donating their language skills.
+
+  We use Weblate to localise this project into many languages. If you want to help translate Uptime Kuma into your language, please see [these instructions on how to translate using Weblate](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+
   There are some cases where a change cannot be done directly in Weblate and requires a PR:
-  
-  - A text may not yet be localisable. In this case, **adding a new language key** via `{{ $t("Translation key") }}` or [`<i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html) might be necessary.  
-  - Language keys need to be **added to `en.json`** to appear in Weblate. If this has not been done, a PR is appreciated.  
-  - **Adding a new language** requires creating a new file. See [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).  
-  
+  - A text may not yet be localisable. In this case, **adding a new language key** via `{{ $t("Translation key") }}` or [`<i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html) might be necessary.
+  - Language keys need to be **added to `en.json`** to appear in Weblate. If this has not been done, a PR is appreciated.
+  - **Adding a new language** requires creating a new file. See [these instructions](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
+
   <sub>Because maintainer time is precious, junior maintainers may merge uncontroversial PRs in this area.</sub>
 
   </p>
@@ -98,7 +95,6 @@ to review the appropriate one for your contribution.
   <p>
 
   To set up a new notification provider these files need to be modified/created:
-
   - `server/notification-providers/PROVIDER_NAME.js` is where the heart of the
     notification provider lives.
 
@@ -135,7 +131,6 @@ to review the appropriate one for your contribution.
   translations (`{{ $t("Translation key") }}`,
   [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html))
   in `src/lang/en.json` to enable our translators to translate this
-
   - `src/components/notifications/index.js` is where the frontend of the
     provider needs to be registered. _If you have an idea how we can skip this
     step, we would love to hear about it ^^_
@@ -147,7 +142,6 @@ to review the appropriate one for your contribution.
 
   To make sure you have tested the notification provider, please include
   screenshots of the following events in the pull-request description:
-
   - `UP`/`DOWN`
   - Certificate Expiry via <https://expired.badssl.com/>
   - Domain Expiry via <https://google.com/> and a larger time set
@@ -159,7 +153,7 @@ to review the appropriate one for your contribution.
 
   ```md
   | Event              | Before                | After                |
-  |--------------------|-----------------------|----------------------|
+  | ------------------ | --------------------- | -------------------- |
   | `UP`               | ![Before](image-link) | ![After](image-link) |
   | `DOWN`             | ![Before](image-link) | ![After](image-link) |
   | Certificate-expiry | ![Before](image-link) | ![After](image-link) |
@@ -177,7 +171,6 @@ to review the appropriate one for your contribution.
   <p>
 
   To set up a new notification provider these files need to be modified/created:
-
   - `server/monitor-types/MONITORING_TYPE.js` is the core of each monitor.
     The `async check(...)`-function should:
     - in the happy-path: set `heartbeat.msg` to a successful message and set `heartbeat.status = UP`
@@ -220,7 +213,6 @@ to review the appropriate one for your contribution.
   <p>
 
   Contributing is easy and fun. We will guide you through the process:
-
   1. **Fork** the [Uptime-Kuma repository](https://github.com/louislam/uptime-kuma/) and **clone** it to your local machine.
   2. **Create a new branch** for your changes (e.g., `signal-notification-provider`).
   3. **Make your changes** and **commit** them with a clear message.
@@ -235,7 +227,6 @@ to review the appropriate one for your contribution.
 
   A PR should remain in **draft status** until all tasks are completed.
   Only change the status to **Ready for Review** when:
-
   - You have implemented all planned changes.
   - Your code is fully tested and ready for review.
   - You have updated or created the necessary tests.
@@ -248,7 +239,6 @@ to review the appropriate one for your contribution.
 
 - Merging multiple issues by a huge PR is more difficult to review and causes
   conflicts with other PRs. Please
-
   - (if possible) **create one PR for one issue** or
   - (if not possible) **explain which issues a PR addresses and why this PR
     should not be broken apart**
@@ -269,7 +259,9 @@ to review the appropriate one for your contribution.
 ### Continuous Integration
 
 All pull requests must pass our continuous integration checks. These checks include:
-- **Linting**: We use ESLint and Stylelint to enforce code style. You can run the linter locally with `npm run lint`.
+
+- **Linting**: We use ESLint and Stylelint for code quality checks. You can run the linter locally with `npm run lint`.
+- **Formatting**: We use Prettier for code formatting. You can format your code with `npm run fmt` (or CI will do this for you)
 - **Testing**: We use Playwright for end-to-end tests and have a suite of backend tests. You can run the tests locally with `npm test`.
 
 I ([@louislam](https://github.com/louislam)) have the final say.
@@ -296,13 +288,11 @@ you can finally start the app. The goal is to make the Uptime Kuma installation
 as easy as installing a mobile app.
 
 - Easy to install for non-Docker users
-
   - no native build dependency is needed (for `x86_64`/`armv7`/`arm64`)
   - no extra configuration and
   - no extra effort required to get it running
 
 - Single container for Docker users
-
   - no complex docker-compose file
   - mapping the volume and exposing the port should be the only requirements
 
@@ -479,18 +469,16 @@ We have a few procedures we follow. These are documented here:
 
 - <details><summary><b>Set up a Docker Builder</b> (click to expand)</summary>
   <p>
-
   - amd64, armv7 using local.
   - arm64 using remote arm64 cpu, as the emulator is too slow and can no longer
     pass the `npm ci` command.
-
   1. Add the public key to the remote server.
   2. Add the remote context. The remote machine must be arm64 and installed
      Docker CE.
 
-     ```bash
-     docker context create oracle-arm64-jp --docker "host=ssh://root@100.107.174.88"
-     ```
+  ```bash
+  docker context create oracle-arm64-jp --docker "host=ssh://root@100.107.174.88"
+  ```
 
   3. Create a new builder.
 
@@ -514,7 +502,6 @@ We have a few procedures we follow. These are documented here:
 
 - <details><summary><b>Release</b> (click to expand)</summary>
   <p>
-
   1. Draft a release note
   2. Make sure the repo is cleared
   3. If the healthcheck is updated, remember to re-compile it:
@@ -527,7 +514,6 @@ We have a few procedures we follow. These are documented here:
   9. Deploy to the demo server: `npm run deploy-demo-server`
 
   These Items need to be checked:
-
   - [ ] Check all tags is fine on
         <https://hub.docker.com/r/louislam/uptime-kuma/tags>
   - [ ] Try the Docker image with tag 1.X.X (Clean install / amd64 / arm64 /
@@ -539,7 +525,6 @@ We have a few procedures we follow. These are documented here:
 
 - <details><summary><b>Release Beta</b> (click to expand)</summary>
   <p>
-
   1. Draft a release note, check `This is a pre-release`
   2. Make sure the repo is cleared
   3. `npm run release-beta` with env vars: `VERSION` and `GITHUB_TOKEN`

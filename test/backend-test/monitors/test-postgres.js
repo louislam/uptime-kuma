@@ -7,16 +7,12 @@ const { UP, PENDING } = require("../../../src/util");
 describe(
     "Postgres Single Node",
     {
-        skip:
-            !!process.env.CI &&
-            (process.platform !== "linux" || process.arch !== "x64"),
+        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
     },
     () => {
         test("check() sets status to UP when Postgres server is reachable", async () => {
             // The default timeout of 30 seconds might not be enough for the container to start
-            const postgresContainer = await new PostgreSqlContainer(
-                "postgres:latest"
-            )
+            const postgresContainer = await new PostgreSqlContainer("postgres:latest")
                 .withStartupTimeout(60000)
                 .start();
             const postgresMonitor = new PostgresMonitorType();
@@ -51,10 +47,7 @@ describe(
             // regex match any string
             const regex = /.+/;
 
-            await assert.rejects(
-                postgresMonitor.check(monitor, heartbeat, {}),
-                regex
-            );
+            await assert.rejects(postgresMonitor.check(monitor, heartbeat, {}), regex);
         });
     }
 );

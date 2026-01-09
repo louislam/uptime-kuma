@@ -13,19 +13,22 @@ class Evolution extends NotificationProvider {
         try {
             let config = {
                 headers: {
-                    "Accept": "application/json",
+                    Accept: "application/json",
                     "Content-Type": "application/json",
-                    "apikey": notification.evolutionAuthToken,
-                }
+                    apikey: notification.evolutionAuthToken,
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
 
             let data = {
-                "number": notification.evolutionRecipient,
-                "text": msg,
+                number: notification.evolutionRecipient,
+                text: msg,
             };
 
-            let url = (notification.evolutionApiUrl || "https://evolapicloud.com/").replace(/([^/])\/+$/, "$1") + "/message/sendText/" + encodeURIComponent(notification.evolutionInstanceName);
+            let url =
+                (notification.evolutionApiUrl || "https://evolapicloud.com/").replace(/([^/])\/+$/, "$1") +
+                "/message/sendText/" +
+                encodeURIComponent(notification.evolutionInstanceName);
 
             await axios.post(url, data, config);
 
@@ -34,7 +37,6 @@ class Evolution extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
-
 }
 
 module.exports = Evolution;
