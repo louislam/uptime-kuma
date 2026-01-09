@@ -1,10 +1,8 @@
 <template>
     <button
         class="mb-3"
-        type="button" :class="[
-            'btn',
-            browserSupportsServiceWorkers ? 'btn-primary' : 'btn-danger'
-        ]"
+        type="button"
+        :class="['btn', browserSupportsServiceWorkers ? 'btn-primary' : 'btn-danger']"
         :disabled="!btnEnabled"
         @click="registerWebpush"
     >
@@ -35,7 +33,7 @@ export default {
             this.browserSupportsServiceWorkers = true;
             this.btnText = this.$t("Notifications Enabled");
         } else {
-            if (("serviceWorker" in navigator)) {
+            if ("serviceWorker" in navigator) {
                 this.btnText = this.$t("Allow Notifications");
                 this.browserSupportsServiceWorkers = true;
                 this.btnEnabled = true;
@@ -86,12 +84,12 @@ export default {
                 console.error("Subscription failed:", error);
                 this.$root.toastRes({
                     ok: false,
-                    msg: error
+                    msg: error,
                 });
             } finally {
                 this.processing = false;
             }
-        }
+        },
     },
 };
 </script>

@@ -3,14 +3,14 @@
         <!-- Access Token Input -->
         <div class="mb-3">
             <label for="onechat-access-token" class="form-label">
-                OneChat Access Token<span style="color: red;"><sup>*</sup></span>
+                OneChat Access Token
+                <span style="color: red"><sup>*</sup></span>
             </label>
             <HiddenInput
                 id="onechat-access-token"
                 v-model="$parent.notification.accessToken"
                 :required="true"
-            >
-            </HiddenInput>
+            ></HiddenInput>
             <div class="form-text">
                 <p>{{ $t("OneChatAccessToken") }}</p>
             </div>
@@ -19,7 +19,8 @@
         <!-- Receiver ID Input -->
         <div class="mb-3">
             <label for="onechat-receiver-id" class="form-label">
-                {{ $t("OneChatUserIdOrGroupId") }}<span style="color: red;"><sup>*</sup></span>
+                {{ $t("OneChatUserIdOrGroupId") }}
+                <span style="color: red"><sup>*</sup></span>
             </label>
             <input
                 id="onechat-receiver-id"
@@ -33,15 +34,10 @@
         <!-- Bot ID Input -->
         <div class="mb-3">
             <label for="onechat-bot-id" class="form-label">
-                {{ $t("OneChatBotId") }}<span style="color: red;"><sup>*</sup></span>
+                {{ $t("OneChatBotId") }}
+                <span style="color: red"><sup>*</sup></span>
             </label>
-            <input
-                id="onechat-bot-id"
-                v-model="$parent.notification.botId"
-                type="text"
-                class="form-control"
-                required
-            />
+            <input id="onechat-bot-id" v-model="$parent.notification.botId" type="text" class="form-control" required />
         </div>
 
         <!-- Document Link -->

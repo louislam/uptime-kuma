@@ -479,5 +479,6 @@
     "templateLimitedToUpDownNotifications": "apenas disponível para notificações UP/DOWN",
     "-year": "-ano",
     "Json Query Expression": "Expressão Json Query",
-    "ignoredTLSError": "Erros TLS/SSL foram ignorados"
+    "ignoredTLSError": "Erros TLS/SSL foram ignorados",
+    "Clone Maintenance": ""
 }

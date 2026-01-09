@@ -15,7 +15,7 @@ const jobs = [
         interval: "*/5 * * * *",
         jobFunc: incrementalVacuum,
         croner: null,
-    }
+    },
 ];
 
 /**
@@ -32,11 +32,10 @@ const initBackgroundJobs = async function () {
                 name: job.name,
                 timezone,
             },
-            job.jobFunc,
+            job.jobFunc
         );
         job.croner = cornerJob;
     }
-
 };
 
 /**
@@ -54,5 +53,5 @@ const stopBackgroundJobs = function () {
 
 module.exports = {
     initBackgroundJobs,
-    stopBackgroundJobs
+    stopBackgroundJobs,
 };

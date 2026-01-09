@@ -1,5 +1,5 @@
 <template>
-    <span class="badge rounded-pill" :class=" 'bg-' + color ">{{ text }}</span>
+    <span class="badge rounded-pill" :class="'bg-' + color">{{ text }}</span>
 </template>
 
 <script>
@@ -9,7 +9,7 @@ export default {
         status: {
             type: Number,
             default: 0,
-        }
+        },
     },
 
     computed: {
@@ -57,7 +57,7 @@ export default {
 </script>
 
 <style scoped>
-    span {
-        min-width: 64px;
-    }
+span {
+    min-width: 64px;
+}
 </style>

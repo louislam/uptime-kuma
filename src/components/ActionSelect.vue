@@ -1,9 +1,17 @@
 <template>
     <div class="input-group mb-3">
         <select :id="id" ref="select" v-model="model" class="form-select" :disabled="disabled" :required="required">
-            <option v-for="option in options" :key="option" :value="option.value" :disabled="option.disabled">{{ option.label }}</option>
+            <option v-for="option in options" :key="option" :value="option.value" :disabled="option.disabled">
+                {{ option.label }}
+            </option>
         </select>
-        <button type="button" class="btn btn-outline-primary" :class="{ disabled: actionDisabled }" :aria-label="actionAriaLabel" @click="action()">
+        <button
+            type="button"
+            class="btn btn-outline-primary"
+            :class="{ disabled: actionDisabled }"
+            :aria-label="actionAriaLabel"
+            @click="action()"
+        >
             <font-awesome-icon :icon="icon" aria-hidden="true" />
         </button>
     </div>
@@ -39,7 +47,7 @@ export default {
          */
         disabled: {
             type: Boolean,
-            default: false
+            default: false,
         },
         /**
          * The icon displayed in the right button of the select field.
@@ -71,7 +79,7 @@ export default {
          */
         actionDisabled: {
             type: Boolean,
-            default: false
+            default: false,
         },
         /**
          * Whether the select field is required.
@@ -80,9 +88,9 @@ export default {
         required: {
             type: Boolean,
             default: false,
-        }
+        },
     },
-    emits: [ "update:modelValue" ],
+    emits: ["update:modelValue"],
     computed: {
         /**
          * Send value update to parent on change.
@@ -93,8 +101,8 @@ export default {
             },
             set(value) {
                 this.$emit("update:modelValue", value);
-            }
-        }
+            },
+        },
     },
 };
 </script>
