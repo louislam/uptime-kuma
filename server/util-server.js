@@ -1,9 +1,13 @@
 const ping = require("@louislam/ping");
 const { R } = require("redbean-node");
 const {
-    log, genSecret, badgeConstants,
-    PING_PACKET_SIZE_DEFAULT, PING_GLOBAL_TIMEOUT_DEFAULT,
-    PING_COUNT_DEFAULT, PING_PER_REQUEST_TIMEOUT_DEFAULT
+    log,
+    genSecret,
+    badgeConstants,
+    PING_PACKET_SIZE_DEFAULT,
+    PING_GLOBAL_TIMEOUT_DEFAULT,
+    PING_COUNT_DEFAULT,
+    PING_PER_REQUEST_TIMEOUT_DEFAULT,
 } = require("../src/util");
 const passwordHash = require("./password-hash");
 const iconv = require("iconv-lite");
@@ -22,6 +26,7 @@ const {
     },
 } = require("node-radius-utils");
 const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
 
 // SASLOptions used in JSDoc
 // eslint-disable-next-line no-unused-vars
@@ -34,9 +39,7 @@ const isWindows = process.platform === /^win/.test(process.platform);
  * @returns {Promise<Bean>} JWT secret
  */
 exports.initJWTSecret = async () => {
-    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", [
-        "jwtSecret",
-    ]);
+    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", ["jwtSecret"]);
 
     if (!jwtSecretBean) {
         jwtSecretBean = R.dispense("setting");
@@ -67,12 +70,19 @@ exports.decodeJwt = (jwt) => {
  * @param {string} authMethod The method used to send the credentials. Default client_secret_basic
  * @returns {Promise<oidc.TokenSet>} TokenSet promise if the token request was successful
  */
-exports.getOidcTokenClientCredentials = async (tokenEndpoint, clientId, clientSecret, scope, audience, authMethod = "client_secret_basic") => {
+exports.getOidcTokenClientCredentials = async (
+    tokenEndpoint,
+    clientId,
+    clientSecret,
+    scope,
+    audience,
+    authMethod = "client_secret_basic"
+) => {
     const oauthProvider = new oidc.Issuer({ token_endpoint: tokenEndpoint });
     let client = new oauthProvider.Client({
         client_id: clientId,
         client_secret: clientSecret,
-        token_endpoint_auth_method: authMethod
+        token_endpoint_auth_method: authMethod,
     });
 
     // Increase default timeout and clock tolerance
@@ -108,7 +118,7 @@ exports.ping = async (
     numeric = true,
     size = PING_PACKET_SIZE_DEFAULT,
     deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
-    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT,
+    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT
 ) => {
     try {
         return await exports.pingAsync(destAddr, false, count, sourceAddr, numeric, size, deadline, timeout);
@@ -145,31 +155,34 @@ exports.pingAsync = function (
     numeric = true,
     size = PING_PACKET_SIZE_DEFAULT,
     deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
-    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT,
+    timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT
 ) {
     return new Promise((resolve, reject) => {
-        ping.promise.probe(destAddr, {
-            v6: ipv6,
-            min_reply: count,
-            sourceAddr: sourceAddr,
-            numeric: numeric,
-            packetSize: size,
-            deadline: deadline,
-            timeout: timeout
-        }).then((res) => {
-            // If ping failed, it will set field to unknown
-            if (res.alive) {
-                resolve(res.time);
-            } else {
-                if (isWindows) {
-                    reject(new Error(exports.convertToUTF8(res.output)));
+        ping.promise
+            .probe(destAddr, {
+                v6: ipv6,
+                min_reply: count,
+                sourceAddr: sourceAddr,
+                numeric: numeric,
+                packetSize: size,
+                deadline: deadline,
+                timeout: timeout,
+            })
+            .then((res) => {
+                // If ping failed, it will set field to unknown
+                if (res.alive) {
+                    resolve(res.time);
                 } else {
-                    reject(new Error(res.output));
+                    if (isWindows) {
+                        reject(new Error(exports.convertToUTF8(res.output)));
+                    } else {
+                        reject(new Error(res.output));
+                    }
                 }
-            }
-        }).catch((err) => {
-            reject(err);
-        });
+            })
+            .catch((err) => {
+                reject(err);
+            });
     });
 };
 
@@ -193,11 +206,14 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
 
         let connectedToKafka = false;
 
-        const timeoutID = setTimeout(() => {
-            log.debug("kafkaProducer", "KafkaProducer timeout triggered");
-            connectedToKafka = true;
-            reject(new Error("Timeout"));
-        }, interval * 1000 * 0.8);
+        const timeoutID = setTimeout(
+            () => {
+                log.debug("kafkaProducer", "KafkaProducer timeout triggered");
+                connectedToKafka = true;
+                reject(new Error("Timeout"));
+            },
+            interval * 1000 * 0.8
+        );
 
         if (saslOptions.mechanism === "None") {
             saslOptions = undefined;
@@ -217,36 +233,41 @@ exports.kafkaProducerAsync = function (brokers, topic, message, options = {}, sa
             allowAutoTopicCreation: allowAutoTopicCreation,
             retry: {
                 retries: 0,
-            }
+            },
         });
 
-        producer.connect().then(
-            () => {
-                producer.send({
-                    topic: topic,
-                    messages: [{
-                        value: message,
-                    }],
-                }).then((_) => {
-                    resolve("Message sent successfully");
-                }).catch((e) => {
-                    connectedToKafka = true;
-                    producer.disconnect();
-                    clearTimeout(timeoutID);
-                    reject(new Error("Error sending message: " + e.message));
-                }).finally(() => {
-                    connectedToKafka = true;
-                    clearTimeout(timeoutID);
-                });
-            }
-        ).catch(
-            (e) => {
+        producer
+            .connect()
+            .then(() => {
+                producer
+                    .send({
+                        topic: topic,
+                        messages: [
+                            {
+                                value: message,
+                            },
+                        ],
+                    })
+                    .then((_) => {
+                        resolve("Message sent successfully");
+                    })
+                    .catch((e) => {
+                        connectedToKafka = true;
+                        producer.disconnect();
+                        clearTimeout(timeoutID);
+                        reject(new Error("Error sending message: " + e.message));
+                    })
+                    .finally(() => {
+                        connectedToKafka = true;
+                        clearTimeout(timeoutID);
+                    });
+            })
+            .catch((e) => {
                 connectedToKafka = true;
                 producer.disconnect();
                 clearTimeout(timeoutID);
                 reject(new Error("Error in producer connection: " + e.message));
-            }
-        );
+            });
 
         producer.on("producer.network.request_timeout", (_) => {
             if (!connectedToKafka) {
@@ -304,31 +325,33 @@ exports.radius = function (
     callingStationId,
     secret,
     port = 1812,
-    timeout = 2500,
+    timeout = 2500
 ) {
     const client = new RadiusClient({
         host: hostname,
         hostPort: port,
         timeout: timeout,
         retries: 1,
-        dictionaries: [ file ],
+        dictionaries: [file],
     });
 
-    return client.accessRequest({
-        secret: secret,
-        attributes: [
-            [ attributes.USER_NAME, username ],
-            [ attributes.USER_PASSWORD, password ],
-            [ attributes.CALLING_STATION_ID, callingStationId ],
-            [ attributes.CALLED_STATION_ID, calledStationId ],
-        ],
-    }).catch((error) => {
-        if (error.response?.code) {
-            throw Error(error.response.code);
-        } else {
-            throw Error(error.message);
-        }
-    });
+    return client
+        .accessRequest({
+            secret: secret,
+            attributes: [
+                [attributes.USER_NAME, username],
+                [attributes.USER_PASSWORD, password],
+                [attributes.CALLING_STATION_ID, callingStationId],
+                [attributes.CALLED_STATION_ID, calledStationId],
+            ],
+        })
+        .catch((error) => {
+            if (error.response?.code) {
+                throw Error(error.response.code);
+            } else {
+                throw Error(error.message);
+            }
+        });
 };
 
 /**
@@ -371,34 +394,6 @@ exports.setSettings = async function (type, data) {
     await Settings.setSettings(type, data);
 };
 
-// ssl-checker by @dyaa
-//https://github.com/dyaa/ssl-checker/blob/master/src/index.ts
-
-/**
- * Get number of days between two dates
- * @param {Date} validFrom Start date
- * @param {Date} validTo End date
- * @returns {number} Number of days
- */
-const getDaysBetween = (validFrom, validTo) =>
-    Math.round(Math.abs(+validFrom - +validTo) / 8.64e7);
-exports.getDaysBetween = getDaysBetween;
-
-/**
- * Get days remaining from a time range
- * @param {Date} validFrom Start date
- * @param {Date} validTo End date
- * @returns {number} Number of days remaining
- */
-const getDaysRemaining = (validFrom, validTo) => {
-    const daysRemaining = getDaysBetween(validFrom, validTo);
-    if (new Date(validTo).getTime() < new Date(validFrom).getTime()) {
-        return -daysRemaining;
-    }
-    return daysRemaining;
-};
-exports.getDaysRemaining = getDaysRemaining;
-
 /**
  * Fix certificate info for display
  * @param {object} info The chain obtained from getPeerCertificate()
@@ -419,22 +414,22 @@ const parseCertificateInfo = function (info) {
         }
         link.validTo = new Date(link.valid_to);
         link.validFor = link.subjectaltname?.replace(/DNS:|IP Address:/g, "").split(", ");
-        link.daysRemaining = getDaysRemaining(new Date(), link.validTo);
+        link.daysRemaining = dayjs.utc(link.validTo).diff(dayjs.utc(), "day");
 
         existingList[link.fingerprint] = true;
 
         // Move up the chain until loop is encountered
         if (link.issuerCertificate == null) {
-            link.certType = (i === 0) ? "self-signed" : "root CA";
+            link.certType = i === 0 ? "self-signed" : "root CA";
             break;
         } else if (link.issuerCertificate.fingerprint in existingList) {
             // a root CA certificate is typically "signed by itself"  (=> "self signed certificate") and thus the "issuerCertificate" is a reference to itself.
             log.debug("cert", `[Last] ${link.issuerCertificate.fingerprint}`);
-            link.certType = (i === 0) ? "self-signed" : "root CA";
+            link.certType = i === 0 ? "self-signed" : "root CA";
             link.issuerCertificate = null;
             break;
         } else {
-            link.certType = (i === 0) ? "server" : "intermediate CA";
+            link.certType = i === 0 ? "server" : "intermediate CA";
             link = link.issuerCertificate;
         }
 
@@ -473,7 +468,7 @@ exports.checkCertificate = function (socket) {
 
     return {
         valid: valid,
-        certInfo: parsedInfo
+        certInfo: parsedInfo,
     };
 };
 
@@ -518,7 +513,7 @@ exports.checkStatusCode = function (status, acceptedCodes) {
             continue;
         }
 
-        const codeRangeSplit = codeRange.split("-").map(string => parseInt(string));
+        const codeRangeSplit = codeRange.split("-").map((string) => parseInt(string));
         if (codeRangeSplit.length === 1) {
             if (status === codeRangeSplit[0]) {
                 return true;
@@ -543,7 +538,6 @@ exports.checkStatusCode = function (status, acceptedCodes) {
  * @returns {number} Total clients in room
  */
 exports.getTotalClientInRoom = (io, roomName) => {
-
     const sockets = io.sockets;
 
     if (!sockets) {
@@ -612,9 +606,7 @@ exports.doubleCheckPassword = async (socket, currentPassword) => {
         throw new Error("Wrong data type?");
     }
 
-    let user = await R.findOne("user", " id = ? AND active = 1 ", [
-        socket.userID,
-    ]);
+    let user = await R.findOne("user", " id = ? AND active = 1 ", [socket.userID]);
 
     if (!user || !passwordHash.verify(currentPassword, user.password)) {
         throw new Error("Incorrect current password");
@@ -671,18 +663,18 @@ exports.filterAndJoin = (parts, connector = "") => {
 module.exports.sendHttpError = (res, msg = "") => {
     if (msg.includes("SQLITE_BUSY") || msg.includes("SQLITE_LOCKED")) {
         res.status(503).json({
-            "status": "fail",
-            "msg": msg,
+            status: "fail",
+            msg: msg,
         });
     } else if (msg.toLowerCase().includes("not found")) {
         res.status(404).json({
-            "status": "fail",
-            "msg": msg,
+            status: "fail",
+            msg: msg,
         });
     } else {
         res.status(403).json({
-            "status": "fail",
-            "msg": msg,
+            status: "fail",
+            msg: msg,
         });
     }
 };
@@ -706,10 +698,7 @@ function timeObjectConvertTimezone(obj, timezone, timeObjectToUTC = true) {
     let hours = parseInt(offsetString.substring(1, 3));
     let minutes = parseInt(offsetString.substring(4, 6));
 
-    if (
-        (timeObjectToUTC && offsetString.startsWith("+")) ||
-        (!timeObjectToUTC && offsetString.startsWith("-"))
-    ) {
+    if ((timeObjectToUTC && offsetString.startsWith("+")) || (!timeObjectToUTC && offsetString.startsWith("-"))) {
         hours *= -1;
         minutes *= -1;
     }
@@ -760,7 +749,7 @@ module.exports.timeObjectToLocal = (obj, timezone = undefined) => {
  * @returns {Set} A set of SHA256 fingerprints.
  */
 module.exports.rootCertificatesFingerprints = () => {
-    let fingerprints = tls.rootCertificates.map(cert => {
+    let fingerprints = tls.rootCertificates.map((cert) => {
         let certLines = cert.split("\n");
         certLines.shift();
         certLines.pop();
@@ -770,11 +759,18 @@ module.exports.rootCertificatesFingerprints = () => {
         const shasum = crypto.createHash("sha256");
         shasum.update(buf);
 
-        return shasum.digest("hex").toUpperCase().replace(/(.{2})(?!$)/g, "$1:");
+        return shasum
+            .digest("hex")
+            .toUpperCase()
+            .replace(/(.{2})(?!$)/g, "$1:");
     });
 
-    fingerprints.push("6D:99:FB:26:5E:B1:C5:B3:74:47:65:FC:BC:64:8F:3C:D8:E1:BF:FA:FD:C4:C2:F9:9B:9D:47:CF:7F:F1:C2:4F"); // ISRG X1 cross-signed with DST X3
-    fingerprints.push("8B:05:B6:8C:C6:59:E5:ED:0F:CB:38:F2:C9:42:FB:FD:20:0E:6F:2F:F9:F8:5D:63:C6:99:4E:F5:E0:B0:27:01"); // ISRG X2 cross-signed with ISRG X1
+    fingerprints.push(
+        "6D:99:FB:26:5E:B1:C5:B3:74:47:65:FC:BC:64:8F:3C:D8:E1:BF:FA:FD:C4:C2:F9:9B:9D:47:CF:7F:F1:C2:4F"
+    ); // ISRG X1 cross-signed with DST X3
+    fingerprints.push(
+        "8B:05:B6:8C:C6:59:E5:ED:0F:CB:38:F2:C9:42:FB:FD:20:0E:6F:2F:F9:F8:5D:63:C6:99:4E:F5:E0:B0:27:01"
+    ); // ISRG X2 cross-signed with ISRG X1
 
     return new Set(fingerprints);
 };
@@ -790,9 +786,7 @@ module.exports.shake256 = (data, len) => {
     if (!data) {
         return "";
     }
-    return crypto.createHash("shake256", { outputLength: len })
-        .update(data)
-        .digest("hex");
+    return crypto.createHash("shake256", { outputLength: len }).update(data).digest("hex");
 };
 
 /**

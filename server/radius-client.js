@@ -46,11 +46,11 @@ class RadiusClient {
             const packet = {
                 code: "Access-Request",
                 secret: secret,
-                attributes: {}
+                attributes: {},
             };
 
             // Convert attributes array to object
-            attributes.forEach(([ attr, value ]) => {
+            attributes.forEach(([attr, value]) => {
                 packet.attributes[attr] = value;
             });
 
@@ -110,8 +110,7 @@ class RadiusClient {
 
                 let response;
                 try {
-                    response = radius.decode({ packet: msg,
-                        secret: secret });
+                    response = radius.decode({ packet: msg, secret: secret });
                 } catch (error) {
                     socket.close();
                     return reject(new Error(`RADIUS response decoding failed: ${error.message}`));
@@ -123,8 +122,7 @@ class RadiusClient {
                 const responseCode = response.code;
 
                 if (responseCode === "Access-Accept") {
-                    resolve({ code: "Access-Accept",
-                        ...response });
+                    resolve({ code: "Access-Accept", ...response });
                 } else if (responseCode === "Access-Reject") {
                     // Reject as error to match original behavior
                     const error = new Error("Access-Reject");
@@ -136,8 +134,7 @@ class RadiusClient {
                     error.response = { code: "Access-Challenge" };
                     reject(error);
                 } else {
-                    resolve({ code: responseCode,
-                        ...response });
+                    resolve({ code: responseCode, ...response });
                 }
             });
 

@@ -24,9 +24,7 @@ class SendGrid extends NotificationProvider {
 
             // Add CC recipients if provided
             if (notification.sendgridCcEmail) {
-                personalizations.cc = notification.sendgridCcEmail
-                    .split(",")
-                    .map((email) => ({ email: email.trim() }));
+                personalizations.cc = notification.sendgridCcEmail.split(",").map((email) => ({ email: email.trim() }));
             }
 
             // Add BCC recipients if provided
@@ -37,11 +35,9 @@ class SendGrid extends NotificationProvider {
             }
 
             let data = {
-                personalizations: [ personalizations ],
+                personalizations: [personalizations],
                 from: { email: notification.sendgridFromEmail.trim() },
-                subject:
-          notification.sendgridSubject ||
-          "Notification from Your Uptime Kuma",
+                subject: notification.sendgridSubject || "Notification from Your Uptime Kuma",
                 content: [
                     {
                         type: "text/plain",
@@ -50,11 +46,7 @@ class SendGrid extends NotificationProvider {
                 ],
             };
 
-            await axios.post(
-                "https://api.sendgrid.com/v3/mail/send",
-                data,
-                config
-            );
+            await axios.post("https://api.sendgrid.com/v3/mail/send", data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);

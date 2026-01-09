@@ -43,14 +43,14 @@ class HaloPSA extends NotificationProvider {
                 monitor: monitorJSON?.name || "No Monitor",
                 message: msg,
                 timestamp: new Date().toISOString(),
-                uptime_kuma_version: process.env.npm_package_version || "unknown"
+                uptime_kuma_version: process.env.npm_package_version || "unknown",
             };
 
             // Send POST request to Halo PSA webhook
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                }
+                },
             };
 
             if (notification.haloUsername && notification.haloPassword) {
@@ -62,11 +62,7 @@ class HaloPSA extends NotificationProvider {
 
             config = this.getAxiosConfigWithProxy(config);
 
-            const result = await axios.post(
-                notification.halowebhookurl,
-                payload,
-                config
-            );
+            const result = await axios.post(notification.halowebhookurl, payload, config);
 
             // Check for successful HTTP response
             if (result.status === 200 || result.status === 201 || result.status === 204) {

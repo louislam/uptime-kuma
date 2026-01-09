@@ -76,7 +76,6 @@ class SetupDatabase {
             dbConfig = Database.readDBConfig();
             log.debug("setup-database", "db-config.json is found and is valid");
             this.needSetup = false;
-
         } catch (e) {
             log.info("setup-database", "db-config.json is not found or invalid: " + e.message);
 
@@ -105,7 +104,6 @@ class SetupDatabase {
             dbConfig.password = getEnvOrFile("UPTIME_KUMA_DB_PASSWORD");
             Database.writeDBConfig(dbConfig);
         }
-
     }
 
     /**
@@ -175,7 +173,7 @@ class SetupDatabase {
 
                 let dbConfig = request.body.dbConfig;
 
-                let supportedDBTypes = [ "mariadb", "sqlite" ];
+                let supportedDBTypes = ["mariadb", "sqlite"];
 
                 if (this.isEnabledEmbeddedMariaDB()) {
                     supportedDBTypes.push("embedded-mariadb");
@@ -259,7 +257,10 @@ class SetupDatabase {
                 });
 
                 // Shutdown down this express and start the main server
-                log.info("setup-database", "Database is configured, close the setup-database server and start the main server now.");
+                log.info(
+                    "setup-database",
+                    "Database is configured, close the setup-database server and start the main server now."
+                );
                 if (tempServer) {
                     tempServer.close(() => {
                         log.info("setup-database", "The setup-database server is closed");
@@ -268,12 +269,14 @@ class SetupDatabase {
                 } else {
                     resolve();
                 }
-
             });
 
-            app.use("/", expressStaticGzip("dist", {
-                enableBrotli: true,
-            }));
+            app.use(
+                "/",
+                expressStaticGzip("dist", {
+                    enableBrotli: true,
+                })
+            );
 
             app.get("*", async (_request, response) => {
                 response.send(this.server.indexHTML);
@@ -286,7 +289,7 @@ class SetupDatabase {
 
             tempServer = app.listen(port, hostname, () => {
                 log.info("setup-database", `Starting Setup Database on ${port}`);
-                let domain = (hostname) ? hostname : "localhost";
+                let domain = hostname ? hostname : "localhost";
                 log.info("setup-database", `Open http://${domain}:${port} in your browser`);
                 log.info("setup-database", "Waiting for user action...");
             });

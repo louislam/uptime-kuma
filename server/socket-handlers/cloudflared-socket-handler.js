@@ -33,7 +33,6 @@ cloudflared.error = (errorMessage) => {
  * @returns {void}
  */
 module.exports.cloudflaredSocketHandler = (socket) => {
-
     socket.on(prefix + "join", async () => {
         try {
             checkLogin(socket);
@@ -94,7 +93,6 @@ module.exports.cloudflaredSocketHandler = (socket) => {
             log.error("cloudflared", "Error in removeToken handler: " + error.message);
         }
     });
-
 };
 
 /**
