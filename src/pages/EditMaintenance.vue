@@ -341,6 +341,10 @@
                     </div>
                 </div>
             </form>
+
+            <Confirm ref="confirmNoMonitors" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="doSubmit">
+                {{ $t("noMonitorsSelectedWarning") }}
+            </Confirm>
         </div>
     </transition>
 </template>
@@ -350,11 +354,13 @@ import VueMultiselect from "vue-multiselect";
 import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
 import cronstrue from "cronstrue/i18n";
+import Confirm from "../components/Confirm.vue";
 
 export default {
     components: {
         VueMultiselect,
         Datepicker,
+        Confirm
     },
 
     data() {
@@ -634,10 +640,33 @@ export default {
         },
 
         /**
+         * Check if maintenance has monitors or status pages assigned
+         * @returns {boolean} True if maintenance has monitors or status pages
+         */
+        hasMonitorsOrStatusPages() {
+            const hasMonitors = this.affectedMonitors.length > 0;
+            const hasStatusPages = this.showOnAllPages || this.selectedStatusPages.length > 0;
+            return hasMonitors || hasStatusPages;
+        },
+
+        /**
+         * Handle form submission - show confirmation if no monitors selected
+         * @returns {void}
+         */
+        submit() {
+            // If creating/cloning and no monitors selected, show confirmation
+            if ((this.isAdd || this.isClone) && this.affectedMonitors.length === 0) {
+                this.$refs.confirmNoMonitors.show();
+                return;
+            }
+            this.doSubmit();
+        },
+
+        /**
          * Create new maintenance
          * @returns {Promise<void>}
          */
-        async submit() {
+        async doSubmit() {
             this.processing = true;
 
             if (this.isAdd || this.isClone) {
