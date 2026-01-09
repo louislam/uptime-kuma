@@ -90,9 +90,9 @@ correct authorization and authentication mechanisms are in place.
 ### Security Best Practices
 
 - Ensure that the code is free from common vulnerabilities like **SQL
-    injection**, **XSS attacks**, and **insecure API calls**.
+  injection**, **XSS attacks**, and **insecure API calls**.
 - Check for proper encryption of sensitive data, and ensure that **passwords**
-    or **API tokens** are not hardcoded in the code.
+  or **API tokens** are not hardcoded in the code.
 
 ## Performance
 
@@ -105,7 +105,7 @@ like load times, memory usage, or other performance aspects.
 
 - Have the right libraries been chosen?
 - Are there unnecessary dependencies that might reduce performance or increase
-    code complexity?
+  code complexity?
 - Are these dependencies actively maintained and free of known vulnerabilities?
 
 ### Performance Best Practices
@@ -113,7 +113,7 @@ like load times, memory usage, or other performance aspects.
 - **Measure performance** using tools like Lighthouse or profiling libraries.
 - **Avoid unnecessary dependencies** that may bloat the codebase.
 - Ensure that the **code does not degrade the user experience** (e.g., by
-    increasing load times or memory consumption).
+  increasing load times or memory consumption).
 
 ## Compliance and Integration
 
@@ -187,9 +187,9 @@ the PR can be approved. Some examples of **significant issues** include:
 - Missing tests for new functionality.
 - Identified **security vulnerabilities**.
 - Code changes that break **backward compatibility** without a proper migration
-    plan.
+  plan.
 - Code that causes **major performance regressions** (e.g., high CPU/memory
-    usage).
+  usage).
 
 ## After the Review
 

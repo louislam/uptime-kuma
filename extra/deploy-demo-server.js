@@ -1,8 +1,7 @@
 require("dotenv").config();
 const { NodeSSH } = require("node-ssh");
 const readline = require("readline");
-const rl = readline.createInterface({ input: process.stdin,
-    output: process.stdout });
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
 
 (async () => {
@@ -13,7 +12,7 @@ const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
             host: process.env.UPTIME_KUMA_DEMO_HOST,
             port: process.env.UPTIME_KUMA_DEMO_PORT,
             username: process.env.UPTIME_KUMA_DEMO_USERNAME,
-            privateKeyPath: process.env.UPTIME_KUMA_DEMO_PRIVATE_KEY_PATH
+            privateKeyPath: process.env.UPTIME_KUMA_DEMO_PRIVATE_KEY_PATH,
         });
 
         let cwd = process.env.UPTIME_KUMA_DEMO_CWD;
@@ -48,7 +47,6 @@ const prompt = (query) => new Promise((resolve) => rl.question(query, resolve));
             cwd,
         });
         console.log(result.stdout + result.stderr);*/
-
     } catch (e) {
         console.log(e);
     } finally {

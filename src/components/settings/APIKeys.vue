@@ -1,15 +1,13 @@
 <template>
     <div>
-        <div
-            v-if="settings.disableAuth"
-            class="mt-5 d-flex align-items-center justify-content-center my-3"
-        >
+        <div v-if="settings.disableAuth" class="mt-5 d-flex align-items-center justify-content-center my-3">
             {{ $t("apiKeysDisabledMsg") }}
         </div>
         <div v-else>
             <div class="add-btn">
                 <button class="btn btn-primary me-2" type="button" @click="$refs.apiKeyDialog.show()">
-                    <font-awesome-icon icon="plus" /> {{ $t("Add API Key") }}
+                    <font-awesome-icon icon="plus" />
+                    {{ $t("Add API Key") }}
                 </button>
             </div>
 
@@ -21,12 +19,7 @@
                     {{ $t("No API Keys") }}
                 </span>
 
-                <div
-                    v-for="(item, index) in keyList"
-                    :key="index"
-                    class="item"
-                    :class="item.status"
-                >
+                <div v-for="(item, index) in keyList" :key="index" class="item" :class="item.status">
                     <div class="left-part">
                         <div class="circle"></div>
                         <div class="info">
@@ -34,9 +27,7 @@
                             <div class="status">
                                 {{ $t("apiKey-" + item.status) }}
                             </div>
-                            <div class="date">
-                                {{ $t("Created") }}: {{ item.createdDate }}
-                            </div>
+                            <div class="date">{{ $t("Created") }}: {{ item.createdDate }}</div>
                             <div class="date">
                                 {{ $t("Expires") }}:
                                 {{ item.expires || $t("Never") }}
@@ -47,15 +38,18 @@
                     <div class="buttons">
                         <div class="btn-group" role="group">
                             <button v-if="item.active" class="btn btn-normal" @click="disableDialog(item.id)">
-                                <font-awesome-icon icon="pause" /> {{ $t("Disable") }}
+                                <font-awesome-icon icon="pause" />
+                                {{ $t("Disable") }}
                             </button>
 
                             <button v-if="!item.active" class="btn btn-primary" @click="enableKey(item.id)">
-                                <font-awesome-icon icon="play" /> {{ $t("Enable") }}
+                                <font-awesome-icon icon="play" />
+                                {{ $t("Enable") }}
                             </button>
 
                             <button class="btn btn-danger" @click="deleteDialog(item.id)">
-                                <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
+                                <font-awesome-icon icon="trash" />
+                                {{ $t("Delete") }}
                             </button>
                         </div>
                     </div>
@@ -63,7 +57,7 @@
             </div>
         </div>
 
-        <div class="text-center mt-3" style="font-size: 13px;">
+        <div class="text-center mt-3" style="font-size: 13px">
             <a href="https://github.com/louislam/uptime-kuma/wiki/API-Keys" target="_blank">{{ $t("Learn More") }}</a>
         </div>
 
@@ -139,11 +133,9 @@ export default {
          * @returns {void}
          */
         disableKey() {
-            this.$root
-                .getSocket()
-                .emit("disableAPIKey", this.selectedKeyID, (res) => {
-                    this.$root.toastRes(res);
-                });
+            this.$root.getSocket().emit("disableAPIKey", this.selectedKeyID, (res) => {
+                this.$root.toastRes(res);
+            });
         },
 
         /**

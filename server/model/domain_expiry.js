@@ -1,19 +1,19 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { R } = require("redbean-node");
-const { log } = require("../../src/util");
+const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } = require("../../src/util");
 const { parse: parseTld } = require("tldts");
-const { getDaysRemaining, getDaysBetween, setting, setSetting } = require("../util-server");
+const { setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
 const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
+const TranslatableError = require("../translatable-error");
+const dayjs = require("dayjs");
 
-const TABLE = "domain_expiry";
-const urlTypes = [ "websocket-upgrade", "http", "keyword", "json-query", "real-browser" ];
-const excludeTypes = [ "docker", "group", "push", "manual", "rabbitmq", "redis" ];
-
-const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
-    // cache for 8h
-    cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 })
-}) : fetch;
+const cachedFetch = process.env.NODE_ENV
+    ? NodeFetchCache.create({
+          // cache for 8h
+          cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
+      })
+    : fetch;
 
 /**
  * Find the RDAP server for a given TLD
@@ -31,11 +31,12 @@ async function getRdapServer(tld) {
     }
 
     for (const service of rdapList["services"]) {
-        const [ tlds, urls ] = service;
+        const [tlds, urls] = service;
         if (tlds.includes(tld)) {
             return urls[0];
         }
     }
+    log.debug("rdap", `No RDAP server found for TLD ${tld}`);
     return null;
 }
 
@@ -86,19 +87,18 @@ async function getRdapDomainExpiryDate(domain) {
  */
 async function sendDomainNotificationByTargetDays(domain, daysRemaining, targetDays, notificationList) {
     let sent = false;
-    log.debug("domain", `Send domain expiry notification for ${targetDays} deadline.`);
+    log.debug("domain_expiry", `Send domain expiry notification for ${targetDays} deadline.`);
 
     for (let notification of notificationList) {
         try {
-            log.debug("domain", `Sending to ${notification.name}`);
+            log.debug("domain_expiry", `Sending to ${notification.name}`);
             await Notification.send(
                 JSON.parse(notification.config),
                 `Domain name ${domain} will expire in ${daysRemaining} days`
             );
             sent = true;
         } catch (e) {
-            log.error("domain", `Cannot send domain notification to ${notification.name}`);
-            log.error("domain", e);
+            log.error("domain_expiry", `Cannot send domain notification to ${notification.name}:`, e);
         }
     }
 
@@ -111,7 +111,7 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<DomainExpiry>} Domain bean
      */
     static async findByName(domain) {
-        return R.findOne(TABLE, "domain = ?", [ domain ]);
+        return R.findOne("domain_expiry", "domain = ?", [domain]);
     }
 
     /**
@@ -119,7 +119,7 @@ class DomainExpiry extends BeanModel {
      * @returns {DomainExpiry} Domain bean
      */
     static createByName(domain) {
-        const d = R.dispense(TABLE);
+        const d = R.dispense("domain_expiry");
         d.domain = domain;
         return d;
     }
@@ -127,7 +127,8 @@ class DomainExpiry extends BeanModel {
     static parseTld = parseTld;
 
     /**
-     * @returns {(object)} parsed domain components
+     * @typedef {import("tldts-core").IResult} DomainComponents
+     * @returns {DomainComponents} parsed domain components
      */
     parseName() {
         return parseTld(this.domain);
@@ -142,33 +143,75 @@ class DomainExpiry extends BeanModel {
 
     /**
      * @param {Monitor} monitor Monitor object
-     * @returns {Promise<DomainExpiry>} Domain expiry bean
+     * @throws {TranslatableError} Throws an error if the monitor type is unsupported or missing target.
+     * @returns {Promise<{ domain: string, tld: string }>} Domain expiry support info
      */
-    static async forMonitor(monitor) {
-        const m = monitor;
-        if (excludeTypes.includes(m.type) || m.type?.match(/sql$/)) {
-            return false;
+    static async checkSupport(monitor) {
+        if (!(monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD)) {
+            throw new TranslatableError("domain_expiry_unsupported_monitor_type");
         }
-        const tld = parseTld(urlTypes.includes(m.type) ? m.url : m.type === "grpc-keyword" ? m.grpcUrl : m.hostname);
+        const targetField = TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD[monitor.type];
+        const target = monitor[targetField];
+        if (typeof target !== "string" || target.length === 0) {
+            throw new TranslatableError("domain_expiry_unsupported_missing_target");
+        }
+
+        const tld = parseTld(target);
+
+        // Avoid logging for incomplete/invalid input while editing monitors.
+        if (!tld.domain) {
+            throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: tld.hostname });
+        }
+        if (!tld.publicSuffix) {
+            throw new TranslatableError("domain_expiry_unsupported_public_suffix", { publicSuffix: tld.publicSuffix });
+        }
+        if (tld.isIp) {
+            throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
+        }
+
+        // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
+        if (tld.publicSuffix.length < 2) {
+            throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
+        }
+
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
-            log.warn("domain", `${tld.publicSuffix} is not supported. File a bug report if you believe it should be.`);
-            return false;
+            // Only warn when the monitor actually has domain expiry notifications enabled.
+            // The edit monitor page calls this method frequently while the user is typing.
+            if (Boolean(monitor.domainExpiryNotification)) {
+                log.warn(
+                    "domain_expiry",
+                    `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                );
+            }
+            throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
+                publicSuffix: tld.publicSuffix,
+            });
         }
-        const existing = await DomainExpiry.findByName(tld.domain);
-        if (existing) {
-            return existing;
+
+        return {
+            domain: tld.domain,
+            tld: tld.publicSuffix,
+        };
+    }
+
+    /**
+     * @param {string} domainName Domain name
+     * @returns {Promise<DomainExpiry>} Domain expiry bean
+     */
+    static async findByDomainNameOrCreate(domainName) {
+        let domain = await DomainExpiry.findByName(domainName);
+        if (!domain && domainName) {
+            domain = await DomainExpiry.createByName(domainName);
         }
-        if (tld.domain) {
-            return await DomainExpiry.createByName(tld.domain);
-        }
+        return domain;
     }
 
     /**
      * @returns {number} number of days remaining before expiry
      */
     get daysRemaining() {
-        return getDaysRemaining(new Date(), new Date(this.expiry));
+        return dayjs.utc(this.expiry).diff(dayjs.utc(), "day");
     }
 
     /**
@@ -179,26 +222,26 @@ class DomainExpiry extends BeanModel {
     }
 
     /**
-     * @param {(Monitor)} monitor Monitor object
-     * @returns {Promise<void>}
+     * @param {string} domainName Monitor object
+     * @throws {TranslatableError} If the domain is not supported
+     * @returns {Promise<Date | undefined>} the expiry date
      */
-    static async checkExpiry(monitor) {
-
-        let bean = await DomainExpiry.forMonitor(monitor);
-
+    static async checkExpiry(domainName) {
+        let bean = await DomainExpiry.findByDomainNameOrCreate(domainName);
         let expiryDate;
-        if (bean?.lastCheck && getDaysBetween(new Date(bean.lastCheck), new Date()) < 1) {
-            log.debug("domain", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
+
+        if (bean?.lastCheck && dayjs.utc(bean.lastCheck).diff(dayjs.utc(), "day") < 1) {
+            log.debug("domain_expiry", `Domain expiry already checked recently for ${bean.domain}, won't re-check.`);
             return bean.expiry;
         } else if (bean) {
             expiryDate = await bean.getExpiryDate();
 
-            if (new Date(expiryDate) > new Date(bean.expiry)) {
+            if (dayjs.utc(expiryDate).isAfter(dayjs.utc(bean.expiry))) {
                 bean.lastExpiryNotificationSent = null;
             }
 
-            bean.expiry = expiryDate;
-            bean.lastCheck = new Date();
+            bean.expiry = R.isoDateTimeMillis(expiryDate);
+            bean.lastCheck = R.isoDateTimeMillis(dayjs.utc());
             await R.store(bean);
         }
 
@@ -210,29 +253,35 @@ class DomainExpiry extends BeanModel {
     }
 
     /**
-     * @param {Monitor} monitor Monitor instance
+     * @param {string} domainName the domain name to send notifications for
      * @param {LooseObject<any>[]} notificationList notification List
      * @returns {Promise<void>}
      */
-    static async sendNotifications(monitor, notificationList) {
-        const domain = await DomainExpiry.forMonitor(monitor);
-        const name = domain.domain;
-
+    static async sendNotifications(domainName, notificationList) {
+        const domain = await DomainExpiry.findByDomainNameOrCreate(domainName);
         if (!notificationList.length > 0) {
             // fail fast. If no notification is set, all the following checks can be skipped.
-            log.debug("domain", "No notification, no need to send domain notification");
+            log.debug("domain_expiry", "No notification, no need to send domain notification");
+            return;
+        }
+        // sanity check if expiry date is valid before calculating days remaining. Should not happen and likely indicates a bug in the code.
+        if (!domain.expiry || isNaN(new Date(domain.expiry).getTime())) {
+            log.warn(
+                "domain_expiry",
+                `No valid expiry date passed to sendNotifications for ${domainName} (expiry: ${domain.expiry}), skipping notification`
+            );
             return;
         }
 
-        const daysRemaining = getDaysRemaining(new Date(), domain.expiry);
+        const daysRemaining = domain.daysRemaining;
         const lastSent = domain.lastExpiryNotificationSent;
-        log.debug("domain", `${name} expires in ${daysRemaining} days`);
+        log.debug("domain_expiry", `${domainName} expires in ${daysRemaining} days`);
 
         let notifyDays = await setting("domainExpiryNotifyDays");
         if (notifyDays == null || !Array.isArray(notifyDays)) {
             // Reset Default
-            await setSetting("domainExpiryNotifyDays", [ 7, 14, 21 ], "general");
-            notifyDays = [ 7, 14, 21 ];
+            await setSetting("domainExpiryNotifyDays", [7, 14, 21], "general");
+            notifyDays = [7, 14, 21];
         }
         if (Array.isArray(notifyDays)) {
             // Asc sort to avoid sending multiple notifications if daysRemaining is below multiple targetDays
@@ -240,19 +289,19 @@ class DomainExpiry extends BeanModel {
             for (const targetDays of notifyDays) {
                 if (daysRemaining > targetDays) {
                     log.debug(
-                        "domain",
-                        `No need to send domain notification for ${name} (${daysRemaining} days valid) on ${targetDays} deadline.`
+                        "domain_expiry",
+                        `No need to send domain notification for ${domainName} (${daysRemaining} days valid) on ${targetDays} deadline.`
                     );
                     continue;
                 } else if (lastSent && lastSent <= targetDays) {
                     log.debug(
-                        "domain",
-                        `Notification for ${name} on ${targetDays} deadline sent already, no need to send again.`
+                        "domain_expiry",
+                        `Notification for ${domainName} on ${targetDays} deadline sent already, no need to send again.`
                     );
                     continue;
                 }
                 const sent = await sendDomainNotificationByTargetDays(
-                    name,
+                    domainName,
                     daysRemaining,
                     targetDays,
                     notificationList

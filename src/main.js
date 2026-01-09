@@ -26,17 +26,10 @@ dayjs.extend(timezone);
 dayjs.extend(relativeTime);
 
 const app = createApp({
-    mixins: [
-        socket,
-        theme,
-        mobile,
-        datetime,
-        publicMixin,
-        lang,
-    ],
+    mixins: [socket, theme, mobile, datetime, publicMixin, lang],
     data() {
         return {
-            appName: appName
+            appName: appName,
         };
     },
     render: () => h(App),

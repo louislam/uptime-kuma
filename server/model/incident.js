@@ -3,7 +3,6 @@ const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 
 class Incident extends BeanModel {
-
     /**
      * Resolve the incident and mark it as inactive
      * @returns {Promise<void>}

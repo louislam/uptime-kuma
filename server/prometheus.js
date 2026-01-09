@@ -22,7 +22,7 @@ class Prometheus {
             monitor_type: monitor.type,
             monitor_url: monitor.url,
             monitor_hostname: monitor.hostname,
-            monitor_port: monitor.port
+            monitor_port: monitor.port,
         };
     }
 
@@ -36,11 +36,16 @@ class Prometheus {
     static async init() {
         // Add all available tags as possible labels,
         // and use Set to remove possible duplicates (for when multiple tags contain non-ascii characters, and thus are sanitized to the same label)
-        const tags = new Set((await R.findAll("tag")).map((tag) => {
-            return Prometheus.sanitizeForPrometheus(tag.name);
-        }).filter((tagName) => {
-            return tagName !== "";
-        }).sort(this.sortTags));
+        const tags = new Set(
+            (await R.findAll("tag"))
+                .map((tag) => {
+                    return Prometheus.sanitizeForPrometheus(tag.name);
+                })
+                .filter((tagName) => {
+                    return tagName !== "";
+                })
+                .sort(this.sortTags)
+        );
 
         const commonLabels = [
             ...tags,
@@ -55,25 +60,25 @@ class Prometheus {
         monitorCertDaysRemaining = new PrometheusClient.Gauge({
             name: "monitor_cert_days_remaining",
             help: "The number of days remaining until the certificate expires",
-            labelNames: commonLabels
+            labelNames: commonLabels,
         });
 
         monitorCertIsValid = new PrometheusClient.Gauge({
             name: "monitor_cert_is_valid",
             help: "Is the certificate still valid? (1 = Yes, 0= No)",
-            labelNames: commonLabels
+            labelNames: commonLabels,
         });
 
         monitorResponseTime = new PrometheusClient.Gauge({
             name: "monitor_response_time",
             help: "Monitor Response Time (ms)",
-            labelNames: commonLabels
+            labelNames: commonLabels,
         });
 
         monitorStatus = new PrometheusClient.Gauge({
             name: "monitor_status",
             help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
-            labelNames: commonLabels
+            labelNames: commonLabels,
         });
     }
 
@@ -115,10 +120,12 @@ class Prometheus {
         });
 
         // Order the tags alphabetically
-        return Object.keys(mappedTags).sort(this.sortTags).reduce((obj, key) => {
-            obj[key] = mappedTags[key];
-            return obj;
-        }, {});
+        return Object.keys(mappedTags)
+            .sort(this.sortTags)
+            .reduce((obj, key) => {
+                obj[key] = mappedTags[key];
+                return obj;
+            }, {});
     }
 
     /**
@@ -212,5 +219,5 @@ class Prometheus {
 }
 
 module.exports = {
-    Prometheus
+    Prometheus,
 };
