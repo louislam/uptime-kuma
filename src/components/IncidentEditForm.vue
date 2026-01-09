@@ -51,12 +51,36 @@
                     {{ $t("Style") }}: {{ $t(modelValue.style) }}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="#" @click.prevent="updateField('style', 'info')">{{ $t("info") }}</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="updateField('style', 'warning')">{{ $t("warning") }}</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="updateField('style', 'danger')">{{ $t("danger") }}</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="updateField('style', 'primary')">{{ $t("primary") }}</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="updateField('style', 'light')">{{ $t("light") }}</a></li>
-                    <li><a class="dropdown-item" href="#" @click.prevent="updateField('style', 'dark')">{{ $t("dark") }}</a></li>
+                    <li>
+                        <a class="dropdown-item" href="#" @click.prevent="updateField('style', 'info')">
+                            {{ $t("info") }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" @click.prevent="updateField('style', 'warning')">
+                            {{ $t("warning") }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" @click.prevent="updateField('style', 'danger')">
+                            {{ $t("danger") }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" @click.prevent="updateField('style', 'primary')">
+                            {{ $t("primary") }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" @click.prevent="updateField('style', 'light')">
+                            {{ $t("light") }}
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" @click.prevent="updateField('style', 'dark')">
+                            {{ $t("dark") }}
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -72,15 +96,15 @@ export default {
             required: true,
         },
     },
-    emits: [ "update:modelValue", "post", "cancel" ],
+    emits: ["update:modelValue", "post", "cancel"],
     methods: {
         updateField(field, value) {
             this.$emit("update:modelValue", {
                 ...this.modelValue,
-                [field]: value
+                [field]: value,
             });
-        }
-    }
+        },
+    },
 };
 </script>
 

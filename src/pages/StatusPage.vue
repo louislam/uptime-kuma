@@ -303,7 +303,11 @@
 
             <!-- Incident Edit Form -->
             <IncidentEditForm
-                v-if="editIncidentMode && incident !== null && (!incident.id || !activeIncidents.some(i => i.id === incident.id))"
+                v-if="
+                    editIncidentMode &&
+                    incident !== null &&
+                    (!incident.id || !activeIncidents.some((i) => i.id === incident.id))
+                "
                 v-model="incident"
                 @post="postIncident"
                 @cancel="cancelIncident"
@@ -329,13 +333,22 @@
                 >
                     <h4 class="alert-heading" data-testid="incident-title">{{ activeIncident.title }}</h4>
                     <!-- eslint-disable-next-line vue/no-v-html-->
-                    <div class="content" data-testid="incident-content" v-html="getIncidentHTML(activeIncident.content)"></div>
+                    <div
+                        class="content"
+                        data-testid="incident-content"
+                        v-html="getIncidentHTML(activeIncident.content)"
+                    ></div>
 
                     <!-- Incident Date -->
                     <div class="date mt-3">
-                        {{ $t("Date Created") }}: {{ $root.datetime(activeIncident.createdDate) }} ({{ dateFromNow(activeIncident.createdDate) }})<br />
+                        {{ $t("Date Created") }}: {{ $root.datetime(activeIncident.createdDate) }} ({{
+                            dateFromNow(activeIncident.createdDate)
+                        }})
+                        <br />
                         <span v-if="activeIncident.lastUpdatedDate">
-                            {{ $t("Last Updated") }}: {{ $root.datetime(activeIncident.lastUpdatedDate) }} ({{ dateFromNow(activeIncident.lastUpdatedDate) }})
+                            {{ $t("Last Updated") }}: {{ $root.datetime(activeIncident.lastUpdatedDate) }} ({{
+                                dateFromNow(activeIncident.lastUpdatedDate)
+                            }})
                         </span>
                     </div>
 
@@ -348,7 +361,10 @@
                             <font-awesome-icon icon="edit" />
                             {{ $t("Edit") }}
                         </button>
-                        <button class="btn btn-light me-2" @click="$refs.incidentManageModal.showDelete(activeIncident)">
+                        <button
+                            class="btn btn-light me-2"
+                            @click="$refs.incidentManageModal.showDelete(activeIncident)"
+                        >
                             <font-awesome-icon icon="unlink" />
                             {{ $t("Delete") }}
                         </button>
@@ -492,7 +508,11 @@
                 </div>
 
                 <template v-else>
-                    <div v-for="(dateGroup, dateKey) in groupedIncidentHistory" :key="dateKey" class="incident-date-group mb-4">
+                    <div
+                        v-for="(dateGroup, dateKey) in groupedIncidentHistory"
+                        :key="dateKey"
+                        class="incident-date-group mb-4"
+                    >
                         <h4 class="incident-date-header">{{ dateKey }}</h4>
                         <div class="shadow-box incident-list-box">
                             <IncidentHistory
@@ -506,13 +526,20 @@
                         </div>
                     </div>
 
-                    <div v-if="incidentHistoryPage < incidentHistoryTotalPages" class="load-more-controls d-flex justify-content-center mt-3">
+                    <div
+                        v-if="incidentHistoryPage < incidentHistoryTotalPages"
+                        class="load-more-controls d-flex justify-content-center mt-3"
+                    >
                         <button
                             class="btn btn-outline-secondary btn-sm"
                             :disabled="incidentHistoryLoading"
                             @click="loadMoreIncidentHistory"
                         >
-                            <span v-if="incidentHistoryLoading" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            <span
+                                v-if="incidentHistoryLoading"
+                                class="spinner-border spinner-border-sm me-1"
+                                role="status"
+                            ></span>
                             {{ $t("Load More") }}
                         </button>
                     </div>
@@ -845,7 +872,7 @@ export default {
          * @returns {object[]} List of active pinned incidents
          */
         activeIncidents() {
-            return this.incidentHistory.filter(i => i.active && i.pin);
+            return this.incidentHistory.filter((i) => i.active && i.pin);
         },
 
         /**
@@ -862,7 +889,7 @@ export default {
                 groups[dateKey].push(incident);
             }
             return groups;
-        }
+        },
     },
     watch: {
         /**
@@ -957,23 +984,26 @@ export default {
             .then((res) => {
                 this.config = res.data.config;
 
-            if (!this.config.domainNameList) {
-                this.config.domainNameList = [];
-            }
+                if (!this.config.domainNameList) {
+                    this.config.domainNameList = [];
+                }
 
-            if (this.config.icon) {
-                this.imgDataUrl = this.config.icon;
-            }
+                if (this.config.icon) {
+                    this.imgDataUrl = this.config.icon;
+                }
 
-            this.maintenanceList = res.data.maintenanceList;
-            this.$root.publicGroupList = res.data.publicGroupList;
+                this.maintenanceList = res.data.maintenanceList;
+                this.$root.publicGroupList = res.data.publicGroupList;
 
-            this.loading = false;
-            this.loadIncidentHistory();
+                this.loading = false;
+                this.loadIncidentHistory();
 
-            feedInterval = setInterval(() => {
-                this.updateHeartbeatList();
-            }, Math.max(5, this.config.autoRefreshInterval) * 1000);
+                feedInterval = setInterval(
+                    () => {
+                        this.updateHeartbeatList();
+                    },
+                    Math.max(5, this.config.autoRefreshInterval) * 1000
+                );
 
                 this.incident = res.data.incident;
                 this.maintenanceList = res.data.maintenanceList;
@@ -1378,7 +1408,7 @@ export default {
                     this.incidentHistoryLoading = false;
                     if (res.ok) {
                         if (append) {
-                            this.incidentHistory = [ ...this.incidentHistory, ...res.incidents ];
+                            this.incidentHistory = [...this.incidentHistory, ...res.incidents];
                         } else {
                             this.incidentHistory = res.incidents;
                         }
@@ -1390,21 +1420,24 @@ export default {
                     }
                 });
             } else {
-                axios.get(`/api/status-page/${this.slug}/incident-history?page=${page}`).then((res) => {
-                    this.incidentHistoryLoading = false;
-                    if (res.data.ok) {
-                        if (append) {
-                            this.incidentHistory = [ ...this.incidentHistory, ...res.data.incidents ];
-                        } else {
-                            this.incidentHistory = res.data.incidents;
+                axios
+                    .get(`/api/status-page/${this.slug}/incident-history?page=${page}`)
+                    .then((res) => {
+                        this.incidentHistoryLoading = false;
+                        if (res.data.ok) {
+                            if (append) {
+                                this.incidentHistory = [...this.incidentHistory, ...res.data.incidents];
+                            } else {
+                                this.incidentHistory = res.data.incidents;
+                            }
+                            this.incidentHistoryPage = res.data.page;
+                            this.incidentHistoryTotalPages = res.data.totalPages;
                         }
-                        this.incidentHistoryPage = res.data.page;
-                        this.incidentHistoryTotalPages = res.data.totalPages;
-                    }
-                }).catch((error) => {
-                    this.incidentHistoryLoading = false;
-                    console.error("Failed to load incident history:", error);
-                });
+                    })
+                    .catch((error) => {
+                        this.incidentHistoryLoading = false;
+                        console.error("Failed to load incident history:", error);
+                    });
             }
         },
 
@@ -1431,7 +1464,7 @@ export default {
             return date.toLocaleDateString(undefined, {
                 year: "numeric",
                 month: "long",
-                day: "numeric"
+                day: "numeric",
             });
         },
 
@@ -1448,8 +1481,7 @@ export default {
                 }
             });
         },
-
-    }
+    },
 };
 </script>
 
@@ -1740,5 +1772,4 @@ footer {
         padding: 0;
     }
 }
-
 </style>

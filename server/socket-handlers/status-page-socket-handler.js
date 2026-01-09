@@ -111,7 +111,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             const result = await StatusPage.getIncidentHistory(statusPageID, page, false);
             callback({
                 ok: true,
-                ...result
+                ...result,
             });
         } catch (error) {
             callback({
@@ -131,7 +131,7 @@ module.exports.statusPageSocketHandler = (socket) => {
             const result = await StatusPage.getIncidentHistory(statusPageID, page, true);
             callback({
                 ok: true,
-                ...result
+                ...result,
             });
         } catch (error) {
             callback({
@@ -150,17 +150,17 @@ module.exports.statusPageSocketHandler = (socket) => {
                 callback({
                     ok: false,
                     msg: "slug is not found",
-                    msgi18n: true
+                    msgi18n: true,
                 });
                 return;
             }
 
-            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [ incidentID, statusPageID ]);
+            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [incidentID, statusPageID]);
             if (!bean) {
                 callback({
                     ok: false,
                     msg: "Incident not found or access denied",
-                    msgi18n: true
+                    msgi18n: true,
                 });
                 return;
             }
@@ -171,12 +171,12 @@ module.exports.statusPageSocketHandler = (socket) => {
                 callback({
                     ok: false,
                     msg: e.message,
-                    msgi18n: true
+                    msgi18n: true,
                 });
                 return;
             }
 
-            const validStyles = [ "info", "warning", "danger", "primary", "light", "dark" ];
+            const validStyles = ["info", "warning", "danger", "primary", "light", "dark"];
             if (!validStyles.includes(incident.style)) {
                 incident.style = "warning";
             }
@@ -213,17 +213,17 @@ module.exports.statusPageSocketHandler = (socket) => {
                 callback({
                     ok: false,
                     msg: "slug is not found",
-                    msgi18n: true
+                    msgi18n: true,
                 });
                 return;
             }
 
-            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [ incidentID, statusPageID ]);
+            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [incidentID, statusPageID]);
             if (!bean) {
                 callback({
                     ok: false,
                     msg: "Incident not found or access denied",
-                    msgi18n: true
+                    msgi18n: true,
                 });
                 return;
             }
@@ -253,17 +253,17 @@ module.exports.statusPageSocketHandler = (socket) => {
                 callback({
                     ok: false,
                     msg: "slug is not found",
-                    msgi18n: true
+                    msgi18n: true,
                 });
                 return;
             }
 
-            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [ incidentID, statusPageID ]);
+            let bean = await R.findOne("incident", " id = ? AND status_page_id = ? ", [incidentID, statusPageID]);
             if (!bean) {
                 callback({
                     ok: false,
                     msg: "Incident not found or access denied",
-                    msgi18n: true
+                    msgi18n: true,
                 });
                 return;
             }

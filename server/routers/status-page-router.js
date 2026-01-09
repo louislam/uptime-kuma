@@ -159,7 +159,7 @@ router.get("/api/status-page/:slug/incident-history", cache("5 minutes"), async 
         const result = await StatusPage.getIncidentHistory(statusPageID, page, true);
         response.json({
             ok: true,
-            ...result
+            ...result,
         });
     } catch (error) {
         sendHttpError(response, error.message);

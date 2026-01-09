@@ -9,7 +9,16 @@ const { Feed } = require("feed");
 const config = require("../config");
 
 const { setting } = require("../util-server");
-const { STATUS_PAGE_ALL_DOWN, STATUS_PAGE_ALL_UP, STATUS_PAGE_MAINTENANCE, STATUS_PAGE_PARTIAL_DOWN, UP, MAINTENANCE, DOWN, INCIDENT_PAGE_SIZE } = require("../../src/util");
+const {
+    STATUS_PAGE_ALL_DOWN,
+    STATUS_PAGE_ALL_UP,
+    STATUS_PAGE_MAINTENANCE,
+    STATUS_PAGE_PARTIAL_DOWN,
+    UP,
+    MAINTENANCE,
+    DOWN,
+    INCIDENT_PAGE_SIZE,
+} = require("../../src/util");
 
 class StatusPage extends BeanModel {
     /**
@@ -300,10 +309,12 @@ class StatusPage extends BeanModel {
         const config = await statusPage.toPublicJSON();
 
         // All active incidents
-        let incidents = await R.find("incident", " pin = 1 AND active = 1 AND status_page_id = ? ORDER BY created_date DESC", [
-            statusPage.id,
-        ]);
-        incidents = incidents.map(i => i.toPublicJSON());
+        let incidents = await R.find(
+            "incident",
+            " pin = 1 AND active = 1 AND status_page_id = ? ORDER BY created_date DESC",
+            [statusPage.id]
+        );
+        incidents = incidents.map((i) => i.toPublicJSON());
 
         let maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
 
@@ -500,18 +511,19 @@ class StatusPage extends BeanModel {
     static async getIncidentHistory(statusPageId, page, isPublic = true) {
         const offset = (page - 1) * INCIDENT_PAGE_SIZE;
 
-        const incidents = await R.find("incident",
-            " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ",
-            [ statusPageId, INCIDENT_PAGE_SIZE, offset ]
-        );
+        const incidents = await R.find("incident", " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ", [
+            statusPageId,
+            INCIDENT_PAGE_SIZE,
+            offset,
+        ]);
 
-        const total = await R.count("incident", " status_page_id = ? ", [ statusPageId ]);
+        const total = await R.count("incident", " status_page_id = ? ", [statusPageId]);
 
         return {
-            incidents: incidents.map(i => isPublic ? i.toPublicJSON() : i.toJSON()),
+            incidents: incidents.map((i) => (isPublic ? i.toPublicJSON() : i.toJSON())),
             total,
             page,
-            totalPages: Math.ceil(total / INCIDENT_PAGE_SIZE)
+            totalPages: Math.ceil(total / INCIDENT_PAGE_SIZE),
         };
     }
 

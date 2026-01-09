@@ -15,7 +15,7 @@
                 v-for="incident in incidents"
                 :key="incident.id"
                 class="incident-item"
-                :class="{ 'resolved': !incident.active }"
+                :class="{ resolved: !incident.active }"
             >
                 <div class="incident-style-indicator" :class="`bg-${incident.style}`"></div>
                 <div class="incident-body">
@@ -49,9 +49,7 @@
                     <!-- eslint-disable-next-line vue/no-v-html-->
                     <div class="incident-content mt-1" v-html="getIncidentHTML(incident.content)"></div>
                     <div class="incident-meta text-muted small mt-2">
-                        <div>
-                            {{ $t("Created") }}: {{ datetime(incident.createdDate) }}
-                        </div>
+                        <div>{{ $t("Created") }}: {{ datetime(incident.createdDate) }}</div>
                         <div v-if="incident.lastUpdatedDate">
                             {{ $t("Last Updated") }}: {{ datetime(incident.lastUpdatedDate) }}
                         </div>
@@ -69,26 +67,22 @@ import datetimeMixin from "../mixins/datetime";
 
 export default {
     name: "IncidentHistory",
-    mixins: [ datetimeMixin ],
+    mixins: [datetimeMixin],
     props: {
         incidents: {
             type: Array,
-            default: () => []
+            default: () => [],
         },
         editMode: {
             type: Boolean,
-            default: false
+            default: false,
         },
         loading: {
             type: Boolean,
-            default: false
-        }
+            default: false,
+        },
     },
-    emits: [
-        "edit-incident",
-        "delete-incident",
-        "resolve-incident"
-    ],
+    emits: ["edit-incident", "delete-incident", "resolve-incident"],
     methods: {
         /**
          * Get sanitized HTML for incident content
@@ -100,8 +94,8 @@ export default {
                 return DOMPurify.sanitize(marked(content));
             }
             return "";
-        }
-    }
+        },
+    },
 };
 </script>
 

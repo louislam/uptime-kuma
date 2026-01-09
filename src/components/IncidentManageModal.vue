@@ -6,19 +6,12 @@
                     <h5 class="modal-title">
                         {{ $t("Edit Incident") }}
                     </h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
-                    ></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form @submit.prevent="submit">
                         <div class="mb-3">
-                            <label for="incident-title" class="form-label">{{
-                                $t("Title")
-                            }}</label>
+                            <label for="incident-title" class="form-label">{{ $t("Title") }}</label>
                             <input
                                 id="incident-title"
                                 v-model="form.title"
@@ -30,9 +23,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="incident-content" class="form-label">{{
-                                $t("Content")
-                            }}</label>
+                            <label for="incident-content" class="form-label">{{ $t("Content") }}</label>
                             <textarea
                                 id="incident-content"
                                 v-model="form.content"
@@ -44,14 +35,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="incident-style" class="form-label">{{
-                                $t("Style")
-                            }}</label>
-                            <select
-                                id="incident-style"
-                                v-model="form.style"
-                                class="form-select"
-                            >
+                            <label for="incident-style" class="form-label">{{ $t("Style") }}</label>
+                            <select id="incident-style" v-model="form.style" class="form-select">
                                 <option value="info">{{ $t("info") }}</option>
                                 <option value="warning">
                                     {{ $t("warning") }}
@@ -68,44 +53,22 @@
                         </div>
 
                         <div class="mb-3 form-check">
-                            <input
-                                id="incident-pin"
-                                v-model="form.pin"
-                                type="checkbox"
-                                class="form-check-input"
-                            />
+                            <input id="incident-pin" v-model="form.pin" type="checkbox" class="form-check-input" />
                             <label for="incident-pin" class="form-check-label">
                                 {{ $t("Pin this incident") }}
                             </label>
                             <div class="form-text">
-                                {{
-                                    $t(
-                                        "Pinned incidents are shown prominently on the status page"
-                                    )
-                                }}
+                                {{ $t("Pinned incidents are shown prominently on the status page") }}
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                    >
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         {{ $t("Cancel") }}
                     </button>
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        :disabled="processing"
-                        @click="submit"
-                    >
-                        <span
-                            v-if="processing"
-                            class="spinner-border spinner-border-sm me-1"
-                            role="status"
-                        ></span>
+                    <button type="button" class="btn btn-primary" :disabled="processing" @click="submit">
+                        <span v-if="processing" class="spinner-border spinner-border-sm me-1" role="status"></span>
                         {{ $t("Save") }}
                     </button>
                 </div>
@@ -139,7 +102,7 @@ export default {
             required: true,
         },
     },
-    emits: [ "incident-updated" ],
+    emits: ["incident-updated"],
     data() {
         return {
             modal: null,
@@ -201,22 +164,14 @@ export default {
 
             this.processing = true;
 
-            this.$root
-                .getSocket()
-                .emit(
-                    "editIncident",
-                    this.slug,
-                    this.incidentId,
-                    this.form,
-                    (res) => {
-                        this.processing = false;
-                        this.$root.toastRes(res);
-                        if (res.ok) {
-                            this.modal.hide();
-                            this.$emit("incident-updated");
-                        }
-                    }
-                );
+            this.$root.getSocket().emit("editIncident", this.slug, this.incidentId, this.form, (res) => {
+                this.processing = false;
+                this.$root.toastRes(res);
+                if (res.ok) {
+                    this.modal.hide();
+                    this.$emit("incident-updated");
+                }
+            });
         },
 
         /**
@@ -228,20 +183,13 @@ export default {
                 return;
             }
 
-            this.$root
-                .getSocket()
-                .emit(
-                    "deleteIncident",
-                    this.slug,
-                    this.pendingDeleteIncident.id,
-                    (res) => {
-                        this.$root.toastRes(res);
-                        if (res.ok) {
-                            this.$emit("incident-updated");
-                        }
-                        this.pendingDeleteIncident = null;
-                    }
-                );
+            this.$root.getSocket().emit("deleteIncident", this.slug, this.pendingDeleteIncident.id, (res) => {
+                this.$root.toastRes(res);
+                if (res.ok) {
+                    this.$emit("incident-updated");
+                }
+                this.pendingDeleteIncident = null;
+            });
         },
     },
 };
