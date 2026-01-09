@@ -13,10 +13,14 @@
             <option value="3">{{ $t("promosmsTypeFull") }}</option>
             <option value="4">{{ $t("promosmsTypeSpeed") }}</option>
         </select>
-        <div class="form-text">
-            {{ $t("checkPrice", [$t("promosms")]) }}
-            <a href="https://promosms.com/cennik/" target="_blank">https://promosms.com/cennik/</a>
-        </div>
+        <i18n-t tag="div" keypath="checkPriceAt" class="form-text">
+            <template #service>
+                promosms
+            </template>
+            <template #url>
+                <a href="https://promosms.com/cennik/" target="_blank">https://promosms.com/cennik/</a>
+            </template>
+        </i18n-t>
     </div>
     <div class="mb-3">
         <label for="promosms-phone-number" class="form-label">{{ $t("promosmsPhoneNumber") }}</label>
