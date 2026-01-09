@@ -12,10 +12,10 @@ body:
         ## ❗ IMPORTANT: DO NOT SHARE VULNERABILITY DETAILS HERE
 
         ## Please do not open issues for upstream dependency scan results.
-        
+
         Automated security tools often report false-positive issues that are not exploitable in the context of Uptime Kuma.
         Reviewing these without concrete impact does not scale for us.
-        
+
         If you can demonstrate that an upstream issue is actually exploitable in Uptime Kuma (e.g. with a PoC or reproducible steps), we’re happy to take a look.
 
         ### ⚠️ Report a Security Vulnerability

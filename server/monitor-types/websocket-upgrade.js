@@ -29,7 +29,7 @@ class WebSocketMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        const [ message, code ] = await this.attemptUpgrade(monitor);
+        const [message, code] = await this.attemptUpgrade(monitor);
 
         if (typeof code !== "undefined") {
             // If returned status code matches user controlled accepted status code(default 1000), return success
@@ -53,7 +53,7 @@ class WebSocketMonitorType extends MonitorType {
     /**
      * Uses the ws Node.js library to establish a connection to target server
      * @param {object} monitor The monitor object for input parameters.
-     * @returns {[ string, int ]} Array containing a status message and response code
+     * @returns {Promise<[ string, int ]>} Array containing a status message and response code
      */
     async attemptUpgrade(monitor) {
         return new Promise((resolve) => {
@@ -70,17 +70,20 @@ class WebSocketMonitorType extends MonitorType {
             ws.onerror = (error) => {
                 // Give user the choice to ignore Sec-WebSocket-Accept header for non compliant servers
                 // Header in HTTP 101 Switching Protocols response from server, technically already upgraded to WS
-                if (monitor.wsIgnoreSecWebsocketAcceptHeader && error.message === "Invalid Sec-WebSocket-Accept header") {
-                    resolve([ "1000 - OK", 1000 ]);
+                if (
+                    monitor.wsIgnoreSecWebsocketAcceptHeader &&
+                    error.message === "Invalid Sec-WebSocket-Accept header"
+                ) {
+                    resolve(["1000 - OK", 1000]);
                     return;
                 }
                 // Upgrade failed, return message to user
-                resolve([ error.message, error.code ]);
+                resolve([error.message, error.code]);
             };
 
             ws.onclose = (event) => {
                 // Return the close code, if connection didn't close cleanly, return the reason if present
-                resolve([ event.wasClean ? event.code.toString() + " - OK" : event.reason, event.code ]);
+                resolve([event.wasClean ? event.code.toString() + " - OK" : event.reason, event.code]);
             };
         });
     }

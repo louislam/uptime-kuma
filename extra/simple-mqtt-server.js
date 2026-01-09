@@ -41,17 +41,19 @@ server1.aedes.on("subscribe", (subscriptions, client) => {
 
     for (let s of subscriptions) {
         if (s.topic === "test") {
-            server1.aedes.publish({
-                topic: "test",
-                payload: Buffer.from("ok"),
-            }, (error) => {
-                if (error) {
-                    log.error("mqtt_server", error);
+            server1.aedes.publish(
+                {
+                    topic: "test",
+                    payload: Buffer.from("ok"),
+                },
+                (error) => {
+                    if (error) {
+                        log.error("mqtt_server", error);
+                    }
                 }
-            });
+            );
         }
     }
-
 });
 
 server1.start();

@@ -2,7 +2,7 @@ name: autofix.ci
 
 on:
   push:
-    branches: [ "master", "1.23.X"]
+    branches: ["master", "1.23.X"]
   pull_request:
 permissions: {}
 
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with: { persist-credentials: false }
-      
+
       - name: Cache/Restore node_modules
         uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
         id: node-modules-cache
@@ -37,5 +37,9 @@ jobs:
       - name: Auto-fix CSS/SCSS linting issues
         run: npm run lint-fix:style
         continue-on-error: true
-      
+
+      - name: Auto-format code with Prettier
+        run: npm run fmt
+        continue-on-error: true
+
       - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27

@@ -43,7 +43,7 @@ class SystemServiceMonitorType extends MonitorType {
                 return;
             }
 
-            execFile("systemctl", [ "is-active", serviceName ], { timeout: 5000 }, (error, stdout, stderr) => {
+            execFile("systemctl", ["is-active", serviceName], { timeout: 5000 }, (error, stdout, stderr) => {
                 // Combine output and truncate to ~200 chars to prevent DB bloat
                 let output = (stderr || stdout || "").toString().trim();
                 if (output.length > 200) {
@@ -72,9 +72,7 @@ class SystemServiceMonitorType extends MonitorType {
         return new Promise((resolve, reject) => {
             // SECURITY: Validate service name to reduce command-injection risk
             if (!/^[A-Za-z0-9._-]+$/.test(serviceName)) {
-                throw new Error(
-                    "Invalid service name. Only alphanumeric characters and '.', '_', '-' are allowed."
-                );
+                throw new Error("Invalid service name. Only alphanumeric characters and '.', '_', '-' are allowed.");
             }
 
             const cmd = "powershell";
@@ -83,7 +81,7 @@ class SystemServiceMonitorType extends MonitorType {
                 "-NonInteractive",
                 "-Command",
                 // Single quotes around the service name
-                `(Get-Service -Name '${serviceName.replaceAll("'", "''")}').Status`
+                `(Get-Service -Name '${serviceName.replaceAll("'", "''")}').Status`,
             ];
 
             execFile(cmd, args, { timeout: 5000 }, (error, stdout, stderr) => {

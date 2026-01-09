@@ -22,7 +22,7 @@ class MqttMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        const [ messageTopic, receivedMessage ] = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
+        const [messageTopic, receivedMessage] = await this.mqttAsync(monitor.hostname, monitor.mqttTopic, {
             port: monitor.port,
             username: monitor.mqttUsername,
             password: monitor.mqttPassword,
@@ -143,11 +143,14 @@ class MqttMonitorType extends MonitorType {
                 hostname = "mqtt://" + hostname;
             }
 
-            const timeoutID = setTimeout(() => {
-                log.debug("mqtt", "MQTT timeout triggered");
-                client.end();
-                reject(new Error("Timeout, Message not received"));
-            }, interval * 1000 * 0.8);
+            const timeoutID = setTimeout(
+                () => {
+                    log.debug(this.name, "MQTT timeout triggered");
+                    client.end();
+                    reject(new Error("Timeout, Message not received"));
+                },
+                interval * 1000 * 0.8
+            );
 
             // Construct the URL based on protocol
             let mqttUrl = `${hostname}:${port}`;
@@ -159,20 +162,20 @@ class MqttMonitorType extends MonitorType {
                 }
             }
 
-            log.debug("mqtt", `MQTT connecting to ${mqttUrl}`);
+            log.debug(this.name, `MQTT connecting to ${mqttUrl}`);
 
             let client = mqtt.connect(mqttUrl, {
                 username,
                 password,
-                clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8)
+                clientId: "uptime-kuma_" + Math.random().toString(16).substr(2, 8),
             });
 
             client.on("connect", () => {
-                log.debug("mqtt", "MQTT connected");
+                log.debug(this.name, "MQTT connected");
 
                 try {
                     client.subscribe(topic, () => {
-                        log.debug("mqtt", "MQTT subscribed to topic");
+                        log.debug(this.name, "MQTT subscribed to topic");
                     });
                 } catch (e) {
                     client.end();
@@ -190,9 +193,8 @@ class MqttMonitorType extends MonitorType {
             client.on("message", (messageTopic, message) => {
                 client.end();
                 clearTimeout(timeoutID);
-                resolve([ messageTopic, message.toString("utf8") ]);
+                resolve([messageTopic, message.toString("utf8")]);
             });
-
         });
     }
 }

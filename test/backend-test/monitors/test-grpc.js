@@ -43,7 +43,7 @@ async function createTestGrpcServer(port, methodHandlers) {
         longs: String,
         enums: String,
         defaults: true,
-        oneofs: true
+        oneofs: true,
     });
     const protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
     const testPackage = protoDescriptor.test;
@@ -62,245 +62,233 @@ async function createTestGrpcServer(port, methodHandlers) {
     });
 
     return new Promise((resolve, reject) => {
-        server.bindAsync(
-            `0.0.0.0:${port}`,
-            grpc.ServerCredentials.createInsecure(),
-            (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    server.start();
-                    // Clean up temp file
-                    fs.unlinkSync(protoPath);
-                    resolve(server);
-                }
+        server.bindAsync(`0.0.0.0:${port}`, grpc.ServerCredentials.createInsecure(), (err) => {
+            if (err) {
+                reject(err);
+            } else {
+                server.start();
+                // Clean up temp file
+                fs.unlinkSync(protoPath);
+                resolve(server);
             }
-        );
+        });
     });
 }
 
-describe("GrpcKeywordMonitorType", {
-    skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
-}, () => {
-    test("check() sets status to UP when keyword is found in response", async () => {
-        const port = 50051;
-        const server = await createTestGrpcServer(port, {
-            Echo: (call, callback) => {
-                callback(null, { message: "Hello World with SUCCESS keyword" });
+describe(
+    "GrpcKeywordMonitorType",
+    {
+        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
+    },
+    () => {
+        test("check() sets status to UP when keyword is found in response", async () => {
+            const port = 50051;
+            const server = await createTestGrpcServer(port, {
+                Echo: (call, callback) => {
+                    callback(null, { message: "Hello World with SUCCESS keyword" });
+                },
+            });
+
+            const grpcMonitor = new GrpcKeywordMonitorType();
+            const monitor = {
+                grpcUrl: `localhost:${port}`,
+                grpcProtobuf: testProto,
+                grpcServiceName: "test.TestService",
+                grpcMethod: "echo",
+                grpcBody: JSON.stringify({ message: "test" }),
+                keyword: "SUCCESS",
+                invertKeyword: false,
+                grpcEnableTls: false,
+                isInvertKeyword: () => false,
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await grpcMonitor.check(monitor, heartbeat, {});
+                assert.strictEqual(heartbeat.status, UP);
+                assert.ok(heartbeat.msg.includes("SUCCESS"));
+                assert.ok(heartbeat.msg.includes("is"));
+            } finally {
+                server.forceShutdown();
             }
         });
 
-        const grpcMonitor = new GrpcKeywordMonitorType();
-        const monitor = {
-            grpcUrl: `localhost:${port}`,
-            grpcProtobuf: testProto,
-            grpcServiceName: "test.TestService",
-            grpcMethod: "echo",
-            grpcBody: JSON.stringify({ message: "test" }),
-            keyword: "SUCCESS",
-            invertKeyword: false,
-            grpcEnableTls: false,
-            isInvertKeyword: () => false,
-        };
+        test("check() rejects when keyword is not found in response", async () => {
+            const port = 50052;
+            const server = await createTestGrpcServer(port, {
+                Echo: (call, callback) => {
+                    callback(null, { message: "Hello World without the expected keyword" });
+                },
+            });
 
-        const heartbeat = {
-            msg: "",
-            status: PENDING,
-        };
+            const grpcMonitor = new GrpcKeywordMonitorType();
+            const monitor = {
+                grpcUrl: `localhost:${port}`,
+                grpcProtobuf: testProto,
+                grpcServiceName: "test.TestService",
+                grpcMethod: "echo",
+                grpcBody: JSON.stringify({ message: "test" }),
+                keyword: "MISSING",
+                invertKeyword: false,
+                grpcEnableTls: false,
+                isInvertKeyword: () => false,
+            };
 
-        try {
-            await grpcMonitor.check(monitor, heartbeat, {});
-            assert.strictEqual(heartbeat.status, UP);
-            assert.ok(heartbeat.msg.includes("SUCCESS"));
-            assert.ok(heartbeat.msg.includes("is"));
-        } finally {
-            server.forceShutdown();
-        }
-    });
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
 
-    test("check() rejects when keyword is not found in response", async () => {
-        const port = 50052;
-        const server = await createTestGrpcServer(port, {
-            Echo: (call, callback) => {
-                callback(null, { message: "Hello World without the expected keyword" });
-            }
-        });
-
-        const grpcMonitor = new GrpcKeywordMonitorType();
-        const monitor = {
-            grpcUrl: `localhost:${port}`,
-            grpcProtobuf: testProto,
-            grpcServiceName: "test.TestService",
-            grpcMethod: "echo",
-            grpcBody: JSON.stringify({ message: "test" }),
-            keyword: "MISSING",
-            invertKeyword: false,
-            grpcEnableTls: false,
-            isInvertKeyword: () => false,
-        };
-
-        const heartbeat = {
-            msg: "",
-            status: PENDING,
-        };
-
-        try {
-            await assert.rejects(
-                grpcMonitor.check(monitor, heartbeat, {}),
-                (err) => {
+            try {
+                await assert.rejects(grpcMonitor.check(monitor, heartbeat, {}), (err) => {
                     assert.ok(err.message.includes("MISSING"));
                     assert.ok(err.message.includes("not"));
                     return true;
-                }
-            );
-        } finally {
-            server.forceShutdown();
-        }
-    });
-
-    test("check() rejects when inverted keyword is present in response", async () => {
-        const port = 50053;
-        const server = await createTestGrpcServer(port, {
-            Echo: (call, callback) => {
-                callback(null, { message: "Response with ERROR keyword" });
+                });
+            } finally {
+                server.forceShutdown();
             }
         });
 
-        const grpcMonitor = new GrpcKeywordMonitorType();
-        const monitor = {
-            grpcUrl: `localhost:${port}`,
-            grpcProtobuf: testProto,
-            grpcServiceName: "test.TestService",
-            grpcMethod: "echo",
-            grpcBody: JSON.stringify({ message: "test" }),
-            keyword: "ERROR",
-            invertKeyword: true,
-            grpcEnableTls: false,
-            isInvertKeyword: () => true,
-        };
+        test("check() rejects when inverted keyword is present in response", async () => {
+            const port = 50053;
+            const server = await createTestGrpcServer(port, {
+                Echo: (call, callback) => {
+                    callback(null, { message: "Response with ERROR keyword" });
+                },
+            });
 
-        const heartbeat = {
-            msg: "",
-            status: PENDING,
-        };
+            const grpcMonitor = new GrpcKeywordMonitorType();
+            const monitor = {
+                grpcUrl: `localhost:${port}`,
+                grpcProtobuf: testProto,
+                grpcServiceName: "test.TestService",
+                grpcMethod: "echo",
+                grpcBody: JSON.stringify({ message: "test" }),
+                keyword: "ERROR",
+                invertKeyword: true,
+                grpcEnableTls: false,
+                isInvertKeyword: () => true,
+            };
 
-        try {
-            await assert.rejects(
-                grpcMonitor.check(monitor, heartbeat, {}),
-                (err) => {
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await assert.rejects(grpcMonitor.check(monitor, heartbeat, {}), (err) => {
                     assert.ok(err.message.includes("ERROR"));
                     assert.ok(err.message.includes("present"));
                     return true;
-                }
-            );
-        } finally {
-            server.forceShutdown();
-        }
-    });
-
-    test("check() sets status to UP when inverted keyword is not present in response", async () => {
-        const port = 50054;
-        const server = await createTestGrpcServer(port, {
-            Echo: (call, callback) => {
-                callback(null, { message: "Response without error keyword" });
+                });
+            } finally {
+                server.forceShutdown();
             }
         });
 
-        const grpcMonitor = new GrpcKeywordMonitorType();
-        const monitor = {
-            grpcUrl: `localhost:${port}`,
-            grpcProtobuf: testProto,
-            grpcServiceName: "test.TestService",
-            grpcMethod: "echo",
-            grpcBody: JSON.stringify({ message: "test" }),
-            keyword: "ERROR",
-            invertKeyword: true,
-            grpcEnableTls: false,
-            isInvertKeyword: () => true,
-        };
+        test("check() sets status to UP when inverted keyword is not present in response", async () => {
+            const port = 50054;
+            const server = await createTestGrpcServer(port, {
+                Echo: (call, callback) => {
+                    callback(null, { message: "Response without error keyword" });
+                },
+            });
 
-        const heartbeat = {
-            msg: "",
-            status: PENDING,
-        };
+            const grpcMonitor = new GrpcKeywordMonitorType();
+            const monitor = {
+                grpcUrl: `localhost:${port}`,
+                grpcProtobuf: testProto,
+                grpcServiceName: "test.TestService",
+                grpcMethod: "echo",
+                grpcBody: JSON.stringify({ message: "test" }),
+                keyword: "ERROR",
+                invertKeyword: true,
+                grpcEnableTls: false,
+                isInvertKeyword: () => true,
+            };
 
-        try {
-            await grpcMonitor.check(monitor, heartbeat, {});
-            assert.strictEqual(heartbeat.status, UP);
-            assert.ok(heartbeat.msg.includes("ERROR"));
-            assert.ok(heartbeat.msg.includes("not"));
-        } finally {
-            server.forceShutdown();
-        }
-    });
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
 
-    test("check() rejects when gRPC server is unreachable", async () => {
-        const grpcMonitor = new GrpcKeywordMonitorType();
-        const monitor = {
-            grpcUrl: "localhost:50099",
-            grpcProtobuf: testProto,
-            grpcServiceName: "test.TestService",
-            grpcMethod: "echo",
-            grpcBody: JSON.stringify({ message: "test" }),
-            keyword: "SUCCESS",
-            invertKeyword: false,
-            grpcEnableTls: false,
-            isInvertKeyword: () => false,
-        };
+            try {
+                await grpcMonitor.check(monitor, heartbeat, {});
+                assert.strictEqual(heartbeat.status, UP);
+                assert.ok(heartbeat.msg.includes("ERROR"));
+                assert.ok(heartbeat.msg.includes("not"));
+            } finally {
+                server.forceShutdown();
+            }
+        });
 
-        const heartbeat = {
-            msg: "",
-            status: PENDING,
-        };
+        test("check() rejects when gRPC server is unreachable", async () => {
+            const grpcMonitor = new GrpcKeywordMonitorType();
+            const monitor = {
+                grpcUrl: "localhost:50099",
+                grpcProtobuf: testProto,
+                grpcServiceName: "test.TestService",
+                grpcMethod: "echo",
+                grpcBody: JSON.stringify({ message: "test" }),
+                keyword: "SUCCESS",
+                invertKeyword: false,
+                grpcEnableTls: false,
+                isInvertKeyword: () => false,
+            };
 
-        await assert.rejects(
-            grpcMonitor.check(monitor, heartbeat, {}),
-            (err) => {
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            await assert.rejects(grpcMonitor.check(monitor, heartbeat, {}), (err) => {
                 // Should fail with connection error
                 return true;
-            }
-        );
-    });
-
-    test("check() truncates long response messages in error output", async () => {
-        const port = 50055;
-        const longMessage = "A".repeat(100) + " with SUCCESS keyword";
-
-        const server = await createTestGrpcServer(port, {
-            Echo: (call, callback) => {
-                callback(null, { message: longMessage });
-            }
+            });
         });
 
-        const grpcMonitor = new GrpcKeywordMonitorType();
-        const monitor = {
-            grpcUrl: `localhost:${port}`,
-            grpcProtobuf: testProto,
-            grpcServiceName: "test.TestService",
-            grpcMethod: "echo",
-            grpcBody: JSON.stringify({ message: "test" }),
-            keyword: "MISSING",
-            invertKeyword: false,
-            grpcEnableTls: false,
-            isInvertKeyword: () => false,
-        };
+        test("check() truncates long response messages in error output", async () => {
+            const port = 50055;
+            const longMessage = "A".repeat(100) + " with SUCCESS keyword";
 
-        const heartbeat = {
-            msg: "",
-            status: PENDING,
-        };
+            const server = await createTestGrpcServer(port, {
+                Echo: (call, callback) => {
+                    callback(null, { message: longMessage });
+                },
+            });
 
-        try {
-            await assert.rejects(
-                grpcMonitor.check(monitor, heartbeat, {}),
-                (err) => {
+            const grpcMonitor = new GrpcKeywordMonitorType();
+            const monitor = {
+                grpcUrl: `localhost:${port}`,
+                grpcProtobuf: testProto,
+                grpcServiceName: "test.TestService",
+                grpcMethod: "echo",
+                grpcBody: JSON.stringify({ message: "test" }),
+                keyword: "MISSING",
+                invertKeyword: false,
+                grpcEnableTls: false,
+                isInvertKeyword: () => false,
+            };
+
+            const heartbeat = {
+                msg: "",
+                status: PENDING,
+            };
+
+            try {
+                await assert.rejects(grpcMonitor.check(monitor, heartbeat, {}), (err) => {
                     // Should truncate message to 50 characters with "..."
                     assert.ok(err.message.includes("..."));
                     return true;
-                }
-            );
-        } finally {
-            server.forceShutdown();
-        }
-    });
-});
+                });
+            } finally {
+                server.forceShutdown();
+            }
+        });
+    }
+);
