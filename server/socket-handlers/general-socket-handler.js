@@ -13,20 +13,20 @@ const path = require("path");
  */
 function getGameList() {
     let gameList = [];
-    gameList = Object.keys(games).map(key => {
+    gameList = Object.keys(games).map((key) => {
         const item = games[key];
         return {
-            keys: [ key ],
+            keys: [key],
             pretty: item.name,
             options: item.options,
-            extra: item.extra || {}
+            extra: item.extra || {},
         };
     });
     gameList.sort((a, b) => {
-        if ( a.pretty < b.pretty ) {
+        if (a.pretty < b.pretty) {
             return -1;
         }
-        if ( a.pretty > b.pretty ) {
+        if (a.pretty > b.pretty) {
             return 1;
         }
         return 0;
@@ -72,21 +72,23 @@ module.exports.generalSocketHandler = (socket, server) => {
         try {
             checkLogin(socket);
             // Just noticed that await call could block the whole socket.io server!!! Use pure promise instead.
-            testChrome(executable).then((version) => {
-                callback({
-                    ok: true,
-                    msg: {
-                        key: "foundChromiumVersion",
-                        values: [ version ],
-                    },
-                    msgi18n: true,
+            testChrome(executable)
+                .then((version) => {
+                    callback({
+                        ok: true,
+                        msg: {
+                            key: "foundChromiumVersion",
+                            values: [version],
+                        },
+                        msgi18n: true,
+                    });
+                })
+                .catch((e) => {
+                    callback({
+                        ok: false,
+                        msg: e.message,
+                    });
                 });
-            }).catch((e) => {
-                callback({
-                    ok: false,
-                    msg: e.message,
-                });
-            });
         } catch (e) {
             callback({
                 ok: false,
@@ -122,9 +124,7 @@ module.exports.generalSocketHandler = (socket, server) => {
                     return;
                 }
             }
-        } catch (e) {
-
-        }
+        } catch (e) {}
 
         callback({
             ok: false,

@@ -38,7 +38,6 @@ if (process.platform === "win32") {
         allowedList.push(drive + ":\\Program Files\\Google\\Chrome\\Application\\chrome.exe");
         allowedList.push(drive + ":\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe");
     }
-
 } else if (process.platform === "linux") {
     allowedList = [
         "chromium",
@@ -48,7 +47,7 @@ if (process.platform === "win32") {
         "/usr/bin/chromium",
         "/usr/bin/chromium-browser",
         "/usr/bin/google-chrome",
-        "/snap/bin/chromium",           // Ubuntu
+        "/snap/bin/chromium", // Ubuntu
     ];
 } else if (process.platform === "darwin") {
     allowedList = [
@@ -126,8 +125,10 @@ async function prepareChromeExecutable(executablePath) {
     } else {
         // User specified a path
         // Check if the executablePath is in the list of allowed
-        if (!await isAllowedChromeExecutable(executablePath)) {
-            throw new Error("This Chromium executable path is not allowed by default. If you are sure this is safe, please add an environment variable UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC=1 to allow it.");
+        if (!(await isAllowedChromeExecutable(executablePath))) {
+            throw new Error(
+                "This Chromium executable path is not allowed by default. If you are sure this is safe, please add an environment variable UPTIME_KUMA_ALLOW_ALL_CHROME_EXEC=1 to allow it."
+            );
         }
     }
     return executablePath;
@@ -146,11 +147,13 @@ async function prepareChromeExecutable(executablePath) {
  */
 async function installChromiumViaApt(executablePath) {
     if (await commandExists(executablePath)) {
-        return
+        return;
     }
     await new Promise((resolve, reject) => {
         log.info("chromium", "Installing Chromium...");
-        let child = childProcess.exec("apt update && apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk");
+        let child = childProcess.exec(
+            "apt update && apt --yes --no-install-recommends install chromium fonts-indic fonts-noto fonts-noto-cjk"
+        );
 
         // On exit
         child.on("exit", (code) => {
@@ -241,14 +244,15 @@ async function testRemoteBrowser(remoteBrowserURL) {
     }
 }
 class RealBrowserMonitorType extends MonitorType {
-
     name = "real-browser";
 
     /**
      * @inheritdoc
      */
     async check(monitor, heartbeat, server) {
-        const browser = monitor.remote_browser ? await getRemoteBrowser(monitor.remote_browser, monitor.user_id) : await getBrowser();
+        const browser = monitor.remote_browser
+            ? await getRemoteBrowser(monitor.remote_browser, monitor.user_id)
+            : await getBrowser();
         const context = await browser.newContext();
         const page = await context.newPage();
 

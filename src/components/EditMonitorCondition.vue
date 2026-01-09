@@ -17,21 +17,13 @@
         </select>
 
         <select v-model="model.variable" class="form-select" data-testid="condition-variable">
-            <option
-                v-for="variable in conditionVariables"
-                :key="variable.id"
-                :value="variable.id"
-            >
+            <option v-for="variable in conditionVariables" :key="variable.id" :value="variable.id">
                 {{ $t(variable.id) }}
             </option>
         </select>
 
         <select v-model="model.operator" class="form-select" data-testid="condition-operator">
-            <option
-                v-for="operator in getVariableOperators(model.variable)"
-                :key="operator.id"
-                :value="operator.id"
-            >
+            <option v-for="operator in getVariableOperators(model.variable)" :key="operator.id" :value="operator.id">
                 {{ $t(operator.caption) }}
             </option>
         </select>
@@ -94,7 +86,7 @@ export default {
         },
     },
 
-    emits: [ "update:modelValue", "remove" ],
+    emits: ["update:modelValue", "remove"],
 
     computed: {
         model: {
@@ -103,8 +95,8 @@ export default {
             },
             set(value) {
                 this.$emit("update:modelValue", value);
-            }
-        }
+            },
+        },
     },
 
     methods: {
@@ -113,7 +105,7 @@ export default {
         },
 
         getVariableOperators(variableId) {
-            return this.conditionVariables.find(v => v.id === variableId)?.operators ?? [];
+            return this.conditionVariables.find((v) => v.id === variableId)?.operators ?? [];
         },
     },
 };

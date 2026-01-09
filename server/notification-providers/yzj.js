@@ -22,7 +22,7 @@ class YZJ extends NotificationProvider {
                 },
             };
             const params = {
-                content: msg
+                content: msg,
             };
             // yzjtype=0 => general robot
             const url = `${notification.yzjWebHookUrl}?yzjtype=0&yzjtoken=${notification.yzjToken}`;
