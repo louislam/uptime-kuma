@@ -22,7 +22,7 @@ class Webpush extends NotificationProvider {
                 // Test message
                 const data = JSON.stringify({
                     title: "TEST",
-                    body: `Test Alert - ${msg}`
+                    body: `Test Alert - ${msg}`,
                 });
 
                 await webpush.sendNotification(notification.subscription, data);
@@ -32,7 +32,10 @@ class Webpush extends NotificationProvider {
 
             const data = JSON.stringify({
                 title: heartbeatJSON["status"] === UP ? "Monitor Up" : "Monitor DOWN",
-                body: heartbeatJSON["status"] === UP ? `❌ ${heartbeatJSON["name"]} is DOWN` : `✅ ${heartbeatJSON["name"]} is UP`
+                body:
+                    heartbeatJSON["status"] === UP
+                        ? `❌ ${heartbeatJSON["name"]} is DOWN`
+                        : `✅ ${heartbeatJSON["name"]} is UP`,
             });
 
             await webpush.sendNotification(notification.subscription, data);

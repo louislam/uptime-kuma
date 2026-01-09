@@ -3,7 +3,5 @@
     "compilerOptions": {
         "esModuleInterop": false
     },
-    "files": [
-        "./src/util.ts"
-    ]
+    "files": ["./src/util.ts"]
 }

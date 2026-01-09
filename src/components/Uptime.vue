@@ -85,13 +85,13 @@ export default {
 
         title() {
             if (this.type === "1y") {
-                return `1${this.$t("-year")}`;
+                return `1 ${this.$tc("year", 1)}`;
             }
             if (this.type === "720") {
-                return `30${this.$t("-day")}`;
+                return `30 ${this.$tc("day", 30)}`;
             }
-            return `24${this.$t("-hour")}`;
-        }
+            return `24 ${this.$tc("hour", 24)}`;
+        },
     },
 };
 </script>

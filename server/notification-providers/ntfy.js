@@ -15,23 +15,30 @@ class Ntfy extends NotificationProvider {
             let headers = {};
             if (notification.ntfyAuthenticationMethod === "usernamePassword") {
                 headers = {
-                    "Authorization": "Basic " + Buffer.from(notification.ntfyusername + ":" + notification.ntfypassword).toString("base64"),
+                    Authorization:
+                        "Basic " +
+                        Buffer.from(notification.ntfyusername + ":" + notification.ntfypassword).toString("base64"),
                 };
             } else if (notification.ntfyAuthenticationMethod === "accessToken") {
                 headers = {
-                    "Authorization": "Bearer " + notification.ntfyaccesstoken,
+                    Authorization: "Bearer " + notification.ntfyaccesstoken,
                 };
             }
-            let config = { headers };
+            if (notification.ntfyCall) {
+                headers["X-Call"] = notification.ntfyCall;
+            }
+            let config = {
+                headers,
+            };
             config = this.getAxiosConfigWithProxy(config);
             // If heartbeatJSON is null, assume non monitoring notification (Certificate warning) or testing.
             if (heartbeatJSON == null) {
                 let ntfyTestData = {
-                    "topic": notification.ntfytopic,
-                    "title": (monitorJSON?.name || notification.ntfytopic) + " [Uptime-Kuma]",
-                    "message": msg,
-                    "priority": notification.ntfyPriority,
-                    "tags": [ "test_tube" ],
+                    topic: notification.ntfytopic,
+                    title: (monitorJSON?.name || notification.ntfytopic) + " [Uptime-Kuma]",
+                    message: msg,
+                    priority: notification.ntfyPriority,
+                    tags: ["test_tube"],
                 };
                 await axios.post(notification.ntfyserverurl, ntfyTestData, config);
                 return okMsg;
@@ -41,29 +48,29 @@ class Ntfy extends NotificationProvider {
             let priority = notification.ntfyPriority || 4;
             if ("status" in heartbeatJSON) {
                 if (heartbeatJSON.status === DOWN) {
-                    tags = [ "red_circle" ];
+                    tags = ["red_circle"];
                     status = "Down";
                     // defaults to max(priority + 1, 5)
                     priority = notification.ntfyPriorityDown || (priority === 5 ? priority : priority + 1);
                 } else if (heartbeatJSON["status"] === UP) {
-                    tags = [ "green_circle" ];
+                    tags = ["green_circle"];
                     status = "Up";
                 }
             }
             let data = {
-                "topic": notification.ntfytopic,
-                "message": heartbeatJSON.msg,
-                "priority": priority,
-                "title": monitorJSON.name + " " + status + " [Uptime-Kuma]",
-                "tags": tags,
+                topic: notification.ntfytopic,
+                message: heartbeatJSON.msg,
+                priority: priority,
+                title: monitorJSON.name + " " + status + " [Uptime-Kuma]",
+                tags: tags,
             };
 
             if (monitorJSON.url && monitorJSON.url !== "https://") {
                 data.actions = [
                     {
-                        "action": "view",
-                        "label": "Open " + monitorJSON.name,
-                        "url": monitorJSON.url,
+                        action: "view",
+                        label: "Open " + monitorJSON.name,
+                        url: monitorJSON.url,
                     },
                 ];
             }
@@ -75,7 +82,6 @@ class Ntfy extends NotificationProvider {
             await axios.post(notification.ntfyserverurl, data, config);
 
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

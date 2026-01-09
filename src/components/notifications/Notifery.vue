@@ -1,8 +1,6 @@
 <template>
     <div class="mb-3">
-        <label for="notifery-api-key" class="form-label">{{
-            $t("API Key")
-        }}</label>
+        <label for="notifery-api-key" class="form-label">{{ $t("API Key") }}</label>
         <HiddenInput
             id="notifery-api-key"
             v-model="$parent.notification.notiferyApiKey"
@@ -33,7 +31,7 @@
         />
     </div>
 
-    <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px;">
+    <i18n-t tag="p" keypath="More info on:" style="margin-top: 8px">
         <a href="https://docs.notifery.com/api/event/" target="_blank">https://docs.notifery.com/api/event/</a>
     </i18n-t>
 </template>
