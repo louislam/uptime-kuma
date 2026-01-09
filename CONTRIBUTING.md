@@ -269,7 +269,8 @@ to review the appropriate one for your contribution.
 ### Continuous Integration
 
 All pull requests must pass our continuous integration checks. These checks include:
-- **Linting**: We use ESLint and Stylelint to enforce code style. You can run the linter locally with `npm run lint`.
+- **Linting**: We use ESLint and Stylelint for code quality checks. You can run the linter locally with `npm run lint`.
+- **Formatting**: We use Prettier for code formatting. You can format your code with `npm run fmt` (or CI will do this for you)
 - **Testing**: We use Playwright for end-to-end tests and have a suite of backend tests. You can run the tests locally with `npm test`.
 
 I ([@louislam](https://github.com/louislam)) have the final say.
