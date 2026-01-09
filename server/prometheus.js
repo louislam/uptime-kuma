@@ -147,7 +147,7 @@ class Prometheus {
      * @typedef {import("./uptime-calculator").UptimeDataResult} UptimeDataResult
      * @param {object} heartbeat Heartbeat details
      * @param {object} tlsInfo TLS details
-     * @param {{data24h: UptimeDataResult, data30d: UptimeDataResult, data1y:UptimeDataResult}} uptime
+     * @param {{data24h: UptimeDataResult, data30d: UptimeDataResult, data1y:UptimeDataResult} | null} uptime the uptime and average response rate over a variety of fixed windows
      * @returns {void}
      */
     update(heartbeat, tlsInfo, uptime) {
