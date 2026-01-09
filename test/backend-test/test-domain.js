@@ -243,7 +243,7 @@ describe("Domain Expiry", () => {
             url: "capture",
         };
         const manyDays = 3650;
-        await setSetting("domainExpiryNotifyDays", [ manyDays ], "general");
+        await setSetting("domainExpiryNotifyDays", [manyDays], "general");
         const notif = R.convertToBean("notification", {
             config: JSON.stringify({
                 type: "webhook",
@@ -255,9 +255,9 @@ describe("Domain Expiry", () => {
             user_id: 1,
             name: "Testhook",
         });
-        const [ , data ] = await Promise.all([
-            DomainExpiry.sendNotifications("google.com", [ notif ]),
-            mockWebhook(hook.port, hook.url)
+        const [, data] = await Promise.all([
+            DomainExpiry.sendNotifications("google.com", [notif]),
+            mockWebhook(hook.port, hook.url),
         ]);
         assert.match(data.msg, /will expire in/);
     });

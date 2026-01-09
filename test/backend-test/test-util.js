@@ -8,7 +8,6 @@ dayjs.extend(require("dayjs/plugin/utc"));
 dayjs.extend(require("dayjs/plugin/customParseFormat"));
 
 describe("Server Utilities", () => {
-    
     test("SQL_DATETIME_FORMAT constant matches MariaDB/MySQL format", () => {
         assert.strictEqual(SQL_DATETIME_FORMAT, "YYYY-MM-DD HH:mm:ss");
     });
