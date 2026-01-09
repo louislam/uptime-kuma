@@ -36,14 +36,22 @@
             required
         />
 
-        <label for="signName" class="form-label">{{ $t("SignName") }}<span style="color: red;"><sup>*</sup></span></label>
-        <input id="signName" v-model="$parent.notification.signName" type="text" class="form-control" required>
+        <label for="signName" class="form-label">
+            {{ $t("SignName") }}
+            <span style="color: red"><sup>*</sup></span>
+        </label>
+        <input id="signName" v-model="$parent.notification.signName" type="text" class="form-control" required />
         <div class="form-check form-switch">
             <label class="form-check-label">{{ $t("OptionalParameters") }}</label>
-            <input id="optionalParameters" v-model="$parent.notification.optionalParameters" class="form-check-input" type="checkbox">
+            <input
+                id="optionalParameters"
+                v-model="$parent.notification.optionalParameters"
+                class="form-check-input"
+                type="checkbox"
+            />
         </div>
-        <div class="form-text">{{ $t("aliyun_enable_optional_variables_at_the_risk_of_non_delivery") }} </div>
-        <br>
+        <div class="form-text">{{ $t("aliyun_enable_optional_variables_at_the_risk_of_non_delivery") }}</div>
+        <br />
         <div class="form-text">
             <i18n-t tag="p" keypath="aliun-template-requirements-and-parameters">
                 <template #parameters>
