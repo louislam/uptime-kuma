@@ -66,11 +66,7 @@
                     <option :value="null">
                         {{ $t("Select") }}
                     </option>
-                    <option
-                        v-for="(monitor, index) in $root.monitorList"
-                        :key="index"
-                        :value="monitor.id"
-                    >
+                    <option v-for="(monitor, index) in $root.monitorList" :key="index" :value="monitor.id">
                         {{ monitor.name }}
                     </option>
                 </select>
@@ -293,7 +289,7 @@ export default {
                     this.toastErrorTimeoutSecs = parsedTimeout > 0 ? parsedTimeout / 1000 : parsedTimeout;
                 }
             }
-        }
+        },
     },
 };
 </script>

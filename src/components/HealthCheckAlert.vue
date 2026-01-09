@@ -1,5 +1,5 @@
 <template>
-    <div v-if="! healthCheckStatus" id="health-check" class="d-flex flex-wrap py-3 mx-4">
+    <div v-if="!healthCheckStatus" id="health-check" class="d-flex flex-wrap py-3 mx-4">
         <div class="alert alert-danger w-100 d-inline-flex align-items-center justify-content-between">
             <div class="px-3">Monitoring is paused, the health check monitor is down!</div>
             <div>
@@ -44,7 +44,10 @@ export default {
         healthCheckStatus() {
             const healthCheckMonitorId = this.healthCheckMonitor?.id;
 
-            if (healthCheckMonitorId in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[healthCheckMonitorId]) {
+            if (
+                healthCheckMonitorId in this.$root.lastHeartbeatList &&
+                this.$root.lastHeartbeatList[healthCheckMonitorId]
+            ) {
                 return this.$root.lastHeartbeatList[healthCheckMonitorId].status === UP;
             }
 
