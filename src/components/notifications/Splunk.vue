@@ -1,7 +1,12 @@
 <template>
     <div class="mb-3">
         <label for="splunk-rest-url" class="form-label">{{ $t("Splunk Rest URL") }}</label>
-        <HiddenInput id="splunk-rest-url" v-model="$parent.notification.splunkRestURL" :required="true" autocomplete="false"></HiddenInput>
+        <HiddenInput
+            id="splunk-rest-url"
+            v-model="$parent.notification.splunkRestURL"
+            :required="true"
+            autocomplete="false"
+        ></HiddenInput>
     </div>
     <div class="mb-3">
         <label for="splunk-severity" class="form-label">{{ $t("Severity") }}</label>

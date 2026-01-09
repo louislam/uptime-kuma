@@ -8,7 +8,7 @@ const TwoFA = require("../server/2fa");
 const args = require("args-parser")(process.argv);
 const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
 });
 
 const main = async () => {
@@ -19,7 +19,7 @@ const main = async () => {
         // No need to actually reset the password for testing, just make sure no connection problem. It is ok for now.
         if (!process.env.TEST_BACKEND) {
             const user = await R.findOne("user");
-            if (! user) {
+            if (!user) {
                 throw new Error("user not found, have you installed?");
             }
 
@@ -31,7 +31,6 @@ const main = async () => {
                 await TwoFA.disable2FA(user.id);
                 console.log("2FA has been removed successfully.");
             }
-
         }
     } catch (e) {
         console.error("Error: " + e.message);

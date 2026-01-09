@@ -12,7 +12,7 @@ const args = require("args-parser")(process.argv);
 
 const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
 });
 
 const main = async () => {
@@ -28,7 +28,7 @@ const main = async () => {
         // No need to actually reset the password for testing, just make sure no connection problem. It is ok for now.
         if (!process.env.TEST_BACKEND) {
             const user = await R.findOne("user");
-            if (! user) {
+            if (!user) {
                 throw new Error("user not found, have you installed?");
             }
 
@@ -41,7 +41,10 @@ const main = async () => {
                 // When called with "--new-password" argument for unattended modification (e.g. npm run reset-password -- --new_password=secret)
                 if ("new-password" in args) {
                     console.log("Using password from argument");
-                    console.warn("\x1b[31m%s\x1b[0m", "Warning: the password might be stored, in plain text, in your shell's history");
+                    console.warn(
+                        "\x1b[31m%s\x1b[0m",
+                        "Warning: the password might be stored, in plain text, in your shell's history"
+                    );
                     password = confirmPassword = args["new-password"] + "";
                     if (passwordStrength(password).value === "Too weak") {
                         throw new Error("Password is too weak, please use a stronger password.");
@@ -71,7 +74,6 @@ const main = async () => {
                 }
             }
             console.log("Password reset successfully.");
-
         }
     } catch (e) {
         console.error("Error: " + e.message);
@@ -112,19 +114,23 @@ function disconnectAllSocketClients(username, password) {
             timeout: 5000,
         });
         socket.on("connect", () => {
-            socket.emit("login", {
-                username,
-                password,
-            }, (res) => {
-                if (res.ok) {
-                    console.log("Logged in.");
-                    socket.emit("disconnectOtherSocketClients");
-                } else {
-                    console.warn("Login failed.");
-                    console.warn("Please restart the server to disconnect all sessions.");
+            socket.emit(
+                "login",
+                {
+                    username,
+                    password,
+                },
+                (res) => {
+                    if (res.ok) {
+                        console.log("Logged in.");
+                        socket.emit("disconnectOtherSocketClients");
+                    } else {
+                        console.warn("Login failed.");
+                        console.warn("Please restart the server to disconnect all sessions.");
+                    }
+                    socket.close();
                 }
-                socket.close();
-            });
+            );
         });
 
         socket.on("connect_error", function () {

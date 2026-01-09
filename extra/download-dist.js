@@ -26,7 +26,6 @@ function download(url) {
             console.log("Extracting dist...");
 
             if (fs.existsSync("./dist")) {
-
                 if (fs.existsSync("./dist-backup")) {
                     fs.rmSync("./dist-backup", {
                         recursive: true,
