@@ -2261,6 +2261,7 @@ export default {
         defaultFriendlyName() {
             if (this.monitor.hostname) {
                 try {
+                    // Convert IDN to punycode
                     const url = new URL(`http://${this.monitor.hostname}`);
                     return url.hostname;
                 } catch (e) {

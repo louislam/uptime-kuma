@@ -121,7 +121,9 @@ exports.ping = async (
     timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT
 ) => {
     try {
-        return await exports.pingAsync(destAddr, false, count, sourceAddr, numeric, size, deadline, timeout);
+        const result = await exports.pingAsync(destAddr, false, count, sourceAddr, numeric, size, deadline, timeout);
+        console.log("Ping result:", destAddr, result);
+        return result;
     } catch (e) {
         // If the host cannot be resolved, try again with ipv6
         log.debug("ping", "IPv6 error message: " + e.message);
@@ -157,6 +159,16 @@ exports.pingAsync = function (
     deadline = PING_GLOBAL_TIMEOUT_DEFAULT,
     timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT
 ) {
+    try {
+        const url = new URL(`http://${destAddr}`);
+        destAddr = url.hostname;
+        if (destAddr.startsWith("[") && destAddr.endsWith("]")) {
+            destAddr = destAddr.slice(1, -1);
+        }
+    } catch (e) {
+        // ignore
+    }
+
     return new Promise((resolve, reject) => {
         ping.promise
             .probe(destAddr, {
