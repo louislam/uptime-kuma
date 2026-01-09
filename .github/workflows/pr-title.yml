@@ -1,6 +1,6 @@
 name: "PR Metadata"
 # if someone opens a PR, edits it, or reopens it we want to validate the title
-# This is separate form the rest of the CI as the title may change without code changes
+# This is separate from the rest of the CI as the title may change without code changes
 
 on:
   # SECURITY: pull_request_target is used here to allow validation of PRs from forks.
