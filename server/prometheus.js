@@ -61,49 +61,49 @@ class Prometheus {
             "monitor_port",
         ];
 
-        const monitorCertDaysRemaining = new PrometheusClient.Gauge({
+        monitorCertDaysRemaining = new PrometheusClient.Gauge({
             name: "monitor_cert_days_remaining",
             help: "The number of days remaining until the certificate expires",
             labelNames: commonLabels,
         });
 
-        const monitorCertIsValid = new PrometheusClient.Gauge({
+        monitorCertIsValid = new PrometheusClient.Gauge({
             name: "monitor_cert_is_valid",
             help: "Is the certificate still valid? (1 = Yes, 0= No)",
             labelNames: commonLabels,
         });
 
-        const monitorUptime1y = new PrometheusClient.Gauge({
+        monitorUptime1y = new PrometheusClient.Gauge({
             name: "monitor_uptime_1y",
             help: "Monitor Uptime 1y (%)",
             labelNames: commonLabels,
         });
 
-        const monitorUptime30d = new PrometheusClient.Gauge({
+        monitorUptime30d = new PrometheusClient.Gauge({
             name: "monitor_uptime_30d",
             help: "Monitor Uptime 30d (%)",
             labelNames: commonLabels,
         });
 
-        const monitorUptime24h = new PrometheusClient.Gauge({
+        monitorUptime24h = new PrometheusClient.Gauge({
             name: "monitor_uptime_24h",
             help: "Monitor Uptime 24h (%)",
             labelNames: commonLabels,
         });
 
-        const monitorAverageResponseTime = new PrometheusClient.Gauge({
+        monitorAverageResponseTime = new PrometheusClient.Gauge({
             name: "monitor_average_response_time",
             help: "Monitor Average Response Time (ms)",
             labelNames: commonLabels,
         });
 
-        const monitorResponseTime = new PrometheusClient.Gauge({
+        monitorResponseTime = new PrometheusClient.Gauge({
             name: "monitor_response_time",
             help: "Monitor Response Time (ms)",
             labelNames: commonLabels,
         });
 
-        const monitorStatus = new PrometheusClient.Gauge({
+        monitorStatus = new PrometheusClient.Gauge({
             name: "monitor_status",
             help: "Monitor Status (1 = UP, 0= DOWN, 2= PENDING, 3= MAINTENANCE)",
             labelNames: commonLabels,
