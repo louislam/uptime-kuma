@@ -28,7 +28,7 @@ describe("Database Down Notification", () => {
         // Run migrations to ensure schema is current
         try {
             await R.knex.migrate.latest({
-                directory: path.join(__dirname, "../../db/knex_migrations")
+                directory: path.join(__dirname, "../../db/knex_migrations"),
             });
         } catch (e) {
             // For migration errors, log but continue - test might still work
@@ -71,7 +71,7 @@ describe("Database Down Notification", () => {
         assert.ok(Notification.cacheLastRefresh > 0, "Cache refresh time should be set");
 
         // Verify test notification is in cache
-        const cached = Notification.notificationCache.find(n => n.id === testNotification.id);
+        const cached = Notification.notificationCache.find((n) => n.id === testNotification.id);
         assert.ok(cached, "Test notification should be in cache");
         assert.strictEqual(cached.name, "Test Notification");
         // Config is stored as raw string, parse to verify
@@ -151,11 +151,18 @@ describe("Database Down Notification", () => {
 
             // Cache should remain unchanged (not cleared)
             assert.ok(Array.isArray(Notification.notificationCache), "Cache should still be an array");
-            assert.strictEqual(Notification.notificationCache.length, originalCacheLength, "Cache should have same length");
-            assert.deepStrictEqual(Notification.notificationCache, originalCacheItems, "Cache should contain same items");
+            assert.strictEqual(
+                Notification.notificationCache.length,
+                originalCacheLength,
+                "Cache should have same length"
+            );
+            assert.deepStrictEqual(
+                Notification.notificationCache,
+                originalCacheItems,
+                "Cache should contain same items"
+            );
         } finally {
             R.find = originalFind;
         }
     });
 });
-

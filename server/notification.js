@@ -317,7 +317,7 @@ class Notification {
             // Get all notifications (including default ones)
             const notifications = await R.find("notification", " active = 1 ");
 
-            this.notificationCache = notifications.map(bean => {
+            this.notificationCache = notifications.map((bean) => {
                 return {
                     id: bean.id,
                     name: bean.name,
@@ -328,7 +328,10 @@ class Notification {
             });
 
             this.cacheLastRefresh = Date.now();
-            log.debug("notification", `Refreshed notification cache with ${this.notificationCache.length} notifications`);
+            log.debug(
+                "notification",
+                `Refreshed notification cache with ${this.notificationCache.length} notifications`
+            );
         } catch (e) {
             log.error("notification", `Failed to refresh notification cache: ${e.message}`);
             // Don't clear the cache if refresh fails, keep using old cache
@@ -348,7 +351,10 @@ class Notification {
         if (this.lastDatabaseDownNotificationTime > 0) {
             const timeSinceLastNotification = now - this.lastDatabaseDownNotificationTime;
             if (timeSinceLastNotification < COOLDOWN_PERIOD) {
-                log.debug("notification", `Skipping database down notification - cooldown period active (${Math.round(timeSinceLastNotification / 3600000)}h / 24h)`);
+                log.debug(
+                    "notification",
+                    `Skipping database down notification - cooldown period active (${Math.round(timeSinceLastNotification / 3600000)}h / 24h)`
+                );
                 return;
             }
         }
@@ -372,7 +378,10 @@ class Notification {
                 await this.send(config, msg);
                 log.info("notification", `Sent database down notification via ${notification.name} (${config.type})`);
             } catch (e) {
-                log.error("notification", `Failed to send database down notification via ${notification.name}: ${e.message}`);
+                log.error(
+                    "notification",
+                    `Failed to send database down notification via ${notification.name}: ${e.message}`
+                );
             }
         }
     }

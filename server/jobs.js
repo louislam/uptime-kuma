@@ -35,7 +35,7 @@ const jobs = [
         interval: "*/30 * * * *", // Every 30 minutes
         jobFunc: refreshNotificationCache,
         croner: null,
-    }
+    },
 ];
 
 /**

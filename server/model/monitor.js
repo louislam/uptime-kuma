@@ -1091,7 +1091,7 @@ class Monitor extends BeanModel {
                     }
                 }
 
-                if (! this.isStop) {
+                if (!this.isStop) {
                     log.info("monitor", "Try to restart the monitor");
                     this.heartbeatInterval = setTimeout(safeBeat, this.interval * 1000);
                 }
