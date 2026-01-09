@@ -476,9 +476,9 @@ We have a few procedures we follow. These are documented here:
   2. Add the remote context. The remote machine must be arm64 and installed
      Docker CE.
 
-     ```bash
-     docker context create oracle-arm64-jp --docker "host=ssh://root@100.107.174.88"
-     ```
+  ```bash
+  docker context create oracle-arm64-jp --docker "host=ssh://root@100.107.174.88"
+  ```
 
   3. Create a new builder.
 
