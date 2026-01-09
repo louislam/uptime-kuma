@@ -7,14 +7,8 @@
                     {{ $t("Display Timezone") }}
                 </label>
                 <select id="timezone" v-model="$root.userTimezone" class="form-select">
-                    <option value="auto">
-                        {{ $t("Auto") }}: {{ guessTimezone }}
-                    </option>
-                    <option
-                        v-for="(timezone, index) in timezoneList"
-                        :key="index"
-                        :value="timezone.value"
-                    >
+                    <option value="auto">{{ $t("Auto") }}: {{ guessTimezone }}</option>
+                    <option v-for="(timezone, index) in timezoneList" :key="index" :value="timezone.value">
                         {{ timezone.name }}
                     </option>
                 </select>
@@ -27,11 +21,7 @@
                 </label>
                 <select id="timezone" v-model="settings.serverTimezone" class="form-select">
                     <option value="UTC">UTC</option>
-                    <option
-                        v-for="(timezone, index) in timezoneList"
-                        :key="index"
-                        :value="timezone.value"
-                    >
+                    <option v-for="(timezone, index) in timezoneList" :key="index" :value="timezone.value">
                         {{ timezone.name }}
                     </option>
                 </select>
@@ -137,17 +127,12 @@
                 <label class="form-label" for="steamAPIKey">
                     {{ $t("Steam API Key") }}
                 </label>
-                <HiddenInput
-                    id="steamAPIKey"
-                    v-model="settings.steamAPIKey"
-                    autocomplete="new-password"
-                />
-                <div class="form-text">
-                    {{ $t("steamApiKeyDescription") }}
-                    <a href="https://steamcommunity.com/dev" target="_blank">
-                        https://steamcommunity.com/dev
-                    </a>
-                </div>
+                <HiddenInput id="steamAPIKey" v-model="settings.steamAPIKey" autocomplete="new-password" />
+                <i18n-t tag="div" keypath="steamApiKeyDescriptionAt" class="form-text">
+                    <template #url>
+                        <a href="https://steamcommunity.com/dev" target="_blank">https://steamcommunity.com/dev</a>
+                    </template>
+                </i18n-t>
             </div>
 
             <!-- DNS Cache (nscd) -->
@@ -249,7 +234,7 @@ export default {
         },
         guessTimezone() {
             return dayjs.tz.guess();
-        }
+        },
     },
 
     methods: {
@@ -280,4 +265,3 @@ export default {
     },
 };
 </script>
-

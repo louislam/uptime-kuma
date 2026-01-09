@@ -5,7 +5,7 @@ const hash = require("../../../server/modules/axios-ntlm/lib/hash");
 
 describe("createPseudoRandomValue()", () => {
     test("returns a hexadecimal string with the requested length", () => {
-        for (const length of [ 0, 8, 16, 32, 64 ]) {
+        for (const length of [0, 8, 16, 32, 64]) {
             const result = hash.createPseudoRandomValue(length);
             assert.strictEqual(typeof result, "string");
             assert.strictEqual(result.length, length);

@@ -1,7 +1,12 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const StatusPage = require("../../server/model/status_page");
-const { STATUS_PAGE_ALL_UP, STATUS_PAGE_ALL_DOWN, STATUS_PAGE_PARTIAL_DOWN, STATUS_PAGE_MAINTENANCE } = require("../../src/util");
+const {
+    STATUS_PAGE_ALL_UP,
+    STATUS_PAGE_ALL_DOWN,
+    STATUS_PAGE_PARTIAL_DOWN,
+    STATUS_PAGE_MAINTENANCE,
+} = require("../../src/util");
 
 describe("StatusPage", () => {
     describe("getStatusDescription()", () => {

@@ -1,4 +1,4 @@
-process.env.UPTIME_KUMA_HIDE_LOG = [ "info_db", "info_server" ].join(",");
+process.env.UPTIME_KUMA_HIDE_LOG = ["info_db", "info_server"].join(",");
 
 const { describe, test, mock, before, after } = require("node:test");
 const assert = require("node:assert");
@@ -18,7 +18,7 @@ describe("Domain Expiry", () => {
     const monHttpCom = {
         type: "http",
         url: "https://www.google.com",
-        domainExpiryNotification: true
+        domainExpiryNotification: true,
     };
 
     before(async () => {
@@ -41,7 +41,7 @@ describe("Domain Expiry", () => {
             const supportInfo = await DomainExpiry.checkSupport(monHttpCom);
             let expected = {
                 domain: "google.com",
-                tld: "com"
+                tld: "com",
             };
             assert.deepStrictEqual(supportInfo, expected);
         });
@@ -51,7 +51,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
@@ -66,7 +66,7 @@ describe("Domain Expiry", () => {
             test("throws error for undefined target", async () => {
                 const monitor = {
                     type: "http",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
@@ -82,7 +82,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: null,
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
@@ -100,7 +100,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
@@ -116,7 +116,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://192.168.1.1",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
@@ -132,7 +132,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://[2001:db8::1]",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
@@ -148,7 +148,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://example.x",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
@@ -166,7 +166,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://api.staging.example.com/v1/users",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 const supportInfo = await DomainExpiry.checkSupport(monitor);
                 assert.strictEqual(supportInfo.domain, "example.com");
@@ -177,7 +177,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://mail.subdomain.example.org",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 const supportInfo = await DomainExpiry.checkSupport(monitor);
                 assert.strictEqual(supportInfo.domain, "example.org");
@@ -188,7 +188,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://example.com:8080/api",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 const supportInfo = await DomainExpiry.checkSupport(monitor);
                 assert.strictEqual(supportInfo.domain, "example.com");
@@ -199,7 +199,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://example.com/search?q=test&page=1",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 const supportInfo = await DomainExpiry.checkSupport(monitor);
                 assert.strictEqual(supportInfo.domain, "example.com");
@@ -210,7 +210,7 @@ describe("Domain Expiry", () => {
                 const monitor = {
                     type: "http",
                     url: "https://example.localhost",
-                    domainExpiryNotification: true
+                    domainExpiryNotification: true,
                 };
                 await assert.rejects(
                     async () => await DomainExpiry.checkSupport(monitor),
@@ -239,21 +239,21 @@ describe("Domain Expiry", () => {
     test("sendNotifications() triggers notification for expiring domain", async () => {
         await DomainExpiry.findByName("google.com");
         const hook = {
-            "port": 3010,
-            "url": "capture"
+            port: 3010,
+            url: "capture",
         };
         const manyDays = 3650;
         await setSetting("domainExpiryNotifyDays", [ manyDays ], "general");
         const notif = R.convertToBean("notification", {
-            "config": JSON.stringify({
+            config: JSON.stringify({
                 type: "webhook",
                 httpMethod: "post",
                 webhookContentType: "json",
-                webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`
+                webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`,
             }),
-            "active": 1,
-            "user_id": 1,
-            "name": "Testhook"
+            active: 1,
+            user_id: 1,
+            name: "Testhook",
         });
         const [ , data ] = await Promise.all([
             DomainExpiry.sendNotifications("google.com", [ notif ]),
@@ -268,15 +268,15 @@ describe("Domain Expiry", () => {
         const mockDomain = {
             domain: "test-null.com",
             expiry: null,
-            lastExpiryNotificationSent: null
+            lastExpiryNotificationSent: null,
         };
 
         mock.method(DomainExpiry, "findByDomainNameOrCreate", async () => mockDomain);
 
         try {
             const hook = {
-                "port": 3012,
-                "url": "should-not-be-called-null"
+                port: 3012,
+                url: "should-not-be-called-null",
             };
 
             const notif = {
@@ -285,22 +285,24 @@ describe("Domain Expiry", () => {
                     type: "webhook",
                     httpMethod: "post",
                     webhookContentType: "json",
-                    webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`
-                })
+                    webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`,
+                }),
             };
 
             // Race between sendNotifications and mockWebhook timeout
             // If webhook is called, we fail. If it times out, we pass.
             const result = await Promise.race([
-                DomainExpiry.sendNotifications("test-null.com", [ notif ]),
-                mockWebhook(hook.port, hook.url, 500).then(() => {
-                    throw new Error("Webhook was called but should not have been for null expiry");
-                }).catch((e) => {
-                    if (e.reason === "Timeout") {
-                        return "timeout"; // Expected - webhook was not called
-                    }
-                    throw e;
-                })
+                DomainExpiry.sendNotifications("test-null.com", [notif]),
+                mockWebhook(hook.port, hook.url, 500)
+                    .then(() => {
+                        throw new Error("Webhook was called but should not have been for null expiry");
+                    })
+                    .catch((e) => {
+                        if (e.reason === "Timeout") {
+                            return "timeout"; // Expected - webhook was not called
+                        }
+                        throw e;
+                    }),
             ]);
 
             assert.ok(result === undefined || result === "timeout", "Should not send notification for null expiry");
@@ -315,14 +317,14 @@ describe("Domain Expiry", () => {
             const mockDomain = {
                 domain: "test-undefined.com",
                 expiry: undefined,
-                lastExpiryNotificationSent: null
+                lastExpiryNotificationSent: null,
             };
 
             mock.method(DomainExpiry, "findByDomainNameOrCreate", async () => mockDomain);
 
             const hook = {
-                "port": 3013,
-                "url": "should-not-be-called-undefined"
+                port: 3013,
+                url: "should-not-be-called-undefined",
             };
 
             const notif = {
@@ -331,25 +333,30 @@ describe("Domain Expiry", () => {
                     type: "webhook",
                     httpMethod: "post",
                     webhookContentType: "json",
-                    webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`
-                })
+                    webhookURL: `http://127.0.0.1:${hook.port}/${hook.url}`,
+                }),
             };
 
             // Race between sendNotifications and mockWebhook timeout
             // If webhook is called, we fail. If it times out, we pass.
             const result = await Promise.race([
-                DomainExpiry.sendNotifications("test-undefined.com", [ notif ]),
-                mockWebhook(hook.port, hook.url, 500).then(() => {
-                    throw new Error("Webhook was called but should not have been for undefined expiry");
-                }).catch((e) => {
-                    if (e.reason === "Timeout") {
-                        return "timeout"; // Expected - webhook was not called
-                    }
-                    throw e;
-                })
+                DomainExpiry.sendNotifications("test-undefined.com", [notif]),
+                mockWebhook(hook.port, hook.url, 500)
+                    .then(() => {
+                        throw new Error("Webhook was called but should not have been for undefined expiry");
+                    })
+                    .catch((e) => {
+                        if (e.reason === "Timeout") {
+                            return "timeout"; // Expected - webhook was not called
+                        }
+                        throw e;
+                    }),
             ]);
 
-            assert.ok(result === undefined || result === "timeout", "Should not send notification for undefined expiry");
+            assert.ok(
+                result === undefined || result === "timeout",
+                "Should not send notification for undefined expiry"
+            );
         } finally {
             mock.restoreAll();
         }

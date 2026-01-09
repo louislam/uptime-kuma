@@ -11,11 +11,12 @@ class SMSEagle extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         try {
-            if (notification.smseagleApiType === "smseagle-apiv1") { // according to https://www.smseagle.eu/apiv1/
+            if (notification.smseagleApiType === "smseagle-apiv1") {
+                // according to https://www.smseagle.eu/apiv1/
                 let config = {
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
-                    }
+                    },
                 };
                 config = this.getAxiosConfigWithProxy(config);
 
@@ -52,7 +53,7 @@ class SMSEagle extends NotificationProvider {
                 url.searchParams.append("access_token", notification.smseagleToken);
                 url.searchParams.append(recipientType, notification.smseagleRecipient);
                 if (!notification.smseagleRecipientType || notification.smseagleRecipientType === "smseagle-sms") {
-                    url.searchParams.append("unicode", (notification.smseagleEncoding) ? "1" : "0");
+                    url.searchParams.append("unicode", notification.smseagleEncoding ? "1" : "0");
                     url.searchParams.append("highpriority", notification.smseaglePriority ?? "0");
                 } else {
                     url.searchParams.append("duration", duration);
@@ -72,22 +73,23 @@ class SMSEagle extends NotificationProvider {
                 }
 
                 return okMsg;
-            } else if (notification.smseagleApiType === "smseagle-apiv2") { // according to https://www.smseagle.eu/docs/apiv2/
+            } else if (notification.smseagleApiType === "smseagle-apiv2") {
+                // according to https://www.smseagle.eu/docs/apiv2/
                 let config = {
                     headers: {
                         "access-token": notification.smseagleToken,
                         "Content-Type": "application/json",
-                    }
+                    },
                 };
                 config = this.getAxiosConfigWithProxy(config);
 
-                let encoding = (notification.smseagleEncoding) ? "unicode" : "standard";
-                let priority = (notification.smseaglePriority) ?? 0;
+                let encoding = notification.smseagleEncoding ? "unicode" : "standard";
+                let priority = notification.smseaglePriority ?? 0;
 
                 let postData = {
                     text: msg,
                     encoding: encoding,
-                    priority: priority
+                    priority: priority,
                 };
 
                 if (notification.smseagleRecipientContact) {
@@ -103,7 +105,6 @@ class SMSEagle extends NotificationProvider {
                 let endpoint = "/messages/sms";
 
                 if (notification.smseagleMsgType !== "smseagle-sms") {
-
                     postData["duration"] = notification.smseagleDuration ?? 10;
 
                     if (notification.smseagleMsgType === "smseagle-ring") {
@@ -118,7 +119,7 @@ class SMSEagle extends NotificationProvider {
 
                 let resp = await axios.post(notification.smseagleUrl + "/api/v2" + endpoint, postData, config);
 
-                const queuedCount = resp.data.filter(x => x.status === "queued").length;
+                const queuedCount = resp.data.filter((x) => x.status === "queued").length;
                 const unqueuedCount = resp.data.length - queuedCount;
 
                 if (resp.status !== 200 || queuedCount === 0) {

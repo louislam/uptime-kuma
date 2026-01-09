@@ -16,7 +16,10 @@ function getAnalyticsScript(statusPage) {
         case "umami":
             return umamiAnalytics.getUmamiAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
         case "plausible":
-            return plausibleAnalytics.getPlausibleAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
+            return plausibleAnalytics.getPlausibleAnalyticsScript(
+                statusPage.analyticsScriptUrl,
+                statusPage.analyticsId
+            );
         case "matomo":
             return matomoAnalytics.getMatomoAnalyticsScript(statusPage.analyticsScriptUrl, statusPage.analyticsId);
         default:
@@ -44,5 +47,5 @@ function isValidAnalyticsConfig(statusPage) {
 
 module.exports = {
     getAnalyticsScript,
-    isValidAnalyticsConfig
+    isValidAnalyticsConfig,
 };

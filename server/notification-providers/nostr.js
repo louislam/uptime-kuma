@@ -1,11 +1,5 @@
 const NotificationProvider = require("./notification-provider");
-const {
-    finalizeEvent,
-    Relay,
-    kinds,
-    nip04,
-    nip19,
-} = require("nostr-tools");
+const { finalizeEvent, Relay, kinds, nip04, nip19 } = require("nostr-tools");
 
 // polyfills for node versions
 const semver = require("semver");
@@ -39,7 +33,7 @@ class Nostr extends NotificationProvider {
             let event = {
                 kind: kinds.EncryptedDirectMessage,
                 created_at: createdAt,
-                tags: [[ "p", recipientPublicKey ]],
+                tags: [["p", recipientPublicKey]],
                 content: ciphertext,
             };
             const signedEvent = finalizeEvent(event, senderPrivateKey);

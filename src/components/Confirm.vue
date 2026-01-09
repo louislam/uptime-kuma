@@ -48,9 +48,9 @@ export default {
         title: {
             type: String,
             default: null,
-        }
+        },
     },
-    emits: [ "yes", "no" ],
+    emits: ["yes", "no"],
     data: () => ({
         modal: null,
     }),
@@ -78,7 +78,7 @@ export default {
          */
         no() {
             this.$emit("no");
-        }
+        },
     },
 };
 </script>

@@ -21,13 +21,22 @@
                 />
             </div>
 
-            <router-link :to="monitorURL(monitor.id)" class="item" :class="{ 'disabled': ! monitor.active }">
+            <router-link :to="monitorURL(monitor.id)" class="item" :class="{ disabled: !monitor.active }">
                 <div class="row">
-                    <div class="col-6 small-padding" :class="{ 'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none' }">
+                    <div
+                        class="col-6 small-padding"
+                        :class="{
+                            'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none',
+                        }"
+                    >
                         <div class="info">
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                             <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
-                                <font-awesome-icon icon="chevron-down" class="animated" :class="{ collapsed: isCollapsed}" />
+                                <font-awesome-icon
+                                    icon="chevron-down"
+                                    class="animated"
+                                    :class="{ collapsed: isCollapsed }"
+                                />
                             </span>
                             {{ monitor.name }}
                         </div>
@@ -99,28 +108,28 @@ export default {
         /** Callback to determine if monitor is selected */
         isSelected: {
             type: Function,
-            default: () => {}
+            default: () => {},
         },
         /** Callback fired when monitor is selected */
         select: {
             type: Function,
-            default: () => {}
+            default: () => {},
         },
         /** Callback fired when monitor is deselected */
         deselect: {
             type: Function,
-            default: () => {}
+            default: () => {},
         },
         /** Function to filter child monitors */
         filterFunc: {
             type: Function,
-            default: () => {}
+            default: () => {},
         },
         /** Function to sort child monitors */
         sortFunc: {
             type: Function,
             default: () => {},
-        }
+        },
     },
     data() {
         return {
@@ -133,7 +142,7 @@ export default {
             let result = Object.values(this.$root.monitorList);
 
             // Get children
-            result = result.filter(childMonitor => childMonitor.parent === this.monitor.id);
+            result = result.filter((childMonitor) => childMonitor.parent === this.monitor.id);
 
             // Run filter on children
             result = result.filter(this.filterFunc);
@@ -155,10 +164,9 @@ export default {
         isSelectMode() {
             // TODO: Resize the heartbeat bar, but too slow
             // this.$refs.heartbeatBar.resize();
-        }
+        },
     },
     beforeMount() {
-
         // Always unfold if monitor is accessed directly
         if (this.monitor.childrenIDs.includes(parseInt(this.$route.params.id))) {
             this.isCollapsed = false;
@@ -378,5 +386,4 @@ export default {
         cursor: grabbing;
     }
 }
-
 </style>

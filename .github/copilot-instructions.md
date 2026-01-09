@@ -134,7 +134,7 @@ npm run dev  # Starts frontend (port 3000) and backend (port 3001)
 
 ## Database
 
-- Primary: SQLite (also supports MariaDB/MySQL/PostgreSQL)
+- Primary: SQLite (also supports MariaDB/MySQL)
 - Migrations in `db/knex_migrations/` using Knex.js
 - Filename format validated by CI: `node ./extra/check-knex-filenames.mjs`
 
