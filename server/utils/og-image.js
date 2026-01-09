@@ -9,7 +9,7 @@ const {
     MAINTENANCE,
     UP,
     DOWN,
-    PENDING
+    PENDING,
 } = require("../util-server");
 
 // Image dimensions (Open Graph standard)
@@ -94,10 +94,7 @@ function truncateText(text, maxLength) {
  * @returns {object} Status counts
  */
 function countMonitorsByStatus(monitors) {
-    const counts = { up: 0,
-        down: 0,
-        pending: 0,
-        maintenance: 0 };
+    const counts = { up: 0, down: 0, pending: 0, maintenance: 0 };
 
     monitors.forEach((monitor) => {
         if (monitor.status === UP) {
@@ -165,7 +162,7 @@ function generateIndividualMonitorDetails(monitors, startY) {
     const displayMonitors = monitors.slice(0, MAX_INDIVIDUAL_MONITORS);
 
     displayMonitors.forEach((monitor, index) => {
-        const y = startY + (index * 35);
+        const y = startY + index * 35;
         const statusColor = getMonitorStatusColor(monitor.status);
         const monitorName = truncateText(monitor.name, MAX_MONITOR_NAME_LENGTH);
 
@@ -306,28 +303,11 @@ ${monitorDetailsSVG}${footerSVG}
  * @returns {Promise<Buffer>} PNG image buffer
  */
 async function generateOGImage(statusPageData) {
-    const {
-        title,
-        statusDescription,
-        statusColor,
-        icon,
-        showPoweredBy,
-        monitors
-    } = statusPageData;
+    const { title, statusDescription, statusColor, icon, showPoweredBy, monitors } = statusPageData;
 
-    const svg = generateOGImageSVG(
-        title,
-        statusDescription,
-        statusColor,
-        icon,
-        !!showPoweredBy,
-        Date.now(),
-        monitors
-    );
+    const svg = generateOGImageSVG(title, statusDescription, statusColor, icon, !!showPoweredBy, Date.now(), monitors);
 
-    const pngBuffer = await sharp(Buffer.from(svg))
-        .png()
-        .toBuffer();
+    const pngBuffer = await sharp(Buffer.from(svg)).png().toBuffer();
 
     return pngBuffer;
 }

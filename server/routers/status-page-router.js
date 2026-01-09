@@ -245,9 +245,7 @@ router.get("/api/status-page/:slug/image", cache("5 minutes"), async (request, r
 
     try {
         // Get Status Page
-        let statusPage = await R.findOne("status_page", " slug = ? ", [
-            slug
-        ]);
+        let statusPage = await R.findOne("status_page", " slug = ? ", [slug]);
 
         if (!statusPage) {
             sendHttpError(response, "Status Page Not Found");
@@ -261,7 +259,6 @@ router.get("/api/status-page/:slug/image", cache("5 minutes"), async (request, r
         response.type("image/png");
         response.setHeader("Cache-Control", "public, max-age=300"); // 5 minutes
         response.send(pngBuffer);
-
     } catch (error) {
         sendHttpError(response, error.message);
     }

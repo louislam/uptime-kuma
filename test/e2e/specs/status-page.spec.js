@@ -239,7 +239,7 @@ test.describe("Status Page", () => {
         expect(buffer.length).toBeGreaterThan(0);
 
         // Verify PNG signature
-        const pngSignature = Buffer.from([ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A ]);
+        const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
         expect(buffer.subarray(0, 8)).toEqual(pngSignature);
 
         // Test 404 for non-existent page

@@ -5,12 +5,7 @@ const StatusPage = require("../../server/model/status_page");
 const { generateOGImageSVG, getStatusColor, escapeXml } = require("../../server/utils/og-image");
 const fs = require("fs");
 const path = require("path");
-const {
-    STATUS_PAGE_ALL_UP,
-    STATUS_PAGE_PARTIAL_DOWN,
-    STATUS_PAGE_ALL_DOWN,
-    MAINTENANCE
-} = require("../../src/util");
+const { STATUS_PAGE_ALL_UP, STATUS_PAGE_PARTIAL_DOWN, STATUS_PAGE_ALL_DOWN, MAINTENANCE } = require("../../src/util");
 
 const SNAPSHOTS_DIR = path.join(__dirname, "snapshots", "og-images");
 
@@ -27,38 +22,38 @@ const TEST_SCENARIOS = [
         name: "all-up",
         title: "Production",
         statusCode: STATUS_PAGE_ALL_UP,
-        monitorCount: 8
+        monitorCount: 8,
     },
     {
         name: "all-down",
         title: "Infrastructure",
         statusCode: STATUS_PAGE_ALL_DOWN,
-        monitorCount: 6
+        monitorCount: 6,
     },
     {
         name: "maintenance",
         title: "Maintenance",
         statusCode: MAINTENANCE,
-        monitorCount: 3
+        monitorCount: 3,
     },
     {
         name: "partial",
         title: "API Services",
         statusCode: STATUS_PAGE_PARTIAL_DOWN,
-        monitorCount: 12
+        monitorCount: 12,
     },
     {
         name: "all-up-many-monitors",
         title: "Enterprise",
         statusCode: STATUS_PAGE_ALL_UP,
-        monitorCount: 200
+        monitorCount: 200,
     },
     {
         name: "all-up-no-branding",
         title: "Production",
         statusCode: STATUS_PAGE_ALL_UP,
         monitorCount: 8,
-        showPoweredBy: false
+        showPoweredBy: false,
     },
     {
         name: "all-up-custom-icon-no-branding",
@@ -66,7 +61,7 @@ const TEST_SCENARIOS = [
         statusCode: STATUS_PAGE_ALL_UP,
         monitorCount: 8,
         icon: "/icon.svg",
-        showPoweredBy: false
+        showPoweredBy: false,
     },
     {
         name: "all-up-custom-icon-with-branding",
@@ -74,14 +69,14 @@ const TEST_SCENARIOS = [
         statusCode: STATUS_PAGE_ALL_UP,
         monitorCount: 8,
         icon: "/icon.svg",
-        showPoweredBy: true
+        showPoweredBy: true,
     },
     {
         name: "all-up-long-title",
         title: "This is an extremely long status page title that will need to be truncated",
         statusCode: STATUS_PAGE_ALL_UP,
-        monitorCount: 5
-    }
+        monitorCount: 5,
+    },
 ];
 
 /**
@@ -114,7 +109,7 @@ function createMockStatusPage(overrides = {}, rssData = null) {
         slug: "test",
         title: "Test Page",
         description: "Test Description",
-        ...overrides
+        ...overrides,
     };
 
     const originalGetRSSData = StatusPage.getRSSPageData;
@@ -127,8 +122,7 @@ function createMockStatusPage(overrides = {}, rssData = null) {
         StatusPage.getRSSPageData = originalGetRSSData;
     };
 
-    return { mockPage,
-        cleanup };
+    return { mockPage, cleanup };
 }
 
 /**
@@ -141,13 +135,9 @@ async function assertValidPNG(buffer) {
     assert.ok(buffer.length > 0, "Expected non-empty buffer");
 
     // Check PNG signature (first 8 bytes)
-    const pngSignature = Buffer.from([ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A ]);
+    const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     const actualSignature = buffer.slice(0, 8);
-    assert.deepStrictEqual(
-        actualSignature,
-        pngSignature,
-        "Expected valid PNG signature"
-    );
+    assert.deepStrictEqual(actualSignature, pngSignature, "Expected valid PNG signature");
 
     // Use sharp to verify metadata
     const metadata = await sharp(buffer).metadata();
@@ -171,7 +161,7 @@ describe("OG Image Helper Functions", () => {
         });
 
         test("escapeXml() replaces double quote with entity", () => {
-            assert.strictEqual(escapeXml("\""), "&quot;");
+            assert.strictEqual(escapeXml('"'), "&quot;");
         });
 
         test("escapeXml() replaces single quote with entity", () => {
@@ -210,71 +200,31 @@ describe("OG Image Helper Functions", () => {
 
 describe("generateOGImageSVG()", () => {
     test("generateOGImageSVG() starts with XML declaration", () => {
-        const svg = generateOGImageSVG(
-            "Test",
-            "All OK",
-            "#10b981",
-            null,
-            true,
-            FIXED_TIMESTAMP,
-            Array(5).fill({})
-        );
+        const svg = generateOGImageSVG("Test", "All OK", "#10b981", null, true, FIXED_TIMESTAMP, Array(5).fill({}));
 
         assert.ok(svg.startsWith("<?xml"), "Expected XML declaration at start");
     });
 
     test("generateOGImageSVG() includes SVG namespace", () => {
-        const svg = generateOGImageSVG(
-            "Test",
-            "All OK",
-            "#10b981",
-            null,
-            true,
-            FIXED_TIMESTAMP,
-            Array(5).fill({})
-        );
+        const svg = generateOGImageSVG("Test", "All OK", "#10b981", null, true, FIXED_TIMESTAMP, Array(5).fill({}));
 
-        assert.ok(svg.includes("xmlns=\"http://www.w3.org/2000/svg\""), "Expected SVG namespace");
+        assert.ok(svg.includes('xmlns="http://www.w3.org/2000/svg"'), "Expected SVG namespace");
     });
 
     test("generateOGImageSVG() sets width to 1200", () => {
-        const svg = generateOGImageSVG(
-            "Test",
-            "All OK",
-            "#10b981",
-            null,
-            true,
-            FIXED_TIMESTAMP,
-            Array(5).fill({})
-        );
+        const svg = generateOGImageSVG("Test", "All OK", "#10b981", null, true, FIXED_TIMESTAMP, Array(5).fill({}));
 
-        assert.ok(svg.includes("width=\"1200\""), "Expected width of 1200");
+        assert.ok(svg.includes('width="1200"'), "Expected width of 1200");
     });
 
     test("generateOGImageSVG() sets height to 630", () => {
-        const svg = generateOGImageSVG(
-            "Test",
-            "All OK",
-            "#10b981",
-            null,
-            true,
-            FIXED_TIMESTAMP,
-            Array(5).fill({})
-        );
+        const svg = generateOGImageSVG("Test", "All OK", "#10b981", null, true, FIXED_TIMESTAMP, Array(5).fill({}));
 
-        assert.ok(svg.includes("height=\"630\""), "Expected height of 630");
+        assert.ok(svg.includes('height="630"'), "Expected height of 630");
     });
 
     test("generateOGImageSVG() includes closing SVG tag", () => {
-        const svg = generateOGImageSVG(
-            "Test",
-            "All OK",
-            "#10b981",
-            null,
-            true,
-            FIXED_TIMESTAMP,
-            Array(5).fill({})
-        );
+        const svg = generateOGImageSVG("Test", "All OK", "#10b981", null, true, FIXED_TIMESTAMP, Array(5).fill({}));
 
         assert.ok(svg.includes("</svg>"), "Expected closing svg tag");
     });
@@ -293,25 +243,21 @@ describe("generateOGImageSVG()", () => {
                 // Create realistic monitor mix for status summary
                 monitors = [];
                 const upCount = Math.floor(scenario.monitorCount * 0.85); // 85% up
-                const downCount = Math.floor(scenario.monitorCount * 0.10); // 10% down
+                const downCount = Math.floor(scenario.monitorCount * 0.1); // 10% down
                 const maintenanceCount = Math.floor(scenario.monitorCount * 0.03); // 3% maintenance
                 const pendingCount = scenario.monitorCount - upCount - downCount - maintenanceCount; // Rest pending
 
                 for (let i = 0; i < upCount; i++) {
-                    monitors.push({ name: `Monitor ${i + 1}`,
-                        status: 1 });
+                    monitors.push({ name: `Monitor ${i + 1}`, status: 1 });
                 }
                 for (let i = 0; i < downCount; i++) {
-                    monitors.push({ name: `Monitor ${upCount + i + 1}`,
-                        status: 0 });
+                    monitors.push({ name: `Monitor ${upCount + i + 1}`, status: 0 });
                 }
                 for (let i = 0; i < maintenanceCount; i++) {
-                    monitors.push({ name: `Monitor ${upCount + downCount + i + 1}`,
-                        status: 3 });
+                    monitors.push({ name: `Monitor ${upCount + downCount + i + 1}`, status: 3 });
                 }
                 for (let i = 0; i < pendingCount; i++) {
-                    monitors.push({ name: `Monitor ${upCount + downCount + maintenanceCount + i + 1}`,
-                        status: 2 });
+                    monitors.push({ name: `Monitor ${upCount + downCount + maintenanceCount + i + 1}`, status: 2 });
                 }
             } else {
                 monitors = Array(scenario.monitorCount).fill({}); // Show count
@@ -381,10 +327,10 @@ describe("StatusPage Model", () => {
                 {},
                 {
                     heartbeats: [{ status: 1 }],
-                    statusDescription: "All Systems Operational"
+                    statusDescription: "All Systems Operational",
                 }
             );
-    
+
             try {
                 const buffer = await StatusPage.generateOGImage(mockPage);
                 await assertValidPNG(buffer);
@@ -394,20 +340,20 @@ describe("StatusPage Model", () => {
                 cleanup();
             }
         });
-    
+
         test("generateOGImage() handles status page with custom icon and no branding", async () => {
             const { mockPage, cleanup } = createMockStatusPage(
                 {
                     title: "Production",
                     show_powered_by: false,
-                    icon: "/icon.svg"
+                    icon: "/icon.svg",
                 },
                 {
                     heartbeats: [{ status: 1 }, { status: 0 }],
-                    statusDescription: "Partially Degraded Service"
+                    statusDescription: "Partially Degraded Service",
                 }
             );
-    
+
             try {
                 const buffer = await StatusPage.generateOGImage(mockPage);
                 await assertValidPNG(buffer);

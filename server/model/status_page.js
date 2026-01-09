@@ -317,7 +317,7 @@ class StatusPage extends BeanModel {
                             for (const monitor of group.monitorList) {
                                 monitors.push({
                                     name: monitor.name,
-                                    status: monitor.status || 2 // 1=up, 0=down, 2=pending
+                                    status: monitor.status || 2, // 1=up, 0=down, 2=pending
                                 });
                             }
                         }
@@ -330,9 +330,8 @@ class StatusPage extends BeanModel {
         }
 
         // Get icon - use getIcon() method if available, otherwise use icon property
-        const icon = (statusPage.getIcon && typeof statusPage.getIcon === "function")
-            ? statusPage.getIcon()
-            : statusPage.icon;
+        const icon =
+            statusPage.getIcon && typeof statusPage.getIcon === "function" ? statusPage.getIcon() : statusPage.icon;
 
         // If no detailed monitor data, create array with count for display
         const monitorsForDisplay = monitors.length > 0 ? monitors : heartbeats.map(() => ({}));
@@ -344,7 +343,7 @@ class StatusPage extends BeanModel {
             statusColor,
             icon,
             showPoweredBy: !!statusPage.show_powered_by,
-            monitors: monitorsForDisplay
+            monitors: monitorsForDisplay,
         });
     }
 
