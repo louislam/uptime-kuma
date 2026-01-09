@@ -175,17 +175,26 @@ class Prometheus {
 
         if (uptime) {
             try {
-                monitorAverageResponseTimeSeconds.set({ ...this.monitorLabelValues, window: "1d" }, uptime.data24h.avgPing / 1000);
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "1d" },
+                    uptime.data24h.avgPing / 1000
+                );
             } catch (e) {
                 log.error("prometheus", "Caught error", e);
             }
             try {
-                monitorAverageResponseTimeSeconds.set({ ...this.monitorLabelValues, window: "30d" }, uptime.data30d.avgPing / 1000);
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "30d" },
+                    uptime.data30d.avgPing / 1000
+                );
             } catch (e) {
                 log.error("prometheus", "Caught error", e);
             }
             try {
-                monitorAverageResponseTimeSeconds.set({ ...this.monitorLabelValues, window: "365d" }, uptime.data1y.avgPing / 1000);
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "365d" },
+                    uptime.data1y.avgPing / 1000
+                );
             } catch (e) {
                 log.error("prometheus", "Caught error", e);
             }
