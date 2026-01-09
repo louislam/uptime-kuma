@@ -62,12 +62,12 @@
         <div class="form-text">{{ $t("aliyun_enable_optional_variables_at_the_risk_of_non_delivery") }}</div>
         <br />
         <div class="form-text">
-            <i18n-t tag="p" keypath="aliun-template-requirements-and-parameters">
+            <i18n-t tag="p" keypath="aliyun-template-requirements-and-parameters">
                 <template #parameters>
                     <code>${name} ${time} ${status}</code>
                 </template>
             </i18n-t>
-            <i18n-t tag="p" keypath="aliun-template-optional-parameters">
+            <i18n-t tag="p" keypath="aliyun-template-optional-parameters">
                 <template #parameters>
                     <code>${msg}</code>
                 </template>
