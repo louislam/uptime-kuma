@@ -162,9 +162,9 @@ exports.pingAsync = function (
         const url = new URL(`http://${destAddr}`);
         destAddr = url.hostname;
         // Enforce valid IPv6 address
-        //if (destAddr.startsWith("[") && destAddr.endsWith("]")) {
-        //    destAddr = destAddr.slice(1, -1);
-        //}
+        if (destAddr.startsWith("[") && destAddr.endsWith("]")) {
+            destAddr = destAddr.slice(1, -1);
+        }
     } catch (e) {
         // ignore
     }
