@@ -10,13 +10,98 @@
 */
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.PING_PER_REQUEST_TIMEOUT_DEFAULT = exports.PING_PER_REQUEST_TIMEOUT_MAX = exports.PING_PER_REQUEST_TIMEOUT_MIN = exports.PING_COUNT_DEFAULT = exports.PING_COUNT_MAX = exports.PING_COUNT_MIN = exports.PING_GLOBAL_TIMEOUT_DEFAULT = exports.PING_GLOBAL_TIMEOUT_MAX = exports.PING_GLOBAL_TIMEOUT_MIN = exports.PING_PACKET_SIZE_DEFAULT = exports.PING_PACKET_SIZE_MAX = exports.PING_PACKET_SIZE_MIN = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
-exports.evaluateJsonQuery = exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMaintenanceRelativeURL = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = void 0;
+exports.CONSOLE_STYLE_FgPink =
+    exports.CONSOLE_STYLE_FgBrown =
+    exports.CONSOLE_STYLE_FgViolet =
+    exports.CONSOLE_STYLE_FgLightBlue =
+    exports.CONSOLE_STYLE_FgLightGreen =
+    exports.CONSOLE_STYLE_FgOrange =
+    exports.CONSOLE_STYLE_FgGray =
+    exports.CONSOLE_STYLE_FgWhite =
+    exports.CONSOLE_STYLE_FgCyan =
+    exports.CONSOLE_STYLE_FgMagenta =
+    exports.CONSOLE_STYLE_FgBlue =
+    exports.CONSOLE_STYLE_FgYellow =
+    exports.CONSOLE_STYLE_FgGreen =
+    exports.CONSOLE_STYLE_FgRed =
+    exports.CONSOLE_STYLE_FgBlack =
+    exports.CONSOLE_STYLE_Hidden =
+    exports.CONSOLE_STYLE_Reverse =
+    exports.CONSOLE_STYLE_Blink =
+    exports.CONSOLE_STYLE_Underscore =
+    exports.CONSOLE_STYLE_Dim =
+    exports.CONSOLE_STYLE_Bright =
+    exports.CONSOLE_STYLE_Reset =
+    exports.PING_PER_REQUEST_TIMEOUT_DEFAULT =
+    exports.PING_PER_REQUEST_TIMEOUT_MAX =
+    exports.PING_PER_REQUEST_TIMEOUT_MIN =
+    exports.PING_COUNT_DEFAULT =
+    exports.PING_COUNT_MAX =
+    exports.PING_COUNT_MIN =
+    exports.PING_GLOBAL_TIMEOUT_DEFAULT =
+    exports.PING_GLOBAL_TIMEOUT_MAX =
+    exports.PING_GLOBAL_TIMEOUT_MIN =
+    exports.PING_PACKET_SIZE_DEFAULT =
+    exports.PING_PACKET_SIZE_MAX =
+    exports.PING_PACKET_SIZE_MIN =
+    exports.MIN_INTERVAL_SECOND =
+    exports.MAX_INTERVAL_SECOND =
+    exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND =
+    exports.SQL_DATETIME_FORMAT =
+    exports.SQL_DATE_FORMAT =
+    exports.STATUS_PAGE_MAINTENANCE =
+    exports.STATUS_PAGE_PARTIAL_DOWN =
+    exports.STATUS_PAGE_ALL_UP =
+    exports.STATUS_PAGE_ALL_DOWN =
+    exports.MAINTENANCE =
+    exports.PENDING =
+    exports.UP =
+    exports.DOWN =
+    exports.appName =
+    exports.isNode =
+    exports.isDev =
+        void 0;
+exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD =
+    exports.evaluateJsonQuery =
+    exports.intHash =
+    exports.localToUTC =
+    exports.utcToLocal =
+    exports.utcToISODateTime =
+    exports.isoToUTCDateTime =
+    exports.parseTimeFromTimeObject =
+    exports.parseTimeObject =
+    exports.getMonitorRelativeURL =
+    exports.genSecret =
+    exports.getCryptoRandomInt =
+    exports.getRandomInt =
+    exports.getRandomArbitrary =
+    exports.TimeLogger =
+    exports.polyfill =
+    exports.log =
+    exports.debug =
+    exports.ucfirst =
+    exports.sleep =
+    exports.flipStatus =
+    exports.badgeConstants =
+    exports.CONSOLE_STYLE_BgGray =
+    exports.CONSOLE_STYLE_BgWhite =
+    exports.CONSOLE_STYLE_BgCyan =
+    exports.CONSOLE_STYLE_BgMagenta =
+    exports.CONSOLE_STYLE_BgBlue =
+    exports.CONSOLE_STYLE_BgYellow =
+    exports.CONSOLE_STYLE_BgGreen =
+    exports.CONSOLE_STYLE_BgRed =
+    exports.CONSOLE_STYLE_BgBlack =
+        void 0;
 const dayjs_1 = require("dayjs");
 const jsonata = require("jsonata");
 exports.isDev = process.env.NODE_ENV === "development";
-exports.isNode = typeof process !== "undefined" && ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0 ? void 0 : _a.node);
-const dayjs = (exports.isNode) ? require("dayjs") : dayjs_1.default;
+exports.isNode =
+    typeof process !== "undefined" &&
+    ((_a = process === null || process === void 0 ? void 0 : process.versions) === null || _a === void 0
+        ? void 0
+        : _a.node);
+const dayjs = exports.isNode ? require("dayjs") : dayjs_1.default;
 exports.appName = "Uptime Kuma";
 exports.DOWN = 0;
 exports.UP = 1;
@@ -87,10 +172,10 @@ const consoleModuleColors = [
     exports.CONSOLE_STYLE_FgPink,
 ];
 const consoleLevelColors = {
-    "INFO": exports.CONSOLE_STYLE_FgCyan,
-    "WARN": exports.CONSOLE_STYLE_FgYellow,
-    "ERROR": exports.CONSOLE_STYLE_FgRed,
-    "DEBUG": exports.CONSOLE_STYLE_FgGray,
+    INFO: exports.CONSOLE_STYLE_FgCyan,
+    WARN: exports.CONSOLE_STYLE_FgYellow,
+    ERROR: exports.CONSOLE_STYLE_FgRed,
+    DEBUG: exports.CONSOLE_STYLE_FgGray,
 };
 exports.badgeConstants = {
     naColor: "#999",
@@ -108,7 +193,7 @@ exports.badgeConstants = {
     defaultCertExpValueSuffix: " days",
     defaultCertExpLabelSuffix: "h",
     defaultCertExpireWarnDays: "14",
-    defaultCertExpireDownDays: "7"
+    defaultCertExpireDownDays: "7",
 };
 function flipStatus(s) {
     if (s === exports.UP) {
@@ -121,7 +206,7 @@ function flipStatus(s) {
 }
 exports.flipStatus = flipStatus;
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 exports.sleep = sleep;
 function ucfirst(str) {
@@ -145,7 +230,7 @@ class Logger {
             debug: [],
         };
         if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
-            const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+            const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map((v) => v.toLowerCase());
             for (const pair of list) {
                 const values = pair.split(/_(.*)/s);
                 if (values.length >= 2) {
@@ -168,8 +253,7 @@ class Logger {
         let now;
         if (dayjs.tz) {
             now = dayjs.tz(new Date()).format();
-        }
-        else {
+        } else {
             now = dayjs().format();
         }
         const levelColor = consoleLevelColors[level];
@@ -188,8 +272,7 @@ class Logger {
             }
             modulePart = "[" + moduleColor + module + exports.CONSOLE_STYLE_Reset + "]";
             levelPart = levelColor + `${level}:` + exports.CONSOLE_STYLE_Reset;
-        }
-        else {
+        } else {
             timePart = now;
             modulePart = `[${module}]`;
             levelPart = `${level}:`;
@@ -263,19 +346,21 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 exports.getRandomInt = getRandomInt;
-const getRandomBytes = ((typeof window !== "undefined" && window.crypto)
-    ? function () {
-        return (numBytes) => {
-            const randomBytes = new Uint8Array(numBytes);
-            for (let i = 0; i < numBytes; i += 65536) {
-                window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
-            }
-            return randomBytes;
-        };
-    }
-    : function () {
-        return require("crypto").randomBytes;
-    })();
+const getRandomBytes = (
+    typeof window !== "undefined" && window.crypto
+        ? function () {
+              return (numBytes) => {
+                  const randomBytes = new Uint8Array(numBytes);
+                  for (let i = 0; i < numBytes; i += 65536) {
+                      window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
+                  }
+                  return randomBytes;
+              };
+          }
+        : function () {
+              return require("crypto").randomBytes;
+          }
+)();
 function getCryptoRandomInt(min, max) {
     const range = max - min;
     if (range >= Math.pow(2, 32)) {
@@ -290,19 +375,18 @@ function getCryptoRandomInt(min, max) {
             bytesNeeded += 1;
         }
         bitsNeeded += 1;
-        mask = mask << 1 | 1;
+        mask = (mask << 1) | 1;
         tmpRange = tmpRange >>> 1;
     }
     const randomBytes = getRandomBytes(bytesNeeded);
     let randomValue = 0;
     for (let i = 0; i < bytesNeeded; i++) {
-        randomValue |= randomBytes[i] << 8 * i;
+        randomValue |= randomBytes[i] << (8 * i);
     }
     randomValue = randomValue & mask;
     if (randomValue <= range) {
         return min + randomValue;
-    }
-    else {
+    } else {
         return getCryptoRandomInt(min, max);
     }
 }
@@ -321,10 +405,6 @@ function getMonitorRelativeURL(id) {
     return "/dashboard/" + id;
 }
 exports.getMonitorRelativeURL = getMonitorRelativeURL;
-function getMaintenanceRelativeURL(id) {
-    return "/maintenance/" + id;
-}
-exports.getMaintenanceRelativeURL = getMaintenanceRelativeURL;
 function parseTimeObject(time) {
     if (!time) {
         return {
@@ -380,30 +460,36 @@ function intHash(str, length = 10) {
     for (let i = 0; i < str.length; i++) {
         hash += str.charCodeAt(i);
     }
-    return (hash % length + length) % length;
+    return ((hash % length) + length) % length;
 }
 exports.intHash = intHash;
 async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue) {
     let response;
     try {
         response = JSON.parse(data);
-    }
-    catch (_a) {
-        response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
+    } catch (_a) {
+        response =
+            (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
     }
     try {
-        response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
+        response = jsonPath ? await jsonata(jsonPath).evaluate(response) : response;
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
         }
         if (Array.isArray(response)) {
             const responseStr = JSON.stringify(response);
             const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
-            throw new Error("JSON query returned the array " + truncatedResponse + ", but a primitive value is required. " +
-                "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean().");
+            throw new Error(
+                "JSON query returned the array " +
+                    truncatedResponse +
+                    ", but a primitive value is required. " +
+                    "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean()."
+            );
         }
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {
-            throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
+            throw new Error(
+                `The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`
+            );
         }
         let jsonQueryExpression;
         switch (jsonPathOperator) {
@@ -428,20 +514,40 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
         const expression = jsonata(jsonQueryExpression);
         const status = await expression.evaluate({
             value: response.toString(),
-            expected: expectedValue.toString()
+            expected: expectedValue.toString(),
         });
         if (status === undefined) {
-            throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
+            throw new Error(
+                "Query evaluation returned undefined. Check query syntax and the structure of the response data"
+            );
         }
         return {
             status,
-            response
+            response,
         };
-    }
-    catch (err) {
+    } catch (err) {
         response = JSON.stringify(response);
-        response = (response && response.length > 50) ? `${response.substring(0, 100)}… (truncated)` : response;
+        response = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response;
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }
 exports.evaluateJsonQuery = evaluateJsonQuery;
+exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
+    http: "url",
+    keyword: "url",
+    "json-query": "url",
+    "real-browser": "url",
+    "websocket-upgrade": "url",
+    port: "hostname",
+    ping: "hostname",
+    "grpc-keyword": "grpcUrl",
+    dns: "hostname",
+    smtp: "hostname",
+    snmp: "hostname",
+    gamedig: "hostname",
+    steam: "hostname",
+    mqtt: "hostname",
+    radius: "hostname",
+    "tailscale-ping": "hostname",
+    "sip-options": "hostname",
+};

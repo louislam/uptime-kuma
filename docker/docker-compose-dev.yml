@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   uptime-kuma:
@@ -9,6 +9,5 @@ services:
       - ../server:/app/server
       - ../db:/app/db
     ports:
-      - "3001:3001"  # <Host Port>:<Container Port>
+      - "3001:3001" # <Host Port>:<Container Port>
       - "3307:3306"
-

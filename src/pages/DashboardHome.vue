@@ -9,28 +9,19 @@
                 <div class="row">
                     <div class="col">
                         <h3>{{ $t("Up") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.up === 0 && 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.up === 0 && 'text-secondary'">
                             {{ $root.stats.up }}
                         </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Down") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.down > 0 ? 'text-danger' : 'text-secondary'">
                             {{ $root.stats.down }}
                         </span>
                     </div>
                     <div class="col">
                         <h3>{{ $t("Maintenance") }}</h3>
-                        <span
-                            class="num"
-                            :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'"
-                        >
+                        <span class="num" :class="$root.stats.maintenance > 0 ? 'text-maintenance' : 'text-secondary'">
                             {{ $root.stats.maintenance }}
                         </span>
                     </div>
@@ -45,7 +36,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box table-shadow-box" style="overflow-x: hidden;">
+            <div class="shadow-box table-shadow-box" style="overflow-x: hidden">
                 <div class="mb-3 text-end">
                     <button
                         class="btn btn-sm btn-outline-danger"
@@ -65,10 +56,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(beat, index) in displayedRecords" :key="index" :class="{ 'shadow-box': $root.windowWidth <= 550}">
-                            <td class="name-column"><router-link :to="`/dashboard/${beat.monitorID}`">{{ $root.monitorList[beat.monitorID]?.name }}</router-link></td>
+                        <tr
+                            v-for="(beat, index) in displayedRecords"
+                            :key="index"
+                            :class="{ 'shadow-box': $root.windowWidth <= 550 }"
+                        >
+                            <td class="name-column">
+                                <router-link :to="`/dashboard/${beat.monitorID}`">
+                                    {{ $root.monitorList[beat.monitorID]?.name }}
+                                </router-link>
+                            </td>
                             <td><Status :status="beat.status" /></td>
-                            <td :class="{ 'border-0':! beat.msg}"><Datetime :value="beat.time" /></td>
+                            <td :class="{ 'border-0': !beat.msg }"><Datetime :value="beat.time" /></td>
                             <td class="border-0">{{ beat.msg }}</td>
                         </tr>
 
@@ -119,8 +118,8 @@ export default {
     props: {
         calculatedHeight: {
             type: Number,
-            default: 0
-        }
+            default: 0,
+        },
     },
     data() {
         return {
@@ -222,7 +221,6 @@ export default {
             } else {
                 this.perPage = this.initialPerPage;
             }
-
         },
 
         clearAllEventsDialog() {
@@ -304,4 +302,3 @@ table {
     }
 }
 </style>
-

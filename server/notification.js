@@ -77,12 +77,14 @@ const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
 const Brevo = require("./notification-providers/brevo");
+const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
 const SMSIR = require("./notification-providers/smsir");
 const { commandExists } = require("./util-server");
 const Webpush = require("./notification-providers/Webpush");
+const HaloPSA = require("./notification-providers/HaloPSA");
 
 class Notification {
     providerList = {};
@@ -174,6 +176,7 @@ class Notification {
             new Cellsynt(),
             new Wpush(),
             new Brevo(),
+            new Resend(),
             new YZJ(),
             new SMSPlanet(),
             new SpugPush(),
@@ -181,6 +184,7 @@ class Notification {
             new SMSIR(),
             new SendGrid(),
             new Webpush(),
+            new HaloPSA(),
         ];
         for (let item of list) {
             if (!item.name) {
@@ -203,19 +207,9 @@ class Notification {
      * @returns {Promise<string>} Successful msg
      * @throws Error with fail msg
      */
-    static async send(
-        notification,
-        msg,
-        monitorJSON = null,
-        heartbeatJSON = null
-    ) {
+    static async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         if (this.providerList[notification.type]) {
-            return this.providerList[notification.type].send(
-                notification,
-                msg,
-                monitorJSON,
-                heartbeatJSON
-            );
+            return this.providerList[notification.type].send(notification, msg, monitorJSON, heartbeatJSON);
         } else {
             throw new Error("Notification type is not supported");
         }
@@ -232,10 +226,7 @@ class Notification {
         let bean;
 
         if (notificationID) {
-            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
-                notificationID,
-                userID,
-            ]);
+            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
 
             if (!bean) {
                 throw new Error("notification not found");
@@ -264,10 +255,7 @@ class Notification {
      * @returns {Promise<void>}
      */
     static async delete(notificationID, userID) {
-        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
-            notificationID,
-            userID,
-        ]);
+        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
 
         if (!bean) {
             throw new Error("notification not found");
@@ -292,16 +280,13 @@ class Notification {
  * @returns {Promise<void>}
  */
 async function applyNotificationEveryMonitor(notificationID, userID) {
-    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
-        userID,
-    ]);
+    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [userID]);
 
     for (let i = 0; i < monitors.length; i++) {
-        let checkNotification = await R.findOne(
-            "monitor_notification",
-            " monitor_id = ? AND notification_id = ? ",
-            [ monitors[i].id, notificationID ]
-        );
+        let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
+            monitors[i].id,
+            notificationID,
+        ]);
 
         if (!checkNotification) {
             let relation = R.dispense("monitor_notification");

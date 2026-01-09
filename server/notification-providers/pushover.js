@@ -16,15 +16,15 @@ class Pushover extends NotificationProvider {
         const url = "https://api.pushover.net/1/messages.json";
 
         let data = {
-            "message": msg,
-            "user": notification.pushoveruserkey,
-            "token": notification.pushoverapptoken,
-            "sound": notification.pushoversounds,
-            "priority": notification.pushoverpriority,
-            "title": notification.pushovertitle,
-            "retry": "30",
-            "expire": "3600",
-            "html": 1,
+            message: msg,
+            user: notification.pushoveruserkey,
+            token: notification.pushoverapptoken,
+            sound: notification.pushoversounds,
+            priority: notification.pushoverpriority,
+            title: notification.pushovertitle,
+            retry: "30",
+            expire: "3600",
+            html: 1,
         };
 
         const baseURL = await setting("primaryBaseURL");
@@ -55,7 +55,6 @@ class Pushover extends NotificationProvider {
             data.message += `\n<b>Time (${heartbeatJSON["timezone"]})</b>: ${heartbeatJSON["localDateTime"]}`;
             await axios.post(url, data, config);
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

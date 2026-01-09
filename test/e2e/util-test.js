@@ -13,7 +13,7 @@ export async function screenshot(testInfo, page) {
     const screenshot = await page.screenshot();
     await testInfo.attach("screenshot", {
         body: screenshot,
-        contentType: "image/png"
+        contentType: "image/png",
     });
 }
 

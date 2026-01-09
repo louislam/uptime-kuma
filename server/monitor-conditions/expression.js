@@ -15,7 +15,7 @@ const LOGICAL = {
  * @returns {void}
  */
 function processMonitorConditions(conditions, parentGroup) {
-    conditions.forEach(condition => {
+    conditions.forEach((condition) => {
         const andOr = condition.andOr === LOGICAL.OR ? LOGICAL.OR : LOGICAL.AND;
 
         if (condition.type === "group") {

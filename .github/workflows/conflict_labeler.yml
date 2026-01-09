@@ -1,6 +1,11 @@
 name: Merge Conflict Labeler
 
-on:
+# pull_request_target is safe here because:
+# 1. Only uses a pinned trusted action (by SHA)
+# 2. Has minimal permissions (contents: read, pull-requests: write)
+# 3. Doesn't checkout or execute any untrusted code from PRs
+# 4. Only adds/removes labels based on merge conflict status
+on: # zizmor: ignore[dangerous-triggers]
   push:
     branches:
       - master
@@ -19,7 +24,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Apply label
-        uses: eps1lon/actions-label-merge-conflict@v3
+        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0 # v3.0.3
         with:
-          dirtyLabel: 'needs:resolve-merge-conflict'
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          dirtyLabel: "needs:resolve-merge-conflict"
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
