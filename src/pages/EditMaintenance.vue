@@ -496,21 +496,21 @@ export default {
             return this.$route.path.startsWith("/maintenance/clone");
         },
 
-        /**  
-         * Check if maintenance has monitors  
-         * @returns {boolean} True if maintenance has monitors  
-         */  
-        hasMonitors() {  
-            return this.affectedMonitors.length > 0;  
-        },  
+        /**
+         * Check if maintenance has monitors
+         * @returns {boolean} True if maintenance has monitors
+         */
+        hasMonitors() {
+            return this.affectedMonitors.length > 0;
+        },
 
-        /**  
-         * Check if maintenance status pages assigned  
-         * @returns {boolean} True if maintenance status pages  
-         */  
-        hasStatusPages() {  
-            return this.showOnAllPages || this.selectedStatusPages.length > 0;  
-        },  
+        /**
+         * Check if maintenance status pages assigned
+         * @returns {boolean} True if maintenance status pages
+         */
+        hasStatusPages() {
+            return this.showOnAllPages || this.selectedStatusPages.length > 0;
+        },
     },
     watch: {
         "$route.fullPath"() {
@@ -655,7 +655,6 @@ export default {
             }
         },
 
-
         /**
          * Handle form submission - show confirmation if no monitors selected
          * @returns {void}
@@ -675,7 +674,7 @@ export default {
          */
         async doSubmit() {
             this.processing = true;
-            
+
             if (!this.hasMonitors && !this.hasStatusPages) {
                 this.$root.toastError(this.$t("noMonitorsOrStatusPagesSelectedError"));
                 this.processing = false;
