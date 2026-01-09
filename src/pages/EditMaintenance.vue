@@ -660,8 +660,8 @@ export default {
          * @returns {void}
          */
         submit() {
-            // If creating/cloning and no monitors selected, show confirmation
-            if (!this.hasMonitors) {
+            // While unusual, not requiring montiors can allow showing on status pages if a "currently unmonitored" service goes down
+            if (!this.hasMonitors && this.hasStatusPages) {
                 this.$refs.confirmNoMonitors.show();
                 return;
             }
