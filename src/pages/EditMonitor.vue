@@ -1119,7 +1119,7 @@
                                     :max="maxInterval"
                                     step="1"
                                     @focus="lowIntervalConfirmation.editedValue = true"
-                                    @blur="checkIntervalValue"
+                                    @blur="finishUpdateInterval"
                                 />
 
                                 <div class="form-text">
@@ -3156,10 +3156,6 @@ message HealthCheckResponse {
             }
 
             return adjustedLimit;
-        },
-
-        checkIntervalValue() {
-            this.finishUpdateInterval();
         },
 
         finishUpdateInterval() {
