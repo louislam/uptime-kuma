@@ -1,4 +1,4 @@
-process.env.UPTIME_KUMA_HIDE_LOG = [ "info_db", "info_server" ].join(",");
+process.env.UPTIME_KUMA_HIDE_LOG = ["info_db", "info_server"].join(",");
 
 const { describe, test, before, after } = require("node:test");
 const assert = require("node:assert");
@@ -26,17 +26,17 @@ describe("Steam Monitor", () => {
                     servers: [
                         {
                             name: "Test Game Server",
-                            addr: "127.0.0.1:27015"
-                        }
-                    ]
-                }
+                            addr: "127.0.0.1:27015",
+                        },
+                    ],
+                },
             });
         });
         app.get("/EmptyGetServerList/", (req, res) => {
             res.json({
                 response: {
-                    servers: []
-                }
+                    servers: [],
+                },
             });
         });
 
@@ -63,13 +63,13 @@ describe("Steam Monitor", () => {
             packetSize: 56,
             ignoreTls: false,
             maxredirects: 10,
-            getAcceptedStatuscodes: () => ["200-299"]
+            getAcceptedStatuscodes: () => ["200-299"],
         };
 
         const heartbeat = {
             msg: "",
             status: PENDING,
-            ping: null
+            ping: null,
         };
 
         await steamMonitor.check(monitor, heartbeat, {});
@@ -89,19 +89,16 @@ describe("Steam Monitor", () => {
             timeout: 2,
             ignoreTls: false,
             maxredirects: 10,
-            getAcceptedStatuscodes: () => ["200-299"]
+            getAcceptedStatuscodes: () => ["200-299"],
         };
 
         const heartbeat = {
             msg: "",
-            status: PENDING
+            status: PENDING,
         };
 
-        await assert.rejects(
-            steamMonitor.check(monitor, heartbeat, {}),
-            {
-                message: "Server not found on Steam"
-            }
-        );
+        await assert.rejects(steamMonitor.check(monitor, heartbeat, {}), {
+            message: "Server not found on Steam",
+        });
     });
 });
