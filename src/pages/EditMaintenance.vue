@@ -341,6 +341,10 @@
                     </div>
                 </div>
             </form>
+
+            <Confirm ref="confirmNoMonitors" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="doSubmit">
+                {{ $t("noMonitorsSelectedWarning") }}
+            </Confirm>
         </div>
     </transition>
 </template>
@@ -350,11 +354,13 @@ import VueMultiselect from "vue-multiselect";
 import Datepicker from "@vuepic/vue-datepicker";
 import { timezoneList } from "../util-frontend";
 import cronstrue from "cronstrue/i18n";
+import Confirm from "../components/Confirm.vue";
 
 export default {
     components: {
         VueMultiselect,
         Datepicker,
+        Confirm,
     },
 
     data() {
@@ -488,6 +494,22 @@ export default {
 
         isClone() {
             return this.$route.path.startsWith("/maintenance/clone");
+        },
+
+        /**
+         * Check if maintenance has monitors
+         * @returns {boolean} True if maintenance has monitors
+         */
+        hasMonitors() {
+            return this.affectedMonitors.length > 0;
+        },
+
+        /**
+         * Check if maintenance status pages assigned
+         * @returns {boolean} True if maintenance status pages
+         */
+        hasStatusPages() {
+            return this.showOnAllPages || this.selectedStatusPages.length > 0;
         },
     },
     watch: {
@@ -634,15 +656,29 @@ export default {
         },
 
         /**
+         * Handle form submission - show confirmation if no monitors selected
+         * @returns {void}
+         */
+        submit() {
+            // While unusual, not requiring montiors can allow showing on status pages if a "currently unmonitored" service goes down
+            if (!this.hasMonitors && this.hasStatusPages) {
+                this.$refs.confirmNoMonitors.show();
+                return;
+            }
+            this.doSubmit();
+        },
+
+        /**
          * Create new maintenance
          * @returns {Promise<void>}
          */
-        async submit() {
+        async doSubmit() {
             this.processing = true;
 
-            if (this.affectedMonitors.length === 0) {
-                this.$root.toastError(this.$t("atLeastOneMonitor"));
-                return (this.processing = false);
+            if (!this.hasMonitors && !this.hasStatusPages) {
+                this.$root.toastError(this.$t("noMonitorsOrStatusPagesSelectedError"));
+                this.processing = false;
+                return;
             }
 
             if (this.isAdd || this.isClone) {
