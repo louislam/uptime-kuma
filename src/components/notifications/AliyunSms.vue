@@ -4,25 +4,34 @@
             {{ $t("AccessKeyId") }}
             <span style="color: red"><sup>*</sup></span>
         </label>
-        <input id="accessKeyId" v-model="$parent.notification.accessKeyId" type="text" class="form-control" required />
+        <HiddenInput
+            id="accessKeyId"
+            v-model="$parent.notification.accessKeyId"
+            :required="true"
+            autocomplete="new-password"
+        ></HiddenInput>
 
         <label for="secretAccessKey" class="form-label">
             {{ $t("SecretAccessKey") }}
             <span style="color: red"><sup>*</sup></span>
         </label>
-        <input
+        <HiddenInput
             id="secretAccessKey"
             v-model="$parent.notification.secretAccessKey"
-            type="text"
-            class="form-control"
-            required
-        />
+            :required="true"
+            autocomplete="new-password"
+        ></HiddenInput>
 
         <label for="phonenumber" class="form-label">
             {{ $t("PhoneNumbers") }}
             <span style="color: red"><sup>*</sup></span>
         </label>
-        <input id="phonenumber" v-model="$parent.notification.phonenumber" type="text" class="form-control" required />
+        <HiddenInput
+            id="phonenumber"
+            v-model="$parent.notification.phonenumber"
+            :required="true"
+            autocomplete="new-password"
+        ></HiddenInput>
 
         <label for="templateCode" class="form-label">
             {{ $t("TemplateCode") }}
@@ -71,3 +80,12 @@
         </div>
     </div>
 </template>
+<script>
+import HiddenInput from "../HiddenInput.vue";
+
+export default {
+    components: {
+        HiddenInput,
+    },
+};
+</script>
