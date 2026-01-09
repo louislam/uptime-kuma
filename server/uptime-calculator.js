@@ -206,7 +206,7 @@ class UptimeCalculator {
      * @param {number} status status
      * @param {number} ping Ping
      * @param {dayjs.Dayjs} date Date (Only for migration)
-     * @returns {dayjs.Dayjs} date
+     * @returns {Promise<dayjs.Dayjs>} date
      * @throws {Error} Invalid status
      */
     async update(status, ping = 0, date) {
