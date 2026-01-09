@@ -3158,6 +3158,10 @@ message HealthCheckResponse {
             return adjustedLimit;
         },
 
+        checkIntervalValue() {
+            this.finishUpdateInterval();
+        },
+
         finishUpdateInterval() {
             if (this.monitor.type === "ping") {
                 // Calculate the minimum required interval based on ping configuration
