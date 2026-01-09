@@ -9,6 +9,8 @@ const { R } = require("redbean-node");
 const { Notification } = require("../../server/notification");
 const { Settings } = require("../../server/settings");
 const { setSetting } = require("../../server/util-server");
+const dayjs = require("dayjs");
+dayjs.extend(require("dayjs/plugin/utc"));
 
 const testDb = new TestDB();
 
@@ -231,7 +233,7 @@ describe("Domain Expiry", () => {
     test("checkExpiry() caches expiration date in database", async () => {
         await DomainExpiry.checkExpiry("google.com"); // RDAP -> Cache
         const domain = await DomainExpiry.findByName("google.com");
-        assert(Date.now() - domain.lastCheck < 5 * 1000);
+        assert(dayjs.utc().diff(dayjs.utc(domain.lastCheck), "second") < 5);
     });
 
     test("sendNotifications() triggers notification for expiring domain", async () => {
@@ -240,7 +242,8 @@ describe("Domain Expiry", () => {
             port: 3010,
             url: "capture",
         };
-        await setSetting("domainExpiryNotifyDays", [1, 2, 1500], "general");
+        const manyDays = 3650;
+        await setSetting("domainExpiryNotifyDays", [manyDays], "general");
         const notif = R.convertToBean("notification", {
             config: JSON.stringify({
                 type: "webhook",
@@ -252,8 +255,6 @@ describe("Domain Expiry", () => {
             user_id: 1,
             name: "Testhook",
         });
-        const manyDays = 3650;
-        setSetting("domainExpiryNotifyDays", [manyDays], "general");
         const [, data] = await Promise.all([
             DomainExpiry.sendNotifications("google.com", [notif]),
             mockWebhook(hook.port, hook.url),
