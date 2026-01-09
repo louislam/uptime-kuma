@@ -360,7 +360,7 @@ export default {
     components: {
         VueMultiselect,
         Datepicker,
-        Confirm
+        Confirm,
     },
 
     data() {
