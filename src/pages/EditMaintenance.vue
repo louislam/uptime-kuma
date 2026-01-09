@@ -495,6 +495,22 @@ export default {
         isClone() {
             return this.$route.path.startsWith("/maintenance/clone");
         },
+
+        /**  
+         * Check if maintenance has monitors  
+         * @returns {boolean} True if maintenance has monitors  
+         */  
+        hasMonitors() {  
+            return this.affectedMonitors.length > 0;  
+        },  
+
+        /**  
+         * Check if maintenance status pages assigned  
+         * @returns {boolean} True if maintenance status pages  
+         */  
+        hasStatusPages() {  
+            return this.showOnAllPages || this.selectedStatusPages.length > 0;  
+        },  
     },
     watch: {
         "$route.fullPath"() {
@@ -639,15 +655,6 @@ export default {
             }
         },
 
-        /**
-         * Check if maintenance has monitors or status pages assigned
-         * @returns {boolean} True if maintenance has monitors or status pages
-         */
-        hasMonitorsOrStatusPages() {
-            const hasMonitors = this.affectedMonitors.length > 0;
-            const hasStatusPages = this.showOnAllPages || this.selectedStatusPages.length > 0;
-            return hasMonitors || hasStatusPages;
-        },
 
         /**
          * Handle form submission - show confirmation if no monitors selected
@@ -655,7 +662,7 @@ export default {
          */
         submit() {
             // If creating/cloning and no monitors selected, show confirmation
-            if ((this.isAdd || this.isClone) && this.affectedMonitors.length === 0) {
+            if (!this.hasMonitors) {
                 this.$refs.confirmNoMonitors.show();
                 return;
             }
@@ -668,6 +675,12 @@ export default {
          */
         async doSubmit() {
             this.processing = true;
+            
+            if (!this.hasMonitors && !this.hasStatusPages) {
+                this.$root.toastError(this.$t("noMonitorsOrStatusPagesSelectedError"));
+                this.processing = false;
+                return;
+            }
 
             if (this.isAdd || this.isClone) {
                 this.$root.addMaintenance(this.maintenance, async (res) => {
