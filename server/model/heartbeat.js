@@ -8,7 +8,6 @@ const { BeanModel } = require("redbean-node/dist/bean-model");
  *      3 = MAINTENANCE
  */
 class Heartbeat extends BeanModel {
-
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
@@ -18,7 +17,7 @@ class Heartbeat extends BeanModel {
         return {
             status: this.status,
             time: this.time,
-            msg: "",        // Hide for public
+            msg: "", // Hide for public
             ping: this.ping,
         };
     }
@@ -39,7 +38,6 @@ class Heartbeat extends BeanModel {
             retries: this._retries,
         };
     }
-
 }
 
 module.exports = Heartbeat;

@@ -26,7 +26,7 @@ export const isNode = typeof process !== "undefined" && process?.versions?.node;
  * Smarter dayjs import that supports both frontend and backend
  * @returns {dayjs.Dayjs} dayjs instance
  */
-const dayjs = (isNode) ? require("dayjs") : dayjsFrontend;
+const dayjs = isNode ? require("dayjs") : dayjsFrontend;
 
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
@@ -115,11 +115,11 @@ const consoleModuleColors = [
     CONSOLE_STYLE_FgPink,
 ];
 
-const consoleLevelColors : Record<string, string> = {
-    "INFO": CONSOLE_STYLE_FgCyan,
-    "WARN": CONSOLE_STYLE_FgYellow,
-    "ERROR": CONSOLE_STYLE_FgRed,
-    "DEBUG": CONSOLE_STYLE_FgGray,
+const consoleLevelColors: Record<string, string> = {
+    INFO: CONSOLE_STYLE_FgCyan,
+    WARN: CONSOLE_STYLE_FgYellow,
+    ERROR: CONSOLE_STYLE_FgRed,
+    DEBUG: CONSOLE_STYLE_FgGray,
 };
 
 /**
@@ -134,7 +134,7 @@ export const badgeConstants = {
     defaultDownColor: "#c2290a",
     defaultPendingColor: "#f8a306",
     defaultMaintenanceColor: "#1747f5",
-    defaultPingColor: "blue",  // as defined by badge-maker / shields.io
+    defaultPingColor: "blue", // as defined by badge-maker / shields.io
     defaultStyle: "flat",
     defaultPingValueSuffix: "ms",
     defaultPingLabelSuffix: "h",
@@ -144,7 +144,7 @@ export const badgeConstants = {
     defaultCertExpLabelSuffix: "h",
     // Values Come From Default Notification Times
     defaultCertExpireWarnDays: "14",
-    defaultCertExpireDownDays: "7"
+    defaultCertExpireDownDays: "7",
 };
 
 /**
@@ -170,7 +170,7 @@ export function flipStatus(s: number) {
  * @returns {Promise<void>} Promise that resolves after ms
  */
 export function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -197,7 +197,6 @@ export function debug(msg: unknown) {
 }
 
 class Logger {
-
     /**
      * UPTIME_KUMA_HIDE_LOG=debug_monitor,info_monitor
      *
@@ -207,7 +206,7 @@ class Logger {
      *     "info_monitor",
      *  ]
      */
-    hideLog : Record<string, string[]> = {
+    hideLog: Record<string, string[]> = {
         info: [],
         warn: [],
         error: [],
@@ -219,7 +218,7 @@ class Logger {
      */
     constructor() {
         if (typeof process !== "undefined" && process.env.UPTIME_KUMA_HIDE_LOG) {
-            const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map(v => v.toLowerCase());
+            const list = process.env.UPTIME_KUMA_HIDE_LOG.split(",").map((v) => v.toLowerCase());
 
             for (const pair of list) {
                 // split first "_" only
@@ -281,7 +280,6 @@ class Logger {
 
             modulePart = "[" + moduleColor + module + CONSOLE_STYLE_Reset + "]";
             levelPart = levelColor + `${level}:` + CONSOLE_STYLE_Reset;
-
         } else {
             // No console colors
             timePart = now;
@@ -365,7 +363,11 @@ class Logger {
 
 export const log = new Logger();
 
-declare global { interface String { replaceAll(str: string, newStr: string): string; } }
+declare global {
+    interface String {
+        replaceAll(str: string, newStr: string): string;
+    }
+}
 
 /**
  * String.prototype.replaceAll() polyfill
@@ -444,24 +446,22 @@ export function getRandomInt(min: number, max: number) {
  * @returns {Uint8Array} Random bytes
  */
 const getRandomBytes = (
-    (typeof window !== "undefined" && window.crypto)
-
-        // Browsers
-        ? function () {
-            return (numBytes: number) => {
-                const randomBytes = new Uint8Array(numBytes);
-                for (let i = 0; i < numBytes; i += 65536) {
-                    window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
-                }
-                return randomBytes;
-            };
-        }
-
-    // Node
-        : function () {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            return require("crypto").randomBytes;
-        }
+    typeof window !== "undefined" && window.crypto
+        ? // Browsers
+          function () {
+              return (numBytes: number) => {
+                  const randomBytes = new Uint8Array(numBytes);
+                  for (let i = 0; i < numBytes; i += 65536) {
+                      window.crypto.getRandomValues(randomBytes.subarray(i, i + Math.min(numBytes - i, 65536)));
+                  }
+                  return randomBytes;
+              };
+          }
+        : // Node
+          function () {
+              // eslint-disable-next-line @typescript-eslint/no-var-requires
+              return require("crypto").randomBytes;
+          }
 )();
 
 /**
@@ -471,8 +471,7 @@ const getRandomBytes = (
  * @param max Maximum value of integer
  * @returns Cryptographically suitable random integer
  */
-export function getCryptoRandomInt(min: number, max: number):number {
-
+export function getCryptoRandomInt(min: number, max: number): number {
     // synchronous version of: https://github.com/joepie91/node-random-number-csprng
 
     const range = max - min;
@@ -490,7 +489,7 @@ export function getCryptoRandomInt(min: number, max: number):number {
             bytesNeeded += 1;
         }
         bitsNeeded += 1;
-        mask = mask << 1 | 1;
+        mask = (mask << 1) | 1;
         tmpRange = tmpRange >>> 1;
     }
 
@@ -498,7 +497,7 @@ export function getCryptoRandomInt(min: number, max: number):number {
     let randomValue = 0;
 
     for (let i = 0; i < bytesNeeded; i++) {
-        randomValue |= randomBytes[i] << 8 * i;
+        randomValue |= randomBytes[i] << (8 * i);
     }
 
     randomValue = randomValue & mask;
@@ -519,7 +518,7 @@ export function genSecret(length = 64) {
     let secret = "";
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const charsLength = chars.length;
-    for ( let i = 0; i < length; i++ ) {
+    for (let i = 0; i < length; i++) {
         secret += chars.charAt(getCryptoRandomInt(0, charsLength - 1));
     }
     return secret;
@@ -532,15 +531,6 @@ export function genSecret(length = 64) {
  */
 export function getMonitorRelativeURL(id: string) {
     return "/dashboard/" + id;
-}
-
-/**
- * Get relative path for maintenance
- * @param id ID of maintenance
- * @returns Formatted relative path
- */
-export function getMaintenanceRelativeURL(id: string) {
-    return "/maintenance/" + id;
 }
 
 /**
@@ -579,7 +569,7 @@ export function parseTimeObject(time: string) {
  * @param obj object to parse
  * @returns {string} e.g. 12:00
  */
-export function parseTimeFromTimeObject(obj : any) {
+export function parseTimeFromTimeObject(obj: any) {
     if (!obj) {
         return obj;
     }
@@ -600,7 +590,7 @@ export function parseTimeFromTimeObject(obj : any) {
  * @param input Date
  * @returns ISO Date time
  */
-export function isoToUTCDateTime(input : string) {
+export function isoToUTCDateTime(input: string) {
     return dayjs(input).utc().format(SQL_DATETIME_FORMAT);
 }
 
@@ -608,7 +598,7 @@ export function isoToUTCDateTime(input : string) {
  * @param input valid datetime string
  * @returns {string} ISO DateTime string
  */
-export function utcToISODateTime(input : string) {
+export function utcToISODateTime(input: string) {
     return dayjs.utc(input).toISOString();
 }
 
@@ -618,7 +608,7 @@ export function utcToISODateTime(input : string) {
  * @param format Format to return
  * @returns A string date of SQL_DATETIME_FORMAT
  */
-export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) : string {
+export function utcToLocal(input: string, format = SQL_DATETIME_FORMAT): string {
     return dayjs.utc(input).local().format(format);
 }
 
@@ -628,7 +618,7 @@ export function utcToLocal(input : string, format = SQL_DATETIME_FORMAT) : strin
  * @param format Format to return
  * @returns Date in requested format
  */
-export function localToUTC(input : string, format = SQL_DATETIME_FORMAT) {
+export function localToUTC(input: string, format = SQL_DATETIME_FORMAT) {
     return dayjs(input).utc().format(format);
 }
 
@@ -638,14 +628,14 @@ export function localToUTC(input : string, format = SQL_DATETIME_FORMAT) {
  * @param length Default is 10 which means 0 - 9
  * @returns {number} output number
  */
-export function intHash(str : string, length = 10) : number {
+export function intHash(str: string, length = 10): number {
     // A simple hashing function (you can use more complex hash functions if needed)
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         hash += str.charCodeAt(i);
     }
     // Normalize the hash to the range [0, 10]
-    return (hash % length + length) % length; // Ensure the result is non-negative
+    return ((hash % length) + length) % length; // Ensure the result is non-negative
 }
 
 /**
@@ -657,18 +647,24 @@ export function intHash(str : string, length = 10) : number {
  * @returns An object containing the status and the evaluation result.
  * @throws Error if the evaluation returns undefined.
  */
-export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOperator: string, expectedValue: any): Promise<{ status: boolean; response: any }> {
+export async function evaluateJsonQuery(
+    data: any,
+    jsonPath: string,
+    jsonPathOperator: string,
+    expectedValue: any
+): Promise<{ status: boolean; response: any }> {
     // Attempt to parse data as JSON; if unsuccessful, handle based on data type.
     let response: any;
     try {
         response = JSON.parse(data);
     } catch {
-        response = (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
+        response =
+            (typeof data === "object" || typeof data === "number") && !Buffer.isBuffer(data) ? data : data.toString();
     }
 
     try {
         // If a JSON path is provided, pre-evaluate the data using it.
-        response = (jsonPath) ? await jsonata(jsonPath).evaluate(response) : response;
+        response = jsonPath ? await jsonata(jsonPath).evaluate(response) : response;
 
         if (response === null || response === undefined) {
             throw new Error("Empty or undefined response. Check query syntax and response structure");
@@ -679,13 +675,17 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
             const responseStr = JSON.stringify(response);
             const truncatedResponse = responseStr.length > 25 ? responseStr.substring(0, 25) + "...]" : responseStr;
             throw new Error(
-                "JSON query returned the array " + truncatedResponse + ", but a primitive value is required. " +
-                "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean()."
+                "JSON query returned the array " +
+                    truncatedResponse +
+                    ", but a primitive value is required. " +
+                    "Modify your query to return a single value via [0] to get the first element or use an aggregation like $count(), $sum() or $boolean()."
             );
         }
 
         if (typeof response === "object" || response instanceof Date || typeof response === "function") {
-            throw new Error(`The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`);
+            throw new Error(
+                `The post-JSON query evaluated response from the server is of type ${typeof response}, which cannot be directly compared to the expected value`
+            );
         }
 
         // Perform the comparison logic using the chosen operator
@@ -714,20 +714,43 @@ export async function evaluateJsonQuery(data: any, jsonPath: string, jsonPathOpe
         const expression = jsonata(jsonQueryExpression);
         const status = await expression.evaluate({
             value: response.toString(),
-            expected: expectedValue.toString()
+            expected: expectedValue.toString(),
         });
 
         if (status === undefined) {
-            throw new Error("Query evaluation returned undefined. Check query syntax and the structure of the response data");
+            throw new Error(
+                "Query evaluation returned undefined. Check query syntax and the structure of the response data"
+            );
         }
 
         return {
-            status,  // The evaluation of the json query
-            response // The response from the server or result from initial json-query evaluation
+            status, // The evaluation of the json query
+            response, // The response from the server or result from initial json-query evaluation
         };
     } catch (err: any) {
         response = JSON.stringify(response); // Ensure the response is treated as a string for the console
-        response = (response && response.length > 50) ? `${response.substring(0, 100)}… (truncated)` : response;// Truncate long responses to the console
+        response = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response; // Truncate long responses to the console
         throw new Error(`Error evaluating JSON query: ${err.message}. Response from server was: ${response}`);
     }
 }
+
+// these types will have domain expiry support via the specified field
+export const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
+    http: "url",
+    keyword: "url",
+    "json-query": "url",
+    "real-browser": "url",
+    "websocket-upgrade": "url",
+    port: "hostname",
+    ping: "hostname",
+    "grpc-keyword": "grpcUrl",
+    dns: "hostname",
+    smtp: "hostname",
+    snmp: "hostname",
+    gamedig: "hostname",
+    steam: "hostname",
+    mqtt: "hostname",
+    radius: "hostname",
+    "tailscale-ping": "hostname",
+    "sip-options": "hostname",
+} as const;

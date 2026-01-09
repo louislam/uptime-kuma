@@ -31,29 +31,29 @@ export default {
         /** Whether tooltip is visible */
         visible: {
             type: Boolean,
-            default: false
+            default: false,
         },
         /** Content object to display */
         content: {
             type: Object,
-            default: null
+            default: null,
         },
         /** X position (viewport coordinates) */
         x: {
             type: Number,
-            default: 0
+            default: 0,
         },
         /** Y position (viewport coordinates) */
         y: {
             type: Number,
-            default: 0
+            default: 0,
         },
         /** Position relative to target element */
         position: {
             type: String,
             default: "below",
-            validator: (value) => [ "above", "below" ].includes(value)
-        }
+            validator: (value) => ["above", "below"].includes(value),
+        },
     },
     computed: {
         tooltipStyle() {
@@ -107,7 +107,7 @@ export default {
             }
             return this.$root.datetime(this.content.time);
         },
-    }
+    },
 };
 </script>
 

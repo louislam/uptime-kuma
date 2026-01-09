@@ -15,40 +15,31 @@
             <p v-if="monitor.description" v-html="descriptionHTML"></p>
             <div class="d-flex">
                 <div class="tags">
-                    <Tag
-                        v-for="tag in monitor.tags"
-                        :key="tag.id"
-                        :item="tag"
-                        :size="'sm'"
-                    />
+                    <Tag v-for="tag in monitor.tags" :key="tag.id" :item="tag" :size="'sm'" />
                 </div>
             </div>
             <p class="url">
                 <a
                     v-if="
                         monitor.type === 'http' ||
-                            monitor.type === 'keyword' ||
-                            monitor.type === 'json-query' ||
-                            monitor.type === 'mp-health' ||
-                            monitor.type === 'real-browser' ||
-                            monitor.type === 'websocket-upgrade'
+                        monitor.type === 'keyword' ||
+                        monitor.type === 'json-query' ||
+                        monitor.type === 'real-browser' ||
+                        monitor.type === 'websocket-upgrade'
                     "
                     :href="monitor.url"
                     target="_blank"
                     rel="noopener noreferrer"
-                >{{ filterPassword(monitor.url) }}</a>
+                >
+                    {{ filterPassword(monitor.url) }}
+                </a>
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'keyword'">
                     <br />
-                    <span>{{ $t("Keyword") }}: </span>
+                    <span>{{ $t("Keyword") }}:</span>
                     <span class="keyword">{{ monitor.keyword }}</span>
-                    <span
-                        v-if="monitor.invertKeyword"
-                        alt="Inverted keyword"
-                        class="keyword-inverted"
-                    >
-                        ↧</span>
+                    <span v-if="monitor.invertKeyword" alt="Inverted keyword" class="keyword-inverted">↧</span>
                 </span>
                 <span v-if="monitor.type === 'json-query'">
                     <br />
@@ -58,57 +49,47 @@
                     <span>{{ $t("Expected Value") }}:</span>
                     <span class="keyword">{{ monitor.expectedValue }}</span>
                 </span>
-                <span v-if="monitor.type === 'dns'">[{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
+                <span v-if="monitor.type === 'dns'">
+                    [{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}
                     <br />
                     <span>{{ $t("Last Result") }}:</span>
                     <span class="keyword">{{ monitor.dns_last_result }}</span>
                 </span>
                 <span v-if="monitor.type === 'docker'">Docker container: {{ monitor.docker_container }}</span>
-                <span v-if="monitor.type === 'gamedig'">Gamedig - {{ monitor.game }}: {{ monitor.hostname }}:{{
-                    monitor.port
-                }}</span>
-                <span v-if="monitor.type === 'grpc-keyword'">gRPC - {{ filterPassword(monitor.grpcUrl) }}
+                <span v-if="monitor.type === 'gamedig'">
+                    Gamedig - {{ monitor.game }}: {{ monitor.hostname }}:{{ monitor.port }}
+                </span>
+                <span v-if="monitor.type === 'grpc-keyword'">
+                    gRPC - {{ filterPassword(monitor.grpcUrl) }}
                     <br />
                     <span>{{ $t("Keyword") }}:</span>
                     <span class="keyword">{{ monitor.keyword }}</span>
                 </span>
-                <span v-if="monitor.type === 'mongodb'">{{
-                    filterPassword(monitor.databaseConnectionString)
-                }}</span>
-                <span v-if="monitor.type === 'mqtt'">MQTT: {{ monitor.hostname }}:{{ monitor.port }}/{{
-                    monitor.mqttTopic
-                }}</span>
-                <span v-if="monitor.type === 'mysql'">{{
-                    filterPassword(monitor.databaseConnectionString)
-                }}</span>
-                <span v-if="monitor.type === 'postgres'">{{
-                    filterPassword(monitor.databaseConnectionString)
-                }}</span>
-                <span v-if="monitor.type === 'push'">Push:
-                    <a
-                        :href="pushURL"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >{{ pushURL }}</a></span>
+                <span v-if="monitor.type === 'mongodb'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'mqtt'">
+                    MQTT: {{ monitor.hostname }}:{{ monitor.port }}/{{ monitor.mqttTopic }}
+                </span>
+                <span v-if="monitor.type === 'mysql'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'postgres'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'push'">
+                    Push:
+                    <a :href="pushURL" target="_blank" rel="noopener noreferrer">{{ pushURL }}</a>
+                </span>
                 <span v-if="monitor.type === 'radius'">Radius: {{ filterPassword(monitor.hostname) }}</span>
-                <span v-if="monitor.type === 'redis'">{{
-                    filterPassword(monitor.databaseConnectionString)
-                }}</span>
-                <span v-if="monitor.type === 'sqlserver'">SQL Server:
-                    {{ filterPassword(monitor.databaseConnectionString) }}</span>
-                <span v-if="monitor.type === 'steam'">Steam Game Server: {{ monitor.hostname }}:{{
-                    monitor.port
-                }}</span>
+                <span v-if="monitor.type === 'redis'">{{ filterPassword(monitor.databaseConnectionString) }}</span>
+                <span v-if="monitor.type === 'sqlserver'">
+                    SQL Server: {{ filterPassword(monitor.databaseConnectionString) }}
+                </span>
+                <span v-if="monitor.type === 'steam'">
+                    Steam Game Server: {{ monitor.hostname }}:{{ monitor.port }}
+                </span>
             </p>
 
             <div class="functions">
                 <div class="btn-group" role="group">
-                    <button
-                        v-if="monitor.active"
-                        class="btn btn-normal"
-                        @click="pauseDialog"
-                    >
-                        <font-awesome-icon icon="pause" /> {{ $t("Pause") }}
+                    <button v-if="monitor.active" class="btn btn-normal" @click="pauseDialog">
+                        <font-awesome-icon icon="pause" />
+                        {{ $t("Pause") }}
                     </button>
                     <button
                         v-if="!monitor.active"
@@ -116,25 +97,20 @@
                         :disabled="monitor.forceInactive"
                         @click="resumeMonitor"
                     >
-                        <font-awesome-icon icon="play" /> {{ $t("Resume") }}
+                        <font-awesome-icon icon="play" />
+                        {{ $t("Resume") }}
                     </button>
-                    <router-link
-                        :to="'/edit/' + monitor.id"
-                        class="btn btn-normal"
-                    >
-                        <font-awesome-icon icon="edit" /> {{ $t("Edit") }}
+                    <router-link :to="'/edit/' + monitor.id" class="btn btn-normal">
+                        <font-awesome-icon icon="edit" />
+                        {{ $t("Edit") }}
                     </router-link>
-                    <router-link
-                        :to="'/clone/' + monitor.id"
-                        class="btn btn-normal"
-                    >
-                        <font-awesome-icon icon="clone" /> {{ $t("Clone") }}
+                    <router-link :to="'/clone/' + monitor.id" class="btn btn-normal">
+                        <font-awesome-icon icon="clone" />
+                        {{ $t("Clone") }}
                     </router-link>
-                    <button
-                        class="btn btn-normal text-danger"
-                        @click="deleteDialog"
-                    >
-                        <font-awesome-icon icon="trash" /> {{ $t("Delete") }}
+                    <button class="btn btn-normal text-danger" @click="deleteDialog">
+                        <font-awesome-icon icon="trash" />
+                        {{ $t("Delete") }}
                     </button>
                 </div>
             </div>
@@ -143,53 +119,42 @@
                 <div class="row">
                     <div class="col-md-8">
                         <HeartbeatBar :monitor-id="monitor.id" />
-                        <span class="word">{{
-                            $t("checkEverySecond", [monitor.interval])
-                        }}
-                            ({{
+                        <span class="word">
+                            {{ $t("checkEverySecond", [monitor.interval]) }} ({{
                                 secondsToHumanReadableFormat(monitor.interval)
-                            }})</span>
+                            }})
+                        </span>
                     </div>
                     <div class="col-md-4 text-center">
                         <span
                             class="badge rounded-pill"
                             :class="'bg-' + status.color"
-                            style="font-size: 30px;"
+                            style="font-size: 30px"
                             data-testid="monitor-status"
-                        >{{ status.text }}</span>
+                        >
+                            {{ status.text }}
+                        </span>
                     </div>
                 </div>
             </div>
 
             <!-- Push Examples -->
             <div v-if="monitor.type === 'push'" class="shadow-box big-padding">
-                <a
-                    href="#"
-                    @click="
-                        pushMonitor.showPushExamples =
-                            !pushMonitor.showPushExamples
-                    "
-                >{{ $t("pushViewCode") }}</a>
+                <a href="#" @click="pushMonitor.showPushExamples = !pushMonitor.showPushExamples">
+                    {{ $t("pushViewCode") }}
+                </a>
 
                 <transition name="slide-fade" appear>
                     <div v-if="pushMonitor.showPushExamples" class="mt-3">
-                        <select
-                            id="push-current-example"
-                            v-model="pushMonitor.currentExample"
-                            class="form-select"
-                        >
+                        <select id="push-current-example" v-model="pushMonitor.currentExample" class="form-select">
                             <optgroup :label="$t('programmingLanguages')">
                                 <option value="csharp">C#</option>
                                 <option value="go">Go</option>
                                 <option value="java">Java</option>
-                                <option value="javascript-fetch">
-                                    JavaScript (fetch)
-                                </option>
+                                <option value="javascript-fetch">JavaScript (fetch)</option>
                                 <option value="php">PHP</option>
                                 <option value="python">Python</option>
-                                <option value="typescript-fetch">
-                                    TypeScript (fetch)
-                                </option>
+                                <option value="typescript-fetch">TypeScript (fetch)</option>
                             </optgroup>
                             <optgroup :label="$t('pushOthers')">
                                 <option value="bash-curl">Bash (curl)</option>
@@ -217,16 +182,9 @@
                         class="col-12 col-sm col row d-flex align-items-center d-sm-block"
                     >
                         <h4 class="col-4 col-sm-12">{{ pingTitle() }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            ({{ $t("Current") }})
-                        </p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("Current") }})</p>
                         <span class="col-4 col-sm-12 num">
-                            <a
-                                href="#"
-                                @click.prevent="
-                                    showPingChartBox = !showPingChartBox
-                                "
-                            >
+                            <a href="#" @click.prevent="showPingChartBox = !showPingChartBox">
                                 <CountUp :value="ping" />
                             </a>
                         </span>
@@ -236,82 +194,67 @@
                         class="col-12 col-sm col row d-flex align-items-center d-sm-block"
                     >
                         <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (24{{ $t("-hour") }})
-                        </p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 24 }} {{ $tc("hour", 24) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <CountUp :value="avgPing" />
                         </span>
                     </div>
 
                     <!-- Uptime (24-hour) -->
-                    <div
-                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
-                    >
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (24{{ $t("-hour") }})
-                        </p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 24 }} {{ $tc("hour", 24) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="24" />
                         </span>
                     </div>
 
                     <!-- Uptime (30-day) -->
-                    <div
-                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
-                    >
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (30{{ $t("-day") }})
-                        </p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 30 }} {{ $tc("day", 30) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="720" />
                         </span>
                     </div>
 
                     <!-- Uptime (1-year) -->
-                    <div
-                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
-                    >
+                    <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (1{{ $t("-year") }})
-                        </p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 1 }} {{ $tc("year", 1) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="1y" />
                         </span>
                     </div>
 
-                    <div
-                        v-if="tlsInfo"
-                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
-                    >
+                    <div v-if="tlsInfo" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Cert Exp.") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (<Datetime
-                                :value="tlsInfo.certInfo.validTo"
-                                date-only
-                            />)
+                            (
+                            <Datetime :value="tlsInfo.certInfo.validTo" date-only />
+                            )
                         </p>
                         <span class="col-4 col-sm-12 num">
-                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">{{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}</a>
-                            <font-awesome-icon v-if="tlsInfo.hostnameMatchMonitorUrl === false" class="cert-info-warn" icon="exclamation-triangle" :title="$t('certHostnameMismatch')" />
+                            <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">
+                                {{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}
+                            </a>
+                            <font-awesome-icon
+                                v-if="tlsInfo.hostnameMatchMonitorUrl === false"
+                                class="cert-info-warn"
+                                icon="exclamation-triangle"
+                                :title="$t('certHostnameMismatch')"
+                            />
                         </span>
                     </div>
-                    <div
-                        v-if="domainInfo"
-                        class="col-12 col-sm col row d-flex align-items-center d-sm-block"
-                    >
+                    <div v-if="domainInfo" class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("labelDomainExpiry") }}</h4>
                         <p class="col-4 col-sm-12 mb-0 mb-sm-2">
-                            (<Datetime
-                                :value="domainInfo.expiresOn"
-                                date-only
-                            />)
+                            (
+                            <Datetime :value="domainInfo.expiresOn" date-only />
+                            )
                         </p>
                         <span class="col-4 col-sm-12 num">
-                            {{ domainInfo.daysRemaining }} {{ $tc("day", domainInfo.daysRemaining ) }}
+                            {{ domainInfo.daysRemaining }} {{ $tc("day", domainInfo.daysRemaining) }}
                         </span>
                     </div>
                 </div>
@@ -319,26 +262,17 @@
 
             <!-- Cert Info Box -->
             <transition name="slide-fade" appear>
-                <div
-                    v-if="showCertInfoBox"
-                    class="shadow-box big-padding text-center"
-                >
+                <div v-if="showCertInfoBox" class="shadow-box big-padding text-center">
                     <div class="row">
                         <div class="col">
-                            <certificate-info
-                                :certInfo="tlsInfo.certInfo"
-                                :valid="tlsInfo.valid"
-                            />
+                            <certificate-info :certInfo="tlsInfo.certInfo" :valid="tlsInfo.valid" />
                         </div>
                     </div>
                 </div>
             </transition>
 
             <!-- Ping Chart -->
-            <div
-                v-if="showPingChartBox"
-                class="shadow-box big-padding text-center ping-chart-wrapper"
-            >
+            <div v-if="showPingChartBox" class="shadow-box big-padding text-center ping-chart-wrapper">
                 <div class="row">
                     <div class="col">
                         <PingChart :monitor-id="monitor.id" />
@@ -352,15 +286,12 @@
                     <div class="col-md-6 zoom-cursor">
                         <img
                             :src="screenshotURL"
-                            style="width: 100%;"
+                            style="width: 100%"
                             alt="screenshot of the website"
                             @click="showScreenshotDialog"
                         />
                     </div>
-                    <ScreenshotDialog
-                        ref="screenshotDialog"
-                        :imageURL="screenshotURL"
-                    />
+                    <ScreenshotDialog ref="screenshotDialog" :imageURL="screenshotURL" />
                 </div>
             </div>
 
@@ -376,20 +307,12 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <button
-                                type="button"
-                                class="dropdown-item"
-                                @click="clearEventsDialog"
-                            >
+                            <button type="button" class="dropdown-item" @click="clearEventsDialog">
                                 {{ $t("Events") }}
                             </button>
                         </li>
                         <li>
-                            <button
-                                type="button"
-                                class="dropdown-item"
-                                @click="clearHeartbeatsDialog"
-                            >
+                            <button type="button" class="dropdown-item" @click="clearHeartbeatsDialog">
                                 {{ $t("Heartbeats") }}
                             </button>
                         </li>
@@ -404,11 +327,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr
-                            v-for="(beat, index) in displayedRecords"
-                            :key="index"
-                            style="padding: 10px;"
-                        >
+                        <tr v-for="(beat, index) in displayedRecords" :key="index" style="padding: 10px">
                             <td><Status :status="beat.status" /></td>
                             <td :class="{ 'border-0': !beat.msg }">
                                 <Datetime :value="beat.time" />
@@ -434,12 +353,7 @@
                 </div>
             </div>
 
-            <Confirm
-                ref="confirmPause"
-                :yes-text="$t('Yes')"
-                :no-text="$t('No')"
-                @yes="pauseMonitor"
-            >
+            <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseMonitor">
                 {{ $t("pauseMonitorMsg") }}
             </Confirm>
 
@@ -458,7 +372,7 @@
                             v-model="deleteChildrenMonitors"
                             class="form-check-input"
                             type="checkbox"
-                        >
+                        />
                         <label class="form-check-label" for="delete-children-checkbox">
                             {{ $t("deleteChildrenMonitors", childrenCount, { count: childrenCount }) }}
                         </label>
@@ -503,9 +417,7 @@ import Datetime from "../components/Datetime.vue";
 import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
 import Pagination from "v-pagination-3";
-const PingChart = defineAsyncComponent(() =>
-    import("../components/PingChart.vue")
-);
+const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
@@ -572,7 +484,7 @@ export default {
             if (!this.monitor || this.monitor.type !== "group") {
                 return 0;
             }
-            const children = Object.values(this.$root.monitorList).filter(m => m.parent === this.monitor.id);
+            const children = Object.values(this.$root.monitorList).filter((m) => m.parent === this.monitor.id);
             return children.length;
         },
 
@@ -589,10 +501,7 @@ export default {
             // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.cacheTime = Date.now();
 
-            if (
-                this.monitor.id in this.$root.lastHeartbeatList &&
-                this.$root.lastHeartbeatList[this.monitor.id]
-            ) {
+            if (this.monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[this.monitor.id]) {
                 return this.$root.lastHeartbeatList[this.monitor.id];
             }
 
@@ -610,10 +519,7 @@ export default {
         },
 
         avgPing() {
-            if (
-                this.$root.avgPingList[this.monitor.id] ||
-                this.$root.avgPingList[this.monitor.id] === 0
-            ) {
+            if (this.$root.avgPingList[this.monitor.id] || this.$root.avgPingList[this.monitor.id] === 0) {
                 return this.$root.avgPingList[this.monitor.id];
             }
 
@@ -632,10 +538,7 @@ export default {
             // Add: this.$root.tlsInfoList[this.monitor.id].certInfo
             // Fix: TypeError: Cannot read properties of undefined (reading 'validTo')
             // Reason: TLS Info object format is changed in 1.8.0, if for some reason, it cannot connect to the site after update to 1.8.0, the object is still in the old format.
-            if (
-                this.$root.tlsInfoList[this.monitor.id] &&
-                this.$root.tlsInfoList[this.monitor.id].certInfo
-            ) {
+            if (this.$root.tlsInfoList[this.monitor.id] && this.$root.tlsInfoList[this.monitor.id].certInfo) {
                 return this.$root.tlsInfoList[this.monitor.id];
             }
 
@@ -655,21 +558,11 @@ export default {
         },
 
         pushURL() {
-            return (
-                this.$root.baseURL +
-                "/api/push/" +
-                this.monitor.pushToken +
-                "?status=up&msg=OK&ping="
-            );
+            return this.$root.baseURL + "/api/push/" + this.monitor.pushToken + "?status=up&msg=OK&ping=";
         },
 
         screenshotURL() {
-            return (
-                getResBaseURL() +
-                this.monitor.screenshot +
-                "?time=" +
-                this.cacheTime
-            );
+            return getResBaseURL() + this.monitor.screenshot + "?time=" + this.cacheTime;
         },
 
         descriptionHTML() {
@@ -702,10 +595,7 @@ export default {
     mounted() {
         this.getImportantHeartbeatListLength();
 
-        this.$root.emitter.on(
-            "newImportantHeartbeat",
-            this.onNewImportantHeartbeat
-        );
+        this.$root.emitter.on("newImportantHeartbeat", this.onNewImportantHeartbeat);
 
         if (this.monitor && this.monitor.type === "push") {
             if (this.lastHeartBeat.status === -1) {
@@ -716,10 +606,7 @@ export default {
     },
 
     beforeUnmount() {
-        this.$root.emitter.off(
-            "newImportantHeartbeat",
-            this.onNewImportantHeartbeat
-        );
+        this.$root.emitter.off("newImportantHeartbeat", this.onNewImportantHeartbeat);
     },
 
     methods: {
@@ -746,11 +633,9 @@ export default {
          * @returns {void}
          */
         resumeMonitor() {
-            this.$root
-                .getSocket()
-                .emit("resumeMonitor", this.monitor.id, (res) => {
-                    this.$root.toastRes(res);
-                });
+            this.$root.getSocket().emit("resumeMonitor", this.monitor.id, (res) => {
+                this.$root.toastRes(res);
+            });
         },
 
         /**
@@ -758,11 +643,9 @@ export default {
          * @returns {void}
          */
         pauseMonitor() {
-            this.$root
-                .getSocket()
-                .emit("pauseMonitor", this.monitor.id, (res) => {
-                    this.$root.toastRes(res);
-                });
+            this.$root.getSocket().emit("pauseMonitor", this.monitor.id, (res) => {
+                this.$root.toastRes(res);
+            });
         },
 
         /**
@@ -847,11 +730,7 @@ export default {
                 translationPrefix = "Avg. ";
             }
 
-            if (
-                this.monitor.type === "http" ||
-                this.monitor.type === "keyword" ||
-                this.monitor.type === "json-query"
-            ) {
+            if (this.monitor.type === "http" || this.monitor.type === "keyword" || this.monitor.type === "json-query") {
                 return this.$t(translationPrefix + "Response");
             }
 
@@ -881,10 +760,7 @@ export default {
                 return parsedUrl.toString();
             } catch (e) {
                 // Handle SQL Server
-                return urlString.replaceAll(
-                    /Password=(.+);/gi,
-                    "Password=******;"
-                );
+                return urlString.replaceAll(/Password=(.+);/gi, "Password=******;");
             }
         },
 
@@ -894,18 +770,12 @@ export default {
          */
         getImportantHeartbeatListLength() {
             if (this.monitor) {
-                this.$root
-                    .getSocket()
-                    .emit(
-                        "monitorImportantHeartbeatListCount",
-                        this.monitor.id,
-                        (res) => {
-                            if (res.ok) {
-                                this.importantHeartBeatListLength = res.count;
-                                this.getImportantHeartbeatListPaged();
-                            }
-                        }
-                    );
+                this.$root.getSocket().emit("monitorImportantHeartbeatListCount", this.monitor.id, (res) => {
+                    if (res.ok) {
+                        this.importantHeartBeatListLength = res.count;
+                        this.getImportantHeartbeatListPaged();
+                    }
+                });
             }
         },
 
@@ -918,17 +788,11 @@ export default {
                 const offset = (this.page - 1) * this.perPage;
                 this.$root
                     .getSocket()
-                    .emit(
-                        "monitorImportantHeartbeatListPaged",
-                        this.monitor.id,
-                        offset,
-                        this.perPage,
-                        (res) => {
-                            if (res.ok) {
-                                this.displayedRecords = res.data;
-                            }
+                    .emit("monitorImportantHeartbeatListPaged", this.monitor.id, offset, this.perPage, (res) => {
+                        if (res.ok) {
+                            this.displayedRecords = res.data;
                         }
-                    );
+                    });
             }
         },
 
@@ -960,21 +824,12 @@ export default {
 
         loadPushExample() {
             this.pushMonitor.code = "";
-            this.$root
-                .getSocket()
-                .emit(
-                    "getPushExample",
-                    this.pushMonitor.currentExample,
-                    (res) => {
-                        let code = res.code
-                            .replace("60", this.monitor.interval)
-                            .replace(
-                                "https://example.com/api/push/key?status=up&msg=OK&ping=",
-                                this.pushURL
-                            );
-                        this.pushMonitor.code = code;
-                    }
-                );
+            this.$root.getSocket().emit("getPushExample", this.pushMonitor.currentExample, (res) => {
+                let code = res.code
+                    .replace("60", this.monitor.interval)
+                    .replace("https://example.com/api/push/key?status=up&msg=OK&ping=", this.pushURL);
+                this.pushMonitor.code = code;
+            });
         },
 
         secondsToHumanReadableFormat(seconds) {
@@ -1016,7 +871,8 @@ export default {
     .btn-group {
         width: 100%;
 
-        .btn, a.btn {
+        .btn,
+        a.btn {
             display: inline-flex;
             flex-direction: column;
             align-items: center;
@@ -1162,5 +1018,4 @@ table {
         opacity: 0.7;
     }
 }
-
 </style>

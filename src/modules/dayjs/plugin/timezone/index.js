@@ -11,7 +11,7 @@ let typeToPos = {
     day: 2,
     hour: 3,
     minute: 4,
-    second: 5
+    second: 5,
 }; // Cache time-zone lookups from Intl.DateTimeFormat,
 // as it is a *very* slow method.
 
@@ -36,7 +36,7 @@ let getDateTimeFormat = function getDateTimeFormat(timezone, options) {
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
-            timeZoneName: timeZoneName
+            timeZoneName: timeZoneName,
         });
         dtfCache[key] = dtf;
     }
@@ -78,7 +78,19 @@ export default (function (o, c, d) {
         /* istanbul ignore next */
 
         let fixedHour = hour === 24 ? 0 : hour;
-        let utcString = filled[0] + "-" + filled[1] + "-" + filled[2] + " " + fixedHour + ":" + filled[4] + ":" + filled[5] + ":000";
+        let utcString =
+            filled[0] +
+            "-" +
+            filled[1] +
+            "-" +
+            filled[2] +
+            " " +
+            fixedHour +
+            ":" +
+            filled[4] +
+            ":" +
+            filled[5] +
+            ":000";
         let utcTs = d.utc(utcString).valueOf();
         let asTS = +timestamp;
         let over = asTS % 1000;
@@ -89,13 +101,13 @@ export default (function (o, c, d) {
     // https://github.com/moment/luxon/blob/master/src/datetime.js#L76
 
     let fixOffset = function fixOffset(localTS, o0, tz) {
-    // Our UTC time is just a guess because our offset is just a guess
+        // Our UTC time is just a guess because our offset is just a guess
         let utcGuess = localTS - o0 * 60 * 1000; // Test whether the zone matches the offset for this ts
 
         let o2 = tzOffset(utcGuess, tz); // If so, offset didn't change and we're done
 
         if (o0 === o2) {
-            return [ utcGuess, o0 ];
+            return [utcGuess, o0];
         } // If not, change the ts by the difference in the offset
 
         utcGuess -= (o2 - o0) * 60 * 1000; // If that gives us the local time we want, we're done
@@ -103,11 +115,11 @@ export default (function (o, c, d) {
         let o3 = tzOffset(utcGuess, tz);
 
         if (o2 === o3) {
-            return [ utcGuess, o2 ];
+            return [utcGuess, o2];
         } // If it's different, we're in a hole time.
         // The offset has changed, but the we don't adjust the time
 
-        return [ localTS - Math.min(o2, o3) * 60 * 1000, Math.max(o2, o3) ];
+        return [localTS - Math.min(o2, o3) * 60 * 1000, Math.max(o2, o3)];
     };
 
     let proto = c.prototype;
@@ -119,11 +131,15 @@ export default (function (o, c, d) {
 
         let oldOffset = this.utcOffset();
         let date = this.toDate();
-        let target = date.toLocaleString("en-US", {
-            timeZone: timezone
-        }).replace("\u202f", " ");
+        let target = date
+            .toLocaleString("en-US", {
+                timeZone: timezone,
+            })
+            .replace("\u202f", " ");
         let diff = Math.round((date - new Date(target)) / 1000 / 60);
-        let ins = d(target).$set(MS, this.$ms).utcOffset(-Math.round(date.getTimezoneOffset() / 15) * 15 - diff, true);
+        let ins = d(target)
+            .$set(MS, this.$ms)
+            .utcOffset(-Math.round(date.getTimezoneOffset() / 15) * 15 - diff, true);
 
         if (keepLocalTime) {
             let newOffset = ins.utcOffset();
@@ -135,10 +151,10 @@ export default (function (o, c, d) {
     };
 
     proto.offsetName = function (type) {
-    // type: short(default) / long
+        // type: short(default) / long
         let zone = this.$x.$timezone || d.tz.guess();
         let result = makeFormatParts(this.valueOf(), zone, {
-            timeZoneName: type
+            timeZoneName: type,
         }).find(function (m) {
             return m.type.toLowerCase() === "timezonename";
         });

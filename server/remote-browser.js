@@ -1,7 +1,6 @@
 const { R } = require("redbean-node");
 
 class RemoteBrowser {
-
     /**
      * Gets remote browser from ID
      * @param {number} remoteBrowserID ID of the remote browser
@@ -9,7 +8,7 @@ class RemoteBrowser {
      * @returns {Promise<Bean>} Remote Browser
      */
     static async get(remoteBrowserID, userID) {
-        let bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [ remoteBrowserID, userID ]);
+        let bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [remoteBrowserID, userID]);
 
         if (!bean) {
             throw new Error("Remote browser not found");
@@ -29,12 +28,11 @@ class RemoteBrowser {
         let bean;
 
         if (remoteBrowserID) {
-            bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [ remoteBrowserID, userID ]);
+            bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [remoteBrowserID, userID]);
 
             if (!bean) {
                 throw new Error("Remote browser not found");
             }
-
         } else {
             bean = R.dispense("remote_browser");
         }
@@ -55,18 +53,17 @@ class RemoteBrowser {
      * @returns {Promise<void>}
      */
     static async delete(remoteBrowserID, userID) {
-        let bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [ remoteBrowserID, userID ]);
+        let bean = await R.findOne("remote_browser", " id = ? AND user_id = ? ", [remoteBrowserID, userID]);
 
         if (!bean) {
             throw new Error("Remote Browser not found");
         }
 
         // Delete removed remote browser from monitors if exists
-        await R.exec("UPDATE monitor SET remote_browser = null WHERE remote_browser = ?", [ remoteBrowserID ]);
+        await R.exec("UPDATE monitor SET remote_browser = null WHERE remote_browser = ?", [remoteBrowserID]);
 
         await R.trash(bean);
     }
-
 }
 
 module.exports = {
