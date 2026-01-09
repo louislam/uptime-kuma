@@ -4,6 +4,8 @@ const { R } = require("redbean-node");
 
 let monitorCertDaysRemaining = null;
 let monitorCertIsValid = null;
+let monitorUptimeRatio = null;
+let monitorAverageResponseTimeSeconds = null;
 let monitorResponseTime = null;
 let monitorStatus = null;
 
@@ -69,6 +71,18 @@ class Prometheus {
             labelNames: commonLabels,
         });
 
+        monitorUptimeRatio = new PrometheusClient.Gauge({
+            name: "monitor_uptime_ratio",
+            help: "Uptime ratio calculated over sliding window specified by the 'window' label. (0.0 - 1.0)",
+            labelNames: [...commonLabels, "window"],
+        });
+
+        monitorAverageResponseTimeSeconds = new PrometheusClient.Gauge({
+            name: "monitor_response_time_seconds",
+            help: "Average response time in seconds calculated over sliding window specified by the 'window' label",
+            labelNames: [...commonLabels, "window"],
+        });
+
         monitorResponseTime = new PrometheusClient.Gauge({
             name: "monitor_response_time",
             help: "Monitor Response Time (ms)",
@@ -130,11 +144,13 @@ class Prometheus {
 
     /**
      * Update the metrics page
+     * @typedef {import("./uptime-calculator").UptimeDataResult} UptimeDataResult
      * @param {object} heartbeat Heartbeat details
      * @param {object} tlsInfo TLS details
+     * @param {{data24h: UptimeDataResult, data30d: UptimeDataResult, data1y:UptimeDataResult} | null} uptime the uptime and average response rate over a variety of fixed windows
      * @returns {void}
      */
-    update(heartbeat, tlsInfo) {
+    update(heartbeat, tlsInfo, uptime) {
         if (typeof tlsInfo !== "undefined") {
             try {
                 let isValid;
@@ -145,8 +161,7 @@ class Prometheus {
                 }
                 monitorCertIsValid.set(this.monitorLabelValues, isValid);
             } catch (e) {
-                log.error("prometheus", "Caught error");
-                log.error("prometheus", e);
+                log.error("prometheus", "Caught error", e);
             }
 
             try {
@@ -154,8 +169,49 @@ class Prometheus {
                     monitorCertDaysRemaining.set(this.monitorLabelValues, tlsInfo.certInfo.daysRemaining);
                 }
             } catch (e) {
-                log.error("prometheus", "Caught error");
-                log.error("prometheus", e);
+                log.error("prometheus", "Caught error", e);
+            }
+        }
+
+        if (uptime) {
+            try {
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "1d" },
+                    uptime.data24h.avgPing / 1000
+                );
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "30d" },
+                    uptime.data30d.avgPing / 1000
+                );
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorAverageResponseTimeSeconds.set(
+                    { ...this.monitorLabelValues, window: "365d" },
+                    uptime.data1y.avgPing / 1000
+                );
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorUptimeRatio.set({ ...this.monitorLabelValues, window: "1d" }, uptime.data24h.uptime);
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorUptimeRatio.set({ ...this.monitorLabelValues, window: "30d" }, uptime.data30d.uptime);
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
+            }
+            try {
+                monitorUptimeRatio.set({ ...this.monitorLabelValues, window: "365d" }, uptime.data1y.uptime);
+            } catch (e) {
+                log.error("prometheus", "Caught error", e);
             }
         }
 
@@ -189,6 +245,8 @@ class Prometheus {
         try {
             monitorCertDaysRemaining.remove(this.monitorLabelValues);
             monitorCertIsValid.remove(this.monitorLabelValues);
+            monitorUptimeRatio.remove(this.monitorLabelValues);
+            monitorAverageResponseTimeSeconds.remove(this.monitorLabelValues);
             monitorResponseTime.remove(this.monitorLabelValues);
             monitorStatus.remove(this.monitorLabelValues);
         } catch (e) {

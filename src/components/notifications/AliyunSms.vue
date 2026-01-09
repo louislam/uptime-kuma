@@ -58,8 +58,8 @@
                 class="form-check-input"
                 type="checkbox"
             />
+            <div class="form-text">{{ $t("aliyun_enable_optional_variables_at_the_risk_of_non_delivery") }}</div>
         </div>
-        <div class="form-text">{{ $t("aliyun_enable_optional_variables_at_the_risk_of_non_delivery") }}</div>
         <br />
         <div class="form-text">
             <i18n-t tag="p" keypath="aliyun-template-requirements-and-parameters">
