@@ -45,8 +45,7 @@ export default {
          */
         async changeLang(lang, options = {}) {
             const persist = options.persist !== false;
-            let message = (await langModules["../lang/" + lang + ".json"]())
-                .default;
+            let message = (await langModules["../lang/" + lang + ".json"]()).default;
             this.$i18n.setLocaleMessage(lang, message);
             this.$i18n.locale = lang;
             if (persist) {

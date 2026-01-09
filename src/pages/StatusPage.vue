@@ -208,13 +208,14 @@
                 <!-- Status Page Language -->
                 <div class="my-3">
                     <label for="status-page-language" class="form-label">{{ $t("Status Page Language") }}</label>
-                    <select id="status-page-language" v-model="config.language" class="form-select" data-testid="language-select">
+                    <select
+                        id="status-page-language"
+                        v-model="config.language"
+                        class="form-select"
+                        data-testid="language-select"
+                    >
                         <option :value="null">{{ $t("Use browser language") }}</option>
-                        <option
-                            v-for="lang in $i18n.availableLocales"
-                            :key="lang"
-                            :value="lang"
-                        >
+                        <option v-for="lang in $i18n.availableLocales" :key="lang" :value="lang">
                             {{ $i18n.messages[lang].languageName }}
                         </option>
                     </select>
@@ -956,29 +957,30 @@ export default {
             this.slug = "default";
         }
 
-        this.getData().then((res) => {
-            this.config = res.data.config;
+        this.getData()
+            .then((res) => {
+                this.config = res.data.config;
 
-            if (!this.config.domainNameList) {
-                this.config.domainNameList = [];
-            }
+                if (!this.config.domainNameList) {
+                    this.config.domainNameList = [];
+                }
 
-            if (!("language" in this.config)) {
-                this.config.language = null;
-            }
+                if (!("language" in this.config)) {
+                    this.config.language = null;
+                }
 
-            if (this.config.icon) {
-                this.imgDataUrl = this.config.icon;
-            }
+                if (this.config.icon) {
+                    this.imgDataUrl = this.config.icon;
+                }
 
-            // Apply configured language if the visitor hasn't set their own preference
-            if (this.config.language && !localStorage.locale) {
-                this.$root.setLanguage(this.config.language, { persist: false });
-            }
+                // Apply configured language if the visitor hasn't set their own preference
+                if (this.config.language && !localStorage.locale) {
+                    this.$root.setLanguage(this.config.language, { persist: false });
+                }
 
-            this.incident = res.data.incident;
-            this.maintenanceList = res.data.maintenanceList;
-            this.$root.publicGroupList = res.data.publicGroupList;
+                this.incident = res.data.incident;
+                this.maintenanceList = res.data.maintenanceList;
+                this.$root.publicGroupList = res.data.publicGroupList;
 
                 if (!this.config.domainNameList) {
                     this.config.domainNameList = [];
