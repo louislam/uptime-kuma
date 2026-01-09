@@ -4,12 +4,12 @@ exports.up = function (knex) {
         .alterTable("status_page", function (table) {
             table.renameColumn("google_analytics_tag_id", "analytics_id");
             table.string("analytics_script_url");
-            table.enu("analytics_type", [ "google", "umami", "plausible", "matomo" ]).defaultTo(null);
-
-        }).then(() => {
+            table.enu("analytics_type", ["google", "umami", "plausible", "matomo"]).defaultTo(null);
+        })
+        .then(() => {
             // After a succesful migration, add google as default for previous pages
             knex("status_page").whereNotNull("analytics_id").update({
-                "analytics_type": "google",
+                analytics_type: "google",
             });
         });
 };

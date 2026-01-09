@@ -66,8 +66,8 @@ export function timezoneList() {
  */
 export function setPageLocale() {
     const html = document.documentElement;
-    html.setAttribute("lang", currentLocale() );
-    html.setAttribute("dir", localeDirection() );
+    html.setAttribute("lang", currentLocale());
+    html.setAttribute("dir", localeDirection());
 }
 
 /**
@@ -92,7 +92,7 @@ export function getResBaseURL() {
  */
 export function isDevContainer() {
     // eslint-disable-next-line no-undef
-    return (typeof DEVCONTAINER === "string" && DEVCONTAINER === "1");
+    return typeof DEVCONTAINER === "string" && DEVCONTAINER === "1";
 }
 
 /**
@@ -116,22 +116,14 @@ export function getDevContainerServerHostname() {
  */
 export function colorOptions(self) {
     return [
-        { name: self.$t("Gray"),
-            color: "#4B5563" },
-        { name: self.$t("Red"),
-            color: "#DC2626" },
-        { name: self.$t("Orange"),
-            color: "#D97706" },
-        { name: self.$t("Green"),
-            color: "#059669" },
-        { name: self.$t("Blue"),
-            color: "#2563EB" },
-        { name: self.$t("Indigo"),
-            color: "#4F46E5" },
-        { name: self.$t("Purple"),
-            color: "#7C3AED" },
-        { name: self.$t("Pink"),
-            color: "#DB2777" },
+        { name: self.$t("Gray"), color: "#4B5563" },
+        { name: self.$t("Red"), color: "#DC2626" },
+        { name: self.$t("Orange"), color: "#D97706" },
+        { name: self.$t("Green"), color: "#059669" },
+        { name: self.$t("Blue"), color: "#2563EB" },
+        { name: self.$t("Indigo"), color: "#4F46E5" },
+        { name: self.$t("Purple"), color: "#7C3AED" },
+        { name: self.$t("Pink"), color: "#DB2777" },
     ];
 }
 
@@ -207,7 +199,10 @@ class TimeDurationFormatter {
         if (Intl.DurationFormat !== undefined) {
             this.durationFormatInstance = new Intl.DurationFormat(currentLocale(), this.durationFormatOptions);
         } else {
-            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(currentLocale(), this.relativeTimeFormatOptions);
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(
+                currentLocale(),
+                this.relativeTimeFormatOptions
+            );
         }
     }
 
@@ -241,7 +236,7 @@ class TimeDurationFormatter {
                 days,
                 hours,
                 minutes,
-                seconds: secs
+                seconds: secs,
             });
         }
 
@@ -258,10 +253,7 @@ class TimeDurationFormatter {
         const toFormattedPart = (value, unitOfTime) => {
             const partsArray = this.relativeTimeFormatInstance.formatToParts(value, unitOfTime);
             const filteredParts = partsArray
-                .filter(
-                    (part, index) =>
-                        part.type === "integer" || (part.type === "literal" && index > 0)
-                )
+                .filter((part, index) => part.type === "integer" || (part.type === "literal" && index > 0))
                 .map((part) => part.value);
 
             const formattedString = filteredParts.join("").trim();
@@ -289,4 +281,3 @@ class TimeDurationFormatter {
 }
 
 export const timeDurationFormatter = new TimeDurationFormatter();
-

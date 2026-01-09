@@ -30,11 +30,7 @@ class SIPMonitorType extends MonitorType {
     async runSipSak(hostname, port, timeout) {
         const { stdout, stderr } = await execFile(
             "sipsak",
-            [
-                "-s", `sip:${hostname}:${port}`,
-                "--from", `sip:sipsak@${hostname}`,
-                "-v",
-            ],
+            ["-s", `sip:${hostname}:${port}`, "--from", `sip:sipsak@${hostname}`, "-v"],
             { timeout }
         );
 

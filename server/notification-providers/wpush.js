@@ -13,10 +13,10 @@ class WPush extends NotificationProvider {
 
         try {
             const context = {
-                "title": this.checkStatus(heartbeatJSON, monitorJSON),
-                "content": msg,
-                "apikey": notification.wpushAPIkey,
-                "channel": notification.wpushChannel
+                title: this.checkStatus(heartbeatJSON, monitorJSON),
+                content: msg,
+                apikey: notification.wpushAPIkey,
+                channel: notification.wpushChannel,
             };
             let config = this.getAxiosConfigWithProxy({});
             const result = await axios.post("https://api.wpush.cn/api/v1/send", context, config);
@@ -25,7 +25,6 @@ class WPush extends NotificationProvider {
             }
 
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

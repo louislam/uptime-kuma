@@ -38,30 +38,28 @@ class Slack extends NotificationProvider {
 
         if (baseURL) {
             actions.push({
-                "type": "button",
-                "text": {
-                    "type": "plain_text",
-                    "text": "Visit Uptime Kuma",
+                type: "button",
+                text: {
+                    type: "plain_text",
+                    text: "Visit Uptime Kuma",
                 },
-                "value": "Uptime-Kuma",
-                "url": baseURL + getMonitorRelativeURL(monitorJSON.id),
+                value: "Uptime-Kuma",
+                url: baseURL + getMonitorRelativeURL(monitorJSON.id),
             });
-
         }
 
         const address = this.extractAddress(monitorJSON);
         if (isUrl(address)) {
             try {
                 actions.push({
-                    "type": "button",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Visit site",
+                    type: "button",
+                    text: {
+                        type: "plain_text",
+                        text: "Visit site",
                     },
-                    "value": "Site",
-                    "url": new URL(address),
+                    value: "Site",
+                    url: new URL(address),
                 });
-
             } catch (e) {
                 log.debug("slack", `Failed to parse address ${address} as URL`);
             }
@@ -80,31 +78,30 @@ class Slack extends NotificationProvider {
      * @returns {Array<object>} The rich content blocks for the Slack message
      */
     buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
-
         //create an array to dynamically add blocks
         const blocks = [];
 
         // the header block
         blocks.push({
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": title,
+            type: "header",
+            text: {
+                type: "plain_text",
+                text: title,
             },
         });
 
         // the body block, containing the details
         blocks.push({
-            "type": "section",
-            "fields": [
+            type: "section",
+            fields: [
                 {
-                    "type": "mrkdwn",
-                    "text": "*Message*\n" + msg,
+                    type: "mrkdwn",
+                    text: "*Message*\n" + msg,
                 },
                 {
-                    "type": "mrkdwn",
-                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
-                }
+                    type: "mrkdwn",
+                    text: `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
+                },
             ],
         });
 
@@ -112,8 +109,8 @@ class Slack extends NotificationProvider {
         if (actions.length > 0) {
             //the actions block, containing buttons
             blocks.push({
-                "type": "actions",
-                "elements": actions,
+                type: "actions",
+                elements: actions,
             });
         }
 
@@ -134,10 +131,10 @@ class Slack extends NotificationProvider {
             let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON == null) {
                 let data = {
-                    "text": msg,
-                    "channel": notification.slackchannel,
-                    "username": notification.slackusername,
-                    "icon_emoji": notification.slackiconemo,
+                    text: msg,
+                    channel: notification.slackchannel,
+                    username: notification.slackusername,
+                    icon_emoji: notification.slackiconemo,
                 };
                 await axios.post(notification.slackwebhookURL, data, config);
                 return okMsg;
@@ -147,20 +144,18 @@ class Slack extends NotificationProvider {
 
             const title = "Uptime Kuma Alert";
             let data = {
-                "text": msg,
-                "channel": notification.slackchannel,
-                "username": notification.slackusername,
-                "icon_emoji": notification.slackiconemo,
-                "attachments": [],
+                text: msg,
+                channel: notification.slackchannel,
+                username: notification.slackusername,
+                icon_emoji: notification.slackiconemo,
+                attachments: [],
             };
 
             if (notification.slackrichmessage) {
-                data.attachments.push(
-                    {
-                        "color": (heartbeatJSON["status"] === UP) ? "#2eb886" : "#e01e5a",
-                        "blocks": this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
-                    }
-                );
+                data.attachments.push({
+                    color: heartbeatJSON["status"] === UP ? "#2eb886" : "#e01e5a",
+                    blocks: this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
+                });
             } else {
                 data.text = `${title}\n${msg}`;
             }
@@ -174,7 +169,6 @@ class Slack extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 

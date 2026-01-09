@@ -10,7 +10,7 @@
 
 - Do not report any upstream dependency issues / scan result by any tools. It will be closed immediately without explanations. Unless you have PoC to prove that the upstream issue affected Uptime Kuma.
 - Do not use the public issue tracker or discuss it in public as it will cause
-more damage.
+  more damage.
 
 ## Do you accept other 3rd-party bug bounty platforms?
 

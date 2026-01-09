@@ -7,10 +7,12 @@ const { Notification } = require("../notification");
 const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 const TranslatableError = require("../translatable-error");
 
-const cachedFetch = process.env.NODE_ENV ? NodeFetchCache.create({
-    // cache for 8h
-    cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 })
-}) : fetch;
+const cachedFetch = process.env.NODE_ENV
+    ? NodeFetchCache.create({
+          // cache for 8h
+          cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
+      })
+    : fetch;
 
 /**
  * Find the RDAP server for a given TLD
@@ -28,7 +30,7 @@ async function getRdapServer(tld) {
     }
 
     for (const service of rdapList["services"]) {
-        const [ tlds, urls ] = service;
+        const [tlds, urls] = service;
         if (tlds.includes(tld)) {
             return urls[0];
         }
@@ -108,7 +110,7 @@ class DomainExpiry extends BeanModel {
      * @returns {Promise<DomainExpiry>} Domain bean
      */
     static async findByName(domain) {
-        return R.findOne("domain_expiry", "domain = ?", [ domain ]);
+        return R.findOne("domain_expiry", "domain = ?", [domain]);
     }
 
     /**
@@ -159,7 +161,7 @@ class DomainExpiry extends BeanModel {
         if (!tld.domain) {
             throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: tld.hostname });
         }
-        if ( !tld.publicSuffix) {
+        if (!tld.publicSuffix) {
             throw new TranslatableError("domain_expiry_unsupported_public_suffix", { publicSuffix: tld.publicSuffix });
         }
         if (tld.isIp) {
@@ -176,9 +178,14 @@ class DomainExpiry extends BeanModel {
             // Only warn when the monitor actually has domain expiry notifications enabled.
             // The edit monitor page calls this method frequently while the user is typing.
             if (Boolean(monitor.domainExpiryNotification)) {
-                log.warn("domain_expiry", `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`);
+                log.warn(
+                    "domain_expiry",
+                    `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                );
             }
-            throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", { publicSuffix: tld.publicSuffix });
+            throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
+                publicSuffix: tld.publicSuffix,
+            });
         }
 
         return {
@@ -258,7 +265,10 @@ class DomainExpiry extends BeanModel {
         }
         // sanity check if expiry date is valid before calculating days remaining. Should not happen and likely indicates a bug in the code.
         if (!domain.expiry || isNaN(new Date(domain.expiry).getTime())) {
-            log.warn("domain_expiry", `No valid expiry date passed to sendNotifications for ${domainName} (expiry: ${domain.expiry}), skipping notification`);
+            log.warn(
+                "domain_expiry",
+                `No valid expiry date passed to sendNotifications for ${domainName} (expiry: ${domain.expiry}), skipping notification`
+            );
             return;
         }
 
@@ -269,8 +279,8 @@ class DomainExpiry extends BeanModel {
         let notifyDays = await setting("domainExpiryNotifyDays");
         if (notifyDays == null || !Array.isArray(notifyDays)) {
             // Reset Default
-            await setSetting("domainExpiryNotifyDays", [ 7, 14, 21 ], "general");
-            notifyDays = [ 7, 14, 21 ];
+            await setSetting("domainExpiryNotifyDays", [7, 14, 21], "general");
+            notifyDays = [7, 14, 21];
         }
         if (Array.isArray(notifyDays)) {
             // Asc sort to avoid sending multiple notifications if daysRemaining is below multiple targetDays

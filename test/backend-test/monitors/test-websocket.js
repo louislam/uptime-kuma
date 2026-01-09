@@ -13,16 +13,15 @@ const http = require("node:http");
 function nonCompliantWS() {
     const srv = net.createServer((socket) => {
         socket.once("data", (buf) => {
-            socket.write("HTTP/1.1 101 Switching Protocols\r\n" +
-                    "Upgrade: websocket\r\n" +
-                    "Connection: Upgrade\r\n\r\n");
+            socket.write(
+                "HTTP/1.1 101 Switching Protocols\r\n" + "Upgrade: websocket\r\n" + "Connection: Upgrade\r\n\r\n"
+            );
             socket.destroy();
         });
     });
     return new Promise((resolve) => {
         srv.listen(0, () => {
-            resolve({ server: srv,
-                port: srv.address().port });
+            resolve({ server: srv, port: srv.address().port });
         });
     });
 }
@@ -38,8 +37,7 @@ function httpServer() {
     });
     return new Promise((resolve) => {
         srv.listen(0, () => {
-            resolve({ server: srv,
-                port: srv.address().port });
+            resolve({ server: srv, port: srv.address().port });
         });
     });
 }
@@ -51,17 +49,14 @@ function httpServer() {
  */
 function createWebSocketServer(options = {}) {
     return new Promise((resolve) => {
-        const wss = new WebSocketServer({ port: 0,
-            ...options });
+        const wss = new WebSocketServer({ port: 0, ...options });
         wss.on("listening", () => {
-            resolve({ server: wss,
-                port: wss.address().port });
+            resolve({ server: wss, port: wss.address().port });
         });
     });
 }
 
-describe("WebSocket Monitor", {
-}, () => {
+describe("WebSocket Monitor", {}, () => {
     test("check() rejects with unexpected server response when connecting to non-WebSocket server", {}, async (t) => {
         const websocketMonitor = new WebSocketMonitorType();
         const { server: srv, port } = await httpServer();
@@ -92,7 +87,7 @@ describe("WebSocket Monitor", {
         const monitor = {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -118,7 +113,7 @@ describe("WebSocket Monitor", {
         const monitor = {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -144,7 +139,7 @@ describe("WebSocket Monitor", {
         const monitor = {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
-            accepted_statuscodes_json: JSON.stringify([ "1001" ]),
+            accepted_statuscodes_json: JSON.stringify(["1001"]),
             timeout: 30,
         };
 
@@ -153,10 +148,7 @@ describe("WebSocket Monitor", {
             status: PENDING,
         };
 
-        await assert.rejects(
-            websocketMonitor.check(monitor, heartbeat, {}),
-            new Error("Unexpected status code: 1000")
-        );
+        await assert.rejects(websocketMonitor.check(monitor, heartbeat, {}), new Error("Unexpected status code: 1000"));
     });
 
     test("check() rejects when expected status code is empty", async (t) => {
@@ -167,7 +159,7 @@ describe("WebSocket Monitor", {
         const monitor = {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
-            accepted_statuscodes_json: JSON.stringify([ "" ]),
+            accepted_statuscodes_json: JSON.stringify([""]),
             timeout: 30,
         };
 
@@ -176,10 +168,7 @@ describe("WebSocket Monitor", {
             status: PENDING,
         };
 
-        await assert.rejects(
-            websocketMonitor.check(monitor, heartbeat, {}),
-            new Error("Unexpected status code: 1000")
-        );
+        await assert.rejects(websocketMonitor.check(monitor, heartbeat, {}), new Error("Unexpected status code: 1000"));
     });
 
     test("check() rejects when Sec-WebSocket-Accept header is invalid", async (t) => {
@@ -190,7 +179,7 @@ describe("WebSocket Monitor", {
         const monitor = {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -213,7 +202,7 @@ describe("WebSocket Monitor", {
         const monitor = {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: true,
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -239,7 +228,7 @@ describe("WebSocket Monitor", {
         const monitor = {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: true,
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -265,7 +254,7 @@ describe("WebSocket Monitor", {
         const monitor = {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: true,
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -286,7 +275,7 @@ describe("WebSocket Monitor", {
             handleProtocols: (protocols) => {
                 // Explicitly reject all subprotocols
                 return null;
-            }
+            },
         });
         t.after(() => wss.close());
 
@@ -294,7 +283,7 @@ describe("WebSocket Monitor", {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             wsSubprotocol: "ocpp1.6",
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -303,10 +292,7 @@ describe("WebSocket Monitor", {
             status: PENDING,
         };
 
-        await assert.rejects(
-            websocketMonitor.check(monitor, heartbeat, {}),
-            new Error("Server sent no subprotocol")
-        );
+        await assert.rejects(websocketMonitor.check(monitor, heartbeat, {}), new Error("Server sent no subprotocol"));
     });
 
     test("check() rejects when multiple subprotocols contain invalid characters", async (t) => {
@@ -318,7 +304,7 @@ describe("WebSocket Monitor", {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             wsSubprotocol: "  # &  ,ocpp2.0   []  ,     ocpp1.6 ,  ,,     ;      ",
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -338,7 +324,7 @@ describe("WebSocket Monitor", {
         const { server: wss, port } = await createWebSocketServer({
             handleProtocols: (protocols) => {
                 return Array.from(protocols).includes("test") ? "test" : null;
-            }
+            },
         });
         t.after(() => wss.close());
 
@@ -346,7 +332,7 @@ describe("WebSocket Monitor", {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             wsSubprotocol: "invalid                        ,              test  ",
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
@@ -369,7 +355,7 @@ describe("WebSocket Monitor", {
         const { server: wss, port } = await createWebSocketServer({
             handleProtocols: (protocols) => {
                 return Array.from(protocols).includes("test") ? "test" : null;
-            }
+            },
         });
         t.after(() => wss.close());
 
@@ -377,7 +363,7 @@ describe("WebSocket Monitor", {
             url: `ws://localhost:${port}`,
             wsIgnoreSecWebsocketAcceptHeader: false,
             wsSubprotocol: "invalid,test",
-            accepted_statuscodes_json: JSON.stringify([ "1000" ]),
+            accepted_statuscodes_json: JSON.stringify(["1000"]),
             timeout: 30,
         };
 
