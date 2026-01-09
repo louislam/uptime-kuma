@@ -1,7 +1,8 @@
 <template>
     <div class="mb-3">
         <label for="halopsa-webhook-url" class="form-label">
-            {{ $t("Halo PSA Webhook URL") }}<span class="test-danger">*</span>
+            {{ $t("Halo PSA Webhook URL") }}
+            <span class="test-danger">*</span>
         </label>
         <HiddenInput
             v-model="$parent.notification.halowebhookurl"
@@ -69,6 +70,6 @@ import HiddenInput from "../HiddenInput.vue";
 export default {
     components: {
         HiddenInput,
-    }
+    },
 };
 </script>

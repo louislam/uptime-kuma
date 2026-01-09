@@ -14,16 +14,16 @@ class SMSPlanet extends NotificationProvider {
         try {
             let config = {
                 headers: {
-                    "Authorization": "Bearer " + notification.smsplanetApiToken,
-                    "content-type": "multipart/form-data"
-                }
+                    Authorization: "Bearer " + notification.smsplanetApiToken,
+                    "content-type": "multipart/form-data",
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
 
             let data = {
-                "from": notification.smsplanetSenderName,
-                "to": notification.smsplanetPhoneNumbers,
-                "msg": msg.replace(/🔴/, "❌")
+                from: notification.smsplanetSenderName,
+                to: notification.smsplanetPhoneNumbers,
+                msg: msg.replace(/🔴/, "❌"),
             };
 
             let response = await axios.post(url, data, config);

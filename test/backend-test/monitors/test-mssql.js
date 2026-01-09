@@ -9,9 +9,7 @@ const { UP, PENDING } = require("../../../src/util");
  * @returns {Promise<{container: MSSQLServerContainer, connectionString: string}>} The started container and connection string
  */
 async function createAndStartMSSQLContainer() {
-    const container = await new MSSQLServerContainer(
-        "mcr.microsoft.com/mssql/server:2022-latest"
-    )
+    const container = await new MSSQLServerContainer("mcr.microsoft.com/mssql/server:2022-latest")
         .acceptLicense()
         // The default timeout of 30 seconds might not be enough for the container to start
         .withStartupTimeout(60000)
@@ -19,16 +17,14 @@ async function createAndStartMSSQLContainer() {
 
     return {
         container,
-        connectionString: container.getConnectionUri(false)
+        connectionString: container.getConnectionUri(false),
     };
 }
 
 describe(
     "MSSQL Monitor",
     {
-        skip:
-            !!process.env.CI &&
-            (process.platform !== "linux" || process.arch !== "x64"),
+        skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
     },
     () => {
         test("check() sets status to UP when MSSQL server is reachable", async () => {
@@ -47,11 +43,7 @@ describe(
 
             try {
                 await mssqlMonitor.check(monitor, heartbeat, {});
-                assert.strictEqual(
-                    heartbeat.status,
-                    UP,
-                    `Expected status ${UP} but got ${heartbeat.status}`
-                );
+                assert.strictEqual(heartbeat.status, UP, `Expected status ${UP} but got ${heartbeat.status}`);
             } finally {
                 await container.stop();
             }
@@ -76,11 +68,7 @@ describe(
                     "Database connection/query failed: Failed to connect to localhost:15433 - Could not connect (sequence)"
                 )
             );
-            assert.notStrictEqual(
-                heartbeat.status,
-                UP,
-                `Expected status should not be ${heartbeat.status}`
-            );
+            assert.notStrictEqual(heartbeat.status, UP, `Expected status should not be ${heartbeat.status}`);
         });
 
         test("check() sets status to UP when custom query returns single value", async () => {
@@ -100,11 +88,7 @@ describe(
 
             try {
                 await mssqlMonitor.check(monitor, heartbeat, {});
-                assert.strictEqual(
-                    heartbeat.status,
-                    UP,
-                    `Expected status ${UP} but got ${heartbeat.status}`
-                );
+                assert.strictEqual(heartbeat.status, UP, `Expected status ${UP} but got ${heartbeat.status}`);
             } finally {
                 await container.stop();
             }
@@ -135,11 +119,7 @@ describe(
 
             try {
                 await mssqlMonitor.check(monitor, heartbeat, {});
-                assert.strictEqual(
-                    heartbeat.status,
-                    UP,
-                    `Expected status ${UP} but got ${heartbeat.status}`
-                );
+                assert.strictEqual(heartbeat.status, UP, `Expected status ${UP} but got ${heartbeat.status}`);
             } finally {
                 await container.stop();
             }
@@ -171,15 +151,9 @@ describe(
             try {
                 await assert.rejects(
                     mssqlMonitor.check(monitor, heartbeat, {}),
-                    new Error(
-                        "Query result did not meet the specified conditions (99)"
-                    )
+                    new Error("Query result did not meet the specified conditions (99)")
                 );
-                assert.strictEqual(
-                    heartbeat.status,
-                    PENDING,
-                    `Expected status should not be ${heartbeat.status}`
-                );
+                assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
             } finally {
                 await container.stop();
             }
@@ -211,15 +185,9 @@ describe(
             try {
                 await assert.rejects(
                     mssqlMonitor.check(monitor, heartbeat, {}),
-                    new Error(
-                        "Database connection/query failed: Query returned no results"
-                    )
+                    new Error("Database connection/query failed: Query returned no results")
                 );
-                assert.strictEqual(
-                    heartbeat.status,
-                    PENDING,
-                    `Expected status should not be ${heartbeat.status}`
-                );
+                assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
             } finally {
                 await container.stop();
             }
@@ -251,15 +219,9 @@ describe(
             try {
                 await assert.rejects(
                     mssqlMonitor.check(monitor, heartbeat, {}),
-                    new Error(
-                        "Database connection/query failed: Multiple values were found, expected only one value"
-                    )
+                    new Error("Database connection/query failed: Multiple values were found, expected only one value")
                 );
-                assert.strictEqual(
-                    heartbeat.status,
-                    PENDING,
-                    `Expected status should not be ${heartbeat.status}`
-                );
+                assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
             } finally {
                 await container.stop();
             }
@@ -291,15 +253,9 @@ describe(
             try {
                 await assert.rejects(
                     mssqlMonitor.check(monitor, heartbeat, {}),
-                    new Error(
-                        "Database connection/query failed: Multiple columns were found, expected only one value"
-                    )
+                    new Error("Database connection/query failed: Multiple columns were found, expected only one value")
                 );
-                assert.strictEqual(
-                    heartbeat.status,
-                    PENDING,
-                    `Expected status should not be ${heartbeat.status}`
-                );
+                assert.strictEqual(heartbeat.status, PENDING, `Expected status should not be ${heartbeat.status}`);
             } finally {
                 await container.stop();
             }

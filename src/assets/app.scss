@@ -3,7 +3,19 @@
 @import "node_modules/bootstrap/scss/bootstrap";
 
 #app {
-    font-family: "Twemoji Country Flags", BlinkMacSystemFont, segoe ui, Roboto, helvetica neue, Arial, noto sans, sans-serif, apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
+    font-family:
+        "Twemoji Country Flags",
+        BlinkMacSystemFont,
+        segoe ui,
+        Roboto,
+        helvetica neue,
+        Arial,
+        noto sans,
+        sans-serif,
+        apple color emoji,
+        segoe ui emoji,
+        segoe ui symbol,
+        noto color emoji;
 }
 
 h1 {
@@ -51,7 +63,6 @@ textarea.form-control {
         }
     }
 }
-
 
 // optgroup
 optgroup {
@@ -118,7 +129,10 @@ optgroup {
 .btn-primary {
     color: white;
 
-    &:hover, &:active, &:focus, &.active {
+    &:hover,
+    &:active,
+    &:focus,
+    &.active {
         color: white;
         background-color: $highlight;
         border-color: $highlight;
@@ -130,7 +144,7 @@ optgroup {
 }
 
 .btn-normal {
-    $bg-color: #F5F5F5;
+    $bg-color: #f5f5f5;
 
     background-color: $bg-color;
     border-color: $bg-color;
@@ -145,7 +159,10 @@ optgroup {
 .btn-warning {
     color: white;
 
-    &:hover, &:active, &:focus, &.active {
+    &:hover,
+    &:active,
+    &:focus,
+    &.active {
         color: white;
     }
 }
@@ -153,13 +170,16 @@ optgroup {
 .btn-info {
     color: white;
 
-    &:hover, &:active, &:focus, &.active {
+    &:hover,
+    &:active,
+    &:focus,
+    &.active {
         color: white;
     }
 }
 
 .btn-dark {
-    background-color: #161B22;
+    background-color: #161b22;
 }
 
 .btn-outline-normal {
@@ -206,7 +226,7 @@ optgroup {
                 font-weight: bold;
             }
 
-            td:nth-child(-n+3) {
+            td:nth-child(-n + 3) {
                 text-align: center;
             }
 
@@ -234,11 +254,13 @@ optgroup {
     background-color: #090c10;
     color: $dark-font-color;
 
-    mark, .mark {
+    mark,
+    .mark {
         background-color: #b6ad86;
     }
 
-    &::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb {
+    &::-webkit-scrollbar-thumb,
+    ::-webkit-scrollbar-thumb {
         background: $dark-border-color;
     }
 
@@ -295,11 +317,13 @@ optgroup {
         background-color: $dark-bg;
     }
 
-    .form-control, .form-select {
+    .form-control,
+    .form-select {
         border-color: $dark-border-color;
     }
 
-    .form-control:disabled, .form-control[readonly] {
+    .form-control:disabled,
+    .form-control[readonly] {
         background-color: #232f3b;
         opacity: 1;
     }
@@ -309,7 +333,8 @@ optgroup {
         color: $dark-font-color;
     }
 
-    .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    .nav-pills .nav-link.active,
+    .nav-pills .show > .nav-link {
         color: $dark-font-color2;
     }
 
@@ -338,7 +363,10 @@ optgroup {
     .btn-warning {
         color: $dark-font-color2;
 
-        &:hover, &:active, &:focus, &.active {
+        &:hover,
+        &:active,
+        &:focus,
+        &.active {
             color: $dark-font-color2;
         }
     }
@@ -407,7 +435,6 @@ optgroup {
             color: $dark-font-color2;
         }
     }
-
 }
 
 /*
@@ -522,7 +549,7 @@ optgroup {
     border-color: #4caf50;
 }
 
-[contenteditable=true] {
+[contenteditable="true"] {
     transition: all $easing-in 0.2s;
     background-color: rgba(239, 239, 239, 0.7);
     border-radius: 8px;
@@ -552,7 +579,6 @@ optgroup {
         color: #eee;
     }
     */
-
 }
 
 .action {
@@ -591,7 +617,8 @@ h5.settings-subheading::after {
 }
 
 /* required class */
-.code-editor, .css-editor {
+.code-editor,
+.css-editor {
     /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
 
     border-radius: 1rem;
@@ -603,7 +630,6 @@ h5.settings-subheading::after {
         border: 1px solid $dark-border-color;
     }
 }
-
 
 $shadow-box-padding: 20px;
 
@@ -642,7 +668,7 @@ $shadow-box-padding: 20px;
 }
 
 .zoom-cursor {
-  cursor: zoom-in;
+    cursor: zoom-in;
 }
 
 // Localization

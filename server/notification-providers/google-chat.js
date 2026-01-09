@@ -15,7 +15,7 @@ class GoogleChat extends NotificationProvider {
         // If Google Chat Webhook rate limit is reached, retry to configured max retries defaults to 3, delay between 60-180 seconds
         const post = async (url, data, config) => {
             let retries = notification.googleChatMaxRetries || 1; // Default to 1 retries
-            retries = (retries > 10) ? 10 : retries; // Enforce maximum retries in backend
+            retries = retries > 10 ? 10 : retries; // Enforce maximum retries in backend
             while (retries > 0) {
                 try {
                     await axios.post(url, data, config);
@@ -27,7 +27,7 @@ class GoogleChat extends NotificationProvider {
                             throw error;
                         }
                         const delay = 60000 + Math.random() * 120000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
+                        await new Promise((resolve) => setTimeout(resolve, delay));
                     } else {
                         throw error;
                     }
@@ -46,7 +46,7 @@ class GoogleChat extends NotificationProvider {
                     monitorJSON,
                     heartbeatJSON
                 );
-                const data = { "text": renderedText };
+                const data = { text: renderedText };
                 await post(notification.googleChatWebhookURL, data, config);
                 return okMsg;
             }

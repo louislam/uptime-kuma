@@ -31,7 +31,10 @@ class RabbitMqMonitorType extends MonitorType {
                 await this.checkSingleNode(monitor, baseUrl, `${nodeIndex}/${baseUrls.length}`);
                 // If checkSingleNode succeeds (doesn't throw), set heartbeat to UP
                 heartbeat.status = UP;
-                heartbeat.msg = baseUrls.length === 1 ? "Node is reachable and there are no alerts in the cluster" : `One of the ${baseUrls.length} nodes is reachable and there are no alerts in the cluster`;
+                heartbeat.msg =
+                    baseUrls.length === 1
+                        ? "Node is reachable and there are no alerts in the cluster"
+                        : `One of the ${baseUrls.length} nodes is reachable and there are no alerts in the cluster`;
                 return;
             } catch (error) {
                 log.warn(this.name, `Node ${nodeIndex}: ${error.message}`);
@@ -64,8 +67,12 @@ class RabbitMqMonitorType extends MonitorType {
             method: "get",
             timeout: monitor.timeout * 1000,
             headers: {
-                "Accept": "application/json",
-                "Authorization": "Basic " + Buffer.from(`${monitor.rabbitmqUsername || ""}:${monitor.rabbitmqPassword || ""}`).toString("base64"),
+                Accept: "application/json",
+                Authorization:
+                    "Basic " +
+                    Buffer.from(`${monitor.rabbitmqUsername || ""}:${monitor.rabbitmqPassword || ""}`).toString(
+                        "base64"
+                    ),
             },
             signal: axiosAbortSignal((monitor.timeout + 10) * 1000),
             // Capture reason for 503 status
@@ -76,7 +83,10 @@ class RabbitMqMonitorType extends MonitorType {
 
         try {
             const res = await axios.request(options);
-            log.debug("monitor", `[${monitor.name}] Axios Response: status=${res.status} body=${JSON.stringify(res.data)}`);
+            log.debug(
+                "monitor",
+                `[${monitor.name}] Axios Response: status=${res.status} body=${JSON.stringify(res.data)}`
+            );
 
             if (res.status === 200) {
                 log.debug("monitor", `[${monitor.name}] Node ${nodeInfo} is healthy`);

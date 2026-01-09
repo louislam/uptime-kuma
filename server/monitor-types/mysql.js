@@ -11,9 +11,7 @@ class MysqlMonitorType extends MonitorType {
     name = "mysql";
 
     supportsConditions = true;
-    conditionVariables = [
-        new ConditionVariable("result", defaultStringOperators),
-    ];
+    conditionVariables = [new ConditionVariable("result", defaultStringOperators)];
 
     /**
      * @inheritdoc
@@ -74,7 +72,7 @@ class MysqlMonitorType extends MonitorType {
         return new Promise((resolve, reject) => {
             const connection = mysql.createConnection({
                 uri: connectionString,
-                password
+                password,
             });
 
             connection.on("error", (err) => {
@@ -113,7 +111,7 @@ class MysqlMonitorType extends MonitorType {
         return new Promise((resolve, reject) => {
             const connection = mysql.createConnection({
                 uri: connectionString,
-                password
+                password,
             });
 
             connection.on("error", (err) => {
