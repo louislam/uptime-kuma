@@ -13,46 +13,48 @@ class Octopush extends NotificationProvider {
         const urlV1 = "https://www.octopush-dm.com/api/sms/json";
 
         try {
-        // Default - V2
+            // Default - V2
             if (notification.octopushVersion === "2" || !notification.octopushVersion) {
                 let config = {
                     headers: {
                         "api-key": notification.octopushAPIKey,
                         "api-login": notification.octopushLogin,
-                        "cache-control": "no-cache"
-                    }
+                        "cache-control": "no-cache",
+                    },
                 };
+                config = this.getAxiosConfigWithProxy(config);
                 let data = {
-                    "recipients": [
+                    recipients: [
                         {
-                            "phone_number": notification.octopushPhoneNumber
-                        }
+                            phone_number: notification.octopushPhoneNumber,
+                        },
                     ],
                     //octopush not supporting non ascii char
-                    "text": msg.replace(/[^\x00-\x7F]/g, ""),
-                    "type": notification.octopushSMSType,
-                    "purpose": "alert",
-                    "sender": notification.octopushSenderName
+                    text: msg.replace(/[^\x00-\x7F]/g, ""),
+                    type: notification.octopushSMSType,
+                    purpose: "alert",
+                    sender: notification.octopushSenderName,
                 };
                 await axios.post(urlV2, data, config);
             } else if (notification.octopushVersion === "1") {
                 let data = {
-                    "user_login": notification.octopushDMLogin,
-                    "api_key": notification.octopushDMAPIKey,
-                    "sms_recipients": notification.octopushDMPhoneNumber,
-                    "sms_sender": notification.octopushDMSenderName,
-                    "sms_type": (notification.octopushDMSMSType === "sms_premium") ? "FR" : "XXX",
-                    "transactional": "1",
+                    user_login: notification.octopushDMLogin,
+                    api_key: notification.octopushDMAPIKey,
+                    sms_recipients: notification.octopushDMPhoneNumber,
+                    sms_sender: notification.octopushDMSenderName,
+                    sms_type: notification.octopushDMSMSType === "sms_premium" ? "FR" : "XXX",
+                    transactional: "1",
                     //octopush not supporting non ascii char
-                    "sms_text": msg.replace(/[^\x00-\x7F]/g, ""),
+                    sms_text: msg.replace(/[^\x00-\x7F]/g, ""),
                 };
 
                 let config = {
                     headers: {
-                        "cache-control": "no-cache"
+                        "cache-control": "no-cache",
                     },
-                    params: data
+                    params: data,
                 };
+                config = this.getAxiosConfigWithProxy(config);
 
                 // V1 API returns 200 even on error so we must check
                 // response data

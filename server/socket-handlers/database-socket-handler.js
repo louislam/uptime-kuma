@@ -7,14 +7,13 @@ const Database = require("../database");
  * @returns {void}
  */
 module.exports.databaseSocketHandler = (socket) => {
-
     // Post or edit incident
     socket.on("getDatabaseSize", async (callback) => {
         try {
             checkLogin(socket);
             callback({
                 ok: true,
-                size: Database.getSize(),
+                size: await Database.getSize(),
             });
         } catch (error) {
             callback({
@@ -38,5 +37,4 @@ module.exports.databaseSocketHandler = (socket) => {
             });
         }
     });
-
 };

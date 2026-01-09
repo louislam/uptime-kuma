@@ -14,8 +14,8 @@ class User extends BeanModel {
      */
     static async resetPassword(userID, newPassword) {
         await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-            passwordHash.generate(newPassword),
-            userID
+            await passwordHash.generate(newPassword),
+            userID,
         ]);
     }
 
@@ -25,12 +25,9 @@ class User extends BeanModel {
      * @returns {Promise<void>}
      */
     async resetPassword(newPassword) {
-        const hashedPassword = passwordHash.generate(newPassword);
+        const hashedPassword = await passwordHash.generate(newPassword);
 
-        await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [
-            hashedPassword,
-            this.id
-        ]);
+        await R.exec("UPDATE `user` SET password = ? WHERE id = ? ", [hashedPassword, this.id]);
 
         this.password = hashedPassword;
     }
@@ -42,12 +39,14 @@ class User extends BeanModel {
      * @returns {string} the JsonWebToken as a string
      */
     static createJWT(user, jwtSecret) {
-        return jwt.sign({
-            username: user.username,
-            h: shake256(user.password, SHAKE256_LENGTH),
-        }, jwtSecret);
+        return jwt.sign(
+            {
+                username: user.username,
+                h: shake256(user.password, SHAKE256_LENGTH),
+            },
+            jwtSecret
+        );
     }
-
 }
 
 module.exports = User;

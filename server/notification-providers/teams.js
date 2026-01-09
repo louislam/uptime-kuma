@@ -46,21 +46,16 @@ class Teams extends NotificationProvider {
      * @param {string} args.dashboardUrl URL of the dashboard affected
      * @returns {object} Notification payload
      */
-    _notificationPayloadFactory = ({
-        heartbeatJSON,
-        monitorName,
-        monitorUrl,
-        dashboardUrl,
-    }) => {
+    _notificationPayloadFactory = ({ heartbeatJSON, monitorName, monitorUrl, dashboardUrl }) => {
         const status = heartbeatJSON?.status;
         const facts = [];
         const actions = [];
 
         if (dashboardUrl) {
             actions.push({
-                "type": "Action.OpenUrl",
-                "title": "Visit Uptime Kuma",
-                "url": dashboardUrl
+                type: "Action.OpenUrl",
+                title: "Visit Uptime Kuma",
+                url: dashboardUrl,
             });
         }
 
@@ -85,9 +80,9 @@ class Teams extends NotificationProvider {
                 value: `[${monitorUrl}](${monitorUrl})`,
             });
             actions.push({
-                "type": "Action.OpenUrl",
-                "title": "Visit Monitor URL",
-                "url": monitorUrl
+                type: "Action.OpenUrl",
+                title: "Visit Monitor URL",
+                url: monitorUrl,
             });
         }
 
@@ -99,79 +94,79 @@ class Teams extends NotificationProvider {
         }
 
         const payload = {
-            "type": "message",
+            type: "message",
             // message with status prefix as notification text
-            "summary": this._statusMessageFactory(status, monitorName, true),
-            "attachments": [
+            summary: this._statusMessageFactory(status, monitorName, true),
+            attachments: [
                 {
-                    "contentType": "application/vnd.microsoft.card.adaptive",
-                    "contentUrl": "",
-                    "content": {
-                        "type": "AdaptiveCard",
-                        "body": [
+                    contentType: "application/vnd.microsoft.card.adaptive",
+                    contentUrl: "",
+                    content: {
+                        type: "AdaptiveCard",
+                        body: [
                             {
-                                "type": "Container",
-                                "verticalContentAlignment": "Center",
-                                "items": [
+                                type: "Container",
+                                verticalContentAlignment: "Center",
+                                items: [
                                     {
-                                        "type": "ColumnSet",
-                                        "style": this._getStyle(status),
-                                        "columns": [
+                                        type: "ColumnSet",
+                                        style: this._getStyle(status),
+                                        columns: [
                                             {
-                                                "type": "Column",
-                                                "width": "auto",
-                                                "verticalContentAlignment": "Center",
-                                                "items": [
+                                                type: "Column",
+                                                width: "auto",
+                                                verticalContentAlignment: "Center",
+                                                items: [
                                                     {
-                                                        "type": "Image",
-                                                        "width": "32px",
-                                                        "style": "Person",
-                                                        "url": "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
-                                                        "altText": "Uptime Kuma Logo"
-                                                    }
-                                                ]
+                                                        type: "Image",
+                                                        width: "32px",
+                                                        style: "Person",
+                                                        url: "https://raw.githubusercontent.com/louislam/uptime-kuma/master/public/icon.png",
+                                                        altText: "Uptime Kuma Logo",
+                                                    },
+                                                ],
                                             },
                                             {
-                                                "type": "Column",
-                                                "width": "stretch",
-                                                "items": [
+                                                type: "Column",
+                                                width: "stretch",
+                                                items: [
                                                     {
-                                                        "type": "TextBlock",
-                                                        "size": "Medium",
-                                                        "weight": "Bolder",
-                                                        "text": `**${this._statusMessageFactory(status, monitorName, false)}**`,
+                                                        type: "TextBlock",
+                                                        size: "Medium",
+                                                        weight: "Bolder",
+                                                        text: `**${this._statusMessageFactory(status, monitorName, false)}**`,
                                                     },
                                                     {
-                                                        "type": "TextBlock",
-                                                        "size": "Small",
-                                                        "weight": "Default",
-                                                        "text": "Uptime Kuma Alert",
-                                                        "isSubtle": true,
-                                                        "spacing": "None"
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
+                                                        type: "TextBlock",
+                                                        size: "Small",
+                                                        weight: "Default",
+                                                        text: "Uptime Kuma Alert",
+                                                        isSubtle: true,
+                                                        spacing: "None",
+                                                    },
+                                                ],
+                                            },
+                                        ],
+                                    },
+                                ],
                             },
                             {
-                                "type": "FactSet",
-                                "separator": false,
-                                "facts": facts
-                            }
+                                type: "FactSet",
+                                separator: false,
+                                facts: facts,
+                            },
                         ],
-                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                        "version": "1.5"
-                    }
-                }
-            ]
+                        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                        version: "1.5",
+                    },
+                },
+            ],
         };
 
         if (actions) {
             payload.attachments[0].content.body.push({
-                "type": "ActionSet",
-                "actions": actions,
+                type: "ActionSet",
+                actions: actions,
             });
         }
 
@@ -185,7 +180,8 @@ class Teams extends NotificationProvider {
      * @returns {Promise<void>}
      */
     _sendNotification = async (webhookUrl, payload) => {
-        await axios.post(webhookUrl, payload);
+        let config = this.getAxiosConfigWithProxy({});
+        await axios.post(webhookUrl, payload, config);
     };
 
     /**
@@ -197,8 +193,8 @@ class Teams extends NotificationProvider {
     _handleGeneralNotification = (webhookUrl, msg) => {
         const payload = this._notificationPayloadFactory({
             heartbeatJSON: {
-                msg: msg
-            }
+                msg: msg,
+            },
         });
 
         return this._sendNotification(webhookUrl, payload);

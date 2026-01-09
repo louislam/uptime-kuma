@@ -14,7 +14,7 @@ class Opsgenie extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         let opsgenieAlertsUrl;
-        let priority = (!notification.opsgeniePriority) ? 3 : notification.opsgeniePriority;
+        let priority = !notification.opsgeniePriority ? 3 : notification.opsgeniePriority;
         const textMsg = "Uptime Kuma Alert";
 
         try {
@@ -32,10 +32,10 @@ class Opsgenie extends NotificationProvider {
             if (heartbeatJSON == null) {
                 let notificationTestAlias = "uptime-kuma-notification-test";
                 let data = {
-                    "message": msg,
-                    "alias": notificationTestAlias,
-                    "source": "Uptime Kuma",
-                    "priority": "P5"
+                    message: msg,
+                    alias: notificationTestAlias,
+                    source: "Uptime Kuma",
+                    priority: "P5",
                 };
 
                 return this.post(notification, opsgenieAlertsUrl, data);
@@ -43,11 +43,11 @@ class Opsgenie extends NotificationProvider {
 
             if (heartbeatJSON.status === DOWN) {
                 let data = {
-                    "message": monitorJSON ? textMsg + `: ${monitorJSON.name}` : textMsg,
-                    "alias": monitorJSON.name,
-                    "description": msg,
-                    "source": "Uptime Kuma",
-                    "priority": `P${priority}`
+                    message: monitorJSON ? textMsg + `: ${monitorJSON.name}` : textMsg,
+                    alias: monitorJSON.name,
+                    description: msg,
+                    source: "Uptime Kuma",
+                    priority: `P${priority}`,
                 };
 
                 return this.post(notification, opsgenieAlertsUrl, data);
@@ -56,7 +56,7 @@ class Opsgenie extends NotificationProvider {
             if (heartbeatJSON.status === UP) {
                 let opsgenieAlertsCloseUrl = `${opsgenieAlertsUrl}/${encodeURIComponent(monitorJSON.name)}/close?identifierType=alias`;
                 let data = {
-                    "source": "Uptime Kuma",
+                    source: "Uptime Kuma",
                 };
 
                 return this.post(notification, opsgenieAlertsCloseUrl, data);
@@ -77,9 +77,10 @@ class Opsgenie extends NotificationProvider {
         let config = {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `GenieKey ${notification.opsgenieApiKey}`,
-            }
+                Authorization: `GenieKey ${notification.opsgenieApiKey}`,
+            },
         };
+        config = this.getAxiosConfigWithProxy(config);
 
         let res = await axios.post(url, data, config);
         if (res.status == null) {

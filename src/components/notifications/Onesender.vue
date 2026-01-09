@@ -14,7 +14,12 @@
 
     <div class="mb-3">
         <label for="receiver-onesender" class="form-label">{{ $t("Token Onesender") }}</label>
-        <HiddenInput id="receiver-onesender" v-model="$parent.notification.onesenderToken" :required="true" autocomplete="false"></HiddenInput>
+        <HiddenInput
+            id="receiver-onesender"
+            v-model="$parent.notification.onesenderToken"
+            :required="true"
+            autocomplete="false"
+        ></HiddenInput>
         <i18n-t tag="div" keypath="wayToGetOnesenderUrlandToken" class="form-text">
             <a href="https://onesender.net/" target="_blank">{{ $t("here") }}</a>
         </i18n-t>
@@ -32,7 +37,9 @@
             <option value="group">{{ $t("Group ID") }}</option>
         </select>
     </div>
-    <div v-if="$parent.notification.onesenderTypeReceiver == 'private'" class="form-text">{{ $t("privateOnesenderDesc", ['"application/json"']) }}</div>
+    <div v-if="$parent.notification.onesenderTypeReceiver == 'private'" class="form-text">
+        {{ $t("privateOnesenderDesc", ['"application/json"']) }}
+    </div>
     <div v-else class="form-text">{{ $t("groupOnesenderDesc") }}</div>
     <div class="mb-3">
         <input
@@ -68,7 +75,9 @@ export default {
     computed: {
         computedReceiverResult() {
             let receiver = this.$parent.notification.onesenderReceiver;
-            return this.$parent.notification.onesenderTypeReceiver === "private" ? receiver + "@s.whatsapp.net" : receiver + "@g.us";
+            return this.$parent.notification.onesenderTypeReceiver === "private"
+                ? receiver + "@s.whatsapp.net"
+                : receiver + "@g.us";
         },
     },
 };

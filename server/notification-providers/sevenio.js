@@ -12,12 +12,12 @@ class SevenIO extends NotificationProvider {
         const okMsg = "Sent Successfully.";
 
         const data = {
-            to: notification.sevenioTo,
+            to: notification.sevenioReceiver,
             from: notification.sevenioSender || "Uptime Kuma",
             text: msg,
         };
 
-        const config = {
+        let config = {
             baseURL: "https://gateway.seven.io/api/",
             headers: {
                 "Content-Type": "application/json",
@@ -26,6 +26,7 @@ class SevenIO extends NotificationProvider {
         };
 
         try {
+            config = this.getAxiosConfigWithProxy(config);
             // testing or certificate expiry notification
             if (heartbeatJSON == null) {
                 await axios.post("sms", data, config);
@@ -39,10 +40,12 @@ class SevenIO extends NotificationProvider {
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             if (heartbeatJSON["status"] === DOWN) {
-                data.text = `Your service ${monitorJSON["name"]} ${address}went down at ${heartbeatJSON["localDateTime"]} ` +
+                data.text =
+                    `Your service ${monitorJSON["name"]} ${address}went down at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}). Error: ${heartbeatJSON["msg"]}`;
             } else if (heartbeatJSON["status"] === UP) {
-                data.text = `Your service ${monitorJSON["name"]} ${address}went back up at ${heartbeatJSON["localDateTime"]} ` +
+                data.text =
+                    `Your service ${monitorJSON["name"]} ${address}went back up at ${heartbeatJSON["localDateTime"]} ` +
                     `(${heartbeatJSON["timezone"]}).`;
             }
             await axios.post("sms", data, config);
@@ -51,7 +54,6 @@ class SevenIO extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
-
 }
 
 module.exports = SevenIO;

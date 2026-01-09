@@ -16,46 +16,53 @@ class Line extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + notification.lineChannelAccessToken
-                }
+                    Authorization: "Bearer " + notification.lineChannelAccessToken,
+                },
             };
+            config = this.getAxiosConfigWithProxy(config);
             if (heartbeatJSON == null) {
                 let testMessage = {
-                    "to": notification.lineUserID,
-                    "messages": [
+                    to: notification.lineUserID,
+                    messages: [
                         {
-                            "type": "text",
-                            "text": "Test Successful!"
-                        }
-                    ]
+                            type: "text",
+                            text: "Test Successful!",
+                        },
+                    ],
                 };
                 await axios.post(url, testMessage, config);
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downMessage = {
-                    "to": notification.lineUserID,
-                    "messages": [
+                    to: notification.lineUserID,
+                    messages: [
                         {
-                            "type": "text",
-                            "text": "UptimeKuma Alert: [🔴 Down]\n" +
-                                "Name: " + monitorJSON["name"] + " \n" +
+                            type: "text",
+                            text:
+                                "UptimeKuma Alert: [🔴 Down]\n" +
+                                "Name: " +
+                                monitorJSON["name"] +
+                                " \n" +
                                 heartbeatJSON["msg"] +
-                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
-                        }
-                    ]
+                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        },
+                    ],
                 };
                 await axios.post(url, downMessage, config);
             } else if (heartbeatJSON["status"] === UP) {
                 let upMessage = {
-                    "to": notification.lineUserID,
-                    "messages": [
+                    to: notification.lineUserID,
+                    messages: [
                         {
-                            "type": "text",
-                            "text": "UptimeKuma Alert: [✅ Up]\n" +
-                                "Name: " + monitorJSON["name"] + " \n" +
+                            type: "text",
+                            text:
+                                "UptimeKuma Alert: [✅ Up]\n" +
+                                "Name: " +
+                                monitorJSON["name"] +
+                                " \n" +
                                 heartbeatJSON["msg"] +
-                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`
-                        }
-                    ]
+                                `\nTime (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`,
+                        },
+                    ],
                 };
                 await axios.post(url, upMessage, config);
             }

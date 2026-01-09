@@ -1,13 +1,12 @@
 const axios = require("axios");
 const { R } = require("redbean-node");
 const https = require("https");
-const fs = require("fs");
+const fsAsync = require("fs").promises;
 const path = require("path");
 const Database = require("./database");
-const { axiosAbortSignal } = require("./util-server");
+const { axiosAbortSignal, fsExists } = require("./util-server");
 
 class DockerHost {
-
     static CertificateFileNameCA = "ca.pem";
     static CertificateFileNameCert = "cert.pem";
     static CertificateFileNameKey = "key.pem";
@@ -23,12 +22,11 @@ class DockerHost {
         let bean;
 
         if (dockerHostID) {
-            bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [ dockerHostID, userID ]);
+            bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [dockerHostID, userID]);
 
             if (!bean) {
                 throw new Error("docker host not found");
             }
-
         } else {
             bean = R.dispense("docker_host");
         }
@@ -50,14 +48,14 @@ class DockerHost {
      * @returns {Promise<void>}
      */
     static async delete(dockerHostID, userID) {
-        let bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [ dockerHostID, userID ]);
+        let bean = await R.findOne("docker_host", " id = ? AND user_id = ? ", [dockerHostID, userID]);
 
         if (!bean) {
             throw new Error("docker host not found");
         }
 
         // Delete removed proxy from monitors if exists
-        await R.exec("UPDATE monitor SET docker_host = null WHERE docker_host = ?", [ dockerHostID ]);
+        await R.exec("UPDATE monitor SET docker_host = null WHERE docker_host = ?", [dockerHostID]);
 
         await R.trash(bean);
     }
@@ -72,7 +70,7 @@ class DockerHost {
             url: "/containers/json?all=true",
             timeout: 5000,
             headers: {
-                "Accept": "*/*",
+                Accept: "*/*",
             },
             signal: axiosAbortSignal(6000),
         };
@@ -81,26 +79,24 @@ class DockerHost {
             options.socketPath = dockerHost.dockerDaemon;
         } else if (dockerHost.dockerType === "tcp") {
             options.baseURL = DockerHost.patchDockerURL(dockerHost.dockerDaemon);
-            options.httpsAgent = new https.Agent(DockerHost.getHttpsAgentOptions(dockerHost.dockerType, options.baseURL));
+            options.httpsAgent = new https.Agent(
+                await DockerHost.getHttpsAgentOptions(dockerHost.dockerType, options.baseURL)
+            );
         }
 
         try {
             let res = await axios.request(options);
 
             if (Array.isArray(res.data)) {
-
                 if (res.data.length > 1) {
-
                     if ("ImageID" in res.data[0]) {
                         return res.data.length;
                     } else {
                         throw new Error("Invalid Docker response, is it Docker really a daemon?");
                     }
-
                 } else {
                     return res.data.length;
                 }
-
             } else {
                 throw new Error("Invalid Docker response, is it Docker really a daemon?");
             }
@@ -141,35 +137,40 @@ class DockerHost {
      * File names can also be overridden via 'DOCKER_TLS_FILE_NAME_(CA|KEY|CERT)'.
      * @param {string} dockerType i.e. "tcp" or "socket"
      * @param {string} url The docker host URL rewritten to https://
-     * @returns {object} HTTP agent options
+     * @returns {Promise<object>} HTTP agent options
      */
-    static getHttpsAgentOptions(dockerType, url) {
+    static async getHttpsAgentOptions(dockerType, url) {
         let baseOptions = {
             maxCachedSessions: 0,
-            rejectUnauthorized: true
+            rejectUnauthorized: true,
         };
         let certOptions = {};
 
-        let dirName = (new URL(url)).hostname;
+        let dirName = new URL(url).hostname;
 
         let caPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameCA);
         let certPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameCert);
         let keyPath = path.join(Database.dockerTLSDir, dirName, DockerHost.CertificateFileNameKey);
 
-        if (dockerType === "tcp" && fs.existsSync(caPath) && fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-            let ca = fs.readFileSync(caPath);
-            let key = fs.readFileSync(keyPath);
-            let cert = fs.readFileSync(certPath);
+        if (
+            dockerType === "tcp" &&
+            (await fsExists(caPath)) &&
+            (await fsExists(certPath)) &&
+            (await fsExists(keyPath))
+        ) {
+            let ca = await fsAsync.readFile(caPath);
+            let key = await fsAsync.readFile(keyPath);
+            let cert = await fsAsync.readFile(certPath);
             certOptions = {
                 ca,
                 key,
-                cert
+                cert,
             };
         }
 
         return {
             ...baseOptions,
-            ...certOptions
+            ...certOptions,
         };
     }
 }

@@ -16,16 +16,17 @@ class YZJ extends NotificationProvider {
                 msg = `${this.statusToString(heartbeatJSON["status"])} ${monitorJSON["name"]} \n> ${heartbeatJSON["msg"]}\n> Time (${heartbeatJSON["timezone"]}): ${heartbeatJSON["localDateTime"]}`;
             }
 
-            const config = {
+            let config = {
                 headers: {
                     "Content-Type": "application/json",
                 },
             };
             const params = {
-                content: msg
+                content: msg,
             };
             // yzjtype=0 => general robot
             const url = `${notification.yzjWebHookUrl}?yzjtype=0&yzjtoken=${notification.yzjToken}`;
+            config = this.getAxiosConfigWithProxy(config);
 
             const result = await axios.post(url, params, config);
             if (!result.data?.success) {

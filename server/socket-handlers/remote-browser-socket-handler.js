@@ -24,7 +24,6 @@ module.exports.remoteBrowserSocketHandler = (socket) => {
                 msgi18n: true,
                 id: remoteBrowserBean.id,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -45,7 +44,6 @@ module.exports.remoteBrowserSocketHandler = (socket) => {
                 msg: "successDeleted",
                 msgi18n: true,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -69,7 +67,6 @@ module.exports.remoteBrowserSocketHandler = (socket) => {
                 ok: true,
                 msg,
             });
-
         } catch (e) {
             log.error("remoteBrowser", e);
 

@@ -66,8 +66,8 @@ export function timezoneList() {
  */
 export function setPageLocale() {
     const html = document.documentElement;
-    html.setAttribute("lang", currentLocale() );
-    html.setAttribute("dir", localeDirection() );
+    html.setAttribute("lang", currentLocale());
+    html.setAttribute("dir", localeDirection());
 }
 
 /**
@@ -92,7 +92,7 @@ export function getResBaseURL() {
  */
 export function isDevContainer() {
     // eslint-disable-next-line no-undef
-    return (typeof DEVCONTAINER === "string" && DEVCONTAINER === "1");
+    return typeof DEVCONTAINER === "string" && DEVCONTAINER === "1";
 }
 
 /**
@@ -109,23 +109,6 @@ export function getDevContainerServerHostname() {
 }
 
 /**
- * Regex pattern fr identifying hostnames and IP addresses
- * @param {boolean} mqtt whether or not the regex should take into
- * account the fact that it is an mqtt uri
- * @returns {RegExp} The requested regex
- */
-export function hostNameRegexPattern(mqtt = false) {
-    // mqtt, mqtts, ws and wss schemes accepted by mqtt.js (https://github.com/mqttjs/MQTT.js/#connect)
-    const mqttSchemeRegexPattern = "((mqtt|ws)s?:\\/\\/)?";
-    // Source: https://digitalfortress.tech/tips/top-15-commonly-used-regex/
-    const ipRegexPattern = `((^${mqtt ? mqttSchemeRegexPattern : ""}((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))$)|(^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?$))`;
-    // Source: https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
-    const hostNameRegexPattern = `^${mqtt ? mqttSchemeRegexPattern : ""}([a-zA-Z0-9])?(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\\-_]*[a-zA-Z0-9_])\\.)*([A-Za-z0-9_]|[A-Za-z0-9_][A-Za-z0-9\\-_]*[A-Za-z0-9_])(\\.)?$`;
-
-    return `${ipRegexPattern}|${hostNameRegexPattern}`;
-}
-
-/**
  * Get the tag color options
  * Shared between components
  * @param {any} self Component
@@ -133,22 +116,14 @@ export function hostNameRegexPattern(mqtt = false) {
  */
 export function colorOptions(self) {
     return [
-        { name: self.$t("Gray"),
-            color: "#4B5563" },
-        { name: self.$t("Red"),
-            color: "#DC2626" },
-        { name: self.$t("Orange"),
-            color: "#D97706" },
-        { name: self.$t("Green"),
-            color: "#059669" },
-        { name: self.$t("Blue"),
-            color: "#2563EB" },
-        { name: self.$t("Indigo"),
-            color: "#4F46E5" },
-        { name: self.$t("Purple"),
-            color: "#7C3AED" },
-        { name: self.$t("Pink"),
-            color: "#DB2777" },
+        { name: self.$t("Gray"), color: "#4B5563" },
+        { name: self.$t("Red"), color: "#DC2626" },
+        { name: self.$t("Orange"), color: "#D97706" },
+        { name: self.$t("Green"), color: "#059669" },
+        { name: self.$t("Blue"), color: "#2563EB" },
+        { name: self.$t("Indigo"), color: "#4F46E5" },
+        { name: self.$t("Purple"), color: "#7C3AED" },
+        { name: self.$t("Pink"), color: "#DB2777" },
     ];
 }
 
@@ -213,3 +188,96 @@ export function getToastErrorTimeout() {
 
     return errorTimeout;
 }
+
+class TimeDurationFormatter {
+    /**
+     * Default locale and options for Time Duration Formatter (supports both DurationFormat and RelativeTimeFormat)
+     */
+    constructor() {
+        this.durationFormatOptions = { style: "long" };
+        this.relativeTimeFormatOptions = { numeric: "always" };
+        if (Intl.DurationFormat !== undefined) {
+            this.durationFormatInstance = new Intl.DurationFormat(currentLocale(), this.durationFormatOptions);
+        } else {
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(
+                currentLocale(),
+                this.relativeTimeFormatOptions
+            );
+        }
+    }
+
+    /**
+     * Method to update the instance locale and options
+     * @param {string} locale Localization identifier (e.g., "en", "ar-sy") to update the instance with.
+     * @returns {void} No return value.
+     */
+    updateLocale(locale) {
+        if (Intl.DurationFormat !== undefined) {
+            this.durationFormatInstance = new Intl.DurationFormat(locale, this.durationFormatOptions);
+        } else {
+            this.relativeTimeFormatInstance = new Intl.RelativeTimeFormat(locale, this.relativeTimeFormatOptions);
+        }
+    }
+
+    /**
+     * Method to convert seconds into Human readable format
+     * @param {number} seconds Receive value in seconds.
+     * @returns {string} String converted to Days Mins Seconds Format
+     */
+    secondsToHumanReadableFormat(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor(((seconds % 86400) % 3600) / 60);
+        const secs = ((seconds % 86400) % 3600) % 60;
+
+        if (this.durationFormatInstance !== undefined) {
+            // use Intl.DurationFormat if available
+            return this.durationFormatInstance.format({
+                days,
+                hours,
+                minutes,
+                seconds: secs,
+            });
+        }
+
+        const parts = [];
+        /**
+         * Build the formatted string from parts
+         * 1. Get the relative time formatted parts from the instance.
+         * 2. Filter out the relevant parts literal (unit of time) or integer (value).
+         * 3. Map out the required values.
+         * @param {number} value Receives value in seconds.
+         * @param {string} unitOfTime Expected unit of time after conversion.
+         * @returns {void}
+         */
+        const toFormattedPart = (value, unitOfTime) => {
+            const partsArray = this.relativeTimeFormatInstance.formatToParts(value, unitOfTime);
+            const filteredParts = partsArray
+                .filter((part, index) => part.type === "integer" || (part.type === "literal" && index > 0))
+                .map((part) => part.value);
+
+            const formattedString = filteredParts.join("").trim();
+            parts.push(formattedString);
+        };
+
+        if (days > 0) {
+            toFormattedPart(days, "day");
+        }
+        if (hours > 0) {
+            toFormattedPart(hours, "hour");
+        }
+        if (minutes > 0) {
+            toFormattedPart(minutes, "minute");
+        }
+        if (secs > 0) {
+            toFormattedPart(secs, "second");
+        }
+
+        if (parts.length > 0) {
+            return `${parts.join(" ")}`;
+        }
+        return this.relativeTimeFormatInstance.format(0, "second"); // Handle case for 0 seconds
+    }
+}
+
+export const timeDurationFormatter = new TimeDurationFormatter();

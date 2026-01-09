@@ -91,6 +91,14 @@ class UptimeCalculator {
     }
 
     /**
+     * Remove all monitors from the list
+     * @returns {Promise<void>}
+     */
+    static async removeAll() {
+        UptimeCalculator.list = {};
+    }
+
+    /**
      *
      */
     constructor() {
@@ -224,7 +232,6 @@ class UptimeCalculator {
             minutelyData.maintenance = minutelyData.maintenance ? minutelyData.maintenance + 1 : 1;
             hourlyData.maintenance = hourlyData.maintenance ? hourlyData.maintenance + 1 : 1;
             dailyData.maintenance = dailyData.maintenance ? dailyData.maintenance + 1 : 1;
-
         } else if (flatStatus === UP) {
             minutelyData.up += 1;
             hourlyData.up += 1;
@@ -268,7 +275,6 @@ class UptimeCalculator {
                     dailyData.maxPing = Math.max(dailyData.maxPing, ping);
                 }
             }
-
         } else if (flatStatus === DOWN) {
             minutelyData.down += 1;
             hourlyData.down += 1;
@@ -377,10 +383,7 @@ class UptimeCalculator {
             return this.lastDailyStatBean;
         }
 
-        let bean = await R.findOne("stat_daily", " monitor_id = ? AND timestamp = ?", [
-            this.monitorID,
-            timestamp,
-        ]);
+        let bean = await R.findOne("stat_daily", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
 
         if (!bean) {
             bean = R.dispense("stat_daily");
@@ -402,10 +405,7 @@ class UptimeCalculator {
             return this.lastHourlyStatBean;
         }
 
-        let bean = await R.findOne("stat_hourly", " monitor_id = ? AND timestamp = ?", [
-            this.monitorID,
-            timestamp,
-        ]);
+        let bean = await R.findOne("stat_hourly", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
 
         if (!bean) {
             bean = R.dispense("stat_hourly");
@@ -427,10 +427,7 @@ class UptimeCalculator {
             return this.lastMinutelyStatBean;
         }
 
-        let bean = await R.findOne("stat_minutely", " monitor_id = ? AND timestamp = ?", [
-            this.monitorID,
-            timestamp,
-        ]);
+        let bean = await R.findOne("stat_minutely", " monitor_id = ? AND timestamp = ?", [this.monitorID, timestamp]);
 
         if (!bean) {
             bean = R.dispense("stat_minutely");
@@ -454,7 +451,7 @@ class UptimeCalculator {
         // Convert to timestamp in second
         let divisionKey = date.unix();
 
-        if (! (divisionKey in this.minutelyUptimeDataList)) {
+        if (!(divisionKey in this.minutelyUptimeDataList)) {
             this.minutelyUptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
@@ -479,7 +476,7 @@ class UptimeCalculator {
         // Convert to timestamp in second
         let divisionKey = date.unix();
 
-        if (! (divisionKey in this.hourlyUptimeDataList)) {
+        if (!(divisionKey in this.hourlyUptimeDataList)) {
             this.hourlyUptimeDataList.push(divisionKey, {
                 up: 0,
                 down: 0,
@@ -561,7 +558,6 @@ class UptimeCalculator {
      * @throws {Error} The maximum number of minutes greater than 1440
      */
     getData(num, type = "day") {
-
         if (type === "hour" && num > 24 * 30) {
             throw new Error("The maximum number of hours is 720");
         }
@@ -582,7 +578,7 @@ class UptimeCalculator {
         let totalPing = 0;
         let endTimestamp;
 
-        // Get the eariest timestamp of the required period based on the type
+        // Get the earliest timestamp of the required period based on the type
         switch (type) {
             case "day":
                 endTimestamp = key - 86400 * (num - 1);
@@ -710,7 +706,7 @@ class UptimeCalculator {
 
         let endTimestamp;
 
-        // Get the eariest timestamp of the required period based on the type
+        // Get the earliest timestamp of the required period based on the type
         switch (type) {
             case "day":
                 endTimestamp = key - 86400 * (num - 1);
@@ -796,8 +792,7 @@ class UptimeCalculator {
             case "y":
                 return this.getData(365 * num, "day");
             default:
-                throw new Error(`Unsupported unit (${unit}) for badge duration ${duration}`
-                );
+                throw new Error(`Unsupported unit (${unit}) for badge duration ${duration}`);
         }
     }
 
@@ -844,6 +839,34 @@ class UptimeCalculator {
      */
     setMigrationMode(value) {
         this.migrationMode = value;
+    }
+
+    /**
+     * Clear all statistics and heartbeats for a monitor
+     * @param {number} monitorID the id of the monitor
+     * @returns {Promise<void>}
+     */
+    static async clearStatistics(monitorID) {
+        await R.exec("DELETE FROM heartbeat WHERE monitor_id = ?", [monitorID]);
+
+        await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ?", [monitorID]);
+        await R.exec("DELETE FROM stat_hourly WHERE monitor_id = ?", [monitorID]);
+        await R.exec("DELETE FROM stat_daily WHERE monitor_id = ?", [monitorID]);
+
+        await UptimeCalculator.remove(monitorID);
+    }
+
+    /**
+     * Clear all statistics and heartbeats for all monitors
+     * @returns {Promise<void>}
+     */
+    static async clearAllStatistics() {
+        await R.exec("DELETE FROM heartbeat");
+        await R.exec("DELETE FROM stat_minutely");
+        await R.exec("DELETE FROM stat_hourly");
+        await R.exec("DELETE FROM stat_daily");
+
+        await UptimeCalculator.removeAll();
     }
 }
 

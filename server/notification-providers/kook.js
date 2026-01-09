@@ -17,14 +17,14 @@ class Kook extends NotificationProvider {
         };
         let config = {
             headers: {
-                "Authorization": "Bot " + notification.kookBotToken,
+                Authorization: "Bot " + notification.kookBotToken,
                 "Content-Type": "application/json",
             },
         };
         try {
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(url, data, config);
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }

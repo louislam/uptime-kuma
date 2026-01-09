@@ -19,8 +19,8 @@ class Onesender extends NotificationProvider {
                 type: "text",
                 recipient_type: "individual",
                 text: {
-                    body: msg
-                }
+                    body: msg,
+                },
             };
             if (notification.onesenderTypeReceiver === "private") {
                 data.to = notification.onesenderReceiver + "@s.whatsapp.net";
@@ -30,18 +30,16 @@ class Onesender extends NotificationProvider {
             }
             let config = {
                 headers: {
-                    "Authorization": "Bearer " + notification.onesenderToken,
-                }
+                    Authorization: "Bearer " + notification.onesenderToken,
+                },
             };
+            config = this.getAxiosConfigWithProxy(config);
             await axios.post(notification.onesenderURL, data, config);
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
-
 }
 
 module.exports = Onesender;

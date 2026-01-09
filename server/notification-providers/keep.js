@@ -31,6 +31,8 @@ class Keep extends NotificationProvider {
 
             let webhookURL = url + "/alerts/event/uptimekuma";
 
+            config = this.getAxiosConfigWithProxy(config);
+
             await axios.post(webhookURL, data, config);
             return okMsg;
         } catch (error) {

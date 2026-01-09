@@ -12,6 +12,17 @@
     </div>
 
     <div class="mb-3">
+        <label for="webhook-http-method" class="form-label">{{ $t("HTTP Method") }}</label>
+        <select id="webhook-http-method" v-model="$parent.notification.httpMethod" class="form-select">
+            <option value="post">POST</option>
+            <option value="get">GET</option>
+        </select>
+        <div class="form-text">
+            {{ $parent.notification.httpMethod === "get" ? $t("webhookGetMethodDesc") : $t("webhookPostMethodDesc") }}
+        </div>
+    </div>
+
+    <div v-if="$parent.notification.httpMethod === 'post'" class="mb-3">
         <label for="webhook-request-body" class="form-label">{{ $t("Request Body") }}</label>
         <select
             id="webhook-request-body"
@@ -24,21 +35,33 @@
             <option value="custom">{{ $t("webhookBodyCustomOption") }}</option>
         </select>
 
-        <div v-if="$parent.notification.webhookContentType == 'json'" class="form-text">{{ $t("webhookJsonDesc", ['"application/json"']) }}</div>
-        <i18n-t v-else-if="$parent.notification.webhookContentType == 'form-data'" tag="div" keypath="webhookFormDataDesc" class="form-text">
+        <div v-if="$parent.notification.webhookContentType == 'json'" class="form-text">
+            {{ $t("webhookJsonDesc", ['"application/json"']) }}
+        </div>
+        <i18n-t
+            v-else-if="$parent.notification.webhookContentType == 'form-data'"
+            tag="div"
+            keypath="webhookFormDataDesc"
+            class="form-text"
+        >
             <template #multipart>multipart/form-data"</template>
             <template #decodeFunction>
                 <strong>json_decode($_POST['data'])</strong>
             </template>
         </i18n-t>
         <template v-else-if="$parent.notification.webhookContentType == 'custom'">
-            <TemplatedTextarea id="customBody" v-model="$parent.notification.webhookCustomBody" :required="true" :placeholder="customBodyPlaceholder"></TemplatedTextarea>
+            <TemplatedTextarea
+                id="customBody"
+                v-model="$parent.notification.webhookCustomBody"
+                :required="true"
+                :placeholder="customBodyPlaceholder"
+            ></TemplatedTextarea>
         </template>
     </div>
 
     <div class="mb-3">
         <div class="form-check form-switch">
-            <input v-model="showAdditionalHeadersField" class="form-check-input" type="checkbox">
+            <input v-model="showAdditionalHeadersField" class="form-check-input" type="checkbox" />
             <label class="form-check-label">{{ $t("webhookAdditionalHeadersTitle") }}</label>
         </div>
         <div class="form-text">{{ $t("webhookAdditionalHeadersDesc") }}</div>
@@ -68,18 +91,23 @@ export default {
     computed: {
         headersPlaceholder() {
             return this.$t("Example:", [
-`{
+                `{
     "Authorization": "Authorization Token"
 }`,
             ]);
         },
         customBodyPlaceholder() {
             return this.$t("Example:", [
-`{
+                `{
     "Title": "Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}",
     "Body": "{{ msg }}"
-}`
+}`,
             ]);
+        },
+    },
+    mounted() {
+        if (typeof this.$parent.notification.httpMethod === "undefined") {
+            this.$parent.notification.httpMethod = "post";
         }
     },
 };

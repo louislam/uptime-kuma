@@ -96,20 +96,25 @@ class Bark extends NotificationProvider {
      */
     async postNotification(notification, title, subtitle, endpoint) {
         let result;
+        let config = this.getAxiosConfigWithProxy({});
         if (notification.apiVersion === "v1" || notification.apiVersion == null) {
             // url encode title and subtitle
             title = encodeURIComponent(title);
             subtitle = encodeURIComponent(subtitle);
             const params = this.additionalParameters(notification);
-            result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`);
+            result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`, config);
         } else {
-            result = await axios.post(`${endpoint}/push`, {
-                title,
-                body: subtitle,
-                icon: barkNotificationAvatar,
-                sound: notification.barkSound || "telegraph", // default sound is telegraph
-                group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
-            });
+            result = await axios.post(
+                endpoint,
+                {
+                    title,
+                    body: subtitle,
+                    icon: barkNotificationAvatar,
+                    sound: notification.barkSound || "telegraph", // default sound is telegraph
+                    group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
+                },
+                config
+            );
         }
         this.checkResult(result);
         if (result.statusText != null) {

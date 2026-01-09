@@ -29,15 +29,15 @@ class Stackfield extends NotificationProvider {
             }
 
             const data = {
-                "Title": textMsg,
+                Title: textMsg,
             };
+            let config = this.getAxiosConfigWithProxy({});
 
-            await axios.post(notification.stackfieldwebhookURL, data);
+            await axios.post(notification.stackfieldwebhookURL, data, config);
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
 }
 
