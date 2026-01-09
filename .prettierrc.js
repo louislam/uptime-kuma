@@ -36,7 +36,7 @@ module.exports = {
         {
             files: ["*.json"],
             options: {
-                tabWidth: 2,
+                tabWidth: 4,
                 trailingComma: "none",
             },
         },
@@ -45,12 +45,6 @@ module.exports = {
             options: {
                 tabWidth: 2,
                 trailingComma: "none",
-            },
-        },
-        {
-            files: ["package.json"],
-            options: {
-                tabWidth: 2,
             },
         },
         {
