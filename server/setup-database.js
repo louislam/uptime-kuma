@@ -201,7 +201,6 @@ class SetupDatabase {
 
                 // External MariaDB
                 if (dbConfig.type === "mariadb") {
-
                     // If socketPath is not provided, hostname and port are required
                     if (dbConfig.socketPath === undefined || dbConfig.socketPath.length === 0) {
                         if (!dbConfig.hostname) {
@@ -215,7 +214,8 @@ class SetupDatabase {
                             this.runningSetup = false;
                             return;
                         }
-                    } else if (dbConfig.socketPath && dbConfig.socketPath.length > 0) { // Socket path is provided
+                    } else if (dbConfig.socketPath && dbConfig.socketPath.length > 0) {
+                        // Socket path is provided
                         // Checking if the path exists and is a socket
                         if (!fs.existsSync(dbConfig.socketPath)) {
                             response.status(400).json("The path to the Socket does not exist");

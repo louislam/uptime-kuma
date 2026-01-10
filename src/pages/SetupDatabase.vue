@@ -96,7 +96,7 @@
                     </div>
 
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.socketPath" type="text" class="form-control">
+                        <input id="floatingInput" v-model="dbConfig.socketPath" type="text" class="form-control" />
                         <label for="floatingInput">{{ $t("socketPath") }} ({{ $t("Optional") }})</label>
                     </div>
 
