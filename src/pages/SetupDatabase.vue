@@ -123,16 +123,16 @@
                     </div>
 
                     <div class="mt-3 short text-start">
-                        <div class="form-check form-switch ps-0" style="height: auto; display: block; padding: 0;">
+                        <div class="form-check form-switch ps-0" style="height: auto; display: block; padding: 0">
                             <div class="d-flex align-items-center">
-                                <input 
-                                    id="sslCheck" 
-                                    v-model="dbConfig.ssl" 
-                                    type="checkbox" 
-                                    role="switch" 
+                                <input
+                                    id="sslCheck"
+                                    v-model="dbConfig.ssl"
+                                    type="checkbox"
+                                    role="switch"
                                     class="form-check-input ms-0 me-2"
-                                    style="float: none;"
-                                >
+                                    style="float: none"
+                                />
                                 <label class="form-check-label fw-bold" for="sslCheck">
                                     {{ $t("enableSSL") }} <span class="fw-normal text-muted" style="font-size: 0.9em;">(Optional)</span>
                                 </label>  
@@ -145,18 +145,22 @@
 
                     <template v-if="dbConfig.ssl">
                         <div class="form-floating mt-3 short">
-                            <textarea 
-                                id="caInput" 
-                                v-model="dbConfig.ca" 
-                                class="form-control" 
-                                placeholder="-----BEGIN CERTIFICATE-----" 
-                                style="height: 120px; font-family: monospace; font-size: 11px;"
+                            <textarea
+                                id="caInput"
+                                v-model="dbConfig.ca"
+                                class="form-control"
+                                placeholder="-----BEGIN CERTIFICATE-----"
+                                style="height: 120px; font-family: monospace; font-size: 11px"
                             ></textarea>
                             <label for="caInput">{{ $t("caCertificate") }}</label>
                         </div>
-                        
+
                         <div class="short text-start mt-1">
-                            <div class="alert alert-secondary py-2 px-3 mb-0" role="alert" style="font-size: 0.8rem; line-height: 1.3;">
+                            <div
+                                class="alert alert-secondary py-2 px-3 mb-0"
+                                role="alert"
+                                style="font-size: 0.8rem; line-height: 1.3"
+                            >
                                 <font-awesome-icon icon="info-circle" class="me-1" />
                                 <strong>{{ $t("selfSigned") }}?</strong> {{ $t("caFormatInstruction") }} <br>
                                 <strong>{{ $t("trusted") }} ?</strong> {{ $t("caBlankInstruction") }}
