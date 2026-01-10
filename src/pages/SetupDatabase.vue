@@ -134,11 +134,11 @@
                                     style="float: none;"
                                 >
                                 <label class="form-check-label fw-bold" for="sslCheck">
-                                    Enable SSL/TLS <span class="fw-normal text-muted" style="font-size: 0.9em;">(Optional)</span>
+                                    {{ $t("enableSSL") }} <span class="fw-normal text-muted" style="font-size: 0.9em;">(Optional)</span>
                                 </label>  
                             </div>
                             <div class="form-text mt-1" style="font-size: 0.85em; opacity: 0.8;">
-                                Enable to use a secure connection. Required for most cloud databases.
+                                {{ $t("sslExplanation") }}
                             </div>
                         </div>
                     </div>
@@ -152,14 +152,14 @@
                                 placeholder="-----BEGIN CERTIFICATE-----" 
                                 style="height: 120px; font-family: monospace; font-size: 11px;"
                             ></textarea>
-                            <label for="caInput">CA Certificate</label>
+                            <label for="caInput">{{ $t("caCertificate") }}</label>
                         </div>
                         
                         <div class="short text-start mt-1">
                             <div class="alert alert-secondary py-2 px-3 mb-0" role="alert" style="font-size: 0.8rem; line-height: 1.3;">
                                 <font-awesome-icon icon="info-circle" class="me-1" />
-                                <strong>Self-signed?</strong> Paste the CA Cert in PEM format. <br>
-                                <strong>Trusted?</strong> Leave blank if your database uses a certificate signed by a public CA.
+                                <strong>{{ $t("selfSigned") }}?</strong> {{ $t("caFormatInstruction") }} <br>
+                                <strong>{{ $t("trusted") }} ?</strong> {{ $t("caBlankInstruction") }}
                             </div>
                         </div>
                     </template>
