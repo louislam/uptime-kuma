@@ -122,45 +122,47 @@
                         <label for="floatingInput">{{ $t("dbName") }}</label>
                     </div>
 
-                    <div class="d-flex mt-3 short gap-2">
-                        <div
-                            class="form-check form-switch form-control m-0 d-flex align-items-center justify-content-center"
-                            style="flex: 1"
-                        >
-                            <input
-                                id="sslCheck"
-                                v-model="dbConfig.ssl"
-                                type="checkbox"
-                                role="switch"
-                                class="form-check-input mt-0"
-                                style="margin-left: 0; margin-right: 10px; position: relative"
-                            />
-                            <label class="form-check-label" for="sslCheck">SSL</label>
+                    <div class="mt-3 short text-start">
+                        <div class="form-check form-switch ps-0" style="height: auto; display: block; padding: 0;">
+                            <div class="d-flex align-items-center">
+                                <input 
+                                    id="sslCheck" 
+                                    v-model="dbConfig.ssl" 
+                                    type="checkbox" 
+                                    role="switch" 
+                                    class="form-check-input ms-0 me-2"
+                                    style="float: none;"
+                                >
+                                <label class="form-check-label fw-bold" for="sslCheck">
+                                    Enable SSL/TLS <span class="fw-normal text-muted" style="font-size: 0.9em;">(Optional)</span>
+                                </label>  
+                            </div>
+                            <div class="form-text mt-1" style="font-size: 0.85em; opacity: 0.8;">
+                                Enable to use a secure connection. Required for most cloud databases.
+                            </div>
                         </div>
-
-                        <button
-                            id="caButton"
-                            type="button"
-                            class="form-control d-flex align-items-center justify-content-center"
-                            style="flex: 1; cursor: pointer"
-                            :disabled="!dbConfig.ssl"
-                            @click="showCA = !showCA"
-                        >
-                            <span class="me-2">CA</span>
-                            <font-awesome-icon :icon="showCA && dbConfig.ssl ? 'arrow-up' : 'arrow-down'" />
-                        </button>
                     </div>
 
-                    <div v-if="showCA && dbConfig.ssl" class="form-floating mt-2 short">
-                        <textarea
-                            id="caInput"
-                            v-model="dbConfig.ca"
-                            class="form-control"
-                            placeholder="CA Certificate"
-                            style="height: 100px; font-family: monospace; font-size: 12px"
-                        ></textarea>
-                        <label for="caInput">CA Certificate</label>
-                    </div>
+                    <template v-if="dbConfig.ssl">
+                        <div class="form-floating mt-3 short">
+                            <textarea 
+                                id="caInput" 
+                                v-model="dbConfig.ca" 
+                                class="form-control" 
+                                placeholder="-----BEGIN CERTIFICATE-----" 
+                                style="height: 120px; font-family: monospace; font-size: 11px;"
+                            ></textarea>
+                            <label for="caInput">CA Certificate</label>
+                        </div>
+                        
+                        <div class="short text-start mt-1">
+                            <div class="alert alert-secondary py-2 px-3 mb-0" role="alert" style="font-size: 0.8rem; line-height: 1.3;">
+                                <font-awesome-icon icon="info-circle" class="me-1" />
+                                <strong>Self-signed?</strong> Paste the CA Cert in PEM format. <br>
+                                <strong>Trusted?</strong> Leave blank if your database uses a certificate signed by a public CA.
+                            </div>
+                        </div>
+                    </template>
                 </template>
 
                 <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
@@ -181,7 +183,6 @@ export default {
     data() {
         return {
             show: false,
-            showCA: false,
             dbConfig: {
                 type: undefined,
                 port: 3306,

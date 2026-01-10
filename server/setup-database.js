@@ -102,8 +102,8 @@ class SetupDatabase {
             dbConfig.dbName = process.env.UPTIME_KUMA_DB_NAME;
             dbConfig.username = getEnvOrFile("UPTIME_KUMA_DB_USERNAME");
             dbConfig.password = getEnvOrFile("UPTIME_KUMA_DB_PASSWORD");
-            dbConfig.ssl = process.env.UPTIME_KUMA_DB_SSL?.toLowerCase() === "true";
-            dbConfig.ca = process.env.UPTIME_KUMA_DB_CA || "";
+            dbConfig.ssl = getEnvOrFile("UPTIME_KUMA_DB_SSL")?.toLowerCase() === "true";
+            dbConfig.ca = getEnvOrFile("UPTIME_KUMA_DB_CA");
             Database.writeDBConfig(dbConfig);
         }
     }
