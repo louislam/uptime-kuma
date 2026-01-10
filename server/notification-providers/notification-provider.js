@@ -110,10 +110,6 @@ class NotificationProvider {
     throwGeneralAxiosError(error) {
         let msg = error && error.message ? error.message : String(error);
 
-        if (msg === "AggregateError") {
-            msg = "Request failed";
-        }
-
         if (error && error.code) {
             msg += ` (code=${error.code})`;
         }
