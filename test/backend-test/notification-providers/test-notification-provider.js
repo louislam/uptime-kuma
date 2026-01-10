@@ -14,12 +14,9 @@ describe("NotificationProvider.throwGeneralAxiosError()", () => {
 
         let aggErr = new AggregateError([err1, err2], "AggregateError");
 
-        assert.throws(
-            () => provider.throwGeneralAxiosError(aggErr),
-            {
-                message: /^AggregateError - caused by: .+/
-            }
-        );
+        assert.throws(() => provider.throwGeneralAxiosError(aggErr), {
+            message: /^AggregateError - caused by: .+/,
+        });
     });
 
     test("expands AggregateError wrapped in error.cause", () => {
@@ -30,11 +27,8 @@ describe("NotificationProvider.throwGeneralAxiosError()", () => {
         let outerErr = new Error("Request failed");
         outerErr.cause = aggErr;
 
-        assert.throws(
-            () => provider.throwGeneralAxiosError(outerErr),
-            {
-                message: /^Request failed - caused by: .+/
-            }
-        );
+        assert.throws(() => provider.throwGeneralAxiosError(outerErr), {
+            message: /^Request failed - caused by: .+/,
+        });
     });
 });
