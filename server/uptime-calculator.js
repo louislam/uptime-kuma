@@ -272,6 +272,8 @@ class UptimeCalculator {
                 } else {
                     dailyData.avgPing = (dailyData.avgPing * (dailyData.up - 1) + ping) / dailyData.up;
                     dailyData.minPing = Math.min(dailyData.minPing, ping);
+                    // Note: After migration 2026-01-10-0714, ping_max uses DOUBLE
+                    // allowing values up to 9 quadrillion (sufficient for any real-world ping)
                     dailyData.maxPing = Math.max(dailyData.maxPing, ping);
                 }
             }

@@ -19,6 +19,74 @@ const { Prometheus } = require("../prometheus");
 const Database = require("../database");
 const { UptimeCalculator } = require("../uptime-calculator");
 
+/**
+ * Maximum allowed ping value in milliseconds
+ * 86400000ms = 24 hours
+ *
+ * This prevents:
+ * - User error (entering seconds instead of ms)
+ * - Unreasonable values that indicate bugs
+ * - Database bloat from extreme values
+ *
+ * Note: Very long-running jobs (>24h) should use
+ * separate monitoring approaches, not push monitors.
+ */
+const MAX_PING_VALUE = 86400000; // 24 hours in milliseconds
+
+/**
+ * Minimum allowed ping value in milliseconds
+ * Negative values don't make sense for ping
+ */
+const MIN_PING_VALUE = 0;
+
+/**
+ * Validate ping value from push monitor
+ * @param {string|number} ping - Ping value from request
+ * @returns {{valid: boolean, value: number, error: string}} Validation result
+ */
+function validatePingValue(ping) {
+    // Allow undefined/null (ping is optional)
+    if (ping === undefined || ping === null || ping === "") {
+        return { valid: true, value: null, error: null };
+    }
+
+    // Convert to number
+    const pingValue = Number(ping);
+
+    // Check if valid number
+    if (isNaN(pingValue)) {
+        return {
+            valid: false,
+            value: null,
+            error: `Invalid ping value: '${ping}' is not a valid number`,
+        };
+    }
+
+    // Check if negative
+    if (pingValue < MIN_PING_VALUE) {
+        return {
+            valid: false,
+            value: pingValue,
+            error: `Invalid ping value: ${pingValue}ms cannot be negative`,
+        };
+    }
+
+    // Check if too large
+    if (pingValue > MAX_PING_VALUE) {
+        return {
+            valid: false,
+            value: pingValue,
+            error: `Ping value ${pingValue}ms exceeds maximum allowed (${MAX_PING_VALUE}ms = 24 hours). ` +
+                `If you're monitoring a job that takes longer than 24 hours, consider using ` +
+                `multiple monitors or a different monitoring approach. ` +
+                `Large ping values may indicate you're sending seconds instead of milliseconds.`,
+        };
+    }
+
+    // Valid!
+    return { valid: true, value: pingValue, error: null };
+}
+
 let router = express.Router();
 
 let cache = apicache.middleware;
@@ -48,8 +116,18 @@ router.all("/api/push/:pushToken", async (request, response) => {
     try {
         let pushToken = request.params.pushToken;
         let msg = request.query.msg || "OK";
-        let ping = parseFloat(request.query.ping) || null;
+        let ping = request.query.ping;
         let statusString = request.query.status || "up";
+
+        const pingValidation = validatePingValue(ping);
+        if (!pingValidation.valid) {
+            return response.status(400).json({
+                ok: false,
+                msg: pingValidation.error,
+            });
+        }
+        ping = pingValidation.value;
+
         const statusFromParam = statusString === "up" ? UP : DOWN;
 
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [pushToken]);
@@ -131,7 +209,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
             ok: true,
         });
     } catch (e) {
-        response.status(404).json({
+        response.status(500).json({
             ok: false,
             msg: e.message,
         });
