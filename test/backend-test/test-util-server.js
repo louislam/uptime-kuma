@@ -3,45 +3,46 @@ const assert = require("node:assert");
 const { pingAsync } = require("../../server/util-server");
 
 describe("Server Utilities: pingAsync", () => {
+
     test("should convert IDN domains to Punycode before pinging", async () => {
-        try {
-            // timeout 1s
-            await pingAsync("münchen.de", false, 1, "", true, 56, 1, 1);
-        } catch (e) {
-            if (e.message.includes("Parameter string not correctly encoded")) {
-                assert.fail("Ping failed with encoding error: IDN was not converted");
+        const idnDomain = "münchen.de";
+        const punycodeDomain = "xn--mnchen-3ya.de";
+
+        await assert.rejects(
+            pingAsync(idnDomain, false, 1, "", true, 56, 1, 1),
+            (err) => {
+                if (err.message.includes("Parameter string not correctly encoded")) {
+                    assert.fail("Ping failed with encoding error: IDN was not converted");
+                }
+                assert.ok(err.message.includes(punycodeDomain), `Error message should contain the Punycode domain "${punycodeDomain}". Got: ${err.message}`);
+                return true;
             }
-            assert.ok(
-                e.message.includes("xn--mnchen-3ya.de"),
-                `Error message should contain "xn--mnchen-3ya.de". Got: ${e.message}`
-            );
-        }
+        );
     });
 
     test("should strip brackets from IPv6 addresses before pinging", async () => {
-        try {
-            // Cloudflare DNS
-            await pingAsync("[2606:4700:4700::1111]", true, 1, "", true, 56, 1, 1);
-        } catch (e) {
-            if (e.message.includes("[2606:4700:4700::1111]")) {
-                assert.fail(`Error message contained brackets, implying they were not stripped. Got: ${e.message}`);
+        const ipv6WithBrackets = "[2001:db8::1]";
+        const ipv6Raw = "2001:db8::1";
+
+        await assert.rejects(
+            pingAsync(ipv6WithBrackets, true, 1, "", true, 56, 1, 1),
+            (err) => {
+                assert.strictEqual(err.message.includes(ipv6WithBrackets), false, "Error message should not contain brackets");
+                assert.ok(err.message.includes(ipv6Raw), `Error message should contain the raw IP "${ipv6Raw}". Got: ${err.message}`);
+                return true;
             }
-            // The error message should contain the raw IP without brackets
-            assert.ok(
-                e.message.includes("2606:4700:4700::1111"),
-                `Error message should contain the raw IP "2606:4700:4700::1111". Got: ${e.message}`
-            );
-        }
+        );
     });
 
     test("should handle standard ASCII domains correctly", async () => {
-        try {
-            await pingAsync("google.com", false, 1, "", true, 56, 1, 1);
-        } catch (e) {
-            if (e.message.includes("Parameter string not correctly encoded")) {
-                assert.fail("Ping failed with encoding error for ASCII domain");
+        const domain = "invalid-domain.test";
+        await assert.rejects(
+            pingAsync(domain, false, 1, "", true, 56, 1, 1),
+            (err) => {
+                assert.strictEqual(err.message.includes("Parameter string not correctly encoded"), false);
+                assert.ok(err.message.includes(domain), `Error message should contain the domain "${domain}". Got: ${err.message}`);
+                return true;
             }
-            assert.ok(e.message.includes("google.com"), `Error message should contain "google.com". Got: ${e.message}`);
-        }
+        );
     });
 });

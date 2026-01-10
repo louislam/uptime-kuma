@@ -158,10 +158,8 @@ exports.pingAsync = function (
     timeout = PING_PER_REQUEST_TIMEOUT_DEFAULT
 ) {
     try {
-        // Convert IDN to punycode, then keep hostname
         const url = new URL(`http://${destAddr}`);
         destAddr = url.hostname;
-        // Enforce valid IPv6 address
         if (destAddr.startsWith("[") && destAddr.endsWith("]")) {
             destAddr = destAddr.slice(1, -1);
         }
