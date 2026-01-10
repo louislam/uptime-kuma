@@ -8,6 +8,32 @@ const { allowDevAllOrigin } = require("./util-server");
 const mysql = require("mysql2/promise");
 
 /**
+ * Reads a configuration value from an environment variable or a Docker secrets file.
+ * If both the direct env var and the _FILE variant are set, an error is thrown.
+ * @param {string} envName The base name of the environment variable (e.g., "UPTIME_KUMA_DB_PASSWORD")
+ * @returns {string|undefined} The value from the env var, file contents (trimmed), or undefined if neither is set
+ * @throws {Error} If both the direct env var and the _FILE variant are set
+ */
+function getEnvOrFile(envName) {
+    const directValue = process.env[envName];
+    const fileValue = process.env[envName + "_FILE"];
+
+    if (directValue && fileValue) {
+        throw new Error(`Both ${envName} and ${envName}_FILE are set. Please use only one.`);
+    }
+
+    if (fileValue) {
+        try {
+            return fs.readFileSync(fileValue, "utf8").trim();
+        } catch (err) {
+            throw new Error(`Failed to read ${envName}_FILE at ${fileValue}: ${err.message}`);
+        }
+    }
+
+    return directValue;
+}
+
+/**
  *  A standalone express app that is used to setup a database
  *  It is used when db-config.json and kuma.db are not found or invalid
  *  Once it is configured, it will shut down and start the main server
@@ -50,7 +76,6 @@ class SetupDatabase {
             dbConfig = Database.readDBConfig();
             log.debug("setup-database", "db-config.json is found and is valid");
             this.needSetup = false;
-
         } catch (e) {
             log.info("setup-database", "db-config.json is not found or invalid: " + e.message);
 
@@ -75,12 +100,11 @@ class SetupDatabase {
             dbConfig.hostname = process.env.UPTIME_KUMA_DB_HOSTNAME;
             dbConfig.port = process.env.UPTIME_KUMA_DB_PORT;
             dbConfig.dbName = process.env.UPTIME_KUMA_DB_NAME;
-            dbConfig.username = process.env.UPTIME_KUMA_DB_USERNAME;
-            dbConfig.password = process.env.UPTIME_KUMA_DB_PASSWORD;
+            dbConfig.username = getEnvOrFile("UPTIME_KUMA_DB_USERNAME");
+            dbConfig.password = getEnvOrFile("UPTIME_KUMA_DB_PASSWORD");
             dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET;
             Database.writeDBConfig(dbConfig);
         }
-
     }
 
     /**
@@ -150,7 +174,7 @@ class SetupDatabase {
 
                 let dbConfig = request.body.dbConfig;
 
-                let supportedDBTypes = [ "mariadb", "sqlite" ];
+                let supportedDBTypes = ["mariadb", "sqlite"];
 
                 if (this.isEnabledEmbeddedMariaDB()) {
                     supportedDBTypes.push("embedded-mariadb");
@@ -179,7 +203,7 @@ class SetupDatabase {
                 if (dbConfig.type === "mariadb") {
 
                     // If socketPath is not provided, hostname and port are required
-                    if(dbConfig.socketPath === undefined || dbConfig.socketPath.length === 0) {
+                    if (dbConfig.socketPath === undefined || dbConfig.socketPath.length === 0) {
                         if (!dbConfig.hostname) {
                             response.status(400).json("Hostname is required");
                             this.runningSetup = false;
@@ -256,7 +280,10 @@ class SetupDatabase {
                 });
 
                 // Shutdown down this express and start the main server
-                log.info("setup-database", "Database is configured, close the setup-database server and start the main server now.");
+                log.info(
+                    "setup-database",
+                    "Database is configured, close the setup-database server and start the main server now."
+                );
                 if (tempServer) {
                     tempServer.close(() => {
                         log.info("setup-database", "The setup-database server is closed");
@@ -265,12 +292,14 @@ class SetupDatabase {
                 } else {
                     resolve();
                 }
-
             });
 
-            app.use("/", expressStaticGzip("dist", {
-                enableBrotli: true,
-            }));
+            app.use(
+                "/",
+                expressStaticGzip("dist", {
+                    enableBrotli: true,
+                })
+            );
 
             app.get("*", async (_request, response) => {
                 response.send(this.server.indexHTML);
@@ -283,7 +312,7 @@ class SetupDatabase {
 
             tempServer = app.listen(port, hostname, () => {
                 log.info("setup-database", `Starting Setup Database on ${port}`);
-                let domain = (hostname) ? hostname : "localhost";
+                let domain = hostname ? hostname : "localhost";
                 log.info("setup-database", `Open http://${domain}:${port} in your browser`);
                 log.info("setup-database", "Waiting for user action...");
             });

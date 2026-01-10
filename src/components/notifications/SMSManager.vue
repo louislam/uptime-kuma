@@ -5,14 +5,19 @@
             {{ $t("SMSManager API Docs") }}
             <a href="https://smsmanager.cz/api/http#send" target="_blank">{{ $t("here") }}</a>
         </div>
-        <input id="smsmanager-key" v-model="$parent.notification.smsmanagerApiKey" type="text" class="form-control">
+        <input id="smsmanager-key" v-model="$parent.notification.smsmanagerApiKey" type="text" class="form-control" />
     </div>
     <div class="mb-3">
-        <label for="smsmanager-numbers" class="form-label"> {{ $t("Recipients") }}</label>
-        <div class="form-text">
-            {{ $t("You can divide numbers with") }} <b>,</b> {{ $t("or") }} <b>;</b>
-        </div>
-        <input id="smsmanager-numbers" v-model="$parent.notification.numbers" type="text" class="form-control">
+        <label for="smsmanager-numbers" class="form-label">{{ $t("Recipients") }}</label>
+        <i18n-t tag="div" keypath="You can divide numbers with commas or semicolons" class="form-text">
+            <template #comma>
+                <code>,</code>
+            </template>
+            <template #semicolon>
+                <code>;</code>
+            </template>
+        </i18n-t>
+        <input id="smsmanager-numbers" v-model="$parent.notification.numbers" type="text" class="form-control" />
     </div>
     <div class="mb-3">
         <label for="smsmanager-messageType" class="form-label">{{ $t("Gateway Type") }}</label>
@@ -23,9 +28,13 @@
         </select>
     </div>
     <div class="mb-3">
-        <div class="form-text">
-            {{ $t("checkPrice", [$t("SMSManager")]) }}
-            <a href="https://smsmanager.cz/rozesilani-sms/ceny/ceska-republika/" target="_blank">{{ $t("here") }}</a>
-        </div>
+        <i18n-t tag="div" keypath="checkPriceAt" class="form-text">
+            <template #service>SMSManager</template>
+            <template #url>
+                <a href="https://smsmanager.cz/rozesilani-sms/ceny/ceska-republika/" target="_blank">
+                    {{ $t("here") }}
+                </a>
+            </template>
+        </i18n-t>
     </div>
 </template>
