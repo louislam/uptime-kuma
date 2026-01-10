@@ -169,7 +169,7 @@ exports.pingAsync = function (
 
     // Unconditionally strip brackets
     if (typeof destAddr === "string") {
-        destAddr = destAddr.replace(/[\[\]]/g, "");
+        destAddr = destAddr.replace(/[[\]]/g, "");
     }
 
     return new Promise((resolve, reject) => {
