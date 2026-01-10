@@ -123,21 +123,22 @@
                     </div>
 
                     <div class="mt-3 short text-start">
-                        <div class="form-check form-switch ps-0" style="height: auto; display: block; padding: 0;">
+                        <div class="form-check form-switch ps-0" style="height: auto; display: block; padding: 0">
                             <div class="d-flex align-items-center">
-                                <input 
-                                    id="sslCheck" 
-                                    v-model="dbConfig.ssl" 
-                                    type="checkbox" 
-                                    role="switch" 
+                                <input
+                                    id="sslCheck"
+                                    v-model="dbConfig.ssl"
+                                    type="checkbox"
+                                    role="switch"
                                     class="form-check-input ms-0 me-2"
-                                    style="float: none;"
-                                >
+                                    style="float: none"
+                                />
                                 <label class="form-check-label fw-bold" for="sslCheck">
-                                    Enable SSL/TLS <span class="fw-normal text-muted" style="font-size: 0.9em;">(Optional)</span>
-                                </label>  
+                                    Enable SSL/TLS
+                                    <span class="fw-normal text-muted" style="font-size: 0.9em">(Optional)</span>
+                                </label>
                             </div>
-                            <div class="form-text mt-1" style="font-size: 0.85em; opacity: 0.8;">
+                            <div class="form-text mt-1" style="font-size: 0.85em; opacity: 0.8">
                                 Enable to use a secure connection. Required for most cloud databases.
                             </div>
                         </div>
@@ -145,21 +146,28 @@
 
                     <template v-if="dbConfig.ssl">
                         <div class="form-floating mt-3 short">
-                            <textarea 
-                                id="caInput" 
-                                v-model="dbConfig.ca" 
-                                class="form-control" 
-                                placeholder="-----BEGIN CERTIFICATE-----" 
-                                style="height: 120px; font-family: monospace; font-size: 11px;"
+                            <textarea
+                                id="caInput"
+                                v-model="dbConfig.ca"
+                                class="form-control"
+                                placeholder="-----BEGIN CERTIFICATE-----"
+                                style="height: 120px; font-family: monospace; font-size: 11px"
                             ></textarea>
                             <label for="caInput">CA Certificate</label>
                         </div>
-                        
+
                         <div class="short text-start mt-1">
-                            <div class="alert alert-secondary py-2 px-3 mb-0" role="alert" style="font-size: 0.8rem; line-height: 1.3;">
+                            <div
+                                class="alert alert-secondary py-2 px-3 mb-0"
+                                role="alert"
+                                style="font-size: 0.8rem; line-height: 1.3"
+                            >
                                 <font-awesome-icon icon="info-circle" class="me-1" />
-                                <strong>Self-signed?</strong> Paste the CA Cert in PEM format. <br>
-                                <strong>Trusted?</strong> Leave blank if your database uses a certificate signed by a public CA.
+                                <strong>Self-signed?</strong>
+                                Paste the CA Cert in PEM format.
+                                <br />
+                                <strong>Trusted?</strong>
+                                Leave blank if your database uses a certificate signed by a public CA.
                             </div>
                         </div>
                     </template>
