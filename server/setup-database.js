@@ -201,24 +201,8 @@ class SetupDatabase {
 
                 // External MariaDB
                 if (dbConfig.type === "mariadb") {
-                    // If socketPath is not provided, hostname and port are required
+                    // If socketPath is provided and not empty, validate it
                     if (
-                        !dbConfig.socketPath ||
-                        typeof dbConfig.socketPath !== "string" ||
-                        dbConfig.socketPath.trim().length === 0
-                    ) {
-                        if (!dbConfig.hostname) {
-                            response.status(400).json("Hostname is required");
-                            this.runningSetup = false;
-                            return;
-                        }
-
-                        if (!dbConfig.port) {
-                            response.status(400).json("Port is required");
-                            this.runningSetup = false;
-                            return;
-                        }
-                    } else if (
                         dbConfig.socketPath &&
                         typeof dbConfig.socketPath === "string" &&
                         dbConfig.socketPath.trim().length > 0
@@ -236,9 +220,18 @@ class SetupDatabase {
                             return;
                         }
                     } else {
-                        response.status(400).json("Either a path to the Socket or Hostname and Port are required");
-                        this.runningSetup = false;
-                        return;
+                        // socketPath not provided, hostname and port are required
+                        if (!dbConfig.hostname) {
+                            response.status(400).json("Hostname is required");
+                            this.runningSetup = false;
+                            return;
+                        }
+
+                        if (!dbConfig.port) {
+                            response.status(400).json("Port is required");
+                            this.runningSetup = false;
+                            return;
+                        }
                     }
 
                     if (!dbConfig.dbName) {
