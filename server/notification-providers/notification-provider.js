@@ -108,7 +108,7 @@ class NotificationProvider {
      * @throws {any} The error specified
      */
     throwGeneralAxiosError(error) {
-        let msg = (error && error.message) ? error.message : String(error);
+        let msg = error && error.message ? error.message : String(error);
 
         if (msg === "AggregateError") {
             msg = "Request failed";
@@ -143,13 +143,15 @@ class NotificationProvider {
         }
 
         if (agg) {
-            let causes = agg.errors.map(e => {
-                let m = e && e.message ? e.message : String(e);
-                if (e && e.code) {
-                    m += ` (code=${e.code})`;
-                }
-                return m;
-            }).join("; ");
+            let causes = agg.errors
+                .map((e) => {
+                    let m = e && e.message ? e.message : String(e);
+                    if (e && e.code) {
+                        m += ` (code=${e.code})`;
+                    }
+                    return m;
+                })
+                .join("; ");
             msg += " - caused by: " + causes;
         } else if (error && error.cause && error.cause.message) {
             msg += " - cause: " + error.cause.message;
