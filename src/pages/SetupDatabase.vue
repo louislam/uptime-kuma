@@ -121,6 +121,43 @@
                         <input id="floatingInput" v-model="dbConfig.dbName" type="text" class="form-control" required />
                         <label for="floatingInput">{{ $t("dbName") }}</label>
                     </div>
+
+                    <div class="d-flex mt-3 short gap-2">
+                        <div class="form-check form-switch form-control m-0 d-flex align-items-center justify-content-center" style="flex: 1;">
+                            <input 
+                                id="sslCheck" 
+                                v-model="dbConfig.ssl" 
+                                type="checkbox" 
+                                role="switch" 
+                                class="form-check-input mt-0"
+                                style="margin-left: 0; margin-right: 10px; position: relative;"
+                            >
+                            <label class="form-check-label" for="sslCheck">SSL</label>
+                        </div>
+
+                        <button 
+                            id="caButton"
+                            type="button" 
+                            class="form-control d-flex align-items-center justify-content-center" 
+                            style="flex: 1; cursor: pointer;" 
+                            :disabled="!dbConfig.ssl"
+                            @click="showCA = !showCA"
+                        >
+                            <span class="me-2">CA</span>
+                            <font-awesome-icon :icon="showCA && dbConfig.ssl ? 'arrow-up' : 'arrow-down'" />
+                        </button>
+                    </div>
+
+                    <div v-if="showCA && dbConfig.ssl" class="form-floating mt-2 short">
+                        <textarea 
+                            id="caInput" 
+                            v-model="dbConfig.ca" 
+                            class="form-control" 
+                            placeholder="CA Certificate" 
+                            style="height: 100px; font-family: monospace; font-size: 12px;"
+                        ></textarea>
+                        <label for="caInput">CA Certificate</label>
+                    </div>
                 </template>
 
                 <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
@@ -141,6 +178,7 @@ export default {
     data() {
         return {
             show: false,
+            showCA: false,
             dbConfig: {
                 type: undefined,
                 port: 3306,
@@ -148,6 +186,8 @@ export default {
                 username: "",
                 password: "",
                 dbName: "kuma",
+                ssl: false,
+                ca: "",
             },
             info: {
                 needSetup: false,
@@ -251,6 +291,14 @@ export default {
     > .form-control {
         padding-left: 1.3rem;
     }
+}
+
+.form-check {
+    height: calc(3.5rem + 2px);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 }
 
 .short {
