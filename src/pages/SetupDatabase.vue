@@ -123,23 +123,26 @@
                     </div>
 
                     <div class="d-flex mt-3 short gap-2">
-                        <div class="form-check form-switch form-control m-0 d-flex align-items-center justify-content-center" style="flex: 1;">
-                            <input 
-                                id="sslCheck" 
-                                v-model="dbConfig.ssl" 
-                                type="checkbox" 
-                                role="switch" 
+                        <div
+                            class="form-check form-switch form-control m-0 d-flex align-items-center justify-content-center"
+                            style="flex: 1"
+                        >
+                            <input
+                                id="sslCheck"
+                                v-model="dbConfig.ssl"
+                                type="checkbox"
+                                role="switch"
                                 class="form-check-input mt-0"
-                                style="margin-left: 0; margin-right: 10px; position: relative;"
-                            >
+                                style="margin-left: 0; margin-right: 10px; position: relative"
+                            />
                             <label class="form-check-label" for="sslCheck">SSL</label>
                         </div>
 
-                        <button 
+                        <button
                             id="caButton"
-                            type="button" 
-                            class="form-control d-flex align-items-center justify-content-center" 
-                            style="flex: 1; cursor: pointer;" 
+                            type="button"
+                            class="form-control d-flex align-items-center justify-content-center"
+                            style="flex: 1; cursor: pointer"
                             :disabled="!dbConfig.ssl"
                             @click="showCA = !showCA"
                         >
@@ -149,12 +152,12 @@
                     </div>
 
                     <div v-if="showCA && dbConfig.ssl" class="form-floating mt-2 short">
-                        <textarea 
-                            id="caInput" 
-                            v-model="dbConfig.ca" 
-                            class="form-control" 
-                            placeholder="CA Certificate" 
-                            style="height: 100px; font-family: monospace; font-size: 12px;"
+                        <textarea
+                            id="caInput"
+                            v-model="dbConfig.ca"
+                            class="form-control"
+                            placeholder="CA Certificate"
+                            style="height: 100px; font-family: monospace; font-size: 12px"
                         ></textarea>
                         <label for="caInput">CA Certificate</label>
                     </div>

@@ -284,12 +284,14 @@ class Database {
                 port: dbConfig.port,
                 user: dbConfig.username,
                 password: dbConfig.password,
-                ...(dbConfig.ssl ? {
-                        ssl: {
-                            rejectUnauthorized: true,
-                            ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [ dbConfig.ca ] } : {}),
-                        }
-                    } : {}),
+                ...(dbConfig.ssl
+                    ? {
+                          ssl: {
+                              rejectUnauthorized: true,
+                              ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
+                          },
+                      }
+                    : {}),
             });
 
             // Set to true, so for example "uptime.kuma", becomes `uptime.kuma`, not `uptime`.`kuma`
@@ -315,12 +317,14 @@ class Database {
                         }
                         return next();
                     },
-                    ...(dbConfig.ssl ? {
-                        ssl: {
-                            rejectUnauthorized: true,
-                            ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [ dbConfig.ca ] } : {}),
-                        }
-                    } : {}),
+                    ...(dbConfig.ssl
+                        ? {
+                              ssl: {
+                                  rejectUnauthorized: true,
+                                  ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
+                              },
+                          }
+                        : {}),
                 },
                 pool: mariadbPoolConfig,
             };
@@ -342,12 +346,14 @@ class Database {
                         }
                         return next();
                     },
-                    ...(dbConfig.ssl ? {
-                        ssl: {
-                            rejectUnauthorized: true,
-                            ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [ dbConfig.ca ] } : {}),
-                        }
-                    } : {}),
+                    ...(dbConfig.ssl
+                        ? {
+                              ssl: {
+                                  rejectUnauthorized: true,
+                                  ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
+                              },
+                          }
+                        : {}),
                 },
                 pool: mariadbPoolConfig,
             };
