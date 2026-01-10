@@ -346,14 +346,6 @@ class Database {
                         }
                         return next();
                     },
-                    ...(dbConfig.ssl
-                        ? {
-                              ssl: {
-                                  rejectUnauthorized: true,
-                                  ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
-                              },
-                          }
-                        : {}),
                 },
                 pool: mariadbPoolConfig,
             };
