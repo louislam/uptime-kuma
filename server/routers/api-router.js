@@ -76,7 +76,8 @@ function validatePingValue(ping) {
         return {
             valid: false,
             value: pingValue,
-            error: `Ping value ${pingValue}ms exceeds maximum allowed (${MAX_PING_VALUE}ms = 24 hours). ` +
+            error:
+                `Ping value ${pingValue}ms exceeds maximum allowed (${MAX_PING_VALUE}ms = 24 hours). ` +
                 `If you're monitoring a job that takes longer than 24 hours, consider using ` +
                 `multiple monitors or a different monitoring approach. ` +
                 `Large ping values may indicate you're sending seconds instead of milliseconds.`,

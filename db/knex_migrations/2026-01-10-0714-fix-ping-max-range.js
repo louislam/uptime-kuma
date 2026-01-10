@@ -31,51 +31,59 @@ exports.up = function (knex) {
     // Alter all three statistics tables to use DOUBLE instead of FLOAT
     // This allows storing ping values >= 1,000,000 milliseconds
 
-    return knex.schema
-        // Fix stat_daily table
-        .alterTable("stat_daily", function (table) {
-            table.double("ping_min")
-                .notNullable()
-                .defaultTo(0)
-                .comment("Minimum ping during this period in milliseconds")
-                .alter();
+    return (
+        knex.schema
+            // Fix stat_daily table
+            .alterTable("stat_daily", function (table) {
+                table
+                    .double("ping_min")
+                    .notNullable()
+                    .defaultTo(0)
+                    .comment("Minimum ping during this period in milliseconds")
+                    .alter();
 
-            table.double("ping_max")
-                .notNullable()
-                .defaultTo(0)
-                .comment("Maximum ping during this period in milliseconds")
-                .alter();
-        })
+                table
+                    .double("ping_max")
+                    .notNullable()
+                    .defaultTo(0)
+                    .comment("Maximum ping during this period in milliseconds")
+                    .alter();
+            })
 
-        // Fix stat_hourly table
-        .alterTable("stat_hourly", function (table) {
-            table.double("ping_min")
-                .notNullable()
-                .defaultTo(0)
-                .comment("Minimum ping during this period in milliseconds")
-                .alter();
+            // Fix stat_hourly table
+            .alterTable("stat_hourly", function (table) {
+                table
+                    .double("ping_min")
+                    .notNullable()
+                    .defaultTo(0)
+                    .comment("Minimum ping during this period in milliseconds")
+                    .alter();
 
-            table.double("ping_max")
-                .notNullable()
-                .defaultTo(0)
-                .comment("Maximum ping during this period in milliseconds")
-                .alter();
-        })
+                table
+                    .double("ping_max")
+                    .notNullable()
+                    .defaultTo(0)
+                    .comment("Maximum ping during this period in milliseconds")
+                    .alter();
+            })
 
-        // Fix stat_minutely table
-        .alterTable("stat_minutely", function (table) {
-            table.double("ping_min")
-                .notNullable()
-                .defaultTo(0)
-                .comment("Minimum ping during this period in milliseconds")
-                .alter();
+            // Fix stat_minutely table
+            .alterTable("stat_minutely", function (table) {
+                table
+                    .double("ping_min")
+                    .notNullable()
+                    .defaultTo(0)
+                    .comment("Minimum ping during this period in milliseconds")
+                    .alter();
 
-            table.double("ping_max")
-                .notNullable()
-                .defaultTo(0)
-                .comment("Maximum ping during this period in milliseconds")
-                .alter();
-        });
+                table
+                    .double("ping_max")
+                    .notNullable()
+                    .defaultTo(0)
+                    .comment("Maximum ping during this period in milliseconds")
+                    .alter();
+            })
+    );
 };
 
 /**
@@ -92,13 +100,15 @@ exports.up = function (knex) {
 exports.down = function (knex) {
     return knex.schema
         .alterTable("stat_daily", function (table) {
-            table.float("ping_min")
+            table
+                .float("ping_min")
                 .notNullable()
                 .defaultTo(0)
                 .comment("Minimum ping during this period in milliseconds")
                 .alter();
 
-            table.float("ping_max")
+            table
+                .float("ping_max")
                 .notNullable()
                 .defaultTo(0)
                 .comment("Maximum ping during this period in milliseconds")
@@ -106,13 +116,15 @@ exports.down = function (knex) {
         })
 
         .alterTable("stat_hourly", function (table) {
-            table.float("ping_min")
+            table
+                .float("ping_min")
                 .notNullable()
                 .defaultTo(0)
                 .comment("Minimum ping during this period in milliseconds")
                 .alter();
 
-            table.float("ping_max")
+            table
+                .float("ping_max")
                 .notNullable()
                 .defaultTo(0)
                 .comment("Maximum ping during this period in milliseconds")
@@ -120,13 +132,15 @@ exports.down = function (knex) {
         })
 
         .alterTable("stat_minutely", function (table) {
-            table.float("ping_min")
+            table
+                .float("ping_min")
                 .notNullable()
                 .defaultTo(0)
                 .comment("Minimum ping during this period in milliseconds")
                 .alter();
 
-            table.float("ping_max")
+            table
+                .float("ping_max")
                 .notNullable()
                 .defaultTo(0)
                 .comment("Maximum ping during this period in milliseconds")
