@@ -134,10 +134,11 @@
                                     style="float: none"
                                 />
                                 <label class="form-check-label fw-bold" for="sslCheck">
-                                    {{ $t("enableSSL") }} <span class="fw-normal text-muted" style="font-size: 0.9em;">(Optional)</span>
-                                </label>  
+                                    {{ $t("enableSSL") }}
+                                    <span class="fw-normal text-muted" style="font-size: 0.9em">(Optional)</span>
+                                </label>
                             </div>
-                            <div class="form-text mt-1" style="font-size: 0.85em; opacity: 0.8;">
+                            <div class="form-text mt-1" style="font-size: 0.85em; opacity: 0.8">
                                 {{ $t("sslExplanation") }}
                             </div>
                         </div>
@@ -162,8 +163,11 @@
                                 style="font-size: 0.8rem; line-height: 1.3"
                             >
                                 <font-awesome-icon icon="info-circle" class="me-1" />
-                                <strong>{{ $t("selfSigned") }}?</strong> {{ $t("caFormatInstruction") }} <br>
-                                <strong>{{ $t("trusted") }} ?</strong> {{ $t("caBlankInstruction") }}
+                                <strong>{{ $t("selfSigned") }}?</strong>
+                                {{ $t("caFormatInstruction") }}
+                                <br />
+                                <strong>{{ $t("trusted") }} ?</strong>
+                                {{ $t("caBlankInstruction") }}
                             </div>
                         </div>
                     </template>
