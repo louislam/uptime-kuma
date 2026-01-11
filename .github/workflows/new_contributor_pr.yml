@@ -1,0 +1,38 @@
+name: New contributor message
+
+on:
+  # Safety
+  # This workflow uses pull_request_target so it can run with write permissions on first-time contributor PRs.
+  # It is safe because it does not check out or execute any code from the pull request and
+  # only uses the pinned, trusted actions/first-interaction action
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [opened]
+    branches:
+      - master
+
+permissions:
+  pull-requests: write
+
+jobs:
+  build:
+    if: github.repository == 'louislam/uptime-kuma'
+    name: Hello new contributor
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-message: |
+            Hello! Thank you for your contribution 👋
+
+            As this is your first contribution, please be sure to check out our
+            [Pull Request guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma).
+
+            In particular:
+            - Mark your PR as Draft while you’re still making changes
+            - Mark it as Ready for review once it’s fully ready 🟢
+
+            If you have any design or process questions, feel free to ask them right here in this pull request - unclear documentation is a bug too.
+
+            Thanks for lending a paw to Uptime Kuma 🐻
