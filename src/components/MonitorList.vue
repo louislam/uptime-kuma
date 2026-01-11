@@ -2,20 +2,58 @@
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
             <div class="header-top">
-                <button
-                    class="btn btn-outline-normal ms-2"
-                    :class="{ active: selectMode }"
-                    type="button"
-                    @click="selectMode = !selectMode"
-                >
-                    {{ $t("Select") }}
-                </button>
+                <div class="select-checkbox-wrapper">
+                    <input
+                        v-if="!selectMode"
+                        v-model="selectMode"
+                        class="form-check-input"
+                        type="checkbox"
+                        :aria-label="$t('Select')"
+                    />
+                    <input
+                        v-if="selectMode"
+                        v-model="selectAll"
+                        class="form-check-input"
+                        type="checkbox"
+                        :aria-label="$t('selectAllMonitors')"
+                    />
+                </div>
 
-                <div class="placeholder"></div>
-                <div class="search-wrapper">
-                    <a v-if="searchText == ''" class="search-icon">
-                        <font-awesome-icon icon="search" />
-                    </a>
+                <div class="header-filter">
+                    <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
+                </div>
+
+                <div v-if="selectMode && selectedMonitorCount > 0" class="actions-wrapper">
+                    <div class="dropdown">
+                        <button
+                            class="btn btn-outline-normal dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            :aria-label="$t('Actions')"
+                        >
+                            {{ $t("Actions") }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
+                                    <font-awesome-icon icon="pause" class="me-2" /> {{ $t("Pause") }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click.prevent="resumeSelected">
+                                    <font-awesome-icon icon="play" class="me-2" /> {{ $t("Resume") }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" @click.prevent="deleteDialog">
+                                    <font-awesome-icon icon="trash" class="me-2" /> {{ $t("Delete") }}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="search-wrapper ms-auto">
                     <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
                         <font-awesome-icon icon="times" />
                     </a>
@@ -30,25 +68,10 @@
                     </form>
                 </div>
             </div>
-            <div class="header-filter">
-                <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
-            </div>
 
-            <!-- Selection Controls -->
-            <div v-if="selectMode" class="selection-controls px-2 pt-2">
-                <input v-model="selectAll" class="form-check-input select-input" type="checkbox" />
-
-                <button class="btn-outline-normal" @click="pauseDialog">
-                    <font-awesome-icon icon="pause" size="sm" />
-                    {{ $t("Pause") }}
-                </button>
-                <button class="btn-outline-normal" @click="resumeSelected">
-                    <font-awesome-icon icon="play" size="sm" />
-                    {{ $t("Resume") }}
-                </button>
-
-                <span v-if="selectedMonitorCount > 0">
-                    {{ $t("selectedMonitorCount", [selectedMonitorCount]) }}
+            <div v-if="selectMode && selectedMonitorCount > 0" class="selected-count-row">
+                <span class="selected-count">
+                    {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
                 </span>
             </div>
         </div>
@@ -80,6 +103,10 @@
 
     <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
         {{ $t("pauseMonitorMsg") }}
+    </Confirm>
+
+    <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteSelected">
+        {{ $t("deleteMonitorsMsg") }}
     </Confirm>
 </template>
 
@@ -307,10 +334,14 @@ export default {
          * @returns {void}
          */
         pauseSelected() {
+            const count = Object.keys(this.selectedMonitors).filter(id => this.$root.monitorList[id].active).length;
             Object.keys(this.selectedMonitors)
                 .filter((id) => this.$root.monitorList[id].active)
                 .forEach((id) => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
 
+            if (count > 0) {
+                this.$root.toastSuccess(this.$t("pausedMonitorsMsg", [count]));
+            }
             this.cancelSelectMode();
         },
         /**
@@ -318,9 +349,47 @@ export default {
          * @returns {void}
          */
         resumeSelected() {
+            const count = Object.keys(this.selectedMonitors).filter(id => !this.$root.monitorList[id].active).length;
             Object.keys(this.selectedMonitors)
-                .filter((id) => !this.$root.monitorList[id].active)
-                .forEach((id) => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+                .filter(id => !this.$root.monitorList[id].active)
+                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+
+            if (count > 0) {
+                this.$root.toastSuccess(this.$t("resumedMonitorsMsg", [count]));
+            }
+            this.cancelSelectMode();
+        },
+        /**
+         * Show dialog to confirm deletion
+         * @returns {void}
+         */
+        deleteDialog() {
+            this.$refs.confirmDelete.show();
+        },
+        /**
+         * Delete each selected monitor
+         * @returns {void}
+         */
+        deleteSelected() {
+            const count = Object.keys(this.selectedMonitors).length;
+            let successCount = 0;
+            let errorCount = 0;
+
+            Object.keys(this.selectedMonitors).forEach(id => {
+                this.$root.getSocket().emit("deleteMonitor", id, false, (res) => {
+                    if (res.ok) {
+                        successCount++;
+                    } else {
+                        errorCount++;
+                        this.$root.toastError(res.msg);
+                    }
+
+                    // Show succes message after all deletions completed
+                    if (successCount + errorCount === count && successCount > 0) {
+                        this.$root.toastSuccess(this.$t("deletedMonitorsMsg", [successCount]));
+                    }
+                });
+            });
 
             this.cancelSelectMode();
         },
@@ -440,13 +509,123 @@ export default {
 
 .header-top {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 8px;
+    padding: 10px;
+}
+
+.select-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+
+    .form-check-input {
+        cursor: pointer;
+        margin: 0;
+    }
 }
 
 .header-filter {
     display: flex;
     align-items: center;
+}
+
+.actions-wrapper {
+    display: flex;
+    align-items: center;
+
+    .dropdown-toggle {
+        white-space: nowrap;
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+
+    .dropdown-menu {
+        min-width: 140px;
+        padding: 4px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+        .dark & {
+            background-color: $dark-bg;
+            border-color: $dark-border-color;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+    }
+
+    .dropdown-item {
+        cursor: pointer;
+        padding: 6px 12px;
+        font-size: 0.9em;
+
+        .dark & {
+            color: $dark-font-color;
+
+            &:hover {
+                background-color: $dark-bg2;
+                color: $dark-font-color;
+            }
+        }
+
+        &.text-danger {
+            color: #dc3545;
+
+            .dark & {
+                color: #dc3545;
+            }
+
+            &:hover {
+                background-color: #dc3545 !important;
+                color: white !important;
+
+                .dark & {
+                    background-color: #dc3545 !important;
+                    color: white !important;
+                }
+
+                svg {
+                    color: white !important;
+                }
+            }
+        }
+    }
+}
+
+.selected-count {
+    white-space: nowrap;
+    font-size: 0.9em;
+    color: $primary;
+
+    .dark & {
+        color: $dark-font-color;
+    }
+}
+
+.selected-count-row {
+    padding: 5px 10px 0 10px;
+    display: flex;
+    align-items: center;
+}
+
+.selection-controls {
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+
+    .d-flex {
+        width: 100%;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
+    }
+
+    .selected-count {
+        margin-left: auto;
+    }
 }
 
 @media (max-width: 770px) {
@@ -460,25 +639,25 @@ export default {
 .search-wrapper {
     display: flex;
     align-items: center;
+    position: relative;
 }
 
 .search-icon {
-    padding: 10px;
+    position: absolute;
+    right: 10px;
     color: #c0c0c0;
+    cursor: pointer;
+    transition: all ease-in-out 0.1s;
+    z-index: 1;
 
-    // Clear filter button (X)
-    svg[data-icon="times"] {
-        cursor: pointer;
-        transition: all ease-in-out 0.1s;
-
-        &:hover {
-            opacity: 0.5;
-        }
+    &:hover {
+        opacity: 0.5;
     }
 }
 
 .search-input {
     max-width: 15em;
+    padding-right: 30px;
 }
 
 .monitor-item {
@@ -498,10 +677,13 @@ export default {
     margin-top: 5px;
 }
 
-.selection-controls {
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+@media (max-width: 550px) {
+    .selection-controls {
+        .selected-count {
+            margin-left: 0;
+            width: 100%;
+            margin-top: 0.25rem;
+        }
+    }
 }
 </style>
