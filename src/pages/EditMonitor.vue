@@ -2260,13 +2260,7 @@ export default {
 
         defaultFriendlyName() {
             if (this.monitor.hostname) {
-                try {
-                    // Convert IDN to punycode
-                    const url = new URL(`http://${this.monitor.hostname}`);
-                    return url.hostname;
-                } catch (e) {
-                    return this.monitor.hostname;
-                }
+                return this.monitor.hostname;
             }
             if (this.monitor.system_service_name) {
                 return this.monitor.system_service_name;
