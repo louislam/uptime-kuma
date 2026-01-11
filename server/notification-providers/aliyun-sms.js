@@ -19,7 +19,9 @@ class AliyunSMS extends NotificationProvider {
                     name: monitorJSON["name"],
                     time: heartbeatJSON["localDateTime"],
                     status: this.statusToString(heartbeatJSON["status"]),
-                    msg: this.removeIpAndDomain(heartbeatJSON["msg"]),
+                    ...(notification.optionalParameters && {
+                        msg: this.removeIpAndDomain(heartbeatJSON["msg"]),
+                    }),
                 });
                 if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
@@ -29,7 +31,9 @@ class AliyunSMS extends NotificationProvider {
                     name: "",
                     time: "",
                     status: "",
-                    msg: this.removeIpAndDomain(msg),
+                    ...(notification.optionalParameters && {
+                        msg: this.removeIpAndDomain(msg),
+                    }),
                 });
                 if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
