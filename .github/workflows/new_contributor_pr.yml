@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened]
     branches:
-      - main
+      - master
 
 permissions:
   pull-requests: write
