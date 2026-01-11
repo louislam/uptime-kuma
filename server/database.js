@@ -285,6 +285,14 @@ class Database {
                 user: dbConfig.username,
                 password: dbConfig.password,
                 socketPath: dbConfig.socketPath,
+                ...(dbConfig.ssl
+                    ? {
+                          ssl: {
+                              rejectUnauthorized: true,
+                              ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
+                          },
+                      }
+                    : {}),
             });
 
             // Set to true, so for example "uptime.kuma", becomes `uptime.kuma`, not `uptime`.`kuma`
@@ -311,6 +319,14 @@ class Database {
                         }
                         return next();
                     },
+                    ...(dbConfig.ssl
+                        ? {
+                              ssl: {
+                                  rejectUnauthorized: true,
+                                  ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
+                              },
+                          }
+                        : {}),
                 },
                 pool: mariadbPoolConfig,
             };

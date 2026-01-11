@@ -103,6 +103,8 @@ class SetupDatabase {
             dbConfig.username = getEnvOrFile("UPTIME_KUMA_DB_USERNAME");
             dbConfig.password = getEnvOrFile("UPTIME_KUMA_DB_PASSWORD");
             dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET;
+            dbConfig.ssl = getEnvOrFile("UPTIME_KUMA_DB_SSL")?.toLowerCase() === "true";
+            dbConfig.ca = getEnvOrFile("UPTIME_KUMA_DB_CA");
             Database.writeDBConfig(dbConfig);
         }
     }
@@ -262,6 +264,14 @@ class SetupDatabase {
                             password: dbConfig.password,
                             database: dbConfig.dbName,
                             socketPath: dbConfig.socketPath,
+                            ...(dbConfig.ssl
+                                ? {
+                                      ssl: {
+                                          rejectUnauthorized: true,
+                                          ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
+                                      },
+                                  }
+                                : {}),
                         });
                         await connection.execute("SELECT 1");
                         connection.end();
