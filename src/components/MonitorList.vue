@@ -36,17 +36,20 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
-                                    <font-awesome-icon icon="pause" class="me-2" /> {{ $t("Pause") }}
+                                    <font-awesome-icon icon="pause" class="me-2" />
+                                    {{ $t("Pause") }}
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="#" @click.prevent="resumeSelected">
-                                    <font-awesome-icon icon="play" class="me-2" /> {{ $t("Resume") }}
+                                    <font-awesome-icon icon="play" class="me-2" />
+                                    {{ $t("Resume") }}
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item text-danger" href="#" @click.prevent="deleteDialog">
-                                    <font-awesome-icon icon="trash" class="me-2" /> {{ $t("Delete") }}
+                                    <font-awesome-icon icon="trash" class="me-2" />
+                                    {{ $t("Delete") }}
                                 </a>
                             </li>
                         </ul>
@@ -71,7 +74,7 @@
 
             <div v-if="selectMode && selectedMonitorCount > 0" class="selected-count-row">
                 <span class="selected-count">
-                    {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
+                    {{ $t("selectedMonitorCount", [selectedMonitorCount]) }}
                 </span>
             </div>
         </div>
@@ -334,7 +337,7 @@ export default {
          * @returns {void}
          */
         pauseSelected() {
-            const count = Object.keys(this.selectedMonitors).filter(id => this.$root.monitorList[id].active).length;
+            const count = Object.keys(this.selectedMonitors).filter((id) => this.$root.monitorList[id].active).length;
             Object.keys(this.selectedMonitors)
                 .filter((id) => this.$root.monitorList[id].active)
                 .forEach((id) => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
@@ -349,10 +352,10 @@ export default {
          * @returns {void}
          */
         resumeSelected() {
-            const count = Object.keys(this.selectedMonitors).filter(id => !this.$root.monitorList[id].active).length;
+            const count = Object.keys(this.selectedMonitors).filter((id) => !this.$root.monitorList[id].active).length;
             Object.keys(this.selectedMonitors)
-                .filter(id => !this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+                .filter((id) => !this.$root.monitorList[id].active)
+                .forEach((id) => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
 
             if (count > 0) {
                 this.$root.toastSuccess(this.$t("resumedMonitorsMsg", [count]));
@@ -375,7 +378,7 @@ export default {
             let successCount = 0;
             let errorCount = 0;
 
-            Object.keys(this.selectedMonitors).forEach(id => {
+            Object.keys(this.selectedMonitors).forEach((id) => {
                 this.$root.getSocket().emit("deleteMonitor", id, false, (res) => {
                     if (res.ok) {
                         successCount++;
