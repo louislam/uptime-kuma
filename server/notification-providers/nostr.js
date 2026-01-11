@@ -23,7 +23,7 @@ class Nostr extends NotificationProvider {
             const event = {
                 kind: 14, // NIP-17 private direct message
                 created_at: createdAt,
-                tags: [[ "p", recipientPublicKey ]],
+                tags: [["p", recipientPublicKey]],
                 content: msg,
             };
             try {
