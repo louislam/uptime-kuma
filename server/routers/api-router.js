@@ -52,9 +52,9 @@ router.all("/api/push/:pushToken", async (request, response) => {
         let statusString = request.query.status || "up";
         const statusFromParam = statusString === "up" ? UP : DOWN;
 
-        // Validate ping value - max 1 billion ms (~11.5 days)
+        // Validate ping value - max 100 billion ms (~3.17 years)
         // Fits safely in both BIGINT and FLOAT(20,2)
-        const MAX_PING_MS = 1000000000;
+        const MAX_PING_MS = 100000000000;
         if (ping !== null && (ping < 0 || ping > MAX_PING_MS)) {
             throw new Error(`Invalid ping value. Must be between 0 and ${MAX_PING_MS} ms.`);
         }
