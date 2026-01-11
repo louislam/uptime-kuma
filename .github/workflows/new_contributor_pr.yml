@@ -5,7 +5,7 @@ on:
   # This workflow uses pull_request_target so it can run with write permissions on first-time contributor PRs.
   # It is safe because it does not check out or execute any code from the pull request and
   # only uses the pinned, trusted actions/first-interaction action
-  pull_request_target:
+  pull_request_target:  # zizmor: ignore[dangerous-triggers]
     types: [opened]
     branches:
       - master
