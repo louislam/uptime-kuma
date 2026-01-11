@@ -19,25 +19,26 @@ describe("Server Utilities: pingAsync", () => {
         });
     });
 
-    test("should strip brackets from IPv6 addresses before pinging", async () => {
+test("should strip brackets from IPv6 addresses before pinging", async () => {
         const ipv6WithBrackets = "[2606:4700:4700::1111]";
         const ipv6Raw = "2606:4700:4700::1111";
-        await assert.rejects(pingAsync(ipv6WithBrackets, true, 1, "", true, 56, 1, 1), (err) => {
-            assert.strictEqual(
-                err.message.includes(ipv6WithBrackets),
-                false,
-                "Error message should not contain brackets"
-            );
-            // Allow either the IP in the message (local) OR "Network is unreachable"
-            const containsIP = err.message.includes(ipv6Raw);
-            const isUnreachable =
-                err.message.includes("Network is unreachable") || err.message.includes("Network unreachable");
-            assert.ok(
-                containsIP || isUnreachable,
-                `Error message should contain the raw IP "${ipv6Raw}" OR be a network unreachable error. Got: ${err.message}`
-            );
-            return true;
-        });
+
+        await assert.rejects(
+            pingAsync(ipv6WithBrackets, true, 1, "", true, 56, 1, 1),
+            (err) => {
+                assert.strictEqual(err.message.includes(ipv6WithBrackets), false, "Error message should not contain brackets");
+                // Allow either the IP in the message (local) OR "Network is unreachable"
+                const containsIP = err.message.includes(ipv6Raw);
+                const isUnreachable = err.message.includes("Network is unreachable") || err.message.includes("Network unreachable");
+                // macOS error when IPv6 stack is missing
+                const isMacOSError = err.message.includes("nodename nor servname provided");
+                assert.ok(
+                    containsIP || isUnreachable || isMacOSError,
+                    `Ping failed correctly, but error message format was unexpected.\nGot: "${err.message}"\nExpected to contain IP "${ipv6Raw}" OR be a standard network error.`
+                );
+                return true;
+            }
+        );
     });
 
     test("should handle standard ASCII domains correctly", async () => {
