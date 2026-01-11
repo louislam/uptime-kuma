@@ -1374,7 +1374,7 @@ class Monitor extends BeanModel {
         // UP -> UP = not important
         // PENDING -> PENDING = not important
         // * PENDING -> DOWN = important
-        // PENDING -> UP = not important
+        // * PENDING -> UP = not important
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
