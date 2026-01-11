@@ -144,7 +144,7 @@
                         </div>
                     </div>
 
-                    <div class="form-floating mt-3 short"  v-if="dbConfig.ssl">
+                    <div v-if="dbConfig.ssl" class="form-floating mt-3 short">
                         <textarea
                             id="caInput"
                             v-model="dbConfig.ca"
