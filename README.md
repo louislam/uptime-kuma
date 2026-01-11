@@ -175,7 +175,7 @@ You can mention me if you ask a question on the subreddit.
 
 ### Create Pull Requests
 
-Pull requests are awesome. 
+Pull requests are awesome.
 To keep reviews fast and effective, please make sure you’ve [read our pull request guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma).
 
 ### Test Pull Requests

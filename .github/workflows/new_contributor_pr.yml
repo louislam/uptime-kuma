@@ -21,15 +21,15 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           pr-message: |
             Hello! Thank you for your contribution 👋
-            
+
             As this is your first contribution, please be sure to check out our
             [Pull Request guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma).
-            
+
             In particular:
             - Mark your PR as Draft while you’re still making changes
             - Mark it as Ready for review once it’s fully ready 🟢
-            
+
             If you have any design or process questions, feel free to ask them right here in this pull request - unclear documentation is a bug too.
-            
+
             Thanks for helping keep Uptime Kuma alert and dependable 🐻
             Welcome aboard!
