@@ -23,7 +23,8 @@ jobs:
       - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1.0
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          pr-message: |
+          issue_message: "This is a required parameter, but we don't run on this event as we consider it a bit spammy.."
+          pr_message: |
             Hello! Thank you for your contribution 👋
 
             As this is your first contribution, please be sure to check out our
