@@ -21,7 +21,7 @@ class Nostr extends NotificationProvider {
         for (const recipientPublicKey of recipientsPublicKeys) {
             const event = {
                 kind: 14, // NIP-17 private direct message
-                tags: [[ "p", recipientPublicKey ]],
+                tags: [["p", recipientPublicKey]],
                 content: msg,
             };
             const wrappedEvent = nip59.wrapEvent(event, senderPrivateKey, recipientPublicKey);
