@@ -17,7 +17,7 @@
                                 v-model="tag.name"
                                 type="text"
                                 class="form-control"
-                                :class="{'is-invalid': nameInvalid || nameContainsComma}"
+                                :class="{ 'is-invalid': nameInvalid || nameContainsComma }"
                                 required
                             />
                             <div class="invalid-feedback">

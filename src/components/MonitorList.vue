@@ -177,8 +177,13 @@ export default {
          * @returns {boolean} True if any filter is active, false otherwise.
          */
         filtersActive() {
-            return this.$router.currentRoute.value.query?.status != null || this.$router.currentRoute.value.query?.active != null || this.$router.currentRoute.value.query?.tags != null || this.searchText !== "";
-        }
+            return (
+                this.$router.currentRoute.value.query?.status != null ||
+                this.$router.currentRoute.value.query?.active != null ||
+                this.$router.currentRoute.value.query?.tags != null ||
+                this.searchText !== ""
+            );
+        },
     },
     watch: {
         searchText() {
@@ -232,24 +237,20 @@ export default {
 
         const fetchedTagIDs = tagParams
             ? tagParams
-                .split(",")
-                .map(identifier => {
-                    const tagID = parseInt(identifier, 10);
-                    if (isNaN(tagID)) {
-                        return;
-                    }
-                    return tags.find(t => t.tag_id === tagID)?.id ?? 1;
-                })
-                .filter(tagID => tagID !== 0)
+                  .split(",")
+                  .map((identifier) => {
+                      const tagID = parseInt(identifier, 10);
+                      if (isNaN(tagID)) {
+                          return;
+                      }
+                      return tags.find((t) => t.tag_id === tagID)?.id ?? 1;
+                  })
+                  .filter((tagID) => tagID !== 0)
             : undefined;
 
         this.updateFilter({
-            status: statusParams ? statusParams.split(",").map(
-                status => status.trim()
-            ) : queryParams?.["status"],
-            active: activeParams ? activeParams.split(",").map(
-                active => active.trim()
-            ) : queryParams?.["active"],
+            status: statusParams ? statusParams.split(",").map((status) => status.trim()) : queryParams?.["status"],
+            active: activeParams ? activeParams.split(",").map((active) => active.trim()) : queryParams?.["active"],
             tags: tagParams ? fetchedTagIDs : queryParams?.["tags"],
         });
     },
@@ -291,16 +292,13 @@ export default {
         updateFilter(newFilter) {
             const newQuery = { ...this.$router.currentRoute.value.query };
 
-            for (const [ key, value ] of Object.entries(newFilter)) {
-                if (!value
-                    || (value instanceof Array && value.length === 0)) {
+            for (const [key, value] of Object.entries(newFilter)) {
+                if (!value || (value instanceof Array && value.length === 0)) {
                     delete newQuery[key];
                     continue;
                 }
 
-                newQuery[key] = value instanceof Array
-                    ? value.length > 0 ? value.join(",") : null
-                    : value;
+                newQuery[key] = value instanceof Array ? (value.length > 0 ? value.join(",") : null) : value;
             }
             this.$router.push({ query: newQuery });
         },
@@ -395,7 +393,10 @@ export default {
 
             // filter by status
             let statusMatch = true;
-            if (this.$router.currentRoute.value.query?.status != null && this.$router.currentRoute.value.query?.status.length > 0) {
+            if (
+                this.$router.currentRoute.value.query?.status != null &&
+                this.$router.currentRoute.value.query?.status.length > 0
+            ) {
                 if (monitor.id in this.$root.lastHeartbeatList && this.$root.lastHeartbeatList[monitor.id]) {
                     monitor.status = this.$root.lastHeartbeatList[monitor.id].status;
                 }
@@ -404,16 +405,22 @@ export default {
 
             // filter by active
             let activeMatch = true;
-            if (this.$router.currentRoute.value.query?.active != null && this.$router.currentRoute.value.query?.active.length > 0) {
+            if (
+                this.$router.currentRoute.value.query?.active != null &&
+                this.$router.currentRoute.value.query?.active.length > 0
+            ) {
                 activeMatch = this.$router.currentRoute.value.query?.active.includes(monitor.active);
             }
 
             // filter by tags
             let tagsMatch = true;
             const tagsInURL = this.$router.currentRoute.value.query?.tags?.split(",") || [];
-            if (this.$router.currentRoute.value.query?.tags != null && this.$router.currentRoute.value.query?.tags.length > 0) {
-                const monitorTagIds = monitor.tags.map(tag => tag.tag_id);
-                tagsMatch = tagsInURL.map(Number).some(tagId => monitorTagIds.includes(tagId));
+            if (
+                this.$router.currentRoute.value.query?.tags != null &&
+                this.$router.currentRoute.value.query?.tags.length > 0
+            ) {
+                const monitorTagIds = monitor.tags.map((tag) => tag.tag_id);
+                tagsMatch = tagsInURL.map(Number).some((tagId) => monitorTagIds.includes(tagId));
             }
 
             return searchTextMatch && statusMatch && activeMatch && tagsMatch;

@@ -13,11 +13,12 @@
             <span v-if="numFiltersActive > 0" class="px-1 fw-bold">{{ numFiltersActive }}</span>
             <font-awesome-icon v-if="numFiltersActive > 0" icon="times" />
         </button>
-        <MonitorListFilterDropdown
-            :filterActive="$router.currentRoute.value.query?.status?.length > 0"
-        >
+        <MonitorListFilterDropdown :filterActive="$router.currentRoute.value.query?.status?.length > 0">
             <template #status>
-                <Status v-if="$router.currentRoute.value.query?.status?.length === 1" :status="$router.currentRoute.value.query?.status[0]" />
+                <Status
+                    v-if="$router.currentRoute.value.query?.status?.length === 1"
+                    :status="$router.currentRoute.value.query?.status[0]"
+                />
                 <span v-else>
                     {{ $t("Status") }}
                 </span>
@@ -137,8 +138,14 @@
         <MonitorListFilterDropdown :filterActive="$router.currentRoute.value.query?.tags?.length > 0">
             <template #status>
                 <Tag
-                    v-if="$router.currentRoute.value.query?.tags?.split?.(',')?.length === 1 && tagsList.find(tag => tag.id === +$router.currentRoute.value.query?.tags?.split?.(',')?.[0])"
-                    :item="tagsList.find(tag => tag.id === +$router.currentRoute.value.query?.tags?.split?.(',')?.[0])" :size="'sm'"
+                    v-if="
+                        $router.currentRoute.value.query?.tags?.split?.(',')?.length === 1 &&
+                        tagsList.find((tag) => tag.id === +$router.currentRoute.value.query?.tags?.split?.(',')?.[0])
+                    "
+                    :item="
+                        tagsList.find((tag) => tag.id === +$router.currentRoute.value.query?.tags?.split?.(',')?.[0])
+                    "
+                    :size="'sm'"
                 />
                 <span v-else>
                     {{ $t("Tags") }}
@@ -154,7 +161,7 @@
                             <span class="ps-3">
                                 {{ getTaggedMonitorCount(tag) }}
                                 <span
-                                    v-if="$router.currentRoute.value.query?.tags?.split(',').includes(''+tag.id)"
+                                    v-if="$router.currentRoute.value.query?.tags?.split(',').includes('' + tag.id)"
                                     class="px-1 filter-active"
                                 >
                                     <font-awesome-icon icon="check" />
@@ -184,7 +191,7 @@ export default {
         Status,
         Tag,
     },
-    emits: [ "updateFilter" ],
+    emits: ["updateFilter"],
     data() {
         return {
             tagsList: [],
@@ -192,10 +199,14 @@ export default {
     },
     computed: {
         numFiltersActive() {
-            return this.$router.currentRoute.value.query.status?.length > 0 ? 1 : 0 +
-                this.$router.currentRoute.value.query.active?.length > 0 ? 1 : 0 +
-                this.$router.currentRoute.value.query.tags?.length > 0 ? 1 : 0;
-        }
+            return this.$router.currentRoute.value.query.status?.length > 0
+                ? 1
+                : 0 + this.$router.currentRoute.value.query.active?.length > 0
+                  ? 1
+                  : 0 + this.$router.currentRoute.value.query.tags?.length > 0
+                    ? 1
+                    : 0;
+        },
     },
     mounted() {
         this.getExistingTags();
@@ -216,7 +227,7 @@ export default {
             };
 
             if (newFilter.status.includes("" + status)) {
-                newFilter.status = newFilter.status.filter(item => item !== "" + status);
+                newFilter.status = newFilter.status.filter((item) => item !== "" + status);
             } else {
                 newFilter.status.push(status);
             }
@@ -229,7 +240,7 @@ export default {
             };
 
             if (newFilter.active.includes("" + active)) {
-                newFilter.active = newFilter.active.filter(item => item !== "" + active);
+                newFilter.active = newFilter.active.filter((item) => item !== "" + active);
             } else {
                 newFilter.active.push(active);
             }
@@ -242,7 +253,7 @@ export default {
             };
 
             if (newFilter.tags.includes("" + tag.id)) {
-                newFilter.tags = newFilter.tags.filter(item => item !== "" + tag.id);
+                newFilter.tags = newFilter.tags.filter((item) => item !== "" + tag.id);
             } else {
                 newFilter.tags.push(tag.id);
             }
