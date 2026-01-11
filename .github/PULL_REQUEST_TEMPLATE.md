@@ -15,7 +15,7 @@ In this pull request, the following changes are made:
 - [ ] ⚠️ If there are Breaking change (a fix or feature that alters existing functionality in a way that could cause issues) I have called them out
 - [ ] 🧠 I have disclosed any use of LLMs/AI in this contribution and reviewed all generated content.
       I understand that I am responsible for and able to explain every line of code I submit.
-- [ ] 🔍 Any UI changes adhere to vlisal style of this project.
+- [ ] 🔍 Any UI changes adhere to visual style of this project.
 - [ ] 🛠️ I have self-reviewed and self-tested my code to ensure it works as expected.
 - [ ] 📝 I have commented my code, especially in hard-to-understand areas (e.g., using JSDoc for methods).
 - [ ] 🤖 I added or updated automated tests where appropriate.
