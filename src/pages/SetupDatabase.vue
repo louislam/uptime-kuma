@@ -144,33 +144,17 @@
                         </div>
                     </div>
 
-                    <template v-if="dbConfig.ssl">
-                        <div class="form-floating mt-3 short">
-                            <textarea
-                                id="caInput"
-                                v-model="dbConfig.ca"
-                                class="form-control"
-                                placeholder="-----BEGIN CERTIFICATE-----"
-                                style="height: 120px; font-family: monospace; font-size: 11px"
-                            ></textarea>
-                            <label for="caInput">{{ $t("caCertificate") }}</label>
-                        </div>
-
-                        <div class="short text-start mt-1">
-                            <div
-                                class="alert alert-secondary py-2 px-3 mb-0"
-                                role="alert"
-                                style="font-size: 0.8rem; line-height: 1.3"
-                            >
-                                <font-awesome-icon icon="info-circle" class="me-1" />
-                                <strong>{{ $t("selfSigned") }}?</strong>
-                                {{ $t("caFormatInstruction") }}
-                                <br />
-                                <strong>{{ $t("trusted") }} ?</strong>
-                                {{ $t("caBlankInstruction") }}
-                            </div>
-                        </div>
-                    </template>
+                    <div class="form-floating mt-3 short"  v-if="dbConfig.ssl">
+                        <textarea
+                            id="caInput"
+                            v-model="dbConfig.ca"
+                            class="form-control"
+                            placeholder="-----BEGIN CERTIFICATE-----"
+                            style="height: 120px"
+                        ></textarea>
+                        <label for="caInput">{{ $t("mariadbCaCertificateLabel") }}</label>
+                        <div class="form-text">{{ $t("mariadbCaCertificateHelptext") }}</div>
+                    </div>
                 </template>
 
                 <button class="btn btn-primary mt-4 short" type="submit" :disabled="disabledButton">
