@@ -9,11 +9,14 @@
                 {{ $t("proxyDescription") }}
             </p>
 
-            <ul class="list-group mb-3" style="border-radius: 1rem;">
+            <ul class="list-group mb-3" style="border-radius: 1rem">
                 <li v-for="(proxy, index) in $root.proxyList" :key="index" class="list-group-item">
                     {{ proxy.host }}:{{ proxy.port }} ({{ proxy.protocol }})
-                    <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("Default") }}</span><br>
+                    <span v-if="proxy.default === true" class="badge bg-primary ms-2">{{ $t("Default") }}</span>
+                    <br />
                     <a href="#" @click="$refs.proxyDialog.show(proxy.id)">{{ $t("Edit") }}</a>
+                    |
+                    <a href="#" @click="$refs.proxyDialog.showClone(proxy.id)">{{ $t("Clone") }}</a>
                 </li>
             </ul>
 
@@ -31,7 +34,7 @@ import ProxyDialog from "../../components/ProxyDialog.vue";
 
 export default {
     components: {
-        ProxyDialog
+        ProxyDialog,
     },
 };
 </script>

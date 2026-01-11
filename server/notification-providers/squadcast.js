@@ -3,24 +3,22 @@ const axios = require("axios");
 const { DOWN } = require("../../src/util");
 
 class Squadcast extends NotificationProvider {
-
     name = "squadcast";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
 
         try {
-
             let config = {};
             let data = {
                 message: msg,
                 description: "",
                 tags: {},
                 heartbeat: heartbeatJSON,
-                source: "uptime-kuma"
+                source: "uptime-kuma",
             };
 
             if (heartbeatJSON !== null) {
@@ -35,45 +33,25 @@ class Squadcast extends NotificationProvider {
                     data.status = "resolve";
                 }
 
-                let address;
-                switch (monitorJSON["type"]) {
-                    case "ping":
-                        address = monitorJSON["hostname"];
-                        break;
-                    case "port":
-                    case "dns":
-                    case "steam":
-                        address = monitorJSON["hostname"];
-                        if (monitorJSON["port"]) {
-                            address += ":" + monitorJSON["port"];
-                        }
-                        break;
-                    default:
-                        address = monitorJSON["url"];
-                        break;
-                }
+                data.tags["AlertAddress"] = this.extractAddress(monitorJSON);
 
-                data.tags["AlertAddress"] = address;
-
-                monitorJSON["tags"].forEach(tag => {
+                monitorJSON["tags"].forEach((tag) => {
                     data.tags[tag["name"]] = {
-                        value: tag["value"]
+                        value: tag["value"],
                     };
                     if (tag["color"] !== null) {
                         data.tags[tag["name"]]["color"] = tag["color"];
                     }
                 });
             }
+            config = this.getAxiosConfigWithProxy(config);
 
             await axios.post(notification.squadcastWebhookURL, data, config);
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
-
     }
-
 }
 
 module.exports = Squadcast;

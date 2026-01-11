@@ -2,7 +2,6 @@
 
 import fs from "fs";
 import util from "util";
-import rmSync from "../fs-rmSync.js";
 
 /**
  * Copy across the required language files
@@ -16,7 +15,10 @@ import rmSync from "../fs-rmSync.js";
  */
 function copyFiles(langCode, baseLang) {
     if (fs.existsSync("./languages")) {
-        rmSync("./languages", { recursive: true });
+        fs.rmSync("./languages", {
+            recursive: true,
+            force: true,
+        });
     }
     fs.mkdirSync("./languages");
 
@@ -52,13 +54,13 @@ async function updateLanguage(langCode, baseLangCode) {
     } else {
         console.log("Empty file");
         obj = {
-            languageName: "<Your Language name in your language (not in English)>"
+            languageName: "<Your Language name in your language (not in English)>",
         };
     }
 
     // En first
     for (const key in en) {
-        if (! obj[key]) {
+        if (!obj[key]) {
             obj[key] = en[key];
         }
     }
@@ -66,15 +68,17 @@ async function updateLanguage(langCode, baseLangCode) {
     if (baseLang !== en) {
         // Base second
         for (const key in baseLang) {
-            if (! obj[key]) {
+            if (!obj[key]) {
                 obj[key] = key;
             }
         }
     }
 
-    const code = "export default " + util.inspect(obj, {
-        depth: null,
-    });
+    const code =
+        "export default " +
+        util.inspect(obj, {
+            depth: null,
+        });
 
     fs.writeFileSync(`../../src/languages/${file}`, code);
 }
@@ -93,6 +97,9 @@ console.log("Updating: " + langCode);
 
 copyFiles(langCode, baseLangCode);
 await updateLanguage(langCode, baseLangCode);
-rmSync("./languages", { recursive: true });
+fs.rmSync("./languages", {
+    recursive: true,
+    force: true,
+});
 
 console.log("Done. Fixing formatting by ESLint...");

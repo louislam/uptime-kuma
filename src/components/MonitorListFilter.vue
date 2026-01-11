@@ -4,7 +4,7 @@
             type="button"
             :title="$t('Clear current filters')"
             class="clear-filters-btn btn"
-            :class="{ 'active': numFiltersActive > 0}"
+            :class="{ active: numFiltersActive > 0 }"
             tabindex="0"
             :disabled="numFiltersActive === 0"
             @click="clearFilters"
@@ -19,7 +19,7 @@
             <template #status>
                 <Status v-if="$router.currentRoute.value.query?.status?.length === 1" :status="$router.currentRoute.value.query?.status[0]" />
                 <span v-else>
-                    {{ $t('Status') }}
+                    {{ $t("Status") }}
                 </span>
             </template>
             <template #dropdown>
@@ -141,7 +141,7 @@
                     :item="tagsList.find(tag => tag.id === +$router.currentRoute.value.query?.tags?.split?.(',')?.[0])" :size="'sm'"
                 />
                 <span v-else>
-                    {{ $t('Tags') }}
+                    {{ $t("Tags") }}
                 </span>
             </template>
             <template #dropdown>
@@ -165,7 +165,7 @@
                 </li>
                 <li v-if="tagsList.length === 0">
                     <div class="dropdown-item disabled px-3">
-                        {{ $t('No tags found.') }}
+                        {{ $t("No tags found.") }}
                     </div>
                 </li>
             </template>
@@ -264,11 +264,11 @@ export default {
             });
         },
         getTaggedMonitorCount(tag) {
-            return Object.values(this.$root.monitorList).filter(monitor => {
-                return monitor.tags.find(monitorTag => monitorTag.tag_id === tag.id);
+            return Object.values(this.$root.monitorList).filter((monitor) => {
+                return monitor.tags.find((monitorTag) => monitorTag.tag_id === tag.id);
             }).length;
-        }
-    }
+        },
+    },
 };
 </script>
 

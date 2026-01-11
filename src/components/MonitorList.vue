@@ -2,7 +2,12 @@
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
             <div class="header-top">
-                <button class="btn btn-outline-normal ms-2" :class="{ 'active': selectMode }" type="button" @click="selectMode = !selectMode">
+                <button
+                    class="btn btn-outline-normal ms-2"
+                    :class="{ active: selectMode }"
+                    type="button"
+                    @click="selectMode = !selectMode"
+                >
                     {{ $t("Select") }}
                 </button>
 
@@ -31,23 +36,32 @@
 
             <!-- Selection Controls -->
             <div v-if="selectMode" class="selection-controls px-2 pt-2">
-                <input
-                    v-model="selectAll"
-                    class="form-check-input select-input"
-                    type="checkbox"
-                />
+                <input v-model="selectAll" class="form-check-input select-input" type="checkbox" />
 
-                <button class="btn-outline-normal" @click="pauseDialog"><font-awesome-icon icon="pause" size="sm" /> {{ $t("Pause") }}</button>
-                <button class="btn-outline-normal" @click="resumeSelected"><font-awesome-icon icon="play" size="sm" /> {{ $t("Resume") }}</button>
+                <button class="btn-outline-normal" @click="pauseDialog">
+                    <font-awesome-icon icon="pause" size="sm" />
+                    {{ $t("Pause") }}
+                </button>
+                <button class="btn-outline-normal" @click="resumeSelected">
+                    <font-awesome-icon icon="play" size="sm" />
+                    {{ $t("Resume") }}
+                </button>
 
                 <span v-if="selectedMonitorCount > 0">
-                    {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
+                    {{ $t("selectedMonitorCount", [selectedMonitorCount]) }}
                 </span>
             </div>
         </div>
-        <div ref="monitorList" class="monitor-list" :class="{ scrollbar: scrollbar }" :style="monitorListStyle">
+        <div
+            ref="monitorList"
+            class="monitor-list"
+            :class="{ scrollbar: scrollbar }"
+            :style="monitorListStyle"
+            data-testid="monitor-list"
+        >
             <div v-if="Object.keys($root.monitorList).length === 0" class="text-center mt-3">
-                {{ $t("No Monitors, please") }} <router-link to="/add">{{ $t("add one") }}</router-link>
+                {{ $t("No Monitors, please") }}
+                <router-link to="/add">{{ $t("add one") }}</router-link>
             </div>
 
             <MonitorListItem
@@ -114,7 +128,6 @@ export default {
                     height: "calc(100vh - 160px)",
                 };
             }
-
         },
 
         /**
@@ -124,7 +137,7 @@ export default {
         sortedMonitorList() {
             let result = Object.values(this.$root.monitorList);
 
-            result = result.filter(monitor => {
+            result = result.filter((monitor) => {
                 // The root list does not show children
                 if (monitor.parent !== null) {
                     return false;
@@ -151,7 +164,7 @@ export default {
             }
 
             return {
-                "height": `calc(100% - ${listHeaderHeight}px)`
+                height: `calc(100% - ${listHeaderHeight}px)`,
             };
         },
 
@@ -336,8 +349,8 @@ export default {
          */
         pauseSelected() {
             Object.keys(this.selectedMonitors)
-                .filter(id => this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
+                .filter((id) => this.$root.monitorList[id].active)
+                .forEach((id) => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
 
             this.cancelSelectMode();
         },
@@ -347,8 +360,8 @@ export default {
          */
         resumeSelected() {
             Object.keys(this.selectedMonitors)
-                .filter(id => !this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+                .filter((id) => !this.$root.monitorList[id].active)
+                .forEach((id) => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
 
             this.cancelSelectMode();
         },
@@ -360,7 +373,7 @@ export default {
         filterFunc(monitor) {
             // Group monitors bypass filter if at least 1 of children matched
             if (monitor.type === "group") {
-                const children = Object.values(this.$root.monitorList).filter(m => m.parent === monitor.id);
+                const children = Object.values(this.$root.monitorList).filter((m) => m.parent === monitor.id);
                 if (children.some((child, index, children) => this.filterFunc(child))) {
                     return true;
                 }
@@ -372,9 +385,12 @@ export default {
             if (this.searchText !== "") {
                 const loweredSearchText = this.searchText.toLowerCase();
                 searchTextMatch =
-                    monitor.name.toLowerCase().includes(loweredSearchText)
-                    || monitor.tags.find(tag => tag.name.toLowerCase().includes(loweredSearchText)
-                        || tag.value?.toLowerCase().includes(loweredSearchText));
+                    monitor.name.toLowerCase().includes(loweredSearchText) ||
+                    monitor.tags.find(
+                        (tag) =>
+                            tag.name.toLowerCase().includes(loweredSearchText) ||
+                            tag.value?.toLowerCase().includes(loweredSearchText)
+                    );
             }
 
             // filter by status
@@ -430,7 +446,7 @@ export default {
             }
 
             return m1.name.localeCompare(m2.name);
-        }
+        },
     },
 };
 </script>

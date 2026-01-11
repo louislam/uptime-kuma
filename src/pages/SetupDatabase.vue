@@ -3,9 +3,7 @@
         <form @submit.prevent="submit">
             <div>
                 <object width="64" height="64" data="/icon.svg" />
-                <div style="font-size: 28px; font-weight: bold; margin-top: 5px;">
-                    Uptime Kuma
-                </div>
+                <div style="font-size: 28px; font-weight: bold; margin-top: 5px">Uptime Kuma</div>
             </div>
 
             <div v-if="info.runningSetup" class="mt-5">
@@ -33,24 +31,39 @@
                     {{ $t("setupDatabaseChooseDatabase") }}
                 </p>
 
-                <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                <div class="btn-group" role="group" :aria-label="$t('Basic radio toggle button group')">
                     <template v-if="info.isEnabledEmbeddedMariaDB">
-                        <input id="btnradio3" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="embedded-mariadb">
+                        <input
+                            id="btnradio3"
+                            v-model="dbConfig.type"
+                            type="radio"
+                            class="btn-check"
+                            autocomplete="off"
+                            value="embedded-mariadb"
+                        />
 
-                        <label class="btn btn-outline-primary" for="btnradio3">
-                            Embedded MariaDB
-                        </label>
+                        <label class="btn btn-outline-primary" for="btnradio3">Embedded MariaDB</label>
                     </template>
 
-                    <input id="btnradio2" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="mariadb">
-                    <label class="btn btn-outline-primary" for="btnradio2">
-                        MariaDB/MySQL
-                    </label>
+                    <input
+                        id="btnradio2"
+                        v-model="dbConfig.type"
+                        type="radio"
+                        class="btn-check"
+                        autocomplete="off"
+                        value="mariadb"
+                    />
+                    <label class="btn btn-outline-primary" for="btnradio2">MariaDB/MySQL</label>
 
-                    <input id="btnradio1" v-model="dbConfig.type" type="radio" class="btn-check" autocomplete="off" value="sqlite">
-                    <label class="btn btn-outline-primary" for="btnradio1">
-                        SQLite
-                    </label>
+                    <input
+                        id="btnradio1"
+                        v-model="dbConfig.type"
+                        type="radio"
+                        class="btn-check"
+                        autocomplete="off"
+                        value="sqlite"
+                    />
+                    <label class="btn btn-outline-primary" for="btnradio1">SQLite</label>
                 </div>
 
                 <div v-if="dbConfig.type === 'embedded-mariadb'" class="mt-3 short">
@@ -67,28 +80,82 @@
 
                 <template v-if="dbConfig.type === 'mariadb'">
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.hostname" type="text" class="form-control" required>
+                        <input
+                            id="floatingInput"
+                            v-model="dbConfig.hostname"
+                            type="text"
+                            class="form-control"
+                            required
+                        />
                         <label for="floatingInput">{{ $t("Hostname") }}</label>
                     </div>
 
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required>
+                        <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required />
                         <label for="floatingInput">{{ $t("Port") }}</label>
                     </div>
 
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.username" type="text" class="form-control" required>
+                        <input
+                            id="floatingInput"
+                            v-model="dbConfig.username"
+                            type="text"
+                            class="form-control"
+                            required
+                        />
                         <label for="floatingInput">{{ $t("Username") }}</label>
                     </div>
 
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.password" type="password" class="form-control" required>
+                        <input
+                            id="floatingInput"
+                            v-model="dbConfig.password"
+                            type="password"
+                            class="form-control"
+                            required
+                        />
                         <label for="floatingInput">{{ $t("Password") }}</label>
                     </div>
 
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.dbName" type="text" class="form-control" required>
+                        <input id="floatingInput" v-model="dbConfig.dbName" type="text" class="form-control" required />
                         <label for="floatingInput">{{ $t("dbName") }}</label>
+                    </div>
+
+                    <div class="mt-3 short text-start">
+                        <div class="form-check form-switch ps-0" style="height: auto; display: block; padding: 0">
+                            <div class="d-flex align-items-center">
+                                <input
+                                    id="sslCheck"
+                                    v-model="dbConfig.ssl"
+                                    type="checkbox"
+                                    role="switch"
+                                    class="form-check-input ms-0 me-2"
+                                    style="float: none"
+                                />
+                                <label class="form-check-label fw-bold" for="sslCheck">
+                                    {{ $t("enableSSL") }}
+                                    <span class="fw-normal text-muted" style="font-size: 0.9em">
+                                        ({{ $t("Optional") }})
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="form-text mt-1">
+                                {{ $t("mariadbUseSSLHelptext") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="dbConfig.ssl" class="form-floating mt-3 short">
+                        <textarea
+                            id="caInput"
+                            v-model="dbConfig.ca"
+                            class="form-control"
+                            placeholder="-----BEGIN CERTIFICATE-----"
+                            style="height: 120px"
+                        ></textarea>
+                        <label for="caInput">{{ $t("mariadbCaCertificateLabel") }}</label>
+                        <div class="form-text">{{ $t("mariadbCaCertificateHelptext") }}</div>
                     </div>
                 </template>
 
@@ -117,6 +184,8 @@ export default {
                 username: "",
                 password: "",
                 dbName: "kuma",
+                ssl: false,
+                ca: "",
             },
             info: {
                 needSetup: false,
@@ -155,7 +224,6 @@ export default {
             } finally {
                 this.info.runningSetup = false;
             }
-
         },
 
         async goToMainServerWhenReady() {
@@ -180,7 +248,7 @@ export default {
 
         test() {
             this.$root.toastError("not implemented");
-        }
+        },
     },
 };
 </script>
@@ -221,6 +289,14 @@ export default {
     > .form-control {
         padding-left: 1.3rem;
     }
+}
+
+.form-check {
+    height: calc(3.5rem + 2px);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 }
 
 .short {

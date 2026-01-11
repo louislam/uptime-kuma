@@ -5,10 +5,10 @@ const saltRounds = 10;
 /**
  * Hash a password
  * @param {string} password Password to hash
- * @returns {string} Hash
+ * @returns {Promise<string>} Hash
  */
 exports.generate = function (password) {
-    return bcrypt.hashSync(password, saltRounds);
+    return bcrypt.hash(password, saltRounds);
 };
 
 /**
@@ -31,7 +31,7 @@ exports.verify = function (password, hash) {
  * @returns {boolean} Is SHA1 hash?
  */
 function isSHA1(hash) {
-    return (typeof hash === "string" && hash.startsWith("sha1"));
+    return typeof hash === "string" && hash.startsWith("sha1");
 }
 
 /**

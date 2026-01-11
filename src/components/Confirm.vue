@@ -6,17 +6,17 @@
                     <h5 id="exampleModalLabel" class="modal-title">
                         {{ title || $t("Confirm") }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                 </div>
                 <div class="modal-body">
                     <slot />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn" :class="btnStyle" data-bs-dismiss="modal" @click="yes">
-                        {{ yesText }}
+                        {{ yesText || $t("Yes") }}
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="no">
-                        {{ noText }}
+                        {{ noText || $t("No") }}
                     </button>
                 </div>
             </div>
@@ -37,20 +37,20 @@ export default {
         /** Text to use as yes */
         yesText: {
             type: String,
-            default: "Yes",     // TODO: No idea what to translate this
+            default: null,
         },
         /** Text to use as no */
         noText: {
             type: String,
-            default: "No",
+            default: null,
         },
         /** Title to show on modal. Defaults to translated version of "Config" */
         title: {
             type: String,
             default: null,
-        }
+        },
     },
-    emits: [ "yes", "no" ],
+    emits: ["yes", "no"],
     data: () => ({
         modal: null,
     }),
@@ -78,7 +78,7 @@ export default {
          */
         no() {
             this.$emit("no");
-        }
+        },
     },
 };
 </script>

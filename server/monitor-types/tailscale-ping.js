@@ -2,23 +2,13 @@ const { MonitorType } = require("./monitor-type");
 const { UP } = require("../../src/util");
 const childProcessAsync = require("promisify-child-process");
 
-/**
- * A TailscalePing class extends the MonitorType.
- * It runs Tailscale ping to monitor the status of a specific node.
- */
 class TailscalePing extends MonitorType {
-
     name = "tailscale-ping";
 
     /**
-     * Checks the ping status of the URL associated with the monitor.
-     * It then parses the Tailscale ping command output to update the heatrbeat.
-     * @param {object} monitor The monitor object associated with the check.
-     * @param {object} heartbeat The heartbeat object to update.
-     * @returns {Promise<void>}
-     * @throws Will throw an error if checking Tailscale ping encounters any error
+     * @inheritdoc
      */
-    async check(monitor, heartbeat) {
+    async check(monitor, heartbeat, _server) {
         try {
             let tailscaleOutput = await this.runTailscalePing(monitor.hostname, monitor.interval);
             this.parseTailscaleOutput(tailscaleOutput, heartbeat);
@@ -37,11 +27,11 @@ class TailscalePing extends MonitorType {
      */
     async runTailscalePing(hostname, interval) {
         let timeout = interval * 1000 * 0.8;
-        let res = await childProcessAsync.spawn("tailscale", [ "ping", "--c", "1", hostname ], {
+        let res = await childProcessAsync.spawn("tailscale", ["ping", "--c", "1", hostname], {
             timeout: timeout,
             encoding: "utf8",
         });
-        if (res.stderr && res.stderr.toString()) {
+        if (res.stderr && res.stderr.toString() && res.code !== 0) {
             throw new Error(`Error in output: ${res.stderr.toString()}`);
         }
         if (res.stdout && res.stdout.toString()) {

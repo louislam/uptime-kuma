@@ -4,17 +4,13 @@
         "newLine": "LF",
         "target": "es2018",
         "module": "commonjs",
-        "lib": [
-            "es2020",
-            "DOM"
-        ],
+        "lib": ["es2020", "DOM"],
         "declaration": false,
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": false,
-        "strict": true
+        "strict": true,
+        "esModuleInterop": true
     },
-    "files": [
-        "./src/util.ts"
-    ]
+    "files": []
 }

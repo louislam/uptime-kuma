@@ -1,10 +1,11 @@
 {
-    "extends": "stylelint-config-standard",
+    "extends": [
+        "stylelint-config-standard",
+        "stylelint-config-prettier"
+    ],
     "customSyntax": "postcss-html",
     "rules": {
-        "indentation": 4,
         "no-descending-specificity": null,
-        "selector-list-comma-newline-after": null,
         "declaration-empty-line-before": null,
         "alpha-value-notation": "number",
         "color-function-notation": "legacy",

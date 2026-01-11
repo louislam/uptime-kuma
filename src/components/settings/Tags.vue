@@ -1,11 +1,20 @@
 <template>
     <div class="my-4">
         <div class="mx-0 mx-lg-4 pt-1 mb-4">
-            <button class="btn btn-primary" @click.stop="addTag"><font-awesome-icon icon="plus" /> {{ $t("Add New Tag") }}</button>
+            <button class="btn btn-primary" @click.stop="addTag">
+                <font-awesome-icon icon="plus" />
+                {{ $t("Add New Tag") }}
+            </button>
         </div>
 
         <div class="tags-list my-3">
-            <div v-for="(tag, index) in tagsList" :key="tag.id" class="d-flex align-items-center mx-0 mx-lg-4 py-1 tags-list-row" :disabled="processing" @click="editTag(index)">
+            <div
+                v-for="(tag, index) in tagsList"
+                :key="tag.id"
+                class="d-flex align-items-center mx-0 mx-lg-4 py-1 tags-list-row"
+                :disabled="processing"
+                @click="editTag(index)"
+            >
                 <div class="col-10 col-sm-5">
                     <Tag :item="tag" />
                 </div>
@@ -13,7 +22,12 @@
                     <div>{{ monitorsByTag(tag.id).length }} {{ $tc("Monitor", monitorsByTag(tag.id).length) }}</div>
                 </div>
                 <div class="col-2 pe-2 pe-lg-3 d-flex justify-content-end">
-                    <button type="button" class="btn-rm-tag btn btn-outline-danger ms-2 py-1" :disabled="processing" @click.stop="deleteConfirm(index)">
+                    <button
+                        type="button"
+                        class="btn-rm-tag btn btn-outline-danger ms-2 py-1"
+                        :disabled="processing"
+                        @click.stop="deleteConfirm(index)"
+                    >
                         <font-awesome-icon class="" icon="trash" />
                     </button>
                 </div>
@@ -140,7 +154,7 @@ export default {
          */
         monitorsByTag(tagId) {
             return Object.values(this.$root.monitorList).filter((monitor) => {
-                return monitor.tags.find(monitorTag => monitorTag.tag_id === tagId);
+                return monitor.tags.find((monitorTag) => monitorTag.tag_id === tagId);
             });
         },
     },
@@ -171,5 +185,4 @@ export default {
         background-color: $dark-bg2;
     }
 }
-
 </style>

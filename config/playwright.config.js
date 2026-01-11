@@ -1,11 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const port = 30001;
-const url = `http://localhost:${port}`;
+export const url = `http://localhost:${port}`;
 
 export default defineConfig({
     // Look for test files in the "tests" directory, relative to this configuration file.
-    testDir: "../test/e2e",
+    testDir: "../test/e2e/specs",
     outputDir: "../private/playwright-test-results",
     fullyParallel: false,
     locale: "en-US",
@@ -22,10 +22,11 @@ export default defineConfig({
     // Reporter to use
     reporter: [
         [
-            "html", {
+            "html",
+            {
                 outputFolder: "../private/playwright-report",
                 open: "never",
-            }
+            },
         ],
     ],
 
@@ -40,8 +41,14 @@ export default defineConfig({
     // Configure projects for major browsers.
     projects: [
         {
-            name: "chromium",
+            name: "run-once setup",
+            testMatch: /setup-process\.once\.js/,
             use: { ...devices["Desktop Chrome"] },
+        },
+        {
+            name: "specs",
+            use: { ...devices["Desktop Chrome"] },
+            dependencies: ["run-once setup"],
         },
         /*
         {
@@ -52,7 +59,7 @@ export default defineConfig({
 
     // Run your local dev server before starting the tests.
     webServer: {
-        command: `node extra/remove-playwright-test-data.js && node server/server.js --port=${port} --data-dir=./data/playwright-test`,
+        command: `node extra/remove-playwright-test-data.js && cross-env NODE_ENV=development node server/server.js --port=${port} --data-dir=./data/playwright-test`,
         url,
         reuseExistingServer: false,
         cwd: "../",

@@ -18,7 +18,7 @@ const github = require("@actions/github");
             await client.issues.listLabelsOnIssue({
                 owner: issue.owner,
                 repo: issue.repo,
-                issue_number: issue.number
+                issue_number: issue.number,
             })
         ).data.map(({ name }) => name);
 
@@ -29,7 +29,7 @@ const github = require("@actions/github");
                 owner: issue.owner,
                 repo: issue.repo,
                 issue_number: issue.number,
-                labels: [ "invalid-format" ]
+                labels: ["invalid-format"],
             });
 
             // Add the issue closing comment
@@ -37,7 +37,7 @@ const github = require("@actions/github");
                 owner: issue.owner,
                 repo: issue.repo,
                 issue_number: issue.number,
-                body: `@${username}: Hello! :wave:\n\nThis issue is being automatically closed because it does not follow the issue template. Please **DO NOT open blank issues and use our [issue-templates](https://github.com/louislam/uptime-kuma/issues/new/choose) instead**.\nBlank Issues do not contain the context nessesary for a good discussions.`
+                body: `@${username}: Hello! :wave:\n\nThis issue is being automatically closed because it does not follow the issue template. Please **DO NOT open blank issues and use our [issue-templates](https://github.com/louislam/uptime-kuma/issues/new/choose) instead**.\nBlank Issues do not contain the context necessary for a good discussions.`,
             });
 
             // Close the issue
@@ -45,7 +45,7 @@ const github = require("@actions/github");
                 owner: issue.owner,
                 repo: issue.repo,
                 issue_number: issue.number,
-                state: "closed"
+                state: "closed",
             });
         } else {
             console.log("Pass!");
@@ -53,5 +53,4 @@ const github = require("@actions/github");
     } catch (e) {
         console.log(e);
     }
-
 })();

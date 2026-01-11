@@ -146,7 +146,7 @@ function ApiCache() {
         let groupName = req.apicacheGroup;
 
         if (groupName) {
-            debug("group detected \"" + groupName + "\"");
+            debug('group detected "' + groupName + '"');
             let group = (index.groups[groupName] = index.groups[groupName] || []);
             group.unshift(key);
         }
@@ -219,9 +219,12 @@ function ApiCache() {
         }
 
         // add automatic cache clearing from duration, includes max limit on setTimeout
-        timers[key] = setTimeout(function () {
-            instance.clear(key, true);
-        }, Math.min(duration, 2147483647));
+        timers[key] = setTimeout(
+            function () {
+                instance.clear(key, true);
+            },
+            Math.min(duration, 2147483647)
+        );
     }
 
     /**
@@ -246,10 +249,7 @@ function ApiCache() {
                     oldContent = !Buffer.alloc ? new Buffer(0) : Buffer.alloc(0);
                 }
 
-                res._apicache.content = Buffer.concat(
-                    [oldContent, content],
-                    oldContent.length + content.length
-                );
+                res._apicache.content = Buffer.concat([oldContent, content], oldContent.length + content.length);
             } else {
                 res._apicache.content = content;
             }
@@ -268,7 +268,7 @@ function ApiCache() {
      * @param {function(Object, Object):boolean} toggle
      */
     function makeResponseCacheable(req, res, next, key, duration, strDuration, toggle) {
-    // monkeypatch res.end to create cache object
+        // monkeypatch res.end to create cache object
         res._apicache = {
             write: res.write,
             writeHead: res.writeHead,
@@ -310,17 +310,12 @@ function ApiCache() {
                 if (res._apicache.cacheable && res._apicache.content) {
                     addIndexEntries(key, req);
                     let headers = res._apicache.headers || getSafeHeaders(res);
-                    let cacheObject = createCacheObject(
-                        res.statusCode,
-                        headers,
-                        res._apicache.content,
-                        encoding
-                    );
+                    let cacheObject = createCacheObject(res.statusCode, headers, res._apicache.content, encoding);
                     cacheResponse(key, cacheObject, duration);
 
                     // display log entry
                     let elapsed = new Date() - req.apicacheTimer;
-                    debug("adding cache entry for \"" + key + "\" @ " + strDuration, logDuration(elapsed));
+                    debug('adding cache entry for "' + key + '" @ ' + strDuration, logDuration(elapsed));
                     debug("_apicache.headers: ", res._apicache.headers);
                     debug("res.getHeaders(): ", getSafeHeaders(res));
                     debug("cacheObject: ", cacheObject);
@@ -366,8 +361,7 @@ function ApiCache() {
         // unstringify buffers
         let data = cacheObject.data;
         if (data && data.type === "Buffer") {
-            data =
-        typeof data.data === "number" ? new Buffer.alloc(data.data) : new Buffer.from(data.data);
+            data = typeof data.data === "number" ? new Buffer.alloc(data.data) : new Buffer.from(data.data);
         }
 
         // test Etag against If-None-Match for 304
@@ -402,10 +396,10 @@ function ApiCache() {
         let redis = globalOptions.redisClient;
 
         if (group) {
-            debug("clearing group \"" + target + "\"");
+            debug('clearing group "' + target + '"');
 
             group.forEach(function (key) {
-                debug("clearing cached entry for \"" + key + "\"");
+                debug('clearing cached entry for "' + key + '"');
                 clearTimeout(timers[key]);
                 delete timers[key];
                 if (!globalOptions.redisClient) {
@@ -414,7 +408,7 @@ function ApiCache() {
                     try {
                         redis.del(key);
                     } catch (err) {
-                        console.log("[apicache] error in redis.del(\"" + key + "\")");
+                        console.log('[apicache] error in redis.del("' + key + '")');
                     }
                 }
                 index.all = index.all.filter(doesntMatch(key));
@@ -422,7 +416,7 @@ function ApiCache() {
 
             delete index.groups[target];
         } else if (target) {
-            debug("clearing " + (isAutomatic ? "expired" : "cached") + " entry for \"" + target + "\"");
+            debug("clearing " + (isAutomatic ? "expired" : "cached") + ' entry for "' + target + '"');
             clearTimeout(timers[target]);
             delete timers[target];
             // clear actual cached entry
@@ -432,7 +426,7 @@ function ApiCache() {
                 try {
                     redis.del(target);
                 } catch (err) {
-                    console.log("[apicache] error in redis.del(\"" + target + "\")");
+                    console.log('[apicache] error in redis.del("' + target + '")');
                 }
             }
 
@@ -461,7 +455,7 @@ function ApiCache() {
                     try {
                         redis.del(key);
                     } catch (err) {
-                        console.log("[apicache] error in redis.del(\"" + key + "\")");
+                        console.log('[apicache] error in redis.del("' + key + '")');
                     }
                 });
             }
@@ -485,7 +479,7 @@ function ApiCache() {
         }
 
         if (typeof duration === "string") {
-            let split = duration.match(/^([\d\.,]+)\s?(\w+)$/);
+            let split = duration.match(/^([\d\.,]+)\s?([a-zA-Z]+)$/);
 
             if (split.length === 3) {
                 let len = parseFloat(split[1]);
@@ -511,15 +505,15 @@ function ApiCache() {
     };
 
     /**
-   * Return cache performance statistics (hit rate).  Suitable for
-   * putting into a route:
-   * <code>
-   * app.get('/api/cache/performance', (req, res) => {
-   *    res.json(apicache.getPerformance())
-   * })
-   * </code>
-   * @returns {any[]}
-   */
+     * Return cache performance statistics (hit rate).  Suitable for
+     * putting into a route:
+     * <code>
+     * app.get('/api/cache/performance', (req, res) => {
+     *    res.json(apicache.getPerformance())
+     * })
+     * </code>
+     * @returns {any[]}
+     */
     this.getPerformance = function () {
         return performanceArray.map(function (p) {
             return p.report();
@@ -528,7 +522,7 @@ function ApiCache() {
 
     /**
      * Get index of a group
-     * @param {string} group 
+     * @param {string} group
      * @returns {number}
      */
     this.getIndex = function (group) {
@@ -543,9 +537,9 @@ function ApiCache() {
      * Express middleware
      * @param {(string|number)} strDuration Duration to cache responses
      * for.
-     * @param {function(Object, Object):boolean} middlewareToggle 
+     * @param {function(Object, Object):boolean} middlewareToggle
      * @param {Object} localOptions Options for APICache
-     * @returns 
+     * @returns
      */
     this.middleware = function cache(strDuration, middlewareToggle, localOptions) {
         let duration = instance.getDuration(strDuration);
@@ -762,8 +756,8 @@ function ApiCache() {
             }
             if (
                 req.headers["x-apicache-bypass"] ||
-        req.headers["x-apicache-force-fetch"] ||
-        (opt.respectCacheControl && req.headers["cache-control"] == "no-cache")
+                req.headers["x-apicache-force-fetch"] ||
+                (opt.respectCacheControl && req.headers["cache-control"] == "no-cache")
             ) {
                 return bypass();
             }
@@ -830,15 +824,7 @@ function ApiCache() {
                             );
                         } else {
                             perf.miss(key);
-                            return makeResponseCacheable(
-                                req,
-                                res,
-                                next,
-                                key,
-                                duration,
-                                strDuration,
-                                middlewareToggle
-                            );
+                            return makeResponseCacheable(req, res, next, key, duration, strDuration, middlewareToggle);
                         }
                     });
                 } catch (err) {
@@ -859,7 +845,7 @@ function ApiCache() {
 
     /**
      * Process options
-     * @param {Object} options 
+     * @param {Object} options
      * @returns {Object}
      */
     this.options = function (options) {

@@ -2,30 +2,36 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 
 class SerwerSMS extends NotificationProvider {
-
     name = "serwersms";
 
     /**
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        let okMsg = "Sent Successfully.";
+        const okMsg = "Sent Successfully.";
+        const url = "https://api2.serwersms.pl/messages/send_sms";
 
         try {
             let config = {
                 headers: {
                     "Content-Type": "application/json",
-                }
+                },
             };
+            config = this.getAxiosConfigWithProxy(config);
             let data = {
-                "username": notification.serwersmsUsername,
-                "password": notification.serwersmsPassword,
-                "phone": notification.serwersmsPhoneNumber,
-                "text": msg.replace(/[^\x00-\x7F]/g, ""),
-                "sender": notification.serwersmsSenderName,
+                username: notification.serwersmsUsername,
+                password: notification.serwersmsPassword,
+                text: msg.replace(/[^\x00-\x7F]/g, ""),
+                sender: notification.serwersmsSenderName,
             };
 
-            let resp = await axios.post("https://api2.serwersms.pl/messages/send_sms", data, config);
+            if (notification.serwersmsRecipientType === "group") {
+                data.group_id = notification.serwersmsGroupId;
+            } else {
+                data.phone = notification.serwersmsPhoneNumber;
+            }
+
+            let resp = await axios.post(url, data, config);
 
             if (!resp.data.success) {
                 if (resp.data.error) {
