@@ -135,7 +135,7 @@
                                 />
                                 <label class="form-check-label fw-bold" for="sslCheck">
                                     {{ $t("enableSSL") }}
-                                    <span class="fw-normal text-muted" style="font-size: 0.9em">(Optional)</span>
+                                    <span class="fw-normal text-muted" style="font-size: 0.9em">({{ $t("Optional") }})</span>
                                 </label>
                             </div>
                             <div class="form-text mt-1">
