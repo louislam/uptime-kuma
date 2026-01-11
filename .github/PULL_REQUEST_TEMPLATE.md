@@ -2,7 +2,7 @@
 
 In this pull request, the following changes are made:
 
-- Fobar was changed to FooFoo, because ...
+- Foobar was changed to FooFoo, because ...
 
 <!--Please link any GitHub issues or tasks that this pull request addresses-->
 
