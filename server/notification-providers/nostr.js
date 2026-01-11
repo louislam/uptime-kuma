@@ -17,15 +17,21 @@ class Nostr extends NotificationProvider {
         // Create NIP-59 gift-wrapped events for each recipient
         // This uses NIP-17 kind 14 (private direct message) wrapped with NIP-59
         // to prevent metadata leakage (sender/recipient public keys are hidden)
+        const createdAt = Math.floor(Date.now() / 1000);
         const events = [];
         for (const recipientPublicKey of recipientsPublicKeys) {
             const event = {
                 kind: 14, // NIP-17 private direct message
-                tags: [["p", recipientPublicKey]],
+                created_at: createdAt,
+                tags: [[ "p", recipientPublicKey ]],
                 content: msg,
             };
-            const wrappedEvent = nip59.wrapEvent(event, senderPrivateKey, recipientPublicKey);
-            events.push(wrappedEvent);
+            try {
+                const wrappedEvent = nip59.wrapEvent(event, senderPrivateKey, recipientPublicKey);
+                events.push(wrappedEvent);
+            } catch (error) {
+                throw new Error(`Failed to create gift-wrapped event for recipient: ${error.message}`);
+            }
         }
 
         // Publish events to each relay
