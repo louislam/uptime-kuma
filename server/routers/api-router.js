@@ -52,6 +52,13 @@ router.all("/api/push/:pushToken", async (request, response) => {
         let statusString = request.query.status || "up";
         const statusFromParam = statusString === "up" ? UP : DOWN;
 
+        // Validate ping value - max 1 billion ms (~11.5 days)
+        // Fits safely in both BIGINT and FLOAT(20,2)
+        const MAX_PING_MS = 1000000000;
+        if (ping !== null && (ping < 0 || ping > MAX_PING_MS)) {
+            throw new Error(`Invalid ping value. Must be between 0 and ${MAX_PING_MS} ms.`);
+        }
+
         let monitor = await R.findOne("monitor", " push_token = ? AND active = 1 ", [pushToken]);
 
         if (!monitor) {
