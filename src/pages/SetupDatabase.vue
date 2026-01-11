@@ -138,8 +138,8 @@
                                     <span class="fw-normal text-muted" style="font-size: 0.9em">(Optional)</span>
                                 </label>
                             </div>
-                            <div class="form-text mt-1" style="font-size: 0.85em; opacity: 0.8">
-                                {{ $t("sslExplanation") }}
+                            <div class="form-text mt-1">
+                                {{ $t("mariadbUseSSLHelptext") }}
                             </div>
                         </div>
                     </div>
