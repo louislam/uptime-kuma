@@ -31,18 +31,4 @@ describe("Monitor response saving", () => {
 
         assert.strictEqual(bean.response, JSON.stringify({ ok: true }));
     });
-
-    test("saveResponseIfEnabled only saves for errors when configured", () => {
-        const monitor = Object.create(Monitor.prototype);
-        monitor.save_response = 0;
-        monitor.save_error_response = 1;
-        monitor.response_max_length = 0;
-
-        const bean = {};
-        monitor.saveResponseIfEnabled(bean, "ok", false);
-        assert.strictEqual(bean.response, undefined);
-
-        monitor.saveResponseIfEnabled(bean, "fail", true);
-        assert.strictEqual(bean.response, "fail");
-    });
 });

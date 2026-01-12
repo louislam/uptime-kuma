@@ -642,7 +642,9 @@ class Monitor extends BeanModel {
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    this.saveResponseIfEnabled(bean, res.data, false);
+                    if (this.getSaveResponse()) {
+                        this.saveResponseData(bean, res.data);
+                    }
 
                     // fallback for if kelog event is not emitted, but we may still have tlsInfo,
                     // e.g. if the connection is made through a proxy
@@ -955,8 +957,8 @@ class Monitor extends BeanModel {
                     bean.msg = error.message;
                 }
 
-                if (error?.response?.data !== undefined) {
-                    this.saveResponseIfEnabled(bean, error.response.data, true);
+                if (this.getSaveErrorResponse() && error?.response?.data !== undefined) {
+                    this.saveResponseData(bean, error.response.data);
                 }
 
                 // If UP come in here, it must be upside down mode
@@ -1148,21 +1150,6 @@ class Monitor extends BeanModel {
         }
 
         bean.response = responseData;
-    }
-
-    /**
-     * Conditionally save response body to a heartbeat based on monitor settings.
-     * @param {import("redbean-node").Bean} bean Heartbeat bean to populate.
-     * @param {unknown} data Response payload.
-     * @param {boolean} isError Whether the response is from an error path.
-     * @returns {void}
-     */
-    saveResponseIfEnabled(bean, data, isError) {
-        if (isError ? !this.getSaveErrorResponse() : !this.getSaveResponse()) {
-            return;
-        }
-
-        this.saveResponseData(bean, data);
     }
 
     /**
