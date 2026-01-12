@@ -526,12 +526,22 @@ export default {
     }
 }
 
+.search-row {
+    display: flex;
+    padding: 10px;
+    padding-bottom: 5px;
+}
+
 .header-top {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     gap: 8px;
     padding: 10px;
+
+    @media (max-width: 550px) {
+        flex-wrap: wrap;
+    }
 }
 
 .select-checkbox-wrapper {
@@ -659,6 +669,12 @@ export default {
     display: flex;
     align-items: center;
     position: relative;
+
+    @media (max-width: 550px) {
+        order: -1;
+        width: 100%;
+        margin-bottom: 8px;
+    }
 }
 
 .search-icon {
@@ -677,6 +693,11 @@ export default {
 .search-input {
     max-width: 15em;
     padding-right: 30px;
+
+    @media (max-width: 550px) {
+        max-width: 100%;
+        width: 100%;
+    }
 }
 
 .monitor-item {
