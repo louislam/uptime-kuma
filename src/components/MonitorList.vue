@@ -3,14 +3,14 @@
         <div class="list-header">
             <div class="header-top">
                 <div class="select-checkbox-wrapper">
-                <input
-	                        v-if="!selectMode"
-	                        v-model="selectMode"
-	                        @change="selectAll = selectMode"
-	                        class="form-check-input"
-	                        type="checkbox"
-	                        :aria-label="$t('selectAllMonitorsAria')"
-	                    />
+                    <input
+                        v-if="!selectMode"
+                        v-model="selectMode"
+                        class="form-check-input"
+                        type="checkbox"
+                        :aria-label="$t('selectAllMonitorsAria')"
+                        @change="selectAll = selectMode"
+                    />
                     <input
                         v-else
                         v-model="selectAll"
@@ -41,10 +41,7 @@
             </div>
 
             <div v-if="selectMode && selectedMonitorCount > 0" class="selected-count-row">
-                <button
-                    class="btn btn-outline-normal"
-                    @click="cancelSelectMode"
-                >
+                <button class="btn btn-outline-normal" @click="cancelSelectMode">
                     {{ $t("Cancel") }}
                 </button>
                 <div class="actions-wrapper ms-2">
@@ -355,7 +352,7 @@ export default {
             }
 
             const activeMonitors = Object.keys(this.selectedMonitors).filter((id) => this.$root.monitorList[id].active);
-            
+
             if (activeMonitors.length === 0) {
                 this.$root.toastError(this.$t("noMonitorsPausedMsg"));
                 return;
@@ -376,8 +373,10 @@ export default {
                 return;
             }
 
-            const inactiveMonitors = Object.keys(this.selectedMonitors).filter((id) => !this.$root.monitorList[id].active);
-            
+            const inactiveMonitors = Object.keys(this.selectedMonitors).filter(
+                (id) => !this.$root.monitorList[id].active
+            );
+
             if (inactiveMonitors.length === 0) {
                 this.$root.toastError(this.$t("noMonitorsResumedMsg"));
                 return;
@@ -399,7 +398,7 @@ export default {
             }
 
             const monitorIds = Object.keys(this.selectedMonitors);
-            
+
             this.bulkActionInProgress = true;
             let successCount = 0;
             let errorCount = 0;
@@ -428,9 +427,9 @@ export default {
                 this.$root.toastSuccess(this.$tc("deletedMonitorsMsg", successCount));
             }
             if (errorCount > 0) {
-                this.$root.toastError(this.$tc("bulkDeleteErrorMsg", errorCount));            
+                this.$root.toastError(this.$tc("bulkDeleteErrorMsg", errorCount));
             }
-            
+
             this.cancelSelectMode();
         },
         /**
@@ -560,9 +559,7 @@ export default {
     gap: 8px;
     padding: 10px;
 
-    @media (min-width: 550px) and (max-width: 769px),
-           (min-width: 1150px) and (max-width: 1199px),
-           (min-width: 1500px) {
+    @media (min-width: 550px) and (max-width: 769px), (min-width: 1150px) and (max-width: 1199px), (min-width: 1500px) {
         flex-wrap: wrap;
     }
 }
@@ -693,9 +690,7 @@ export default {
     align-items: center;
     position: relative;
 
-    @media (min-width: 550px) and (max-width: 769px),
-           (min-width: 1150px) and (max-width: 1199px),
-           (min-width: 1500px) {
+    @media (min-width: 550px) and (max-width: 769px), (min-width: 1150px) and (max-width: 1199px), (min-width: 1500px) {
         order: -1;
         width: 100%;
         margin-bottom: 8px;
@@ -723,9 +718,7 @@ export default {
     max-width: 15em;
     padding-right: 30px;
 
-    @media (min-width: 550px) and (max-width: 769px),
-           (min-width: 1150px) and (max-width: 1199px),
-           (min-width: 1500px) {
+    @media (min-width: 550px) and (max-width: 769px), (min-width: 1150px) and (max-width: 1199px), (min-width: 1500px) {
         max-width: 100%;
         width: 100%;
     }
