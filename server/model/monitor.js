@@ -24,6 +24,8 @@ const {
     PING_PER_REQUEST_TIMEOUT_MIN,
     PING_PER_REQUEST_TIMEOUT_MAX,
     PING_PER_REQUEST_TIMEOUT_DEFAULT,
+    RESPONSE_BODY_LENGTH_DEFAULT,
+    RESPONSE_BODY_LENGTH_MAX,
 } = require("../../src/util");
 const {
     ping,
@@ -60,8 +62,6 @@ const zlib = require("node:zlib");
 const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
-
-const DEFAULT_MAX_RESPONSE_LENGTH = 10240;
 
 /**
  * status:
@@ -209,7 +209,7 @@ class Monitor extends BeanModel {
             // response saving options
             saveResponse: this.getSaveResponse(),
             saveErrorResponse: this.getSaveErrorResponse(),
-            responseMaxLength: this.response_max_length ?? DEFAULT_MAX_RESPONSE_LENGTH,
+            responseMaxLength: this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT,
         };
 
         if (includeSensitiveData) {
@@ -1145,7 +1145,7 @@ class Monitor extends BeanModel {
             }
         }
 
-        const maxSize = this.response_max_length !== undefined ? this.response_max_length : DEFAULT_MAX_RESPONSE_LENGTH;
+        const maxSize = this.response_max_length !== undefined ? this.response_max_length : RESPONSE_BODY_LENGTH_DEFAULT;
         if (maxSize > 0 && responseData.length > maxSize) {
             responseData = responseData.substring(0, maxSize) + "... (truncated)";
         }
@@ -1679,6 +1679,16 @@ class Monitor extends BeanModel {
         }
         if (this.retryInterval < MIN_INTERVAL_SECOND) {
             throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.response_max_length !== undefined) {
+            if (this.response_max_length < 0) {
+                throw new Error(`Response max length cannot be less than 0`);
+            }
+
+            if (this.response_max_length > RESPONSE_BODY_LENGTH_MAX) {
+                throw new Error(`Response max length cannot be more than ${RESPONSE_BODY_LENGTH_MAX} bytes`);
+            }
         }
 
         if (this.type === "ping") {
