@@ -217,7 +217,7 @@ class UptimeCalculator {
         let flatStatus = this.flatStatus(status);
 
         if (flatStatus === DOWN && ping > 0) {
-            log.debug("uptime-calc", "The ping is not effective when the status is DOWN");
+            log.debug("uptime_calc", "The ping is not effective when the status is DOWN");
         }
 
         let divisionKey = this.getMinutelyKey(date);
@@ -295,7 +295,7 @@ class UptimeCalculator {
 
         // Don't store data in test mode
         if (process.env.TEST_BACKEND) {
-            log.debug("uptime-calc", "Skip storing data in test mode");
+            log.debug("uptime_calc", "Skip storing data in test mode");
             return date;
         }
 
@@ -358,7 +358,7 @@ class UptimeCalculator {
         if (!this.migrationMode) {
             // Remove the old data
             // TODO: Improvement: Convert it to a job?
-            log.debug("uptime-calc", "Remove old data");
+            log.debug("uptime_calc", "Remove old data");
             await R.exec("DELETE FROM stat_minutely WHERE monitor_id = ? AND timestamp < ?", [
                 this.monitorID,
                 this.getMinutelyKey(currentDate.subtract(this.statMinutelyKeepHour, "hour")),
