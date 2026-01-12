@@ -56,6 +56,7 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const zlib = require("node:zlib");
 const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
@@ -1149,7 +1150,7 @@ class Monitor extends BeanModel {
             responseData = responseData.substring(0, maxSize) + "... (truncated)";
         }
 
-        bean.response = responseData;
+        bean.response = zlib.gzipSync(Buffer.from(responseData, "utf8")).toString("base64");
     }
 
     /**

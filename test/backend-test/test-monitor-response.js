@@ -1,6 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const Monitor = require("../../server/model/monitor");
+const Heartbeat = require("../../server/model/heartbeat");
 
 describe("Monitor response saving", () => {
     test("getSaveResponse and getSaveErrorResponse parse booleans", () => {
@@ -19,7 +20,7 @@ describe("Monitor response saving", () => {
         const bean = {};
         monitor.saveResponseData(bean, "abcdef");
 
-        assert.strictEqual(bean.response, "abcde... (truncated)");
+        assert.strictEqual(Heartbeat.decodeResponseValue(bean.response), "abcde... (truncated)");
     });
 
     test("saveResponseData stringifies objects", () => {
@@ -29,6 +30,6 @@ describe("Monitor response saving", () => {
         const bean = {};
         monitor.saveResponseData(bean, { ok: true });
 
-        assert.strictEqual(bean.response, JSON.stringify({ ok: true }));
+        assert.strictEqual(Heartbeat.decodeResponseValue(bean.response), JSON.stringify({ ok: true }));
     });
 });

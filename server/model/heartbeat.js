@@ -1,4 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
+const zlib = require("node:zlib");
 
 /**
  * status:
@@ -36,8 +37,25 @@ class Heartbeat extends BeanModel {
             important: this._important,
             duration: this._duration,
             retries: this._retries,
-            response: this._response,
+            response: Heartbeat.decodeResponseValue(this._response),
         };
+    }
+
+    /**
+     * Decode compressed response payload stored in database.
+     * @param {string|null} response Encoded response payload.
+     * @returns {string|null} Decoded response payload.
+     */
+    static decodeResponseValue(response) {
+        if (!response) {
+            return response;
+        }
+
+        try {
+            return zlib.gunzipSync(Buffer.from(response, "base64")).toString("utf8");
+        } catch (error) {
+            return response;
+        }
     }
 }
 

@@ -9,6 +9,7 @@ const io = server.io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
 const Database = require("./database");
+const Heartbeat = require("./model/heartbeat");
 
 /**
  * Send list of notification providers to client
@@ -54,7 +55,16 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
         [monitorID]
     );
 
-    let result = list.reverse();
+    let result = list.reverse().map((row) => {
+        if (row.response) {
+            return {
+                ...row,
+                response: Heartbeat.decodeResponseValue(row.response),
+            };
+        }
+
+        return row;
+    });
 
     if (toUser) {
         io.to(socket.userID).emit("heartbeatList", monitorID, result, overwrite);
@@ -87,10 +97,12 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 
     timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
 
+    const result = list.map((bean) => bean.toJSON());
+
     if (toUser) {
-        io.to(socket.userID).emit("importantHeartbeatList", monitorID, list, overwrite);
+        io.to(socket.userID).emit("importantHeartbeatList", monitorID, result, overwrite);
     } else {
-        socket.emit("importantHeartbeatList", monitorID, list, overwrite);
+        socket.emit("importantHeartbeatList", monitorID, result, overwrite);
     }
 }
 
