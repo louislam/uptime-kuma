@@ -753,6 +753,10 @@ let needSetup = false;
                 }
 
                 bean.import(monitor);
+                // Map camelCase frontend property to snake_case database column
+                if (monitor.retryOnlyOnStatusCodeFailure !== undefined) {
+                    bean.retry_only_on_status_code_failure = monitor.retryOnlyOnStatusCodeFailure;
+                }
                 bean.user_id = socket.userID;
 
                 bean.validate();
@@ -905,6 +909,7 @@ let needSetup = false;
                 bean.snmpVersion = monitor.snmpVersion;
                 bean.snmpOid = monitor.snmpOid;
                 bean.jsonPathOperator = monitor.jsonPathOperator;
+                bean.retry_only_on_status_code_failure = Boolean(monitor.retryOnlyOnStatusCodeFailure);
                 bean.timeout = monitor.timeout;
                 bean.rabbitmqNodes = JSON.stringify(monitor.rabbitmqNodes);
                 bean.rabbitmqUsername = monitor.rabbitmqUsername;

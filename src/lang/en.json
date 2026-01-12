@@ -86,6 +86,8 @@
     "resendEveryXTimes": "Resend every {0} times",
     "resendDisabled": "Resend disabled",
     "retriesDescription": "Maximum retries before the service is marked as down and a notification is sent",
+    "Only retry if status code check fails": "Only retry if status code check fails",
+    "retryOnlyOnStatusCodeFailureDescription": "If enabled, retries will only occur when the HTTP status code check fails (e.g., server is down). If the status code check passes but the JSON query fails, the monitor will be marked as down immediately without retries.",
     "ignoredTLSError": "TLS/SSL errors have been ignored",
     "ignoreTLSError": "Ignore TLS/SSL errors for HTTPS websites",
     "ignoreTLSErrorGeneral": "Ignore TLS/SSL error for connection",
