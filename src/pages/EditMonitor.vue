@@ -1496,7 +1496,14 @@
                                     </div>
                                 </div>
 
-                                <div class="my-3">
+                                <div
+                                    v-if="
+                                        monitor.type === 'http' ||
+                                        monitor.type === 'keyword' ||
+                                        monitor.type === 'json-query'
+                                    "
+                                    class="my-3"
+                                >
                                     <div class="form-check">
                                         <input
                                             id="saveResponse"
@@ -1517,7 +1524,14 @@
                                     </div>
                                 </div>
 
-                                <div class="my-3">
+                                <div
+                                    v-if="
+                                        monitor.type === 'http' ||
+                                        monitor.type === 'keyword' ||
+                                        monitor.type === 'json-query'
+                                    "
+                                    class="my-3"
+                                >
                                     <div class="form-check">
                                         <input
                                             id="saveErrorResponse"
@@ -1538,7 +1552,15 @@
                                     </div>
                                 </div>
 
-                                <div v-if="monitor.saveResponse || monitor.saveErrorResponse" class="my-3">
+                                <div
+                                    v-if="
+                                        (monitor.type === 'http' ||
+                                            monitor.type === 'keyword' ||
+                                            monitor.type === 'json-query') &&
+                                        (monitor.saveResponse || monitor.saveErrorResponse)
+                                    "
+                                    class="my-3"
+                                >
                                     <label for="responseMaxLength" class="form-label">
                                         {{ $t("responseMaxLength") }}
                                     </label>
@@ -2226,7 +2248,7 @@ const monitorDefaults = {
     maxredirects: 10,
     accepted_statuscodes: ["200-299"],
     saveResponse: false,
-    saveErrorResponse: false,
+    saveErrorResponse: true,
     responseMaxLength: 10240,
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
