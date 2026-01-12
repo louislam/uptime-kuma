@@ -940,8 +940,7 @@ class Monitor extends BeanModel {
                     // only retry if the error is NOT from JSON query evaluation
                     // JSON query errors have the message "JSON query does not pass..."
                     const isJsonQueryError =
-                        typeof error.message === "string" &&
-                        error.message.includes("JSON query does not pass");
+                        typeof error.message === "string" && error.message.includes("JSON query does not pass");
 
                     if (isJsonQueryError) {
                         // Don't retry on JSON query failures, mark as DOWN immediately
@@ -1984,7 +1983,6 @@ class Monitor extends BeanModel {
             await this.checkCertExpiryNotifications(tlsInfo);
         }
     }
-
 }
 
 module.exports = Monitor;
