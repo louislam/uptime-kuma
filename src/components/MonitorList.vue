@@ -46,6 +46,10 @@
                     <font-awesome-icon icon="play" size="sm" />
                     {{ $t("Resume") }}
                 </button>
+                <button class="btn-outline-normal btn-danger" @click="deleteDialog">
+                    <font-awesome-icon icon="trash" size="sm" />
+                    {{ $t("Delete") }}
+                </button>
 
                 <span v-if="selectedMonitorCount > 0">
                     {{ $t("selectedMonitorCount", [selectedMonitorCount]) }}
@@ -80,6 +84,10 @@
 
     <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
         {{ $t("pauseMonitorMsg") }}
+    </Confirm>
+
+    <Confirm ref="confirmDelete" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteSelected">
+        {{ $t("deleteSelectedMonitorsMsg") }}
     </Confirm>
 </template>
 
@@ -303,6 +311,13 @@ export default {
             this.$refs.confirmPause.show();
         },
         /**
+         * Show dialog to confirm delete
+         * @returns {void}
+         */
+        deleteDialog() {
+            this.$refs.confirmDelete.show();
+        },
+        /**
          * Pause each selected monitor
          * @returns {void}
          */
@@ -321,6 +336,20 @@ export default {
             Object.keys(this.selectedMonitors)
                 .filter((id) => !this.$root.monitorList[id].active)
                 .forEach((id) => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+
+            this.cancelSelectMode();
+        },
+        /**
+         * Delete each selected monitor
+         * @returns {void}
+         */
+        deleteSelected() {
+            const selectedIds = Object.keys(this.selectedMonitors);
+            
+            // Delete each selected monitor
+            selectedIds.forEach((id) => {
+                this.$root.deleteMonitor(id, false, () => {});
+            });
 
             this.cancelSelectMode();
         },
@@ -503,5 +532,15 @@ export default {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.btn-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #dc3545;
+    color: white;
 }
 </style>
