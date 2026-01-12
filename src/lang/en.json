@@ -329,7 +329,7 @@
     "auto-select": "Auto Select",
     "Select": "Select",
     "Actions": "Actions",
-    "selectedMonitorCount": "{0} selected | {0} selected",
+    "selectedMonitorCount": "selected: {n} | selected: {n}",
     "selectMonitorMsg": "Select monitors to perform actions",
     "selectAllMonitors": "Select/Deselect all monitors",
     "Check/Uncheck": "Check/Uncheck",
