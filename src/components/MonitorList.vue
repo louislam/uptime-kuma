@@ -23,36 +23,6 @@
                     <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
                 </div>
 
-                <div v-if="selectMode && selectedMonitorCount > 0" class="actions-wrapper">
-                    <div class="dropdown">
-                        <button
-                            class="btn btn-outline-normal dropdown-toggle"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            :aria-label="$t('Actions')"
-                        >
-                            {{ $t("Actions") }}
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
-                                    <font-awesome-icon icon="pause" class="me-2" /> {{ $t("Pause") }}
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="#" @click.prevent="resumeSelected">
-                                    <font-awesome-icon icon="play" class="me-2" /> {{ $t("Resume") }}
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="#" @click.prevent="deleteDialog">
-                                    <font-awesome-icon icon="trash" class="me-2" /> {{ $t("Delete") }}
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
                 <div class="search-wrapper ms-auto">
                     <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
                         <font-awesome-icon icon="times" />
@@ -71,8 +41,44 @@
 
             <div v-if="selectMode && selectedMonitorCount > 0" class="selected-count-row">
                 <span class="selected-count">
-                    {{ $t("selectedMonitorCount", [ selectedMonitorCount ]) }}
+                    {{ $tc("selectedMonitorCount", selectedMonitorCount) }}
                 </span>
+                <button
+                    class="btn btn-outline-normal ms-2"
+                    @click="cancelSelectMode"
+                >
+                    {{ $t("Cancel") }}
+                </button>
+                <div class="actions-wrapper ms-2">
+                    <div class="dropdown">
+                        <button
+                            class="btn btn-outline-normal dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            :aria-label="$t('Actions')"
+                            :disabled="bulkActionInProgress"
+                        >
+                            {{ $t("Actions") }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
+                                    <font-awesome-icon icon="pause" class="me-2" /> {{ $t("Pause") }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click.prevent="resumeSelected">
+                                    <font-awesome-icon icon="play" class="me-2" /> {{ $t("Resume") }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" @click.prevent="$refs.confirmDelete.show()">
+                                    <font-awesome-icon icon="trash" class="me-2" /> {{ $t("Delete") }}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
         <div
@@ -136,6 +142,7 @@ export default {
             disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
+            bulkActionInProgress: false,
             filterState: {
                 status: null,
                 active: null,
@@ -334,14 +341,17 @@ export default {
          * @returns {void}
          */
         pauseSelected() {
-            const count = Object.keys(this.selectedMonitors).filter(id => this.$root.monitorList[id].active).length;
-            Object.keys(this.selectedMonitors)
-                .filter((id) => this.$root.monitorList[id].active)
-                .forEach((id) => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
-
-            if (count > 0) {
-                this.$root.toastSuccess(this.$t("pausedMonitorsMsg", [count]));
+            const activeMonitors = Object.keys(this.selectedMonitors).filter((id) => this.$root.monitorList[id].active);
+            
+            if (activeMonitors.length === 0) {
+                this.$root.toastError(this.$t("noMonitorsPausedMsg"));
+                return;
             }
+
+            this.bulkActionInProgress = true;
+            activeMonitors.forEach((id) => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
+            this.$root.toastSuccess(this.$tc("pausedMonitorsMsg", activeMonitors.length));
+            this.bulkActionInProgress = false;
             this.cancelSelectMode();
         },
         /**
@@ -349,48 +359,57 @@ export default {
          * @returns {void}
          */
         resumeSelected() {
-            const count = Object.keys(this.selectedMonitors).filter(id => !this.$root.monitorList[id].active).length;
-            Object.keys(this.selectedMonitors)
-                .filter(id => !this.$root.monitorList[id].active)
-                .forEach(id => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
-
-            if (count > 0) {
-                this.$root.toastSuccess(this.$t("resumedMonitorsMsg", [count]));
+            const inactiveMonitors = Object.keys(this.selectedMonitors).filter((id) => !this.$root.monitorList[id].active);
+            
+            if (inactiveMonitors.length === 0) {
+                this.$root.toastError(this.$t("noMonitorsResumedMsg"));
+                return;
             }
+
+            this.bulkActionInProgress = true;
+            inactiveMonitors.forEach((id) => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+            this.$root.toastSuccess(this.$tc("resumedMonitorsMsg", inactiveMonitors.length));
+            this.bulkActionInProgress = false;
             this.cancelSelectMode();
         },
         /**
-         * Show dialog to confirm deletion
-         * @returns {void}
-         */
-        deleteDialog() {
-            this.$refs.confirmDelete.show();
-        },
-        /**
          * Delete each selected monitor
-         * @returns {void}
+         * @returns {Promise<void>}
          */
-        deleteSelected() {
-            const count = Object.keys(this.selectedMonitors).length;
+        async deleteSelected() {
+            const monitorIds = Object.keys(this.selectedMonitors);
+            
+            this.bulkActionInProgress = true;
             let successCount = 0;
             let errorCount = 0;
 
-            Object.keys(this.selectedMonitors).forEach(id => {
-                this.$root.getSocket().emit("deleteMonitor", id, false, (res) => {
-                    if (res.ok) {
-                        successCount++;
-                    } else {
-                        errorCount++;
-                        this.$root.toastError(res.msg);
-                    }
+            for (const id of monitorIds) {
+                try {
+                    await new Promise((resolve, reject) => {
+                        this.$root.getSocket().emit("deleteMonitor", id, false, (res) => {
+                            if (res.ok) {
+                                successCount++;
+                                resolve();
+                            } else {
+                                errorCount++;
+                                reject();
+                            }
+                        });
+                    });
+                } catch (error) {
+                    // Error already counted
+                }
+            }
 
-                    // Show succes message after all deletions completed
-                    if (successCount + errorCount === count && successCount > 0) {
-                        this.$root.toastSuccess(this.$t("deletedMonitorsMsg", [successCount]));
-                    }
-                });
-            });
+            this.bulkActionInProgress = false;
 
+            if (successCount > 0) {
+                this.$root.toastSuccess(this.$tc("deletedMonitorsMsg", successCount));
+            }
+            if (errorCount > 0) {
+                this.$root.toastError(this.$t("bulkDeleteErrorMsg", [errorCount]));
+            }
+            
             this.cancelSelectMode();
         },
         /**
