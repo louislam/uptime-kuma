@@ -43,10 +43,7 @@
                 <span class="selected-count">
                     {{ $tc("selectedMonitorCount", selectedMonitorCount) }}
                 </span>
-                <button
-                    class="btn btn-outline-normal ms-2"
-                    @click="cancelSelectMode"
-                >
+                <button class="btn btn-outline-normal ms-2" @click="cancelSelectMode">
                     {{ $t("Cancel") }}
                 </button>
                 <div class="actions-wrapper ms-2">
@@ -74,8 +71,13 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item text-danger" href="#" @click.prevent="$refs.confirmDelete.show()">
-                                    <font-awesome-icon icon="trash" class="me-2" /> {{ $t("Delete") }}
+                                <a
+                                    class="dropdown-item text-danger"
+                                    href="#"
+                                    @click.prevent="$refs.confirmDelete.show()"
+                                >
+                                    <font-awesome-icon icon="trash" class="me-2" />
+                                    {{ $t("Delete") }}
                                 </a>
                             </li>
                         </ul>
@@ -344,7 +346,7 @@ export default {
          */
         pauseSelected() {
             const activeMonitors = Object.keys(this.selectedMonitors).filter((id) => this.$root.monitorList[id].active);
-            
+
             if (activeMonitors.length === 0) {
                 this.$root.toastError(this.$t("noMonitorsPausedMsg"));
                 return;
@@ -361,8 +363,10 @@ export default {
          * @returns {void}
          */
         resumeSelected() {
-            const inactiveMonitors = Object.keys(this.selectedMonitors).filter((id) => !this.$root.monitorList[id].active);
-            
+            const inactiveMonitors = Object.keys(this.selectedMonitors).filter(
+                (id) => !this.$root.monitorList[id].active
+            );
+
             if (inactiveMonitors.length === 0) {
                 this.$root.toastError(this.$t("noMonitorsResumedMsg"));
                 return;
@@ -380,7 +384,7 @@ export default {
          */
         async deleteSelected() {
             const monitorIds = Object.keys(this.selectedMonitors);
-            
+
             this.bulkActionInProgress = true;
             let successCount = 0;
             let errorCount = 0;
@@ -411,7 +415,7 @@ export default {
             if (errorCount > 0) {
                 this.$root.toastError(this.$t("bulkDeleteErrorMsg", [errorCount]));
             }
-            
+
             this.cancelSelectMode();
         },
         /**
