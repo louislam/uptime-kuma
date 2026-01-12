@@ -63,12 +63,14 @@
                         <ul class="dropdown-menu">
                             <li>
                                 <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
-                                    <font-awesome-icon icon="pause" class="me-2" /> {{ $t("Pause") }}
+                                    <font-awesome-icon icon="pause" class="me-2" />
+                                    {{ $t("Pause") }}
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item" href="#" @click.prevent="resumeSelected">
-                                    <font-awesome-icon icon="play" class="me-2" /> {{ $t("Resume") }}
+                                    <font-awesome-icon icon="play" class="me-2" />
+                                    {{ $t("Resume") }}
                                 </a>
                             </li>
                             <li>

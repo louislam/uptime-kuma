@@ -1,8 +1,6 @@
 <template>
     <div class="d-flex align-items-center">
-        <MonitorListFilterDropdown
-            :filterActive="filterState.status?.length > 0"
-        >
+        <MonitorListFilterDropdown :filterActive="filterState.status?.length > 0">
             <template #status>
                 <Status v-if="filterState.status?.length === 1" :status="filterState.status[0]" />
                 <span v-else>
