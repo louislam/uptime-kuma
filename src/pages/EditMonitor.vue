@@ -1496,7 +1496,6 @@
                                     </div>
                                 </div>
 
-
                                 <div
                                     v-if="
                                         monitor.type === 'http' ||
@@ -1524,7 +1523,7 @@
                                         </i18n-t>
                                     </div>
                                 </div>
-                                
+
                                 <div
                                     v-if="
                                         monitor.type === 'http' ||
