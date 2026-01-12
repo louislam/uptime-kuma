@@ -345,7 +345,7 @@ export default {
          */
         deleteSelected() {
             const selectedIds = Object.keys(this.selectedMonitors);
-            
+
             // Delete each selected monitor
             selectedIds.forEach((id) => {
                 this.$root.deleteMonitor(id, false, () => {});
