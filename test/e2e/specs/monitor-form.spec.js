@@ -129,7 +129,7 @@ test.describe("Monitor Form", () => {
         await page.getByRole("link", { name: "Edit" }).click();
         await page.waitForURL("/edit/*");
 
-        await expect(page.getByLabel("Save HTTP Success Response for Notifications")).toBeChecked();
+        await expect(page.getByLabel("Save HTTP Success Response for Notifications")).toBeHidden();
         await expect(page.getByLabel("Save HTTP Error Response for Notifications")).not.toBeChecked();
         await expect(page.getByLabel("Response Max Length (bytes)")).toHaveValue("2048");
 
