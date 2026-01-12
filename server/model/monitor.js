@@ -144,6 +144,7 @@ class Monitor extends BeanModel {
             timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            retryOnlyOnStatusCodeFailure: Boolean(this.retry_only_on_status_code_failure),
             resendInterval: this.resendInterval,
             keyword: this.keyword,
             invertKeyword: this.isInvertKeyword(),
@@ -682,6 +683,12 @@ class Monitor extends BeanModel {
                         if (status) {
                             bean.status = UP;
                             bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
+                            
+                            // Store numeric value if response is numeric (will be stored after heartbeat is saved)
+                            // Store it in a temporary variable, not on the bean, to avoid database column errors
+                            if (typeof response === "number" || (typeof response === "string" && !isNaN(parseFloat(response)))) {
+                                this._pendingNumericValue = typeof response === "number" ? response : parseFloat(response);
+                            }
                         } else {
                             throw new Error(
                                 `JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
@@ -934,12 +941,26 @@ class Monitor extends BeanModel {
                 // Just reset the retries
                 if (this.isUpsideDown() && bean.status === UP) {
                     retries = 0;
-                } else if (this.maxretries > 0 && retries < this.maxretries) {
-                    retries++;
-                    bean.status = PENDING;
                 } else {
-                    // Continue counting retries during DOWN
-                    retries++;
+                    // For json-query monitors with retry_only_on_status_code_failure enabled,
+                    // only retry if the error is NOT from JSON query evaluation
+                    // JSON query errors have the message "JSON query does not pass..."
+                    const isJsonQueryError = this.type === "json-query" && 
+                        typeof error.message === "string" && 
+                        error.message.includes("JSON query does not pass");
+                    
+                    const shouldSkipRetry = isJsonQueryError && this.retry_only_on_status_code_failure;
+                    
+                    if (shouldSkipRetry) {
+                        // Don't retry on JSON query failures, mark as DOWN immediately
+                        retries = 0;
+                    } else if (this.maxretries > 0 && retries < this.maxretries) {
+                        retries++;
+                        bean.status = PENDING;
+                    } else {
+                        // Continue counting retries during DOWN
+                        retries++;
+                    }
                 }
             }
 
@@ -1042,6 +1063,13 @@ class Monitor extends BeanModel {
             // Store to database
             log.debug("monitor", `[${this.name}] Store`);
             await R.store(bean);
+            
+            // Store numeric value if available (stored by monitor types like SNMP and JSON-query)
+            // Check for pending numeric value stored during the check (not on bean to avoid DB column errors)
+            if (this._pendingNumericValue !== undefined && this._pendingNumericValue !== null) {
+                await this.storeNumericValue(this._pendingNumericValue, bean.id);
+                this._pendingNumericValue = undefined; // Clear after storing
+            }
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
             const data24h = uptimeCalculator.get24Hour();
@@ -1960,6 +1988,36 @@ class Monitor extends BeanModel {
         if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
             await this.checkCertExpiryNotifications(tlsInfo);
+        }
+    }
+
+    /**
+     * Store numeric value for this monitor
+     * @param {number} value Numeric value to store
+     * @param {number} heartbeatId Optional heartbeat ID to associate with this value
+     * @returns {Promise<void>}
+     */
+    async storeNumericValue(value, heartbeatId = null) {
+        if (value === null || value === undefined || isNaN(value)) {
+            return;
+        }
+
+        try {
+            const numericValue = parseFloat(value);
+            if (isNaN(numericValue)) {
+                return;
+            }
+
+            const bean = R.dispense("monitor_numeric_value");
+            bean.monitor_id = this.id;
+            bean.value = numericValue;
+            bean.time = R.isoDateTimeMillis(dayjs.utc());
+            if (heartbeatId) {
+                bean.heartbeat_id = heartbeatId;
+            }
+            await R.store(bean);
+        } catch (e) {
+            log.error("monitor", `Failed to store numeric value for monitor ${this.id}: ${e.message}`);
         }
     }
 }
