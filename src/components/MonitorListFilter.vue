@@ -1,18 +1,5 @@
 <template>
-    <div class="px-2 pt-2 d-flex">
-        <button
-            type="button"
-            :title="$t('Clear current filters')"
-            class="clear-filters-btn btn"
-            :class="{ active: numFiltersActive > 0 }"
-            tabindex="0"
-            :disabled="numFiltersActive === 0"
-            @click="clearFilters"
-        >
-            <font-awesome-icon icon="stream" />
-            <span v-if="numFiltersActive > 0" class="px-1 fw-bold">{{ numFiltersActive }}</span>
-            <font-awesome-icon v-if="numFiltersActive > 0" icon="times" />
-        </button>
+    <div class="d-flex align-items-center">
         <MonitorListFilterDropdown :filterActive="filterState.status?.length > 0">
             <template #status>
                 <Status v-if="filterState.status?.length === 1" :status="filterState.status[0]" />

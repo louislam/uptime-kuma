@@ -1147,7 +1147,7 @@
                                 </div>
                             </div>
 
-                            <div class="my-3">
+                            <div v-if="monitor.maxretries" class="my-3">
                                 <label for="retry-interval" class="form-label">
                                     {{ $t("Heartbeat Retry Interval") }}
                                     <span>({{ $t("retryCheckEverySecond", [monitor.retryInterval]) }})</span>
