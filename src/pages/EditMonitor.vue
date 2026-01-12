@@ -1545,8 +1545,9 @@
                                 <div
                                     v-if="
                                         (monitor.type === 'http' ||
-                                        monitor.type === 'keyword' ||
-                                        monitor.type === 'json-query') && monitor.saveErrorResponse
+                                            monitor.type === 'keyword' ||
+                                            monitor.type === 'json-query') &&
+                                        monitor.saveErrorResponse
                                     "
                                     class="my-3"
                                 >
