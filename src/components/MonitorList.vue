@@ -3,19 +3,20 @@
         <div class="list-header">
             <div class="header-top">
                 <div class="select-checkbox-wrapper">
+                <input
+	                        v-if="!selectMode"
+	                        v-model="selectMode"
+	                        @change="selectAll = selectMode"
+	                        class="form-check-input"
+	                        type="checkbox"
+	                        :aria-label="$t('selectAllMonitorsAria')"
+	                    />
                     <input
-                        v-if="!selectMode"
-                        v-model="selectMode"
-                        class="form-check-input"
-                        type="checkbox"
-                        :aria-label="$t('Select')"
-                    />
-                    <input
-                        v-if="selectMode"
+                        v-else
                         v-model="selectAll"
                         class="form-check-input"
                         type="checkbox"
-                        :aria-label="$t('selectAllMonitors')"
+                        :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
                     />
                 </div>
 
@@ -40,11 +41,8 @@
             </div>
 
             <div v-if="selectMode && selectedMonitorCount > 0" class="selected-count-row">
-                <span class="selected-count">
-                    {{ $tc("selectedMonitorCount", selectedMonitorCount) }}
-                </span>
                 <button
-                    class="btn btn-outline-normal ms-2"
+                    class="btn btn-outline-normal"
                     @click="cancelSelectMode"
                 >
                     {{ $t("Cancel") }}
@@ -57,6 +55,7 @@
                             data-bs-toggle="dropdown"
                             :aria-label="$t('Actions')"
                             :disabled="bulkActionInProgress"
+                            aria-expanded="false"
                         >
                             {{ $t("Actions") }}
                         </button>
@@ -74,13 +73,21 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item text-danger" href="#" @click.prevent="$refs.confirmDelete.show()">
-                                    <font-awesome-icon icon="trash" class="me-2" /> {{ $t("Delete") }}
+                                <a
+                                    class="dropdown-item text-danger"
+                                    href="#"
+                                    @click.prevent="$refs.confirmDelete.show()"
+                                >
+                                    <font-awesome-icon icon="trash" class="me-2" />
+                                    {{ $t("Delete") }}
                                 </a>
                             </li>
                         </ul>
                     </div>
                 </div>
+                <span class="selected-count ms-2">
+                    {{ $tc("selectedMonitorCountMsg", selectedMonitorCount) }}
+                </span>
             </div>
         </div>
         <div
@@ -343,6 +350,10 @@ export default {
          * @returns {void}
          */
         pauseSelected() {
+            if (this.bulkActionInProgress) {
+                return;
+            }
+
             const activeMonitors = Object.keys(this.selectedMonitors).filter((id) => this.$root.monitorList[id].active);
             
             if (activeMonitors.length === 0) {
@@ -361,6 +372,10 @@ export default {
          * @returns {void}
          */
         resumeSelected() {
+            if (this.bulkActionInProgress) {
+                return;
+            }
+
             const inactiveMonitors = Object.keys(this.selectedMonitors).filter((id) => !this.$root.monitorList[id].active);
             
             if (inactiveMonitors.length === 0) {
@@ -379,6 +394,10 @@ export default {
          * @returns {Promise<void>}
          */
         async deleteSelected() {
+            if (this.bulkActionInProgress) {
+                return;
+            }
+
             const monitorIds = Object.keys(this.selectedMonitors);
             
             this.bulkActionInProgress = true;
@@ -409,7 +428,7 @@ export default {
                 this.$root.toastSuccess(this.$tc("deletedMonitorsMsg", successCount));
             }
             if (errorCount > 0) {
-                this.$root.toastError(this.$t("bulkDeleteErrorMsg", [errorCount]));
+                this.$root.toastError(this.$tc("bulkDeleteErrorMsg", errorCount));            
             }
             
             this.cancelSelectMode();
@@ -541,7 +560,9 @@ export default {
     gap: 8px;
     padding: 10px;
 
-    @media (max-width: 550px) {
+    @media (min-width: 550px) and (max-width: 769px),
+           (min-width: 1150px) and (max-width: 1199px),
+           (min-width: 1500px) {
         flex-wrap: wrap;
     }
 }
@@ -672,10 +693,16 @@ export default {
     align-items: center;
     position: relative;
 
-    @media (max-width: 550px) {
+    @media (min-width: 550px) and (max-width: 769px),
+           (min-width: 1150px) and (max-width: 1199px),
+           (min-width: 1500px) {
         order: -1;
         width: 100%;
         margin-bottom: 8px;
+
+        form {
+            width: 100%;
+        }
     }
 }
 
@@ -696,7 +723,9 @@ export default {
     max-width: 15em;
     padding-right: 30px;
 
-    @media (max-width: 550px) {
+    @media (min-width: 550px) and (max-width: 769px),
+           (min-width: 1150px) and (max-width: 1199px),
+           (min-width: 1500px) {
         max-width: 100%;
         width: 100%;
     }
