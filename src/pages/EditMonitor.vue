@@ -1496,33 +1496,6 @@
                                     </div>
                                 </div>
 
-                                <div
-                                    v-if="
-                                        monitor.type === 'http' ||
-                                        monitor.type === 'keyword' ||
-                                        monitor.type === 'json-query'
-                                    "
-                                    class="my-3"
-                                >
-                                    <div class="form-check">
-                                        <input
-                                            id="saveResponse"
-                                            v-model="monitor.saveResponse"
-                                            class="form-check-input"
-                                            type="checkbox"
-                                        />
-                                        <label class="form-check-label" for="saveResponse">
-                                            {{ $t("saveResponseForNotifications") }}
-                                        </label>
-                                    </div>
-                                    <div class="form-text">
-                                        <i18n-t keypath="saveResponseDescription" tag="div" class="form-text">
-                                            <template #templateVariable>
-                                                <code>heartbeatJSON.response</code>
-                                            </template>
-                                        </i18n-t>
-                                    </div>
-                                </div>
 
                                 <div
                                     v-if="
@@ -1541,6 +1514,34 @@
                                         />
                                         <label class="form-check-label" for="saveErrorResponse">
                                             {{ $t("saveErrorResponseForNotifications") }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        <i18n-t keypath="saveResponseDescription" tag="div" class="form-text">
+                                            <template #templateVariable>
+                                                <code>heartbeatJSON.response</code>
+                                            </template>
+                                        </i18n-t>
+                                    </div>
+                                </div>
+                                
+                                <div
+                                    v-if="
+                                        monitor.type === 'http' ||
+                                        monitor.type === 'keyword' ||
+                                        monitor.type === 'json-query'
+                                    "
+                                    class="my-3"
+                                >
+                                    <div class="form-check">
+                                        <input
+                                            id="saveResponse"
+                                            v-model="monitor.saveResponse"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                        <label class="form-check-label" for="saveResponse">
+                                            {{ $t("saveResponseForNotifications") }}
                                         </label>
                                     </div>
                                     <div class="form-text">
