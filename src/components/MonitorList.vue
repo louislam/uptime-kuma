@@ -559,7 +559,7 @@ export default {
     gap: 8px;
     padding: 10px;
 
-    @media (min-width: 550px) and (max-width: 769px), (min-width: 1150px) and (max-width: 1199px), (min-width: 1500px) {
+    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px),(min-width: 1200px) and (max-width: 1499px) {
         flex-wrap: wrap;
     }
 }
@@ -690,7 +690,7 @@ export default {
     align-items: center;
     position: relative;
 
-    @media (min-width: 550px) and (max-width: 769px), (min-width: 1150px) and (max-width: 1199px), (min-width: 1500px) {
+    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px),(min-width: 1200px) and (max-width: 1499px) {
         order: -1;
         width: 100%;
         margin-bottom: 8px;
@@ -718,7 +718,7 @@ export default {
     max-width: 15em;
     padding-right: 30px;
 
-    @media (min-width: 550px) and (max-width: 769px), (min-width: 1150px) and (max-width: 1199px), (min-width: 1500px) {
+    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px),(min-width: 1200px) and (max-width: 1499px) {
         max-width: 100%;
         width: 100%;
     }
@@ -741,7 +741,7 @@ export default {
     margin-top: 5px;
 }
 
-@media (max-width: 550px) {
+@media (max-width: 549px), (min-width: 770px) and (max-width: 1149px),(min-width: 1200px) and (max-width: 1499px) {
     .selection-controls {
         .selected-count {
             margin-left: 0;
