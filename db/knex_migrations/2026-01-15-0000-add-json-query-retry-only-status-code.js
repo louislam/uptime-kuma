@@ -1,6 +1,3 @@
-/* SQL:
-ALTER TABLE monitor ADD retry_only_on_status_code_failure BOOLEAN default 0 not null;
-*/
 exports.up = function (knex) {
     // Add new column to table monitor for json-query retry behavior
     return knex.schema.alterTable("monitor", function (table) {
