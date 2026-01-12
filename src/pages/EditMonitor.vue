@@ -1167,6 +1167,24 @@
                                 </div>
                             </div>
 
+                            <!-- Retry only on status code failure: JSON Query only -->
+                            <div v-if="monitor.type === 'json-query' && monitor.maxretries > 0" class="my-3">
+                                <div class="form-check">
+                                    <input
+                                        id="retry-only-on-status-code-failure"
+                                        v-model="monitor.retryOnlyOnStatusCodeFailure"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                    />
+                                    <label for="retry-only-on-status-code-failure" class="form-check-label">
+                                        {{ $t("Only retry if status code check fails") }}
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    {{ $t("retryOnlyOnStatusCodeFailureDescription") }}
+                                </div>
+                            </div>
+
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
                             <div
                                 v-if="
@@ -2240,6 +2258,7 @@ const monitorDefaults = {
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
+    retryOnlyOnStatusCodeFailure: false,
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,

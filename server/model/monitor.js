@@ -147,6 +147,7 @@ class Monitor extends BeanModel {
             timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            retryOnlyOnStatusCodeFailure: Boolean(this.retry_only_on_status_code_failure),
             resendInterval: this.resendInterval,
             keyword: this.keyword,
             invertKeyword: this.isInvertKeyword(),
@@ -966,12 +967,32 @@ class Monitor extends BeanModel {
                 // Just reset the retries
                 if (this.isUpsideDown() && bean.status === UP) {
                     retries = 0;
-                } else if (this.maxretries > 0 && retries < this.maxretries) {
-                    retries++;
-                    bean.status = PENDING;
+                } else if (this.type === "json-query" && this.retry_only_on_status_code_failure) {
+                    // For json-query monitors with retry_only_on_status_code_failure enabled,
+                    // only retry if the error is NOT from JSON query evaluation
+                    // JSON query errors have the message "JSON query does not pass..."
+                    const isJsonQueryError =
+                        typeof error.message === "string" && error.message.includes("JSON query does not pass");
+
+                    if (isJsonQueryError) {
+                        // Don't retry on JSON query failures, mark as DOWN immediately
+                        retries = 0;
+                    } else if (this.maxretries > 0 && retries < this.maxretries) {
+                        retries++;
+                        bean.status = PENDING;
+                    } else {
+                        // Continue counting retries during DOWN
+                        retries++;
+                    }
                 } else {
-                    // Continue counting retries during DOWN
-                    retries++;
+                    // General retry logic for all other monitor types
+                    if (this.maxretries > 0 && retries < this.maxretries) {
+                        retries++;
+                        bean.status = PENDING;
+                    } else {
+                        // Continue counting retries during DOWN
+                        retries++;
+                    }
                 }
             }
 
