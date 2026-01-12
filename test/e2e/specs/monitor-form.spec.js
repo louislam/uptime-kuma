@@ -130,7 +130,7 @@ test.describe("Monitor Form", () => {
         await page.waitForURL("/edit/*");
 
         await expect(page.getByLabel("Save HTTP Success Response for Notifications")).toBeChecked();
-        await expect(page.getByLabel("Save HTTP Error Response for Notifications")).toBeChecked({ checked: false });
+        await expect(page.getByLabel("Save HTTP Error Response for Notifications")).not.toBeChecked();
         await expect(page.getByLabel("Response Max Length (bytes)")).toHaveValue("2048");
 
         await screenshot(testInfo, page);
