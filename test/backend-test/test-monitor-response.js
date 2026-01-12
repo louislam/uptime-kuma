@@ -2,6 +2,7 @@ const { describe, test } = require("node:test");
 const assert = require("node:assert");
 const Monitor = require("../../server/model/monitor");
 const Heartbeat = require("../../server/model/heartbeat");
+const { RESPONSE_BODY_LENGTH_DEFAULT } = require("../../src/util");
 
 describe("Monitor response saving", () => {
     test("getSaveResponse and getSaveErrorResponse parse booleans", () => {
@@ -25,7 +26,7 @@ describe("Monitor response saving", () => {
 
     test("saveResponseData stringifies objects", () => {
         const monitor = Object.create(Monitor.prototype);
-        monitor.response_max_length = 0;
+        monitor.response_max_length = RESPONSE_BODY_LENGTH_DEFAULT;
 
         const bean = {};
         monitor.saveResponseData(bean, { ok: true });
