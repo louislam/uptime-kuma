@@ -1304,8 +1304,6 @@
     "mtls-auth-server-ca-label": "CA",
     "mtls-auth-server-ca-placeholder": "Server CA",
     "avgPing": "Avg Ping",
-    "Numeric Value": "Numeric Value",
-    "Numeric Value History": "Numeric Value History",
     "Uptime Kuma": "Uptime Kuma",
     "maxPing": "Max Ping",
     "minPing": "Min Ping",
