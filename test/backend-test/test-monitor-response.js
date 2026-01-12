@@ -14,23 +14,23 @@ describe("Monitor response saving", () => {
         assert.strictEqual(monitor.getSaveErrorResponse(), false);
     });
 
-    test("saveResponseData stores and truncates response", () => {
+    test("saveResponseData stores and truncates response", async () => {
         const monitor = Object.create(Monitor.prototype);
         monitor.response_max_length = 5;
 
         const bean = {};
-        monitor.saveResponseData(bean, "abcdef");
+        await monitor.saveResponseData(bean, "abcdef");
 
-        assert.strictEqual(Heartbeat.decodeResponseValue(bean.response), "abcde... (truncated)");
+        assert.strictEqual(await Heartbeat.decodeResponseValue(bean.response), "abcde... (truncated)");
     });
 
-    test("saveResponseData stringifies objects", () => {
+    test("saveResponseData stringifies objects", async () => {
         const monitor = Object.create(Monitor.prototype);
         monitor.response_max_length = RESPONSE_BODY_LENGTH_DEFAULT;
 
         const bean = {};
-        monitor.saveResponseData(bean, { ok: true });
+        await monitor.saveResponseData(bean, { ok: true });
 
-        assert.strictEqual(Heartbeat.decodeResponseValue(bean.response), JSON.stringify({ ok: true }));
+        assert.strictEqual(await Heartbeat.decodeResponseValue(bean.response), JSON.stringify({ ok: true }));
     });
 });

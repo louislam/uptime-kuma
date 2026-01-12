@@ -59,6 +59,8 @@ const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
 const zlib = require("node:zlib");
+const { promisify } = require("node:util");
+const gzip = promisify(zlib.gzip);
 const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
@@ -645,7 +647,7 @@ class Monitor extends BeanModel {
                     bean.ping = dayjs().valueOf() - startTime;
 
                     if (this.getSaveResponse()) {
-                        this.saveResponseData(bean, res.data);
+                        await this.saveResponseData(bean, res.data);
                     }
 
                     // fallback for if kelog event is not emitted, but we may still have tlsInfo,
@@ -960,7 +962,7 @@ class Monitor extends BeanModel {
                 }
 
                 if (this.getSaveErrorResponse() && error?.response?.data !== undefined) {
-                    this.saveResponseData(bean, error.response.data);
+                    await this.saveResponseData(bean, error.response.data);
                 }
 
                 // If UP come in here, it must be upside down mode
@@ -1152,7 +1154,7 @@ class Monitor extends BeanModel {
      * @param {unknown} data Response payload.
      * @returns {void}
      */
-    saveResponseData(bean, data) {
+    async saveResponseData(bean, data) {
         if (data === undefined) {
             return;
         }
@@ -1171,7 +1173,8 @@ class Monitor extends BeanModel {
             responseData = responseData.substring(0, maxSize) + "... (truncated)";
         }
 
-        bean.response = zlib.gzipSync(Buffer.from(responseData, "utf8")).toString("base64");
+        // Offload gzip compression from main event loop to libuv thread pool
+        bean.response = (await gzip(Buffer.from(responseData, "utf8"))).toString("base64");
     }
 
     /**
@@ -1477,7 +1480,7 @@ class Monitor extends BeanModel {
      * Send a notification about a monitor
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
      * @param {Monitor} monitor The monitor to send a notification about
-     * @param {Bean} bean Status information about monitor
+     * @param {import("./heartbeat")} bean Status information about monitor
      * @returns {Promise<void>}
      */
     static async sendNotification(isFirstBeat, monitor, bean) {
@@ -1495,7 +1498,7 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    const heartbeatJSON = bean.toJSON();
+                    const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: true });
                     const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
                     const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.

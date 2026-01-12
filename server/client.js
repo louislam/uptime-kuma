@@ -9,7 +9,6 @@ const io = server.io;
 const { setting } = require("./util-server");
 const checkVersion = require("./check-version");
 const Database = require("./database");
-const Heartbeat = require("./model/heartbeat");
 
 /**
  * Send list of notification providers to client
@@ -55,16 +54,7 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
         [monitorID]
     );
 
-    let result = list.reverse().map((row) => {
-        if (row.response) {
-            return {
-                ...row,
-                response: Heartbeat.decodeResponseValue(row.response),
-            };
-        }
-
-        return row;
-    });
+    let result = list.reverse();
 
     if (toUser) {
         io.to(socket.userID).emit("heartbeatList", monitorID, result, overwrite);
