@@ -1145,9 +1145,8 @@ class Monitor extends BeanModel {
             }
         }
 
-        const maxSize =
-            this.response_max_length !== undefined ? this.response_max_length : RESPONSE_BODY_LENGTH_DEFAULT;
-        if (maxSize > 0 && responseData.length > maxSize) {
+        const maxSize = this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT;
+        if (responseData.length > maxSize) {
             responseData = responseData.substring(0, maxSize) + "... (truncated)";
         }
 
