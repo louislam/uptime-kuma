@@ -156,8 +156,8 @@ describe("Check Translations", () => {
             const upstreamParams = extractParams(upstreamValue);
 
             assert.deepEqual(
-                upstreamParams,
                 localParams,
+                upstreamParams,
                 [
                     `Translation key "${key}" changed placeholder parameters.`,
                     `This is a breaking change for existing translations.`,
