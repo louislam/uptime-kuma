@@ -646,7 +646,8 @@ class Monitor extends BeanModel {
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
 
-                    if (this.getSaveResponse()) {
+                    // in the frontend, the save response is only shown if the saveErrorResponse is set
+                    if (this.getSaveResponse() && this.getSaveErrorResponse()) {
                         await this.saveResponseData(bean, res.data);
                     }
 
