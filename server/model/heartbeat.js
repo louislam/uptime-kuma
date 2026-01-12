@@ -58,7 +58,7 @@ class Heartbeat extends BeanModel {
             important: this._important,
             duration: this._duration,
             retries: this._retries,
-            response: opts?.decodeResponse ? (await Heartbeat.decodeResponseValue(this._response)) : undefined,
+            response: opts?.decodeResponse ? await Heartbeat.decodeResponseValue(this._response) : undefined,
         };
     }
 
