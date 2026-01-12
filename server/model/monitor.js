@@ -60,6 +60,8 @@ const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
 
+const DEFAULT_MAX_RESPONSE_LENGTH = 10240;
+
 /**
  * status:
  *      0 = DOWN
@@ -202,6 +204,11 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+
+            // response saving options
+            saveResponse: this.getSaveResponse(),
+            saveErrorResponse: this.getSaveErrorResponse(),
+            responseMaxLength: this.response_max_length ?? DEFAULT_MAX_RESPONSE_LENGTH,
         };
 
         if (includeSensitiveData) {
@@ -383,6 +390,22 @@ class Monitor extends BeanModel {
      */
     getKafkaProducerAllowAutoTopicCreation() {
         return Boolean(this.kafkaProducerAllowAutoTopicCreation);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Should save response data on success?
+     */
+    getSaveResponse() {
+        return Boolean(this.save_response);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Should save response data on error?
+     */
+    getSaveErrorResponse() {
+        return Boolean(this.save_error_response);
     }
 
     /**
@@ -618,6 +641,8 @@ class Monitor extends BeanModel {
 
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
+
+                    this.saveResponseIfEnabled(bean, res.data, false);
 
                     // fallback for if kelog event is not emitted, but we may still have tlsInfo,
                     // e.g. if the connection is made through a proxy
@@ -930,6 +955,10 @@ class Monitor extends BeanModel {
                     bean.msg = error.message;
                 }
 
+                if (error?.response?.data !== undefined) {
+                    this.saveResponseIfEnabled(bean, error.response.data, true);
+                }
+
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
                 if (this.isUpsideDown() && bean.status === UP) {
@@ -1091,6 +1120,49 @@ class Monitor extends BeanModel {
         } else {
             safeBeat();
         }
+    }
+
+    /**
+     * Save response body to a heartbeat if response saving is enabled.
+     * @param {import("redbean-node").Bean} bean Heartbeat bean to populate.
+     * @param {unknown} data Response payload.
+     * @returns {void}
+     */
+    saveResponseData(bean, data) {
+        if (data === undefined) {
+            return;
+        }
+
+        let responseData = data;
+        if (typeof responseData !== "string") {
+            try {
+                responseData = JSON.stringify(responseData);
+            } catch (error) {
+                responseData = String(responseData);
+            }
+        }
+
+        const maxSize = this.response_max_length !== undefined ? this.response_max_length : DEFAULT_MAX_RESPONSE_LENGTH;
+        if (maxSize > 0 && responseData.length > maxSize) {
+            responseData = responseData.substring(0, maxSize) + "... (truncated)";
+        }
+
+        bean.response = responseData;
+    }
+
+    /**
+     * Conditionally save response body to a heartbeat based on monitor settings.
+     * @param {import("redbean-node").Bean} bean Heartbeat bean to populate.
+     * @param {unknown} data Response payload.
+     * @param {boolean} isError Whether the response is from an error path.
+     * @returns {void}
+     */
+    saveResponseIfEnabled(bean, data, isError) {
+        if (isError ? !this.getSaveErrorResponse() : !this.getSaveResponse()) {
+            return;
+        }
+
+        this.saveResponseData(bean, data);
     }
 
     /**
