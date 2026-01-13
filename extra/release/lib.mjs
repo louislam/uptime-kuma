@@ -1,7 +1,9 @@
 import "dotenv/config";
 import * as childProcess from "child_process";
 import semver from "semver";
-import {generateChangelog} from "../generate-changelog.mjs";
+import { generateChangelog } from "../generate-changelog.mjs";
+import fs from "fs";
+import tar from "tar";
 
 export const dryRun = process.env.RELEASE_DRY_RUN === "1";
 
@@ -31,10 +33,7 @@ export function getRepoNames() {
         // Split by comma
         return process.env.RELEASE_REPO_NAMES.split(",").map((name) => name.trim());
     }
-    return [
-        "louislam/uptime-kuma",
-        "ghcr.io/louislam/uptime-kuma",
-    ];
+    return ["louislam/uptime-kuma", "ghcr.io/louislam/uptime-kuma"];
 }
 
 /**
@@ -59,15 +58,15 @@ export function buildDist() {
  * @param {string} platform Build platform
  * @returns {void}
  */
-export function buildImage(repoNames, tags, target, buildArgs = "", dockerfile = "docker/dockerfile", platform = "linux/amd64,linux/arm64,linux/arm/v7") {
-    let args = [
-        "buildx",
-        "build",
-        "-f",
-        dockerfile,
-        "--platform",
-        platform,
-    ];
+export function buildImage(
+    repoNames,
+    tags,
+    target,
+    buildArgs = "",
+    dockerfile = "docker/dockerfile",
+    platform = "linux/amd64,linux/arm64,linux/arm/v7"
+) {
+    let args = ["buildx", "build", "-f", dockerfile, "--platform", platform];
 
     for (let repoName of repoNames) {
         // Add tags
@@ -76,22 +75,14 @@ export function buildImage(repoNames, tags, target, buildArgs = "", dockerfile =
         }
     }
 
-    args = [
-        ...args,
-        "--target",
-        target,
-    ];
+    args = [...args, "--target", target];
 
     // Add build args
     if (buildArgs) {
         args.push("--build-arg", buildArgs);
     }
 
-    args = [
-        ...args,
-        ".",
-        "--push",
-    ];
+    args = [...args, ".", "--push"];
 
     if (!dryRun) {
         childProcess.spawnSync("docker", args, { stdio: "inherit" });
@@ -174,11 +165,13 @@ export function pressAnyKey() {
     console.log("Git Push and Publish the release note on github, then press any key to continue");
     process.stdin.setRawMode(true);
     process.stdin.resume();
-    return new Promise(resolve => process.stdin.once("data", data => {
-        process.stdin.setRawMode(false);
-        process.stdin.pause();
-        resolve();
-    }));
+    return new Promise((resolve) =>
+        process.stdin.once("data", (data) => {
+            process.stdin.setRawMode(false);
+            process.stdin.pause();
+            resolve();
+        })
+    );
 }
 
 /**
@@ -191,9 +184,9 @@ export function ver(version, identifier) {
     const obj = semver.parse(version);
 
     if (obj.prerelease.length === 0) {
-        obj.prerelease = [ identifier ];
+        obj.prerelease = [identifier];
     } else {
-        obj.prerelease[0] = [ obj.prerelease[0], identifier ].join("-");
+        obj.prerelease[0] = [obj.prerelease[0], identifier].join("-");
     }
     return obj.format();
 }
@@ -258,7 +251,7 @@ export function execSync(cmd) {
  * @returns {void}
  */
 export function checkReleaseBranch() {
-    const res = childProcess.spawnSync("git", [ "rev-parse", "--abbrev-ref", "HEAD" ]);
+    const res = childProcess.spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
     const branch = res.stdout.toString().trim();
     if (branch !== "release") {
         console.error(`Current branch is ${branch}, please switch to "release" branch`);
@@ -272,9 +265,6 @@ export function checkReleaseBranch() {
  * @returns {Promise<void>}
  */
 export async function createDistTarGz() {
-    const fs = await import("fs");
-    const tar = await import("tar");
-
     const distPath = "dist";
     const outputPath = "dist.tar.gz";
 
@@ -292,7 +282,7 @@ export async function createDistTarGz() {
                 gzip: true,
                 file: outputPath,
             },
-            [ distPath ]
+            [distPath]
         );
         console.log(`Successfully created ${outputPath}`);
     } catch (error) {
@@ -329,15 +319,7 @@ The \`dist.tar.gz\` archive will be available as an artifact in the workflow run
 **Note:** This PR was automatically created by the beta release workflow.`;
 
     // Create the PR using gh CLI
-    const args = [
-        "pr",
-        "create",
-        "--title", title,
-        "--body", body,
-        "--base", "master",
-        "--head", "release",
-        "--draft"
-    ];
+    const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", "release", "--draft"];
 
     console.log(`Creating draft PR: ${title}`);
 
@@ -347,7 +329,7 @@ The \`dist.tar.gz\` archive will be available as an artifact in the workflow run
         env: {
             ...process.env,
             GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN,
-        }
+        },
     });
 
     if (result.status !== 0) {

@@ -4,18 +4,9 @@
 
 import * as childProcess from "child_process";
 
-const ignoreList = [
-    "louislam",
-    "CommanderStorm",
-    "UptimeKumaBot",
-    "weblate",
-    "Copilot"
-];
+const ignoreList = ["louislam", "CommanderStorm", "UptimeKumaBot", "weblate", "Copilot"];
 
-const mergeList = [
-    "Translations Update from Weblate",
-    "Update dependencies",
-];
+const mergeList = ["Translations Update from Weblate", "Update dependencies"];
 
 const template = `
 
@@ -37,7 +28,9 @@ Changelog:
 - Other small changes, code refactoring and comment/doc updates in this repo:
 `;
 
-await main();
+if (import.meta.main) {
+    await main();
+}
 
 /**
  * Main Function
@@ -73,20 +66,20 @@ export async function generateChangelog(previousVersion) {
 
         if (mergeList.includes(pr.title)) {
             // Check if it is already in the list
-            const existingItem = list.find(item => item.title === pr.title);
+            const existingItem = list.find((item) => item.title === pr.title);
             if (existingItem) {
                 existingItem.numbers.push(pr.number);
                 for (const author of authorSet) {
                     existingItem.authors.add(author);
                     // Sort the authors
-                    existingItem.authors = new Set([ ...existingItem.authors ].sort((a, b) => a.localeCompare(b)));
+                    existingItem.authors = new Set([...existingItem.authors].sort((a, b) => a.localeCompare(b)));
                 }
                 continue;
             }
         }
 
         const item = {
-            numbers: [ pr.number ],
+            numbers: [pr.number],
             title: pr.title,
             authors: authorSet,
         };
@@ -96,10 +89,10 @@ export async function generateChangelog(previousVersion) {
 
     for (const item of list) {
         // Concat pr numbers into a string like #123 #456
-        const prPart = item.numbers.map(num => `#${num}`).join(" ");
+        const prPart = item.numbers.map((num) => `#${num}`).join(" ");
 
         // Concat authors into a string like @user1 @user2
-        let authorPart = [ ...item.authors ].map(author => `@${author}`).join(" ");
+        let authorPart = [...item.authors].map((author) => `@${author}`).join(" ");
 
         if (authorPart) {
             authorPart = `(Thanks ${authorPart})`;
@@ -117,28 +110,37 @@ export async function generateChangelog(previousVersion) {
  */
 async function getPullRequestList(previousVersion) {
     // Get the date of previousVersion in YYYY-MM-DD format from git
-    const previousVersionDate = childProcess.execSync(`git log -1 --format=%cd --date=short ${previousVersion}`).toString().trim();
+    const previousVersionDate = childProcess
+        .execSync(`git log -1 --format=%cd --date=short ${previousVersion}`)
+        .toString()
+        .trim();
 
     if (!previousVersionDate) {
-        throw new Error(`Unable to find the date of version ${previousVersion}. Please make sure the version tag exists.`);
+        throw new Error(
+            `Unable to find the date of version ${previousVersion}. Please make sure the version tag exists.`
+        );
     }
 
-    const ghProcess = childProcess.spawnSync("gh", [
-        "pr",
-        "list",
-        "--state",
-        "merged",
-        "--base",
-        "master",
-        "--search",
-        `merged:>=${previousVersionDate}`,
-        "--json",
-        "number,title,author",
-        "--limit",
-        "1000"
-    ], {
-        encoding: "utf-8"
-    });
+    const ghProcess = childProcess.spawnSync(
+        "gh",
+        [
+            "pr",
+            "list",
+            "--state",
+            "merged",
+            "--base",
+            "master",
+            "--search",
+            `merged:>=${previousVersionDate}`,
+            "--json",
+            "number,title,author",
+            "--limit",
+            "1000",
+        ],
+        {
+            encoding: "utf-8",
+        }
+    );
 
     if (ghProcess.error) {
         throw ghProcess.error;
@@ -156,14 +158,8 @@ async function getPullRequestList(previousVersion) {
  * @returns {Promise<Set<string>>} Set of Authors' GitHub Usernames
  */
 async function getAuthorList(prID) {
-    const ghProcess = childProcess.spawnSync("gh", [
-        "pr",
-        "view",
-        prID,
-        "--json",
-        "commits"
-    ], {
-        encoding: "utf-8"
+    const ghProcess = childProcess.spawnSync("gh", ["pr", "view", prID, "--json", "commits"], {
+        encoding: "utf-8",
     });
 
     if (ghProcess.error) {
@@ -188,7 +184,7 @@ async function getAuthorList(prID) {
     }
 
     // Sort the set
-    return new Set([ ...set ].sort((a, b) => a.localeCompare(b)));
+    return new Set([...set].sort((a, b) => a.localeCompare(b)));
 }
 
 /**
@@ -200,5 +196,5 @@ async function mainAuthorToFront(mainAuthor, authorSet) {
     if (ignoreList.includes(mainAuthor)) {
         return authorSet;
     }
-    return new Set([ mainAuthor, ...authorSet ]);
+    return new Set([mainAuthor, ...authorSet]);
 }
