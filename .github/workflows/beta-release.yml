@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Beta version number (e.g., 2.0.0-beta.0)'
+        description: "Beta version number (e.g., 2.0.0-beta.0)"
         required: true
         type: string
       previous_version:
-        description: 'Previous version tag for changelog (e.g., 1.23.0)'
+        description: "Previous version tag for changelog (e.g., 1.23.0)"
         required: true
         type: string
       dry_run:
-        description: 'If true, the release will be a dry run without pushing changes'
+        description: "If true, the release will be a dry run without pushing changes"
         required: false
         type: boolean
         default: true
@@ -31,7 +31,7 @@ jobs:
         with:
           ref: master
           persist-credentials: false
-          fetch-depth: 0  # Fetch all history for changelog generation
+          fetch-depth: 0 # Fetch all history for changelog generation
 
       - name: Set up Node.js
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
