@@ -1673,11 +1673,10 @@ class Monitor extends BeanModel {
      * @returns {Promise<string|null>} Last non-PENDING status or null if not found
      */
     static async getLastNonPendingStatus(monitorID) {
-        const heartbeat = await R.findOne(
-            "heartbeat",
-            " monitor_id = ? AND status != ? ORDER BY time DESC LIMIT 1",
-            [monitorID, PENDING]
-        );
+        const heartbeat = await R.findOne("heartbeat", " monitor_id = ? AND status != ? ORDER BY time DESC LIMIT 1", [
+            monitorID,
+            PENDING,
+        ]);
         return heartbeat?.status || null;
     }
 
