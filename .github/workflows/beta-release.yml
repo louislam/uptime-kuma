@@ -41,9 +41,11 @@ jobs:
       - name: Create release branch
         env:
           VERSION: ${{ inputs.version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
           # Delete remote branch if it exists
           git push origin --delete "release-${VERSION}" || true
           # Delete local branch if it exists
