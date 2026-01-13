@@ -266,7 +266,7 @@ export function checkReleaseBranch() {
  */
 export async function createDistTarGz() {
     const distPath = "dist";
-    const outputPath = "dist.tar.gz";
+    const outputPath = "./tmp/dist.tar.gz";
 
     // Check if dist directory exists
     if (!fs.existsSync(distPath)) {
@@ -302,13 +302,15 @@ export async function createReleasePR(version, previousVersion, dryRun) {
     const changelog = await generateChangelog(previousVersion);
 
     const title = dryRun ? `[DRY RUN] Update to ${version}` : `Update to ${version}`;
-    const body = `## Beta Release ${version}
+    const body = `## Release ${version}
 
-This PR prepares the beta release for version ${version}.
+This PR prepares the release for version ${version}.
 
 ### Changelog
 
+\`\`\`md
 ${changelog}
+\`\`\`
 
 ### Release Artifacts
 

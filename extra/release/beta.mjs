@@ -48,11 +48,11 @@ await checkTagExists(repoNames, version);
 // node extra/beta/update-version.js
 execSync("node ./extra/beta/update-version.js");
 
-// Build frontend dist
-buildDist();
-
 // Create Pull Request
 await createReleasePR(version, previousVersion, dryRun);
+
+// Build frontend dist
+buildDist();
 
 if (!dryRun) {
     // Build slim image (rootless)

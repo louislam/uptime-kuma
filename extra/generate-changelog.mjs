@@ -10,7 +10,7 @@ const mergeList = ["Translations Update from Weblate", "Update dependencies"];
 
 const template = `
 
-LLM Task: Please help to put above PRs into the following sections based on their content. If a PR fits multiple sections, choose the most relevant one. If a PR doesn't fit any section, place it in "Others". If there are grammatical errors in the PR titles, please correct them. Don't change the PR numbers and authors, and keep the format. Output as markdown.
+LLM Task: Please help to put above PRs into the following sections based on their content. If a PR fits multiple sections, choose the most relevant one. If a PR doesn't fit any section, place it in "Others". If there are grammatical errors in the PR titles, please correct them. Don't change the PR numbers and authors, and keep the format. Output as markdown file format.
 
 Changelog:
 
