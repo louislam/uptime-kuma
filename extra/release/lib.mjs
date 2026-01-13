@@ -304,12 +304,19 @@ export async function createDistTarGz() {
  * @param {string} previousVersion Previous version tag
  * @param {boolean} dryRun Still create the PR, but add "[DRY RUN]" to the title
  * @param {string} branchName The branch name to use for the PR head (defaults to "release")
+ * @param {string} githubRunId The GitHub Actions run ID for linking to artifacts
  * @returns {Promise<void>}
  */
-export async function createReleasePR(version, previousVersion, dryRun, branchName = "release") {
+export async function createReleasePR(version, previousVersion, dryRun, branchName = "release", githubRunId = null) {
     const changelog = await generateChangelog(previousVersion);
 
     const title = dryRun ? `chore: update to ${version} (dry run)` : `chore: update to ${version}`;
+    
+    // Build the artifact link - use direct run link if available, otherwise link to workflow file
+    const artifactLink = githubRunId 
+        ? `https://github.com/louislam/uptime-kuma/actions/runs/${githubRunId}/workflow`
+        : `https://github.com/louislam/uptime-kuma/actions/workflows/beta-release.yml`;
+    
     const body = `## Release ${version}
 
 This PR prepares the release for version ${version}.
@@ -319,7 +326,7 @@ This PR prepares the release for version ${version}.
 - [ ] Create a new release on GitHub with the tag \`${version}\`.
 - [ ] Ask any LLM to categorize the changelog into sections.
 - [ ] Place the changelog in the release note.
-- [ ] Download the \`dist.tar.gz\` artifact from the [workflow run](https://github.com/louislam/uptime-kuma/actions/workflows/beta-release.yml) and upload it to the release.
+- [ ] Download the \`dist.tar.gz\` artifact from the [workflow run](${artifactLink}) and upload it to the release.
 - [ ] (Beta only) Set prerelease
 - [ ] Publish the release note on GitHub.
 

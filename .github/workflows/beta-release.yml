@@ -77,6 +77,7 @@ jobs:
           RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: npm run release-beta
 
       - name: Upload dist.tar.gz as artifact
