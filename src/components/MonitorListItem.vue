@@ -44,7 +44,11 @@
                             <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
                         </div>
                     </div>
-                    <div v-show="$root.userHeartbeatBar == 'normal'" :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
+                    <div
+                        v-show="$root.userHeartbeatBar == 'normal'"
+                        :key="$root.userHeartbeatBar"
+                        class="col-3 col-xl-6"
+                    >
                         <HeartbeatBar ref="heartbeatBar" size="small" :monitor-id="monitor.id" />
                     </div>
                 </div>
