@@ -301,10 +301,19 @@ export async function createDistTarGz() {
 export async function createReleasePR(version, previousVersion, dryRun) {
     const changelog = await generateChangelog(previousVersion);
 
-    const title = dryRun ? `[DRY RUN] Update to ${version}` : `Update to ${version}`;
+    const title = dryRun ? `build: update to ${version} (dry run)` : `build: update to ${version}`;
     const body = `## Release ${version}
 
 This PR prepares the release for version ${version}.
+
+### Manual Steps Required
+- [ ] Merge this PR (squash and merge)
+- [ ] Create a new release on GitHub with the tag \`${version}\`.
+- [ ] Ask any LLM to categorize the changelog into sections.
+- [ ] Place the changelog in the release note.
+- [ ] Download and upload the \`dist.tar.gz\` artifact to the release.
+- [ ] (Beta only) Set prerelease
+- [ ] Publish the release note on GitHub.
 
 ### Changelog
 
@@ -313,12 +322,8 @@ ${changelog}
 \`\`\`
 
 ### Release Artifacts
-
 The \`dist.tar.gz\` archive will be available as an artifact in the workflow run.
-
----
-
-**Note:** This PR was automatically created by the beta release workflow.`;
+`;
 
     // Create the PR using gh CLI
     const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", "release", "--draft"];
