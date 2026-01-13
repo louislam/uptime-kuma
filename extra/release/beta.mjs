@@ -13,7 +13,6 @@ import {
     createReleasePR,
 } from "./lib.mjs";
 import semver from "semver";
-import { spawnSync } from "node:child_process";
 
 const repoNames = getRepoNames();
 const version = process.env.RELEASE_BETA_VERSION;
@@ -51,10 +50,7 @@ await checkTagExists(repoNames, version);
 // node extra/beta/update-version.js
 execSync("node ./extra/beta/update-version.js");
 
-// Git Push
-spawnSync("git", ["push", "origin", branchName], { stdio: "inherit" });
-
-// Create Pull Request
+// Create Pull Request (gh pr create will handle pushing the branch)
 await createReleasePR(version, previousVersion, dryRun, branchName, githubRunId);
 
 // Build frontend dist
