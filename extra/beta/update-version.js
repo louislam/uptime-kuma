@@ -57,9 +57,6 @@ function commit(version) {
     if (stdout.includes("no changes added to commit")) {
         throw new Error("commit error");
     }
-
-    // Note: Push is handled by gh pr create in the release script
-    // No need to push here as we're on a release branch, not master
 }
 
 /**
