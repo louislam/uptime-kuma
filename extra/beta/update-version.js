@@ -23,13 +23,17 @@ if (!exists) {
 
     // Also update package-lock.json
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const resultVersion = childProcess.spawnSync(npm, ["--no-git-tag-version", "version", version]);
+    const resultVersion = childProcess.spawnSync(npm, ["--no-git-tag-version", "version", version], {
+        shell: true,
+    });
     if (resultVersion.error) {
         console.error(resultVersion.error);
         console.error("error npm version!");
         process.exit(1);
     }
-    const resultInstall = childProcess.spawnSync(npm, ["install"]);
+    const resultInstall = childProcess.spawnSync(npm, ["install"], {
+        shell: true,
+    });
     if (resultInstall.error) {
         console.error(resultInstall.error);
         console.error("error update package-lock!");
@@ -58,10 +62,13 @@ function commit(version) {
         throw new Error("commit error");
     }
 
+    // Get the current branch name
+    res = childProcess.spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    let branchName = res.stdout.toString().trim();
+    console.log("Current branch:", branchName);
+
     // Git push the branch
-    childProcess.spawnSync("git", ["push", "origin"]);
-    stdout = res.stdout.toString().trim();
-    console.log(stdout);
+    childProcess.spawnSync("git", ["push", "origin", branchName, "--force"], { stdio: "inherit" });
 }
 
 /**

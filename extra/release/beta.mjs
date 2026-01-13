@@ -13,7 +13,6 @@ import {
     createReleasePR,
 } from "./lib.mjs";
 import semver from "semver";
-import { spawnSync } from "node:child_process";
 
 const repoNames = getRepoNames();
 const version = process.env.RELEASE_BETA_VERSION;
