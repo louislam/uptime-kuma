@@ -43,11 +43,11 @@ jobs:
           VERSION: ${{ inputs.version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "louislam"
+          git config user.email "1336778+louislam@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
-          git checkout -b "test2"
-          git push origin "test2"
+          git checkout -b "release-${VERSION}"
+          git push origin "release-${VERSION}"
 
       - name: Install dependencies
         run: npm clean-install --no-fund
