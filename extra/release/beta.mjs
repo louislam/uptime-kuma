@@ -48,6 +48,9 @@ await checkTagExists(repoNames, version);
 // node extra/beta/update-version.js
 execSync("node ./extra/beta/update-version.js");
 
+// Git push release branch, force
+execSync("git push origin release --force");
+
 // Build frontend dist
 buildDist();
 
