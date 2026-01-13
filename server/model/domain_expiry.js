@@ -157,7 +157,6 @@ class DomainExpiry extends BeanModel {
         }
 
         const tld = parseTld(target);
-        console.log(tld);
 
         // Avoid logging for incomplete/invalid input while editing monitors.
         if (!tld.isIcann) {
