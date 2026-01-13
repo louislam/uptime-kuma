@@ -58,7 +58,13 @@ function commit(version) {
         throw new Error("commit error");
     }
 
-    res = childProcess.spawnSync("git", ["push", "origin", "master"]);
+    // Get the current branch name
+    res = childProcess.spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    const currentBranch = res.stdout.toString().trim();
+    console.log(`Pushing to current branch: ${currentBranch}`);
+
+    // Push to the current branch with --set-upstream to create it on remote if it doesn't exist
+    res = childProcess.spawnSync("git", ["push", "--set-upstream", "origin", currentBranch]);
     console.log(res.stdout.toString().trim());
 }
 
