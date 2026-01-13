@@ -267,6 +267,12 @@ export function checkReleaseBranch() {
 export async function createDistTarGz() {
     const distPath = "dist";
     const outputPath = "./tmp/dist.tar.gz";
+    const tmpDir = "./tmp";
+
+    // Ensure tmp directory exists
+    if (!fs.existsSync(tmpDir)) {
+        fs.mkdirSync(tmpDir, { recursive: true });
+    }
 
     // Check if dist directory exists
     if (!fs.existsSync(distPath)) {
