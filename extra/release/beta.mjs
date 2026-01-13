@@ -50,6 +50,9 @@ await checkTagExists(repoNames, version);
 // node extra/beta/update-version.js
 execSync("node ./extra/beta/update-version.js");
 
+// Git Push
+spawnSync("git", ["push", "origin", branchName]);
+
 // Create Pull Request
 await createReleasePR(version, previousVersion, dryRun, branchName, githubRunId);
 
