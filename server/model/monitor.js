@@ -60,7 +60,7 @@ const https = require("https");
 const http = require("http");
 const zlib = require("node:zlib");
 const { promisify } = require("node:util");
-const gzip = promisify(zlib.gzip);
+const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
@@ -1174,8 +1174,8 @@ class Monitor extends BeanModel {
             responseData = responseData.substring(0, maxSize) + "... (truncated)";
         }
 
-        // Offload gzip compression from main event loop to libuv thread pool
-        bean.response = (await gzip(Buffer.from(responseData, "utf8"))).toString("base64");
+        // Offload brotli compression from main event loop to libuv thread pool
+        bean.response = (await brotliCompress(Buffer.from(responseData, "utf8"))).toString("base64");
     }
 
     /**

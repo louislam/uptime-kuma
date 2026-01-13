@@ -1,7 +1,7 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const zlib = require("node:zlib");
 const { promisify } = require("node:util");
-const gunzip = promisify(zlib.gunzip);
+const brotliDecompress = promisify(zlib.brotliDecompress);
 
 /**
  * status:
@@ -73,8 +73,8 @@ class Heartbeat extends BeanModel {
         }
 
         try {
-            // Offload gzip decode from main event loop to libuv thread pool
-            return (await gunzip(Buffer.from(response, "base64"))).toString("utf8");
+            // Offload brotli decode from main event loop to libuv thread pool
+            return (await brotliDecompress(Buffer.from(response, "base64"))).toString("utf8");
         } catch (error) {
             return response;
         }
