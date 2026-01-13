@@ -610,15 +610,22 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
                 bean.retries = 0;
                 bean.status = DOWN;
             }
-        } else if (previousHeartbeat.status === PENDING && status === DOWN && previousHeartbeat.retries < maxretries) {
-            // Retries available
-            bean.retries = previousHeartbeat.retries + 1;
-            bean.status = PENDING;
+        } else if (previousHeartbeat.status === PENDING && status === DOWN) {
+            // Still down while pending
+            if (maxretries > 0 && previousHeartbeat.retries < maxretries) {
+                // Retries available
+                bean.retries = previousHeartbeat.retries + 1;
+                bean.status = PENDING;
+            } else {
+                // No more retries
+                bean.retries = 0;
+                bean.status = DOWN;
+            }
         } else {
             // No more retries or not pending
             if (status === DOWN) {
-                bean.retries = previousHeartbeat.retries + 1;
                 bean.status = status;
+                bean.retries = 0;
             } else {
                 bean.retries = 0;
                 bean.status = status;
