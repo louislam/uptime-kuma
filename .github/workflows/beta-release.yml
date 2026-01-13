@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Beta version number (e.g., 2.0.0-beta.0)"
+        description: "Beta version number (e.g., 2.1.0-beta.2)"
         required: true
         type: string
       previous_version:
-        description: "Previous version tag for changelog (e.g., 1.23.0)"
+        description: "Previous version tag for changelog (e.g., 2.1.0-beta.1)"
         required: true
         type: string
       dry_run:
-        description: "If true, the docker image will not be pushed to registries. PR will still be created."
+        description: "Dry Run (The docker image will not be pushed to registries. PR will still be created.)"
         required: false
         type: boolean
         default: false
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           ref: master
-          persist-credentials: false
+          persist-credentials: true
           fetch-depth: 0 # Fetch all history for changelog generation
 
       - name: Set up Node.js
@@ -45,7 +45,6 @@ jobs:
           # Delete local release branch if it exists
           git branch -D release || true
           git checkout -b release
-          git push origin release --force
 
       - name: Install dependencies
         run: npm clean-install --no-fund
