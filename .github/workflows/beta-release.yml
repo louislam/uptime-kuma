@@ -69,7 +69,7 @@ jobs:
       - name: Run release-beta
         env:
           RELEASE_BETA_VERSION: ${{ inputs.version }}
-          PREVIOUS_VERSION: ${{ inputs.previous_version }}
+          RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run release-beta

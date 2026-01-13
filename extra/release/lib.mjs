@@ -24,6 +24,7 @@ export function checkDocker() {
 
 /**
  * Get Docker Hub repository name
+ * @returns {string[]} List of repository names
  */
 export function getRepoNames() {
     if (process.env.RELEASE_REPO_NAMES) {
@@ -266,26 +267,93 @@ export function checkReleaseBranch() {
 }
 
 /**
- * TODO: similar to "tar -zcvf dist.tar.gz dist", but using nodejs
+ * Create dist.tar.gz from the dist directory
+ * Similar to "tar -zcvf dist.tar.gz dist", but using nodejs
+ * @returns {Promise<void>}
  */
 export async function createDistTarGz() {
-    // TODO
+    const fs = await import("fs");
+    const tar = await import("tar");
+
+    const distPath = "dist";
+    const outputPath = "dist.tar.gz";
+
+    // Check if dist directory exists
+    if (!fs.existsSync(distPath)) {
+        console.error("Error: dist directory not found");
+        process.exit(1);
+    }
+
+    console.log(`Creating ${outputPath} from ${distPath}...`);
+
+    try {
+        await tar.create(
+            {
+                gzip: true,
+                file: outputPath,
+            },
+            [ distPath ]
+        );
+        console.log(`Successfully created ${outputPath}`);
+    } catch (error) {
+        console.error(`Failed to create tarball: ${error.message}`);
+        process.exit(1);
+    }
 }
 
 /**
- * TODO: Create a draft release PR
- * @param version
- * @param previousVersion
- * @param dryRun Still create the PR, but add "[DRY RUN]" to the title
+ * Create a draft release PR
+ * @param {string} version Version
+ * @param {string} previousVersion Previous version tag
+ * @param {boolean} dryRun Still create the PR, but add "[DRY RUN]" to the title
+ * @returns {Promise<void>}
  */
 export async function createReleasePR(version, previousVersion, dryRun) {
     const changelog = await generateChangelog(previousVersion);
 
-    // TODO
-    //          gh pr create \
-    //             --title "Beta Release: ${{ inputs.version }}" \
-    //             --body "This PR prepares the beta release version ${{ inputs.version }}. \`dist.tar.gz\` : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-    //             --base master \
-    //             --head release \
-    //             --draft
+    const title = dryRun ? `[DRY RUN] Update to ${version}` : `Update to ${version}`;
+    const body = `## Beta Release ${version}
+
+This PR prepares the beta release for version ${version}.
+
+### Changelog
+
+${changelog}
+
+### Release Artifacts
+
+The \`dist.tar.gz\` archive will be available as an artifact in the workflow run.
+
+---
+
+**Note:** This PR was automatically created by the beta release workflow.`;
+
+    // Create the PR using gh CLI
+    const args = [
+        "pr",
+        "create",
+        "--title", title,
+        "--body", body,
+        "--base", "master",
+        "--head", "release",
+        "--draft"
+    ];
+
+    console.log(`Creating draft PR: ${title}`);
+
+    const result = childProcess.spawnSync("gh", args, {
+        encoding: "utf-8",
+        stdio: "inherit",
+        env: {
+            ...process.env,
+            GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN,
+        }
+    });
+
+    if (result.status !== 0) {
+        console.error("Failed to create pull request");
+        process.exit(1);
+    }
+
+    console.log("Successfully created draft pull request");
 }

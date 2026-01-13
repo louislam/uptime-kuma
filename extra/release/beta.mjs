@@ -51,7 +51,7 @@ execSync("node ./extra/beta/update-version.js");
 // Build frontend dist
 buildDist();
 
-// TODO: Create Pull Request
+// Create Pull Request
 await createReleasePR(version, previousVersion, dryRun);
 
 if (!dryRun) {
@@ -75,5 +75,5 @@ if (!dryRun) {
     console.log("Dry run mode - skipping image build and push.");
 }
 
-// TODO: Create
+// Create dist.tar.gz
 await createDistTarGz();
