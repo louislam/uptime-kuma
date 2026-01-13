@@ -1009,7 +1009,13 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                if (await Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status, this.id)) {
+                // Get lastNonPendingStatus only for PENDING -> UP transitions
+                let lastNonPendingStatus = null;
+                if (previousBeat?.status === PENDING && bean.status === UP) {
+                    lastNonPendingStatus = await Monitor.getLastNonPendingStatus(this.id);
+                }
+
+                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status, lastNonPendingStatus)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
@@ -1450,42 +1456,22 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
      * @param {const} previousBeatStatus Status of the previous beat
      * @param {const} currentBeatStatus Status of the current beat
-     * @param {number} monitorID Optional monitor ID to check history for PENDING->UP transitions
-     * @returns {Promise<boolean>} True if is an important beat else false
+     * @returns {boolean} True if is an important beat else false
+>>>>>>> d4c2e5fc (Refactor isImportantForNotification: remove DB dependency and add tests)
      */
-    static async isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus, monitorID = null) {
-        // * ? -> ANY STATUS = important [isFirstBeat]
-        // UP -> PENDING = not important
-        // * UP -> DOWN = important
-        // UP -> UP = not important
-        // PENDING -> PENDING = not important
-        // * PENDING -> DOWN = important
-        // PENDING -> UP = important if monitor was DOWN before PENDING (fix for issue #6025)
-        // DOWN -> PENDING = this case not exists
-        // DOWN -> DOWN = not important
-        // * DOWN -> UP = important
-        // MAINTENANCE -> MAINTENANCE = not important
-        // MAINTENANCE -> UP = not important
-        // * MAINTENANCE -> DOWN = important
-        // DOWN -> MAINTENANCE = not important
-        // UP -> MAINTENANCE = not important
-
-        // Check for PENDING -> UP transition
-        if (previousBeatStatus === PENDING && currentBeatStatus === UP) {
-            // If monitorID is provided, check if the monitor was DOWN before entering PENDING
-            if (monitorID) {
-                const lastNonPendingStatus = await Monitor.getLastNonPendingStatus(monitorID);
-                // If the last non-PENDING status was DOWN, this transition is important
-                if (lastNonPendingStatus === DOWN) {
-                    return true;
-                }
-            }
-            // Otherwise, PENDING -> UP is not important (original behavior)
-            return false;
+    static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus, lastNonPendingStatus = null) {
+        // First beat is always important
+        if (isFirstBeat) {
+            return true;
         }
 
+        // PENDING -> UP is important only if monitor was DOWN before entering PENDING (fix for issue #6025)
+        if (previousBeatStatus === PENDING && currentBeatStatus === UP) {
+            return lastNonPendingStatus === DOWN;
+        }
+
+        // Important transitions
         return (
-            isFirstBeat ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
