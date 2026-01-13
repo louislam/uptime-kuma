@@ -18,6 +18,8 @@ const repoNames = getRepoNames();
 const version = process.env.RELEASE_BETA_VERSION;
 const dryRun = process.env.DRY_RUN === "true";
 const previousVersion = process.env.RELEASE_PREVIOUS_VERSION;
+const branchName = `release-${version}`;
+const githubRunId = process.env.GITHUB_RUN_ID;
 
 if (dryRun) {
     console.log("Dry run mode enabled. No images will be pushed.");
@@ -25,8 +27,8 @@ if (dryRun) {
 
 console.log("RELEASE_BETA_VERSION:", version);
 
-// Check if the current branch is "release"
-checkReleaseBranch();
+// Check if the current branch is "release-{version}"
+checkReleaseBranch(branchName);
 
 // Check if the version is a valid semver
 checkVersionFormat(version);
@@ -49,7 +51,7 @@ await checkTagExists(repoNames, version);
 execSync("node ./extra/beta/update-version.js");
 
 // Create Pull Request
-await createReleasePR(version, previousVersion, dryRun);
+await createReleasePR(version, previousVersion, dryRun, branchName, githubRunId);
 
 // Build frontend dist
 buildDist();

@@ -39,12 +39,17 @@ jobs:
           node-version: 24
 
       - name: Create release branch
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Delete local release branch if it exists
-          git branch -D release || true
-          git checkout -b release
+          # Delete remote branch if it exists
+          git push origin --delete "release-${VERSION}" || true
+          # Delete local branch if it exists
+          git branch -D "release-${VERSION}" || true
+          # Create new branch from master
+          git checkout -b "release-${VERSION}"
 
       - name: Install dependencies
         run: npm clean-install --no-fund
@@ -74,6 +79,7 @@ jobs:
           RELEASE_PREVIOUS_VERSION: ${{ inputs.previous_version }}
           DRY_RUN: ${{ inputs.dry_run }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: npm run release-beta
 
       - name: Upload dist.tar.gz as artifact
