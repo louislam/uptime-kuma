@@ -10,7 +10,7 @@ util.polyfill();
 
 const version = process.env.RELEASE_BETA_VERSION;
 
-console.log("Beta Version: " + version);
+console.log("Update to Beta Version: " + version);
 
 if (!version || !version.includes("-beta.")) {
     console.error("invalid version, beta version only");
@@ -42,7 +42,9 @@ if (!exists) {
         console.error("error update package-lock!");
         process.exit(1);
     }
+    console.lgo("Try to commit");
     commit(version);
+    console.log("OK");
 } else {
     console.log("version tag exists, please delete the tag or use another tag");
     process.exit(1);
