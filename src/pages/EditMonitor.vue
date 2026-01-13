@@ -2269,7 +2269,7 @@ const monitorDefaults = {
     accepted_statuscodes: ["200-299"],
     saveResponse: false,
     saveErrorResponse: true,
-    responseMaxLength: 10240,
+    responseMaxLength: 256,
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
     docker_container: "",

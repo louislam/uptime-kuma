@@ -2,7 +2,7 @@ exports.up = function (knex) {
     return knex.schema.alterTable("monitor", function (table) {
         table.boolean("save_response").notNullable().defaultTo(false);
         table.boolean("save_error_response").notNullable().defaultTo(true);
-        table.integer("response_max_length").notNullable().defaultTo(10240); // Default 10KB
+        table.integer("response_max_length").notNullable().defaultTo(256); // Default 256B
     });
 };
 
