@@ -157,17 +157,9 @@ class DomainExpiry extends BeanModel {
         }
 
         const tld = parseTld(target);
+        console.log(tld)
 
         // Avoid logging for incomplete/invalid input while editing monitors.
-        /*
-        if (!tld.domain) {
-            throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: tld.hostname });
-        }
-        if (!tld.publicSuffix) {
-            throw new TranslatableError("domain_expiry_unsupported_public_suffix", { publicSuffix: tld.publicSuffix });
-        }
-        */
-        // This block is added
         if (!tld.isIcann) {
             throw new TranslatableError("domain_expiry_unsupported_is_icann", { publicSuffix: tld.hostname });
         }

@@ -1317,8 +1317,6 @@ class Monitor extends BeanModel {
         const monitor = await R.findOne("monitor", "id = ?", [monitorID]);
 
         try {
-            // const supportInfo = await DomainExpiry.checkSupport(monitor);
-            // const domain = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
             const domain = await DomainExpiry.findByMonitorDomainName(monitor);
             if (domain?.expiry) {
                 io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
