@@ -307,7 +307,7 @@ export async function createDistTarGz() {
 export async function createReleasePR(version, previousVersion, dryRun) {
     const changelog = await generateChangelog(previousVersion);
 
-    const title = dryRun ? `build: update to ${version} (dry run)` : `build: update to ${version}`;
+    const title = dryRun ? `chore: update to ${version} (dry run)` : `chore: update to ${version}`;
     const body = `## Release ${version}
 
 This PR prepares the release for version ${version}.

@@ -42,7 +42,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Delete local release branch if it exists
+          git branch -D release || true
           git checkout -b release
+          git push origin release --force
 
       - name: Install dependencies
         run: npm clean-install --no-fund
