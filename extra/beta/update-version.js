@@ -62,6 +62,8 @@ function commit(version) {
         throw new Error("commit error");
     }
 
+    console.log("Committed");
+
     // Get the current branch name
     res = childProcess.spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
     let branchName = res.stdout.toString().trim();
@@ -69,6 +71,8 @@ function commit(version) {
 
     // Git push the branch
     childProcess.spawnSync("git", ["push", "origin", branchName, "--force"], { stdio: "inherit" });
+
+    console.log("Pushed");
 }
 
 /**
