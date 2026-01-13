@@ -58,8 +58,8 @@ function commit(version) {
         throw new Error("commit error");
     }
 
-    res = childProcess.spawnSync("git", ["push", "origin", "master"]);
-    console.log(res.stdout.toString().trim());
+    // Note: Push is handled by gh pr create in the release script
+    // No need to push here as we're on a release branch, not master
 }
 
 /**
