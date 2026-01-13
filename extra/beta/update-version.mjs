@@ -42,7 +42,7 @@ if (!exists) {
         console.error("error update package-lock!");
         process.exit(1);
     }
-    console.lgo("Try to commit");
+    console.log("Try to commit");
     commit(version);
     console.log("OK");
 } else {
