@@ -96,61 +96,7 @@ describe("Domain Expiry", () => {
         });
 
         describe("Domain Parsing", () => {
-            /*
-            test("throws error for invalid domain (no domain part)", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_invalid_domain");
-                        return true;
-                    }
-                );
-            });
-            */
-
-            /*
-            test("throws error for IPv4 address instead of domain", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://192.168.1.1",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_invalid_domain");
-                        return true;
-                    }
-                );
-            });
-            */
-
-            /*
-            test("throws error for IPv6 address", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://[2001:db8::1]",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_invalid_domain");
-                        return true;
-                    }
-                );
-            });
-            */
-
-            test("throws error for non-ICANN TLD (e.g. .local)", async () => {
+             test("throws error for non-ICANN TLD (e.g. .local)", async () => {
                 const monitor = {
                     type: "http",
                     url: "https://example.local",
@@ -181,25 +127,6 @@ describe("Domain Expiry", () => {
                     }
                 );
             });
-
-            /*
-            test("throws error for single-letter TLD", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://example.x",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_public_suffix_too_short");
-                        return true;
-                    }
-                );
-            });
-            */
-        });
 
         describe("Edge Cases & RDAP Support", () => {
             test("handles subdomain correctly", async () => {
@@ -245,24 +172,6 @@ describe("Domain Expiry", () => {
                 assert.strictEqual(supportInfo.domain, "example.com");
                 assert.strictEqual(supportInfo.tld, "com");
             });
-
-            /*
-            test("throws error for unsupported TLD without RDAP endpoint", async () => {
-                const monitor = {
-                    type: "http",
-                    url: "https://example.localhost",
-                    domainExpiryNotification: true,
-                };
-                await assert.rejects(
-                    async () => await DomainExpiry.checkSupport(monitor),
-                    (error) => {
-                        assert.strictEqual(error.constructor.name, "TranslatableError");
-                        assert.strictEqual(error.message, "domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint");
-                        return true;
-                    }
-                );
-            });
-            */
         });
     });
 
