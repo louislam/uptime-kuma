@@ -52,60 +52,63 @@ async function main() {
     }
 
     console.log(`Generating changelog since version ${previousVersion}...`);
+    console.log(await generateChangelog(previousVersion));
+}
 
-    try {
-        const prList = await getPullRequestList(previousVersion);
-        const list = [];
+/**
+ * Generate Changelog
+ * @param {string} previousVersion Previous Version Tag
+ * @returns {Promise<string>} Changelog Content
+ */
+export async function generateChangelog(previousVersion) {
+    const prList = await getPullRequestList(previousVersion);
+    const list = [];
+    let content = "";
 
-        let i = 1;
-        for (const pr of prList) {
-            console.log(`Progress: ${i++}/${prList.length}`);
-            let authorSet = await getAuthorList(pr.number);
-            authorSet = await mainAuthorToFront(pr.author.login, authorSet);
+    let i = 1;
+    for (const pr of prList) {
+        console.log(`Progress: ${i++}/${prList.length}`);
+        let authorSet = await getAuthorList(pr.number);
+        authorSet = await mainAuthorToFront(pr.author.login, authorSet);
 
-            if (mergeList.includes(pr.title)) {
-                // Check if it is already in the list
-                const existingItem = list.find(item => item.title === pr.title);
-                if (existingItem) {
-                    existingItem.numbers.push(pr.number);
-                    for (const author of authorSet) {
-                        existingItem.authors.add(author);
-                        // Sort the authors
-                        existingItem.authors = new Set([ ...existingItem.authors ].sort((a, b) => a.localeCompare(b)));
-                    }
-                    continue;
+        if (mergeList.includes(pr.title)) {
+            // Check if it is already in the list
+            const existingItem = list.find(item => item.title === pr.title);
+            if (existingItem) {
+                existingItem.numbers.push(pr.number);
+                for (const author of authorSet) {
+                    existingItem.authors.add(author);
+                    // Sort the authors
+                    existingItem.authors = new Set([ ...existingItem.authors ].sort((a, b) => a.localeCompare(b)));
                 }
+                continue;
             }
-
-            const item = {
-                numbers: [ pr.number ],
-                title: pr.title,
-                authors: authorSet,
-            };
-
-            list.push(item);
         }
 
-        for (const item of list) {
-            // Concat pr numbers into a string like #123 #456
-            const prPart = item.numbers.map(num => `#${num}`).join(" ");
+        const item = {
+            numbers: [ pr.number ],
+            title: pr.title,
+            authors: authorSet,
+        };
 
-            // Concat authors into a string like @user1 @user2
-            let authorPart = [ ...item.authors ].map(author => `@${author}`).join(" ");
-
-            if (authorPart) {
-                authorPart = `(Thanks ${authorPart})`;
-            }
-
-            console.log(`- ${prPart} ${item.title} ${authorPart}`);
-        }
-
-        console.log(template);
-
-    } catch (e) {
-        console.error("Failed to get pull request list:", e);
-        process.exit(1);
+        list.push(item);
     }
+
+    for (const item of list) {
+        // Concat pr numbers into a string like #123 #456
+        const prPart = item.numbers.map(num => `#${num}`).join(" ");
+
+        // Concat authors into a string like @user1 @user2
+        let authorPart = [ ...item.authors ].map(author => `@${author}`).join(" ");
+
+        if (authorPart) {
+            authorPart = `(Thanks ${authorPart})`;
+        }
+
+        content += `- ${prPart} ${item.title} ${authorPart}\n`;
+    }
+
+    return content + "\n" + template;
 }
 
 /**

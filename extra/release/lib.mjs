@@ -1,6 +1,7 @@
 import "dotenv/config";
 import * as childProcess from "child_process";
 import semver from "semver";
+import {generateChangelog} from "../generate-changelog.mjs";
 
 export const dryRun = process.env.RELEASE_DRY_RUN === "1";
 
@@ -202,6 +203,7 @@ export function ver(version, identifier) {
  * @param {string} version Version
  * @param {string} githubToken GitHub token
  * @returns {void}
+ * @deprecated
  */
 export function uploadArtifacts(version, githubToken) {
     let args = [
@@ -261,4 +263,29 @@ export function checkReleaseBranch() {
         console.error(`Current branch is ${branch}, please switch to "release" branch`);
         process.exit(1);
     }
+}
+
+/**
+ * TODO: similar to "tar -zcvf dist.tar.gz dist", but using nodejs
+ */
+export async function createDistTarGz() {
+    // TODO
+}
+
+/**
+ * TODO: Create a draft release PR
+ * @param version
+ * @param previousVersion
+ * @param dryRun Still create the PR, but add "[DRY RUN]" to the title
+ */
+export async function createReleasePR(version, previousVersion, dryRun) {
+    const changelog = await generateChangelog(previousVersion);
+
+    // TODO
+    //          gh pr create \
+    //             --title "Beta Release: ${{ inputs.version }}" \
+    //             --body "This PR prepares the beta release version ${{ inputs.version }}. \`dist.tar.gz\` : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+    //             --base master \
+    //             --head release \
+    //             --draft
 }

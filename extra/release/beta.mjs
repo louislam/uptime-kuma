@@ -9,11 +9,19 @@ import {
     getRepoNames,
     execSync,
     checkReleaseBranch,
+    createDistTarGz,
+    createReleasePR,
 } from "./lib.mjs";
 import semver from "semver";
 
 const repoNames = getRepoNames();
 const version = process.env.RELEASE_BETA_VERSION;
+const dryRun = process.env.DRY_RUN === "true";
+const previousVersion = process.env.RELEASE_PREVIOUS_VERSION;
+
+if (dryRun) {
+    console.log("Dry run mode enabled. No images will be pushed.");
+}
 
 console.log("RELEASE_BETA_VERSION:", version);
 
@@ -43,14 +51,29 @@ execSync("node ./extra/beta/update-version.js");
 // Build frontend dist
 buildDist();
 
-// Build slim image (rootless)
-buildImage(repoNames, [ "beta-slim-rootless", ver(version, "slim-rootless") ], "rootless", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+// TODO: Create Pull Request
+await createReleasePR(version, previousVersion, dryRun);
 
-// Build full image (rootless)
-buildImage(repoNames, [ "beta-rootless", ver(version, "rootless") ], "rootless");
+if (!dryRun) {
+    // Build slim image (rootless)
+    buildImage(
+        repoNames,
+        ["beta-slim-rootless", ver(version, "slim-rootless")],
+        "rootless",
+        "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+    );
 
-// Build slim image
-buildImage(repoNames, [ "beta-slim", ver(version, "slim") ], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+    // Build full image (rootless)
+    buildImage(repoNames, ["beta-rootless", ver(version, "rootless")], "rootless");
 
-// Build full image
-buildImage(repoNames, [ "beta", version ], "release");
+    // Build slim image
+    buildImage(repoNames, ["beta-slim", ver(version, "slim")], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+
+    // Build full image
+    buildImage(repoNames, ["beta", version], "release");
+} else {
+    console.log("Dry run mode - skipping image build and push.");
+}
+
+// TODO: Create
+await createDistTarGz();

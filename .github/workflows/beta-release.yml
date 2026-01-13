@@ -11,6 +11,11 @@ on:
         description: 'Previous version tag for changelog (e.g., 1.23.0)'
         required: true
         type: string
+      dry_run:
+        description: 'If true, the release will be a dry run without pushing changes'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -41,95 +46,6 @@ jobs:
       - name: Install dependencies
         run: npm clean-install --no-fund
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          echo "Generating changelog since ${{ inputs.previous_version }}"
-          npm run generate-changelog ${{ inputs.previous_version }} > changelog-output.txt 2>&1
-          cat changelog-output.txt
-
-      - name: Sort and categorize changelog with Copilot
-        id: categorize
-        run: |
-          echo "Processing changelog with GitHub Copilot..."
-
-          # Extract the raw PR list from changelog output (before the template)
-          sed -n '/^- #/p' changelog-output.txt > raw-changelog.txt
-
-          # Get the template/prompt
-          sed -n '/LLM Task:/,$p' changelog-output.txt > changelog-prompt.txt
-
-          # Combine them into a single file for Copilot
-          cat raw-changelog.txt > changelog-for-copilot.txt
-          echo "" >> changelog-for-copilot.txt
-          cat changelog-prompt.txt >> changelog-for-copilot.txt
-
-          echo "Changelog content prepared for Copilot categorization"
-          cat changelog-for-copilot.txt
-
-      - name: Create formatted changelog
-        run: |
-          echo "# Changelog for ${{ inputs.version }}" > FORMATTED_CHANGELOG.md
-          echo "" >> FORMATTED_CHANGELOG.md
-          echo "**Note:** This changelog was generated from merged PRs since ${{ inputs.previous_version }}" >> FORMATTED_CHANGELOG.md
-          echo "" >> FORMATTED_CHANGELOG.md
-          echo "## Pull Requests" >> FORMATTED_CHANGELOG.md
-          echo "" >> FORMATTED_CHANGELOG.md
-          cat raw-changelog.txt >> FORMATTED_CHANGELOG.md
-          echo "" >> FORMATTED_CHANGELOG.md
-          echo "---" >> FORMATTED_CHANGELOG.md
-          echo "" >> FORMATTED_CHANGELOG.md
-          echo "**Instructions for manual categorization:**" >> FORMATTED_CHANGELOG.md
-          cat changelog-prompt.txt >> FORMATTED_CHANGELOG.md
-
-      - name: Commit changelog
-        run: |
-          git add FORMATTED_CHANGELOG.md
-          git commit -m "Add changelog for ${{ inputs.version }}"
-
-      - name: Push branch
-        run: |
-          git push origin release
-
-      - name: Create draft pull request
-        id: create-pr
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_URL=$(gh pr create \
-            --base master \
-            --head release \
-            --title "Update to ${{ inputs.version }}" \
-            --body "## Beta Release ${{ inputs.version }}
-
-          This PR prepares the beta release for version ${{ inputs.version }}.
-
-          ### Release Steps Completed:
-          - [x] Create draft pull request
-          - [x] Generate changelog from ${{ inputs.previous_version }}
-          - [ ] Manually categorize changelog (see comment below)
-          - [ ] Run release-beta
-          - [ ] Upload dist.tar.gz
-
-          ### Next Steps:
-          1. Review the changelog comment below
-          2. Manually categorize the PRs using the template provided
-          3. Run the release-beta build job by triggering it manually
-          " \
-            --draft)
-          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
-          echo "PR created: $PR_URL"
-
-          # Extract PR number from URL
-          PR_NUMBER=$(basename "$PR_URL")
-          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
-
-      - name: Post changelog comment
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr comment ${{ steps.create-pr.outputs.pr_number }} --body-file FORMATTED_CHANGELOG.md
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
 
@@ -152,31 +68,14 @@ jobs:
       - name: Run release-beta
         env:
           RELEASE_BETA_VERSION: ${{ inputs.version }}
+          PREVIOUS_VERSION: ${{ inputs.previous_version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run release-beta
 
-      - name: Create dist tarball
+      - name: Push branch
         run: |
-          if [ -d dist ]; then
-            tar -zcvf dist.tar.gz dist
-          else
-            echo "Error: dist directory not found"
-            exit 1
-          fi
-
-      - name: Upload dist.tar.gz to PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Upload the tarball as a release asset comment
-          echo "Uploading dist.tar.gz to PR #${{ steps.create-pr.outputs.pr_number }}"
-
-          # Create a comment with instructions
-          gh pr comment ${{ steps.create-pr.outputs.pr_number }} --body "## Distribution Archive
-
-          The \`dist.tar.gz\` archive has been created and is available as an artifact in this workflow run.
-
-          Download it from: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          "
+          git push origin release
 
       - name: Upload dist.tar.gz as artifact
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
