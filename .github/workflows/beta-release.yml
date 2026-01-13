@@ -52,18 +52,18 @@ jobs:
         id: categorize
         run: |
           echo "Processing changelog with GitHub Copilot..."
-          
+
           # Extract the raw PR list from changelog output (before the template)
           sed -n '/^- #/p' changelog-output.txt > raw-changelog.txt
-          
+
           # Get the template/prompt
           sed -n '/LLM Task:/,$p' changelog-output.txt > changelog-prompt.txt
-          
+
           # Combine them into a single file for Copilot
           cat raw-changelog.txt > changelog-for-copilot.txt
           echo "" >> changelog-for-copilot.txt
           cat changelog-prompt.txt >> changelog-for-copilot.txt
-          
+
           echo "Changelog content prepared for Copilot categorization"
           cat changelog-for-copilot.txt
 
@@ -119,7 +119,7 @@ jobs:
             --draft)
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
           echo "PR created: $PR_URL"
-          
+
           # Extract PR number from URL
           PR_NUMBER=$(echo $PR_URL | grep -oP '\d+$')
           echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
@@ -153,7 +153,9 @@ jobs:
         env:
           RELEASE_BETA_VERSION: ${{ inputs.version }}
           RELEASE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run release-beta
+        run: |
+          # Send a space character to continue past the pressAnyKey prompt
+          printf " " | npm run release-beta
 
       - name: Create dist tarball
         run: |
@@ -165,12 +167,12 @@ jobs:
         run: |
           # Upload the tarball as a release asset comment
           echo "Uploading dist.tar.gz to PR #${{ steps.create-pr.outputs.pr_number }}"
-          
+
           # Create a comment with instructions
           gh pr comment ${{ steps.create-pr.outputs.pr_number }} --body "## Distribution Archive
 
           The \`dist.tar.gz\` archive has been created and is available as an artifact in this workflow run.
-          
+
           Download it from: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           "
 
