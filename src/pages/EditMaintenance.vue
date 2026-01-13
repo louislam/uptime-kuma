@@ -124,7 +124,72 @@
                             </div>
 
                             <!-- Single Maintenance Window -->
-                            <template v-if="maintenance.strategy === 'single'"></template>
+                            <template v-if="maintenance.strategy === 'single'">
+                                <div class="my-3">
+                                    <label class="form-label">{{ $t("Quick Duration") }}</label>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            @click="setQuickDuration(15)"
+                                        >
+                                            15 {{ $t("minuteShort") }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            @click="setQuickDuration(30)"
+                                        >
+                                            30 {{ $t("minuteShort") }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            @click="setQuickDuration(60)"
+                                        >
+                                            1 {{ $tc("hour", 1) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            @click="setQuickDuration(120)"
+                                        >
+                                            2 {{ $tc("hour", 2) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            @click="setQuickDuration(240)"
+                                        >
+                                            4 {{ $tc("hour", 4) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            @click="setQuickDuration(480)"
+                                        >
+                                            8 {{ $tc("hour", 8) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            @click="setQuickDuration(720)"
+                                        >
+                                            12 {{ $tc("hour", 12) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary btn-sm"
+                                            @click="setQuickDuration(1440)"
+                                        >
+                                            24 {{ $tc("hour", 24) }}
+                                        </button>
+                                    </div>
+                                    <div class="form-text">
+                                        {{ $t("Set end time based on start time") }}
+                                    </div>
+                                </div>
+                            </template>
 
                             <template v-if="maintenance.strategy === 'cron'">
                                 <!-- Cron -->
@@ -579,9 +644,6 @@ export default {
                 const minutes = String(now.getMinutes()).padStart(2, "0");
                 const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
 
-                // Get client's timezone
-                const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
                 this.maintenance = {
                     title: "",
                     description: "",
@@ -603,7 +665,7 @@ export default {
                     ],
                     weekdays: [],
                     daysOfMonth: [],
-                    timezoneOption: clientTimezone,
+                    timezoneOption: "SAME_AS_SERVER",
                 };
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
@@ -665,6 +727,30 @@ export default {
             if (removedOption.id === "select-all") {
                 this.affectedMonitors = this.affectedMonitors.filter((m) => m.id !== "select-all");
             }
+        },
+
+        /**
+         * Set quick duration for single maintenance
+         * Calculates end time based on start time + duration in minutes
+         * @param {number} minutes Duration in minutes
+         * @returns {void}
+         */
+        setQuickDuration(minutes) {
+            if (!this.maintenance.dateRange[0]) {
+                this.$root.toastError(this.$t("Please set start time first"));
+                return;
+            }
+
+            const startDate = new Date(this.maintenance.dateRange[0]);
+            const endDate = new Date(startDate.getTime() + minutes * 60000);
+
+            const year = endDate.getFullYear();
+            const month = String(endDate.getMonth() + 1).padStart(2, "0");
+            const day = String(endDate.getDate()).padStart(2, "0");
+            const hours = String(endDate.getHours()).padStart(2, "0");
+            const mins = String(endDate.getMinutes()).padStart(2, "0");
+
+            this.maintenance.dateRange[1] = `${year}-${month}-${day}T${hours}:${mins}`;
         },
 
         /**
