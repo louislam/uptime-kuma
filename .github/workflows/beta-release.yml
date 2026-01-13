@@ -42,6 +42,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Delete release branch if it exists
+          git branch -D release 2>/dev/null || true
+          git push origin --delete release 2>/dev/null || true
           git checkout -b release
 
       - name: Install dependencies
