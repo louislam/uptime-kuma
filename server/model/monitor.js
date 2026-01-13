@@ -1009,7 +1009,7 @@ class Monitor extends BeanModel {
             if (isImportant) {
                 bean.important = true;
 
-                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status)) {
+                if (await Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status, this.id)) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
@@ -1450,16 +1450,17 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
      * @param {const} previousBeatStatus Status of the previous beat
      * @param {const} currentBeatStatus Status of the current beat
-     * @returns {boolean} True if is an important beat else false
+     * @param {number} [monitorID] Optional monitor ID to check history for PENDING->UP transitions
+     * @returns {Promise<boolean>} True if is an important beat else false
      */
-    static isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus) {
+    static async isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus, monitorID = null) {
         // * ? -> ANY STATUS = important [isFirstBeat]
         // UP -> PENDING = not important
         // * UP -> DOWN = important
         // UP -> UP = not important
         // PENDING -> PENDING = not important
         // * PENDING -> DOWN = important
-        // PENDING -> UP = not important
+        // PENDING -> UP = important if monitor was DOWN before PENDING (fix for issue #6025)
         // DOWN -> PENDING = this case not exists
         // DOWN -> DOWN = not important
         // * DOWN -> UP = important
@@ -1468,6 +1469,21 @@ class Monitor extends BeanModel {
         // * MAINTENANCE -> DOWN = important
         // DOWN -> MAINTENANCE = not important
         // UP -> MAINTENANCE = not important
+
+        // Check for PENDING -> UP transition
+        if (previousBeatStatus === PENDING && currentBeatStatus === UP) {
+            // If monitorID is provided, check if the monitor was DOWN before entering PENDING
+            if (monitorID) {
+                const lastNonPendingStatus = await Monitor.getLastNonPendingStatus(monitorID);
+                // If the last non-PENDING status was DOWN, this transition is important
+                if (lastNonPendingStatus === DOWN) {
+                    return true;
+                }
+            }
+            // Otherwise, PENDING -> UP is not important (original behavior)
+            return false;
+        }
+
         return (
             isFirstBeat ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
@@ -1655,6 +1671,21 @@ class Monitor extends BeanModel {
      */
     static async getPreviousHeartbeat(monitorID) {
         return await R.findOne("heartbeat", " id = (select MAX(id) from heartbeat where monitor_id = ?)", [monitorID]);
+    }
+
+    /**
+     * Get the last non-PENDING heartbeat status for a monitor
+     * This is useful to determine if a monitor was DOWN before entering PENDING state
+     * @param {number} monitorID ID of monitor to check
+     * @returns {Promise<string|null>} Last non-PENDING status or null if not found
+     */
+    static async getLastNonPendingStatus(monitorID) {
+        const heartbeat = await R.findOne(
+            "heartbeat",
+            " monitor_id = ? AND status != ? ORDER BY time DESC LIMIT 1",
+            [monitorID, PENDING]
+        );
+        return heartbeat?.status || null;
     }
 
     /**
