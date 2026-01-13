@@ -93,4 +93,3 @@ describe("Monitor.isImportantForNotification", () => {
         assert.strictEqual(Monitor.isImportantForNotification(false, UP, UP, DOWN), false);
     });
 });
-

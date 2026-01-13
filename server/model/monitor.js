@@ -1015,7 +1015,14 @@ class Monitor extends BeanModel {
                     lastNonPendingStatus = await Monitor.getLastNonPendingStatus(this.id);
                 }
 
-                if (Monitor.isImportantForNotification(isFirstBeat, previousBeat?.status, bean.status, lastNonPendingStatus)) {
+                if (
+                    Monitor.isImportantForNotification(
+                        isFirstBeat,
+                        previousBeat?.status,
+                        bean.status,
+                        lastNonPendingStatus
+                    )
+                ) {
                     log.debug("monitor", `[${this.name}] sendNotification`);
                     await Monitor.sendNotification(isFirstBeat, this, bean);
                 } else {
@@ -1456,6 +1463,7 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
      * @param {const} previousBeatStatus Status of the previous beat
      * @param {const} currentBeatStatus Status of the current beat
+     * @param lastNonPendingStatus
      * @returns {boolean} True if is an important beat else false
 >>>>>>> d4c2e5fc (Refactor isImportantForNotification: remove DB dependency and add tests)
      */
