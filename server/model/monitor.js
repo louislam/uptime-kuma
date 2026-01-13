@@ -1450,7 +1450,7 @@ class Monitor extends BeanModel {
      * @param {boolean} isFirstBeat Is this the first beat of this monitor?
      * @param {const} previousBeatStatus Status of the previous beat
      * @param {const} currentBeatStatus Status of the current beat
-     * @param {number} [monitorID] Optional monitor ID to check history for PENDING->UP transitions
+     * @param {number} monitorID Optional monitor ID to check history for PENDING->UP transitions
      * @returns {Promise<boolean>} True if is an important beat else false
      */
     static async isImportantForNotification(isFirstBeat, previousBeatStatus, currentBeatStatus, monitorID = null) {
@@ -1680,11 +1680,10 @@ class Monitor extends BeanModel {
      * @returns {Promise<string|null>} Last non-PENDING status or null if not found
      */
     static async getLastNonPendingStatus(monitorID) {
-        const heartbeat = await R.findOne(
-            "heartbeat",
-            " monitor_id = ? AND status != ? ORDER BY time DESC LIMIT 1",
-            [monitorID, PENDING]
-        );
+        const heartbeat = await R.findOne("heartbeat", " monitor_id = ? AND status != ? ORDER BY time DESC LIMIT 1", [
+            monitorID,
+            PENDING,
+        ]);
         return heartbeat?.status || null;
     }
 
