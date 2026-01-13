@@ -46,8 +46,11 @@ jobs:
           git config user.name "louislam"
           git config user.email "1336778+louislam@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          # Delete the branch remotely if it already exists
+          git push origin --delete "release-${VERSION}" || true
+          # Delete locally if it exists
+          git branch -D "release-${VERSION}" || true
           git checkout -b "release-${VERSION}"
-          git push origin "release-${VERSION}"
 
       - name: Install dependencies
         run: npm clean-install --no-fund
