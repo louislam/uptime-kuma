@@ -570,6 +570,18 @@ export default {
             this.selectedStatusPages = [];
 
             if (this.isAdd) {
+                // Get current date/time in local timezone
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, "0");
+                const day = String(now.getDate()).padStart(2, "0");
+                const hours = String(now.getHours()).padStart(2, "0");
+                const minutes = String(now.getMinutes()).padStart(2, "0");
+                const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+                // Get client's timezone
+                const clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
                 this.maintenance = {
                     title: "",
                     description: "",
@@ -578,7 +590,7 @@ export default {
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [],
+                    dateRange: [currentDateTime, currentDateTime],
                     timeRange: [
                         {
                             hours: 2,
@@ -591,7 +603,7 @@ export default {
                     ],
                     weekdays: [],
                     daysOfMonth: [],
-                    timezoneOption: null,
+                    timezoneOption: clientTimezone,
                 };
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
