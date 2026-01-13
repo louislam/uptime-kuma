@@ -1115,6 +1115,7 @@
     "pingNumericDescription": "チェックした場合、シンボリックホスト名の代わりにIPアドレスが出力されます",
     "pingPerRequestTimeoutDescription": "これは、1つのpingパケットが失われたとみなすまでの最大待機時間（秒）です",
     "Disable URL in Notification": "通知のURLを無効にする",
+    "Suppress Notifications": "サイレント通知",
     "defaultFriendlyName": "新しいモニター",
     "smseagleGroupV2": "電話帳グループID",
     "smseagleContactV2": "電話帳連絡ID",

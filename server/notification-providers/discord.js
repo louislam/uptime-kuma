@@ -2,6 +2,15 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
+/**
+ * Discord Message Flags
+ * @see https://discord.com/developers/docs/resources/message#message-object-message-flags
+ */
+const DISCORD_MESSAGE_FLAGS = {
+    /** This message will not trigger push and desktop notifications */
+    SUPPRESS_NOTIFICATIONS: 1 << 12,
+};
+
 class Discord extends NotificationProvider {
     name = "discord";
 
@@ -40,6 +49,9 @@ class Discord extends NotificationProvider {
                 }
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
+                }
+                if (notification.discordSuppressNotifications) {
+                    discordtestdata.flags = DISCORD_MESSAGE_FLAGS.SUPPRESS_NOTIFICATIONS;
                 }
                 await axios.post(webhookUrl.toString(), discordtestdata, config);
                 return okMsg;
@@ -88,6 +100,9 @@ class Discord extends NotificationProvider {
                 }
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
+                }
+                if (notification.discordSuppressNotifications) {
+                    discorddowndata.flags = DISCORD_MESSAGE_FLAGS.SUPPRESS_NOTIFICATIONS;
                 }
 
                 await axios.post(webhookUrl.toString(), discorddowndata, config);
@@ -139,6 +154,9 @@ class Discord extends NotificationProvider {
 
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
+                }
+                if (notification.discordSuppressNotifications) {
+                    discordupdata.flags = DISCORD_MESSAGE_FLAGS.SUPPRESS_NOTIFICATIONS;
                 }
 
                 await axios.post(webhookUrl.toString(), discordupdata, config);
