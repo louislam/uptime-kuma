@@ -152,10 +152,7 @@ jobs:
       - name: Run release-beta
         env:
           RELEASE_BETA_VERSION: ${{ inputs.version }}
-          RELEASE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Send input to continue past the pressAnyKey prompt
-          yes ' ' | npm run release-beta
+        run: npm run release-beta
 
       - name: Create dist tarball
         run: |

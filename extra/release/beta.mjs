@@ -7,21 +7,15 @@ import {
     checkTagExists,
     checkVersionFormat,
     getRepoNames,
-    pressAnyKey,
-    execSync, uploadArtifacts, checkReleaseBranch,
+    execSync,
+    checkReleaseBranch,
 } from "./lib.mjs";
 import semver from "semver";
 
 const repoNames = getRepoNames();
 const version = process.env.RELEASE_BETA_VERSION;
-const githubToken = process.env.RELEASE_GITHUB_TOKEN;
 
 console.log("RELEASE_BETA_VERSION:", version);
-
-if (!githubToken) {
-    console.error("GITHUB_TOKEN is required");
-    process.exit(1);
-}
 
 // Check if the current branch is "release"
 checkReleaseBranch();
@@ -60,8 +54,3 @@ buildImage(repoNames, [ "beta-slim", ver(version, "slim") ], "release", "BASE_IM
 
 // Build full image
 buildImage(repoNames, [ "beta", version ], "release");
-
-await pressAnyKey();
-
-// npm run upload-artifacts
-uploadArtifacts(version, githubToken);
