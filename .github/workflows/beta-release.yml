@@ -12,10 +12,10 @@ on:
         required: true
         type: string
       dry_run:
-        description: "If true, the release will be a dry run without pushing changes"
+        description: "If true, the docker image will not be pushed to registries. PR will still be created."
         required: false
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: write
