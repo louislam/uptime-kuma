@@ -353,6 +353,7 @@ export default {
             // Render chart using heartbeatList
             let lastHeartbeatTime;
             const monitorInterval = this.$root.monitorList[this.monitorId]?.interval;
+            const isUpsideDown = this.$root.monitorList[this.monitorId]?.upsideDown || false;
             let pingData = []; // Ping Data for Line Chart, y-axis contains ping time
             let downData = []; // Down Data for Bar Chart, y-axis is 1 if target is down (red color), under maintenance (blue color) or pending (orange color), 0 if target is up
             let colorData = []; // Color Data for Bar Chart
@@ -390,7 +391,7 @@ export default {
 
                 pingData.push({
                     x,
-                    y: beat.status === UP ? beat.ping : null,
+                    y: (beat.status === UP || (beat.status === DOWN && isUpsideDown)) ? beat.ping : null,
                 });
                 downData.push({
                     x,
