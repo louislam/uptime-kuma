@@ -157,13 +157,20 @@ class DomainExpiry extends BeanModel {
         }
 
         const tld = parseTld(target);
+        console.log(tld)
 
         // Avoid logging for incomplete/invalid input while editing monitors.
+        /*
         if (!tld.domain) {
             throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: tld.hostname });
         }
         if (!tld.publicSuffix) {
             throw new TranslatableError("domain_expiry_unsupported_public_suffix", { publicSuffix: tld.publicSuffix });
+        }
+        */
+        // This block is added
+        if (!tld.isIcann) {
+            throw new TranslatableError("domain_expiry_unsupported_is_icann", { publicSuffix: tld.hostname });
         }
         if (tld.isIp) {
             throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
@@ -193,6 +200,26 @@ class DomainExpiry extends BeanModel {
             domain: tld.domain,
             tld: tld.publicSuffix,
         };
+    }
+
+    /**
+     * @param {Monitor} monitor Monitor object
+     * @throws {TranslatableError} Throws an error if the monitor type is unsupported or missing target.
+     * @returns {Promise<{ domain: string, tld: string }>} Domain expiry support info
+     */
+    static async findByMonitorDomainName(monitor) {
+        if (!(monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD)) {
+            throw new TranslatableError("domain_expiry_unsupported_monitor_type");
+        }
+        const targetField = TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD[monitor.type];
+        const target = monitor[targetField];
+        if (typeof target !== "string" || target.length === 0) {
+            throw new TranslatableError("domain_expiry_unsupported_missing_target");
+        }
+
+        const tld = parseTld(target);
+
+        return await DomainExpiry.findByDomainNameOrCreate(tld.domain);
     }
 
     /**

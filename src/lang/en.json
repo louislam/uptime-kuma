@@ -1292,6 +1292,7 @@
     "domain_expiry_unsupported_invalid_domain": "The configured value \"{hostname}\" is not a valid domain name",
     "domain_expiry_public_suffix_too_short": "\".{publicSuffix}\" is too short for a top level domain",
     "domain_expiry_unsupported_public_suffix": "The domain \"{domain}\" does not have a valid public suffix",
+    "domain_expiry_unsupported_is_icann": "The domain \"{domain}\" is not a candidate for domain expiry monitoring",
     "domain_expiry_unsupported_is_ip": "\"{hostname}\" is an IP address. Domain expiry monitoring requires a domain name",
     "domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint": "Domain expiry monitoring is not available for \".{publicSuffix}\" because no RDAP service is listed by IANA",
     "minimumIntervalWarning": "Intervals below 20 seconds may result in poor performance.",
