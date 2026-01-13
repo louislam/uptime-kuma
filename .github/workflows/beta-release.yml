@@ -121,7 +121,7 @@ jobs:
           echo "PR created: $PR_URL"
 
           # Extract PR number from URL
-          PR_NUMBER=$(echo $PR_URL | grep -oP '\d+$')
+          PR_NUMBER=$(basename "$PR_URL")
           echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
 
       - name: Post changelog comment
@@ -154,12 +154,17 @@ jobs:
           RELEASE_BETA_VERSION: ${{ inputs.version }}
           RELEASE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Send a space character to continue past the pressAnyKey prompt
-          printf " " | npm run release-beta
+          # Send input to continue past the pressAnyKey prompt
+          yes ' ' | npm run release-beta
 
       - name: Create dist tarball
         run: |
-          tar -zcvf dist.tar.gz dist
+          if [ -d dist ]; then
+            tar -zcvf dist.tar.gz dist
+          else
+            echo "Error: dist directory not found"
+            exit 1
+          fi
 
       - name: Upload dist.tar.gz to PR
         env:
