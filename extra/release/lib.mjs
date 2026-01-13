@@ -247,14 +247,15 @@ export function execSync(cmd) {
 }
 
 /**
- * Check if the current branch is "release"
+ * Check if the current branch matches the expected release branch pattern
+ * @param {string} expectedBranch Expected branch name (can be "release" or "release-{version}")
  * @returns {void}
  */
-export function checkReleaseBranch() {
+export function checkReleaseBranch(expectedBranch = "release") {
     const res = childProcess.spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
     const branch = res.stdout.toString().trim();
-    if (branch !== "release") {
-        console.error(`Current branch is ${branch}, please switch to "release" branch`);
+    if (branch !== expectedBranch) {
+        console.error(`Current branch is ${branch}, please switch to "${expectedBranch}" branch`);
         process.exit(1);
     }
 }
@@ -302,9 +303,10 @@ export async function createDistTarGz() {
  * @param {string} version Version
  * @param {string} previousVersion Previous version tag
  * @param {boolean} dryRun Still create the PR, but add "[DRY RUN]" to the title
+ * @param {string} branchName The branch name to use for the PR head (defaults to "release")
  * @returns {Promise<void>}
  */
-export async function createReleasePR(version, previousVersion, dryRun) {
+export async function createReleasePR(version, previousVersion, dryRun, branchName = "release") {
     const changelog = await generateChangelog(previousVersion);
 
     const title = dryRun ? `chore: update to ${version} (dry run)` : `chore: update to ${version}`;
@@ -317,7 +319,7 @@ This PR prepares the release for version ${version}.
 - [ ] Create a new release on GitHub with the tag \`${version}\`.
 - [ ] Ask any LLM to categorize the changelog into sections.
 - [ ] Place the changelog in the release note.
-- [ ] Download and upload the \`dist.tar.gz\` artifact to the release.
+- [ ] Download the \`dist.tar.gz\` artifact from the [workflow run](https://github.com/louislam/uptime-kuma/actions/workflows/beta-release.yml) and upload it to the release.
 - [ ] (Beta only) Set prerelease
 - [ ] Publish the release note on GitHub.
 
@@ -332,7 +334,7 @@ The \`dist.tar.gz\` archive will be available as an artifact in the workflow run
 `;
 
     // Create the PR using gh CLI
-    const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", "release", "--draft"];
+    const args = ["pr", "create", "--title", title, "--body", body, "--base", "master", "--head", branchName, "--draft"];
 
     console.log(`Creating draft PR: ${title}`);
 
