@@ -46,8 +46,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
-          git checkout -b "release-${VERSION}"
-          git push origin "release-${VERSION}"
+          git checkout -b "test2"
+          git push origin "test2"
 
       - name: Install dependencies
         run: npm clean-install --no-fund
