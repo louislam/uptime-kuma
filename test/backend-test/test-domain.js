@@ -127,6 +127,7 @@ describe("Domain Expiry", () => {
                     }
                 );
             });
+        });
 
         describe("Edge Cases & RDAP Support", () => {
             test("handles subdomain correctly", async () => {
