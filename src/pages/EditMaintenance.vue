@@ -129,7 +129,7 @@
                                     <label for="cron" class="form-label">
                                         {{ $t("cronExpression") }}
                                     </label>
-                                    <p>{{ $t("cronSchedule") }}{{ cronDescription }}</p>
+                                    <p>{{ $t("cronScheduleDescription", { description: cronDescription }) }}</p>
                                     <input
                                         id="cron"
                                         v-model="maintenance.cron"

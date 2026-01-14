@@ -79,7 +79,7 @@
                 <ActionInput
                     v-model="tlsExpiryNotifInput"
                     :type="'number'"
-                    :placeholder="$t('days', 1, {n:1})"
+                    :placeholder="$t('days', 1)"
                     :icon="'plus'"
                     :action="() => addTlsExpiryNotifDay(tlsExpiryNotifInput)"
                     :action-aria-label="$t('Add a new expiry notification day')"
@@ -117,7 +117,7 @@
                 <ActionInput
                     v-model="domainExpiryNotifInput"
                     :type="'number'"
-                    :placeholder="$t('days', 1, {n:1})"
+                    :placeholder="$t('days', 1)"
                     :icon="'plus'"
                     :action="() => addDomainExpiryNotifDay(domainExpiryNotifInput)"
                     :action-aria-label="$t('Add a new expiry notification day')"
