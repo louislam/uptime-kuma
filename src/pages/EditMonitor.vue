@@ -1206,7 +1206,10 @@
                                 <div class="form-text">
                                     {{ $t("downRetryIntervalDescription") }}
                                 </div>
-                                <div v-if="monitor.downRetryInterval > 0 && monitor.downRetryInterval < 20" class="form-text">
+                                <div
+                                    v-if="monitor.downRetryInterval > 0 && monitor.downRetryInterval < 20"
+                                    class="form-text"
+                                >
                                     {{ $t("minimumIntervalWarning") }}
                                 </div>
                             </div>
