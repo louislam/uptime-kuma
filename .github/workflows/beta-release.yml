@@ -50,7 +50,8 @@ jobs:
           git push origin --delete "release-${VERSION}" || true
           # Delete local branch if it exists
           git branch -D "release-${VERSION}" || true
-          # Create new branch from master
+          # For testing purpose
+          # git checkout beta-workflow
           git checkout -b "release-${VERSION}"
 
       - name: Install dependencies

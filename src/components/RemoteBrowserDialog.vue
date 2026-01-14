@@ -31,12 +31,9 @@
                                 required
                             />
 
-                            <div class="form-text mt-3">
-                                {{ $t("Examples") }}:
-                                <ul>
-                                    <li>ws://chrome.browserless.io/playwright?token=YOUR-API-TOKEN</li>
-                                </ul>
-                            </div>
+                            <i18n-t tag="div" keypath="Example:" class="form-text mt-3">
+                                <code>ws://chrome.browserless.io/playwright?token=YOUR-API-TOKEN</code>
+                            </i18n-t>
                         </div>
                     </div>
 
