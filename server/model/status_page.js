@@ -7,8 +7,8 @@ const analytics = require("../analytics/analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
-const { setting } = require("../util-server");
 
+const { setting } = require("../util-server");
 const {
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_ALL_UP,
@@ -17,6 +17,7 @@ const {
     UP,
     MAINTENANCE,
     DOWN,
+    INCIDENT_PAGE_SIZE,
 } = require("../../src/util");
 
 class StatusPage extends BeanModel {
@@ -307,12 +308,13 @@ class StatusPage extends BeanModel {
     static async getStatusPageData(statusPage) {
         const config = await statusPage.toPublicJSON();
 
-        // Incident
-        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [statusPage.id]);
-
-        if (incident) {
-            incident = incident.toPublicJSON();
-        }
+        // All active incidents
+        let incidents = await R.find(
+            "incident",
+            " pin = 1 AND active = 1 AND status_page_id = ? ORDER BY created_date DESC",
+            [statusPage.id]
+        );
+        incidents = incidents.map((i) => i.toPublicJSON());
 
         let maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
 
@@ -330,7 +332,7 @@ class StatusPage extends BeanModel {
         // Response
         return {
             config,
-            incident,
+            incidents,
             publicGroupList,
             maintenanceList,
         };
@@ -497,6 +499,32 @@ class StatusPage extends BeanModel {
         } else {
             return this.icon;
         }
+    }
+
+    /**
+     * Get paginated incident history for a status page
+     * @param {number} statusPageId ID of the status page
+     * @param {number} page Page number (1-based)
+     * @param {boolean} isPublic Whether to return public or admin data
+     * @returns {Promise<object>} Paginated incident data
+     */
+    static async getIncidentHistory(statusPageId, page, isPublic = true) {
+        const offset = (page - 1) * INCIDENT_PAGE_SIZE;
+
+        const incidents = await R.find("incident", " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ", [
+            statusPageId,
+            INCIDENT_PAGE_SIZE,
+            offset,
+        ]);
+
+        const total = await R.count("incident", " status_page_id = ? ", [statusPageId]);
+
+        return {
+            incidents: incidents.map((i) => (isPublic ? i.toPublicJSON() : i.toJSON())),
+            total,
+            page,
+            totalPages: Math.ceil(total / INCIDENT_PAGE_SIZE),
+        };
     }
 
     /**
