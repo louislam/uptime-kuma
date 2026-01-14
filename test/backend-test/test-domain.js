@@ -11,7 +11,6 @@ const { Settings } = require("../../server/settings");
 const { setSetting } = require("../../server/util-server");
 const dayjs = require("dayjs");
 dayjs.extend(require("dayjs/plugin/utc"));
-const TranslatableError = require("../../server/translatable-error");
 
 const testDb = new TestDB();
 
