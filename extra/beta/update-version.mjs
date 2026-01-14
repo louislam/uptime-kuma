@@ -1,3 +1,6 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
 const pkg = require("../../package.json");
 const fs = require("fs");
 const childProcess = require("child_process");
@@ -58,8 +61,13 @@ function commit(version) {
         throw new Error("commit error");
     }
 
-    // Note: Push is handled by gh pr create in the release script
-    // No need to push here as we're on a release branch, not master
+    // Get the current branch name
+    res = childProcess.spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    let branchName = res.stdout.toString().trim();
+    console.log("Current branch:", branchName);
+
+    // Git push the branch
+    childProcess.spawnSync("git", ["push", "origin", branchName, "--force"], { stdio: "inherit" });
 }
 
 /**
