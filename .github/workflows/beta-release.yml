@@ -43,15 +43,15 @@ jobs:
           VERSION: ${{ inputs.version }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "louislam"
-          git config user.email "1336778+louislam@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
-          # Delete the branch remotely if it already exists
+          # Delete remote branch if it exists
           git push origin --delete "release-${VERSION}" || true
-          # Delete locally if it exists
+          # Delete local branch if it exists
           git branch -D "release-${VERSION}" || true
           # For testing purpose
-          git checkout beta-workflow
+          # git checkout beta-workflow
           git checkout -b "release-${VERSION}"
 
       - name: Install dependencies

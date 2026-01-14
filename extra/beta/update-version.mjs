@@ -10,7 +10,7 @@ util.polyfill();
 
 const version = process.env.RELEASE_BETA_VERSION;
 
-console.log("Update to Beta Version: " + version);
+console.log("Beta Version: " + version);
 
 if (!version || !version.includes("-beta.")) {
     console.error("invalid version, beta version only");
@@ -26,25 +26,19 @@ if (!exists) {
 
     // Also update package-lock.json
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    const resultVersion = childProcess.spawnSync(npm, ["--no-git-tag-version", "version", version], {
-        shell: true,
-    });
+    const resultVersion = childProcess.spawnSync(npm, ["--no-git-tag-version", "version", version], { shell: true });
     if (resultVersion.error) {
         console.error(resultVersion.error);
         console.error("error npm version!");
         process.exit(1);
     }
-    const resultInstall = childProcess.spawnSync(npm, ["install"], {
-        shell: true,
-    });
+    const resultInstall = childProcess.spawnSync(npm, ["install"], { shell: true });
     if (resultInstall.error) {
         console.error(resultInstall.error);
         console.error("error update package-lock!");
         process.exit(1);
     }
-    console.log("Try to commit");
     commit(version);
-    console.log("OK");
 } else {
     console.log("version tag exists, please delete the tag or use another tag");
     process.exit(1);
@@ -67,8 +61,6 @@ function commit(version) {
         throw new Error("commit error");
     }
 
-    console.log("Committed");
-
     // Get the current branch name
     res = childProcess.spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
     let branchName = res.stdout.toString().trim();
@@ -76,8 +68,6 @@ function commit(version) {
 
     // Git push the branch
     childProcess.spawnSync("git", ["push", "origin", branchName, "--force"], { stdio: "inherit" });
-
-    console.log("Pushed");
 }
 
 /**
