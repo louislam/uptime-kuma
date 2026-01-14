@@ -194,7 +194,7 @@
                         class="col-12 col-sm col row d-flex align-items-center d-sm-block"
                     >
                         <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 24 }} {{ $tc("hour", 24) }})</p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("hours", 24) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <CountUp :value="avgPing" />
                         </span>
@@ -203,7 +203,7 @@
                     <!-- Uptime (24-hour) -->
                     <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 24 }} {{ $tc("hour", 24) }})</p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("hours", 24) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="24" />
                         </span>
@@ -212,7 +212,7 @@
                     <!-- Uptime (30-day) -->
                     <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 30 }} {{ $tc("day", 30) }})</p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("days", 30) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="720" />
                         </span>
@@ -221,7 +221,7 @@
                     <!-- Uptime (1-year) -->
                     <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 1 }} {{ $tc("year", 1) }})</p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("years", 1) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="1y" />
                         </span>
@@ -236,7 +236,7 @@
                         </p>
                         <span class="col-4 col-sm-12 num">
                             <a href="#" @click.prevent="toggleCertInfoBox = !toggleCertInfoBox">
-                                {{ tlsInfo.certInfo.daysRemaining }} {{ $tc("day", tlsInfo.certInfo.daysRemaining) }}
+                                {{ $t("days", tlsInfo.certInfo.daysRemaining) }}
                             </a>
                             <font-awesome-icon
                                 v-if="tlsInfo.hostnameMatchMonitorUrl === false"
@@ -254,7 +254,7 @@
                             )
                         </p>
                         <span class="col-4 col-sm-12 num">
-                            {{ domainInfo.daysRemaining }} {{ $tc("day", domainInfo.daysRemaining) }}
+                            {{ $t("days", domainInfo.daysRemaining) }}
                         </span>
                     </div>
                 </div>
@@ -374,7 +374,7 @@
                             type="checkbox"
                         />
                         <label class="form-check-label" for="delete-children-checkbox">
-                            {{ $t("deleteChildrenMonitors", childrenCount, { count: childrenCount }) }}
+                            {{ $t("deleteChildrenMonitors", childrenCount) }}
                         </label>
                     </div>
                 </div>

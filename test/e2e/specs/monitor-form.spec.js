@@ -105,4 +105,34 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
     });
+
+    test("save response settings persist", async ({ page }, testInfo) => {
+        await page.goto("./add");
+        await login(page);
+        await selectMonitorType(page, "http");
+
+        const friendlyName = "Example HTTP Save Response";
+        await page.getByTestId("friendly-name-input").fill(friendlyName);
+        await page.getByTestId("url-input").fill("https://www.example.com/");
+
+        // Expect error response save enabled by default
+        await expect(page.getByLabel("Save HTTP Error Response for Notifications")).toBeChecked();
+
+        await page.getByLabel("Save HTTP Success Response for Notifications").check();
+        await page.getByLabel("Save HTTP Error Response for Notifications").uncheck();
+        await page.getByLabel("Response Max Length (bytes)").fill("2048");
+
+        await screenshot(testInfo, page);
+        await page.getByTestId("save-button").click();
+        await page.waitForURL("/dashboard/*");
+
+        await page.getByRole("link", { name: "Edit" }).click();
+        await page.waitForURL("/edit/*");
+
+        await expect(page.getByLabel("Save HTTP Success Response for Notifications")).toBeHidden();
+        await expect(page.getByLabel("Save HTTP Error Response for Notifications")).not.toBeChecked();
+        await expect(page.getByLabel("Response Max Length (bytes)")).toHaveValue("2048");
+
+        await screenshot(testInfo, page);
+    });
 });
