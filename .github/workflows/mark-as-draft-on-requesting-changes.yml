@@ -41,7 +41,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr ready "${{ github.event.pull_request.number }}" --undo || true
+          gh pr ready "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --undo || true
+          # || true to ignore the case where the pr is already a draft
 
   ready-for-review:
     runs-on: ubuntu-latest
