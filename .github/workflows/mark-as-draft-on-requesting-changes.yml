@@ -1,56 +1,55 @@
 name: Mark PR as draft when changes are requested
 
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request_target:
+    types:
+      - review_submitted
+      - labeled
+      - ready_for_review
 
-  pull_request:
-    types: [labeled]
-
-permissions: {}
+permissions:
+  pull-requests: write
+  issues: write
 
 jobs:
   mark-draft:
     runs-on: ubuntu-latest
     if: |
       (
-        github.event_name == 'pull_request_review' &&
+        github.event.action == 'review_submitted' &&
         github.event.review.state == 'changes_requested'
       ) || (
-        github.event_name == 'pull_request' &&
+        github.event.action == 'labeled' &&
         github.event.label.name == 'pr:please address review comments'
       )
     steps:
       - name: Add label on requested changes
-        if: github.event_name == 'pull_request_review'
+        if: github.event.review.state == 'changes_requested'
         env:
-          GH_TOKEN: ${{ secrets.MARK_AS_DRAFT_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue edit "$PR_NUMBER" \
-            --repo "$REPO" \
+          gh issue edit "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
             --add-label "pr:please address review comments"
 
       - name: Mark PR as draft
         env:
-          GH_TOKEN: ${{ secrets.MARK_AS_DRAFT_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr ready "$PR_URL" --undo || true
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr ready "${{ github.event.pull_request.html_url }}" --undo || true
+
   ready-for-review:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.action == 'ready_for_review'
+    if: github.event.action == 'ready_for_review'
     steps:
       - name: Update labels for review
         env:
-          GH_TOKEN: ${{ secrets.MARK_AS_DRAFT_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue edit "$PR_NUMBER" \
-            --repo "$REPO" \
+          gh issue edit "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
             --remove-label "pr:please address review comments" || true
 
-          gh issue edit "$PR_NUMBER" \
-            --repo "$REPO" \
+          gh issue edit "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
             --add-label "pr:needs review"
