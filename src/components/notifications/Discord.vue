@@ -116,6 +116,9 @@
                 {{ $t("Suppress Notifications") }}
             </label>
         </div>
+        <div class="form-text">
+            {{ $t("discordSuppressNotificationsHelptext") }}
+        </div>
     </div>
 </template>
 <script>

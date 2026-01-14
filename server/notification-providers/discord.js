@@ -2,15 +2,6 @@ const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
 
-/**
- * Discord Message Flags
- * @see https://discord.com/developers/docs/resources/message#message-object-message-flags
- */
-const DISCORD_MESSAGE_FLAGS = {
-    /** This message will not trigger push and desktop notifications */
-    SUPPRESS_NOTIFICATIONS: 1 << 12,
-};
-
 class Discord extends NotificationProvider {
     name = "discord";
 
@@ -19,6 +10,11 @@ class Discord extends NotificationProvider {
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
+
+        // Discord Message Flags
+        // @see https://discord.com/developers/docs/resources/message#message-object-message-flags
+        // This message will not trigger push and desktop notifications
+        const SUPPRESS_NOTIFICATIONS_FLAG = 1 << 12;
 
         try {
             let config = this.getAxiosConfigWithProxy({});
@@ -51,7 +47,7 @@ class Discord extends NotificationProvider {
                     discordtestdata.thread_name = notification.postName;
                 }
                 if (notification.discordSuppressNotifications) {
-                    discordtestdata.flags = DISCORD_MESSAGE_FLAGS.SUPPRESS_NOTIFICATIONS;
+                    discordtestdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
                 await axios.post(webhookUrl.toString(), discordtestdata, config);
                 return okMsg;
@@ -102,7 +98,7 @@ class Discord extends NotificationProvider {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
                 if (notification.discordSuppressNotifications) {
-                    discorddowndata.flags = DISCORD_MESSAGE_FLAGS.SUPPRESS_NOTIFICATIONS;
+                    discorddowndata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
                 await axios.post(webhookUrl.toString(), discorddowndata, config);
@@ -156,7 +152,7 @@ class Discord extends NotificationProvider {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
                 if (notification.discordSuppressNotifications) {
-                    discordupdata.flags = DISCORD_MESSAGE_FLAGS.SUPPRESS_NOTIFICATIONS;
+                    discordupdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
                 await axios.post(webhookUrl.toString(), discordupdata, config);
