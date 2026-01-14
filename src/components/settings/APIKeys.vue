@@ -27,7 +27,7 @@
                             <div class="status">
                                 {{ $t("apiKey-" + item.status) }}
                             </div>
-                            <div class="date">{{ $t("CreatedAt", { date: item.createdDate }) }}</div>
+                            <div class="date">{{ $t("createdAt", { date: item.createdDate }) }}</div>
                             <div class="date">
                                 {{ $t("Expires") }}:
                                 {{ item.expires || $t("Never") }}
