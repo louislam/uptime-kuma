@@ -133,56 +133,56 @@
                                             class="btn btn-outline-primary btn-sm"
                                             @click="setQuickDuration(15)"
                                         >
-                                            15 {{ $t("minuteShort") }}
+                                            {{ $tc("minuteShort", 15) }}
                                         </button>
                                         <button
                                             type="button"
                                             class="btn btn-outline-primary btn-sm"
                                             @click="setQuickDuration(30)"
                                         >
-                                            30 {{ $t("minuteShort") }}
+                                            {{ $tc("minuteShort", 30) }}
                                         </button>
                                         <button
                                             type="button"
                                             class="btn btn-outline-primary btn-sm"
                                             @click="setQuickDuration(60)"
                                         >
-                                            1 {{ $tc("hour", 1) }}
+                                            {{ $tc("hour", 1) }}
                                         </button>
                                         <button
                                             type="button"
                                             class="btn btn-outline-primary btn-sm"
                                             @click="setQuickDuration(120)"
                                         >
-                                            2 {{ $tc("hour", 2) }}
+                                            {{ $tc("hour", 2) }}
                                         </button>
                                         <button
                                             type="button"
                                             class="btn btn-outline-primary btn-sm"
                                             @click="setQuickDuration(240)"
                                         >
-                                            4 {{ $tc("hour", 4) }}
+                                            {{ $tc("hour", 4) }}
                                         </button>
                                         <button
                                             type="button"
                                             class="btn btn-outline-primary btn-sm"
                                             @click="setQuickDuration(480)"
                                         >
-                                            8 {{ $tc("hour", 8) }}
+                                            {{ $tc("hour", 8) }}
                                         </button>
                                         <button
                                             type="button"
                                             class="btn btn-outline-primary btn-sm"
                                             @click="setQuickDuration(720)"
                                         >
-                                            12 {{ $tc("hour", 12) }}
+                                            {{ $tc("hour", 12) }}
                                         </button>
                                         <button
                                             type="button"
                                             class="btn btn-outline-primary btn-sm"
                                             @click="setQuickDuration(1440)"
                                         >
-                                            24 {{ $tc("hour", 24) }}
+                                            {{ $tc("hour", 24) }}
                                         </button>
                                     </div>
                                     <div class="form-text">
