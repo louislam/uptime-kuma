@@ -20,7 +20,7 @@ COPY --chown=node:node .npmrc .npmrc
 COPY --chown=node:node package.json package.json
 COPY --chown=node:node package-lock.json package-lock.json
 RUN npm ci
-COPY . .
+COPY --chown=node:node . .
 COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
 RUN npm run build
 RUN npm prune --omit=dev
