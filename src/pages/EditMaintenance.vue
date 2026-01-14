@@ -123,106 +123,6 @@
                                 </select>
                             </div>
 
-                            <!-- Single Maintenance Window -->
-                            <template v-if="maintenance.strategy === 'single'">
-                                <div class="my-3">
-                                    <label class="form-label">{{ $t("Quick Duration") }}</label>
-                                    <div class="d-flex gap-2 flex-wrap">
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm"
-                                            :class="
-                                                currentDurationMinutes === 15 ? 'btn-primary' : 'btn-outline-primary'
-                                            "
-                                            :disabled="currentDurationMinutes === 15"
-                                            @click="setQuickDuration(15)"
-                                        >
-                                            {{ $tc("minuteShort", 15) }}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm"
-                                            :class="
-                                                currentDurationMinutes === 30 ? 'btn-primary' : 'btn-outline-primary'
-                                            "
-                                            :disabled="currentDurationMinutes === 30"
-                                            @click="setQuickDuration(30)"
-                                        >
-                                            {{ $tc("minuteShort", 30) }}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm"
-                                            :class="
-                                                currentDurationMinutes === 60 ? 'btn-primary' : 'btn-outline-primary'
-                                            "
-                                            :disabled="currentDurationMinutes === 60"
-                                            @click="setQuickDuration(60)"
-                                        >
-                                            {{ $tc("hour", 1) }}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm"
-                                            :class="
-                                                currentDurationMinutes === 120 ? 'btn-primary' : 'btn-outline-primary'
-                                            "
-                                            :disabled="currentDurationMinutes === 120"
-                                            @click="setQuickDuration(120)"
-                                        >
-                                            {{ $tc("hour", 2) }}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm"
-                                            :class="
-                                                currentDurationMinutes === 240 ? 'btn-primary' : 'btn-outline-primary'
-                                            "
-                                            :disabled="currentDurationMinutes === 240"
-                                            @click="setQuickDuration(240)"
-                                        >
-                                            {{ $tc("hour", 4) }}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm"
-                                            :class="
-                                                currentDurationMinutes === 480 ? 'btn-primary' : 'btn-outline-primary'
-                                            "
-                                            :disabled="currentDurationMinutes === 480"
-                                            @click="setQuickDuration(480)"
-                                        >
-                                            {{ $tc("hour", 8) }}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm"
-                                            :class="
-                                                currentDurationMinutes === 720 ? 'btn-primary' : 'btn-outline-primary'
-                                            "
-                                            :disabled="currentDurationMinutes === 720"
-                                            @click="setQuickDuration(720)"
-                                        >
-                                            {{ $tc("hour", 12) }}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm"
-                                            :class="
-                                                currentDurationMinutes === 1440 ? 'btn-primary' : 'btn-outline-primary'
-                                            "
-                                            :disabled="currentDurationMinutes === 1440"
-                                            @click="setQuickDuration(1440)"
-                                        >
-                                            {{ $tc("hour", 24) }}
-                                        </button>
-                                    </div>
-                                    <div class="form-text">
-                                        {{ $t("Set end time based on start time") }}
-                                    </div>
-                                </div>
-                            </template>
-
                             <template v-if="maintenance.strategy === 'cron'">
                                 <!-- Cron -->
                                 <div class="my-3">
@@ -426,6 +326,102 @@
                                             />
                                         </div>
                                     </div>
+                                </div>
+                            </template>
+
+                            <template v-if="maintenance.strategy === 'single'">
+                                <div class="my-3">
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 15 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 15"
+                                            @click="setQuickDuration(15)"
+                                        >
+                                            {{ $tc("minuteShort", 15, { n: 15 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 30 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 30"
+                                            @click="setQuickDuration(30)"
+                                        >
+                                            {{ $tc("minuteShort", 30, { n: 30 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 60 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 60"
+                                            @click="setQuickDuration(60)"
+                                        >
+                                            {{ $tc("hours", 1, { n: 1 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 120 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 120"
+                                            @click="setQuickDuration(120)"
+                                        >
+                                            {{ $tc("hours", 2, { n: 2 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 240 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 240"
+                                            @click="setQuickDuration(240)"
+                                        >
+                                            {{ $tc("hours", 4, { n: 4 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 480 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 480"
+                                            @click="setQuickDuration(480)"
+                                        >
+                                            {{ $tc("hours", 8, { n: 8 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 720 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 720"
+                                            @click="setQuickDuration(720)"
+                                        >
+                                            {{ $tc("hours", 12, { n: 12 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 1440 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 1440"
+                                            @click="setQuickDuration(1440)"
+                                        >
+                                            {{ $tc("hours", 24, { n: 24 }) }}
+                                        </button>
+                                    </div>
+                                    <div class="form-text">{{ $t("Sets end time based on start time") }}</div>
                                 </div>
                             </template>
                         </div>
