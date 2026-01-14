@@ -167,7 +167,10 @@ class DomainExpiry extends BeanModel {
             throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
         }
         if (!tld.isIcann) {
-            throw new TranslatableError("domain_expiry_unsupported_is_icann", { domain: tld.domain, publicSuffix: tld.publicSuffix });
+            throw new TranslatableError("domain_expiry_unsupported_is_icann", {
+                domain: tld.domain,
+                publicSuffix: tld.publicSuffix,
+            });
         }
 
         const rdap = await getRdapServer(tld.publicSuffix);
