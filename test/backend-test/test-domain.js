@@ -15,11 +15,6 @@ dayjs.extend(require("dayjs/plugin/utc"));
 const testDb = new TestDB();
 
 describe("Domain Expiry", () => {
-    const monHttpCom = {
-        type: "http",
-        url: "https://www.google.com",
-        domainExpiryNotification: true,
-    };
 
     before(async () => {
         await testDb.create();
