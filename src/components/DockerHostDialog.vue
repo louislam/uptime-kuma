@@ -40,14 +40,13 @@
                                 required
                             />
 
-                            <div class="form-text">
-                                {{ $t("Examples") }}:
+                            <i18n-t tag="div" keypath="Examples:" class="form-text">
                                 <ul>
-                                    <li>/var/run/docker.sock</li>
-                                    <li>http://localhost:2375</li>
-                                    <li>https://localhost:2376 (TLS)</li>
+                                    <li><code>/var/run/docker.sock</code></li>
+                                    <li><code>http://localhost:2375</code></li>
+                                    <li><code>https://localhost:2376 (TLS)</code></li>
                                 </ul>
-                            </div>
+                            </i18n-t>
                         </div>
                     </div>
 

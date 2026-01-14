@@ -1072,7 +1072,15 @@ class Monitor extends BeanModel {
                         log.debug("monitor", `Failed getting expiration date for domain ${supportInfo.domain}`);
                     }
                 } catch (error) {
-                    // purposely not logged due to noise. Is accessible via checkMointor
+                    if (
+                        error.message === "domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint" &&
+                        Boolean(this.domainExpiryNotification)
+                    ) {
+                        log.warn(
+                            "domain_expiry",
+                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                        );
+                    }
                 }
             }
 
