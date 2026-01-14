@@ -53,7 +53,7 @@
     "Current": "Current",
     "Uptime": "Uptime",
     "Cert Exp.": "Cert Exp.",
-    "Monitor": "Monitor | Monitors",
+    "Monitors": "{n} Monitor | {n} Monitors",
     "now": "now",
     "time ago": "{0} ago",
     "days": "{n} day | {n} days",
