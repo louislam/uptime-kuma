@@ -1083,9 +1083,10 @@ class Monitor extends BeanModel {
                 if (this.downRetryInterval > 0) {
                     beatInterval = this.downRetryInterval;
                 }
+                const intervalNote = this.downRetryInterval > 0 ? " (recovery)" : "";
                 log.warn(
                     "monitor",
-                    `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`
+                    `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds${intervalNote} | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`
                 );
             }
 
@@ -1710,11 +1711,14 @@ class Monitor extends BeanModel {
             throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
-        if (this.downRetryInterval > MAX_INTERVAL_SECOND) {
-            throw new Error(`Down retry interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
-        }
-        if (this.downRetryInterval < MIN_INTERVAL_SECOND) {
-            throw new Error(`Down retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        const downRetryInterval = Number(this.downRetryInterval);
+        if (downRetryInterval !== 0) {
+            if (downRetryInterval > MAX_INTERVAL_SECOND) {
+                throw new Error(`Down retry interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
+            }
+            if (downRetryInterval < MIN_INTERVAL_SECOND) {
+                throw new Error(`Down retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+            }
         }
 
         if (this.response_max_length !== undefined) {
