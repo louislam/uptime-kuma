@@ -10,9 +10,9 @@ const dayjs = require("dayjs");
 
 const cachedFetch = process.env.NODE_ENV
     ? NodeFetchCache.create({
-        // cache for 8h
-        cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
-    })
+          // cache for 8h
+          cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
+      })
     : fetch;
 
 /**
