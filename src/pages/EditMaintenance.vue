@@ -669,12 +669,16 @@ export default {
             if (this.isAdd) {
                 // Get current date/time in local timezone
                 const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, "0");
-                const day = String(now.getDate()).padStart(2, "0");
-                const hours = String(now.getHours()).padStart(2, "0");
-                const minutes = String(now.getMinutes()).padStart(2, "0");
-                const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                const oneHourLater = new Date(now.getTime() + 60 * 60000);
+
+                const formatDateTime = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    const hours = String(date.getHours()).padStart(2, "0");
+                    const minutes = String(date.getMinutes()).padStart(2, "0");
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                };
 
                 this.maintenance = {
                     title: "",
@@ -684,7 +688,7 @@ export default {
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [currentDateTime, currentDateTime],
+                    dateRange: [formatDateTime(now), formatDateTime(oneHourLater)],
                     timeRange: [
                         {
                             hours: 2,
