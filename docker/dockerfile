@@ -15,12 +15,15 @@ USER node
 WORKDIR /app
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY --chown=node:node .npmrc .npmrc
 COPY --chown=node:node package.json package.json
 COPY --chown=node:node package-lock.json package-lock.json
-RUN npm ci --omit=dev
+RUN npm ci
 COPY . .
 COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
+RUN npm run build
+RUN npm prune --omit=dev
 RUN mkdir ./data
 
 ############################################
@@ -115,4 +118,3 @@ RUN chmod +x /app/extra/upload-github-release-asset.sh
 # Dist only
 RUN cd /app && tar -zcvf $DIST dist
 RUN /app/extra/upload-github-release-asset.sh github_api_token=$GITHUB_TOKEN owner=louislam repo=uptime-kuma tag=$VERSION filename=/app/$DIST
-

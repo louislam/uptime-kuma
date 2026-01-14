@@ -150,6 +150,7 @@ class Monitor extends BeanModel {
             interval: this.interval,
             retryInterval: this.retryInterval,
             retryOnlyOnStatusCodeFailure: Boolean(this.retry_only_on_status_code_failure),
+            downRetryInterval: this.downRetryInterval,
             resendInterval: this.resendInterval,
             keyword: this.keyword,
             invertKeyword: this.isInvertKeyword(),
@@ -1079,6 +1080,9 @@ class Monitor extends BeanModel {
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
             } else {
+                if (this.downRetryInterval > 0) {
+                    beatInterval = this.downRetryInterval;
+                }
                 log.warn(
                     "monitor",
                     `Monitor #${this.id} '${this.name}': Failing: ${bean.msg} | Interval: ${beatInterval} seconds | Type: ${this.type} | Down Count: ${bean.downCount} | Resend Interval: ${this.resendInterval}`
@@ -1704,6 +1708,13 @@ class Monitor extends BeanModel {
         }
         if (this.retryInterval < MIN_INTERVAL_SECOND) {
             throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.downRetryInterval > MAX_INTERVAL_SECOND) {
+            throw new Error(`Down retry interval cannot be more than ${MAX_INTERVAL_SECOND} seconds`);
+        }
+        if (this.downRetryInterval < MIN_INTERVAL_SECOND) {
+            throw new Error(`Down retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
         }
 
         if (this.response_max_length !== undefined) {
