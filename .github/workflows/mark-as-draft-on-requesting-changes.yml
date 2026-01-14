@@ -40,3 +40,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr ready "$PR_URL" --undo || true
+  ready-for-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'ready_for_review'
+
+    steps:
+      - name: Update labels for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue edit "$PR_NUMBER" \
+            --repo "$REPO" \
+            --remove-label "pr:please address review comments" || true
+
+          gh issue edit "$PR_NUMBER" \
+            --repo "$REPO" \
+            --add-label "pr:needs review"
