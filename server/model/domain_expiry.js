@@ -10,9 +10,9 @@ const dayjs = require("dayjs");
 
 const cachedFetch = process.env.NODE_ENV
     ? NodeFetchCache.create({
-          // cache for 8h
-          cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
-      })
+        // cache for 8h
+        cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
+    })
     : fetch;
 
 /**
@@ -159,16 +159,15 @@ class DomainExpiry extends BeanModel {
         const tld = parseTld(target);
 
         // Avoid logging for incomplete/invalid input while editing monitors.
-        if (!tld.isIcann) {
-            throw new TranslatableError("domain_expiry_unsupported_is_icann", { publicSuffix: tld.hostname });
-        }
         if (tld.isIp) {
             throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
         }
-
         // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
         if (tld.publicSuffix.length < 2) {
             throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
+        }
+        if (!tld.isIcann) {
+            throw new TranslatableError("domain_expiry_unsupported_is_icann", { hostname: tld.hostname });
         }
 
         const rdap = await getRdapServer(tld.publicSuffix);
