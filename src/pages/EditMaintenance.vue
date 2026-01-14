@@ -123,9 +123,6 @@
                                 </select>
                             </div>
 
-                            <!-- Single Maintenance Window -->
-                            <template v-if="maintenance.strategy === 'single'"></template>
-
                             <template v-if="maintenance.strategy === 'cron'">
                                 <!-- Cron -->
                                 <div class="my-3">
@@ -331,6 +328,102 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <template v-if="maintenance.strategy === 'single'">
+                                <div class="my-3">
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 15 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 15"
+                                            @click="setQuickDuration(15)"
+                                        >
+                                            {{ $tc("minuteShort", 15, { n: 15 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 30 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 30"
+                                            @click="setQuickDuration(30)"
+                                        >
+                                            {{ $tc("minuteShort", 30, { n: 30 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 60 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 60"
+                                            @click="setQuickDuration(60)"
+                                        >
+                                            {{ $tc("hours", 1, { n: 1 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 120 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 120"
+                                            @click="setQuickDuration(120)"
+                                        >
+                                            {{ $tc("hours", 2, { n: 2 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 240 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 240"
+                                            @click="setQuickDuration(240)"
+                                        >
+                                            {{ $tc("hours", 4, { n: 4 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 480 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 480"
+                                            @click="setQuickDuration(480)"
+                                        >
+                                            {{ $tc("hours", 8, { n: 8 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 720 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 720"
+                                            @click="setQuickDuration(720)"
+                                        >
+                                            {{ $tc("hours", 12, { n: 12 }) }}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            :class="
+                                                currentDurationMinutes === 1440 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
+                                            :disabled="currentDurationMinutes === 1440"
+                                            @click="setQuickDuration(1440)"
+                                        >
+                                            {{ $tc("hours", 24, { n: 24 }) }}
+                                        </button>
+                                    </div>
+                                    <div class="form-text">{{ $t("Sets end time based on start time") }}</div>
+                                </div>
+                            </template>
                         </div>
                     </div>
 
@@ -511,6 +604,22 @@ export default {
         hasStatusPages() {
             return this.showOnAllPages || this.selectedStatusPages.length > 0;
         },
+
+        /**
+         * Calculate the current duration in minutes between start and end dates
+         * @returns {number|null} Duration in minutes, or null if dates are invalid
+         */
+        currentDurationMinutes() {
+            if (!this.maintenance.dateRange?.[0] || !this.maintenance.dateRange?.[1]) {
+                return null;
+            }
+            const start = new Date(this.maintenance.dateRange[0]);
+            const end = new Date(this.maintenance.dateRange[1]);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                return null;
+            }
+            return Math.round((end.getTime() - start.getTime()) / 60000);
+        },
     },
     watch: {
         "$route.fullPath"() {
@@ -570,6 +679,19 @@ export default {
             this.selectedStatusPages = [];
 
             if (this.isAdd) {
+                // Get current date/time in local timezone
+                const now = new Date();
+                const oneHourLater = new Date(now.getTime() + 60 * 60000);
+
+                const formatDateTime = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    const hours = String(date.getHours()).padStart(2, "0");
+                    const minutes = String(date.getMinutes()).padStart(2, "0");
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                };
+
                 this.maintenance = {
                     title: "",
                     description: "",
@@ -578,7 +700,7 @@ export default {
                     cron: "30 3 * * *",
                     durationMinutes: 60,
                     intervalDay: 1,
-                    dateRange: [],
+                    dateRange: [formatDateTime(now), formatDateTime(oneHourLater)],
                     timeRange: [
                         {
                             hours: 2,
@@ -591,7 +713,7 @@ export default {
                     ],
                     weekdays: [],
                     daysOfMonth: [],
-                    timezoneOption: null,
+                    timezoneOption: "SAME_AS_SERVER",
                 };
             } else if (this.isEdit || this.isClone) {
                 this.$root.getSocket().emit("getMaintenance", this.$route.params.id, (res) => {
@@ -653,6 +775,30 @@ export default {
             if (removedOption.id === "select-all") {
                 this.affectedMonitors = this.affectedMonitors.filter((m) => m.id !== "select-all");
             }
+        },
+
+        /**
+         * Set quick duration for single maintenance
+         * Calculates end time based on start time + duration in minutes
+         * @param {number} minutes Duration in minutes
+         * @returns {void}
+         */
+        setQuickDuration(minutes) {
+            if (!this.maintenance.dateRange[0]) {
+                this.$root.toastError(this.$t("Please set start time first"));
+                return;
+            }
+
+            const startDate = new Date(this.maintenance.dateRange[0]);
+            const endDate = new Date(startDate.getTime() + minutes * 60000);
+
+            const year = endDate.getFullYear();
+            const month = String(endDate.getMonth() + 1).padStart(2, "0");
+            const day = String(endDate.getDate()).padStart(2, "0");
+            const hours = String(endDate.getHours()).padStart(2, "0");
+            const mins = String(endDate.getMinutes()).padStart(2, "0");
+
+            this.maintenance.dateRange[1] = `${year}-${month}-${day}T${hours}:${mins}`;
         },
 
         /**

@@ -85,12 +85,12 @@ export default {
 
         title() {
             if (this.type === "1y") {
-                return `1 ${this.$tc("year", 1)}`;
+                return this.$tc("years", 1, { n: 1 });
             }
             if (this.type === "720") {
-                return `30 ${this.$tc("day", 30)}`;
+                return this.$tc("days", 30, { n: 30 });
             }
-            return `24 ${this.$tc("hour", 24)}`;
+            return this.$tc("hours", 24, { n: 24 });
         },
     },
 };
