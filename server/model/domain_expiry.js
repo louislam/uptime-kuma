@@ -15,20 +15,6 @@ const cachedFetch = process.env.NODE_ENV
       })
     : fetch;
 
-// List of TLDs that do not support RDAP/public expiry dates.
-// We ignore these to prevent log warnings.
-const IGNORED_TLDS = [
-    "local",
-    "internal",
-    "lan",
-    "home",
-    "corp",
-    "test",
-    "example",
-    "invalid",
-    "localhost"
-];
-
 /**
  * Find the RDAP server for a given TLD
  * @param {string} tld TLD
@@ -60,13 +46,13 @@ async function getRdapServer(tld) {
  * @returns {Promise<(Date|null)>} Expiry date from RDAP server
  */
 async function getRdapDomainExpiryDate(domain) {
-    const tld = DomainExpiry.parseTld(domain).publicSuffix;
+    const tldObj = DomainExpiry.parseTld(domain);
 
-    // Skip ignored TLDs silently
-    if (tld && IGNORED_TLDS.includes(tld)) {
+    if (!tldObj.isIcann) {
         return null;
     }
 
+    const tld = tldObj.publicSuffix;
     const rdapServer = await getRdapServer(tld);
     if (rdapServer === null) {
         log.warn("rdap", `No RDAP server found, TLD ${tld} not supported.`);
@@ -178,28 +164,45 @@ class DomainExpiry extends BeanModel {
 
         const tld = parseTld(target);
 
+        // 1. Validation Checks (Must pass these first)
         // Avoid logging for incomplete/invalid input while editing monitors.
+        if (!tld.domain && !tld.hostname) {
+             // If neither domain nor hostname is present, it's invalid
+             // Fallback to basic hostname check if tldts fails completely
+             throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: target });
+        }
+
+        // Check for IP addresses
+        if (tld.isIp) {
+            throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
+        }
+
+        // 2. Logic for Private/Local Domains (Not ICANN)
+        // If it is NOT in the ICANN list (like .local, .internal), we allow it but skip RDAP.
+        // We do this BEFORE strict structural checks because private domains might not have a "publicSuffix" in the traditional sense.
+        if (!tld.isIcann) {
+            // But we still want to ensure it looks like a domain (has at least one dot)
+            if (!tld.hostname || !tld.hostname.includes(".")) {
+                 // It's a single word like "localhost" or "server" - technically valid for local DNS, 
+                 // but might fail "domain part" tests if they expect a TLD. 
+                 // For now, let's treat single words as valid local domains if they aren't IPs.
+            }
+            
+            return {
+                domain: tld.domain || tld.hostname,
+                tld: tld.publicSuffix || tld.hostname.split(".").pop(),
+            };
+        }
+
+        // 3. Strict Checks for ICANN Domains
         if (!tld.domain) {
             throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: tld.hostname });
         }
         if (!tld.publicSuffix) {
             throw new TranslatableError("domain_expiry_unsupported_public_suffix", { publicSuffix: tld.publicSuffix });
         }
-        if (tld.isIp) {
-            throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
-        }
-
-        // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
         if (tld.publicSuffix.length < 2) {
             throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
-        }
-
-        // Allow ignored TLDs to bypass RDAP check and save successfully
-        if (IGNORED_TLDS.includes(tld.publicSuffix)) {
-            return {
-                domain: tld.domain,
-                tld: tld.publicSuffix,
-            };
         }
 
         const rdap = await getRdapServer(tld.publicSuffix);
