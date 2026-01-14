@@ -131,7 +131,9 @@
                                         <button
                                             type="button"
                                             class="btn btn-sm"
-                                            :class="currentDurationMinutes === 15 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :class="
+                                                currentDurationMinutes === 15 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
                                             :disabled="currentDurationMinutes === 15"
                                             @click="setQuickDuration(15)"
                                         >
@@ -140,7 +142,9 @@
                                         <button
                                             type="button"
                                             class="btn btn-sm"
-                                            :class="currentDurationMinutes === 30 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :class="
+                                                currentDurationMinutes === 30 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
                                             :disabled="currentDurationMinutes === 30"
                                             @click="setQuickDuration(30)"
                                         >
@@ -149,7 +153,9 @@
                                         <button
                                             type="button"
                                             class="btn btn-sm"
-                                            :class="currentDurationMinutes === 60 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :class="
+                                                currentDurationMinutes === 60 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
                                             :disabled="currentDurationMinutes === 60"
                                             @click="setQuickDuration(60)"
                                         >
@@ -158,7 +164,9 @@
                                         <button
                                             type="button"
                                             class="btn btn-sm"
-                                            :class="currentDurationMinutes === 120 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :class="
+                                                currentDurationMinutes === 120 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
                                             :disabled="currentDurationMinutes === 120"
                                             @click="setQuickDuration(120)"
                                         >
@@ -167,7 +175,9 @@
                                         <button
                                             type="button"
                                             class="btn btn-sm"
-                                            :class="currentDurationMinutes === 240 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :class="
+                                                currentDurationMinutes === 240 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
                                             :disabled="currentDurationMinutes === 240"
                                             @click="setQuickDuration(240)"
                                         >
@@ -176,7 +186,9 @@
                                         <button
                                             type="button"
                                             class="btn btn-sm"
-                                            :class="currentDurationMinutes === 480 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :class="
+                                                currentDurationMinutes === 480 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
                                             :disabled="currentDurationMinutes === 480"
                                             @click="setQuickDuration(480)"
                                         >
@@ -185,7 +197,9 @@
                                         <button
                                             type="button"
                                             class="btn btn-sm"
-                                            :class="currentDurationMinutes === 720 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :class="
+                                                currentDurationMinutes === 720 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
                                             :disabled="currentDurationMinutes === 720"
                                             @click="setQuickDuration(720)"
                                         >
@@ -194,7 +208,9 @@
                                         <button
                                             type="button"
                                             class="btn btn-sm"
-                                            :class="currentDurationMinutes === 1440 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :class="
+                                                currentDurationMinutes === 1440 ? 'btn-primary' : 'btn-outline-primary'
+                                            "
                                             :disabled="currentDurationMinutes === 1440"
                                             @click="setQuickDuration(1440)"
                                         >
