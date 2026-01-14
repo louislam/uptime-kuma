@@ -694,11 +694,11 @@ class Monitor extends BeanModel {
                             }
                             throw new Error(
                                 bean.msg +
-                                ", but keyword is " +
-                                (keywordFound ? "present" : "not") +
-                                " in [" +
-                                data +
-                                "]"
+                                    ", but keyword is " +
+                                    (keywordFound ? "present" : "not") +
+                                    " in [" +
+                                    data +
+                                    "]"
                             );
                         }
                     } else if (this.type === "json-query") {
@@ -816,7 +816,7 @@ class Monitor extends BeanModel {
                                 PING_GLOBAL_TIMEOUT_DEFAULT,
                                 PING_PER_REQUEST_TIMEOUT_DEFAULT
                             );
-                        } catch (_) { }
+                        } catch (_) {}
                     } else {
                         throw new Error("Server not found on Steam");
                     }
@@ -1327,7 +1327,7 @@ class Monitor extends BeanModel {
                 } else {
                     log.debug("monitor", "Not valid object");
                 }
-            } catch (e) { }
+            } catch (e) {}
         }
 
         tlsInfoBean.info_json = JSON.stringify(checkCertificateResult);
@@ -1415,7 +1415,7 @@ class Monitor extends BeanModel {
             if (domain?.expiry) {
                 io.to(userID).emit("domainInfo", monitorID, domain.daysRemaining, new Date(domain.expiry));
             }
-        } catch (e) { }
+        } catch (e) {}
     }
 
     /**
