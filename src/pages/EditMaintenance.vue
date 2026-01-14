@@ -130,56 +130,72 @@
                                     <div class="d-flex gap-2 flex-wrap">
                                         <button
                                             type="button"
-                                            class="btn btn-outline-primary btn-sm"
+                                            class="btn btn-sm"
+                                            :class="currentDurationMinutes === 15 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :disabled="currentDurationMinutes === 15"
                                             @click="setQuickDuration(15)"
                                         >
                                             {{ $tc("minuteShort", 15) }}
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-outline-primary btn-sm"
+                                            class="btn btn-sm"
+                                            :class="currentDurationMinutes === 30 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :disabled="currentDurationMinutes === 30"
                                             @click="setQuickDuration(30)"
                                         >
                                             {{ $tc("minuteShort", 30) }}
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-outline-primary btn-sm"
+                                            class="btn btn-sm"
+                                            :class="currentDurationMinutes === 60 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :disabled="currentDurationMinutes === 60"
                                             @click="setQuickDuration(60)"
                                         >
                                             {{ $tc("hour", 1) }}
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-outline-primary btn-sm"
+                                            class="btn btn-sm"
+                                            :class="currentDurationMinutes === 120 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :disabled="currentDurationMinutes === 120"
                                             @click="setQuickDuration(120)"
                                         >
                                             {{ $tc("hour", 2) }}
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-outline-primary btn-sm"
+                                            class="btn btn-sm"
+                                            :class="currentDurationMinutes === 240 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :disabled="currentDurationMinutes === 240"
                                             @click="setQuickDuration(240)"
                                         >
                                             {{ $tc("hour", 4) }}
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-outline-primary btn-sm"
+                                            class="btn btn-sm"
+                                            :class="currentDurationMinutes === 480 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :disabled="currentDurationMinutes === 480"
                                             @click="setQuickDuration(480)"
                                         >
                                             {{ $tc("hour", 8) }}
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-outline-primary btn-sm"
+                                            class="btn btn-sm"
+                                            :class="currentDurationMinutes === 720 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :disabled="currentDurationMinutes === 720"
                                             @click="setQuickDuration(720)"
                                         >
                                             {{ $tc("hour", 12) }}
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-outline-primary btn-sm"
+                                            class="btn btn-sm"
+                                            :class="currentDurationMinutes === 1440 ? 'btn-primary' : 'btn-outline-primary'"
+                                            :disabled="currentDurationMinutes === 1440"
                                             @click="setQuickDuration(1440)"
                                         >
                                             {{ $tc("hour", 24) }}
@@ -575,6 +591,22 @@ export default {
          */
         hasStatusPages() {
             return this.showOnAllPages || this.selectedStatusPages.length > 0;
+        },
+
+        /**
+         * Calculate the current duration in minutes between start and end dates
+         * @returns {number|null} Duration in minutes, or null if dates are invalid
+         */
+        currentDurationMinutes() {
+            if (!this.maintenance.dateRange?.[0] || !this.maintenance.dateRange?.[1]) {
+                return null;
+            }
+            const start = new Date(this.maintenance.dateRange[0]);
+            const end = new Date(this.maintenance.dateRange[1]);
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                return null;
+            }
+            return Math.round((end.getTime() - start.getTime()) / 60000);
         },
     },
     watch: {
