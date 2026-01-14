@@ -64,7 +64,7 @@
                     :key="day"
                     class="d-flex align-items-center justify-content-between cert-exp-day-row py-2"
                 >
-                    <span>{{ day }} {{ $t("day", day) }}</span>
+                    <span>{{ $t("days", day) }}</span>
                     <button
                         type="button"
                         class="btn-rm-expiry btn btn-outline-danger ms-2 py-1"
@@ -102,7 +102,7 @@
                     :key="day"
                     class="d-flex align-items-center justify-content-between cert-exp-day-row py-2"
                 >
-                    <span>{{ day }} {{ $t("day", day) }}</span>
+                    <span>{{ $t("days", day) }}</span>
                     <button
                         type="button"
                         class="btn-rm-expiry btn btn-outline-danger ms-2 py-1"
