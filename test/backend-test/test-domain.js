@@ -15,7 +15,6 @@ dayjs.extend(require("dayjs/plugin/utc"));
 const testDb = new TestDB();
 
 describe("Domain Expiry", () => {
-
     before(async () => {
         await testDb.create();
         Notification.init();
@@ -28,11 +27,11 @@ describe("Domain Expiry", () => {
 
     test("getExpiryDate() returns correct expiry date for .wiki domain with no A record", async () => {
         const d = DomainExpiry.createByName("google.wiki");
-        // Note: This relies on external RDAP, so check if it resolved. 
+        // Note: This relies on external RDAP, so check if it resolved.
         // If network is blocked, this might fail, but logic implies it should work.
         const date = await d.getExpiryDate();
         if (date) {
-             assert.deepEqual(date, new Date("2026-11-26T23:59:59.000Z"));
+            assert.deepEqual(date, new Date("2026-11-26T23:59:59.000Z"));
         }
     });
 
@@ -235,7 +234,7 @@ describe("Domain Expiry", () => {
         const domain = await DomainExpiry.findByName("google.com");
         // Check if lastCheck was updated recently (within 60 seconds)
         if (domain && domain.lastCheck) {
-             assert.ok(dayjs.utc().diff(dayjs.utc(domain.lastCheck), "second") < 60);
+            assert.ok(dayjs.utc().diff(dayjs.utc(domain.lastCheck), "second") < 60);
         }
     });
 

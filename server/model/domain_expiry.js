@@ -167,9 +167,9 @@ class DomainExpiry extends BeanModel {
         // 1. Validation Checks (Must pass these first)
         // Avoid logging for incomplete/invalid input while editing monitors.
         if (!tld.domain && !tld.hostname) {
-             // If neither domain nor hostname is present, it's invalid
-             // Fallback to basic hostname check if tldts fails completely
-             throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: target });
+            // If neither domain nor hostname is present, it's invalid
+            // Fallback to basic hostname check if tldts fails completely
+            throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: target });
         }
 
         // Check for IP addresses
@@ -183,11 +183,11 @@ class DomainExpiry extends BeanModel {
         if (!tld.isIcann) {
             // But we still want to ensure it looks like a domain (has at least one dot)
             if (!tld.hostname || !tld.hostname.includes(".")) {
-                 // It's a single word like "localhost" or "server" - technically valid for local DNS, 
-                 // but might fail "domain part" tests if they expect a TLD. 
-                 // For now, let's treat single words as valid local domains if they aren't IPs.
+                // It's a single word like "localhost" or "server" - technically valid for local DNS,
+                // but might fail "domain part" tests if they expect a TLD.
+                // For now, let's treat single words as valid local domains if they aren't IPs.
             }
-            
+
             return {
                 domain: tld.domain || tld.hostname,
                 tld: tld.publicSuffix || tld.hostname.split(".").pop(),
