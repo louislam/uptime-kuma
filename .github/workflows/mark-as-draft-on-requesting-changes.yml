@@ -1,0 +1,33 @@
+name: Mark PR as draft on requested changes
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  mark-draft:
+    if: github.event.review.state == 'changes_requested'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Mark PR as draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr ready "$PR_URL" --undo
+
+      - name: Add label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          gh issue edit "$PR_NUMBER" \
+            --repo "$OWNER/$REPO" \
+            --add-label "pr:please address review comments"
