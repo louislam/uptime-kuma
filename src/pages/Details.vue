@@ -194,7 +194,7 @@
                         class="col-12 col-sm col row d-flex align-items-center d-sm-block"
                     >
                         <h4 class="col-4 col-sm-12">{{ pingTitle(true) }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 24 }} {{ $t("hour", 24) }})</p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("hours", 24) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <CountUp :value="avgPing" />
                         </span>
@@ -203,7 +203,7 @@
                     <!-- Uptime (24-hour) -->
                     <div class="col-12 col-sm col row d-flex align-items-center d-sm-block">
                         <h4 class="col-4 col-sm-12">{{ $t("Uptime") }}</h4>
-                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ 24 }} {{ $t("hour", 24) }})</p>
+                        <p class="col-4 col-sm-12 mb-0 mb-sm-2">({{ $t("hours", 24) }})</p>
                         <span class="col-4 col-sm-12 num">
                             <Uptime :monitor="monitor" type="24" />
                         </span>

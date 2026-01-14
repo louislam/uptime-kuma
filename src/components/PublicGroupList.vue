@@ -239,7 +239,7 @@ export default {
             } else if (monitor?.element?.validCert === false) {
                 return this.$t("noOrBadCertificate");
             } else {
-                return this.$t("UnknownDays");
+                return this.$t("unknownDays");
             }
         },
 
