@@ -164,7 +164,7 @@
 
                                         <template v-if="maintenance.intervalDay >= 1">
                                             ({{
-                                                $tc("recurringIntervalMessage", maintenance.intervalDay, [
+                                                $t("recurringIntervalMessage", maintenance.intervalDay, [
                                                     maintenance.intervalDay,
                                                 ])
                                             }})
@@ -341,7 +341,7 @@
                                             :disabled="currentDurationMinutes === 15"
                                             @click="setQuickDuration(15)"
                                         >
-                                            {{ $tc("minuteShort", 15, { n: 15 }) }}
+                                            {{ $t("minuteShort", 15) }}
                                         </button>
                                         <button
                                             type="button"
@@ -352,7 +352,7 @@
                                             :disabled="currentDurationMinutes === 30"
                                             @click="setQuickDuration(30)"
                                         >
-                                            {{ $tc("minuteShort", 30, { n: 30 }) }}
+                                            {{ $t("minuteShort", 30) }}
                                         </button>
                                         <button
                                             type="button"
@@ -363,7 +363,7 @@
                                             :disabled="currentDurationMinutes === 60"
                                             @click="setQuickDuration(60)"
                                         >
-                                            {{ $tc("hours", 1, { n: 1 }) }}
+                                            {{ $t("hours", 1) }}
                                         </button>
                                         <button
                                             type="button"
@@ -374,7 +374,7 @@
                                             :disabled="currentDurationMinutes === 120"
                                             @click="setQuickDuration(120)"
                                         >
-                                            {{ $tc("hours", 2, { n: 2 }) }}
+                                            {{ $t("hours", 2) }}
                                         </button>
                                         <button
                                             type="button"
@@ -385,7 +385,7 @@
                                             :disabled="currentDurationMinutes === 240"
                                             @click="setQuickDuration(240)"
                                         >
-                                            {{ $tc("hours", 4, { n: 4 }) }}
+                                            {{ $t("hours", 4) }}
                                         </button>
                                         <button
                                             type="button"
@@ -396,7 +396,7 @@
                                             :disabled="currentDurationMinutes === 480"
                                             @click="setQuickDuration(480)"
                                         >
-                                            {{ $tc("hours", 8, { n: 8 }) }}
+                                            {{ $t("hours", 8) }}
                                         </button>
                                         <button
                                             type="button"
@@ -407,7 +407,7 @@
                                             :disabled="currentDurationMinutes === 720"
                                             @click="setQuickDuration(720)"
                                         >
-                                            {{ $tc("hours", 12, { n: 12 }) }}
+                                            {{ $t("hours", 12) }}
                                         </button>
                                         <button
                                             type="button"
@@ -418,7 +418,7 @@
                                             :disabled="currentDurationMinutes === 1440"
                                             @click="setQuickDuration(1440)"
                                         >
-                                            {{ $tc("hours", 24, { n: 24 }) }}
+                                            {{ $t("hours", 24) }}
                                         </button>
                                     </div>
                                     <div class="form-text">{{ $t("Sets end time based on start time") }}</div>

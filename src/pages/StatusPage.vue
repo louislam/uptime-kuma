@@ -574,7 +574,7 @@
                 <div class="refresh-info mb-2">
                     <div>{{ $t("Last Updated") }}: {{ lastUpdateTimeDisplay }}</div>
                     <div data-testid="update-countdown-text">
-                        {{ $tc("statusPageRefreshIn", [updateCountdownText]) }}
+                        {{ $t("statusPageRefreshIn", [updateCountdownText]) }}
                     </div>
                 </div>
             </footer>

@@ -234,12 +234,12 @@ export default {
                 return (
                     monitor.element.certExpiryDaysRemaining +
                     " " +
-                    this.$tc("day", monitor.element.certExpiryDaysRemaining)
+                    this.$t("day", monitor.element.certExpiryDaysRemaining)
                 );
             } else if (monitor?.element?.validCert === false) {
                 return this.$t("noOrBadCertificate");
             } else {
-                return this.$t("Unknown") + " " + this.$tc("day", 2);
+                return this.$t("UnknownDays");
             }
         },
 
