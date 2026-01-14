@@ -1265,6 +1265,8 @@
     "Matomo": "Matomo",
     "Umami": "Umami",
     "Disable URL in Notification": "Disable URL in Notification",
+    "Suppress Notifications": "Suppress Notifications",
+    "discordSuppressNotificationsHelptext": "When enabled, messages will be posted to the channel but won't trigger push or desktop notifications for recipients.",
     "Ip Family": "IP Family",
     "ipFamilyDescriptionAutoSelect": "Uses the {happyEyeballs} for determining the IP family.",
     "Happy Eyeballs algorithm": "Happy Eyeballs algorithm",
