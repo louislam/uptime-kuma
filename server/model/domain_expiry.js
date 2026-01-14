@@ -15,6 +15,20 @@ const cachedFetch = process.env.NODE_ENV
       })
     : fetch;
 
+// List of TLDs that do not support RDAP/public expiry dates.
+// We ignore these to prevent log warnings.
+const IGNORED_TLDS = [
+    "local",
+    "internal",
+    "lan",
+    "home",
+    "corp",
+    "test",
+    "example",
+    "invalid",
+    "localhost"
+];
+
 /**
  * Find the RDAP server for a given TLD
  * @param {string} tld TLD
@@ -47,6 +61,12 @@ async function getRdapServer(tld) {
  */
 async function getRdapDomainExpiryDate(domain) {
     const tld = DomainExpiry.parseTld(domain).publicSuffix;
+
+    // Skip ignored TLDs silently
+    if (tld && IGNORED_TLDS.includes(tld)) {
+        return null;
+    }
+
     const rdapServer = await getRdapServer(tld);
     if (rdapServer === null) {
         log.warn("rdap", `No RDAP server found, TLD ${tld} not supported.`);
@@ -172,6 +192,14 @@ class DomainExpiry extends BeanModel {
         // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
         if (tld.publicSuffix.length < 2) {
             throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
+        }
+
+        // Allow ignored TLDs to bypass RDAP check and save successfully
+        if (IGNORED_TLDS.includes(tld.publicSuffix)) {
+            return {
+                domain: tld.domain,
+                tld: tld.publicSuffix,
+            };
         }
 
         const rdap = await getRdapServer(tld.publicSuffix);
