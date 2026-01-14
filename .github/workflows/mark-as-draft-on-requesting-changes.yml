@@ -1,7 +1,7 @@
 name: Mark PR as draft when changes are requested
 
 # pull_request_target is safe here because:
-# 1. Only uses a pinned trusted action (by SHA)
+# 1. Does not use any external actions; only uses the GitHub CLI via run commands
 # 2. Has minimal permissions
 # 3. Doesn't checkout or execute any untrusted code from PRs
 # 4. Only adds/removes labels or changes the draft status
