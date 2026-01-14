@@ -10,9 +10,9 @@ const dayjs = require("dayjs");
 
 const cachedFetch = process.env.NODE_ENV
     ? NodeFetchCache.create({
-          // cache for 8h
-          cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
-      })
+        // cache for 8h
+        cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
+    })
     : fetch;
 
 /**
@@ -173,14 +173,6 @@ class DomainExpiry extends BeanModel {
 
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
-            // Only warn when the monitor actually has domain expiry notifications enabled.
-            // The edit monitor page calls this method frequently while the user is typing.
-            if (Boolean(monitor.domainExpiryNotification)) {
-                log.warn(
-                    "domain_expiry",
-                    `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
-                );
-            }
             throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
                 publicSuffix: tld.publicSuffix,
             });
@@ -190,26 +182,6 @@ class DomainExpiry extends BeanModel {
             domain: tld.domain,
             tld: tld.publicSuffix,
         };
-    }
-
-    /**
-     * @param {Monitor} monitor Monitor object
-     * @throws {TranslatableError} Throws an error if the monitor type is unsupported or missing target.
-     * @returns {Promise<{ domain: string, tld: string }>} Domain expiry support info
-     */
-    static async findByMonitorDomainName(monitor) {
-        if (!(monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD)) {
-            throw new TranslatableError("domain_expiry_unsupported_monitor_type");
-        }
-        const targetField = TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD[monitor.type];
-        const target = monitor[targetField];
-        if (typeof target !== "string" || target.length === 0) {
-            throw new TranslatableError("domain_expiry_unsupported_missing_target");
-        }
-
-        const tld = parseTld(target);
-
-        return await DomainExpiry.findByDomainNameOrCreate(tld.domain);
     }
 
     /**

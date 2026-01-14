@@ -96,7 +96,7 @@ describe("Domain Expiry", () => {
         });
 
         describe("Domain Parsing", () => {
-             test("throws error for non-ICANN TLD (e.g. .local)", async () => {
+            test("throws error for non-ICANN TLD (e.g. .local)", async () => {
                 const monitor = {
                     type: "http",
                     url: "https://example.local",
@@ -173,18 +173,6 @@ describe("Domain Expiry", () => {
                 assert.strictEqual(supportInfo.domain, "example.com");
                 assert.strictEqual(supportInfo.tld, "com");
             });
-        });
-    });
-
-    describe("findByMonitorDomainName()", () => {
-        test("returns DomainExpiry bean for valid monitor", async () => {
-            const monitor = {
-                type: "http",
-                url: "https://google.com",
-            };
-            const bean = await DomainExpiry.findByMonitorDomainName(monitor);
-            assert.strictEqual(bean.domain, "google.com");
-            assert.ok(bean instanceof DomainExpiry);
         });
     });
 
