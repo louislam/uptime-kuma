@@ -391,7 +391,7 @@ export default {
 
                 pingData.push({
                     x,
-                    y: (beat.status === UP || (beat.status === DOWN && isUpsideDown)) ? beat.ping : null,
+                    y: (isUpsideDown ? beat.status === DOWN : beat.status === UP) ? beat.ping : null,
                 });
                 downData.push({
                     x,
