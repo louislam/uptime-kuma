@@ -176,14 +176,6 @@ class DomainExpiry extends BeanModel {
 
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
-            // Only warn when the monitor actually has domain expiry notifications enabled.
-            // The edit monitor page calls this method frequently while the user is typing.
-            if (Boolean(monitor.domainExpiryNotification)) {
-                log.warn(
-                    "domain_expiry",
-                    `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
-                );
-            }
             throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
                 publicSuffix: tld.publicSuffix,
             });

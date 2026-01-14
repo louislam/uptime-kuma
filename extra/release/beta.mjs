@@ -48,7 +48,7 @@ checkDocker();
 await checkTagExists(repoNames, version);
 
 // node extra/beta/update-version.js
-execSync("node ./extra/beta/update-version.js");
+await import("../beta/update-version.mjs");
 
 // Create Pull Request (gh pr create will handle pushing the branch)
 await createReleasePR(version, previousVersion, dryRun, branchName, githubRunId);
