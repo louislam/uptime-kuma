@@ -231,9 +231,7 @@ export default {
          */
         formattedCertExpiryMessage(monitor) {
             if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
-                return (
-                    this.$t("days", monitor.element.certExpiryDaysRemaining)
-                );
+                return this.$t("days", monitor.element.certExpiryDaysRemaining);
             } else if (monitor?.element?.validCert === false) {
                 return this.$t("noOrBadCertificate");
             } else {
