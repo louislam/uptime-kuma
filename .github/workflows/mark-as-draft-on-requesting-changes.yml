@@ -43,7 +43,8 @@ jobs:
         run: |
           gh pr ready "${{ github.event.pull_request.number }}" \
             --repo "${{ github.repository }}" \
-            --undo
+            --undo || true
+          # || true to ignore the case where the pr is already a draft
 
   ready-for-review:
     runs-on: ubuntu-latest
