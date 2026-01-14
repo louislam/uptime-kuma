@@ -12,9 +12,6 @@ permissions: {}
 jobs:
   mark-draft:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
     if: |
       (
         github.event_name == 'pull_request_review' &&
@@ -27,7 +24,7 @@ jobs:
       - name: Add label on requested changes
         if: github.event_name == 'pull_request_review'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.MARK_AS_DRAFT_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
@@ -37,17 +34,16 @@ jobs:
 
       - name: Mark PR as draft
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.MARK_AS_DRAFT_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr ready "$PR_URL" --undo || true
   ready-for-review:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.action == 'ready_for_review'
-
     steps:
       - name: Update labels for review
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.MARK_AS_DRAFT_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
