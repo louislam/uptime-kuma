@@ -24,6 +24,8 @@ const {
     PING_PER_REQUEST_TIMEOUT_MIN,
     PING_PER_REQUEST_TIMEOUT_MAX,
     PING_PER_REQUEST_TIMEOUT_DEFAULT,
+    RESPONSE_BODY_LENGTH_DEFAULT,
+    RESPONSE_BODY_LENGTH_MAX,
 } = require("../../src/util");
 const {
     ping,
@@ -56,6 +58,9 @@ const { CookieJar } = require("tough-cookie");
 const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
+const zlib = require("node:zlib");
+const { promisify } = require("node:util");
+const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
 
 const rootCertificates = rootCertificatesFingerprints();
@@ -144,6 +149,7 @@ class Monitor extends BeanModel {
             timeout: this.timeout,
             interval: this.interval,
             retryInterval: this.retryInterval,
+            retryOnlyOnStatusCodeFailure: Boolean(this.retry_only_on_status_code_failure),
             resendInterval: this.resendInterval,
             keyword: this.keyword,
             invertKeyword: this.isInvertKeyword(),
@@ -202,6 +208,11 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+
+            // response saving options
+            saveResponse: this.getSaveResponse(),
+            saveErrorResponse: this.getSaveErrorResponse(),
+            responseMaxLength: this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT,
         };
 
         if (includeSensitiveData) {
@@ -383,6 +394,22 @@ class Monitor extends BeanModel {
      */
     getKafkaProducerAllowAutoTopicCreation() {
         return Boolean(this.kafkaProducerAllowAutoTopicCreation);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Should save response data on success?
+     */
+    getSaveResponse() {
+        return Boolean(this.save_response);
+    }
+
+    /**
+     * Parse to boolean
+     * @returns {boolean} Should save response data on error?
+     */
+    getSaveErrorResponse() {
+        return Boolean(this.save_error_response);
     }
 
     /**
@@ -618,6 +645,11 @@ class Monitor extends BeanModel {
 
                     bean.msg = `${res.status} - ${res.statusText}`;
                     bean.ping = dayjs().valueOf() - startTime;
+
+                    // in the frontend, the save response is only shown if the saveErrorResponse is set
+                    if (this.getSaveResponse() && this.getSaveErrorResponse()) {
+                        await this.saveResponseData(bean, res.data);
+                    }
 
                     // fallback for if kelog event is not emitted, but we may still have tlsInfo,
                     // e.g. if the connection is made through a proxy
@@ -880,16 +912,40 @@ class Monitor extends BeanModel {
                     bean.msg = error.message;
                 }
 
+                if (this.getSaveErrorResponse() && error?.response?.data !== undefined) {
+                    await this.saveResponseData(bean, error.response.data);
+                }
+
                 // If UP come in here, it must be upside down mode
                 // Just reset the retries
                 if (this.isUpsideDown() && bean.status === UP) {
                     retries = 0;
-                } else if (this.maxretries > 0 && retries < this.maxretries) {
-                    retries++;
-                    bean.status = PENDING;
+                } else if (this.type === "json-query" && this.retry_only_on_status_code_failure) {
+                    // For json-query monitors with retry_only_on_status_code_failure enabled,
+                    // only retry if the error is NOT from JSON query evaluation
+                    // JSON query errors have the message "JSON query does not pass..."
+                    const isJsonQueryError =
+                        typeof error.message === "string" && error.message.includes("JSON query does not pass");
+
+                    if (isJsonQueryError) {
+                        // Don't retry on JSON query failures, mark as DOWN immediately
+                        retries = 0;
+                    } else if (this.maxretries > 0 && retries < this.maxretries) {
+                        retries++;
+                        bean.status = PENDING;
+                    } else {
+                        // Continue counting retries during DOWN
+                        retries++;
+                    }
                 } else {
-                    // Continue counting retries during DOWN
-                    retries++;
+                    // General retry logic for all other monitor types
+                    if (this.maxretries > 0 && retries < this.maxretries) {
+                        retries++;
+                        bean.status = PENDING;
+                    } else {
+                        // Continue counting retries during DOWN
+                        retries++;
+                    }
                 }
             }
 
@@ -953,7 +1009,15 @@ class Monitor extends BeanModel {
                         log.debug("monitor", `Failed getting expiration date for domain ${supportInfo.domain}`);
                     }
                 } catch (error) {
-                    // purposely not logged due to noise. Is accessible via checkMointor
+                    if (
+                        error.message === "domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint" &&
+                        Boolean(this.domainExpiryNotification)
+                    ) {
+                        log.warn(
+                            "domain_expiry",
+                            `Domain expiry unsupported for '.${error.meta.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
+                        );
+                    }
                 }
             }
 
@@ -994,7 +1058,10 @@ class Monitor extends BeanModel {
             await R.store(bean);
 
             log.debug("monitor", `[${this.name}] prometheus.update`);
-            this.prometheus?.update(bean, tlsInfo);
+            const data24h = uptimeCalculator.get24Hour();
+            const data30d = uptimeCalculator.get30Day();
+            const data1y = uptimeCalculator.get1Year();
+            this.prometheus?.update(bean, tlsInfo, { data24h, data30d, data1y });
 
             previousBeat = bean;
 
@@ -1038,6 +1105,35 @@ class Monitor extends BeanModel {
         } else {
             safeBeat();
         }
+    }
+
+    /**
+     * Save response body to a heartbeat if response saving is enabled.
+     * @param {import("redbean-node").Bean} bean Heartbeat bean to populate.
+     * @param {unknown} data Response payload.
+     * @returns {void}
+     */
+    async saveResponseData(bean, data) {
+        if (data === undefined) {
+            return;
+        }
+
+        let responseData = data;
+        if (typeof responseData !== "string") {
+            try {
+                responseData = JSON.stringify(responseData);
+            } catch (error) {
+                responseData = String(responseData);
+            }
+        }
+
+        const maxSize = this.response_max_length ?? RESPONSE_BODY_LENGTH_DEFAULT;
+        if (responseData.length > maxSize) {
+            responseData = responseData.substring(0, maxSize) + "... (truncated)";
+        }
+
+        // Offload brotli compression from main event loop to libuv thread pool
+        bean.response = (await brotliCompress(Buffer.from(responseData, "utf8"))).toString("base64");
     }
 
     /**
@@ -1343,7 +1439,7 @@ class Monitor extends BeanModel {
      * Send a notification about a monitor
      * @param {boolean} isFirstBeat Is this beat the first of this monitor?
      * @param {Monitor} monitor The monitor to send a notification about
-     * @param {Bean} bean Status information about monitor
+     * @param {import("./heartbeat")} bean Status information about monitor
      * @returns {Promise<void>}
      */
     static async sendNotification(isFirstBeat, monitor, bean) {
@@ -1361,7 +1457,7 @@ class Monitor extends BeanModel {
 
             for (let notification of notificationList) {
                 try {
-                    const heartbeatJSON = bean.toJSON();
+                    const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: true });
                     const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
                     const preloadData = await Monitor.preparePreloadData(monitorData);
                     // Prevent if the msg is undefined, notifications such as Discord cannot send out.
@@ -1566,6 +1662,16 @@ class Monitor extends BeanModel {
         }
         if (this.retryInterval < MIN_INTERVAL_SECOND) {
             throw new Error(`Retry interval cannot be less than ${MIN_INTERVAL_SECOND} seconds`);
+        }
+
+        if (this.response_max_length !== undefined) {
+            if (this.response_max_length < 0) {
+                throw new Error(`Response max length cannot be less than 0`);
+            }
+
+            if (this.response_max_length > RESPONSE_BODY_LENGTH_MAX) {
+                throw new Error(`Response max length cannot be more than ${RESPONSE_BODY_LENGTH_MAX} bytes`);
+            }
         }
 
         if (this.type === "ping") {
@@ -1902,7 +2008,7 @@ class Monitor extends BeanModel {
      */
     async handleTlsInfo(tlsInfo) {
         await this.updateTlsInfo(tlsInfo);
-        this.prometheus?.update(null, tlsInfo);
+        this.prometheus?.update(null, tlsInfo, null);
 
         if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);

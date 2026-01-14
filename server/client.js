@@ -87,10 +87,12 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 
     timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
 
+    const result = list.map((bean) => bean.toJSON());
+
     if (toUser) {
-        io.to(socket.userID).emit("importantHeartbeatList", monitorID, list, overwrite);
+        io.to(socket.userID).emit("importantHeartbeatList", monitorID, result, overwrite);
     } else {
-        socket.emit("importantHeartbeatList", monitorID, list, overwrite);
+        socket.emit("importantHeartbeatList", monitorID, result, overwrite);
     }
 }
 

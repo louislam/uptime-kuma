@@ -42,4 +42,8 @@ jobs:
         run: npm run fmt
         continue-on-error: true
 
+      - name: Compile TypeScript
+        run: npm run tsc
+        continue-on-error: true
+
       - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
