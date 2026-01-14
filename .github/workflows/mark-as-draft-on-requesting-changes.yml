@@ -12,13 +12,13 @@ on: # zizmor: ignore[dangerous-triggers]
       - labeled
       - ready_for_review
 
-permissions:
-  pull-requests: write
-  issues: write
+permissions: {}
 
 jobs:
   mark-draft:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     if: |
       (
         github.event.action == 'review_submitted' &&
@@ -41,10 +41,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh pr ready "${{ github.event.pull_request.html_url }}" --undo || true
+          gh pr ready "${{ github.event.pull_request.number }}" --undo || true
 
   ready-for-review:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     if: github.event.action == 'ready_for_review'
     steps:
       - name: Update labels for review
