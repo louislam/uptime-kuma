@@ -132,8 +132,6 @@ class Discord extends NotificationProvider {
                             const wentOfflineTimestamp = Math.floor(new Date(lastDownHeartbeat.time).getTime() / 1000);
                             wentOfflineFormatted = `<t:${wentOfflineTimestamp}:F>`;
 
-                            // Calculate downtime duration in seconds
-                            const downtimeSeconds = backOnlineTimestamp - wentOfflineTimestamp;
                             // Format as relative time using Discord's relative timestamp (R format)
                             downtimeDuration = `<t:${wentOfflineTimestamp}:R>`;
                         }
