@@ -44,10 +44,7 @@ describe("GameDig Monitor", () => {
         const gamedigMonitor = new GameDigMonitorType();
 
         mock.method(GameDig, "query", async (options) => {
-            assert.ok(
-                net.isIP(options.host) !== 0,
-                `Expected IP address, got ${options.host}`
-            );
+            assert.ok(net.isIP(options.host) !== 0, `Expected IP address, got ${options.host}`);
             return {
                 name: "Test Server",
                 ping: 50,
@@ -234,10 +231,7 @@ describe("GameDig Monitor", () => {
             status: PENDING,
         };
 
-        await assert.rejects(
-            gamedigMonitor.check(monitor, heartbeat, {}),
-            /Error/
-        );
+        await assert.rejects(gamedigMonitor.check(monitor, heartbeat, {}), /Error/);
     });
 
     test("resolveHostname() returns IP address when given valid hostname", async () => {
@@ -245,10 +239,7 @@ describe("GameDig Monitor", () => {
 
         const resolvedIP = await gamedigMonitor.resolveHostname("localhost");
 
-        assert.ok(
-            net.isIP(resolvedIP) !== 0,
-            `Expected valid IP address, got ${resolvedIP}`
-        );
+        assert.ok(net.isIP(resolvedIP) !== 0, `Expected valid IP address, got ${resolvedIP}`);
     });
 
     test("resolveHostname() rejects when DNS resolution fails for invalid hostname", async () => {

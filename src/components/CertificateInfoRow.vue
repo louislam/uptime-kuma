@@ -35,16 +35,9 @@
             </div>
         </div>
         <div class="d-flex">
-            <font-awesome-icon
-                v-if="cert.issuerCertificate"
-                class="m-2 ps-6 link-icon"
-                icon="link"
-            />
+            <font-awesome-icon v-if="cert.issuerCertificate" class="m-2 ps-6 link-icon" icon="link" />
         </div>
-        <certificate-info-row
-            v-if="cert.issuerCertificate"
-            :cert="cert.issuerCertificate"
-        />
+        <certificate-info-row v-if="cert.issuerCertificate" :cert="cert.issuerCertificate" />
     </div>
 </template>
 

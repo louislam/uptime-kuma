@@ -8,9 +8,10 @@
                 {{ $t("notificationDescription") }}
             </p>
 
-            <ul class="list-group mb-3" style="border-radius: 1rem;">
+            <ul class="list-group mb-3" style="border-radius: 1rem">
                 <li v-for="(notification, index) in $root.notificationList" :key="index" class="list-group-item">
-                    {{ notification.name }}<br>
+                    {{ notification.name }}
+                    <br />
                     <a href="#" @click="$refs.notificationDialog.show(notification.id)">{{ $t("Edit") }}</a>
                 </li>
             </ul>
@@ -58,15 +59,31 @@
             <p>{{ $t("certificationExpiryDescription") }}</p>
             <p>{{ $t("notificationDescription") }}</p>
             <div class="mt-1 mb-3 ps-2 cert-exp-days col-12 col-xl-6">
-                <div v-for="day in settings.tlsExpiryNotifyDays" :key="day" class="d-flex align-items-center justify-content-between cert-exp-day-row py-2">
+                <div
+                    v-for="day in settings.tlsExpiryNotifyDays"
+                    :key="day"
+                    class="d-flex align-items-center justify-content-between cert-exp-day-row py-2"
+                >
                     <span>{{ day }} {{ $tc("day", day) }}</span>
-                    <button type="button" class="btn-rm-expiry btn btn-outline-danger ms-2 py-1" :aria-label="$t('Remove the expiry notification')" @click="removeTlsExpiryNotifDay(day)">
+                    <button
+                        type="button"
+                        class="btn-rm-expiry btn btn-outline-danger ms-2 py-1"
+                        :aria-label="$t('Remove the expiry notification')"
+                        @click="removeTlsExpiryNotifDay(day)"
+                    >
                         <font-awesome-icon icon="times" />
                     </button>
                 </div>
             </div>
             <div class="col-12 col-xl-6">
-                <ActionInput v-model="tlsExpiryNotifInput" :type="'number'" :placeholder="$t('day')" :icon="'plus'" :action="() => addTlsExpiryNotifDay(tlsExpiryNotifInput)" :action-aria-label="$t('Add a new expiry notification day')" />
+                <ActionInput
+                    v-model="tlsExpiryNotifInput"
+                    :type="'number'"
+                    :placeholder="$t('day')"
+                    :icon="'plus'"
+                    :action="() => addTlsExpiryNotifDay(tlsExpiryNotifInput)"
+                    :action-aria-label="$t('Add a new expiry notification day')"
+                />
             </div>
             <div>
                 <button class="btn btn-primary" type="button" @click="saveSettings()">
@@ -80,15 +97,31 @@
             <p>{{ $t("domainExpiryDescription") }}</p>
             <p>{{ $t("notificationDescription") }}</p>
             <div class="mt-1 mb-3 ps-2 cert-exp-days col-12 col-xl-6">
-                <div v-for="day in settings.domainExpiryNotifyDays" :key="day" class="d-flex align-items-center justify-content-between cert-exp-day-row py-2">
+                <div
+                    v-for="day in settings.domainExpiryNotifyDays"
+                    :key="day"
+                    class="d-flex align-items-center justify-content-between cert-exp-day-row py-2"
+                >
                     <span>{{ day }} {{ $tc("day", day) }}</span>
-                    <button type="button" class="btn-rm-expiry btn btn-outline-danger ms-2 py-1" :aria-label="$t('Remove the expiry notification')" @click="removeDomainExpiryNotifDay(day)">
+                    <button
+                        type="button"
+                        class="btn-rm-expiry btn btn-outline-danger ms-2 py-1"
+                        :aria-label="$t('Remove the expiry notification')"
+                        @click="removeDomainExpiryNotifDay(day)"
+                    >
                         <font-awesome-icon icon="times" />
                     </button>
                 </div>
             </div>
             <div class="col-12 col-xl-6">
-                <ActionInput v-model="domainExpiryNotifInput" :type="'number'" :placeholder="$t('day')" :icon="'plus'" :action="() => addDomainExpiryNotifDay(domainExpiryNotifInput)" :action-aria-label="$t('Add a new expiry notification day')" />
+                <ActionInput
+                    v-model="domainExpiryNotifInput"
+                    :type="'number'"
+                    :placeholder="$t('day')"
+                    :icon="'plus'"
+                    :action="() => addDomainExpiryNotifDay(domainExpiryNotifInput)"
+                    :action-aria-label="$t('Add a new expiry notification day')"
+                />
             </div>
             <div>
                 <button class="btn btn-primary" type="button" @click="saveSettings()">
@@ -148,7 +181,7 @@ export default {
             if (parsedTimeout != null && !Number.isNaN(parsedTimeout)) {
                 localStorage.toastErrorTimeout = newTimeout > 0 ? newTimeout * 1000 : newTimeout;
             }
-        }
+        },
     },
 
     mounted() {
@@ -162,7 +195,7 @@ export default {
          * @returns {void}
          */
         removeTlsExpiryNotifDay(day) {
-            this.settings.tlsExpiryNotifyDays = this.settings.tlsExpiryNotifyDays.filter(d => d !== day);
+            this.settings.tlsExpiryNotifyDays = this.settings.tlsExpiryNotifyDays.filter((d) => d !== day);
         },
         /**
          * Add a new tls expiry notification day.
@@ -192,7 +225,7 @@ export default {
          * @returns {void}
          */
         removeDomainExpiryNotifDay(day) {
-            this.settings.domainExpiryNotifyDays = this.settings.domainExpiryNotifyDays.filter(d => d !== day);
+            this.settings.domainExpiryNotifyDays = this.settings.domainExpiryNotifyDays.filter((d) => d !== day);
         },
         /**
          * Add a new domain expiry notification day.

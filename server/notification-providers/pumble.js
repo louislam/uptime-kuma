@@ -15,13 +15,13 @@ class Pumble extends NotificationProvider {
             let config = this.getAxiosConfigWithProxy({});
             if (heartbeatJSON === null && monitorJSON === null) {
                 let data = {
-                    "attachments": [
+                    attachments: [
                         {
-                            "title": "Uptime Kuma Alert",
-                            "text": msg,
-                            "color": "#5BDD8B"
-                        }
-                    ]
+                            title: "Uptime Kuma Alert",
+                            text: msg,
+                            color: "#5BDD8B",
+                        },
+                    ],
                 };
 
                 await axios.post(notification.webhookURL, data, config);
@@ -29,13 +29,13 @@ class Pumble extends NotificationProvider {
             }
 
             let data = {
-                "attachments": [
+                attachments: [
                     {
-                        "title": `${monitorJSON["name"]} is ${heartbeatJSON["status"] === UP ? "up" : "down"}`,
-                        "text": heartbeatJSON["msg"],
-                        "color": (heartbeatJSON["status"] === UP ? "#5BDD8B" : "#DC3645"),
-                    }
-                ]
+                        title: `${monitorJSON["name"]} is ${heartbeatJSON["status"] === UP ? "up" : "down"}`,
+                        text: heartbeatJSON["msg"],
+                        color: heartbeatJSON["status"] === UP ? "#5BDD8B" : "#DC3645",
+                    },
+                ],
             };
 
             await axios.post(notification.webhookURL, data, config);

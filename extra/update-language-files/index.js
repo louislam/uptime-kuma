@@ -54,13 +54,13 @@ async function updateLanguage(langCode, baseLangCode) {
     } else {
         console.log("Empty file");
         obj = {
-            languageName: "<Your Language name in your language (not in English)>"
+            languageName: "<Your Language name in your language (not in English)>",
         };
     }
 
     // En first
     for (const key in en) {
-        if (! obj[key]) {
+        if (!obj[key]) {
             obj[key] = en[key];
         }
     }
@@ -68,15 +68,17 @@ async function updateLanguage(langCode, baseLangCode) {
     if (baseLang !== en) {
         // Base second
         for (const key in baseLang) {
-            if (! obj[key]) {
+            if (!obj[key]) {
                 obj[key] = key;
             }
         }
     }
 
-    const code = "export default " + util.inspect(obj, {
-        depth: null,
-    });
+    const code =
+        "export default " +
+        util.inspect(obj, {
+            depth: null,
+        });
 
     fs.writeFileSync(`../../src/languages/${file}`, code);
 }

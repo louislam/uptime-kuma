@@ -35,7 +35,7 @@ const jobs = [
         interval: "*/30 * * * *", // Every 30 minutes
         jobFunc: refreshNotificationCache,
         croner: null,
-    }
+    },
 ];
 
 /**
@@ -52,11 +52,10 @@ const initBackgroundJobs = async function () {
                 name: job.name,
                 timezone,
             },
-            job.jobFunc,
+            job.jobFunc
         );
         job.croner = cornerJob;
     }
-
 };
 
 /**
@@ -74,5 +73,5 @@ const stopBackgroundJobs = function () {
 
 module.exports = {
     initBackgroundJobs,
-    stopBackgroundJobs
+    stopBackgroundJobs,
 };

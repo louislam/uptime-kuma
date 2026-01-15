@@ -77,7 +77,7 @@ const routes = [
                                 path: "/clone/:id",
                                 component: EditMonitor,
                             },
-                        ]
+                        ],
                     },
                     {
                         path: "/list",
@@ -135,7 +135,7 @@ const routes = [
                                 path: "about",
                                 component: About,
                             },
-                        ]
+                        ],
                     },
                     {
                         path: "/manage-status-page",
@@ -160,7 +160,7 @@ const routes = [
                     {
                         path: "/maintenance/clone/:id",
                         component: EditMaintenance,
-                    }
+                    },
                 ],
             },
         ],

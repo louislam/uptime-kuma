@@ -2,16 +2,10 @@
     <div>
         <h4>{{ $t("Certificate Info") }}</h4>
         {{ $t("Certificate Chain") }}:
-        <div
-            v-if="valid"
-            class="rounded d-inline-flex ms-2 text-white tag-valid"
-        >
+        <div v-if="valid" class="rounded d-inline-flex ms-2 text-white tag-valid">
             {{ $t("Valid") }}
         </div>
-        <div
-            v-if="!valid"
-            class="rounded d-inline-flex ms-2 text-white tag-invalid"
-        >
+        <div v-if="!valid" class="rounded d-inline-flex ms-2 text-white tag-invalid">
             {{ $t("Invalid") }}
         </div>
         <certificate-info-row :cert="certInfo" />

@@ -31,7 +31,7 @@ class Telegram extends NotificationProvider {
         if (typeof obj === "object" && obj !== null) {
             // Check if array
             if (Array.isArray(obj)) {
-                return obj.map(item => this.escapeObjectRecursive(item));
+                return obj.map((item) => this.escapeObjectRecursive(item));
             }
 
             const newObj = {};
@@ -87,7 +87,12 @@ class Telegram extends NotificationProvider {
                     }
                 }
 
-                params.text = await this.renderTemplate(notification.telegramTemplate, msg, monitorJSONCopy, heartbeatJSONCopy);
+                params.text = await this.renderTemplate(
+                    notification.telegramTemplate,
+                    msg,
+                    monitorJSONCopy,
+                    heartbeatJSONCopy
+                );
 
                 if (notification.telegramTemplateParseMode !== "plain") {
                     params.parse_mode = notification.telegramTemplateParseMode;
@@ -98,7 +103,6 @@ class Telegram extends NotificationProvider {
 
             await axios.post(`${url}/bot${notification.telegramBotToken}/sendMessage`, params, config);
             return okMsg;
-
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
