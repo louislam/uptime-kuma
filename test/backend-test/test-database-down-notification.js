@@ -65,8 +65,7 @@ describe("Database Down Notification", () => {
         const nonOptInBean = R.dispense("notification");
         nonOptInBean.name = "Non-Opt-In Notification";
         nonOptInBean.user_id = 1;
-        nonOptInBean.config = JSON.stringify({ type: "webhook",
-            webhookURL: "https://example.com/webhook2" });
+        nonOptInBean.config = JSON.stringify({ type: "webhook", webhookURL: "https://example.com/webhook2" });
         nonOptInBean.active = 1;
         nonOptInBean.is_default = 0;
         nonOptInBean.send_database_down = 0; // NOT opted-in
@@ -79,7 +78,7 @@ describe("Database Down Notification", () => {
             assert.ok(Notification.cacheLastRefresh > 0, "Cache refresh time should be set");
 
             // Verify test notification (opt-in) is in cache
-            const cached = Notification.notificationCache.find(n => n.id === testNotification.id);
+            const cached = Notification.notificationCache.find((n) => n.id === testNotification.id);
             assert.ok(cached, "Opt-in notification should be in cache");
             assert.strictEqual(cached.name, "Test Notification");
             // Config is stored as raw string, parse to verify
@@ -87,7 +86,7 @@ describe("Database Down Notification", () => {
             assert.strictEqual(config.type, "webhook");
 
             // Verify non-opt-in notification is NOT in cache
-            const nonOptInCached = Notification.notificationCache.find(n => n.id === nonOptInBean.id);
+            const nonOptInCached = Notification.notificationCache.find((n) => n.id === nonOptInBean.id);
             assert.strictEqual(nonOptInCached, undefined, "Non-opt-in notification should NOT be in cache");
         } finally {
             // Clean up

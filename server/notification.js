@@ -329,7 +329,10 @@ class Notification {
             });
 
             this.cacheLastRefresh = Date.now();
-            log.debug("notification", `Refreshed notification cache with ${this.notificationCache.length} notifications (database down opt-in)`);
+            log.debug(
+                "notification",
+                `Refreshed notification cache with ${this.notificationCache.length} notifications (database down opt-in)`
+            );
         } catch (e) {
             log.error("notification", `Failed to refresh notification cache: ${e.message}`);
             // Don't clear the cache if refresh fails, keep using old cache
