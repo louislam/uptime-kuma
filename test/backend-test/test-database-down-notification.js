@@ -75,7 +75,6 @@ describe("Database Down Notification", () => {
         try {
             await Notification.refreshCache();
 
-<<<<<<< HEAD
             assert.ok(Notification.notificationCache.length > 0, "Cache should contain notifications");
             assert.ok(Notification.cacheLastRefresh > 0, "Cache refresh time should be set");
 
@@ -94,15 +93,6 @@ describe("Database Down Notification", () => {
             // Clean up
             await R.trash(nonOptInBean);
         }
-=======
-        // Verify test notification is in cache
-        const cached = Notification.notificationCache.find((n) => n.id === testNotification.id);
-        assert.ok(cached, "Test notification should be in cache");
-        assert.strictEqual(cached.name, "Test Notification");
-        // Config is stored as raw string, parse to verify
-        const config = JSON.parse(cached.config);
-        assert.strictEqual(config.type, "webhook");
->>>>>>> 732bb6e789e490d1a387e7fa921f0caa2c344302
     });
 
     test("sendDatabaseDownNotification() uses cached notifications and prevents duplicates", async () => {
