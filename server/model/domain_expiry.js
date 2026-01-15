@@ -159,31 +159,22 @@ class DomainExpiry extends BeanModel {
         const tld = parseTld(target);
 
         // Avoid logging for incomplete/invalid input while editing monitors.
-        if (!tld.domain) {
-            throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: tld.hostname });
-        }
-        if (!tld.publicSuffix) {
-            throw new TranslatableError("domain_expiry_unsupported_public_suffix", { publicSuffix: tld.publicSuffix });
-        }
         if (tld.isIp) {
             throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
         }
-
         // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
         if (tld.publicSuffix.length < 2) {
             throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
         }
+        if (!tld.isIcann) {
+            throw new TranslatableError("domain_expiry_unsupported_is_icann", {
+                domain: tld.domain,
+                publicSuffix: tld.publicSuffix,
+            });
+        }
 
         const rdap = await getRdapServer(tld.publicSuffix);
         if (!rdap) {
-            // Only warn when the monitor actually has domain expiry notifications enabled.
-            // The edit monitor page calls this method frequently while the user is typing.
-            if (Boolean(monitor.domainExpiryNotification)) {
-                log.warn(
-                    "domain_expiry",
-                    `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
-                );
-            }
             throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
                 publicSuffix: tld.publicSuffix,
             });

@@ -11,6 +11,11 @@ class Discord extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
+        // Discord Message Flags
+        // @see https://discord.com/developers/docs/resources/message#message-object-message-flags
+        // This message will not trigger push and desktop notifications
+        const SUPPRESS_NOTIFICATIONS_FLAG = 1 << 12;
+
         try {
             let config = this.getAxiosConfigWithProxy({});
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
@@ -40,6 +45,9 @@ class Discord extends NotificationProvider {
                 }
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
+                }
+                if (notification.discordSuppressNotifications) {
+                    discordtestdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
                 await axios.post(webhookUrl.toString(), discordtestdata, config);
                 return okMsg;
@@ -88,6 +96,9 @@ class Discord extends NotificationProvider {
                 }
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
+                }
+                if (notification.discordSuppressNotifications) {
+                    discorddowndata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
                 await axios.post(webhookUrl.toString(), discorddowndata, config);
@@ -139,6 +150,9 @@ class Discord extends NotificationProvider {
 
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
+                }
+                if (notification.discordSuppressNotifications) {
+                    discordupdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
                 }
 
                 await axios.post(webhookUrl.toString(), discordupdata, config);

@@ -102,6 +102,24 @@
             <label class="form-check-label" for="discord-disable-url">{{ $t("Disable URL in Notification") }}</label>
         </div>
     </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="discord-suppress-notifications"
+                v-model="$parent.notification.discordSuppressNotifications"
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+            />
+            <label class="form-check-label" for="discord-suppress-notifications">
+                {{ $t("Suppress Notifications") }}
+            </label>
+        </div>
+        <div class="form-text">
+            {{ $t("discordSuppressNotificationsHelptext") }}
+        </div>
+    </div>
 </template>
 <script>
 export default {
@@ -111,6 +129,9 @@ export default {
         }
         if (this.$parent.notification.disableUrl === undefined) {
             this.$parent.notification.disableUrl = false;
+        }
+        if (this.$parent.notification.discordSuppressNotifications === undefined) {
+            this.$parent.notification.discordSuppressNotifications = false;
         }
     },
 };
