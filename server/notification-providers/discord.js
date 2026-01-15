@@ -121,16 +121,16 @@ class Discord extends NotificationProvider {
                 let wentOfflineFormatted = null;
                 if (heartbeatJSON["lastDownTime"]) {
                     const wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["lastDownTime"]).getTime() / 1000);
-                            wentOfflineFormatted = `<t:${wentOfflineTimestamp}:F>`;
+                    wentOfflineFormatted = `<t:${wentOfflineTimestamp}:F>`;
 
                     // Calculate the actual duration between went offline and back online
                     const durationSeconds = backOnlineTimestamp - wentOfflineTimestamp;
-                    
+
                     // Format duration as human-readable string (e.g., "1h 23m", "45m 30s")
                     const hours = Math.floor(durationSeconds / 3600);
                     const minutes = Math.floor((durationSeconds % 3600) / 60);
                     const seconds = durationSeconds % 60;
-                    
+
                     const durationParts = [];
                     if (hours > 0) {
                         durationParts.push(`${hours}h`);
@@ -142,7 +142,7 @@ class Discord extends NotificationProvider {
                         // Only show seconds if less than an hour
                         durationParts.push(`${seconds}s`);
                     }
-                    
+
                     downtimeDuration = durationParts.length > 0 ? durationParts.join(" ") : "0s";
                 }
 
