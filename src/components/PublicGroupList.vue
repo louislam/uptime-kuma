@@ -51,7 +51,7 @@
                         <template #item="monitor">
                             <div class="item" data-testid="monitor">
                                 <div class="row">
-                                    <div class="col-6 small-padding">
+                                    <div class="col-9 col-xl-6 small-padding">
                                         <div class="info">
                                             <font-awesome-icon
                                                 v-if="editMode"
@@ -116,7 +116,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div :key="$root.userHeartbeatBar" class="col-6">
+                                    <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
                                         <HeartbeatBar size="mid" :monitor-id="monitor.element.id" />
                                     </div>
                                 </div>
@@ -231,15 +231,11 @@ export default {
          */
         formattedCertExpiryMessage(monitor) {
             if (monitor?.element?.validCert && monitor?.element?.certExpiryDaysRemaining) {
-                return (
-                    monitor.element.certExpiryDaysRemaining +
-                    " " +
-                    this.$tc("day", monitor.element.certExpiryDaysRemaining)
-                );
+                return this.$t("days", monitor.element.certExpiryDaysRemaining);
             } else if (monitor?.element?.validCert === false) {
                 return this.$t("noOrBadCertificate");
             } else {
-                return this.$t("Unknown") + " " + this.$tc("day", 2);
+                return this.$t("unknownDays");
             }
         },
 

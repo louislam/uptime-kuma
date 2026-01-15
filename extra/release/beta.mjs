@@ -7,24 +7,28 @@ import {
     checkTagExists,
     checkVersionFormat,
     getRepoNames,
-    pressAnyKey,
-    execSync, uploadArtifacts, checkReleaseBranch,
+    execSync,
+    checkReleaseBranch,
+    createDistTarGz,
+    createReleasePR,
 } from "./lib.mjs";
 import semver from "semver";
 
 const repoNames = getRepoNames();
 const version = process.env.RELEASE_BETA_VERSION;
-const githubToken = process.env.RELEASE_GITHUB_TOKEN;
+const dryRun = process.env.DRY_RUN === "true";
+const previousVersion = process.env.RELEASE_PREVIOUS_VERSION;
+const branchName = `release-${version}`;
+const githubRunId = process.env.GITHUB_RUN_ID;
+
+if (dryRun) {
+    console.log("Dry run mode enabled. No images will be pushed.");
+}
 
 console.log("RELEASE_BETA_VERSION:", version);
 
-if (!githubToken) {
-    console.error("GITHUB_TOKEN is required");
-    process.exit(1);
-}
-
-// Check if the current branch is "release"
-checkReleaseBranch();
+// Check if the current branch is "release-{version}"
+checkReleaseBranch(branchName);
 
 // Check if the version is a valid semver
 checkVersionFormat(version);
@@ -44,24 +48,34 @@ checkDocker();
 await checkTagExists(repoNames, version);
 
 // node extra/beta/update-version.js
-execSync("node ./extra/beta/update-version.js");
+await import("../beta/update-version.mjs");
+
+// Create Pull Request (gh pr create will handle pushing the branch)
+await createReleasePR(version, previousVersion, dryRun, branchName, githubRunId);
 
 // Build frontend dist
 buildDist();
 
-// Build slim image (rootless)
-buildImage(repoNames, [ "beta-slim-rootless", ver(version, "slim-rootless") ], "rootless", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+if (!dryRun) {
+    // Build slim image (rootless)
+    buildImage(
+        repoNames,
+        ["beta-slim-rootless", ver(version, "slim-rootless")],
+        "rootless",
+        "BASE_IMAGE=louislam/uptime-kuma:base2-slim"
+    );
 
-// Build full image (rootless)
-buildImage(repoNames, [ "beta-rootless", ver(version, "rootless") ], "rootless");
+    // Build full image (rootless)
+    buildImage(repoNames, ["beta-rootless", ver(version, "rootless")], "rootless");
 
-// Build slim image
-buildImage(repoNames, [ "beta-slim", ver(version, "slim") ], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
+    // Build slim image
+    buildImage(repoNames, ["beta-slim", ver(version, "slim")], "release", "BASE_IMAGE=louislam/uptime-kuma:base2-slim");
 
-// Build full image
-buildImage(repoNames, [ "beta", version ], "release");
+    // Build full image
+    buildImage(repoNames, ["beta", version], "release");
+} else {
+    console.log("Dry run mode - skipping image build and push.");
+}
 
-await pressAnyKey();
-
-// npm run upload-artifacts
-uploadArtifacts(version, githubToken);
+// Create dist.tar.gz
+await createDistTarGz();

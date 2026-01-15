@@ -2,20 +2,29 @@
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
             <div class="header-top">
-                <button
-                    class="btn btn-outline-normal ms-2"
-                    :class="{ active: selectMode }"
-                    type="button"
-                    @click="selectMode = !selectMode"
-                >
-                    {{ $t("Select") }}
-                </button>
+                <div class="select-checkbox-wrapper">
+                    <input
+                        v-if="!selectMode"
+                        v-model="selectMode"
+                        class="form-check-input"
+                        type="checkbox"
+                        :aria-label="$t('selectAllMonitorsAria')"
+                        @change="selectAll = selectMode"
+                    />
+                    <input
+                        v-else
+                        v-model="selectAll"
+                        class="form-check-input"
+                        type="checkbox"
+                        :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
+                    />
+                </div>
 
-                <div class="placeholder"></div>
-                <div class="search-wrapper">
-                    <a v-if="searchText == ''" class="search-icon">
-                        <font-awesome-icon icon="search" />
-                    </a>
+                <div class="header-filter">
+                    <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
+                </div>
+
+                <div class="search-wrapper ms-auto">
                     <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
                         <font-awesome-icon icon="times" />
                     </a>
@@ -30,25 +39,51 @@
                     </form>
                 </div>
             </div>
-            <div class="header-filter">
-                <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
-            </div>
 
-            <!-- Selection Controls -->
-            <div v-if="selectMode" class="selection-controls px-2 pt-2">
-                <input v-model="selectAll" class="form-check-input select-input" type="checkbox" />
-
-                <button class="btn-outline-normal" @click="pauseDialog">
-                    <font-awesome-icon icon="pause" size="sm" />
-                    {{ $t("Pause") }}
+            <div v-if="selectMode && selectedMonitorCount > 0" class="selected-count-row">
+                <button class="btn btn-outline-normal" @click="cancelSelectMode">
+                    {{ $t("Cancel") }}
                 </button>
-                <button class="btn-outline-normal" @click="resumeSelected">
-                    <font-awesome-icon icon="play" size="sm" />
-                    {{ $t("Resume") }}
-                </button>
-
-                <span v-if="selectedMonitorCount > 0">
-                    {{ $t("selectedMonitorCount", [selectedMonitorCount]) }}
+                <div class="actions-wrapper ms-2">
+                    <div class="dropdown">
+                        <button
+                            class="btn btn-outline-normal dropdown-toggle"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            :aria-label="$t('Actions')"
+                            :disabled="bulkActionInProgress"
+                            aria-expanded="false"
+                        >
+                            {{ $t("Actions") }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="#" @click.prevent="pauseDialog">
+                                    <font-awesome-icon icon="pause" class="me-2" />
+                                    {{ $t("Pause") }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" @click.prevent="resumeSelected">
+                                    <font-awesome-icon icon="play" class="me-2" />
+                                    {{ $t("Resume") }}
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    class="dropdown-item text-danger"
+                                    href="#"
+                                    @click.prevent="$refs.confirmDelete.show()"
+                                >
+                                    <font-awesome-icon icon="trash" class="me-2" />
+                                    {{ $t("Delete") }}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <span class="selected-count ms-2">
+                    {{ $t("selectedMonitorCountMsg", selectedMonitorCount) }}
                 </span>
             </div>
         </div>
@@ -81,6 +116,10 @@
     <Confirm ref="confirmPause" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="pauseSelected">
         {{ $t("pauseMonitorMsg") }}
     </Confirm>
+
+    <Confirm ref="confirmDelete" btn-style="btn-danger" :yes-text="$t('Yes')" :no-text="$t('No')" @yes="deleteSelected">
+        {{ $t("deleteMonitorsMsg") }}
+    </Confirm>
 </template>
 
 <script>
@@ -109,6 +148,7 @@ export default {
             disableSelectAllWatcher: false,
             selectedMonitors: {},
             windowTop: 0,
+            bulkActionInProgress: false,
             filterState: {
                 status: null,
                 active: null,
@@ -307,10 +347,21 @@ export default {
          * @returns {void}
          */
         pauseSelected() {
-            Object.keys(this.selectedMonitors)
-                .filter((id) => this.$root.monitorList[id].active)
-                .forEach((id) => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
+            if (this.bulkActionInProgress) {
+                return;
+            }
 
+            const activeMonitors = Object.keys(this.selectedMonitors).filter((id) => this.$root.monitorList[id].active);
+
+            if (activeMonitors.length === 0) {
+                this.$root.toastError(this.$t("noMonitorsPausedMsg"));
+                return;
+            }
+
+            this.bulkActionInProgress = true;
+            activeMonitors.forEach((id) => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
+            this.$root.toastSuccess(this.$t("pausedMonitorsMsg", activeMonitors.length));
+            this.bulkActionInProgress = false;
             this.cancelSelectMode();
         },
         /**
@@ -318,9 +369,66 @@ export default {
          * @returns {void}
          */
         resumeSelected() {
-            Object.keys(this.selectedMonitors)
-                .filter((id) => !this.$root.monitorList[id].active)
-                .forEach((id) => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+            if (this.bulkActionInProgress) {
+                return;
+            }
+
+            const inactiveMonitors = Object.keys(this.selectedMonitors).filter(
+                (id) => !this.$root.monitorList[id].active
+            );
+
+            if (inactiveMonitors.length === 0) {
+                this.$root.toastError(this.$t("noMonitorsResumedMsg"));
+                return;
+            }
+
+            this.bulkActionInProgress = true;
+            inactiveMonitors.forEach((id) => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
+            this.$root.toastSuccess(this.$t("resumedMonitorsMsg", inactiveMonitors.length));
+            this.bulkActionInProgress = false;
+            this.cancelSelectMode();
+        },
+        /**
+         * Delete each selected monitor
+         * @returns {Promise<void>}
+         */
+        async deleteSelected() {
+            if (this.bulkActionInProgress) {
+                return;
+            }
+
+            const monitorIds = Object.keys(this.selectedMonitors);
+
+            this.bulkActionInProgress = true;
+            let successCount = 0;
+            let errorCount = 0;
+
+            for (const id of monitorIds) {
+                try {
+                    await new Promise((resolve, reject) => {
+                        this.$root.getSocket().emit("deleteMonitor", id, false, (res) => {
+                            if (res.ok) {
+                                successCount++;
+                                resolve();
+                            } else {
+                                errorCount++;
+                                reject();
+                            }
+                        });
+                    });
+                } catch (error) {
+                    // Error already counted
+                }
+            }
+
+            this.bulkActionInProgress = false;
+
+            if (successCount > 0) {
+                this.$root.toastSuccess(this.$t("deletedMonitorsMsg", successCount));
+            }
+            if (errorCount > 0) {
+                this.$root.toastError(this.$t("bulkDeleteErrorMsg", errorCount));
+            }
 
             this.cancelSelectMode();
         },
@@ -438,15 +546,135 @@ export default {
     }
 }
 
+.search-row {
+    display: flex;
+    padding: 10px;
+    padding-bottom: 5px;
+}
+
 .header-top {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 8px;
+    padding: 10px;
+
+    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
+        flex-wrap: wrap;
+    }
+}
+
+.select-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+
+    .form-check-input {
+        cursor: pointer;
+        margin: 0;
+    }
 }
 
 .header-filter {
     display: flex;
     align-items: center;
+}
+
+.actions-wrapper {
+    display: flex;
+    align-items: center;
+
+    .dropdown-toggle {
+        white-space: nowrap;
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+
+    .dropdown-menu {
+        min-width: 140px;
+        padding: 4px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+        .dark & {
+            background-color: $dark-bg;
+            border-color: $dark-border-color;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+    }
+
+    .dropdown-item {
+        cursor: pointer;
+        padding: 6px 12px;
+        font-size: 0.9em;
+
+        .dark & {
+            color: $dark-font-color;
+
+            &:hover {
+                background-color: $dark-bg2;
+                color: $dark-font-color;
+            }
+        }
+
+        &.text-danger {
+            color: #dc3545;
+
+            .dark & {
+                color: #dc3545;
+            }
+
+            &:hover {
+                background-color: #dc3545 !important;
+                color: white !important;
+
+                .dark & {
+                    background-color: #dc3545 !important;
+                    color: white !important;
+                }
+
+                svg {
+                    color: white !important;
+                }
+            }
+        }
+    }
+}
+
+.selected-count {
+    white-space: nowrap;
+    font-size: 0.9em;
+    color: $primary;
+
+    .dark & {
+        color: $dark-font-color;
+    }
+}
+
+.selected-count-row {
+    padding: 5px 10px 0 10px;
+    display: flex;
+    align-items: center;
+}
+
+.selection-controls {
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+
+    .d-flex {
+        width: 100%;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
+    }
+
+    .selected-count {
+        margin-left: auto;
+    }
 }
 
 @media (max-width: 770px) {
@@ -460,25 +688,40 @@ export default {
 .search-wrapper {
     display: flex;
     align-items: center;
+    position: relative;
+
+    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
+        order: -1;
+        width: 100%;
+        margin-bottom: 8px;
+
+        form {
+            width: 100%;
+        }
+    }
 }
 
 .search-icon {
-    padding: 10px;
+    position: absolute;
+    right: 10px;
     color: #c0c0c0;
+    cursor: pointer;
+    transition: all ease-in-out 0.1s;
+    z-index: 1;
 
-    // Clear filter button (X)
-    svg[data-icon="times"] {
-        cursor: pointer;
-        transition: all ease-in-out 0.1s;
-
-        &:hover {
-            opacity: 0.5;
-        }
+    &:hover {
+        opacity: 0.5;
     }
 }
 
 .search-input {
     max-width: 15em;
+    padding-right: 30px;
+
+    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
+        max-width: 100%;
+        width: 100%;
+    }
 }
 
 .monitor-item {
@@ -498,10 +741,13 @@ export default {
     margin-top: 5px;
 }
 
-.selection-controls {
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+@media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
+    .selection-controls {
+        .selected-count {
+            margin-left: 0;
+            width: 100%;
+            margin-top: 0.25rem;
+        }
+    }
 }
 </style>
