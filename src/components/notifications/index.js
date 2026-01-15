@@ -5,6 +5,7 @@ import Apprise from "./Apprise.vue";
 import Bale from "./Bale.vue";
 import Bark from "./Bark.vue";
 import Bitrix24 from "./Bitrix24.vue";
+import Clickup from "./Clickup.vue";
 import Notifery from "./Notifery.vue";
 import ClickSendSMS from "./ClickSendSMS.vue";
 import CallMeBot from "./CallMeBot.vue";
@@ -95,6 +96,7 @@ const NotificationFormList = {
     bale: Bale,
     Bark: Bark,
     Bitrix24: Bitrix24,
+    clickup: Clickup,
     clicksendsms: ClickSendSMS,
     CallMeBot: CallMeBot,
     smsc: SMSC,
