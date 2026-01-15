@@ -1523,6 +1523,25 @@ class Monitor extends BeanModel {
                         .tz(heartbeatJSON["timezone"])
                         .format(SQL_DATETIME_FORMAT);
 
+                    // Calculate downtime tracking information when service comes back up
+                    // This makes downtime information available to all notification providers
+                    if (bean.status === UP && monitor.id) {
+                        try {
+                            const lastDownHeartbeat = await R.getRow(
+                                "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1",
+                                [monitor.id, DOWN]
+                            );
+
+                            if (lastDownHeartbeat && lastDownHeartbeat.time) {
+                                heartbeatJSON["lastDownTime"] = lastDownHeartbeat.time;
+                            }
+                        } catch (error) {
+                            // If we can't calculate downtime, just continue without it
+                            // Silently fail to avoid disrupting notification sending
+                            log.debug("monitor", `[${monitor.name}] Could not calculate downtime information: ${error.message}`);
+                        }
+                    }
+
                     await Notification.send(
                         JSON.parse(notification.config),
                         msg,

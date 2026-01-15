@@ -1,7 +1,6 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
-const { R } = require("redbean-node");
 
 class Discord extends NotificationProvider {
     name = "discord";
@@ -116,29 +115,35 @@ class Discord extends NotificationProvider {
             } else if (heartbeatJSON["status"] === UP) {
                 // Format timestamp for Discord using Discord's timestamp format
                 const backOnlineTimestamp = Math.floor(new Date(heartbeatJSON["time"]).getTime() / 1000);
-                const backOnlineFormatted = `<t:${backOnlineTimestamp}:F>`;
 
-                // Calculate downtime duration by finding the last DOWN heartbeat
+                // Use downtime information from heartbeatJSON (calculated outside notification provider)
                 let downtimeDuration = null;
                 let wentOfflineFormatted = null;
-                try {
-                    if (monitorJSON && monitorJSON.id) {
-                        const lastDownHeartbeat = await R.getRow(
-                            "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1",
-                            [monitorJSON.id, DOWN]
-                        );
-
-                        if (lastDownHeartbeat && lastDownHeartbeat.time) {
-                            const wentOfflineTimestamp = Math.floor(new Date(lastDownHeartbeat.time).getTime() / 1000);
+                if (heartbeatJSON["lastDownTime"]) {
+                    const wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["lastDownTime"]).getTime() / 1000);
                             wentOfflineFormatted = `<t:${wentOfflineTimestamp}:F>`;
 
-                            // Format as relative time using Discord's relative timestamp (R format)
-                            downtimeDuration = `<t:${wentOfflineTimestamp}:R>`;
-                        }
+                    // Calculate the actual duration between went offline and back online
+                    const durationSeconds = backOnlineTimestamp - wentOfflineTimestamp;
+                    
+                    // Format duration as human-readable string (e.g., "1h 23m", "45m 30s")
+                    const hours = Math.floor(durationSeconds / 3600);
+                    const minutes = Math.floor((durationSeconds % 3600) / 60);
+                    const seconds = durationSeconds % 60;
+                    
+                    const durationParts = [];
+                    if (hours > 0) {
+                        durationParts.push(`${hours}h`);
                     }
-                } catch (error) {
-                    // If we can't calculate downtime, just continue without it
-                    // Silently fail to avoid disrupting notification sending
+                    if (minutes > 0) {
+                        durationParts.push(`${minutes}m`);
+                    }
+                    if (seconds > 0 && hours === 0) {
+                        // Only show seconds if less than an hour
+                        durationParts.push(`${seconds}s`);
+                    }
+                    
+                    downtimeDuration = durationParts.length > 0 ? durationParts.join(" ") : "0s";
                 }
 
                 let discordupdata = {
@@ -161,10 +166,6 @@ class Discord extends NotificationProvider {
                                           },
                                       ]
                                     : []),
-                                {
-                                    name: "Back Online",
-                                    value: backOnlineFormatted,
-                                },
                                 ...(wentOfflineFormatted
                                     ? [
                                           {
@@ -181,10 +182,6 @@ class Discord extends NotificationProvider {
                                           },
                                       ]
                                     : []),
-                                {
-                                    name: `Time (${heartbeatJSON["timezone"]})`,
-                                    value: heartbeatJSON["localDateTime"],
-                                },
                                 ...(heartbeatJSON["ping"] != null
                                     ? [
                                           {
