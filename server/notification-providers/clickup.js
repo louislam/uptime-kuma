@@ -14,7 +14,7 @@ class Clickup extends NotificationProvider {
         try {
             let config = this.getAxiosConfigWithProxy({
                 headers: {
-                    "Authorization": notification.clickupToken,
+                    Authorization: notification.clickupToken,
                     "Content-Type": "application/json",
                 },
             });
