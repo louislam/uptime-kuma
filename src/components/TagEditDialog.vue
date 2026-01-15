@@ -68,7 +68,7 @@
 
                         <div class="mb-3">
                             <label for="tag-monitors" class="form-label">
-                                {{ $tc("Monitor", selectedMonitors.length) }}
+                                {{ $t("Monitors", selectedMonitors.length) }}
                             </label>
                             <div class="tag-monitors-list">
                                 <router-link

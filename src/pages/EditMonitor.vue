@@ -1167,6 +1167,24 @@
                                 </div>
                             </div>
 
+                            <!-- Retry only on status code failure: JSON Query only -->
+                            <div v-if="monitor.type === 'json-query' && monitor.maxretries > 0" class="my-3">
+                                <div class="form-check">
+                                    <input
+                                        id="retry-only-on-status-code-failure"
+                                        v-model="monitor.retryOnlyOnStatusCodeFailure"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                    />
+                                    <label for="retry-only-on-status-code-failure" class="form-check-label">
+                                        {{ $t("Only retry if status code check fails") }}
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    {{ $t("retryOnlyOnStatusCodeFailureDescription") }}
+                                </div>
+                            </div>
+
                             <!-- Timeout: HTTP / JSON query / Keyword / Ping / RabbitMQ / SNMP / Websocket Upgrade only -->
                             <div
                                 v-if="
@@ -1493,6 +1511,89 @@
                                     />
                                     <div class="form-text">
                                         {{ $t("maxRedirectDescription") }}
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-if="
+                                        monitor.type === 'http' ||
+                                        monitor.type === 'keyword' ||
+                                        monitor.type === 'json-query'
+                                    "
+                                    class="my-3"
+                                >
+                                    <div class="form-check">
+                                        <input
+                                            id="saveErrorResponse"
+                                            v-model="monitor.saveErrorResponse"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                        <label class="form-check-label" for="saveErrorResponse">
+                                            {{ $t("saveErrorResponseForNotifications") }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        <i18n-t keypath="saveResponseDescription" tag="div" class="form-text">
+                                            <template #templateVariable>
+                                                <code>heartbeatJSON.response</code>
+                                            </template>
+                                        </i18n-t>
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-if="
+                                        (monitor.type === 'http' ||
+                                            monitor.type === 'keyword' ||
+                                            monitor.type === 'json-query') &&
+                                        monitor.saveErrorResponse
+                                    "
+                                    class="my-3"
+                                >
+                                    <div class="form-check">
+                                        <input
+                                            id="saveResponse"
+                                            v-model="monitor.saveResponse"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                        <label class="form-check-label" for="saveResponse">
+                                            {{ $t("saveResponseForNotifications") }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        <i18n-t keypath="saveResponseDescription" tag="div" class="form-text">
+                                            <template #templateVariable>
+                                                <code>heartbeatJSON.response</code>
+                                            </template>
+                                        </i18n-t>
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-if="
+                                        (monitor.type === 'http' ||
+                                            monitor.type === 'keyword' ||
+                                            monitor.type === 'json-query') &&
+                                        (monitor.saveResponse || monitor.saveErrorResponse)
+                                    "
+                                    class="my-3"
+                                >
+                                    <label for="responseMaxLength" class="form-label">
+                                        {{ $t("responseMaxLength") }}
+                                    </label>
+                                    <input
+                                        id="responseMaxLength"
+                                        v-model="monitor.responseMaxLength"
+                                        type="number"
+                                        class="form-control"
+                                        required
+                                        min="0"
+                                        step="1"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("responseMaxLengthDescription") }}
                                     </div>
                                 </div>
 
@@ -2158,6 +2259,7 @@ const monitorDefaults = {
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
+    retryOnlyOnStatusCodeFailure: false,
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
@@ -2165,6 +2267,9 @@ const monitorDefaults = {
     domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: ["200-299"],
+    saveResponse: false,
+    saveErrorResponse: true,
+    responseMaxLength: 1024,
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
     docker_container: "",

@@ -342,14 +342,20 @@
 
                 <!-- Incident Date -->
                 <div class="date mt-3">
-                    {{ $t("Date Created") }}: {{ $root.datetime(incident.createdDate) }} ({{
-                        dateFromNow(incident.createdDate)
-                    }})
+                    {{
+                        $t("dateCreatedAtFromNow", {
+                            date: $root.datetime(incident.createdDate),
+                            fromNow: dateFromNow(incident.createdDate),
+                        })
+                    }}
                     <br />
                     <span v-if="incident.lastUpdatedDate">
-                        {{ $t("Last Updated") }}: {{ $root.datetime(incident.lastUpdatedDate) }} ({{
-                            dateFromNow(incident.lastUpdatedDate)
-                        }})
+                        {{
+                            $t("lastUpdatedAtFromNow", {
+                                date: $root.datetime(incident.lastUpdatedDate),
+                                fromNow: dateFromNow(incident.lastUpdatedDate),
+                            })
+                        }}
                     </span>
                 </div>
 
@@ -572,9 +578,9 @@
                 </p>
 
                 <div class="refresh-info mb-2">
-                    <div>{{ $t("Last Updated") }}: {{ lastUpdateTimeDisplay }}</div>
+                    <div>{{ $t("lastUpdatedAt", { date: lastUpdateTimeDisplay }) }}</div>
                     <div data-testid="update-countdown-text">
-                        {{ $tc("statusPageRefreshIn", [updateCountdownText]) }}
+                        {{ $t("statusPageRefreshIn", [updateCountdownText]) }}
                     </div>
                 </div>
             </footer>
