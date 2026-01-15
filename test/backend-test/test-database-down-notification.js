@@ -14,31 +14,26 @@ describe("Database Down Notification", () => {
         // Ensure database is connected (this copies template DB which has basic tables)
         await Database.connect(true); // testMode = true
 
-        // Run migrations to ensure schema is current
-        // The template database already has basic tables, so we just need to run migrations
-        const path = require("path");
-        const hasNotificationTable = await R.hasTable("notification");
-        
-        if (!hasNotificationTable) {
-            // If notification table doesn't exist, create all tables first
-            const { createTables } = require("../../db/knex_init_db.js");
-            await createTables();
-        }
-        
-        // Run migrations to ensure schema is current
+        // Run migrations to ensure schema is current (including send_database_down column)
+        // Database.patch() handles migrations properly with foreign key checks
         try {
-            await R.knex.migrate.latest({
-                directory: path.join(__dirname, "../../db/knex_migrations")
-            });
+            await Database.patch(undefined, undefined);
         } catch (e) {
-            // For migration errors, log but continue - test might still work
-            // Some migrations may fail if they reference tables that don't exist in test DB
+            // Some migrations may fail if tables don't exist in template DB, that's okay
+            // But we still need to ensure our column exists, so add it manually if migration failed
             if (!e.message.includes("the following files are missing:")) {
                 console.warn("Migration warning (may be expected):", e.message);
+                // Fallback: ensure the column exists if migration didn't complete
+                const hasColumn = await R.knex.schema.hasColumn("notification", "send_database_down");
+                if (!hasColumn) {
+                    await R.knex.schema.alterTable("notification", (table) => {
+                        table.boolean("send_database_down").notNullable().defaultTo(false);
+                    });
+                }
             }
         }
 
-        // Create a test notification
+        // Create a test notification with send_database_down enabled (opt-in)
         const notificationBean = R.dispense("notification");
         notificationBean.name = "Test Notification";
         notificationBean.user_id = 1;
@@ -48,6 +43,7 @@ describe("Database Down Notification", () => {
         });
         notificationBean.active = 1;
         notificationBean.is_default = 0;
+        notificationBean.send_database_down = 1; // Opt-in for database down notifications
         await R.store(notificationBean);
         testNotification = notificationBean;
     });
@@ -64,19 +60,39 @@ describe("Database Down Notification", () => {
         await Database.close();
     });
 
-    test("refreshCache() loads notifications into cache", async () => {
-        await Notification.refreshCache();
+    test("refreshCache() loads only opt-in notifications into cache", async () => {
+        // Create a notification that is NOT opted-in
+        const nonOptInBean = R.dispense("notification");
+        nonOptInBean.name = "Non-Opt-In Notification";
+        nonOptInBean.user_id = 1;
+        nonOptInBean.config = JSON.stringify({ type: "webhook",
+            webhookURL: "https://example.com/webhook2" });
+        nonOptInBean.active = 1;
+        nonOptInBean.is_default = 0;
+        nonOptInBean.send_database_down = 0; // NOT opted-in
+        await R.store(nonOptInBean);
 
-        assert.ok(Notification.notificationCache.length > 0, "Cache should contain notifications");
-        assert.ok(Notification.cacheLastRefresh > 0, "Cache refresh time should be set");
+        try {
+            await Notification.refreshCache();
 
-        // Verify test notification is in cache
-        const cached = Notification.notificationCache.find(n => n.id === testNotification.id);
-        assert.ok(cached, "Test notification should be in cache");
-        assert.strictEqual(cached.name, "Test Notification");
-        // Config is stored as raw string, parse to verify
-        const config = JSON.parse(cached.config);
-        assert.strictEqual(config.type, "webhook");
+            assert.ok(Notification.notificationCache.length > 0, "Cache should contain notifications");
+            assert.ok(Notification.cacheLastRefresh > 0, "Cache refresh time should be set");
+
+            // Verify test notification (opt-in) is in cache
+            const cached = Notification.notificationCache.find(n => n.id === testNotification.id);
+            assert.ok(cached, "Opt-in notification should be in cache");
+            assert.strictEqual(cached.name, "Test Notification");
+            // Config is stored as raw string, parse to verify
+            const config = JSON.parse(cached.config);
+            assert.strictEqual(config.type, "webhook");
+
+            // Verify non-opt-in notification is NOT in cache
+            const nonOptInCached = Notification.notificationCache.find(n => n.id === nonOptInBean.id);
+            assert.strictEqual(nonOptInCached, undefined, "Non-opt-in notification should NOT be in cache");
+        } finally {
+            // Clean up
+            await R.trash(nonOptInBean);
+        }
     });
 
     test("sendDatabaseDownNotification() uses cached notifications and prevents duplicates", async () => {
@@ -102,7 +118,7 @@ describe("Database Down Notification", () => {
             await Notification.sendDatabaseDownNotification("Test database error: ECONNREFUSED");
             assert.ok(sendCallCount > 0, "send() should have been called");
             assert.strictEqual(Notification.databaseDownNotificationSent, true, "Flag should be set");
-            
+
             const firstCallCount = sendCallCount;
 
             // Second call should not send again (duplicate prevention)

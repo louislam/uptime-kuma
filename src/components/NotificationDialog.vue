@@ -45,6 +45,16 @@
                                 <input v-model="notification.applyExisting" class="form-check-input" type="checkbox">
                                 <label class="form-check-label">{{ $t("Apply on all existing monitors") }}</label>
                             </div>
+
+                            <br>
+
+                            <div class="form-check form-switch">
+                                <input v-model="notification.sendDatabaseDown" class="form-check-input" type="checkbox">
+                                <label class="form-check-label">{{ $t("Send database down notifications") }}</label>
+                            </div>
+                            <div class="form-text">
+                                {{ $t("sendDatabaseDownNotificationDescription") }}
+                            </div>
                         </div>
                     </div>
 
@@ -272,6 +282,12 @@ export default {
                 for (let n of this.$root.notificationList) {
                     if (n.id === notificationID) {
                         this.notification = JSON.parse(n.config);
+                        // Load send_database_down from database (not stored in config)
+                        if (n.send_database_down !== undefined) {
+                            this.notification.sendDatabaseDown = n.send_database_down === 1 || n.send_database_down === true;
+                        } else {
+                            this.notification.sendDatabaseDown = false;
+                        }
                         break;
                     }
                 }
@@ -281,6 +297,7 @@ export default {
                     name: "",
                     type: "telegram",
                     isDefault: false,
+                    sendDatabaseDown: false,
                 };
             }
 

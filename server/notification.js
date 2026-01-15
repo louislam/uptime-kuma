@@ -270,6 +270,7 @@ class Notification {
         bean.user_id = userID;
         bean.config = JSON.stringify(notification);
         bean.is_default = notification.isDefault || false;
+        bean.send_database_down = notification.sendDatabaseDown || false;
         await R.store(bean);
 
         if (notification.applyExisting) {
@@ -328,8 +329,8 @@ class Notification {
      */
     static async refreshCache() {
         try {
-            // Get all notifications (including default ones)
-            const notifications = await R.find("notification", " active = 1 ");
+            // Get only notifications that are opted-in for database down notifications
+            const notifications = await R.find("notification", " active = 1 AND send_database_down = 1 ");
 
             this.notificationCache = notifications.map(bean => {
                 return {
@@ -342,7 +343,7 @@ class Notification {
             });
 
             this.cacheLastRefresh = Date.now();
-            log.debug("notification", `Refreshed notification cache with ${this.notificationCache.length} notifications`);
+            log.debug("notification", `Refreshed notification cache with ${this.notificationCache.length} notifications (database down opt-in)`);
         } catch (e) {
             log.error("notification", `Failed to refresh notification cache: ${e.message}`);
             // Don't clear the cache if refresh fails, keep using old cache

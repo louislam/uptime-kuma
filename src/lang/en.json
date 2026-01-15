@@ -619,6 +619,8 @@
     "rrtypeDescription": "Select the RR type you want to monitor",
     "pauseMonitorMsg": "Are you sure want to pause?",
     "enableDefaultNotificationDescription": "This notification will be enabled by default for new monitors. You can still disable the notification separately for each monitor.",
+    "Send database down notifications": "Send database down notifications",
+    "sendDatabaseDownNotificationDescription": "Enable this notification provider to receive alerts when Uptime Kuma's database connection fails. This helps you stay informed about critical system issues even when the database is unavailable. Notifications are sent with a 24-hour cooldown period to prevent spam.",
     "Clear All Events": "Clear All Events",
     "clearAllEventsMsg": "Are you sure want to delete all events?",
     "Events cleared successfully": "Events cleared successfully.",
