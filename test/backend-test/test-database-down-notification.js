@@ -14,6 +14,24 @@ describe("Database Down Notification", () => {
         // Ensure database is connected (this copies template DB which has basic tables)
         await Database.connect(true); // testMode = true
 
+        // Ensure notification table exists with all required columns
+        // The template DB might be outdated, so we need to ensure schema is complete
+        const hasNotificationTable = await R.hasTable("notification");
+        if (!hasNotificationTable) {
+            // If table doesn't exist, create all tables first
+            const { createTables } = require("../../db/knex_init_db.js");
+            await createTables();
+        } else {
+            // Table exists, but check if it has all required columns (template DB might be outdated)
+            // Add missing columns if they don't exist
+            const hasIsDefault = await R.knex.schema.hasColumn("notification", "is_default");
+            if (!hasIsDefault) {
+                await R.knex.schema.alterTable("notification", (table) => {
+                    table.boolean("is_default").notNullable().defaultTo(false);
+                });
+            }
+        }
+
         // Run migrations to ensure schema is current (including send_database_down column)
         // Database.patch() handles migrations properly with foreign key checks
         try {
