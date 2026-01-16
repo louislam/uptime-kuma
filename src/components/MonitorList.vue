@@ -568,7 +568,6 @@ export default {
     }
 }
 
-
 .actions-wrapper {
     display: flex;
     align-items: center;
