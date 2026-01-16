@@ -25,9 +25,7 @@
                         class="form-control"
                         data-testid="description-input"
                     ></textarea>
-                    <div class="form-text">
-                        {{ $t("markdownSupported") }}
-                    </div>
+                    <div class="form-text">{{ $t("markdownSupported") }}. {{ $t("htmlIndentationWarning") }}</div>
                 </div>
 
                 <!-- Footer Text -->
@@ -39,9 +37,7 @@
                         class="form-control"
                         data-testid="footer-text-input"
                     ></textarea>
-                    <div class="form-text">
-                        {{ $t("markdownSupported") }}
-                    </div>
+                    <div class="form-text">{{ $t("markdownSupported") }}. {{ $t("htmlIndentationWarning") }}</div>
                 </div>
 
                 <div class="my-3">
