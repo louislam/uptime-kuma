@@ -3,24 +3,6 @@
         <div class="list-header">
             <!-- Line 1: Checkbox + Status + Tags + Search Bar -->
             <div class="filter-row">
-                <input
-                    v-if="!selectMode"
-                    v-model="selectMode"
-                    class="form-check-input"
-                    type="checkbox"
-                    :aria-label="$t('selectAllMonitorsAria')"
-                    @change="selectAll = selectMode"
-                />
-                <input
-                    v-else
-                    v-model="selectAll"
-                    class="form-check-input"
-                    type="checkbox"
-                    :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
-                />
-
-                <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
-
                 <div class="search-wrapper">
                     <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
                         <font-awesome-icon icon="times" />
@@ -34,6 +16,26 @@
                             autocomplete="off"
                         />
                     </form>
+                </div>
+
+                <div class="filters-group">
+                    <input
+                        v-if="!selectMode"
+                        v-model="selectMode"
+                        class="form-check-input"
+                        type="checkbox"
+                        :aria-label="$t('selectAllMonitorsAria')"
+                        @change="selectAll = selectMode"
+                    />
+                    <input
+                        v-else
+                        v-model="selectAll"
+                        class="form-check-input"
+                        type="checkbox"
+                        :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
+                    />
+
+                    <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
                 </div>
             </div>
 
@@ -563,6 +565,12 @@ export default {
     }
 }
 
+.filters-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .actions-wrapper {
     display: flex;
     align-items: center;
@@ -667,6 +675,25 @@ export default {
     }
 }
 
+@media (max-width: 975px) {
+    .filter-row {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .search-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        flex: 1 1 100%;
+    }
+
+    .filters-group {
+        width: 100%;
+    }
+}
+
 @media (max-width: 770px) {
     .list-header {
         margin: -20px;
@@ -683,6 +710,7 @@ export default {
     min-width: 0;
     max-width: 300px;
     margin-left: auto;
+    order: 1;
 
     form {
         width: 100%;
