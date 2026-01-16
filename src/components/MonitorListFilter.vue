@@ -59,7 +59,7 @@
                     </div>
                 </div>
             </li>
-            <li><hr class="dropdown-divider"></li>
+            <li><hr class="dropdown-divider" /></li>
             <li>
                 <div class="dropdown-item" tabindex="0" @click.stop="toggleActiveFilter(true)">
                     <div class="d-flex align-items-center justify-content-between">
