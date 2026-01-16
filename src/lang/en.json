@@ -1055,6 +1055,8 @@
     "remoteBrowserToggle": "By default Chromium runs inside the Uptime Kuma container. You can use a remote browser by toggling this switch.",
     "useRemoteBrowser": "Use a Remote Browser",
     "deleteRemoteBrowserMessage": "Are you sure want to delete this Remote Browser for all monitors?",
+    "Screenshot Delay": "Screenshot Delay",
+    "screenshotDelayDescription": "Wait this many seconds before taking the screenshot. Useful for pages that need extra time to fully render.",
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "systemService": "System Service",
     "systemServiceName": "Service Name",

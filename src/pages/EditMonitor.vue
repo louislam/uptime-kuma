@@ -262,6 +262,25 @@
                                         :action="() => $refs.remoteBrowserDialog.show()"
                                     />
                                 </div>
+
+                                <!-- Screenshot Delay -->
+                                <div class="my-3">
+                                    <label for="screenshot-delay" class="form-label">
+                                        {{ $t("Screenshot Delay") }} ({{ $t("seconds") }})
+                                    </label>
+                                    <input
+                                        id="screenshot-delay"
+                                        v-model="monitor.screenshot_delay"
+                                        type="number"
+                                        class="form-control"
+                                        min="0"
+                                        max="30"
+                                        step="1"
+                                    />
+                                    <div class="form-text text-warning">
+                                        {{ $t("screenshotDelayDescription") }}
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Game -->
@@ -2293,6 +2312,7 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     remote_browser: null,
+    screenshot_delay: 0,
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
