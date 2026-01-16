@@ -12,9 +12,6 @@
         "shorthand-property-no-redundant-values": null,
         "color-hex-length": null,
         "declaration-block-no-redundant-longhand-properties": null,
-        "at-rule-no-unknown": null,
-        "function-whitespace-after": null,
-        "media-feature-range-operator-space-after": null,
-        "media-feature-range-operator-space-before": null
+        "at-rule-no-unknown": null
     }
 }
