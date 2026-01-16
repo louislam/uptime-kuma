@@ -1,25 +1,7 @@
 <template>
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
-            <!-- Line 1: Search Bar - Full Width -->
-            <div class="search-row">
-                <div class="search-wrapper">
-                    <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
-                        <font-awesome-icon icon="times" />
-                    </a>
-                    <form>
-                        <input
-                            v-model="searchText"
-                            class="form-control search-input"
-                            :placeholder="$t('Search...')"
-                            :aria-label="$t('Search monitored sites')"
-                            autocomplete="off"
-                        />
-                    </form>
-                </div>
-            </div>
-
-            <!-- Line 2: Checkbox + Filters -->
+            <!-- Line 1: Checkbox + Status + Tags + Search Bar -->
             <div class="filter-row">
                 <input
                     v-if="!selectMode"
@@ -38,14 +20,29 @@
                 />
 
                 <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
+
+                <div class="search-wrapper">
+                    <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
+                        <font-awesome-icon icon="times" />
+                    </a>
+                    <form>
+                        <input
+                            v-model="searchText"
+                            class="form-control search-input"
+                            :placeholder="$t('Search...')"
+                            :aria-label="$t('Search monitored sites')"
+                            autocomplete="off"
+                        />
+                    </form>
+                </div>
             </div>
 
-            <!-- Line 3: Cancel + Actions (shown when selection mode is active) -->
-            <div v-if="selectMode && selectedMonitorCount > 0" class="actions-row">
+            <!-- Line 2: Cancel + Actions (shown when selection mode is active) -->
+            <div v-if="selectMode && selectedMonitorCount > 0" class="selection-row">
                 <button class="btn btn-outline-normal" @click="cancelSelectMode">
                     {{ $t("Cancel") }}
                 </button>
-                <div class="actions-wrapper ms-2">
+                <div class="actions-wrapper">
                     <div class="dropdown">
                         <button
                             class="btn btn-outline-normal dropdown-toggle"
@@ -83,7 +80,7 @@
                         </ul>
                     </div>
                 </div>
-                <span class="selected-count ms-2">
+                <span class="selected-count">
                     {{ $tc("selectedMonitorCountMsg", selectedMonitorCount) }}
                 </span>
             </div>
@@ -542,7 +539,7 @@ export default {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 4px;
 
     .dark & {
         background-color: $dark-header-bg;
@@ -550,21 +547,19 @@ export default {
     }
 }
 
-.search-row {
-    display: flex;
-    width: 100%;
-}
-
 .filter-row {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    width: 100%;
 
     .form-check-input {
         cursor: pointer;
         margin: 0;
+        margin-left: 6px;
+        flex-shrink: 0;
     }
 }
 
@@ -677,7 +672,10 @@ export default {
     display: flex;
     align-items: center;
     position: relative;
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 300px;
+    margin-left: auto;
 
     form {
         width: 100%;

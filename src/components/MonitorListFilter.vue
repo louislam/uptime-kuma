@@ -250,6 +250,17 @@ export default {
     cursor: pointer;
 }
 
+.simple-status {
+    min-width: 64px;
+    border: 1px solid #d1d5db;
+    background-color: transparent !important;
+    color: inherit !important;
+
+    .dark & {
+        border-color: #6b7280;
+    }
+}
+
 .clear-filters-btn {
     font-size: 0.8em;
     margin-right: 5px;

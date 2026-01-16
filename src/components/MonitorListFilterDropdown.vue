@@ -103,7 +103,7 @@ export default {
     @extend .btn-outline-normal;
     display: flex;
     align-items: center;
-    margin-left: 5px;
+    margin-left: 0;
     color: $link-color;
 
     .dark & {
