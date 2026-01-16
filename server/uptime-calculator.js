@@ -143,7 +143,8 @@ class UptimeCalculator {
                 avgNumeric: bean.numeric_value,
                 minNumeric: bean.numeric_min,
                 maxNumeric: bean.numeric_max,
-                sumNumeric: bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
+                sumNumeric:
+                    bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
             };
 
             if (bean.extras != null) {
@@ -173,7 +174,8 @@ class UptimeCalculator {
                 avgNumeric: bean.numeric_value,
                 minNumeric: bean.numeric_min,
                 maxNumeric: bean.numeric_max,
-                sumNumeric: bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
+                sumNumeric:
+                    bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
             };
 
             if (bean.extras != null) {
@@ -202,7 +204,8 @@ class UptimeCalculator {
                 avgNumeric: bean.numeric_value,
                 minNumeric: bean.numeric_min,
                 maxNumeric: bean.numeric_max,
-                sumNumeric: bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
+                sumNumeric:
+                    bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
             };
 
             if (bean.extras != null) {

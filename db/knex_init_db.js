@@ -140,7 +140,11 @@ async function createTables() {
         table.integer("ping");
         table.integer("duration").notNullable().defaultTo(0);
         table.integer("down_count").notNullable().defaultTo(0);
-        table.float("numeric_value").nullable().defaultTo(null).comment("Numeric value from monitor check (e.g., from JSON query or SNMP)");
+        table
+            .float("numeric_value")
+            .nullable()
+            .defaultTo(null)
+            .comment("Numeric value from monitor check (e.g., from JSON query or SNMP)");
 
         table.index("important");
         table.index(["monitor_id", "time"], "monitor_time_index");

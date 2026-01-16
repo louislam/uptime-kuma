@@ -66,8 +66,14 @@ module.exports.chartSocketHandler = (socket) => {
                 .filter((entry) => entry.avgNumeric !== null && entry.avgNumeric !== undefined)
                 .map((entry) => ({
                     value: parseFloat(entry.avgNumeric),
-                    min: entry.minNumeric !== null && entry.minNumeric !== undefined ? parseFloat(entry.minNumeric) : null,
-                    max: entry.maxNumeric !== null && entry.maxNumeric !== undefined ? parseFloat(entry.maxNumeric) : null,
+                    min:
+                        entry.minNumeric !== null && entry.minNumeric !== undefined
+                            ? parseFloat(entry.minNumeric)
+                            : null,
+                    max:
+                        entry.maxNumeric !== null && entry.maxNumeric !== undefined
+                            ? parseFloat(entry.maxNumeric)
+                            : null,
                     timestamp: entry.timestamp,
                     time: dayjs.unix(entry.timestamp).utc().format("YYYY-MM-DD HH:mm:ss"),
                 }));
