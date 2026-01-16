@@ -380,7 +380,18 @@ class UptimeCalculator {
         dailyStatBean.numeric_max = dailyData.maxNumeric;
         {
             // eslint-disable-next-line no-unused-vars
-            const { up: _up, down: _down, avgPing: _avgPing, minPing: _minPing, maxPing: _maxPing, avgNumeric: _avgNumeric, minNumeric: _minNumeric, maxNumeric: _maxNumeric, timestamp: _timestamp, ...extras } = dailyData;
+            const {
+                up: _up,
+                down: _down,
+                avgPing: _avgPing,
+                minPing: _minPing,
+                maxPing: _maxPing,
+                avgNumeric: _avgNumeric,
+                minNumeric: _minNumeric,
+                maxNumeric: _maxNumeric,
+                timestamp: _timestamp,
+                ...extras
+            } = dailyData;
             if (Object.keys(extras).length > 0) {
                 dailyStatBean.extras = JSON.stringify(extras);
             }
@@ -403,7 +414,18 @@ class UptimeCalculator {
             hourlyStatBean.numeric_max = hourlyData.maxNumeric;
             {
                 // eslint-disable-next-line no-unused-vars
-                const { up: _up, down: _down, avgPing: _avgPing, minPing: _minPing, maxPing: _maxPing, avgNumeric: _avgNumeric, minNumeric: _minNumeric, maxNumeric: _maxNumeric, timestamp: _timestamp, ...extras } = hourlyData;
+                const {
+                    up: _up,
+                    down: _down,
+                    avgPing: _avgPing,
+                    minPing: _minPing,
+                    maxPing: _maxPing,
+                    avgNumeric: _avgNumeric,
+                    minNumeric: _minNumeric,
+                    maxNumeric: _maxNumeric,
+                    timestamp: _timestamp,
+                    ...extras
+                } = hourlyData;
                 if (Object.keys(extras).length > 0) {
                     hourlyStatBean.extras = JSON.stringify(extras);
                 }
@@ -425,7 +447,18 @@ class UptimeCalculator {
             minutelyStatBean.numeric_max = minutelyData.maxNumeric;
             {
                 // eslint-disable-next-line no-unused-vars
-                const { up: _up, down: _down, avgPing: _avgPing, minPing: _minPing, maxPing: _maxPing, avgNumeric: _avgNumeric, minNumeric: _minNumeric, maxNumeric: _maxNumeric, timestamp: _timestamp, ...extras } = minutelyData;
+                const {
+                    up: _up,
+                    down: _down,
+                    avgPing: _avgPing,
+                    minPing: _minPing,
+                    maxPing: _maxPing,
+                    avgNumeric: _avgNumeric,
+                    minNumeric: _minNumeric,
+                    maxNumeric: _maxNumeric,
+                    timestamp: _timestamp,
+                    ...extras
+                } = minutelyData;
                 if (Object.keys(extras).length > 0) {
                     minutelyStatBean.extras = JSON.stringify(extras);
                 }
