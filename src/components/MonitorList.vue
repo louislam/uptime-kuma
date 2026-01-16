@@ -1,5 +1,5 @@
 <template>
-    <div class="shadow-box mb-3" :style="boxStyle">
+    <div class="shadow-box mb-3 p-0" :style="boxStyle">
         <div class="list-header">
             <div class="header-top">
                 <div class="select-checkbox-wrapper">
@@ -89,7 +89,7 @@
         </div>
         <div
             ref="monitorList"
-            class="monitor-list"
+            class="monitor-list px-2"
             :class="{ scrollbar: scrollbar }"
             :style="monitorListStyle"
             data-testid="monitor-list"
@@ -536,7 +536,6 @@ export default {
 .list-header {
     border-bottom: 1px solid #dee2e6;
     border-radius: 10px 10px 0 0;
-    margin: -10px;
     margin-bottom: 10px;
     padding: 10px;
 
@@ -679,7 +678,6 @@ export default {
 
 @media (max-width: 770px) {
     .list-header {
-        margin: -20px;
         margin-bottom: 10px;
         padding: 5px;
     }
