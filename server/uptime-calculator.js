@@ -227,6 +227,7 @@ class UptimeCalculator {
      * @param {object} dailyData Daily data object
      * @param {number} status Status value
      * @param {number} flatStatus Flattened status value
+     * @returns {void}
      */
     updateStatusCounts(minutelyData, hourlyData, dailyData, status, flatStatus) {
         if (status === MAINTENANCE) {
@@ -251,6 +252,7 @@ class UptimeCalculator {
      * @param {object} hourlyData Hourly data object
      * @param {object} dailyData Daily data object
      * @param {number} ping Ping value
+     * @returns {void}
      */
     updatePing(minutelyData, hourlyData, dailyData, ping) {
         if (isNaN(ping)) {
@@ -298,6 +300,7 @@ class UptimeCalculator {
      * @param {object} hourlyData Hourly data object
      * @param {object} dailyData Daily data object
      * @param {number} numericValue Numeric value
+     * @returns {void}
      */
     updateNumeric(minutelyData, hourlyData, dailyData, numericValue) {
         if (numericValue === null || isNaN(numericValue)) {
