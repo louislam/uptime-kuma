@@ -1362,9 +1362,5 @@
     "None (Successful Connection)": "None (Successful Connection)",
     "expectedTlsAlertDescription": "Select the TLS alert you expect the server to return. Use {code} to verify mTLS endpoints reject connections without client certificates. See {link} for details.",
     "TLS Alert Spec": "RFC 8446",
-    "Specific Monitor Type": "Specific Monitor Type",
-    "markdownSupported": "Markdown syntax supported",
-    "htmlIndentationWarning": "If using HTML, avoid leading spaces to prevent formatting issues.",
-    "pauseDashboardHome": "Pause",
-    "Pause": "Pause"
+    "htmlIndentationWarning": "If using HTML, avoid leading spaces to prevent formatting issues."
 }
