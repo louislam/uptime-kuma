@@ -379,7 +379,7 @@ class UptimeCalculator {
         dailyStatBean.numeric_min = dailyData.minNumeric;
         dailyStatBean.numeric_max = dailyData.maxNumeric;
         {
-            // eslint-disable-next-line no-unused-vars
+            /* eslint-disable no-unused-vars */
             const {
                 up: _up,
                 down: _down,
@@ -392,6 +392,7 @@ class UptimeCalculator {
                 timestamp: _timestamp,
                 ...extras
             } = dailyData;
+            /* eslint-enable no-unused-vars */
             if (Object.keys(extras).length > 0) {
                 dailyStatBean.extras = JSON.stringify(extras);
             }
@@ -413,7 +414,7 @@ class UptimeCalculator {
             hourlyStatBean.numeric_min = hourlyData.minNumeric;
             hourlyStatBean.numeric_max = hourlyData.maxNumeric;
             {
-                // eslint-disable-next-line no-unused-vars
+                /* eslint-disable no-unused-vars */
                 const {
                     up: _up,
                     down: _down,
@@ -426,6 +427,7 @@ class UptimeCalculator {
                     timestamp: _timestamp,
                     ...extras
                 } = hourlyData;
+                /* eslint-enable no-unused-vars */
                 if (Object.keys(extras).length > 0) {
                     hourlyStatBean.extras = JSON.stringify(extras);
                 }
@@ -446,7 +448,7 @@ class UptimeCalculator {
             minutelyStatBean.numeric_min = minutelyData.minNumeric;
             minutelyStatBean.numeric_max = minutelyData.maxNumeric;
             {
-                // eslint-disable-next-line no-unused-vars
+                /* eslint-disable no-unused-vars */
                 const {
                     up: _up,
                     down: _down,
@@ -459,6 +461,7 @@ class UptimeCalculator {
                     timestamp: _timestamp,
                     ...extras
                 } = minutelyData;
+                /* eslint-enable no-unused-vars */
                 if (Object.keys(extras).length > 0) {
                     minutelyStatBean.extras = JSON.stringify(extras);
                 }
