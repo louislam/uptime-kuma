@@ -1,30 +1,9 @@
 <template>
     <div class="shadow-box mb-3" :style="boxStyle">
         <div class="list-header">
-            <div class="header-top">
-                <div class="select-checkbox-wrapper">
-                    <input
-                        v-if="!selectMode"
-                        v-model="selectMode"
-                        class="form-check-input"
-                        type="checkbox"
-                        :aria-label="$t('selectAllMonitorsAria')"
-                        @change="selectAll = selectMode"
-                    />
-                    <input
-                        v-else
-                        v-model="selectAll"
-                        class="form-check-input"
-                        type="checkbox"
-                        :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
-                    />
-                </div>
-
-                <div class="header-filter">
-                    <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
-                </div>
-
-                <div class="search-wrapper ms-auto">
+            <!-- Line 1: Search Bar - Full Width -->
+            <div class="search-row">
+                <div class="search-wrapper">
                     <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
                         <font-awesome-icon icon="times" />
                     </a>
@@ -40,7 +19,29 @@
                 </div>
             </div>
 
-            <div v-if="selectMode && selectedMonitorCount > 0" class="selected-count-row">
+            <!-- Line 2: Checkbox + Filters -->
+            <div class="filter-row">
+                <input
+                    v-if="!selectMode"
+                    v-model="selectMode"
+                    class="form-check-input"
+                    type="checkbox"
+                    :aria-label="$t('selectAllMonitorsAria')"
+                    @change="selectAll = selectMode"
+                />
+                <input
+                    v-else
+                    v-model="selectAll"
+                    class="form-check-input"
+                    type="checkbox"
+                    :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
+                />
+
+                <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
+            </div>
+
+            <!-- Line 3: Cancel + Actions (shown when selection mode is active) -->
+            <div v-if="selectMode && selectedMonitorCount > 0" class="actions-row">
                 <button class="btn btn-outline-normal" @click="cancelSelectMode">
                     {{ $t("Cancel") }}
                 </button>
@@ -539,6 +540,9 @@ export default {
     margin: -10px;
     margin-bottom: 10px;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 
     .dark & {
         background-color: $dark-header-bg;
@@ -548,25 +552,15 @@ export default {
 
 .search-row {
     display: flex;
-    padding: 10px;
-    padding-bottom: 5px;
+    width: 100%;
 }
 
-.header-top {
+.filter-row {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     gap: 8px;
-    padding: 10px;
-
-    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
-        flex-wrap: wrap;
-    }
-}
-
-.select-checkbox-wrapper {
-    display: flex;
-    align-items: center;
+    flex-wrap: wrap;
 
     .form-check-input {
         cursor: pointer;
@@ -574,10 +568,6 @@ export default {
     }
 }
 
-.header-filter {
-    display: flex;
-    align-items: center;
-}
 
 .actions-wrapper {
     display: flex;
@@ -653,8 +643,7 @@ export default {
     }
 }
 
-.selected-count-row {
-    padding: 5px 10px 0 10px;
+.actions-row {
     display: flex;
     align-items: center;
 }
@@ -681,7 +670,7 @@ export default {
     .list-header {
         margin: -20px;
         margin-bottom: 10px;
-        padding: 5px;
+        padding: 20px;
     }
 }
 
@@ -689,15 +678,10 @@ export default {
     display: flex;
     align-items: center;
     position: relative;
+    width: 100%;
 
-    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
-        order: -1;
+    form {
         width: 100%;
-        margin-bottom: 8px;
-
-        form {
-            width: 100%;
-        }
     }
 }
 
@@ -715,13 +699,8 @@ export default {
 }
 
 .search-input {
-    max-width: 15em;
+    width: 100%;
     padding-right: 30px;
-
-    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
-        max-width: 100%;
-        width: 100%;
-    }
 }
 
 .monitor-item {
