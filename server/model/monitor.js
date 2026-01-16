@@ -714,6 +714,8 @@ class Monitor extends BeanModel {
                         if (status) {
                             bean.status = UP;
                             bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
+                            // Save numeric value if it's a number
+                            await this.saveNumericValueIfApplicable(response);
                         } else {
                             throw new Error(
                                 `JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
@@ -2063,6 +2065,40 @@ class Monitor extends BeanModel {
         if (!this.getIgnoreTls() && this.isEnabledExpiryNotification()) {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
             await this.checkCertExpiryNotifications(tlsInfo);
+        }
+    }
+
+    /**
+     * Save numeric value to history table if the value is numeric
+     * @param {any} value Value to check and potentially save
+     * @returns {Promise<void>}
+     */
+    async saveNumericValueIfApplicable(value) {
+        // Check if value is numeric (number or string that can be converted to number)
+        let numericValue = null;
+
+        if (typeof value === "number") {
+            numericValue = value;
+        } else if (typeof value === "string") {
+            // Try to parse as number
+            const parsed = parseFloat(value);
+            if (!isNaN(parsed) && isFinite(parsed)) {
+                numericValue = parsed;
+            }
+        }
+
+        // Only save if we have a valid numeric value
+        if (numericValue !== null) {
+            try {
+                let numericHistoryBean = R.dispense("monitor_numeric_history");
+                numericHistoryBean.monitor_id = this.id;
+                numericHistoryBean.value = numericValue;
+                numericHistoryBean.time = R.isoDateTimeMillis(dayjs.utc());
+                await R.store(numericHistoryBean);
+                log.debug("monitor", `[${this.name}] Saved numeric value: ${numericValue}`);
+            } catch (e) {
+                log.error("monitor", `[${this.name}] Failed to save numeric value: ${e.message}`);
+            }
         }
     }
 }

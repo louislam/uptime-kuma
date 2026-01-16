@@ -280,6 +280,18 @@
                 </div>
             </div>
 
+            <!-- Numeric Value Chart (for json-query and SNMP monitors) -->
+            <div
+                v-if="showNumericChartBox && (monitor.type === 'json-query' || monitor.type === 'snmp')"
+                class="shadow-box big-padding text-center numeric-chart-wrapper"
+            >
+                <div class="row">
+                    <div class="col">
+                        <NumericChart :monitor-id="monitor.id" />
+                    </div>
+                </div>
+            </div>
+
             <!-- Screenshot -->
             <div v-if="monitor.type === 'real-browser'" class="shadow-box">
                 <div class="row">
@@ -418,6 +430,7 @@ import CountUp from "../components/CountUp.vue";
 import Uptime from "../components/Uptime.vue";
 import Pagination from "v-pagination-3";
 const PingChart = defineAsyncComponent(() => import("../components/PingChart.vue"));
+const NumericChart = defineAsyncComponent(() => import("../components/NumericChart.vue"));
 import Tag from "../components/Tag.vue";
 import CertificateInfo from "../components/CertificateInfo.vue";
 import { getMonitorRelativeURL } from "../util.ts";
@@ -443,6 +456,7 @@ export default {
         Status,
         Pagination,
         PingChart,
+        NumericChart,
         Tag,
         CertificateInfo,
         PrismEditor,
@@ -455,6 +469,7 @@ export default {
             heartBeatList: [],
             toggleCertInfoBox: false,
             showPingChartBox: true,
+            showNumericChartBox: true,
             paginationConfig: {
                 hideCount: true,
                 chunksNavigation: "scroll",
