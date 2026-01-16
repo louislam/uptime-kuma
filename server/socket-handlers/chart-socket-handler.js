@@ -48,23 +48,36 @@ module.exports.chartSocketHandler = (socket) => {
                 throw new Error("Invalid period.");
             }
 
-            // Calculate the start time based on period (in hours)
             const periodHours = parseInt(period);
             const startTime = dayjs.utc().subtract(periodHours, "hour");
+            const startTimestamp = startTime.unix();
 
-            // Query numeric history data
+            // Determine which stat table to query based on period
+            // Similar to getMonitorChartData logic
+            let statTable;
+            if (periodHours <= 24) {
+                statTable = "stat_minutely";
+            } else if (periodHours <= 720) {
+                statTable = "stat_hourly";
+            } else {
+                statTable = "stat_daily";
+            }
+
+            // Query numeric history data from aggregated stat tables
             const numericHistory = await R.getAll(
-                `SELECT value, time FROM monitor_numeric_history 
-                 WHERE monitor_id = ? AND time >= ? 
-                 ORDER BY time ASC`,
-                [monitorID, R.isoDateTimeMillis(startTime)]
+                `SELECT numeric_value, numeric_min, numeric_max, timestamp 
+                 FROM ${statTable} 
+                 WHERE monitor_id = ? AND timestamp >= ? AND numeric_value IS NOT NULL
+                 ORDER BY timestamp ASC`,
+                [monitorID, startTimestamp]
             );
 
             // Convert to format expected by frontend
+            // Use numeric_value as the main value, with min/max for reference
             const data = numericHistory.map((row) => ({
-                value: parseFloat(row.value),
-                timestamp: dayjs.utc(row.time).unix(),
-                time: row.time,
+                value: parseFloat(row.numeric_value),
+                timestamp: parseInt(row.timestamp),
+                time: dayjs.unix(row.timestamp).utc().format("YYYY-MM-DD HH:mm:ss"),
             }));
 
             callback({

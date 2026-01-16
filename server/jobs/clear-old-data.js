@@ -48,6 +48,11 @@ const clearOldData = async () => {
             // stat_daily
             await R.exec("DELETE FROM stat_daily WHERE timestamp < ? ", [timestamp]);
 
+            // Clean up old monitor_numeric_history data (now using aggregation, but keep for short transition)
+            // Only keep last 7 days of raw data for migration purposes, then delete older data
+            const numericHistoryCutoff = dayjs().subtract(7, "day").utc();
+            await R.exec("DELETE FROM monitor_numeric_history WHERE time < ?", [R.isoDateTimeMillis(numericHistoryCutoff)]);
+
             if (Database.dbConfig.type === "sqlite") {
                 await R.exec("PRAGMA optimize;");
             }

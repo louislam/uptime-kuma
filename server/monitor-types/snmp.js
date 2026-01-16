@@ -55,8 +55,8 @@ class SNMPMonitorType extends MonitorType {
             if (status) {
                 heartbeat.status = UP;
                 heartbeat.msg = `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`;
-                // Save numeric value if it's a number
-                await monitor.saveNumericValueIfApplicable(response);
+                // Extract numeric value for aggregation (will be passed to uptime calculator)
+                heartbeat.numeric_value = monitor.extractNumericValue(response);
             } else {
                 throw new Error(
                     `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`

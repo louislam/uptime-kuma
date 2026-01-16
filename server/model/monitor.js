@@ -714,8 +714,8 @@ class Monitor extends BeanModel {
                         if (status) {
                             bean.status = UP;
                             bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
-                            // Save numeric value if it's a number
-                            await this.saveNumericValueIfApplicable(response);
+                            // Extract numeric value for aggregation (will be passed to uptime calculator)
+                            bean.numeric_value = this.extractNumericValue(response);
                         } else {
                             throw new Error(
                                 `JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
@@ -1097,7 +1097,9 @@ class Monitor extends BeanModel {
 
             // Calculate uptime
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(this.id);
-            let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+            // Extract numeric value from bean if available (set by json-query or snmp monitors)
+            const numericValue = bean.numeric_value !== undefined ? bean.numeric_value : null;
+            let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping), numericValue);
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
             // Send to frontend
@@ -2069,11 +2071,11 @@ class Monitor extends BeanModel {
     }
 
     /**
-     * Save numeric value to history table if the value is numeric
-     * @param {any} value Value to check and potentially save
-     * @returns {Promise<void>}
+     * Extract numeric value if the value is numeric
+     * @param {any} value Value to check and potentially extract
+     * @returns {number|null} Numeric value or null
      */
-    async saveNumericValueIfApplicable(value) {
+    extractNumericValue(value) {
         // Check if value is numeric (number or string that can be converted to number)
         let numericValue = null;
 
@@ -2087,19 +2089,7 @@ class Monitor extends BeanModel {
             }
         }
 
-        // Only save if we have a valid numeric value
-        if (numericValue !== null) {
-            try {
-                let numericHistoryBean = R.dispense("monitor_numeric_history");
-                numericHistoryBean.monitor_id = this.id;
-                numericHistoryBean.value = numericValue;
-                numericHistoryBean.time = R.isoDateTimeMillis(dayjs.utc());
-                await R.store(numericHistoryBean);
-                log.debug("monitor", `[${this.name}] Saved numeric value: ${numericValue}`);
-            } catch (e) {
-                log.error("monitor", `[${this.name}] Failed to save numeric value: ${e.message}`);
-            }
-        }
+        return numericValue;
     }
 }
 

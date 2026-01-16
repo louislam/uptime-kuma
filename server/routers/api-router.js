@@ -90,7 +90,7 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         // Calculate uptime
         let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitor.id);
-        let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+        let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping), null);
         bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
         log.debug("router", `/api/push/ called at ${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}`);

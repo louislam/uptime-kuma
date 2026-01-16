@@ -138,6 +138,9 @@ class UptimeCalculator {
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
+                avgNumeric: bean.numeric_value,
+                minNumeric: bean.numeric_min,
+                maxNumeric: bean.numeric_max,
             };
 
             if (bean.extras != null) {
@@ -164,6 +167,9 @@ class UptimeCalculator {
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
+                avgNumeric: bean.numeric_value,
+                minNumeric: bean.numeric_min,
+                maxNumeric: bean.numeric_max,
             };
 
             if (bean.extras != null) {
@@ -189,6 +195,9 @@ class UptimeCalculator {
                 avgPing: bean.ping,
                 minPing: bean.pingMin,
                 maxPing: bean.pingMax,
+                avgNumeric: bean.numeric_value,
+                minNumeric: bean.numeric_min,
+                maxNumeric: bean.numeric_max,
             };
 
             if (bean.extras != null) {
@@ -205,11 +214,12 @@ class UptimeCalculator {
     /**
      * @param {number} status status
      * @param {number} ping Ping
+     * @param {number|null} numericValue Numeric value (e.g., from JSON query or SNMP)
      * @param {dayjs.Dayjs} date Date (Only for migration)
      * @returns {Promise<dayjs.Dayjs>} date
      * @throws {Error} Invalid status
      */
-    async update(status, ping = 0, date) {
+    async update(status, ping = 0, numericValue = null, date) {
         if (!date) {
             date = this.getCurrentDate();
         }
@@ -275,6 +285,64 @@ class UptimeCalculator {
                     dailyData.maxPing = Math.max(dailyData.maxPing, ping);
                 }
             }
+
+            // Only UP status can update the numeric value
+            if (numericValue !== null && !isNaN(numericValue)) {
+                const numValue = parseFloat(numericValue);
+                // Add avg numeric
+                // The first beat of the minute, the numeric is the current numeric
+                if (minutelyData.up === 1) {
+                    minutelyData.avgNumeric = numValue;
+                    minutelyData.minNumeric = numValue;
+                    minutelyData.maxNumeric = numValue;
+                } else {
+                    if (minutelyData.avgNumeric === null) {
+                        minutelyData.avgNumeric = numValue;
+                        minutelyData.minNumeric = numValue;
+                        minutelyData.maxNumeric = numValue;
+                    } else {
+                        minutelyData.avgNumeric = (minutelyData.avgNumeric * (minutelyData.up - 1) + numValue) / minutelyData.up;
+                        minutelyData.minNumeric = Math.min(minutelyData.minNumeric, numValue);
+                        minutelyData.maxNumeric = Math.max(minutelyData.maxNumeric, numValue);
+                    }
+                }
+
+                // Add avg numeric
+                // The first beat of the hour, the numeric is the current numeric
+                if (hourlyData.up === 1) {
+                    hourlyData.avgNumeric = numValue;
+                    hourlyData.minNumeric = numValue;
+                    hourlyData.maxNumeric = numValue;
+                } else {
+                    if (hourlyData.avgNumeric === null) {
+                        hourlyData.avgNumeric = numValue;
+                        hourlyData.minNumeric = numValue;
+                        hourlyData.maxNumeric = numValue;
+                    } else {
+                        hourlyData.avgNumeric = (hourlyData.avgNumeric * (hourlyData.up - 1) + numValue) / hourlyData.up;
+                        hourlyData.minNumeric = Math.min(hourlyData.minNumeric, numValue);
+                        hourlyData.maxNumeric = Math.max(hourlyData.maxNumeric, numValue);
+                    }
+                }
+
+                // Add avg numeric (daily)
+                // The first beat of the day, the numeric is the current numeric
+                if (dailyData.up === 1) {
+                    dailyData.avgNumeric = numValue;
+                    dailyData.minNumeric = numValue;
+                    dailyData.maxNumeric = numValue;
+                } else {
+                    if (dailyData.avgNumeric === null) {
+                        dailyData.avgNumeric = numValue;
+                        dailyData.minNumeric = numValue;
+                        dailyData.maxNumeric = numValue;
+                    } else {
+                        dailyData.avgNumeric = (dailyData.avgNumeric * (dailyData.up - 1) + numValue) / dailyData.up;
+                        dailyData.minNumeric = Math.min(dailyData.minNumeric, numValue);
+                        dailyData.maxNumeric = Math.max(dailyData.maxNumeric, numValue);
+                    }
+                }
+            }
         } else if (flatStatus === DOWN) {
             minutelyData.down += 1;
             hourlyData.down += 1;
@@ -305,9 +373,12 @@ class UptimeCalculator {
         dailyStatBean.ping = dailyData.avgPing;
         dailyStatBean.pingMin = dailyData.minPing;
         dailyStatBean.pingMax = dailyData.maxPing;
+        dailyStatBean.numeric_value = dailyData.avgNumeric;
+        dailyStatBean.numeric_min = dailyData.minNumeric;
+        dailyStatBean.numeric_max = dailyData.maxNumeric;
         {
             // eslint-disable-next-line no-unused-vars
-            const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = dailyData;
+            const { up, down, avgPing, minPing, maxPing, avgNumeric, minNumeric, maxNumeric, timestamp, ...extras } = dailyData;
             if (Object.keys(extras).length > 0) {
                 dailyStatBean.extras = JSON.stringify(extras);
             }
@@ -325,9 +396,12 @@ class UptimeCalculator {
             hourlyStatBean.ping = hourlyData.avgPing;
             hourlyStatBean.pingMin = hourlyData.minPing;
             hourlyStatBean.pingMax = hourlyData.maxPing;
+            hourlyStatBean.numeric_value = hourlyData.avgNumeric;
+            hourlyStatBean.numeric_min = hourlyData.minNumeric;
+            hourlyStatBean.numeric_max = hourlyData.maxNumeric;
             {
                 // eslint-disable-next-line no-unused-vars
-                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = hourlyData;
+                const { up, down, avgPing, minPing, maxPing, avgNumeric, minNumeric, maxNumeric, timestamp, ...extras } = hourlyData;
                 if (Object.keys(extras).length > 0) {
                     hourlyStatBean.extras = JSON.stringify(extras);
                 }
@@ -344,9 +418,12 @@ class UptimeCalculator {
             minutelyStatBean.ping = minutelyData.avgPing;
             minutelyStatBean.pingMin = minutelyData.minPing;
             minutelyStatBean.pingMax = minutelyData.maxPing;
+            minutelyStatBean.numeric_value = minutelyData.avgNumeric;
+            minutelyStatBean.numeric_min = minutelyData.minNumeric;
+            minutelyStatBean.numeric_max = minutelyData.maxNumeric;
             {
                 // eslint-disable-next-line no-unused-vars
-                const { up, down, avgPing, minPing, maxPing, timestamp, ...extras } = minutelyData;
+                const { up, down, avgPing, minPing, maxPing, avgNumeric, minNumeric, maxNumeric, timestamp, ...extras } = minutelyData;
                 if (Object.keys(extras).length > 0) {
                     minutelyStatBean.extras = JSON.stringify(extras);
                 }
@@ -458,6 +535,9 @@ class UptimeCalculator {
                 avgPing: 0,
                 minPing: 0,
                 maxPing: 0,
+                avgNumeric: null,
+                minNumeric: null,
+                maxNumeric: null,
             });
         }
 
@@ -483,6 +563,9 @@ class UptimeCalculator {
                 avgPing: 0,
                 minPing: 0,
                 maxPing: 0,
+                avgNumeric: null,
+                minNumeric: null,
+                maxNumeric: null,
             });
         }
 
@@ -507,6 +590,9 @@ class UptimeCalculator {
                 avgPing: 0,
                 minPing: 0,
                 maxPing: 0,
+                avgNumeric: null,
+                minNumeric: null,
+                maxNumeric: null,
             });
         }
 
