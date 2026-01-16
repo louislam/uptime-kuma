@@ -301,7 +301,8 @@ class UptimeCalculator {
                         minutelyData.minNumeric = numValue;
                         minutelyData.maxNumeric = numValue;
                     } else {
-                        minutelyData.avgNumeric = (minutelyData.avgNumeric * (minutelyData.up - 1) + numValue) / minutelyData.up;
+                        minutelyData.avgNumeric =
+                            (minutelyData.avgNumeric * (minutelyData.up - 1) + numValue) / minutelyData.up;
                         minutelyData.minNumeric = Math.min(minutelyData.minNumeric, numValue);
                         minutelyData.maxNumeric = Math.max(minutelyData.maxNumeric, numValue);
                     }
@@ -319,7 +320,8 @@ class UptimeCalculator {
                         hourlyData.minNumeric = numValue;
                         hourlyData.maxNumeric = numValue;
                     } else {
-                        hourlyData.avgNumeric = (hourlyData.avgNumeric * (hourlyData.up - 1) + numValue) / hourlyData.up;
+                        hourlyData.avgNumeric =
+                            (hourlyData.avgNumeric * (hourlyData.up - 1) + numValue) / hourlyData.up;
                         hourlyData.minNumeric = Math.min(hourlyData.minNumeric, numValue);
                         hourlyData.maxNumeric = Math.max(hourlyData.maxNumeric, numValue);
                     }
@@ -378,7 +380,8 @@ class UptimeCalculator {
         dailyStatBean.numeric_max = dailyData.maxNumeric;
         {
             // eslint-disable-next-line no-unused-vars
-            const { up, down, avgPing, minPing, maxPing, avgNumeric, minNumeric, maxNumeric, timestamp, ...extras } = dailyData;
+            const { up, down, avgPing, minPing, maxPing, avgNumeric, minNumeric, maxNumeric, timestamp, ...extras } =
+                dailyData;
             if (Object.keys(extras).length > 0) {
                 dailyStatBean.extras = JSON.stringify(extras);
             }
@@ -401,7 +404,18 @@ class UptimeCalculator {
             hourlyStatBean.numeric_max = hourlyData.maxNumeric;
             {
                 // eslint-disable-next-line no-unused-vars
-                const { up, down, avgPing, minPing, maxPing, avgNumeric, minNumeric, maxNumeric, timestamp, ...extras } = hourlyData;
+                const {
+                    up,
+                    down,
+                    avgPing,
+                    minPing,
+                    maxPing,
+                    avgNumeric,
+                    minNumeric,
+                    maxNumeric,
+                    timestamp,
+                    ...extras
+                } = hourlyData;
                 if (Object.keys(extras).length > 0) {
                     hourlyStatBean.extras = JSON.stringify(extras);
                 }
@@ -423,7 +437,18 @@ class UptimeCalculator {
             minutelyStatBean.numeric_max = minutelyData.maxNumeric;
             {
                 // eslint-disable-next-line no-unused-vars
-                const { up, down, avgPing, minPing, maxPing, avgNumeric, minNumeric, maxNumeric, timestamp, ...extras } = minutelyData;
+                const {
+                    up,
+                    down,
+                    avgPing,
+                    minPing,
+                    maxPing,
+                    avgNumeric,
+                    minNumeric,
+                    maxNumeric,
+                    timestamp,
+                    ...extras
+                } = minutelyData;
                 if (Object.keys(extras).length > 0) {
                     minutelyStatBean.extras = JSON.stringify(extras);
                 }
