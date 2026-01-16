@@ -1,7 +1,6 @@
 const { checkLogin } = require("../util-server");
 const { UptimeCalculator } = require("../uptime-calculator");
 const { log } = require("../../src/util");
-const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 
 module.exports.chartSocketHandler = (socket) => {
@@ -48,37 +47,27 @@ module.exports.chartSocketHandler = (socket) => {
                 throw new Error("Invalid period.");
             }
 
-            const periodHours = parseInt(period);
-            const startTime = dayjs.utc().subtract(periodHours, "hour");
-            const startTimestamp = startTime.unix();
+            let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(monitorID);
 
-            // Determine which stat table to query based on period
-            // Similar to getMonitorChartData logic
-            let statTable;
+            const periodHours = parseInt(period);
+            let dataArray;
             if (periodHours <= 24) {
-                statTable = "stat_minutely";
+                dataArray = uptimeCalculator.getDataArray(periodHours * 60, "minute");
             } else if (periodHours <= 720) {
-                statTable = "stat_hourly";
+                dataArray = uptimeCalculator.getDataArray(periodHours, "hour");
             } else {
-                statTable = "stat_daily";
+                dataArray = uptimeCalculator.getDataArray(periodHours / 24, "day");
             }
 
-            // Query numeric history data from aggregated stat tables
-            const numericHistory = await R.getAll(
-                `SELECT numeric_value, numeric_min, numeric_max, timestamp 
-                 FROM ${statTable} 
-                 WHERE monitor_id = ? AND timestamp >= ? AND numeric_value IS NOT NULL
-                 ORDER BY timestamp ASC`,
-                [monitorID, startTimestamp]
-            );
-
-            // Convert to format expected by frontend
-            // Use numeric_value as the main value, with min/max for reference
-            const data = numericHistory.map((row) => ({
-                value: parseFloat(row.numeric_value),
-                timestamp: parseInt(row.timestamp),
-                time: dayjs.unix(row.timestamp).utc().format("YYYY-MM-DD HH:mm:ss"),
-            }));
+            // Filter and convert to format expected by frontend
+            // Only include entries with numeric values
+            const data = dataArray
+                .filter((entry) => entry.avgNumeric !== null && entry.avgNumeric !== undefined)
+                .map((entry) => ({
+                    value: parseFloat(entry.avgNumeric),
+                    timestamp: entry.timestamp,
+                    time: dayjs.unix(entry.timestamp).utc().format("YYYY-MM-DD HH:mm:ss"),
+                }));
 
             callback({
                 ok: true,
