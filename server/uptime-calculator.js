@@ -4,6 +4,8 @@ const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
 const { R } = require("redbean-node");
 
+const FIRST_BEAT_COUNT = 1;
+
 /**
  * Calculates the uptime of a monitor.
  */
@@ -141,6 +143,7 @@ class UptimeCalculator {
                 avgNumeric: bean.numeric_value,
                 minNumeric: bean.numeric_min,
                 maxNumeric: bean.numeric_max,
+                sumNumeric: bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
             };
 
             if (bean.extras != null) {
@@ -170,6 +173,7 @@ class UptimeCalculator {
                 avgNumeric: bean.numeric_value,
                 minNumeric: bean.numeric_min,
                 maxNumeric: bean.numeric_max,
+                sumNumeric: bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
             };
 
             if (bean.extras != null) {
@@ -198,6 +202,7 @@ class UptimeCalculator {
                 avgNumeric: bean.numeric_value,
                 minNumeric: bean.numeric_min,
                 maxNumeric: bean.numeric_max,
+                sumNumeric: bean.numeric_value !== null && bean.numeric_value !== undefined ? bean.numeric_value * bean.up : 0,
             };
 
             if (bean.extras != null) {
@@ -212,32 +217,15 @@ class UptimeCalculator {
     }
 
     /**
-     * @param {number} status status
-     * @param {number} ping Ping
-     * @param {number|null} numericValue Numeric value (e.g., from JSON query or SNMP)
-     * @param {dayjs.Dayjs} date Date (Only for migration)
-     * @returns {Promise<dayjs.Dayjs>} date
-     * @throws {Error} Invalid status
+     * Update status counts for minutely, hourly, and daily data
+     * @private
+     * @param {object} minutelyData Minutely data object
+     * @param {object} hourlyData Hourly data object
+     * @param {object} dailyData Daily data object
+     * @param {number} status Status value
+     * @param {number} flatStatus Flattened status value
      */
-    async update(status, ping = 0, numericValue = null, date) {
-        if (!date) {
-            date = this.getCurrentDate();
-        }
-
-        let flatStatus = this.flatStatus(status);
-
-        if (flatStatus === DOWN && ping > 0) {
-            log.debug("uptime_calc", "The ping is not effective when the status is DOWN");
-        }
-
-        let divisionKey = this.getMinutelyKey(date);
-        let hourlyKey = this.getHourlyKey(date);
-        let dailyKey = this.getDailyKey(date);
-
-        let minutelyData = this.minutelyUptimeDataList[divisionKey];
-        let hourlyData = this.hourlyUptimeDataList[hourlyKey];
-        let dailyData = this.dailyUptimeDataList[dailyKey];
-
+    updateStatusCounts(minutelyData, hourlyData, dailyData, status, flatStatus) {
         if (status === MAINTENANCE) {
             minutelyData.maintenance = minutelyData.maintenance ? minutelyData.maintenance + 1 : 1;
             hourlyData.maintenance = hourlyData.maintenance ? hourlyData.maintenance + 1 : 1;
@@ -246,129 +234,147 @@ class UptimeCalculator {
             minutelyData.up += 1;
             hourlyData.up += 1;
             dailyData.up += 1;
-
-            // Only UP status can update the ping
-            if (!isNaN(ping)) {
-                // Add avg ping
-                // The first beat of the minute, the ping is the current ping
-                if (minutelyData.up === 1) {
-                    minutelyData.avgPing = ping;
-                    minutelyData.minPing = ping;
-                    minutelyData.maxPing = ping;
-                } else {
-                    minutelyData.avgPing = (minutelyData.avgPing * (minutelyData.up - 1) + ping) / minutelyData.up;
-                    minutelyData.minPing = Math.min(minutelyData.minPing, ping);
-                    minutelyData.maxPing = Math.max(minutelyData.maxPing, ping);
-                }
-
-                // Add avg ping
-                // The first beat of the hour, the ping is the current ping
-                if (hourlyData.up === 1) {
-                    hourlyData.avgPing = ping;
-                    hourlyData.minPing = ping;
-                    hourlyData.maxPing = ping;
-                } else {
-                    hourlyData.avgPing = (hourlyData.avgPing * (hourlyData.up - 1) + ping) / hourlyData.up;
-                    hourlyData.minPing = Math.min(hourlyData.minPing, ping);
-                    hourlyData.maxPing = Math.max(hourlyData.maxPing, ping);
-                }
-
-                // Add avg ping (daily)
-                // The first beat of the day, the ping is the current ping
-                if (dailyData.up === 1) {
-                    dailyData.avgPing = ping;
-                    dailyData.minPing = ping;
-                    dailyData.maxPing = ping;
-                } else {
-                    dailyData.avgPing = (dailyData.avgPing * (dailyData.up - 1) + ping) / dailyData.up;
-                    dailyData.minPing = Math.min(dailyData.minPing, ping);
-                    dailyData.maxPing = Math.max(dailyData.maxPing, ping);
-                }
-            }
-
-            // Only UP status can update the numeric value
-            if (numericValue !== null && !isNaN(numericValue)) {
-                const numValue = parseFloat(numericValue);
-                // Add avg numeric
-                // The first beat of the minute, the numeric is the current numeric
-                if (minutelyData.up === 1) {
-                    minutelyData.avgNumeric = numValue;
-                    minutelyData.minNumeric = numValue;
-                    minutelyData.maxNumeric = numValue;
-                } else {
-                    if (minutelyData.avgNumeric === null) {
-                        minutelyData.avgNumeric = numValue;
-                        minutelyData.minNumeric = numValue;
-                        minutelyData.maxNumeric = numValue;
-                    } else {
-                        minutelyData.avgNumeric =
-                            (minutelyData.avgNumeric * (minutelyData.up - 1) + numValue) / minutelyData.up;
-                        minutelyData.minNumeric = Math.min(minutelyData.minNumeric, numValue);
-                        minutelyData.maxNumeric = Math.max(minutelyData.maxNumeric, numValue);
-                    }
-                }
-
-                // Add avg numeric
-                // The first beat of the hour, the numeric is the current numeric
-                if (hourlyData.up === 1) {
-                    hourlyData.avgNumeric = numValue;
-                    hourlyData.minNumeric = numValue;
-                    hourlyData.maxNumeric = numValue;
-                } else {
-                    if (hourlyData.avgNumeric === null) {
-                        hourlyData.avgNumeric = numValue;
-                        hourlyData.minNumeric = numValue;
-                        hourlyData.maxNumeric = numValue;
-                    } else {
-                        hourlyData.avgNumeric =
-                            (hourlyData.avgNumeric * (hourlyData.up - 1) + numValue) / hourlyData.up;
-                        hourlyData.minNumeric = Math.min(hourlyData.minNumeric, numValue);
-                        hourlyData.maxNumeric = Math.max(hourlyData.maxNumeric, numValue);
-                    }
-                }
-
-                // Add avg numeric (daily)
-                // The first beat of the day, the numeric is the current numeric
-                if (dailyData.up === 1) {
-                    dailyData.avgNumeric = numValue;
-                    dailyData.minNumeric = numValue;
-                    dailyData.maxNumeric = numValue;
-                } else {
-                    if (dailyData.avgNumeric === null) {
-                        dailyData.avgNumeric = numValue;
-                        dailyData.minNumeric = numValue;
-                        dailyData.maxNumeric = numValue;
-                    } else {
-                        dailyData.avgNumeric = (dailyData.avgNumeric * (dailyData.up - 1) + numValue) / dailyData.up;
-                        dailyData.minNumeric = Math.min(dailyData.minNumeric, numValue);
-                        dailyData.maxNumeric = Math.max(dailyData.maxNumeric, numValue);
-                    }
-                }
-            }
         } else if (flatStatus === DOWN) {
             minutelyData.down += 1;
             hourlyData.down += 1;
             dailyData.down += 1;
         }
+    }
 
-        if (minutelyData !== this.lastUptimeData) {
-            this.lastUptimeData = minutelyData;
+    /**
+     * Update ping statistics for minutely, hourly, and daily data
+     * @private
+     * @param {object} minutelyData Minutely data object
+     * @param {object} hourlyData Hourly data object
+     * @param {object} dailyData Daily data object
+     * @param {number} ping Ping value
+     */
+    updatePing(minutelyData, hourlyData, dailyData, ping) {
+        if (isNaN(ping)) {
+            return;
         }
 
-        if (hourlyData !== this.lastHourlyUptimeData) {
-            this.lastHourlyUptimeData = hourlyData;
+        // Update minutely ping
+        if (minutelyData.up === FIRST_BEAT_COUNT) {
+            minutelyData.avgPing = ping;
+            minutelyData.minPing = ping;
+            minutelyData.maxPing = ping;
+        } else {
+            minutelyData.avgPing = (minutelyData.avgPing * (minutelyData.up - 1) + ping) / minutelyData.up;
+            minutelyData.minPing = Math.min(minutelyData.minPing, ping);
+            minutelyData.maxPing = Math.max(minutelyData.maxPing, ping);
         }
 
-        if (dailyData !== this.lastDailyUptimeData) {
-            this.lastDailyUptimeData = dailyData;
+        // Update hourly ping
+        if (hourlyData.up === FIRST_BEAT_COUNT) {
+            hourlyData.avgPing = ping;
+            hourlyData.minPing = ping;
+            hourlyData.maxPing = ping;
+        } else {
+            hourlyData.avgPing = (hourlyData.avgPing * (hourlyData.up - 1) + ping) / hourlyData.up;
+            hourlyData.minPing = Math.min(hourlyData.minPing, ping);
+            hourlyData.maxPing = Math.max(hourlyData.maxPing, ping);
         }
 
-        // Don't store data in test mode
-        if (process.env.TEST_BACKEND) {
-            log.debug("uptime_calc", "Skip storing data in test mode");
-            return date;
+        // Update daily ping
+        if (dailyData.up === FIRST_BEAT_COUNT) {
+            dailyData.avgPing = ping;
+            dailyData.minPing = ping;
+            dailyData.maxPing = ping;
+        } else {
+            dailyData.avgPing = (dailyData.avgPing * (dailyData.up - 1) + ping) / dailyData.up;
+            dailyData.minPing = Math.min(dailyData.minPing, ping);
+            dailyData.maxPing = Math.max(dailyData.maxPing, ping);
+        }
+    }
+
+    /**
+     * Update numeric value statistics for minutely, hourly, and daily data
+     * @private
+     * @param {object} minutelyData Minutely data object
+     * @param {object} hourlyData Hourly data object
+     * @param {object} dailyData Daily data object
+     * @param {number} numericValue Numeric value
+     */
+    updateNumeric(minutelyData, hourlyData, dailyData, numericValue) {
+        if (numericValue === null || isNaN(numericValue)) {
+            return;
         }
 
+        // Update minutely numeric
+        if (minutelyData.up === FIRST_BEAT_COUNT) {
+            minutelyData.sumNumeric = numericValue;
+            minutelyData.avgNumeric = numericValue;
+            minutelyData.minNumeric = numericValue;
+            minutelyData.maxNumeric = numericValue;
+        } else {
+            if (minutelyData.avgNumeric === null) {
+                minutelyData.sumNumeric = numericValue;
+                minutelyData.avgNumeric = numericValue;
+                minutelyData.minNumeric = numericValue;
+                minutelyData.maxNumeric = numericValue;
+            } else {
+                minutelyData.sumNumeric += numericValue;
+                minutelyData.avgNumeric = minutelyData.sumNumeric / minutelyData.up;
+                minutelyData.minNumeric = Math.min(minutelyData.minNumeric, numericValue);
+                minutelyData.maxNumeric = Math.max(minutelyData.maxNumeric, numericValue);
+            }
+        }
+
+        // Update hourly numeric
+        if (hourlyData.up === FIRST_BEAT_COUNT) {
+            hourlyData.sumNumeric = numericValue;
+            hourlyData.avgNumeric = numericValue;
+            hourlyData.minNumeric = numericValue;
+            hourlyData.maxNumeric = numericValue;
+        } else {
+            if (hourlyData.avgNumeric === null) {
+                hourlyData.sumNumeric = numericValue;
+                hourlyData.avgNumeric = numericValue;
+                hourlyData.minNumeric = numericValue;
+                hourlyData.maxNumeric = numericValue;
+            } else {
+                hourlyData.sumNumeric += numericValue;
+                hourlyData.avgNumeric = hourlyData.sumNumeric / hourlyData.up;
+                hourlyData.minNumeric = Math.min(hourlyData.minNumeric, numericValue);
+                hourlyData.maxNumeric = Math.max(hourlyData.maxNumeric, numericValue);
+            }
+        }
+
+        // Update daily numeric
+        if (dailyData.up === FIRST_BEAT_COUNT) {
+            dailyData.sumNumeric = numericValue;
+            dailyData.avgNumeric = numericValue;
+            dailyData.minNumeric = numericValue;
+            dailyData.maxNumeric = numericValue;
+        } else {
+            if (dailyData.avgNumeric === null) {
+                dailyData.sumNumeric = numericValue;
+                dailyData.avgNumeric = numericValue;
+                dailyData.minNumeric = numericValue;
+                dailyData.maxNumeric = numericValue;
+            } else {
+                dailyData.sumNumeric += numericValue;
+                dailyData.avgNumeric = dailyData.sumNumeric / dailyData.up;
+                dailyData.minNumeric = Math.min(dailyData.minNumeric, numericValue);
+                dailyData.maxNumeric = Math.max(dailyData.maxNumeric, numericValue);
+            }
+        }
+    }
+
+    /**
+     * Store statistics to database
+     * @private
+     * @param {object} minutelyData Minutely data object
+     * @param {object} hourlyData Hourly data object
+     * @param {object} dailyData Daily data object
+     * @param {number} divisionKey Minutely division key
+     * @param {number} hourlyKey Hourly key
+     * @param {number} dailyKey Daily key
+     * @param {dayjs.Dayjs} date Date
+     * @returns {Promise<void>}
+     */
+    async storeStatistics(minutelyData, hourlyData, dailyData, divisionKey, hourlyKey, dailyKey, date) {
         let dailyStatBean = await this.getDailyStatBean(dailyKey);
         dailyStatBean.up = dailyData.up;
         dailyStatBean.down = dailyData.down;
@@ -389,6 +395,7 @@ class UptimeCalculator {
                 avgNumeric: _avgNumeric,
                 minNumeric: _minNumeric,
                 maxNumeric: _maxNumeric,
+                sumNumeric: _sumNumeric,
                 timestamp: _timestamp,
                 ...extras
             } = dailyData;
@@ -424,6 +431,7 @@ class UptimeCalculator {
                     avgNumeric: _avgNumeric,
                     minNumeric: _minNumeric,
                     maxNumeric: _maxNumeric,
+                    sumNumeric: _sumNumeric,
                     timestamp: _timestamp,
                     ...extras
                 } = hourlyData;
@@ -458,6 +466,7 @@ class UptimeCalculator {
                     avgNumeric: _avgNumeric,
                     minNumeric: _minNumeric,
                     maxNumeric: _maxNumeric,
+                    sumNumeric: _sumNumeric,
                     timestamp: _timestamp,
                     ...extras
                 } = minutelyData;
@@ -484,6 +493,64 @@ class UptimeCalculator {
                 this.getHourlyKey(currentDate.subtract(this.statHourlyKeepDay, "day")),
             ]);
         }
+    }
+
+    /**
+     * @param {number} status status
+     * @param {number} ping Ping
+     * @param {number|null} numericValue Numeric value (e.g., from JSON query or SNMP)
+     * @param {dayjs.Dayjs} date Date (Only for migration)
+     * @returns {Promise<dayjs.Dayjs>} date
+     * @throws {Error} Invalid status
+     */
+    async update(status, ping = 0, numericValue = null, date = null) {
+        if (!date) {
+            date = this.getCurrentDate();
+        }
+
+        let flatStatus = this.flatStatus(status);
+
+        if (flatStatus === DOWN && ping > 0) {
+            log.debug("uptime_calc", "The ping is not effective when the status is DOWN");
+        }
+
+        let divisionKey = this.getMinutelyKey(date);
+        let hourlyKey = this.getHourlyKey(date);
+        let dailyKey = this.getDailyKey(date);
+
+        let minutelyData = this.minutelyUptimeDataList[divisionKey];
+        let hourlyData = this.hourlyUptimeDataList[hourlyKey];
+        let dailyData = this.dailyUptimeDataList[dailyKey];
+
+        // Update status counts
+        this.updateStatusCounts(minutelyData, hourlyData, dailyData, status, flatStatus);
+
+        // Only UP status can update ping and numeric values
+        if (flatStatus === UP) {
+            this.updatePing(minutelyData, hourlyData, dailyData, ping);
+            this.updateNumeric(minutelyData, hourlyData, dailyData, numericValue);
+        }
+
+        // Update last data references
+        if (minutelyData !== this.lastUptimeData) {
+            this.lastUptimeData = minutelyData;
+        }
+
+        if (hourlyData !== this.lastHourlyUptimeData) {
+            this.lastHourlyUptimeData = hourlyData;
+        }
+
+        if (dailyData !== this.lastDailyUptimeData) {
+            this.lastDailyUptimeData = dailyData;
+        }
+
+        // Don't store data in test mode
+        if (process.env.TEST_BACKEND) {
+            log.debug("uptime_calc", "Skip storing data in test mode");
+            return date;
+        }
+
+        await this.storeStatistics(minutelyData, hourlyData, dailyData, divisionKey, hourlyKey, dailyKey, date);
 
         return date;
     }
@@ -576,6 +643,7 @@ class UptimeCalculator {
                 avgNumeric: null,
                 minNumeric: null,
                 maxNumeric: null,
+                sumNumeric: 0,
             });
         }
 
@@ -604,6 +672,7 @@ class UptimeCalculator {
                 avgNumeric: null,
                 minNumeric: null,
                 maxNumeric: null,
+                sumNumeric: 0,
             });
         }
 
@@ -631,6 +700,7 @@ class UptimeCalculator {
                 avgNumeric: null,
                 minNumeric: null,
                 maxNumeric: null,
+                sumNumeric: 0,
             });
         }
 

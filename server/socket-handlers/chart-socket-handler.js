@@ -61,10 +61,13 @@ module.exports.chartSocketHandler = (socket) => {
 
             // Filter and convert to format expected by frontend
             // Only include entries with numeric values
+            // Use numeric_value as the main value, with min/max for reference
             const data = dataArray
                 .filter((entry) => entry.avgNumeric !== null && entry.avgNumeric !== undefined)
                 .map((entry) => ({
                     value: parseFloat(entry.avgNumeric),
+                    min: entry.minNumeric !== null && entry.minNumeric !== undefined ? parseFloat(entry.minNumeric) : null,
+                    max: entry.maxNumeric !== null && entry.maxNumeric !== undefined ? parseFloat(entry.maxNumeric) : null,
                     timestamp: entry.timestamp,
                     time: dayjs.unix(entry.timestamp).utc().format("YYYY-MM-DD HH:mm:ss"),
                 }));
