@@ -28,7 +28,7 @@
                     <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
                         <font-awesome-icon icon="times" />
                     </a>
-                    <form>
+                    <form @submit.prevent>
                         <input
                             v-model="searchText"
                             class="form-control search-input"
