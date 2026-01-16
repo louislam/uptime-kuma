@@ -1,7 +1,11 @@
 <template>
-    <MonitorListFilterDropdown :filterActive="filterState.status?.length > 0">
+    <MonitorListFilterDropdown :filterActive="filterState.status?.length > 0 || filterState.active?.length > 0">
         <template #status>
-            <Status v-if="filterState.status?.length === 1" :status="filterState.status[0]" />
+            <Status v-if="filterState.status?.length === 1 && !filterState.active?.length" :status="filterState.status[0]" />
+            <span v-else-if="!filterState.status?.length && filterState.active?.length === 1" class="badge status-pill" :class="filterState.active[0] ? 'running' : 'paused'">
+                <font-awesome-icon :icon="filterState.active[0] ? 'play' : 'pause'" class="icon-small" />
+                {{ filterState.active[0] ? $t("Running") : $t("filterActivePaused") }}
+            </span>
             <span v-else>
                 {{ $t("Status") }}
             </span>
