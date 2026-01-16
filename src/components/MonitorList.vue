@@ -358,7 +358,7 @@ export default {
 
             this.bulkActionInProgress = true;
             activeMonitors.forEach((id) => this.$root.getSocket().emit("pauseMonitor", id, () => {}));
-            this.$root.toastSuccess(this.$tc("pausedMonitorsMsg", activeMonitors.length));
+            this.$root.toastSuccess(this.$t("pausedMonitorsMsg", activeMonitors.length));
             this.bulkActionInProgress = false;
             this.cancelSelectMode();
         },
@@ -382,7 +382,7 @@ export default {
 
             this.bulkActionInProgress = true;
             inactiveMonitors.forEach((id) => this.$root.getSocket().emit("resumeMonitor", id, () => {}));
-            this.$root.toastSuccess(this.$tc("resumedMonitorsMsg", inactiveMonitors.length));
+            this.$root.toastSuccess(this.$t("resumedMonitorsMsg", inactiveMonitors.length));
             this.bulkActionInProgress = false;
             this.cancelSelectMode();
         },
@@ -422,10 +422,10 @@ export default {
             this.bulkActionInProgress = false;
 
             if (successCount > 0) {
-                this.$root.toastSuccess(this.$tc("deletedMonitorsMsg", successCount));
+                this.$root.toastSuccess(this.$t("deletedMonitorsMsg", successCount));
             }
             if (errorCount > 0) {
-                this.$root.toastError(this.$tc("bulkDeleteErrorMsg", errorCount));
+                this.$root.toastError(this.$t("bulkDeleteErrorMsg", errorCount));
             }
 
             this.cancelSelectMode();
@@ -539,7 +539,7 @@ export default {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 8px;
 
     .dark & {
         background-color: $dark-header-bg;
@@ -625,6 +625,13 @@ export default {
             }
         }
     }
+}
+
+.selection-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
 }
 
 .selected-count {

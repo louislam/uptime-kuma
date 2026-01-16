@@ -59,23 +59,14 @@
                     </div>
                 </div>
             </li>
-        </template>
-    </MonitorListFilterDropdown>
-    <MonitorListFilterDropdown :filterActive="filterState.active?.length > 0">
-        <template #status>
-            <span v-if="filterState.active?.length === 1">
-                <span v-if="filterState.active[0]">{{ $t("Running") }}</span>
-                <span v-else>{{ $t("filterActivePaused") }}</span>
-            </span>
-            <span v-else>
-                {{ $t("filterActive") }}
-            </span>
-        </template>
-        <template #dropdown>
+            <li><hr class="dropdown-divider"></li>
             <li>
                 <div class="dropdown-item" tabindex="0" @click.stop="toggleActiveFilter(true)">
                     <div class="d-flex align-items-center justify-content-between">
-                        <span>{{ $t("Running") }}</span>
+                        <span class="badge status-pill running">
+                            <font-awesome-icon icon="play" class="icon-small" />
+                            {{ $t("Running") }}
+                        </span>
                         <span class="ps-3">
                             {{ $root.stats.active }}
                             <span v-if="filterState.active?.includes(true)" class="px-1 filter-active">
@@ -88,7 +79,10 @@
             <li>
                 <div class="dropdown-item" tabindex="0" @click.stop="toggleActiveFilter(false)">
                     <div class="d-flex align-items-center justify-content-between">
-                        <span>{{ $t("filterActivePaused") }}</span>
+                        <span class="badge status-pill paused">
+                            <font-awesome-icon icon="pause" class="icon-small" />
+                            {{ $t("filterActivePaused") }}
+                        </span>
                         <span class="ps-3">
                             {{ $root.stats.pause }}
                             <span v-if="filterState.active?.includes(false)" class="px-1 filter-active">
@@ -281,6 +275,39 @@ export default {
 
         .dark & {
             background-color: $dark-font-color2;
+        }
+    }
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    border-top: 1px solid #d1d5db;
+
+    .dark & {
+        border-top-color: #6b7280;
+    }
+}
+
+.status-pill {
+    min-width: 64px;
+    display: inline-block;
+    text-align: center;
+
+    &.running,
+    &.paused {
+        background-color: white !important;
+        border: 1px solid #d1d5db;
+        color: inherit;
+
+        .dark & {
+            background-color: transparent !important;
+            border-color: #6b7280;
+            color: $dark-font-color;
+        }
+
+        .icon-small {
+            font-size: 0.75em;
+            margin-right: 4px;
         }
     }
 }

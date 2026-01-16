@@ -64,7 +64,7 @@
                     :key="day"
                     class="d-flex align-items-center justify-content-between cert-exp-day-row py-2"
                 >
-                    <span>{{ day }} {{ $tc("day", day) }}</span>
+                    <span>{{ $t("days", day) }}</span>
                     <button
                         type="button"
                         class="btn-rm-expiry btn btn-outline-danger ms-2 py-1"
@@ -79,7 +79,7 @@
                 <ActionInput
                     v-model="tlsExpiryNotifInput"
                     :type="'number'"
-                    :placeholder="$t('day')"
+                    :placeholder="$t('days', 1)"
                     :icon="'plus'"
                     :action="() => addTlsExpiryNotifDay(tlsExpiryNotifInput)"
                     :action-aria-label="$t('Add a new expiry notification day')"
@@ -102,7 +102,7 @@
                     :key="day"
                     class="d-flex align-items-center justify-content-between cert-exp-day-row py-2"
                 >
-                    <span>{{ day }} {{ $tc("day", day) }}</span>
+                    <span>{{ $t("days", day) }}</span>
                     <button
                         type="button"
                         class="btn-rm-expiry btn btn-outline-danger ms-2 py-1"
@@ -117,7 +117,7 @@
                 <ActionInput
                     v-model="domainExpiryNotifInput"
                     :type="'number'"
-                    :placeholder="$t('day')"
+                    :placeholder="$t('days', 1)"
                     :icon="'plus'"
                     :action="() => addDomainExpiryNotifDay(domainExpiryNotifInput)"
                     :action-aria-label="$t('Add a new expiry notification day')"
