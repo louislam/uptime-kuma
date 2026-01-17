@@ -1772,13 +1772,13 @@ class Monitor extends BeanModel {
                 if (isNaN(delay) || delay < 0) {
                     throw new Error("Screenshot delay must be a non-negative number");
                 }
-                
+
                 // Must not exceed 0.8 * timeout (page.goto timeout is interval * 1000 * 0.8)
                 const maxDelayFromTimeout = this.interval * 1000 * 0.8;
                 if (delay >= maxDelayFromTimeout) {
                     throw new Error(`Screenshot delay must be less than ${maxDelayFromTimeout}ms (0.8 × interval)`);
                 }
-                
+
                 // Must not exceed 0.5 * interval to prevent blocking next check
                 const maxDelayFromInterval = this.interval * 1000 * 0.5;
                 if (delay >= maxDelayFromInterval) {

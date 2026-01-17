@@ -279,7 +279,11 @@
                                     />
                                     <div class="form-text">
                                         {{ $t("screenshotDelayDescription") }}
-                                        {{ $t("screenshotDelayMaxInfo", { max: Math.floor(monitor.interval * 1000 * 0.5) }) }}
+                                        {{
+                                            $t("screenshotDelayMaxInfo", {
+                                                max: Math.floor(monitor.interval * 1000 * 0.5),
+                                            })
+                                        }}
                                     </div>
                                     <div class="form-text text-warning">
                                         {{ $t("screenshotDelayWarning") }}
