@@ -268,7 +268,7 @@
                                     <label for="screenshot-delay" class="form-label">
                                         {{
                                             $t("Screenshot Delay", {
-                                                miliseconds: $t("miliseconds", monitor.screenshot_delay),
+                                                milliseconds: $t("milliseconds", monitor.screenshot_delay),
                                             })
                                         }}
                                     </label>
