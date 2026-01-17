@@ -29,11 +29,7 @@ class SNMPMonitorType extends MonitorType {
                 // a follow-up PR to keep this change scoped.
                 sessionOptions.securityLevel = snmp.SecurityLevel.noAuthNoPriv;
                 sessionOptions.username = monitor.snmp_v3_username;
-                session = snmp.createV3Session(
-                    monitor.hostname,
-                    monitor.snmp_v3_username,
-                    sessionOptions
-                );
+                session = snmp.createV3Session(monitor.hostname, monitor.snmp_v3_username, sessionOptions);
             } else {
                 session = snmp.createSession(monitor.hostname, monitor.radiusPassword, sessionOptions);
             }

@@ -9,15 +9,11 @@ describe("SNMPMonitorType", () => {
     test(
         "check() sets heartbeat to UP when SNMP agent responds",
         {
-            skip:
-                !!process.env.CI &&
-                (process.platform !== "linux" || process.arch !== "x64"),
+            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
             // Expose SNMP port via Testcontainers
-            const container = await new GenericContainer("polinux/snmpd")
-                .withExposedPorts("161/udp")
-                .start();
+            const container = await new GenericContainer("polinux/snmpd").withExposedPorts("161/udp").start();
 
             try {
                 // Dynamically retrieve the assigned host port and IP
@@ -57,9 +53,7 @@ describe("SNMPMonitorType", () => {
     test(
         "check() throws when SNMP agent does not respond",
         {
-            skip:
-                !!process.env.CI &&
-                (process.platform !== "linux" || process.arch !== "x64"),
+            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
             const monitor = {
@@ -76,10 +70,7 @@ describe("SNMPMonitorType", () => {
             const snmpMonitor = new SNMPMonitorType();
             const heartbeat = {};
 
-            await assert.rejects(
-                () => snmpMonitor.check(monitor, heartbeat),
-                /timeout|RequestTimedOutError/i
-            );
+            await assert.rejects(() => snmpMonitor.check(monitor, heartbeat), /timeout|RequestTimedOutError/i);
         }
     );
 
@@ -124,18 +115,12 @@ describe("SNMPMonitorType", () => {
         const snmpMonitor = new SNMPMonitorType();
         const heartbeat = {};
 
-        await assert.rejects(
-            () => snmpMonitor.check(monitor, heartbeat),
-            /stop test here/
-        );
+        await assert.rejects(() => snmpMonitor.check(monitor, heartbeat), /stop test here/);
 
         // Assertions
         assert.strictEqual(createV3Called, true);
         assert.strictEqual(createSessionCalled, false);
-        assert.strictEqual(
-            receivedOptions.securityLevel,
-            snmp.SecurityLevel.noAuthNoPriv
-        );
+        assert.strictEqual(receivedOptions.securityLevel, snmp.SecurityLevel.noAuthNoPriv);
 
         // Restore originals
         snmp.createV3Session = originalCreateV3Session;
