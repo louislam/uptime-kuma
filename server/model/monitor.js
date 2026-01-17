@@ -1769,8 +1769,8 @@ class Monitor extends BeanModel {
             // screenshot_delay validation
             if (this.screenshot_delay !== undefined && this.screenshot_delay !== null) {
                 const delay = Number(this.screenshot_delay);
-                if (isNaN(delay) || delay < 0 || delay > 30) {
-                    throw new Error("Screenshot delay must be between 0 and 30 seconds");
+                if (isNaN(delay) || delay < 0 || delay > 30000) {
+                    throw new Error("Screenshot delay must be between 0 and 30000 milliseconds");
                 }
             }
         }

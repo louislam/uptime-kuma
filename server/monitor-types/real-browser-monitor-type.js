@@ -271,7 +271,7 @@ class RealBrowserMonitorType extends MonitorType {
 
         // Wait for additional time before taking screenshot if configured
         if (monitor.screenshot_delay > 0) {
-            await page.waitForTimeout(monitor.screenshot_delay * 1000);
+            await page.waitForTimeout(monitor.screenshot_delay);
         }
 
         let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";

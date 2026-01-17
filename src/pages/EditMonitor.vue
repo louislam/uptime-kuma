@@ -266,7 +266,7 @@
                                 <!-- Screenshot Delay -->
                                 <div class="my-3">
                                     <label for="screenshot-delay" class="form-label">
-                                        {{ $t("Screenshot Delay ({seconds})", { seconds: $t("seconds") }) }}
+                                        {{ $t("Screenshot Delay ({ms})", { ms: $t("ms") }) }}
                                     </label>
                                     <input
                                         id="screenshot-delay"
@@ -274,8 +274,8 @@
                                         type="number"
                                         class="form-control"
                                         min="0"
-                                        max="30"
-                                        step="1"
+                                        max="30000"
+                                        step="100"
                                     />
                                     <div class="form-text">
                                         {{ $t("screenshotDelayDescription") }}
