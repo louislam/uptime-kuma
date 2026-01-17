@@ -83,7 +83,7 @@
                     </div>
                 </div>
                 <span class="selected-count">
-                    {{ $tc("selectedMonitorCountMsg", selectedMonitorCount) }}
+                    {{ $t("selectedMonitorCountMsg", selectedMonitorCount) }}
                 </span>
             </div>
         </div>
