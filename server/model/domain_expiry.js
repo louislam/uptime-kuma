@@ -30,24 +30,28 @@ async function getRdapServer(tld) {
         return null;
     }
 
-    const candidates = [];
-    if (tld) {
-        candidates.push(tld);
-        if (tld.includes(".")) {
-            const root = tld.split(".").pop();
-            if (root && root !== tld) {
-                candidates.push(root);
-            }
+    const services = rdapList["services"] ?? [];
+    const findServer = (candidate) => {
+        if (!candidate) {
+            return null;
         }
-    }
-
-    for (const candidate of candidates) {
-        for (const service of rdapList["services"]) {
-            const [tlds, urls] = service;
+        for (const [tlds, urls] of services) {
             if (tlds.includes(candidate)) {
                 return urls[0];
             }
         }
+        return null;
+    };
+
+    let server = findServer(tld);
+    if (!server && tld?.includes(".")) {
+        const root = tld.split(".").pop();
+        if (root && root !== tld) {
+            server = findServer(root);
+        }
+    }
+    if (server) {
+        return server;
     }
     log.debug("rdap", `No RDAP server found for TLD ${tld}`);
     return null;
