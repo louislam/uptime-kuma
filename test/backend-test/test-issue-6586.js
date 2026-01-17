@@ -3,16 +3,29 @@ const { UP } = require("../../src/util");
 const dayjs = require("dayjs");
 const { describe, test, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
+const fs = require("fs");
+const path = require("path");
 
-// Load server but don't let it hang the process
+// --- FIX: Create dummy index.html so server.js doesn't crash on CI ---
+// The server expects 'dist/index.html' to exist. If missing, we create a fake one.
+const distPath = path.join(__dirname, "../../dist");
+if (!fs.existsSync(distPath)) {
+    fs.mkdirSync(distPath, { recursive: true });
+}
+const indexPath = path.join(distPath, "index.html");
+if (!fs.existsSync(indexPath)) {
+    fs.writeFileSync(indexPath, "<html><body>Dummy</body></html>");
+}
+// ---------------------------------------------------------------------
+
+// Now it is safe to load the server
 require("../../server/server"); 
 
 describe("Issue #6663: Push Monitor Retry Reset", () => {
     let monitorId;
 
     beforeEach(async () => {
-        // Wait for database to be ready before starting
-        // (A simple delay to ensure server startup logic processes)
+        // Wait for database to be ready
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         monitorId = await R.store(R.dispense("monitor"));
