@@ -51,15 +51,14 @@ class WeCom extends NotificationProvider {
         };
 
         // Handle mentioned_mobile_list if configured
-        if (notification.weComMentionedMobileList && notification.weComMentionedMobileList.trim()) {
-            // Split by comma, trim whitespace, and filter out empty strings
-            let mobileList = notification.weComMentionedMobileList
+        if (notification.weComMentionedMobileList?.trim()) {
+            let mentionedMobiles = notification.weComMentionedMobileList
                 .split(",")
                 .map((mobile) => mobile.trim())
                 .filter((mobile) => mobile.length > 0);
 
             if (mobileList.length > 0) {
-                textObj.mentioned_mobile_list = mobileList;
+                textObj.mentioned_mobile_list = mentionedMobiles;
             }
         }
 
