@@ -27,11 +27,11 @@ class TailscalePing extends MonitorType {
      */
     async runTailscalePing(hostname, interval) {
         let timeout = interval * 1000 * 0.8;
-        let res = await childProcessAsync.spawn("tailscale", [ "ping", "--c", "1", hostname ], {
+        let res = await childProcessAsync.spawn("tailscale", ["ping", "--c", "1", hostname], {
             timeout: timeout,
             encoding: "utf8",
         });
-        if (res.stderr && res.stderr.toString()) {
+        if (res.stderr && res.stderr.toString() && res.code !== 0) {
             throw new Error(`Error in output: ${res.stderr.toString()}`);
         }
         if (res.stdout && res.stdout.toString()) {

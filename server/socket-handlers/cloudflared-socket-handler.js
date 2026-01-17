@@ -33,7 +33,6 @@ cloudflared.error = (errorMessage) => {
  * @returns {void}
  */
 module.exports.cloudflaredSocketHandler = (socket) => {
-
     socket.on(prefix + "join", async () => {
         try {
             checkLogin(socket);
@@ -41,14 +40,18 @@ module.exports.cloudflaredSocketHandler = (socket) => {
             io.to(socket.userID).emit(prefix + "installed", cloudflared.checkInstalled());
             io.to(socket.userID).emit(prefix + "running", cloudflared.running);
             io.to(socket.userID).emit(prefix + "token", await setting("cloudflaredTunnelToken"));
-        } catch (error) { }
+        } catch (error) {
+            log.error("cloudflared", "Error in join handler: " + error.message);
+        }
     });
 
     socket.on(prefix + "leave", async () => {
         try {
             checkLogin(socket);
             socket.leave("cloudflared");
-        } catch (error) { }
+        } catch (error) {
+            log.error("cloudflared", "Error in leave handler: " + error.message);
+        }
     });
 
     socket.on(prefix + "start", async (token) => {
@@ -61,7 +64,9 @@ module.exports.cloudflaredSocketHandler = (socket) => {
                 cloudflared.token = null;
             }
             cloudflared.start();
-        } catch (error) { }
+        } catch (error) {
+            log.error("cloudflared", "Error in start handler: " + error.message);
+        }
     });
 
     socket.on(prefix + "stop", async (currentPassword, callback) => {
@@ -84,9 +89,10 @@ module.exports.cloudflaredSocketHandler = (socket) => {
         try {
             checkLogin(socket);
             await setSetting("cloudflaredTunnelToken", "");
-        } catch (error) { }
+        } catch (error) {
+            log.error("cloudflared", "Error in removeToken handler: " + error.message);
+        }
     });
-
 };
 
 /**

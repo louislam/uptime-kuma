@@ -14,8 +14,8 @@ class WeCom extends NotificationProvider {
         try {
             let config = {
                 headers: {
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
             let body = this.composeMessage(notification, heartbeatJSON, msg);

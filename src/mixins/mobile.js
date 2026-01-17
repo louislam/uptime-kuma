@@ -1,5 +1,4 @@
 export default {
-
     data() {
         return {
             windowWidth: window.innerWidth,
@@ -31,8 +30,7 @@ export default {
             } else {
                 document.body.classList.remove("mobile");
             }
-        }
-
+        },
     },
 
     computed: {
@@ -40,5 +38,4 @@ export default {
             return this.windowWidth <= 767.98;
         },
     },
-
 };

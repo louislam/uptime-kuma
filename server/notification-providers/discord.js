@@ -11,6 +11,11 @@ class Discord extends NotificationProvider {
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         const okMsg = "Sent Successfully.";
 
+        // Discord Message Flags
+        // @see https://discord.com/developers/docs/resources/message#message-object-message-flags
+        // This message will not trigger push and desktop notifications
+        const SUPPRESS_NOTIFICATIONS_FLAG = 1 << 12;
+
         try {
             let config = this.getAxiosConfigWithProxy({});
             const discordDisplayName = notification.discordUsername || "Uptime Kuma";
@@ -41,37 +46,47 @@ class Discord extends NotificationProvider {
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
                 }
+                if (notification.discordSuppressNotifications) {
+                    discordtestdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
                 await axios.post(webhookUrl.toString(), discordtestdata, config);
                 return okMsg;
             }
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
+            let addess = this.extractAddress(monitorJSON);
             if (heartbeatJSON["status"] === DOWN) {
                 let discorddowndata = {
                     username: discordDisplayName,
-                    embeds: [{
-                        title: "❌ Your service " + monitorJSON["name"] + " went down. ❌",
-                        color: 16711680,
-                        timestamp: heartbeatJSON["time"],
-                        fields: [
-                            {
-                                name: "Service Name",
-                                value: monitorJSON["name"],
-                            },
-                            ...(!notification.disableUrl ? [{
-                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
-                            }] : []),
-                            {
-                                name: `Time (${heartbeatJSON["timezone"]})`,
-                                value: heartbeatJSON["localDateTime"],
-                            },
-                            {
-                                name: "Error",
-                                value: heartbeatJSON["msg"] == null ? "N/A" : heartbeatJSON["msg"],
-                            },
-                        ],
-                    }],
+                    embeds: [
+                        {
+                            title: "❌ Your service " + monitorJSON["name"] + " went down. ❌",
+                            color: 16711680,
+                            timestamp: heartbeatJSON["time"],
+                            fields: [
+                                {
+                                    name: "Service Name",
+                                    value: monitorJSON["name"],
+                                },
+                                ...(!notification.disableUrl && addess
+                                    ? [
+                                          {
+                                              name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                              value: addess,
+                                          },
+                                      ]
+                                    : []),
+                                {
+                                    name: `Time (${heartbeatJSON["timezone"]})`,
+                                    value: heartbeatJSON["localDateTime"],
+                                },
+                                {
+                                    name: "Error",
+                                    value: heartbeatJSON["msg"] == null ? "N/A" : heartbeatJSON["msg"],
+                                },
+                            ],
+                        },
+                    ],
                 };
                 if (!webhookHasAvatar) {
                     discorddowndata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
@@ -82,36 +97,48 @@ class Discord extends NotificationProvider {
                 if (notification.discordPrefixMessage) {
                     discorddowndata.content = notification.discordPrefixMessage;
                 }
+                if (notification.discordSuppressNotifications) {
+                    discorddowndata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
 
                 await axios.post(webhookUrl.toString(), discorddowndata, config);
                 return okMsg;
-
             } else if (heartbeatJSON["status"] === UP) {
                 let discordupdata = {
                     username: discordDisplayName,
-                    embeds: [{
-                        title: "✅ Your service " + monitorJSON["name"] + " is up! ✅",
-                        color: 65280,
-                        timestamp: heartbeatJSON["time"],
-                        fields: [
-                            {
-                                name: "Service Name",
-                                value: monitorJSON["name"],
-                            },
-                            ...(!notification.disableUrl ? [{
-                                name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
-                                value: this.extractAddress(monitorJSON),
-                            }] : []),
-                            {
-                                name: `Time (${heartbeatJSON["timezone"]})`,
-                                value: heartbeatJSON["localDateTime"],
-                            },
-                            {
-                                name: "Ping",
-                                value: heartbeatJSON["ping"] == null ? "N/A" : heartbeatJSON["ping"] + " ms",
-                            },
-                        ],
-                    }],
+                    embeds: [
+                        {
+                            title: "✅ Your service " + monitorJSON["name"] + " is up! ✅",
+                            color: 65280,
+                            timestamp: heartbeatJSON["time"],
+                            fields: [
+                                {
+                                    name: "Service Name",
+                                    value: monitorJSON["name"],
+                                },
+                                ...(!notification.disableUrl && addess
+                                    ? [
+                                          {
+                                              name: monitorJSON["type"] === "push" ? "Service Type" : "Service URL",
+                                              value: addess,
+                                          },
+                                      ]
+                                    : []),
+                                {
+                                    name: `Time (${heartbeatJSON["timezone"]})`,
+                                    value: heartbeatJSON["localDateTime"],
+                                },
+                                ...(heartbeatJSON["ping"] != null
+                                    ? [
+                                          {
+                                              name: "Ping",
+                                              value: heartbeatJSON["ping"] + " ms",
+                                          },
+                                      ]
+                                    : []),
+                            ],
+                        },
+                    ],
                 };
                 if (!webhookHasAvatar) {
                     discordupdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
@@ -124,6 +151,9 @@ class Discord extends NotificationProvider {
                 if (notification.discordPrefixMessage) {
                     discordupdata.content = notification.discordPrefixMessage;
                 }
+                if (notification.discordSuppressNotifications) {
+                    discordupdata.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
 
                 await axios.post(webhookUrl.toString(), discordupdata, config);
                 return okMsg;
@@ -132,7 +162,6 @@ class Discord extends NotificationProvider {
             this.throwGeneralAxiosError(error);
         }
     }
-
 }
 
 module.exports = Discord;

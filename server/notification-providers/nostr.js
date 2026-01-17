@@ -1,23 +1,8 @@
 const NotificationProvider = require("./notification-provider");
-const {
-    finalizeEvent,
-    Relay,
-    kinds,
-    nip04,
-    nip19,
-} = require("nostr-tools");
+const { finalizeEvent, Relay, nip19, nip59 } = require("nostr-tools");
 
-// polyfills for node versions
-const semver = require("semver");
-const nodeVersion = process.version;
-if (semver.lt(nodeVersion, "20.0.0")) {
-    // polyfills for node 18
-    global.crypto = require("crypto");
-    global.WebSocket = require("isomorphic-ws");
-} else {
-    // polyfills for node 20
-    global.WebSocket = require("isomorphic-ws");
-}
+// polyfill WebSocket for nostr-tools
+global.WebSocket = require("isomorphic-ws");
 
 class Nostr extends NotificationProvider {
     name = "nostr";
@@ -26,24 +11,27 @@ class Nostr extends NotificationProvider {
      * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
-        // All DMs should have same timestamp
-        const createdAt = Math.floor(Date.now() / 1000);
-
         const senderPrivateKey = await this.getPrivateKey(notification.sender);
         const recipientsPublicKeys = await this.getPublicKeys(notification.recipients);
 
-        // Create NIP-04 encrypted direct message event for each recipient
+        // Create NIP-59 gift-wrapped events for each recipient
+        // This uses NIP-17 kind 14 (private direct message) wrapped with NIP-59
+        // to prevent metadata leakage (sender/recipient public keys are hidden)
+        const createdAt = Math.floor(Date.now() / 1000);
         const events = [];
         for (const recipientPublicKey of recipientsPublicKeys) {
-            const ciphertext = await nip04.encrypt(senderPrivateKey, recipientPublicKey, msg);
-            let event = {
-                kind: kinds.EncryptedDirectMessage,
+            const event = {
+                kind: 14, // NIP-17 private direct message
                 created_at: createdAt,
-                tags: [[ "p", recipientPublicKey ]],
-                content: ciphertext,
+                tags: [["p", recipientPublicKey]],
+                content: msg,
             };
-            const signedEvent = finalizeEvent(event, senderPrivateKey);
-            events.push(signedEvent);
+            try {
+                const wrappedEvent = nip59.wrapEvent(event, senderPrivateKey, recipientPublicKey);
+                events.push(wrappedEvent);
+            } catch (error) {
+                throw new Error(`Failed to create gift-wrapped event for recipient: ${error.message}`);
+            }
         }
 
         // Publish events to each relay

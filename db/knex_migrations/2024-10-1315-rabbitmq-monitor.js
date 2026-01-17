@@ -4,7 +4,6 @@ exports.up = function (knex) {
         table.string("rabbitmq_username");
         table.string("rabbitmq_password");
     });
-
 };
 
 exports.down = function (knex) {
@@ -13,5 +12,4 @@ exports.down = function (knex) {
         table.dropColumn("rabbitmq_username");
         table.dropColumn("rabbitmq_password");
     });
-
 };

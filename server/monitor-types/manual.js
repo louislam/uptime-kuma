@@ -8,6 +8,8 @@ class ManualMonitorType extends MonitorType {
     supportsConditions = false;
     conditionVariables = [];
 
+    allowCustomStatus = true;
+
     /**
      * @inheritdoc
      */
@@ -32,5 +34,5 @@ class ManualMonitorType extends MonitorType {
 }
 
 module.exports = {
-    ManualMonitorType
+    ManualMonitorType,
 };

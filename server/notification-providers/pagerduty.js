@@ -23,9 +23,7 @@ class PagerDuty extends NotificationProvider {
 
             if (heartbeatJSON.status === UP) {
                 const title = "Uptime Kuma Monitor ✅ Up";
-                const eventAction = notification.pagerdutyAutoResolve || null;
-
-                return this.postNotification(notification, title, heartbeatJSON.msg, monitorJSON, eventAction);
+                return this.postNotification(notification, title, heartbeatJSON.msg, monitorJSON, "resolve");
             }
 
             if (heartbeatJSON.status === DOWN) {
@@ -62,11 +60,6 @@ class PagerDuty extends NotificationProvider {
      * @returns {Promise<string>} Success message
      */
     async postNotification(notification, title, body, monitorInfo, eventAction = "trigger") {
-
-        if (eventAction == null) {
-            return "No action required";
-        }
-
         let monitorUrl;
         if (monitorInfo.type === "port") {
             monitorUrl = monitorInfo.hostname;
@@ -77,6 +70,13 @@ class PagerDuty extends NotificationProvider {
             monitorUrl = monitorInfo.hostname;
         } else {
             monitorUrl = monitorInfo.url;
+        }
+
+        if (eventAction === "resolve") {
+            if (notification.pagerdutyAutoResolve === "0") {
+                return "no action required";
+            }
+            eventAction = notification.pagerdutyAutoResolve;
         }
 
         const options = {
@@ -92,7 +92,7 @@ class PagerDuty extends NotificationProvider {
                 routing_key: notification.pagerdutyIntegrationKey,
                 event_action: eventAction,
                 dedup_key: "Uptime Kuma/" + monitorInfo.id,
-            }
+            },
         };
 
         const baseURL = await setting("primaryBaseURL");

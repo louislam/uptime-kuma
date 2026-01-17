@@ -19,14 +19,12 @@ async function sendNotificationList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
-    let list = await R.find("notification", " user_id = ? ", [
-        socket.userID,
-    ]);
+    let list = await R.find("notification", " user_id = ? ", [socket.userID]);
 
     for (let bean of list) {
         let notificationObject = bean.export();
-        notificationObject.isDefault = (notificationObject.isDefault === 1);
-        notificationObject.active = (notificationObject.active === 1);
+        notificationObject.isDefault = notificationObject.isDefault === 1;
+        notificationObject.active = notificationObject.active === 1;
         result.push(notificationObject);
     }
 
@@ -46,14 +44,15 @@ async function sendNotificationList(socket) {
  * @returns {Promise<void>}
  */
 async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
-    let list = await R.getAll(`
+    let list = await R.getAll(
+        `
         SELECT * FROM heartbeat
         WHERE monitor_id = ?
         ORDER BY time DESC
         LIMIT 100
-    `, [
-        monitorID,
-    ]);
+    `,
+        [monitorID]
+    );
 
     let result = list.reverse();
 
@@ -75,23 +74,26 @@ async function sendHeartbeatList(socket, monitorID, toUser = false, overwrite = 
 async function sendImportantHeartbeatList(socket, monitorID, toUser = false, overwrite = false) {
     const timeLogger = new TimeLogger();
 
-    let list = await R.find("heartbeat", `
+    let list = await R.find(
+        "heartbeat",
+        `
         monitor_id = ?
         AND important = 1
         ORDER BY time DESC
         LIMIT 500
-    `, [
-        monitorID,
-    ]);
+    `,
+        [monitorID]
+    );
 
     timeLogger.print(`[Monitor: ${monitorID}] sendImportantHeartbeatList`);
 
-    if (toUser) {
-        io.to(socket.userID).emit("importantHeartbeatList", monitorID, list, overwrite);
-    } else {
-        socket.emit("importantHeartbeatList", monitorID, list, overwrite);
-    }
+    const result = list.map((bean) => bean.toJSON());
 
+    if (toUser) {
+        io.to(socket.userID).emit("importantHeartbeatList", monitorID, result, overwrite);
+    } else {
+        socket.emit("importantHeartbeatList", monitorID, result, overwrite);
+    }
 }
 
 /**
@@ -102,8 +104,11 @@ async function sendImportantHeartbeatList(socket, monitorID, toUser = false, ove
 async function sendProxyList(socket) {
     const timeLogger = new TimeLogger();
 
-    const list = await R.find("proxy", " user_id = ? ", [ socket.userID ]);
-    io.to(socket.userID).emit("proxyList", list.map(bean => bean.export()));
+    const list = await R.find("proxy", " user_id = ? ", [socket.userID]);
+    io.to(socket.userID).emit(
+        "proxyList",
+        list.map((bean) => bean.export())
+    );
 
     timeLogger.print("Send Proxy List");
 
@@ -119,11 +124,7 @@ async function sendAPIKeyList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
-    const list = await R.find(
-        "api_key",
-        "user_id=?",
-        [ socket.userID ],
-    );
+    const list = await R.find("api_key", "user_id=?", [socket.userID]);
 
     for (let bean of list) {
         result.push(bean.toPublicJSON());
@@ -142,27 +143,23 @@ async function sendAPIKeyList(socket) {
  * @returns {Promise<void>}
  */
 async function sendInfo(socket, hideVersion = false) {
-    let version;
-    let latestVersion;
-    let isContainer;
-    let dbType;
-
-    if (!hideVersion) {
-        version = checkVersion.version;
-        latestVersion = checkVersion.latestVersion;
-        isContainer = (process.env.UPTIME_KUMA_IS_CONTAINER === "1");
-        dbType = Database.dbConfig.type;
-    }
-
-    socket.emit("info", {
-        version,
-        latestVersion,
-        isContainer,
-        dbType,
+    const info = {
         primaryBaseURL: await setting("primaryBaseURL"),
         serverTimezone: await server.getTimezone(),
         serverTimezoneOffset: server.getTimezoneOffset(),
-    });
+    };
+    if (!hideVersion) {
+        info.version = checkVersion.version;
+        info.latestVersion = checkVersion.latestVersion;
+        info.isContainer = process.env.UPTIME_KUMA_IS_CONTAINER === "1";
+        info.dbType = Database.dbConfig.type;
+        info.runtime = {
+            platform: process.platform, // linux or win32
+            arch: process.arch, // x86 or arm
+        };
+    }
+
+    socket.emit("info", info);
 }
 
 /**
@@ -174,9 +171,7 @@ async function sendDockerHostList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
-    let list = await R.find("docker_host", " user_id = ? ", [
-        socket.userID,
-    ]);
+    let list = await R.find("docker_host", " user_id = ? ", [socket.userID]);
 
     for (let bean of list) {
         result.push(bean.toJSON());
@@ -198,9 +193,7 @@ async function sendRemoteBrowserList(socket) {
     const timeLogger = new TimeLogger();
 
     let result = [];
-    let list = await R.find("remote_browser", " user_id = ? ", [
-        socket.userID,
-    ]);
+    let list = await R.find("remote_browser", " user_id = ? ", [socket.userID]);
 
     for (let bean of list) {
         result.push(bean.toJSON());
@@ -219,21 +212,24 @@ async function sendRemoteBrowserList(socket) {
  * @returns {Promise<void>}
  */
 async function sendMonitorTypeList(socket) {
-    const result = Object.entries(UptimeKumaServer.monitorTypeList).map(([ key, type ]) => {
-        return [ key, {
-            supportsConditions: type.supportsConditions,
-            conditionVariables: type.conditionVariables.map(v => {
-                return {
-                    id: v.id,
-                    operators: v.operators.map(o => {
-                        return {
-                            id: o.id,
-                            caption: o.caption,
-                        };
-                    }),
-                };
-            }),
-        }];
+    const result = Object.entries(UptimeKumaServer.monitorTypeList).map(([key, type]) => {
+        return [
+            key,
+            {
+                supportsConditions: type.supportsConditions,
+                conditionVariables: type.conditionVariables.map((v) => {
+                    return {
+                        id: v.id,
+                        operators: v.operators.map((o) => {
+                            return {
+                                id: o.id,
+                                caption: o.caption,
+                            };
+                        }),
+                    };
+                }),
+            },
+        ];
     });
 
     io.to(socket.userID).emit("monitorTypeList", Object.fromEntries(result));

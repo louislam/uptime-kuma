@@ -1,6 +1,8 @@
 {
     "name": "Uptime Kuma",
     "short_name": "Uptime Kuma",
+    "description": "An easy-to-use self-hosted monitoring tool.",
+    "theme_color": "#5cdd8b",
     "start_url": "/",
     "background_color": "#fff",
     "display": "standalone",
@@ -14,6 +16,73 @@
             "src": "icon-512x512.png",
             "sizes": "512x512",
             "type": "image/png"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "View monitoring dashboard",
+            "url": "/dashboard",
+            "icons": [
+                {
+                    "src": "icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Add Monitor",
+            "short_name": "Add Monitor",
+            "description": "Add a new monitor",
+            "url": "/add",
+            "icons": [
+                {
+                    "src": "icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Monitor List",
+            "short_name": "List",
+            "description": "View all monitors",
+            "url": "/list",
+            "icons": [
+                {
+                    "src": "icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Settings",
+            "short_name": "Settings",
+            "description": "Open settings",
+            "url": "/settings",
+            "icons": [
+                {
+                    "src": "icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Maintenance",
+            "short_name": "Maintenance",
+            "description": "Manage maintenance windows",
+            "url": "/maintenance",
+            "icons": [
+                {
+                    "src": "icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
         }
     ]
 }

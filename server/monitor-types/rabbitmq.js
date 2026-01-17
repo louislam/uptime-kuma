@@ -1,5 +1,5 @@
 const { MonitorType } = require("./monitor-type");
-const { log, UP, DOWN } = require("../../src/util");
+const { log, UP } = require("../../src/util");
 const { axiosAbortSignal } = require("../util-server");
 const axios = require("axios");
 
@@ -17,46 +17,93 @@ class RabbitMqMonitorType extends MonitorType {
             throw new Error("Invalid RabbitMQ Nodes");
         }
 
-        heartbeat.status = DOWN;
-        for (let baseUrl of baseUrls) {
+        if (baseUrls.length === 0) {
+            throw new Error("No RabbitMQ nodes configured");
+        }
+
+        const errors = [];
+
+        for (let i = 0; i < baseUrls.length; i++) {
+            const baseUrl = baseUrls[i];
+            const nodeIndex = i + 1;
+
             try {
-                // Without a trailing slash, path in baseUrl will be removed. https://example.com/api -> https://example.com
-                if ( !baseUrl.endsWith("/") ) {
-                    baseUrl += "/";
-                }
-                const options = {
-                    // Do not start with slash, it will strip the trailing slash from baseUrl
-                    url: new URL("api/health/checks/alarms/", baseUrl).href,
-                    method: "get",
-                    timeout: monitor.timeout * 1000,
-                    headers: {
-                        "Accept": "application/json",
-                        "Authorization": "Basic " + Buffer.from(`${monitor.rabbitmqUsername || ""}:${monitor.rabbitmqPassword || ""}`).toString("base64"),
-                    },
-                    signal: axiosAbortSignal((monitor.timeout + 10) * 1000),
-                    // Capture reason for 503 status
-                    validateStatus: (status) => status === 200 || status === 503,
-                };
-                log.debug("monitor", `[${monitor.name}] Axios Request: ${JSON.stringify(options)}`);
-                const res = await axios.request(options);
-                log.debug("monitor", `[${monitor.name}] Axios Response: status=${res.status} body=${JSON.stringify(res.data)}`);
-                if (res.status === 200) {
-                    heartbeat.status = UP;
-                    heartbeat.msg = "OK";
-                    break;
-                } else if (res.status === 503) {
-                    heartbeat.msg = res.data.reason;
-                } else {
-                    heartbeat.msg = `${res.status} - ${res.statusText}`;
-                }
+                await this.checkSingleNode(monitor, baseUrl, `${nodeIndex}/${baseUrls.length}`);
+                // If checkSingleNode succeeds (doesn't throw), set heartbeat to UP
+                heartbeat.status = UP;
+                heartbeat.msg =
+                    baseUrls.length === 1
+                        ? "Node is reachable and there are no alerts in the cluster"
+                        : `One of the ${baseUrls.length} nodes is reachable and there are no alerts in the cluster`;
+                return;
             } catch (error) {
-                if (axios.isCancel(error)) {
-                    heartbeat.msg = "Request timed out";
-                    log.debug("monitor", `[${monitor.name}] Request timed out`);
-                } else {
-                    log.debug("monitor", `[${monitor.name}] Axios Error: ${JSON.stringify(error.message)}`);
-                    heartbeat.msg = error.message;
-                }
+                log.warn(this.name, `Node ${nodeIndex}: ${error.message}`);
+                errors.push(`Node ${nodeIndex}: ${error.message}`);
+            }
+        }
+
+        // If we reach here, all nodes failed
+        throw new Error(`All ${errors.length} nodes failed because ${errors.join("; ")}`);
+    }
+
+    /**
+     * Check a single RabbitMQ node
+     * @param {object} monitor Monitor configuration
+     * @param {string} baseUrl Base URL of the RabbitMQ node
+     * @param {string} nodeInfo Node index info for logging (e.g., "1/3")
+     * @returns {Promise<void>}
+     * @throws {Error} If the node check fails
+     */
+    async checkSingleNode(monitor, baseUrl, nodeInfo) {
+        // Without a trailing slash, path in baseUrl will be removed. https://example.com/api -> https://example.com
+        let normalizedUrl = baseUrl;
+        if (!normalizedUrl.endsWith("/")) {
+            normalizedUrl += "/";
+        }
+
+        const options = {
+            // Do not start with slash, it will strip the trailing slash from baseUrl
+            url: new URL("api/health/checks/alarms/", normalizedUrl).href,
+            method: "get",
+            timeout: monitor.timeout * 1000,
+            headers: {
+                Accept: "application/json",
+                Authorization:
+                    "Basic " +
+                    Buffer.from(`${monitor.rabbitmqUsername || ""}:${monitor.rabbitmqPassword || ""}`).toString(
+                        "base64"
+                    ),
+            },
+            signal: axiosAbortSignal((monitor.timeout + 10) * 1000),
+            // Capture reason for 503 status
+            validateStatus: (status) => status === 200 || status === 503,
+        };
+
+        log.debug("monitor", `[${monitor.name}] Checking node ${nodeInfo}: ${baseUrl}`);
+
+        try {
+            const res = await axios.request(options);
+            log.debug(
+                "monitor",
+                `[${monitor.name}] Axios Response: status=${res.status} body=${JSON.stringify(res.data)}`
+            );
+
+            if (res.status === 200) {
+                log.debug("monitor", `[${monitor.name}] Node ${nodeInfo} is healthy`);
+                // Success - return without error
+            } else if (res.status === 503) {
+                throw new Error(res.data.reason);
+            } else {
+                throw new Error(`${res.status} - ${res.statusText}`);
+            }
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                throw new Error("Request timed out");
+            } else if (error.response) {
+                // Re-throw with the original error message if it's already formatted
+                throw error;
+            } else {
+                throw new Error(error.message);
             }
         }
     }

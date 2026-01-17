@@ -60,7 +60,6 @@ class Splunk extends NotificationProvider {
      * @returns {Promise<string>} Success state
      */
     async postNotification(notification, title, body, monitorInfo, eventAction = "trigger") {
-
         let monitorUrl;
         if (monitorInfo.type === "port") {
             monitorUrl = monitorInfo.hostname;
@@ -92,7 +91,7 @@ class Splunk extends NotificationProvider {
                 entity_display_name: "Uptime Kuma Alert: " + monitorInfo.name,
                 routing_key: notification.pagerdutyIntegrationKey,
                 entity_id: "Uptime Kuma/" + monitorInfo.id,
-            }
+            },
         };
 
         const baseURL = await setting("primaryBaseURL");

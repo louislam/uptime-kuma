@@ -16,8 +16,9 @@ class Twilio extends NotificationProvider {
             let config = {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
-                    "Authorization": "Basic " + Buffer.from(apiKey + ":" + notification.twilioAuthToken).toString("base64"),
-                }
+                    Authorization:
+                        "Basic " + Buffer.from(apiKey + ":" + notification.twilioAuthToken).toString("base64"),
+                },
             };
             config = this.getAxiosConfigWithProxy(config);
 
@@ -25,15 +26,21 @@ class Twilio extends NotificationProvider {
             data.append("To", notification.twilioToNumber);
             data.append("From", notification.twilioFromNumber);
             data.append("Body", msg);
+            if (notification.twilioMessagingServiceSID) {
+                data.append("MessagingServiceSid", notification.twilioMessagingServiceSID);
+            }
 
-            await axios.post(`https://api.twilio.com/2010-04-01/Accounts/${(notification.twilioAccountSID)}/Messages.json`, data, config);
+            await axios.post(
+                `https://api.twilio.com/2010-04-01/Accounts/${notification.twilioAccountSID}/Messages.json`,
+                data,
+                config
+            );
 
             return okMsg;
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
     }
-
 }
 
 module.exports = Twilio;

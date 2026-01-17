@@ -12,16 +12,16 @@ class Threema extends NotificationProvider {
 
         let config = {
             headers: {
-                "Accept": "*/*",
-                "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"
-            }
+                Accept: "*/*",
+                "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+            },
         };
         config = this.getAxiosConfigWithProxy(config);
 
         const data = {
             from: notification.threemaSenderIdentity,
             secret: notification.threemaSecret,
-            text: msg
+            text: msg,
         };
 
         switch (notification.threemaRecipientType) {

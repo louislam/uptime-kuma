@@ -10,7 +10,7 @@ class MongodbMonitorType extends MonitorType {
      * @inheritdoc
      */
     async check(monitor, heartbeat, _server) {
-        let command = { "ping": 1 };
+        let command = { ping: 1 };
         if (monitor.databaseQuery) {
             command = JSON.parse(monitor.databaseQuery);
         }
@@ -37,7 +37,11 @@ class MongodbMonitorType extends MonitorType {
             if (result.toString() === monitor.expectedValue) {
                 heartbeat.msg = "Command executed successfully and expected value was found";
             } else {
-                throw new Error("Query executed, but value is not equal to expected value, value was: [" + JSON.stringify(result) + "]");
+                throw new Error(
+                    "Query executed, but value is not equal to expected value, value was: [" +
+                        JSON.stringify(result) +
+                        "]"
+                );
             }
         }
 

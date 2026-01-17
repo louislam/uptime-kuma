@@ -31,23 +31,22 @@ const clearOldData = async () => {
     }
 
     if (parsedPeriod < 1) {
-        log.info("clearOldData", `Data deletion has been disabled as period is less than 1. Period is ${parsedPeriod} days.`);
+        log.info(
+            "clearOldData",
+            `Data deletion has been disabled as period is less than 1. Period is ${parsedPeriod} days.`
+        );
     } else {
         log.debug("clearOldData", `Clearing Data older than ${parsedPeriod} days...`);
         const sqlHourOffset = Database.sqlHourOffset();
 
         try {
             // Heartbeat
-            await R.exec("DELETE FROM heartbeat WHERE time < " + sqlHourOffset, [
-                parsedPeriod * -24,
-            ]);
+            await R.exec("DELETE FROM heartbeat WHERE time < " + sqlHourOffset, [parsedPeriod * -24]);
 
             let timestamp = dayjs().subtract(parsedPeriod, "day").utc().startOf("day").unix();
 
             // stat_daily
-            await R.exec("DELETE FROM stat_daily WHERE timestamp < ? ", [
-                timestamp,
-            ]);
+            await R.exec("DELETE FROM stat_daily WHERE timestamp < ? ", [timestamp]);
 
             if (Database.dbConfig.type === "sqlite") {
                 await R.exec("PRAGMA optimize;");

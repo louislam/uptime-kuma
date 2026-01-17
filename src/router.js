@@ -16,7 +16,6 @@ import ManageStatusPage from "./pages/ManageStatusPage.vue";
 import AddStatusPage from "./pages/AddStatusPage.vue";
 import NotFound from "./pages/NotFound.vue";
 import DockerHosts from "./components/settings/Docker.vue";
-import MaintenanceDetails from "./pages/MaintenanceDetails.vue";
 import ManageMaintenance from "./pages/ManageMaintenance.vue";
 import APIKeys from "./components/settings/APIKeys.vue";
 import SetupDatabase from "./pages/SetupDatabase.vue";
@@ -78,7 +77,7 @@ const routes = [
                                 path: "/clone/:id",
                                 component: EditMonitor,
                             },
-                        ]
+                        ],
                     },
                     {
                         path: "/list",
@@ -136,7 +135,7 @@ const routes = [
                                 path: "about",
                                 component: About,
                             },
-                        ]
+                        ],
                     },
                     {
                         path: "/manage-status-page",
@@ -151,15 +150,15 @@ const routes = [
                         component: ManageMaintenance,
                     },
                     {
-                        path: "/maintenance/:id",
-                        component: MaintenanceDetails,
-                    },
-                    {
                         path: "/add-maintenance",
                         component: EditMaintenance,
                     },
                     {
                         path: "/maintenance/edit/:id",
+                        component: EditMaintenance,
+                    },
+                    {
+                        path: "/maintenance/clone/:id",
                         component: EditMaintenance,
                     },
                 ],

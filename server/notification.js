@@ -4,6 +4,7 @@ const Alerta = require("./notification-providers/alerta");
 const AlertNow = require("./notification-providers/alertnow");
 const AliyunSms = require("./notification-providers/aliyun-sms");
 const Apprise = require("./notification-providers/apprise");
+const Bale = require("./notification-providers/bale");
 const Bark = require("./notification-providers/bark");
 const Bitrix24 = require("./notification-providers/bitrix24");
 const ClickSendSMS = require("./notification-providers/clicksendsms");
@@ -24,7 +25,6 @@ const HeiiOnCall = require("./notification-providers/heii-oncall");
 const Keep = require("./notification-providers/keep");
 const Kook = require("./notification-providers/kook");
 const Line = require("./notification-providers/line");
-const LineNotify = require("./notification-providers/linenotify");
 const LunaSea = require("./notification-providers/lunasea");
 const Matrix = require("./notification-providers/matrix");
 const Mattermost = require("./notification-providers/mattermost");
@@ -77,12 +77,16 @@ const Onesender = require("./notification-providers/onesender");
 const Wpush = require("./notification-providers/wpush");
 const SendGrid = require("./notification-providers/send-grid");
 const Brevo = require("./notification-providers/brevo");
+const Resend = require("./notification-providers/resend");
 const YZJ = require("./notification-providers/yzj");
 const SMSPlanet = require("./notification-providers/sms-planet");
 const SpugPush = require("./notification-providers/spugpush");
+const SMSIR = require("./notification-providers/smsir");
+const { commandExists } = require("./util-server");
+const Webpush = require("./notification-providers/Webpush");
+const HaloPSA = require("./notification-providers/HaloPSA");
 
 class Notification {
-
     providerList = {};
 
     /**
@@ -101,6 +105,7 @@ class Notification {
             new AlertNow(),
             new AliyunSms(),
             new Apprise(),
+            new Bale(),
             new Bark(),
             new Bitrix24(),
             new ClickSendSMS(),
@@ -120,7 +125,6 @@ class Notification {
             new Keep(),
             new Kook(),
             new Line(),
-            new LineNotify(),
             new LunaSea(),
             new Matrix(),
             new Mattermost(),
@@ -171,15 +175,19 @@ class Notification {
             new GtxMessaging(),
             new Cellsynt(),
             new Wpush(),
-            new SendGrid(),
             new Brevo(),
+            new Resend(),
             new YZJ(),
             new SMSPlanet(),
             new SpugPush(),
             new Notifery(),
+            new SMSIR(),
+            new SendGrid(),
+            new Webpush(),
+            new HaloPSA(),
         ];
         for (let item of list) {
-            if (! item.name) {
+            if (!item.name) {
                 throw new Error("Notification provider without name");
             }
 
@@ -218,15 +226,11 @@ class Notification {
         let bean;
 
         if (notificationID) {
-            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
-                notificationID,
-                userID,
-            ]);
+            bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
 
-            if (! bean) {
+            if (!bean) {
                 throw new Error("notification not found");
             }
-
         } else {
             bean = R.dispense("notification");
         }
@@ -251,12 +255,9 @@ class Notification {
      * @returns {Promise<void>}
      */
     static async delete(notificationID, userID) {
-        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [
-            notificationID,
-            userID,
-        ]);
+        let bean = await R.findOne("notification", " id = ? AND user_id = ? ", [notificationID, userID]);
 
-        if (! bean) {
+        if (!bean) {
             throw new Error("notification not found");
         }
 
@@ -265,14 +266,11 @@ class Notification {
 
     /**
      * Check if apprise exists
-     * @returns {boolean} Does the command apprise exist?
+     * @returns {Promise<boolean>} Does the command apprise exist?
      */
-    static checkApprise() {
-        let commandExistsSync = require("command-exists").sync;
-        let exists = commandExistsSync("apprise");
-        return exists;
+    static async checkApprise() {
+        return await commandExists("apprise");
     }
-
 }
 
 /**
@@ -282,9 +280,7 @@ class Notification {
  * @returns {Promise<void>}
  */
 async function applyNotificationEveryMonitor(notificationID, userID) {
-    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [
-        userID
-    ]);
+    let monitors = await R.getAll("SELECT id FROM monitor WHERE user_id = ?", [userID]);
 
     for (let i = 0; i < monitors.length; i++) {
         let checkNotification = await R.findOne("monitor_notification", " monitor_id = ? AND notification_id = ? ", [
@@ -292,7 +288,7 @@ async function applyNotificationEveryMonitor(notificationID, userID) {
             notificationID,
         ]);
 
-        if (! checkNotification) {
+        if (!checkNotification) {
             let relation = R.dispense("monitor_notification");
             relation.monitor_id = monitors[i].id;
             relation.notification_id = notificationID;
