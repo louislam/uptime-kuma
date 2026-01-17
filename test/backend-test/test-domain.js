@@ -165,7 +165,7 @@ describe("Domain Expiry", () => {
                 };
                 const supportInfo = await DomainExpiry.checkSupport(monitor);
                 assert.strictEqual(supportInfo.domain, "record.com.br");
-                assert.strictEqual(supportInfo.tld, "com.br");
+                assert.strictEqual(supportInfo.tld, "br");
             });
 
             test("handles complex subdomain correctly", async () => {

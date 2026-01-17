@@ -31,27 +31,13 @@ async function getRdapServer(tld) {
     }
 
     const services = rdapList["services"] ?? [];
-    const findServer = (candidate) => {
-        if (!candidate) {
-            return null;
-        }
+    const rootTld = tld?.split(".").pop();
+    if (rootTld) {
         for (const [tlds, urls] of services) {
-            if (tlds.includes(candidate)) {
+            if (tlds.includes(rootTld)) {
                 return urls[0];
             }
         }
-        return null;
-    };
-
-    let server = findServer(tld);
-    if (!server && tld?.includes(".")) {
-        const root = tld.split(".").pop();
-        if (root && root !== tld) {
-            server = findServer(root);
-        }
-    }
-    if (server) {
-        return server;
     }
     log.debug("rdap", `No RDAP server found for TLD ${tld}`);
     return null;
@@ -190,16 +176,18 @@ class DomainExpiry extends BeanModel {
             });
         }
 
-        const rdap = await getRdapServer(tld.publicSuffix);
+        const publicSuffix = tld.publicSuffix;
+        const rootTld = publicSuffix.split(".").pop();
+        const rdap = await getRdapServer(publicSuffix);
         if (!rdap) {
             throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
-                publicSuffix: tld.publicSuffix,
+                publicSuffix,
             });
         }
 
         return {
             domain: tld.domain,
-            tld: tld.publicSuffix,
+            tld: rootTld,
         };
     }
 
