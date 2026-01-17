@@ -1,5 +1,5 @@
 <template>
-    <div class="shadow-box mb-3" :style="boxStyle">
+    <div class="shadow-box mb-3 p-0" :style="boxStyle">
         <div class="list-header">
             <!-- Line 1: Checkbox + Status + Tags + Search Bar -->
             <div class="filter-row">
@@ -7,7 +7,7 @@
                     <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
                         <font-awesome-icon icon="times" />
                     </a>
-                    <form>
+                    <form @submit.prevent>
                         <input
                             v-model="searchText"
                             class="form-control search-input"
@@ -89,7 +89,7 @@
         </div>
         <div
             ref="monitorList"
-            class="monitor-list"
+            class="monitor-list px-2"
             :class="{ scrollbar: scrollbar }"
             :style="monitorListStyle"
             data-testid="monitor-list"
@@ -536,7 +536,6 @@ export default {
 .list-header {
     border-bottom: 1px solid #dee2e6;
     border-radius: 10px 10px 0 0;
-    margin: -10px;
     margin-bottom: 10px;
     padding: 10px;
     display: flex;
@@ -696,7 +695,6 @@ export default {
 
 @media (max-width: 770px) {
     .list-header {
-        margin: -20px;
         margin-bottom: 10px;
         padding: 20px;
     }

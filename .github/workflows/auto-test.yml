@@ -1,5 +1,9 @@
 name: Auto Test
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-server
+  cancel-in-progress: true
+
 on:
   push:
     branches: [master, 1.23.X, 3.0.0]
