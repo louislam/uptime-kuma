@@ -12,16 +12,15 @@ describe("SNMPMonitorType", () => {
             skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
-            // Expose SNMP port via Testcontainers
             const container = await new GenericContainer("polinux/snmpd").withExposedPorts("161/udp").start();
 
             try {
-                // Dynamically retrieve the assigned host port and IP
-                const hostPort = container.getMappedPort(161);
+                // Get the mapped UDP port
+                const hostPort = container.getMappedPort("161/udp");
                 const hostIp = container.getHost();
 
                 // UDP service small wait to ensure snmpd is ready inside container
-                await new Promise((r) => setTimeout(r, 1500));
+                await new Promise((r) => setTimeout(r, 2000));
 
                 const monitor = {
                     type: "snmp",
@@ -33,8 +32,8 @@ describe("SNMPMonitorType", () => {
                     timeout: 5,
                     maxretries: 1,
                     jsonPath: "$",
-                    jsonPathOperator: "exists",
-                    expectedValue: null,
+                    jsonPathOperator: "!=",
+                    expectedValue: "",
                 };
 
                 const snmpMonitor = new SNMPMonitorType();
