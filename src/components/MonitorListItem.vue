@@ -24,12 +24,12 @@
             <router-link :to="monitorURL(monitor.id)" class="item" :class="{ disabled: !monitor.active }">
                 <div class="row">
                     <div
-                        class="col-9 col-xl-6 small-padding"
+                        class="col-9 col-xl-6 small-padding d-flex align-items-center"
                         :class="{
                             'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none',
                         }"
                     >
-                        <div class="info">
+                        <div class="info d-flex align-items-center gap-2">
                             <Uptime :monitor="monitor" type="24" :pill="true" />
                             <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
                                 <font-awesome-icon
@@ -383,6 +383,7 @@ export default {
 
     /* We don't want the padding change due to the border animated */
     .item {
+        padding: 12px 15px;
         transition: none !important;
     }
 
