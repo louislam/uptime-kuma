@@ -2775,7 +2775,7 @@ message HealthCheckResponse {
                 this.monitor.jsonPath = "$";
             }
 
-            // Set default condition for for jsonPathOperator
+            // Set default condition for jsonPathOperator
             if (!this.monitor.jsonPathOperator) {
                 this.monitor.jsonPathOperator = "==";
             }
