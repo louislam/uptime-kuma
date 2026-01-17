@@ -288,7 +288,7 @@
                                             })
                                         }}
                                     </div>
-                                    <div class="form-text text-warning">
+                                    <div v-if="monitor.screenshot_delay" class="form-text text-warning">
                                         {{ $t("screenshotDelayWarning") }}
                                     </div>
                                 </div>
