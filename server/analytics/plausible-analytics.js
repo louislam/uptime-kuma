@@ -5,7 +5,7 @@ const { escape } = require("html-escaper");
  * Returns a string that represents the javascript that is required to insert the Plausible Analytics script
  * into a webpage.
  * @param {string} scriptUrl the Plausible Analytics script url.
- * @param {string} domainsToMonitor Domains to track seperated by a ',' to add Plausible Analytics script.
+ * @param {string} domainsToMonitor Domains to track separated by a ',' to add Plausible Analytics script.
  * @returns {string} HTML script tags to inject into page
  */
 function getPlausibleAnalyticsScript(scriptUrl, domainsToMonitor) {

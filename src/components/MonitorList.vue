@@ -1,8 +1,24 @@
 <template>
-    <div class="shadow-box mb-3" :style="boxStyle">
+    <div class="shadow-box mb-3 p-0" :style="boxStyle">
         <div class="list-header">
-            <div class="header-top">
-                <div class="select-checkbox-wrapper">
+            <!-- Line 1: Checkbox + Status + Tags + Search Bar -->
+            <div class="filter-row">
+                <div class="search-wrapper">
+                    <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
+                        <font-awesome-icon icon="times" />
+                    </a>
+                    <form @submit.prevent>
+                        <input
+                            v-model="searchText"
+                            class="form-control search-input"
+                            :placeholder="$t('Search...')"
+                            :aria-label="$t('Search monitored sites')"
+                            autocomplete="off"
+                        />
+                    </form>
+                </div>
+
+                <div class="filters-group">
                     <input
                         v-if="!selectMode"
                         v-model="selectMode"
@@ -18,33 +34,17 @@
                         type="checkbox"
                         :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
                     />
-                </div>
 
-                <div class="header-filter">
                     <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
-                </div>
-
-                <div class="search-wrapper ms-auto">
-                    <a v-if="searchText != ''" class="search-icon" @click="clearSearchText">
-                        <font-awesome-icon icon="times" />
-                    </a>
-                    <form>
-                        <input
-                            v-model="searchText"
-                            class="form-control search-input"
-                            :placeholder="$t('Search...')"
-                            :aria-label="$t('Search monitored sites')"
-                            autocomplete="off"
-                        />
-                    </form>
                 </div>
             </div>
 
-            <div v-if="selectMode && selectedMonitorCount > 0" class="selected-count-row">
+            <!-- Line 2: Cancel + Actions (shown when selection mode is active) -->
+            <div v-if="selectMode && selectedMonitorCount > 0" class="selection-row">
                 <button class="btn btn-outline-normal" @click="cancelSelectMode">
                     {{ $t("Cancel") }}
                 </button>
-                <div class="actions-wrapper ms-2">
+                <div class="actions-wrapper">
                     <div class="dropdown">
                         <button
                             class="btn btn-outline-normal dropdown-toggle"
@@ -82,14 +82,14 @@
                         </ul>
                     </div>
                 </div>
-                <span class="selected-count ms-2">
+                <span class="selected-count">
                     {{ $t("selectedMonitorCountMsg", selectedMonitorCount) }}
                 </span>
             </div>
         </div>
         <div
             ref="monitorList"
-            class="monitor-list"
+            class="monitor-list px-2"
             :class="{ scrollbar: scrollbar }"
             :style="monitorListStyle"
             data-testid="monitor-list"
@@ -536,9 +536,11 @@ export default {
 .list-header {
     border-bottom: 1px solid #dee2e6;
     border-radius: 10px 10px 0 0;
-    margin: -10px;
     margin-bottom: 10px;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 
     .dark & {
         background-color: $dark-header-bg;
@@ -546,37 +548,26 @@ export default {
     }
 }
 
-.search-row {
-    display: flex;
-    padding: 10px;
-    padding-bottom: 5px;
-}
-
-.header-top {
+.filter-row {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     gap: 8px;
-    padding: 10px;
-
-    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
-        flex-wrap: wrap;
-    }
-}
-
-.select-checkbox-wrapper {
-    display: flex;
-    align-items: center;
+    flex-wrap: nowrap;
+    width: 100%;
 
     .form-check-input {
         cursor: pointer;
         margin: 0;
+        margin-left: 6px;
+        flex-shrink: 0;
     }
 }
 
-.header-filter {
+.filters-group {
     display: flex;
     align-items: center;
+    gap: 8px;
 }
 
 .actions-wrapper {
@@ -643,6 +634,13 @@ export default {
     }
 }
 
+.selection-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
 .selected-count {
     white-space: nowrap;
     font-size: 0.9em;
@@ -653,8 +651,7 @@ export default {
     }
 }
 
-.selected-count-row {
-    padding: 5px 10px 0 10px;
+.actions-row {
     display: flex;
     align-items: center;
 }
@@ -677,11 +674,29 @@ export default {
     }
 }
 
+@media (max-width: 975px) {
+    .filter-row {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .search-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        flex: 1 1 100%;
+    }
+
+    .filters-group {
+        width: 100%;
+    }
+}
+
 @media (max-width: 770px) {
     .list-header {
-        margin: -20px;
         margin-bottom: 10px;
-        padding: 5px;
+        padding: 20px;
     }
 }
 
@@ -689,15 +704,14 @@ export default {
     display: flex;
     align-items: center;
     position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 300px;
+    margin-left: auto;
+    order: 1;
 
-    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
-        order: -1;
+    form {
         width: 100%;
-        margin-bottom: 8px;
-
-        form {
-            width: 100%;
-        }
     }
 }
 
@@ -715,13 +729,8 @@ export default {
 }
 
 .search-input {
-    max-width: 15em;
+    width: 100%;
     padding-right: 30px;
-
-    @media (max-width: 549px), (min-width: 770px) and (max-width: 1149px), (min-width: 1200px) and (max-width: 1499px) {
-        max-width: 100%;
-        width: 100%;
-    }
 }
 
 .monitor-item {
