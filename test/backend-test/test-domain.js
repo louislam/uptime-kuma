@@ -157,6 +157,17 @@ describe("Domain Expiry", () => {
                 assert.strictEqual(supportInfo.tld, "com");
             });
 
+            test("supports multi-level public suffix via RDAP fallback (e.g. com.br)", async () => {
+                const monitor = {
+                    type: "http",
+                    url: "https://record.com.br",
+                    domainExpiryNotification: true,
+                };
+                const supportInfo = await DomainExpiry.checkSupport(monitor);
+                assert.strictEqual(supportInfo.domain, "record.com.br");
+                assert.strictEqual(supportInfo.tld, "br");
+            });
+
             test("handles complex subdomain correctly", async () => {
                 const monitor = {
                     type: "http",
