@@ -1,6 +1,6 @@
 exports.up = function (knex) {
     return knex.schema.alterTable("monitor", function (table) {
-        table.integer("screenshot_delay").defaultTo(0);
+        table.integer("screenshot_delay").notNullable().defaultTo(0);
     });
 };
 
