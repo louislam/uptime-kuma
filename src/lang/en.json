@@ -1058,6 +1058,7 @@
     "Screenshot Delay ({ms})": "Screenshot Delay ({ms})",
     "ms": "ms",
     "screenshotDelayDescription": "Wait this many milliseconds before taking the screenshot.",
+    "screenshotDelayMaxInfo": "Maximum: {max}ms (0.5 × interval).",
     "screenshotDelayWarning": "Higher values keep the browser open longer, which may increase memory usage with many concurrent monitors.",
     "GrafanaOncallUrl": "Grafana Oncall URL",
     "systemService": "System Service",
