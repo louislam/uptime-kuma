@@ -401,7 +401,7 @@ export default {
          * @returns {void}
          */
         toastWarning(msg) {
-            toast.warning(msg);
+            toast.warning(this.$t(msg));
         },
 
         /**
