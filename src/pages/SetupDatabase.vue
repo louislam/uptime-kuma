@@ -79,7 +79,7 @@
                 </div>
 
                 <template v-if="dbConfig.type === 'mariadb'">
-                    <div class="form-floating mt-3 short" v-if="!isProvidedMariaDBSocket">
+                    <div v-if="!isProvidedMariaDBSocket" class="form-floating mt-3 short">
                         <input
                             id="floatingInput"
                             v-model="dbConfig.hostname"
@@ -90,12 +90,12 @@
                         <label for="floatingInput">{{ $t("Hostname") }}</label>
                     </div>
 
-                    <div class="form-floating mt-3 short" v-if="!isProvidedMariaDBSocket">
+                    <div v-if="!isProvidedMariaDBSocket" class="form-floating mt-3 short">
                         <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required />
                         <label for="floatingInput">{{ $t("Port") }}</label>
                     </div>
 
-                    <div class="mt-1 short text-start" v-if="isProvidedMariaDBSocket">
+                    <div v-if="isProvidedMariaDBSocket" class="mt-1 short text-start">
                         <i18n-t keypath="mariadbSocketPathDetectedHelptext" tag="div" class="form-text">
                             <code>UPTIME_KUMA_DB_SOCKET</code>
                         </i18n-t>
