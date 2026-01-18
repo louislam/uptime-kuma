@@ -57,7 +57,7 @@ class WeCom extends NotificationProvider {
                 .map((mobile) => mobile.trim())
                 .filter((mobile) => mobile.length > 0);
 
-            if (mobileList.length > 0) {
+            if (mentionedMobiles.length > 0) {
                 textObj.mentioned_mobile_list = mentionedMobiles;
             }
         }
