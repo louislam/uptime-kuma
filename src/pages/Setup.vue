@@ -42,13 +42,12 @@
                         :placeholder="$t('Password')"
                         required
                         data-cy="password-input"
-                        @input="checkPasswordStrength"
                     />
                     <label for="floatingPassword">{{ $t("Password") }}</label>
                 </div>
 
                 <!-- Password strength indicator -->
-                <PasswordStrengthMeter :password="password" :strength="passwordStrength" />
+                <PasswordStrengthMeter :password="password" :username="username" />
 
                 <div class="form-floating mt-3">
                     <input
@@ -77,7 +76,6 @@
 </template>
 
 <script>
-import zxcvbn from "zxcvbn";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter.vue";
 
 export default {
@@ -90,7 +88,6 @@ export default {
             username: "",
             password: "",
             repeatPassword: "",
-            passwordStrength: null,
         };
     },
     watch: {},
@@ -104,19 +101,6 @@ export default {
         });
     },
     methods: {
-        /**
-         * Check password strength using zxcvbn
-         * @returns {void}
-         */
-        checkPasswordStrength() {
-            if (!this.password) {
-                this.passwordStrength = null;
-                return;
-            }
-            
-            const result = zxcvbn(this.password, [ this.username ]);
-            this.passwordStrength = result.score;
-        },
         /**
          * Submit form data for processing
          * @returns {void}

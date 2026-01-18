@@ -41,14 +41,12 @@
                             class="form-control"
                             autocomplete="new-password"
                             required
-                            @input="checkPasswordStrength"
                         />
                         
                         <!-- Password strength indicator -->
                         <PasswordStrengthMeter 
                             :password="password.newPassword" 
-                            :strength="passwordStrength" 
-                            :centered="true"
+                            :username="$root.username"
                         />
                     </div>
 
@@ -155,7 +153,6 @@
 import Confirm from "../../components/Confirm.vue";
 import TwoFADialog from "../../components/TwoFADialog.vue";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.vue";
-import zxcvbn from "zxcvbn";
 
 export default {
     components: {
@@ -172,7 +169,6 @@ export default {
                 newPassword: "",
                 repeatNewPassword: "",
             },
-            passwordStrength: null,
         };
     },
 
@@ -196,19 +192,6 @@ export default {
 
     methods: {
         /**
-         * Check password strength using zxcvbn
-         * @returns {void}
-         */
-        checkPasswordStrength() {
-            if (!this.password.newPassword) {
-                this.passwordStrength = null;
-                return;
-            }
-            
-            const result = zxcvbn(this.password.newPassword, [ this.$root.username ]);
-            this.passwordStrength = result.score;
-        },
-        /**
          * Check new passwords match before saving them
          * @returns {void}
          */
@@ -228,7 +211,6 @@ export default {
                         this.password.currentPassword = "";
                         this.password.newPassword = "";
                         this.password.repeatNewPassword = "";
-                        this.passwordStrength = null;
 
                         // Update token of the current session
                         if (res.token) {
