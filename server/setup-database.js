@@ -161,9 +161,7 @@ class SetupDatabase {
                     runningSetup: this.runningSetup,
                     needSetup: this.needSetup,
                     isEnabledEmbeddedMariaDB: this.isEnabledEmbeddedMariaDB(),
-                    isEnabledMariaDBSocket:
-                        (process.env.UPTIME_KUMA_DB_SOCKET && process.env.UPTIME_KUMA_DB_SOCKET.trim().length > 0) ||
-                        false,
+                    isEnabledMariaDBSocket: process.env.UPTIME_KUMA_DB_SOCKET?.trim().length > 0,
                 });
             });
 
