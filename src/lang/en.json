@@ -1369,7 +1369,8 @@
     "None (Successful Connection)": "None (Successful Connection)",
     "expectedTlsAlertDescription": "Select the TLS alert you expect the server to return. Use {code} to verify mTLS endpoints reject connections without client certificates. See {link} for details.",
     "TLS Alert Spec": "RFC 8446",
-    "mariadbSocketPathDetectedHelptext": "environment variable detected, Hostname and Port will be ignored.",
+    "mariadbSocketPathDetectedHelptext": "Connecting to the database as specified via the {0} environment variable.",
+    "mariadbSocketEnvVariable": "UPTIME_KUMA_DB_SOCKET",
     "Expand All Groups": "Expand All Groups",
     "Collapse All Groups": "Collapse All Groups"
 }

@@ -79,35 +79,32 @@
                 </div>
 
                 <template v-if="dbConfig.type === 'mariadb'">
-                    <div class="form-floating mt-3 short">
+                    <div class="form-floating mt-3 short" :hidden="isProvidedMariaDBSocket">
                         <input
                             id="floatingInput"
                             v-model="dbConfig.hostname"
                             type="text"
                             class="form-control"
                             required
-                            :disabled="!disabledButtonMariaDBSocket"
                         />
                         <label for="floatingInput">{{ $t("Hostname") }}</label>
                     </div>
 
-                    <div class="form-floating mt-3 short">
+                    <div class="form-floating mt-3 short" :hidden="isProvidedMariaDBSocket">
                         <input
                             id="floatingInput"
                             v-model="dbConfig.port"
                             type="text"
                             class="form-control"
                             required
-                            :disabled="!disabledButtonMariaDBSocket"
                         />
                         <label for="floatingInput">{{ $t("Port") }}</label>
                     </div>
 
-                    <div class="mt-1 short text-start" :hidden="hiddenHelptextMariaDBSocket">
-                        <div class="form-text">
-                            <code>UPTIME_KUMA_DB_SOCKET</code>
-                            {{ $t("mariadbSocketPathDetectedHelptext") }}
-                        </div>
+                    <div class="mt-1 short text-start" :hidden="!isProvidedMariaDBSocket">
+                        <i18n-t keypath="mariadbSocketPathDetectedHelptext" tag="div" class="form-text">
+                            <code>{{ $t("mariadbSocketEnvVariable") }}</code>
+                        </i18n-t>
                     </div>
 
                     <hr class="mt-3 short" />
@@ -215,11 +212,8 @@ export default {
         disabledButton() {
             return this.dbConfig.type === undefined || this.info.runningSetup;
         },
-        disabledButtonMariaDBSocket() {
-            return this.info.isEnabledMariaDBSocket === undefined || this.info.isEnabledMariaDBSocket === false;
-        },
-        hiddenHelptextMariaDBSocket() {
-            return this.info.isEnabledMariaDBSocket === undefined || this.info.isEnabledMariaDBSocket === false;
+        isProvidedMariaDBSocket() {
+            return this.info.isEnabledMariaDBSocket;
         },
     },
     async mounted() {
