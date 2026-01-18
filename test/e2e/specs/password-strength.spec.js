@@ -88,7 +88,7 @@ test.describe("Password Strength Indicator", () => {
         await passwordInput.fill("abc123456789");
         const strengthFill = page.locator(".strength-meter-fill");
         
-        // Get initial width
+        // Get initial class
         const initialClass = await strengthFill.getAttribute("class");
         
         // Change to stronger password
