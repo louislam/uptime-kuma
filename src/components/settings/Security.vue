@@ -41,7 +41,22 @@
                             class="form-control"
                             autocomplete="new-password"
                             required
+                            @input="checkPasswordStrength"
                         />
+                        
+                        <!-- Password strength indicator -->
+                        <div v-if="password.newPassword && passwordStrength !== null" class="password-strength mt-2">
+                            <div class="strength-meter">
+                                <div 
+                                    class="strength-meter-fill" 
+                                    :class="strengthClass"
+                                    :style="{ width: strengthWidth }"
+                                />
+                            </div>
+                            <small v-if="passwordStrength < 3" class="text-warning d-block mt-1">
+                                {{ $t("passwordWeakWarning") }}
+                            </small>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -146,6 +161,7 @@
 <script>
 import Confirm from "../../components/Confirm.vue";
 import TwoFADialog from "../../components/TwoFADialog.vue";
+import zxcvbn from "zxcvbn";
 
 export default {
     components: {
@@ -161,6 +177,7 @@ export default {
                 newPassword: "",
                 repeatNewPassword: "",
             },
+            passwordStrength: null,
         };
     },
 
@@ -174,6 +191,19 @@ export default {
         settingsLoaded() {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
+        strengthClass() {
+            if (this.passwordStrength === null) {
+                return "";
+            }
+            const classes = [ "strength-very-weak", "strength-weak", "strength-fair", "strength-good", "strength-strong" ];
+            return classes[this.passwordStrength] || "";
+        },
+        strengthWidth() {
+            if (this.passwordStrength === null) {
+                return "0%";
+            }
+            return `${(this.passwordStrength + 1) * 20}%`;
+        },
     },
 
     watch: {
@@ -183,6 +213,19 @@ export default {
     },
 
     methods: {
+        /**
+         * Check password strength using zxcvbn
+         * @returns {void}
+         */
+        checkPasswordStrength() {
+            if (!this.password.newPassword) {
+                this.passwordStrength = null;
+                return;
+            }
+            
+            const result = zxcvbn(this.password.newPassword, [ this.$root.username ]);
+            this.passwordStrength = result.score;
+        },
         /**
          * Check new passwords match before saving them
          * @returns {void}
@@ -197,6 +240,7 @@ export default {
                         this.password.currentPassword = "";
                         this.password.newPassword = "";
                         this.password.repeatNewPassword = "";
+                        this.passwordStrength = null;
 
                         // Update token of the current session
                         if (res.token) {
@@ -245,3 +289,41 @@ export default {
     },
 };
 </script>
+
+<style lang="scss" scoped>
+.password-strength {
+    margin-top: 0.5rem;
+}
+
+.strength-meter {
+    height: 5px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.strength-meter-fill {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-very-weak {
+    background-color: #dc3545;
+}
+
+.strength-weak {
+    background-color: #fd7e14;
+}
+
+.strength-fair {
+    background-color: #ffc107;
+}
+
+.strength-good {
+    background-color: #20c997;
+}
+
+.strength-strong {
+    background-color: #28a745;
+}
+</style>

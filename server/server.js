@@ -683,9 +683,14 @@ let needSetup = false;
 
         socket.on("setup", async (username, password, callback) => {
             try {
-                const passwordValidation = validatePassword(password);
+                const passwordValidation = await validatePassword(password, true);
                 if (!passwordValidation.ok) {
                     throw new TranslatableError("passwordTooWeak");
+                }
+
+                // Log warning if password is breached (but still allow it)
+                if (passwordValidation.warning) {
+                    log.warn("setup", `Password warning: ${passwordValidation.warning}`);
                 }
 
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
@@ -1417,9 +1422,14 @@ let needSetup = false;
                     throw new Error("Invalid new password");
                 }
 
-                const passwordValidation = validatePassword(password.newPassword);
+                const passwordValidation = await validatePassword(password.newPassword, true);
                 if (!passwordValidation.ok) {
                     throw new TranslatableError("passwordTooWeak");
+                }
+
+                // Log warning if password is breached (but still allow it)
+                if (passwordValidation.warning) {
+                    log.warn("changePassword", `Password warning for user ${socket.userID}: ${passwordValidation.warning}`);
                 }
 
                 let user = await doubleCheckPassword(socket, password.currentPassword);

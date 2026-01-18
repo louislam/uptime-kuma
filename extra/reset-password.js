@@ -46,16 +46,22 @@ const main = async () => {
                         "Warning: the password might be stored, in plain text, in your shell's history"
                     );
                     password = confirmPassword = args["new-password"] + "";
-                    const passwordValidation = validatePassword(password);
+                    const passwordValidation = await validatePassword(password, true);
                     if (!passwordValidation.ok) {
                         throw new Error(passwordValidation.msg);
                     }
+                    if (passwordValidation.warning) {
+                        console.warn("\x1b[33m%s\x1b[0m", "Warning: " + passwordValidation.warning);
+                    }
                 } else {
                     password = await question("New Password: ");
-                    const passwordValidation = validatePassword(password);
+                    const passwordValidation = await validatePassword(password, true);
                     if (!passwordValidation.ok) {
                         console.log(passwordValidation.msg);
                         continue;
+                    }
+                    if (passwordValidation.warning) {
+                        console.warn("\x1b[33m%s\x1b[0m", "Warning: " + passwordValidation.warning);
                     }
                     confirmPassword = await question("Confirm New Password: ");
                 }
