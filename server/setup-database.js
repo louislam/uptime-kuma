@@ -161,6 +161,7 @@ class SetupDatabase {
                     runningSetup: this.runningSetup,
                     needSetup: this.needSetup,
                     isEnabledEmbeddedMariaDB: this.isEnabledEmbeddedMariaDB(),
+                    isEnabledMariaDBSocket: (process.env.UPTIME_KUMA_DB_SOCKET && process.env.UPTIME_KUMA_DB_SOCKET.trim().length > 0) || false,
                 });
             });
 
@@ -205,22 +206,10 @@ class SetupDatabase {
                 if (dbConfig.type === "mariadb") {
                     // If socketPath is provided and not empty, validate it
                     if (
-                        dbConfig.socketPath &&
-                        typeof dbConfig.socketPath === "string" &&
-                        dbConfig.socketPath.trim().length > 0
+                        process.env.UPTIME_KUMA_DB_SOCKET &&
+                        process.env.UPTIME_KUMA_DB_SOCKET.trim().length > 0
                     ) {
-                        // Checking if the path exists and is a socket
-                        if (!fs.existsSync(dbConfig.socketPath)) {
-                            response.status(400).json("The path to the Socket does not exist");
-                            this.runningSetup = false;
-                            return;
-                        }
-
-                        if (!fs.lstatSync(dbConfig.socketPath).isSocket()) {
-                            response.status(400).json("The path provided is not a Socket");
-                            this.runningSetup = false;
-                            return;
-                        }
+                        dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET;
                     } else {
                         // socketPath not provided, hostname and port are required
                         if (!dbConfig.hostname) {

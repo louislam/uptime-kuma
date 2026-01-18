@@ -1362,5 +1362,5 @@
     "None (Successful Connection)": "None (Successful Connection)",
     "expectedTlsAlertDescription": "Select the TLS alert you expect the server to return. Use {code} to verify mTLS endpoints reject connections without client certificates. See {link} for details.",
     "TLS Alert Spec": "RFC 8446",
-    "socketPath": "Path to socket"
+    "mariadbSocketPathDetectedHelptext": "environment variable detected, Hostname and Port will be ignored."
 }

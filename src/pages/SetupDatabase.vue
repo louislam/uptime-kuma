@@ -86,21 +86,25 @@
                             type="text"
                             class="form-control"
                             required
+                            :disabled="!disabledButtonMariaDBSocket"
                         />
                         <label for="floatingInput">{{ $t("Hostname") }}</label>
                     </div>
 
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required />
+                        <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required :disabled="!disabledButtonMariaDBSocket" />
                         <label for="floatingInput">{{ $t("Port") }}</label>
                     </div>
 
-                    <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.socketPath" type="text" class="form-control" />
-                        <label for="floatingInput">{{ $t("socketPath") }} ({{ $t("Optional") }})</label>
+                    <div class="mt-1 short text-start" :hidden="hiddenHelptextMariaDBSocket">
+                        <div class="form-text">
+                            <code>UPTIME_KUMA_DB_SOCKET</code> {{ $t("mariadbSocketPathDetectedHelptext") }}
+                        </div>
                     </div>
 
-                    <div class="form-floating mt-3 short">
+                    <hr class="mt-3 short" />
+
+                    <div class="form-floating mt-2 short">
                         <input
                             id="floatingInput"
                             v-model="dbConfig.username"
@@ -204,6 +208,12 @@ export default {
         disabledButton() {
             return this.dbConfig.type === undefined || this.info.runningSetup;
         },
+        disabledButtonMariaDBSocket() {
+            return this.info.isEnabledMariaDBSocket === undefined || this.info.isEnabledMariaDBSocket === false;
+        },
+        hiddenHelptextMariaDBSocket() {
+            return this.info.isEnabledMariaDBSocket === undefined || this.info.isEnabledMariaDBSocket === false;
+        }
     },
     async mounted() {
         let res = await axios.get("/setup-database-info");
@@ -213,6 +223,10 @@ export default {
             location.href = "/setup";
         } else {
             this.show = true;
+
+            if (this.info.isEnabledMariaDBSocket) {
+
+            }
         }
     },
     methods: {
