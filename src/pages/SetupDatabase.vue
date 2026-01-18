@@ -101,7 +101,7 @@
                         </i18n-t>
                     </div>
 
-                    <hr v-if="isProvidedMariaDBSocket" class="mt-3 short" />
+                    <hr v-if="isProvidedMariaDBSocket" class="mt-3 mb-2 short" />
 
                     <div class="form-floating mt-3 short">
                         <input
