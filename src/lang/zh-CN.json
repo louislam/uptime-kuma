@@ -1431,5 +1431,6 @@
     "notificationIncidentManagement": "事件管理系统",
     "notificationEmail": "邮件",
     "passwordTooWeak": "密码强度不足。密码应包含字母和数字，且长度至少为 6 个字符。",
-    "ntfyCall": "拨打电话"
+    "ntfyCall": "拨打电话",
+    "versionIs": "版本：{version}"
 }
