@@ -231,9 +231,6 @@ export default {
             location.href = "/setup";
         } else {
             this.show = true;
-
-            if (this.info.isEnabledMariaDBSocket) {
-            }
         }
     },
     methods: {
