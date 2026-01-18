@@ -396,6 +396,15 @@ export default {
         },
 
         /**
+         * Show a warning toast
+         * @param {string} msg Message to show
+         * @returns {void}
+         */
+        toastWarning(msg) {
+            toast.warning(msg);
+        },
+
+        /**
          * Callback for login
          * @callback loginCB
          * @param {object} res Response object

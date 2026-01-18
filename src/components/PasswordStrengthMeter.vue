@@ -1,6 +1,13 @@
 <template>
     <div v-if="password && strength !== null" class="password-strength mt-2">
-        <div class="strength-meter mx-auto">
+        <div 
+            class="strength-meter mx-auto" 
+            role="progressbar"
+            :aria-valuenow="strength"
+            aria-valuemin="0"
+            aria-valuemax="4"
+            :aria-label="strengthLabel"
+        >
             <div 
                 class="strength-meter-fill" 
                 :class="strengthClass"
@@ -49,6 +56,13 @@ export default {
                 return "0%";
             }
             return `${(this.strength + 1) * 20}%`;
+        },
+        strengthLabel() {
+            if (this.strength === null) {
+                return "";
+            }
+            const labels = [ "Very weak", "Weak", "Fair", "Good", "Strong" ];
+            return `Password strength: ${labels[this.strength] || "unknown"}`;
         },
     },
 };
