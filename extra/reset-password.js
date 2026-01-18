@@ -54,7 +54,7 @@ const main = async () => {
                     password = await question("New Password: ");
                     const passwordValidation = validatePassword(password);
                     if (!passwordValidation.ok) {
-                        console.log(passwordValidation.msg || "Password is too weak, please try again.");
+                        console.log(passwordValidation.msg);
                         continue;
                     }
                     confirmPassword = await question("Confirm New Password: ");
