@@ -400,8 +400,8 @@ export default {
          * @param {string} msg Message to show
          * @returns {void}
          */
-        toastWarning(msg) {
-            toast.warning(this.$t(msg));
+        toastWarning(msg, ...args) {
+            toast.warning(this.$t(msg, ...args));
         },
 
         /**
