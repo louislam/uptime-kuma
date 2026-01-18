@@ -6,7 +6,7 @@
 /**
  * Minimum password length as per NIST recommendations
  */
-const MIN_PASSWORD_LENGTH = 8;
+const MIN_PASSWORD_LENGTH = 12;
 
 /**
  * Validates a password according to NIST SP 800-63B guidelines.
