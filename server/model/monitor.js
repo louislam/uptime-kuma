@@ -447,13 +447,19 @@ class Monitor extends BeanModel {
 
             if (!previousBeat || this.type === "push") {
                 previousBeat = await R.findOne("heartbeat", " monitor_id = ? ORDER BY time DESC", [this.id]);
+
                 if (previousBeat) {
                     retries = previousBeat.retries;
 
-                    // If the monitor is currently UP, the retry counter must be reset to 0.
-                    // This prevents carrying over old retry counts if the push handler didn't reset them.
-                    if (previousBeat.status === UP) {
-                        retries = 0;
+                    // We must check if the monitor is Upside Down (where UP=Bad, DOWN=Good)
+                    if (this.upsideDown) {
+                        if (previousBeat.status === DOWN) {
+                            retries = 0;
+                        }
+                    } else {
+                        if (previousBeat.status === UP) {
+                            retries = 0;
+                        }
                     }
                 }
             }
