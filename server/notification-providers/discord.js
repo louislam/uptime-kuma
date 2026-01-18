@@ -56,10 +56,7 @@ class Discord extends NotificationProvider {
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             let addess = this.extractAddress(monitorJSON);
             if (heartbeatJSON["status"] === DOWN) {
-                // Format timestamp for Discord using Discord's timestamp format
-                // <t:timestamp:format> where format is F for full date/time
                 const wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["time"]).getTime() / 1000);
-                const wentOfflineFormatted = `<t:${wentOfflineTimestamp}:F>`;
 
                 let discorddowndata = {
                     username: discordDisplayName,
@@ -83,7 +80,8 @@ class Discord extends NotificationProvider {
                                     : []),
                                 {
                                     name: "Went Offline",
-                                    value: wentOfflineFormatted,
+                                    // F for full date/time
+                                    value: `<t:${wentOfflineTimestamp}:F>`,
                                 },
                                 {
                                     name: `Time (${heartbeatJSON["timezone"]})`,
@@ -113,39 +111,12 @@ class Discord extends NotificationProvider {
                 await axios.post(webhookUrl.toString(), discorddowndata, config);
                 return okMsg;
             } else if (heartbeatJSON["status"] === UP) {
-                // Format timestamp for Discord using Discord's timestamp format
                 const backOnlineTimestamp = Math.floor(new Date(heartbeatJSON["time"]).getTime() / 1000);
-
-                // Use downtime information from heartbeatJSON (calculated outside notification provider)
                 let downtimeDuration = null;
-                let wentOfflineFormatted = null;
+                let wentOfflineTimestamp = null;
                 if (heartbeatJSON["lastDownTime"]) {
-                    const wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["lastDownTime"]).getTime() / 1000);
-                    wentOfflineFormatted = `<t:${wentOfflineTimestamp}:F>`;
-
-                    // Calculate the actual duration between went offline and back online
-                    const durationSeconds = backOnlineTimestamp - wentOfflineTimestamp;
-
-                    // Format duration as human-readable string (e.g., "1h 23m", "45m 30s")
-                    // TODO: Update below to Intl.DurationFormat("en", { style: "short" }).format(duration) once we are on a newer node version
-                    // TODO: Update below to Intl.DurationFormat("en", { style: "short" }).format(duration) once we are on a newer node version
-                    const hours = Math.floor(durationSeconds / 3600);
-                    const minutes = Math.floor((durationSeconds % 3600) / 60);
-                    const seconds = durationSeconds % 60;
-
-                    const durationParts = [];
-                    if (hours > 0) {
-                        durationParts.push(`${hours}h`);
-                    }
-                    if (minutes > 0) {
-                        durationParts.push(`${minutes}m`);
-                    }
-                    if (seconds > 0 && hours === 0) {
-                        // Only show seconds if less than an hour
-                        durationParts.push(`${seconds}s`);
-                    }
-
-                    downtimeDuration = durationParts.length > 0 ? durationParts.join(" ") : "0s";
+                    wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["lastDownTime"]).getTime() / 1000);
+                    downtimeDuration = this.formatDuration(backOnlineTimestamp - wentOfflineTimestamp);
                 }
 
                 let discordupdata = {
@@ -168,11 +139,12 @@ class Discord extends NotificationProvider {
                                           },
                                       ]
                                     : []),
-                                ...(wentOfflineFormatted
+                                ...(wentOfflineTimestamp
                                     ? [
                                           {
                                               name: "Went Offline",
-                                              value: wentOfflineFormatted,
+                                              // F for full date/time
+                                              value: `<t:${wentOfflineTimestamp}:F>`,
                                           },
                                       ]
                                     : []),
@@ -217,6 +189,33 @@ class Discord extends NotificationProvider {
         } catch (error) {
             this.throwGeneralAxiosError(error);
         }
+    }
+
+    /*
+    * Format duration as human-readable string (e.g., "1h 23m", "45m 30s")
+    * TODO: Update below to Intl.DurationFormat("en", { style: "short" }).format(duration) once we are on a newer node version
+    * 
+     * @param {number} timeInSeconds The time in seconds to format a duration for
+     * @returns {string} The formatted duration
+    */
+    formatDuration(timeInSeconds){
+        const hours = Math.floor(durationSeconds / 3600);
+        const minutes = Math.floor((durationSeconds % 3600) / 60);
+        const seconds = durationSeconds % 60;
+
+        const durationParts = [];
+        if (hours > 0) {
+            durationParts.push(`${hours}h`);
+        }
+        if (minutes > 0) {
+            durationParts.push(`${minutes}m`);
+        }
+        if (seconds > 0 && hours === 0) {
+            // Only show seconds if less than an hour
+            durationParts.push(`${seconds}s`);
+        }
+
+        return durationParts.length > 0 ? durationParts.join(" ") : "0s";
     }
 }
 
