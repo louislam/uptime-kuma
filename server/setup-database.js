@@ -206,7 +206,7 @@ class SetupDatabase {
                 if (dbConfig.type === "mariadb") {
                     // If socketPath is provided and not empty, validate it
                     if (process.env.UPTIME_KUMA_DB_SOCKET?.trim().length > 0) {
-                        dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET;
+                        dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET.trim();
                     } else {
                         // socketPath not provided, hostname and port are required
                         if (!dbConfig.hostname) {
