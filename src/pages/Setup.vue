@@ -48,18 +48,7 @@
                 </div>
 
                 <!-- Password strength indicator -->
-                <div v-if="password && passwordStrength !== null" class="password-strength mt-2">
-                    <div class="strength-meter">
-                        <div 
-                            class="strength-meter-fill" 
-                            :class="strengthClass"
-                            :style="{ width: strengthWidth }"
-                        />
-                    </div>
-                    <small v-if="passwordStrength < 3" class="text-warning d-block mt-1">
-                        {{ $t("passwordWeakWarning") }}
-                    </small>
-                </div>
+                <PasswordStrengthMeter :password="password" :strength="passwordStrength" />
 
                 <div class="form-floating mt-3">
                     <input
@@ -89,8 +78,12 @@
 
 <script>
 import zxcvbn from "zxcvbn";
+import PasswordStrengthMeter from "../components/PasswordStrengthMeter.vue";
 
 export default {
+    components: {
+        PasswordStrengthMeter,
+    },
     data() {
         return {
             processing: false,
@@ -99,21 +92,6 @@ export default {
             repeatPassword: "",
             passwordStrength: null,
         };
-    },
-    computed: {
-        strengthClass() {
-            if (this.passwordStrength === null) {
-                return "";
-            }
-            const classes = [ "strength-very-weak", "strength-weak", "strength-fair", "strength-good", "strength-strong" ];
-            return classes[this.passwordStrength] || "";
-        },
-        strengthWidth() {
-            if (this.passwordStrength === null) {
-                return "0%";
-            }
-            return `${(this.passwordStrength + 1) * 20}%`;
-        },
     },
     watch: {},
     mounted() {
@@ -209,41 +187,5 @@ export default {
     padding: 15px;
     margin: auto;
     text-align: center;
-}
-
-.password-strength {
-    margin-top: 0.5rem;
-}
-
-.strength-meter {
-    height: 5px;
-    background-color: #e0e0e0;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.strength-meter-fill {
-    height: 100%;
-    transition: width 0.3s ease, background-color 0.3s ease;
-}
-
-.strength-very-weak {
-    background-color: #dc3545;
-}
-
-.strength-weak {
-    background-color: #fd7e14;
-}
-
-.strength-fair {
-    background-color: #ffc107;
-}
-
-.strength-good {
-    background-color: #20c997;
-}
-
-.strength-strong {
-    background-color: #28a745;
 }
 </style>

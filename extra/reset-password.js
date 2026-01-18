@@ -52,7 +52,7 @@ const main = async () => {
                     }
                     if (passwordValidation.warning) {
                         console.warn("\x1b[31m%s\x1b[0m",
-                        "Warning: "+passwordValidation.warning);
+                        "Warning: " + passwordValidation.warning);
                     }
                 } else {
                     password = await question("New Password: ");
