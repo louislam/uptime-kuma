@@ -194,7 +194,6 @@ class Discord extends NotificationProvider {
     /**
      * Format duration as human-readable string (e.g., "1h 23m", "45m 30s")
      * TODO: Update below to `Intl.DurationFormat("en", { style: "short" }).format(duration)` once we are on a newer node version
-     *
      * @param {number} timeInSeconds The time in seconds to format a duration for
      * @returns {string} The formatted duration
      */
