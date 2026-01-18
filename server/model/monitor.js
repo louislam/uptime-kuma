@@ -1536,7 +1536,10 @@ class Monitor extends BeanModel {
                 } catch (error) {
                     // If we can't calculate downtime, just continue without it
                     // Silently fail to avoid disrupting notification sending
-                    log.debug("monitor", `[${monitor.name}] Could not calculate downtime information: ${error.message}`);
+                    log.debug(
+                        "monitor",
+                        `[${monitor.name}] Could not calculate downtime information: ${error.message}`
+                    );
                 }
             }
 
