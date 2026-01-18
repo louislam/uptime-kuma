@@ -1263,6 +1263,36 @@
                                 <div class="form-text"></div>
                             </div>
 
+                            <!-- Screenshot Delay - Real Browser only -->
+                            <div v-if="monitor.type === 'real-browser'" class="my-3">
+                                <label for="screenshot-delay" class="form-label">
+                                    {{
+                                        $t("Screenshot Delay", {
+                                            milliseconds: $t("milliseconds", monitor.screenshot_delay),
+                                        })
+                                    }}
+                                </label>
+                                <input
+                                    id="screenshot-delay"
+                                    v-model="monitor.screenshot_delay"
+                                    type="number"
+                                    class="form-control"
+                                    min="0"
+                                    :max="Math.floor(monitor.interval * 1000 * 0.5)"
+                                    step="100"
+                                />
+                                <div class="form-text">
+                                    {{
+                                        $t("screenshotDelayDescription", {
+                                            maxValueMs: Math.floor(monitor.interval * 1000 * 0.5),
+                                        })
+                                    }}
+                                </div>
+                                <div v-if="monitor.screenshot_delay" class="form-text text-warning">
+                                    {{ $t("screenshotDelayWarning") }}
+                                </div>
+                            </div>
+
                             <div v-if="showDomainExpiryNotification" class="my-3 form-check">
                                 <input
                                     id="domain-expiry-notification"
@@ -2293,6 +2323,7 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     remote_browser: null,
+    screenshot_delay: 0,
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
@@ -2755,7 +2786,7 @@ message HealthCheckResponse {
                 this.monitor.jsonPath = "$";
             }
 
-            // Set default condition for for jsonPathOperator
+            // Set default condition for jsonPathOperator
             if (!this.monitor.jsonPathOperator) {
                 this.monitor.jsonPathOperator = "==";
             }
