@@ -83,7 +83,7 @@ log.debug("server", "Importing http-graceful-shutdown");
 const gracefulShutdown = require("http-graceful-shutdown");
 log.debug("server", "Importing prometheus-api-metrics");
 const prometheusAPIMetrics = require("prometheus-api-metrics");
-const { passwordStrength } = require("check-password-strength");
+const { validatePassword } = require("./password-util");
 const TranslatableError = require("./translatable-error");
 
 log.debug("server", "Importing 2FA Modules");
@@ -683,7 +683,8 @@ let needSetup = false;
 
         socket.on("setup", async (username, password, callback) => {
             try {
-                if (passwordStrength(password).value === "Too weak") {
+                const passwordValidation = validatePassword(password);
+                if (!passwordValidation.ok) {
                     throw new TranslatableError("passwordTooWeak");
                 }
 
@@ -1416,7 +1417,8 @@ let needSetup = false;
                     throw new Error("Invalid new password");
                 }
 
-                if (passwordStrength(password.newPassword).value === "Too weak") {
+                const passwordValidation = validatePassword(password.newPassword);
+                if (!passwordValidation.ok) {
                     throw new TranslatableError("passwordTooWeak");
                 }
 
