@@ -201,7 +201,6 @@ export default {
                 username: "",
                 password: "",
                 dbName: "kuma",
-                socketPath: undefined,
                 ssl: false,
                 ca: "",
             },
