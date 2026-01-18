@@ -79,7 +79,7 @@ async function validatePassword(password, checkBreached = false) {
         if (breachResult.breached) {
             return {
                 ok: true,
-                warning: `This password has been found ${breachResult.count.toLocaleString()} times in data breaches. Consider using a different password.`
+                warning: {msg: "passwordFoundInDataBreach", meta: breachResult.count}
             };
         }
     }

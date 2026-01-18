@@ -120,7 +120,7 @@ export default {
 
                 // Show warning toast if password was found in breach database
                 if (res.ok && res.warning) {
-                    this.$root.toastWarning(res.warning);
+                    this.$root.toastWarning(res.warning.msg, res.warning.meta);
                 }
 
                 if (res.ok) {
