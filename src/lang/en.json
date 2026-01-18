@@ -1363,7 +1363,7 @@
     "Show this Maintenance Message on which Status Pages": "Show this Maintenance Message on which Status Pages",
     "Endpoint": "Endpoint",
     "Details": "Details",
-    "passwordTooWeak": "Password must be at least 12 characters long.",
+    "passwordTooShort": "Password must be at least 12 characters long.",
     "passwordWeakWarning": "This password may be easy to guess. Consider using a longer or more unique password.",
     "TLS Alerts": "TLS Alerts",
     "Expected TLS Alert": "Expected TLS Alert",
