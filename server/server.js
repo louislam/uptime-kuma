@@ -688,11 +688,6 @@ let needSetup = false;
                     throw new TranslatableError("passwordTooWeak");
                 }
 
-                // Log warning if password is breached (but still allow it)
-                if (passwordValidation.warning) {
-                    log.warn("setup", `Password warning: ${passwordValidation.warning}`);
-                }
-
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
                     throw new Error(
                         "Uptime Kuma has been initialized. If you want to run setup again, please delete the database."
@@ -710,6 +705,7 @@ let needSetup = false;
                     ok: true,
                     msg: "successAdded",
                     msgi18n: true,
+                    warning: passwordValidation.warning,
                 });
             } catch (e) {
                 callback({
@@ -1427,11 +1423,6 @@ let needSetup = false;
                     throw new TranslatableError("passwordTooWeak");
                 }
 
-                // Log warning if password is breached (but still allow it)
-                if (passwordValidation.warning) {
-                    log.warn("changePassword", `Password warning for user ${socket.userID}: ${passwordValidation.warning}`);
-                }
-
                 let user = await doubleCheckPassword(socket, password.currentPassword);
                 await user.resetPassword(password.newPassword);
 
@@ -1442,6 +1433,7 @@ let needSetup = false;
                     token: User.createJWT(user, server.jwtSecret),
                     msg: "successAuthChangePassword",
                     msgi18n: true,
+                    warning: passwordValidation.warning,
                 });
             } catch (e) {
                 callback({

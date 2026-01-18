@@ -236,6 +236,12 @@ export default {
             } else {
                 this.$root.getSocket().emit("changePassword", this.password, (res) => {
                     this.$root.toastRes(res);
+                    
+                    // Show warning toast if password was found in breach database
+                    if (res.ok && res.warning) {
+                        this.$root.toastWarning(res.warning);
+                    }
+                    
                     if (res.ok) {
                         this.password.currentPassword = "";
                         this.password.newPassword = "";
