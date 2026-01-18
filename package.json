@@ -225,7 +225,7 @@
         "vue-toastification": "~2.0.0-rc.5",
         "vuedraggable": "~4.1.0",
         "wait-on": "^7.2.0",
-        "whatwg-url": "~12.0.1"
+        "whatwg-url": "~12.0.1",
         "zxcvbn": "^4.4.2"
     }
 }
