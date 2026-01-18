@@ -1420,7 +1420,7 @@ let needSetup = false;
 
                 const passwordValidation = await validatePassword(password.newPassword, true);
                 if (!passwordValidation.ok) {
-                    throw new TranslatableError("passwordTooWeak");
+                    throw new TranslatableError("passwordTooShort");
                 }
 
                 let user = await doubleCheckPassword(socket, password.currentPassword);
