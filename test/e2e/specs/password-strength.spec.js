@@ -5,7 +5,7 @@ test.describe("Password Strength Indicator", () => {
     test.skip(() => !getSqliteDatabaseExists(), "Database must exist before running this test");
 
     test("should show password strength indicator on setup page", async ({ page }) => {
-        // Navigate to setup page (assuming fresh database)
+        // Navigate to setup page (requires database to exist but not be configured)
         await page.goto("./setup");
 
         // Fill username
