@@ -51,7 +51,7 @@ const main = async () => {
                         throw new Error(passwordValidation.msg);
                     }
                     if (passwordValidation.warning) {
-                        console.warn("\x1b[31m%s\x1b[0m",
+                        console.warn("\x1b[33m%s\x1b[0m",
                         "Warning: " + passwordValidation.warning);
                     }
                 } else {
