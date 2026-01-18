@@ -91,13 +91,7 @@
                     </div>
 
                     <div class="form-floating mt-3 short" :hidden="isProvidedMariaDBSocket">
-                        <input
-                            id="floatingInput"
-                            v-model="dbConfig.port"
-                            type="text"
-                            class="form-control"
-                            required
-                        />
+                        <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required />
                         <label for="floatingInput">{{ $t("Port") }}</label>
                     </div>
 
