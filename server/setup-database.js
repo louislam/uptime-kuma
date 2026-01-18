@@ -161,7 +161,9 @@ class SetupDatabase {
                     runningSetup: this.runningSetup,
                     needSetup: this.needSetup,
                     isEnabledEmbeddedMariaDB: this.isEnabledEmbeddedMariaDB(),
-                    isEnabledMariaDBSocket: (process.env.UPTIME_KUMA_DB_SOCKET && process.env.UPTIME_KUMA_DB_SOCKET.trim().length > 0) || false,
+                    isEnabledMariaDBSocket:
+                        (process.env.UPTIME_KUMA_DB_SOCKET && process.env.UPTIME_KUMA_DB_SOCKET.trim().length > 0) ||
+                        false,
                 });
             });
 
@@ -205,10 +207,7 @@ class SetupDatabase {
                 // External MariaDB
                 if (dbConfig.type === "mariadb") {
                     // If socketPath is provided and not empty, validate it
-                    if (
-                        process.env.UPTIME_KUMA_DB_SOCKET &&
-                        process.env.UPTIME_KUMA_DB_SOCKET.trim().length > 0
-                    ) {
+                    if (process.env.UPTIME_KUMA_DB_SOCKET && process.env.UPTIME_KUMA_DB_SOCKET.trim().length > 0) {
                         dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET;
                     } else {
                         // socketPath not provided, hostname and port are required

@@ -92,13 +92,21 @@
                     </div>
 
                     <div class="form-floating mt-3 short">
-                        <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required :disabled="!disabledButtonMariaDBSocket" />
+                        <input
+                            id="floatingInput"
+                            v-model="dbConfig.port"
+                            type="text"
+                            class="form-control"
+                            required
+                            :disabled="!disabledButtonMariaDBSocket"
+                        />
                         <label for="floatingInput">{{ $t("Port") }}</label>
                     </div>
 
                     <div class="mt-1 short text-start" :hidden="hiddenHelptextMariaDBSocket">
                         <div class="form-text">
-                            <code>UPTIME_KUMA_DB_SOCKET</code> {{ $t("mariadbSocketPathDetectedHelptext") }}
+                            <code>UPTIME_KUMA_DB_SOCKET</code>
+                            {{ $t("mariadbSocketPathDetectedHelptext") }}
                         </div>
                     </div>
 
@@ -213,7 +221,7 @@ export default {
         },
         hiddenHelptextMariaDBSocket() {
             return this.info.isEnabledMariaDBSocket === undefined || this.info.isEnabledMariaDBSocket === false;
-        }
+        },
     },
     async mounted() {
         let res = await axios.get("/setup-database-info");
@@ -225,7 +233,6 @@ export default {
             this.show = true;
 
             if (this.info.isEnabledMariaDBSocket) {
-
             }
         }
     },
