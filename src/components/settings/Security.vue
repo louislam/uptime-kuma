@@ -46,7 +46,7 @@
                         
                         <!-- Password strength indicator -->
                         <div v-if="password.newPassword && passwordStrength !== null" class="password-strength mt-2">
-                            <div class="strength-meter">
+                            <div class="strength-meter mx-auto">
                                 <div 
                                     class="strength-meter-fill" 
                                     :class="strengthClass"
