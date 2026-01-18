@@ -1425,5 +1425,9 @@
     "aliyun-template-optional-parameters": "Paramètres optionnels : {parameters}",
     "aliyun_enable_optional_variables_at_the_risk_of_non_delivery": "En raison des restrictions des transporteurs, l’activation des variables optionnelles se fait au risque d’une non-livraison",
     "ntfyCall": "Appel téléphonique",
-    "ntfyCallHelptext": "Lancez un appel en cas d'alerte incendie. Choisissez « oui » pour utiliser votre premier numéro vérifié ou saisissez un numéro spécifique (par exemple : +12223334444). Nécessite NTFY Pro et un numéro de téléphone vérifié."
+    "ntfyCallHelptext": "Lancez un appel en cas d'alerte incendie. Choisissez « oui » pour utiliser votre premier numéro vérifié ou saisissez un numéro spécifique (par exemple : +12223334444). Nécessite NTFY Pro et un numéro de téléphone vérifié.",
+    "enableSSL": "Activer SSL/TLS",
+    "mariadbUseSSLHelptext": "Activer l'utilisation d'une connexion encryptée pour votre base de données. Requis pour la plupart des bases de données hébergées dans le Cloud.",
+    "mariadbCaCertificateLabel": "Certificat d'autorité de certification",
+    "mariadbCaCertificateHelptext": "Coller le certificat d'autorité dans le format PEM avec les certificats auto-signés. Laisser vide si votre base de données utilise un certificat signé par une autorité de certification publique."
 }
