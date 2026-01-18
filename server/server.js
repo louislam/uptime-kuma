@@ -685,7 +685,7 @@ let needSetup = false;
             try {
                 const passwordValidation = await validatePassword(password, true);
                 if (!passwordValidation.ok) {
-                    throw new TranslatableError("passwordTooWeak");
+                    throw new TranslatableError("passwordTooShort");
                 }
 
                 if ((await R.knex("user").count("id as count").first()).count !== 0) {
