@@ -1365,7 +1365,7 @@
     "Details": "Details",
     "passwordTooShort": "Password must be at least 12 characters long.",
     "passwordWeakWarning": "This password may be easy to guess. Consider using a longer or more unique password.",
-    "passwordFoundInDataBreach": "This password has appeared in a known data breach (via Have I Been Pwned). Please choose a different password. | This password has appeared {n} times in known data breaches (via Have I Been Pwned). Please choose a different password.",
+    "passwordFoundInDataBreach": "The chosen password has appeared in a known data breach (via Have I Been Pwned). Please consider changing to a different password. | The chosen password has appeared {n} times in known data breaches (via Have I Been Pwned). Please consider changing to a different password.",
     "TLS Alerts": "TLS Alerts",
     "Expected TLS Alert": "Expected TLS Alert",
     "None (Successful Connection)": "None (Successful Connection)",
