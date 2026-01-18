@@ -341,7 +341,6 @@ export default {
 }
 
 .btn-collapse-all {
-    margin-left: 0.25rem;
     transition: none !important;
 }
 </style>
