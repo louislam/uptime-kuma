@@ -302,9 +302,10 @@ export default {
 }
 
 .strength-meter {
-    height: 5px;
+    height: 8px;
+    width: 85%;
     background-color: #e0e0e0;
-    border-radius: 3px;
+    border-radius: 8px;
     overflow: hidden;
 }
 
