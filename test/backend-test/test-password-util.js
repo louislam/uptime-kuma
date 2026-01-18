@@ -104,7 +104,8 @@ describe("Password Validation (NIST-aligned)", () => {
         const result = await validatePassword("password123456", true);
         assert.strictEqual(result.ok, true);
         assert.ok(result.warning, "Should have a warning for breached password");
-        assert.match(result.warning, /data breaches/i);
+        assert.strictEqual(result.warning.msg, "passwordFoundInDataBreach");
+        assert.ok(result.warning.meta > 0, "Should have breach count greater than 0");
     });
 
     test("should accept non-breached password with no warning", async () => {

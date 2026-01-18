@@ -398,6 +398,7 @@ export default {
         /**
          * Show a warning toast
          * @param {string} msg Message to show
+         * @param {...any} args Additional parameters for translation interpolation
          * @returns {void}
          */
         toastWarning(msg, ...args) {
