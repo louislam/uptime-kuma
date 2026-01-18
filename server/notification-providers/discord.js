@@ -192,13 +192,16 @@ class Discord extends NotificationProvider {
     }
 
     /*
-    * Format duration as human-readable string (e.g., "1h 23m", "45m 30s")
-    * TODO: Update below to Intl.DurationFormat("en", { style: "short" }).format(duration) once we are on a newer node version
-    * 
+     * Format duration as human-readable string (e.g., "1h 23m", "45m 30s")
+     * TODO: Update below to Intl.DurationFormat("en", { style: "short" }).format(duration) once we are on a newer node version
+     *
      * @param {number} timeInSeconds The time in seconds to format a duration for
      * @returns {string} The formatted duration
-    */
-    formatDuration(timeInSeconds){
+     */
+    /**
+     * @param timeInSeconds
+     */
+    formatDuration(timeInSeconds) {
         const hours = Math.floor(durationSeconds / 3600);
         const minutes = Math.floor((durationSeconds % 3600) / 60);
         const seconds = durationSeconds % 60;
