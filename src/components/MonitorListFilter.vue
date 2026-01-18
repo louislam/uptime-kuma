@@ -137,6 +137,15 @@
             </li>
         </template>
     </MonitorListFilterDropdown>
+    <button
+        v-if="hasGroups"
+        type="button"
+        class="btn btn-outline-normal btn-collapse-all"
+        :title="allCollapsed ? $t('Expand All Groups') : $t('Collapse All Groups')"
+        @click="$emit('toggle-collapse-all')"
+    >
+        <font-awesome-icon :icon="allCollapsed ? 'folder' : 'folder-open'" fixed-width />
+    </button>
 </template>
 
 <script>
@@ -155,8 +164,16 @@ export default {
             type: Object,
             required: true,
         },
+        allCollapsed: {
+            type: Boolean,
+            default: true,
+        },
+        hasGroups: {
+            type: Boolean,
+            default: false,
+        },
     },
-    emits: ["updateFilter"],
+    emits: ["updateFilter", "toggle-collapse-all"],
     data() {
         return {
             tagsList: [],
@@ -321,5 +338,9 @@ export default {
             margin-right: 4px;
         }
     }
+}
+
+.btn-collapse-all {
+    transition: none !important;
 }
 </style>

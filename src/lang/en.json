@@ -793,6 +793,8 @@
     "Retry": "Retry",
     "Topic": "Topic",
     "WeCom Bot Key": "WeCom Bot Key",
+    "WeCom Mentioned Mobile List": "WeCom Mentioned Mobile List",
+    "WeCom Mentioned Mobile List Description": "Enter phone numbers to mention. Separate multiple numbers with commas. Use {'@'}all to mention everyone.",
     "Setup Proxy": "Set Up Proxy",
     "Proxy Protocol": "Proxy Protocol",
     "Proxy Server": "Proxy Server",
@@ -1109,6 +1111,7 @@
     "snmpCommunityStringHelptext": "This string functions as a password to authenticate and control access to SNMP-enabled devices. Match it with your SNMP device's configuration.",
     "OID (Object Identifier)": "OID (Object Identifier)",
     "snmpOIDHelptext": "Enter the OID for the sensor or status you want to monitor. Use network management tools like MIB browsers or SNMP software if you're unsure about the OID.",
+    "snmpV3Username": "SNMPv3 Username",
     "Condition": "Condition",
     "SNMP Version": "SNMP Version",
     "Please enter a valid OID.": "Please enter a valid OID.",
@@ -1365,5 +1368,7 @@
     "Expected TLS Alert": "Expected TLS Alert",
     "None (Successful Connection)": "None (Successful Connection)",
     "expectedTlsAlertDescription": "Select the TLS alert you expect the server to return. Use {code} to verify mTLS endpoints reject connections without client certificates. See {link} for details.",
-    "TLS Alert Spec": "RFC 8446"
+    "TLS Alert Spec": "RFC 8446",
+    "Expand All Groups": "Expand All Groups",
+    "Collapse All Groups": "Collapse All Groups"
 }

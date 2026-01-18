@@ -511,7 +511,22 @@
                                 <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
                                     <option value="1">SNMPv1</option>
                                     <option value="2c">SNMPv2c</option>
+                                    <option value="3">SNMPv3</option>
                                 </select>
+                            </div>
+                            <div v-if="monitor.type === 'snmp' && monitor.snmpVersion === '3'" class="my-3">
+                                <label for="snmp_v3_username" class="form-label">
+                                    {{ $t("snmpV3Username") }}
+                                </label>
+
+                                <input
+                                    id="snmp_v3_username"
+                                    v-model="monitor.snmpV3Username"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="SNMPv3 username"
+                                    required
+                                />
                             </div>
 
                             <div v-if="monitor.type === 'smtp'" class="my-3">
