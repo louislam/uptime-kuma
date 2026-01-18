@@ -18,7 +18,7 @@ class WeCom extends NotificationProvider {
                 },
             };
             config = this.getAxiosConfigWithProxy(config);
-            let body = this.composeMessage(heartbeatJSON, msg);
+            let body = this.composeMessage(notification, heartbeatJSON, msg);
             await axios.post(
                 `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${notification.weComBotKey}`,
                 body,
@@ -32,11 +32,12 @@ class WeCom extends NotificationProvider {
 
     /**
      * Generate the message to send
+     * @param {object} notification Notification configuration
      * @param {object} heartbeatJSON Heartbeat details (For Up/Down only)
      * @param {string} msg General message
      * @returns {object} Message
      */
-    composeMessage(heartbeatJSON, msg) {
+    composeMessage(notification, heartbeatJSON, msg) {
         let title = "UptimeKuma Message";
         if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === UP) {
             title = "UptimeKuma Monitor Up";
@@ -44,11 +45,26 @@ class WeCom extends NotificationProvider {
         if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === DOWN) {
             title = "UptimeKuma Monitor Down";
         }
+
+        let textObj = {
+            content: title + "\n" + msg,
+        };
+
+        // Handle mentioned_mobile_list if configured
+        if (notification.weComMentionedMobileList?.trim()) {
+            let mentionedMobiles = notification.weComMentionedMobileList
+                .split(",")
+                .map((mobile) => mobile.trim())
+                .filter((mobile) => mobile.length > 0);
+
+            if (mentionedMobiles.length > 0) {
+                textObj.mentioned_mobile_list = mentionedMobiles;
+            }
+        }
+
         return {
             msgtype: "text",
-            text: {
-                content: title + "\n" + msg,
-            },
+            text: textObj,
         };
     }
 }
