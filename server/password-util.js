@@ -10,14 +10,13 @@ const MIN_PASSWORD_LENGTH = 8;
 
 /**
  * Validates a password according to NIST SP 800-63B guidelines.
- * 
+ *
  * NIST guidelines state:
  * - Passwords should have a minimum length (8-12 characters recommended)
  * - Composition rules (requiring specific character types) SHALL NOT be imposed
  * - All printable ASCII characters and Unicode characters should be allowed
- * 
+ *
  * This implementation enforces only minimum length, allowing all character compositions.
- * 
  * @param {string} password - The password to validate
  * @returns {{ ok: boolean, msg?: string }} Validation result
  */
