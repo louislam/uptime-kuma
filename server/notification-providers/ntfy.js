@@ -60,7 +60,13 @@ class Ntfy extends NotificationProvider {
 
             // Include monitor's assigned tags
             if (monitorJSON && monitorJSON.tags && Array.isArray(monitorJSON.tags)) {
-                const monitorTagNames = monitorJSON.tags.map((tag) => tag.name);
+                const monitorTagNames = monitorJSON.tags.map((tag) => {
+                    // Include value if it exists
+                    if (tag.value) {
+                        return `${tag.name}: ${tag.value}`;
+                    }
+                    return tag.name;
+                });
                 tags = tags.concat(monitorTagNames);
             }
 
