@@ -1057,6 +1057,14 @@ let needSetup = false;
                 await startMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
 
+                const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+                if (monitor && monitor.type === "group") {
+                    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                    for (const childID of childrenIDs) {
+                        await server.sendUpdateMonitorIntoList(socket, childID);
+                    }
+                }
+
                 callback({
                     ok: true,
                     msg: "successResumed",
@@ -1075,6 +1083,14 @@ let needSetup = false;
                 checkLogin(socket);
                 await pauseMonitor(socket.userID, monitorID);
                 await server.sendUpdateMonitorIntoList(socket, monitorID);
+
+                const monitor = await R.findOne("monitor", " id = ? ", [monitorID]);
+                if (monitor && monitor.type === "group") {
+                    const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+                    for (const childID of childrenIDs) {
+                        await server.sendUpdateMonitorIntoList(socket, childID);
+                    }
+                }
 
                 callback({
                     ok: true,

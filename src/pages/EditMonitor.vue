@@ -3171,9 +3171,12 @@ message HealthCheckResponse {
             }
 
             let createdNewParent = false;
+            let parentCreatedAsActive = false;
 
             if (this.draftGroupName && this.monitor.parent === -1) {
                 // Create Monitor with name of draft group
+                const parentActive = this.isClone ? (this.monitor.active !== false) : false;
+                parentCreatedAsActive = parentActive;
                 const res = await new Promise((resolve) => {
                     this.$root.add(
                         {
@@ -3181,7 +3184,7 @@ message HealthCheckResponse {
                             type: "group",
                             name: this.draftGroupName,
                             interval: this.monitor.interval,
-                            active: false,
+                            active: parentActive,
                         },
                         resolve
                     );
@@ -3203,7 +3206,7 @@ message HealthCheckResponse {
                         await this.$refs.tagsManager.submit(res.monitorID);
 
                         // Start the new parent monitor after edit is done
-                        if (createdNewParent) {
+                        if (createdNewParent && !parentCreatedAsActive) {
                             await this.startParentGroupMonitor();
                         }
                         this.processing = false;
@@ -3223,7 +3226,7 @@ message HealthCheckResponse {
                     this.init();
 
                     // Start the new parent monitor after edit is done
-                    if (createdNewParent) {
+                    if (createdNewParent && !parentCreatedAsActive) {
                         this.startParentGroupMonitor();
                     }
                 });
