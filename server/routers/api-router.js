@@ -99,7 +99,20 @@ router.all("/api/push/:pushToken", async (request, response) => {
 
         bean.important = Monitor.isImportantBeat(isFirstBeat, previousHeartbeat?.status, bean.status);
 
-        if (Monitor.isImportantForNotification(isFirstBeat, previousHeartbeat?.status, bean.status)) {
+        // Get lastNonPendingStatus only for PENDING -> UP transitions
+        let lastNonPendingStatus = null;
+        if (previousHeartbeat?.status === PENDING && bean.status === UP) {
+            lastNonPendingStatus = await Monitor.getLastNonPendingStatus(monitor.id);
+        }
+
+        if (
+            Monitor.isImportantForNotification(
+                isFirstBeat,
+                previousHeartbeat?.status,
+                bean.status,
+                lastNonPendingStatus
+            )
+        ) {
             // Reset down count
             bean.downCount = 0;
 
