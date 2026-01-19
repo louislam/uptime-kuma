@@ -353,7 +353,7 @@ class TCPMonitorType extends MonitorType {
                 reject(new Error("TLS connection timed out"));
             }, timeout);
 
-            socket.on("secureConnect", () => {
+            socket.on("session", () => {
                 clearTimeout(timeoutId);
                 const responseTime = Date.now() - startTime;
 
