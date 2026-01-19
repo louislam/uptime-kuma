@@ -396,6 +396,16 @@ export default {
         },
 
         /**
+         * Show a warning toast
+         * @param {string} msg Message to show
+         * @param {...any} args Additional parameters for translation interpolation
+         * @returns {void}
+         */
+        toastWarning(msg, ...args) {
+            toast.warning(this.$t(msg, ...args));
+        },
+
+        /**
          * Callback for login
          * @callback loginCB
          * @param {object} res Response object
