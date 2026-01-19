@@ -95,8 +95,8 @@ export function currentLocale() {
     return "en";
 }
 
-export const localeDirection = () => {
-    return rtlLangs.includes(currentLocale()) ? "rtl" : "ltr";
+export const localeDirection = (locale = currentLocale()) => {
+    return rtlLangs.includes(locale) ? "rtl" : "ltr";
 };
 
 export const i18n = createI18n({
