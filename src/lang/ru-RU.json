@@ -46,7 +46,7 @@
     "Cert Exp.": "Окончание сертификата.",
     "day": "день | дней",
     "-day": "-дней",
-    "hour": "час",
+    "hour": "час | часов",
     "-hour": "-часа",
     "Response": "Ответ",
     "Ping": "Пинг",
@@ -1325,5 +1325,8 @@
     "Google": "Google",
     "Plausible": "Plausible",
     "Matomo": "Matomo",
-    "Umami": "Umami"
+    "Umami": "Umami",
+    "RSS Title": "Заголовок RSS",
+    "Leave blank to use status page title": "Оставьте поле пустым, чтобы использовать заголовок страницы состояния",
+    "year": "год | годов"
 }
