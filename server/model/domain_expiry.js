@@ -4,33 +4,19 @@ const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } = require("../../src/u
 const { parse: parseTld } = require("tldts");
 const { setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
-const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 const TranslatableError = require("../translatable-error");
 const dayjs = require("dayjs");
 
-const cachedFetch = process.env.NODE_ENV
-    ? NodeFetchCache.create({
-          // cache for 8h
-          cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
-      })
-    : fetch;
+// Load static RDAP DNS data from local file (auto-updated by CI)
+const rdapDnsData = require("./rdap-dns.json");
 
 /**
  * Find the RDAP server for a given TLD
  * @param {string} tld TLD
- * @returns {Promise<string>} First RDAP server found
+ * @returns {string|null} First RDAP server found
  */
-async function getRdapServer(tld) {
-    let rdapList;
-    try {
-        const res = await cachedFetch("https://data.iana.org/rdap/dns.json");
-        rdapList = await res.json();
-    } catch (error) {
-        log.debug("rdap", error);
-        return null;
-    }
-
-    const services = rdapList["services"] ?? [];
+function getRdapServer(tld) {
+    const services = rdapDnsData["services"] ?? [];
     const rootTld = tld?.split(".").pop();
     if (rootTld) {
         for (const [tlds, urls] of services) {
@@ -50,7 +36,7 @@ async function getRdapServer(tld) {
  */
 async function getRdapDomainExpiryDate(domain) {
     const tld = DomainExpiry.parseTld(domain).publicSuffix;
-    const rdapServer = await getRdapServer(tld);
+    const rdapServer = getRdapServer(tld);
     if (rdapServer === null) {
         log.warn("rdap", `No RDAP server found, TLD ${tld} not supported.`);
         return null;
@@ -178,7 +164,7 @@ class DomainExpiry extends BeanModel {
 
         const publicSuffix = tld.publicSuffix;
         const rootTld = publicSuffix.split(".").pop();
-        const rdap = await getRdapServer(publicSuffix);
+        const rdap = getRdapServer(publicSuffix);
         if (!rdap) {
             throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
                 publicSuffix,
