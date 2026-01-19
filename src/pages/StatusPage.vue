@@ -541,6 +541,7 @@
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
+                    :search-text="searchText"
                 />
             </div>
 
@@ -695,6 +696,7 @@ export default {
             updateCountdown: null,
             updateCountdownText: null,
             loading: true,
+            searchText: "",
         };
     },
     computed: {
@@ -1313,6 +1315,14 @@ export default {
                 return "";
             }
         },
+
+        /**
+         * Clear the search text
+         * @returns {void}
+         */
+        clearSearchText() {
+            this.searchText = "";
+        },
     },
 };
 </script>
@@ -1334,6 +1344,59 @@ export default {
 
     .danger {
         color: $danger;
+    }
+
+    .overall-status-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .status-text {
+        flex-shrink: 0;
+    }
+
+    .search-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .search-divider {
+        width: 1px;
+        height: 30px;
+        background: linear-gradient(to bottom, transparent 0%, #d0d0d0 20%, #d0d0d0 80%, transparent 100%);
+
+        .dark & {
+            background: linear-gradient(to bottom, transparent 0%, #3a4450 20%, #3a4450 80%, transparent 100%);
+        }
+    }
+
+    .search-wrapper {
+        display: flex;
+        align-items: center;
+    }
+
+    .search-icon {
+        padding: 10px;
+        color: #c0c0c0;
+
+        svg[data-icon="times"] {
+            cursor: pointer;
+            transition: all ease-in-out 0.1s;
+
+            &:hover {
+                opacity: 0.5;
+            }
+        }
+    }
+
+    .search-input {
+        max-width: 15em;
+        font-size: 16px;
+        font-weight: normal;
     }
 }
 
