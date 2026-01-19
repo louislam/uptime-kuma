@@ -11,7 +11,7 @@
 **Uptime Kuma** is a self-hosted monitoring tool for HTTP(s), TCP, DNS, Docker, etc. Built with Vue 3 (frontend) and Node.js/Express (backend), using Socket.IO for real-time communication.
 
 - **Languages**: JavaScript, Vue 3, TypeScript (limited), HTML, CSS/SCSS
-- **Backend**: Node.js >= 20.4, Express.js, Socket.IO, SQLite
+- **Backend**: Node.js >= 25.3, Express.js, Socket.IO, SQLite
 - **Frontend**: Vue 3, Vite, Bootstrap 5, Chart.js
 - **Package Manager**: npm with `legacy-peer-deps=true` (.npmrc)
 
@@ -19,7 +19,7 @@
 
 ### Prerequisites
 
-- Node.js >= 20.4.0, npm >= 9.3, Git
+- Node.js >= 25.3.0, npm >= 9.3, Git
 
 ### Essential Command Sequence
 
@@ -171,6 +171,6 @@ Files to modify:
 1. **Trust these instructions** - based on testing. Search only if incomplete/incorrect
 2. **Dependencies**: 5 known vulnerabilities (3 moderate, 2 high) - acknowledged, don't fix without discussion
 3. **Git Branches**: `master` (v2 development), `1.23.X` (v1 maintenance)
-4. **Node Version**: >= 20.4.0 required
+4. **Node Version**: >= 25.3.0 required
 5. **Socket.IO**: Most backend logic in `server/socket-handlers/`, not REST
 6. **Never commit**: `data/`, `dist/`, `tmp/`, `private/`, `node_modules/`
