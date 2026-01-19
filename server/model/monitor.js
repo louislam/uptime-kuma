@@ -1508,24 +1508,46 @@ class Monitor extends BeanModel {
 
             let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
 
+            const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: true });
+            const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
+            const preloadData = await Monitor.preparePreloadData(monitorData);
+            // Prevent if the msg is undefined, notifications such as Discord cannot send out.
+            if (!heartbeatJSON["msg"]) {
+                heartbeatJSON["msg"] = "N/A";
+            }
+
+            // Also provide the time in server timezone
+            heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
+            heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
+            heartbeatJSON["localDateTime"] = dayjs
+                .utc(heartbeatJSON["time"])
+                .tz(heartbeatJSON["timezone"])
+                .format(SQL_DATETIME_FORMAT);
+
+            // Calculate downtime tracking information when service comes back up
+            // This makes downtime information available to all notification providers
+            if (bean.status === UP && monitor.id) {
+                try {
+                    const lastDownHeartbeat = await R.getRow(
+                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1",
+                        [monitor.id, DOWN]
+                    );
+
+                    if (lastDownHeartbeat && lastDownHeartbeat.time) {
+                        heartbeatJSON["lastDownTime"] = lastDownHeartbeat.time;
+                    }
+                } catch (error) {
+                    // If we can't calculate downtime, just continue without it
+                    // Silently fail to avoid disrupting notification sending
+                    log.debug(
+                        "monitor",
+                        `[${monitor.name}] Could not calculate downtime information: ${error.message}`
+                    );
+                }
+            }
+
             for (let notification of notificationList) {
                 try {
-                    const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: true });
-                    const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
-                    const preloadData = await Monitor.preparePreloadData(monitorData);
-                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
-                    if (!heartbeatJSON["msg"]) {
-                        heartbeatJSON["msg"] = "N/A";
-                    }
-
-                    // Also provide the time in server timezone
-                    heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
-                    heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
-                    heartbeatJSON["localDateTime"] = dayjs
-                        .utc(heartbeatJSON["time"])
-                        .tz(heartbeatJSON["timezone"])
-                        .format(SQL_DATETIME_FORMAT);
-
                     await Notification.send(
                         JSON.parse(notification.config),
                         msg,
