@@ -99,36 +99,15 @@ module.exports.statusPageSocketHandler = (socket) => {
         }
     });
 
-    socket.on("getIncidentHistory", async (slug, page, callback) => {
-        try {
-            checkLogin(socket);
-
-            let statusPageID = await StatusPage.slugToID(slug);
-            if (!statusPageID) {
-                throw new Error("slug is not found");
-            }
-
-            const result = await StatusPage.getIncidentHistory(statusPageID, page, false);
-            callback({
-                ok: true,
-                ...result,
-            });
-        } catch (error) {
-            callback({
-                ok: false,
-                msg: error.message,
-            });
-        }
-    });
-
-    socket.on("getPublicIncidentHistory", async (slug, page, callback) => {
+    socket.on("getIncidentHistory", async (slug, cursor, callback) => {
         try {
             let statusPageID = await StatusPage.slugToID(slug);
             if (!statusPageID) {
                 throw new Error("slug is not found");
             }
 
-            const result = await StatusPage.getIncidentHistory(statusPageID, page, true);
+            const isPublic = !socket.userID;
+            const result = await StatusPage.getIncidentHistory(statusPageID, cursor, isPublic);
             callback({
                 ok: true,
                 ...result,
@@ -193,7 +172,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ok: true,
                 msg: "Saved.",
                 msgi18n: true,
-                incident: bean.toJSON(),
+                incident: bean.toPublicJSON(),
             });
         } catch (error) {
             callback({
@@ -274,7 +253,7 @@ module.exports.statusPageSocketHandler = (socket) => {
                 ok: true,
                 msg: "Resolved",
                 msgi18n: true,
-                incident: bean.toJSON(),
+                incident: bean.toPublicJSON(),
             });
         } catch (error) {
             callback({

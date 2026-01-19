@@ -16,7 +16,6 @@ class Incident extends BeanModel {
 
     /**
      * Return an object that ready to parse to JSON for public
-     * Only show necessary data to public
      * @returns {object} Object ready to parse
      */
     toPublicJSON() {
@@ -29,16 +28,6 @@ class Incident extends BeanModel {
             active: !!this.active,
             createdDate: this.createdDate,
             lastUpdatedDate: this.lastUpdatedDate,
-        };
-    }
-
-    /**
-     * Return full object for admin use
-     * @returns {object} Object ready to parse
-     */
-    toJSON() {
-        return {
-            ...this.toPublicJSON(),
             status_page_id: this.status_page_id,
         };
     }

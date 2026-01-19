@@ -502,28 +502,50 @@ class StatusPage extends BeanModel {
     }
 
     /**
-     * Get paginated incident history for a status page
+     * Get paginated incident history for a status page using cursor-based pagination
      * @param {number} statusPageId ID of the status page
-     * @param {number} page Page number (1-based)
+     * @param {string|null} cursor ISO date string cursor (created_date of last item from previous page)
      * @param {boolean} isPublic Whether to return public or admin data
-     * @returns {Promise<object>} Paginated incident data
+     * @returns {Promise<object>} Paginated incident data with cursor
      */
-    static async getIncidentHistory(statusPageId, page, isPublic = true) {
-        const offset = (page - 1) * INCIDENT_PAGE_SIZE;
+    static async getIncidentHistory(statusPageId, cursor = null, isPublic = true) {
+        let incidents;
 
-        const incidents = await R.find("incident", " status_page_id = ? ORDER BY created_date DESC LIMIT ? OFFSET ? ", [
-            statusPageId,
-            INCIDENT_PAGE_SIZE,
-            offset,
-        ]);
+        if (cursor) {
+            incidents = await R.find(
+                "incident",
+                " status_page_id = ? AND created_date < ? ORDER BY created_date DESC LIMIT ? ",
+                [statusPageId, cursor, INCIDENT_PAGE_SIZE]
+            );
+        } else {
+            incidents = await R.find("incident", " status_page_id = ? ORDER BY created_date DESC LIMIT ? ", [
+                statusPageId,
+                INCIDENT_PAGE_SIZE,
+            ]);
+        }
 
         const total = await R.count("incident", " status_page_id = ? ", [statusPageId]);
 
+        const lastIncident = incidents[incidents.length - 1];
+        let nextCursor = null;
+        let hasMore = false;
+
+        if (lastIncident) {
+            const moreCount = await R.count("incident", " status_page_id = ? AND created_date < ? ", [
+                statusPageId,
+                lastIncident.createdDate,
+            ]);
+            hasMore = moreCount > 0;
+            if (hasMore) {
+                nextCursor = lastIncident.createdDate;
+            }
+        }
+
         return {
-            incidents: incidents.map((i) => (isPublic ? i.toPublicJSON() : i.toJSON())),
+            incidents: incidents.map((i) => i.toPublicJSON()),
             total,
-            page,
-            totalPages: Math.ceil(total / INCIDENT_PAGE_SIZE),
+            nextCursor,
+            hasMore,
         };
     }
 

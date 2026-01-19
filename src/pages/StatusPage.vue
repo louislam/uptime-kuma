@@ -496,20 +496,12 @@
             </div>
 
             <!-- Past Incidents -->
-            <div class="past-incidents-section mb-4">
-                <h2 class="past-incidents-title mb-3">{{ $t("Past Incidents") }}</h2>
+            <div v-if="pastIncidentCount > 0" class="past-incidents-section mb-4">
+                <h2 class="past-incidents-title mb-3">
+                    {{ $t("Past Incidents") }}
+                </h2>
 
-                <div v-if="incidentHistoryLoading && incidentHistory.length === 0" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">{{ $t("Loading...") }}</span>
-                    </div>
-                </div>
-
-                <div v-else-if="incidentHistory.length === 0" class="text-center py-4 text-muted">
-                    {{ $t("No incidents recorded") }}
-                </div>
-
-                <template v-else>
+                <div class="past-incidents-content">
                     <div
                         v-for="(dateGroup, dateKey) in groupedIncidentHistory"
                         :key="dateKey"
@@ -528,10 +520,7 @@
                         </div>
                     </div>
 
-                    <div
-                        v-if="incidentHistoryPage < incidentHistoryTotalPages"
-                        class="load-more-controls d-flex justify-content-center mt-3"
-                    >
+                    <div v-if="incidentHistoryHasMore" class="load-more-controls d-flex justify-content-center mt-3">
                         <button
                             class="btn btn-outline-secondary btn-sm"
                             :disabled="incidentHistoryLoading"
@@ -545,7 +534,7 @@
                             {{ $t("Load More") }}
                         </button>
                     </div>
-                </template>
+                </div>
             </div>
 
             <!-- Incident Manage Modal -->
@@ -715,8 +704,8 @@ export default {
             loading: true,
             incidentHistory: [],
             incidentHistoryLoading: false,
-            incidentHistoryPage: 1,
-            incidentHistoryTotalPages: 1,
+            incidentHistoryNextCursor: null,
+            incidentHistoryHasMore: false,
         };
     },
     computed: {
@@ -878,12 +867,22 @@ export default {
         },
 
         /**
-         * Group incidents by date for display
+         * Count of past incidents (non-active or unpinned)
+         * @returns {number} Number of past incidents
+         */
+        pastIncidentCount() {
+            return this.incidentHistory.filter((i) => !(i.active && i.pin)).length;
+        },
+
+        /**
+         * Group past incidents (non-active or unpinned) by date for display
+         * Active+pinned incidents are shown separately at the top, not in this section
          * @returns {object} Incidents grouped by date string
          */
         groupedIncidentHistory() {
             const groups = {};
-            for (const incident of this.incidentHistory) {
+            const pastIncidents = this.incidentHistory.filter((i) => !(i.active && i.pin));
+            for (const incident of pastIncidents) {
                 const dateKey = this.formatDateKey(incident.createdDate);
                 if (!groups[dateKey]) {
                     groups[dateKey] = [];
@@ -998,7 +997,6 @@ export default {
                 this.$root.publicGroupList = res.data.publicGroupList;
 
                 this.loading = false;
-                this.loadIncidentHistory();
 
                 feedInterval = setInterval(
                     () => {
@@ -1031,6 +1029,7 @@ export default {
             });
 
         this.updateHeartbeatList();
+        this.loadIncidentHistory();
 
         // Go to edit page if ?edit present
         // null means ?edit present, but no value
@@ -1393,20 +1392,20 @@ export default {
          * @returns {void}
          */
         loadIncidentHistory() {
-            this.loadIncidentHistoryPage(1);
+            this.loadIncidentHistoryWithCursor(null);
         },
 
         /**
-         * Load a specific page of incident history
-         * @param {number} page - Page number to load
+         * Load incident history using cursor-based pagination
+         * @param {string|null} cursor - Cursor for pagination (created_date of last item)
          * @param {boolean} append - Whether to append to existing list
          * @returns {void}
          */
-        loadIncidentHistoryPage(page, append = false) {
+        loadIncidentHistoryWithCursor(cursor, append = false) {
             this.incidentHistoryLoading = true;
 
             if (this.enableEditMode) {
-                this.$root.getSocket().emit("getIncidentHistory", this.slug, page, (res) => {
+                this.$root.getSocket().emit("getIncidentHistory", this.slug, cursor, (res) => {
                     this.incidentHistoryLoading = false;
                     if (res.ok) {
                         if (append) {
@@ -1414,16 +1413,19 @@ export default {
                         } else {
                             this.incidentHistory = res.incidents;
                         }
-                        this.incidentHistoryPage = res.page;
-                        this.incidentHistoryTotalPages = res.totalPages;
+                        this.incidentHistoryNextCursor = res.nextCursor;
+                        this.incidentHistoryHasMore = res.hasMore;
                     } else {
                         console.error("Failed to load incident history:", res.msg);
                         this.$root.toastError(res.msg);
                     }
                 });
             } else {
+                const url = cursor
+                    ? `/api/status-page/${this.slug}/incident-history?cursor=${encodeURIComponent(cursor)}`
+                    : `/api/status-page/${this.slug}/incident-history`;
                 axios
-                    .get(`/api/status-page/${this.slug}/incident-history?page=${page}`)
+                    .get(url)
                     .then((res) => {
                         this.incidentHistoryLoading = false;
                         if (res.data.ok) {
@@ -1432,8 +1434,8 @@ export default {
                             } else {
                                 this.incidentHistory = res.data.incidents;
                             }
-                            this.incidentHistoryPage = res.data.page;
-                            this.incidentHistoryTotalPages = res.data.totalPages;
+                            this.incidentHistoryNextCursor = res.data.nextCursor;
+                            this.incidentHistoryHasMore = res.data.hasMore;
                         }
                     })
                     .catch((error) => {
@@ -1444,12 +1446,12 @@ export default {
         },
 
         /**
-         * Load more incident history (next page, appended)
+         * Load more incident history using cursor-based pagination
          * @returns {void}
          */
         loadMoreIncidentHistory() {
-            if (this.incidentHistoryPage < this.incidentHistoryTotalPages) {
-                this.loadIncidentHistoryPage(this.incidentHistoryPage + 1, true);
+            if (this.incidentHistoryHasMore && this.incidentHistoryNextCursor) {
+                this.loadIncidentHistoryWithCursor(this.incidentHistoryNextCursor, true);
             }
         },
 
@@ -1601,12 +1603,14 @@ footer {
 
     /* Reset button placed at top-left of the logo */
     .reset-top-left {
-        position: absolute;
-        top: 0;
-        left: -15px;
-        z-index: 2;
-        width: 20px;
-        height: 20px;
+        transition:
+            transform $easing-in 0.18s,
+            box-shadow $easing-in 0.18s,
+            background-color $easing-in 0.18s;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        padding: 0;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -1615,11 +1619,6 @@ footer {
         border: none;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
         cursor: pointer;
-        padding: 0;
-        transition:
-            transform $easing-in 0.18s,
-            box-shadow $easing-in 0.18s,
-            background-color $easing-in 0.18s;
         transform-origin: center;
 
         &:hover {
@@ -1760,6 +1759,12 @@ footer {
 .past-incidents-title {
     font-size: 26px;
     font-weight: normal;
+}
+
+.past-incidents-section {
+    .past-incidents-content {
+        padding: 0;
+    }
 }
 
 .incident-date-group {

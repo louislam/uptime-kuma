@@ -155,8 +155,8 @@ router.get("/api/status-page/:slug/incident-history", cache("5 minutes"), async 
             return;
         }
 
-        const page = parseInt(request.query.page) || 1;
-        const result = await StatusPage.getIncidentHistory(statusPageID, page, true);
+        const cursor = request.query.cursor || null;
+        const result = await StatusPage.getIncidentHistory(statusPageID, cursor, true);
         response.json({
             ok: true,
             ...result,
