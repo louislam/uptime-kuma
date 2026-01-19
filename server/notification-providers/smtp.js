@@ -18,12 +18,7 @@ class SMTP extends NotificationProvider {
         };
 
         // Handle TLS/STARTTLS options
-        if (notification.smtpSecure) {
-            // SMTPS (implicit TLS on port 465)
-            config.tls = {
-                rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
-            };
-        } else if (notification.smtpIgnoreSTARTTLS) {
+        if (!notification.smtpSecure && notification.smtpIgnoreSTARTTLS) {
             // Disable STARTTLS completely for servers that don't support it
             // Connection will remain unencrypted
             log.warn(
@@ -32,7 +27,8 @@ class SMTP extends NotificationProvider {
             );
             config.ignoreTLS = true;
         } else {
-            // Allow STARTTLS (default behavior for ports 25, 587)
+            // SMTPS (implicit TLS on port 465)
+            // or STARTTLS (default behavior for ports 25, 587)
             config.tls = {
                 rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
             };
