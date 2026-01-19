@@ -90,6 +90,20 @@ class Slack extends NotificationProvider {
             },
         });
 
+        // Optional context line for monitor group path (excluding monitor name)
+        const groupPath = monitorJSON?.path?.length > 1 ? monitorJSON.path.slice(0, -1).join(" / ") : "";
+        if (groupPath) {
+            blocks.push({
+                type: "context",
+                elements: [
+                    {
+                        type: "mrkdwn",
+                        text: `_${groupPath}_`,
+                    },
+                ],
+            });
+        }
+
         // the body block, containing the details
         blocks.push({
             type: "section",
@@ -142,7 +156,7 @@ class Slack extends NotificationProvider {
 
             const baseURL = await setting("primaryBaseURL");
 
-            const title = "Uptime Kuma Alert";
+            const title = monitorJSON?.name || "Uptime Kuma Alert";
             let data = {
                 text: msg,
                 channel: notification.slackchannel,

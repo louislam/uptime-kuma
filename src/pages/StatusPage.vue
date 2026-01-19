@@ -25,9 +25,7 @@
                         class="form-control"
                         data-testid="description-input"
                     ></textarea>
-                    <div class="form-text">
-                        {{ $t("markdownSupported") }}
-                    </div>
+                    <div class="form-text">{{ $t("markdownSupported") }}</div>
                 </div>
 
                 <!-- Footer Text -->
@@ -39,9 +37,7 @@
                         class="form-control"
                         data-testid="footer-text-input"
                     ></textarea>
-                    <div class="form-text">
-                        {{ $t("markdownSupported") }}
-                    </div>
+                    <div class="form-text">{{ $t("markdownSupported") }}</div>
                 </div>
 
                 <div class="my-3">
@@ -341,14 +337,20 @@
 
                     <!-- Incident Date -->
                     <div class="date mt-3">
-                        {{ $t("Date Created") }}: {{ $root.datetime(activeIncident.createdDate) }} ({{
-                            dateFromNow(activeIncident.createdDate)
-                        }})
+                        {{
+                            $t("dateCreatedAtFromNow", {
+                                date: $root.datetime(activeIncident.createdDate),
+                                fromNow: dateFromNow(activeIncident.createdDate),
+                            })
+                        }}
                         <br />
                         <span v-if="activeIncident.lastUpdatedDate">
-                            {{ $t("Last Updated") }}: {{ $root.datetime(activeIncident.lastUpdatedDate) }} ({{
-                                dateFromNow(activeIncident.lastUpdatedDate)
-                            }})
+                            {{
+                                $t("lastUpdatedAtFromNow", {
+                                    date: $root.datetime(activeIncident.lastUpdatedDate),
+                                    fromNow: dateFromNow(activeIncident.lastUpdatedDate),
+                                })
+                            }}
                         </span>
                     </div>
 
@@ -584,9 +586,9 @@
                 </p>
 
                 <div class="refresh-info mb-2">
-                    <div>{{ $t("Last Updated") }}: {{ lastUpdateTimeDisplay }}</div>
+                    <div>{{ $t("lastUpdatedAt", { date: lastUpdateTimeDisplay }) }}</div>
                     <div data-testid="update-countdown-text">
-                        {{ $tc("statusPageRefreshIn", [updateCountdownText]) }}
+                        {{ $t("statusPageRefreshIn", [updateCountdownText]) }}
                     </div>
                 </div>
             </footer>

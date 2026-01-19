@@ -511,7 +511,22 @@
                                 <select id="snmp_version" v-model="monitor.snmpVersion" class="form-select">
                                     <option value="1">SNMPv1</option>
                                     <option value="2c">SNMPv2c</option>
+                                    <option value="3">SNMPv3</option>
                                 </select>
+                            </div>
+                            <div v-if="monitor.type === 'snmp' && monitor.snmpVersion === '3'" class="my-3">
+                                <label for="snmp_v3_username" class="form-label">
+                                    {{ $t("snmpV3Username") }}
+                                </label>
+
+                                <input
+                                    id="snmp_v3_username"
+                                    v-model="monitor.snmpV3Username"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="SNMPv3 username"
+                                    required
+                                />
                             </div>
 
                             <div v-if="monitor.type === 'smtp'" class="my-3">
@@ -1119,7 +1134,7 @@
                                     :max="maxInterval"
                                     step="1"
                                     @focus="lowIntervalConfirmation.editedValue = true"
-                                    @blur="checkIntervalValue"
+                                    @blur="finishUpdateInterval"
                                 />
 
                                 <div class="form-text">
@@ -1147,7 +1162,7 @@
                                 </div>
                             </div>
 
-                            <div class="my-3">
+                            <div v-if="monitor.maxretries" class="my-3">
                                 <label for="retry-interval" class="form-label">
                                     {{ $t("Heartbeat Retry Interval") }}
                                     <span>({{ $t("retryCheckEverySecond", [monitor.retryInterval]) }})</span>
@@ -1164,6 +1179,24 @@
                                 />
                                 <div v-if="monitor.retryInterval < 20" class="form-text">
                                     {{ $t("minimumIntervalWarning") }}
+                                </div>
+                            </div>
+
+                            <!-- Retry only on status code failure: JSON Query only -->
+                            <div v-if="monitor.type === 'json-query' && monitor.maxretries > 0" class="my-3">
+                                <div class="form-check">
+                                    <input
+                                        id="retry-only-on-status-code-failure"
+                                        v-model="monitor.retryOnlyOnStatusCodeFailure"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                    />
+                                    <label for="retry-only-on-status-code-failure" class="form-check-label">
+                                        {{ $t("Only retry if status code check fails") }}
+                                    </label>
+                                </div>
+                                <div class="form-text">
+                                    {{ $t("retryOnlyOnStatusCodeFailureDescription") }}
                                 </div>
                             </div>
 
@@ -1243,6 +1276,36 @@
                                     {{ $t("Certificate Expiry Notification") }}
                                 </label>
                                 <div class="form-text"></div>
+                            </div>
+
+                            <!-- Screenshot Delay - Real Browser only -->
+                            <div v-if="monitor.type === 'real-browser'" class="my-3">
+                                <label for="screenshot-delay" class="form-label">
+                                    {{
+                                        $t("Screenshot Delay", {
+                                            milliseconds: $t("milliseconds", monitor.screenshot_delay),
+                                        })
+                                    }}
+                                </label>
+                                <input
+                                    id="screenshot-delay"
+                                    v-model="monitor.screenshot_delay"
+                                    type="number"
+                                    class="form-control"
+                                    min="0"
+                                    :max="Math.floor(monitor.interval * 1000 * 0.5)"
+                                    step="100"
+                                />
+                                <div class="form-text">
+                                    {{
+                                        $t("screenshotDelayDescription", {
+                                            maxValueMs: Math.floor(monitor.interval * 1000 * 0.5),
+                                        })
+                                    }}
+                                </div>
+                                <div v-if="monitor.screenshot_delay" class="form-text text-warning">
+                                    {{ $t("screenshotDelayWarning") }}
+                                </div>
                             </div>
 
                             <div v-if="showDomainExpiryNotification" class="my-3 form-check">
@@ -1493,6 +1556,89 @@
                                     />
                                     <div class="form-text">
                                         {{ $t("maxRedirectDescription") }}
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-if="
+                                        monitor.type === 'http' ||
+                                        monitor.type === 'keyword' ||
+                                        monitor.type === 'json-query'
+                                    "
+                                    class="my-3"
+                                >
+                                    <div class="form-check">
+                                        <input
+                                            id="saveErrorResponse"
+                                            v-model="monitor.saveErrorResponse"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                        <label class="form-check-label" for="saveErrorResponse">
+                                            {{ $t("saveErrorResponseForNotifications") }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        <i18n-t keypath="saveResponseDescription" tag="div" class="form-text">
+                                            <template #templateVariable>
+                                                <code>heartbeatJSON.response</code>
+                                            </template>
+                                        </i18n-t>
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-if="
+                                        (monitor.type === 'http' ||
+                                            monitor.type === 'keyword' ||
+                                            monitor.type === 'json-query') &&
+                                        monitor.saveErrorResponse
+                                    "
+                                    class="my-3"
+                                >
+                                    <div class="form-check">
+                                        <input
+                                            id="saveResponse"
+                                            v-model="monitor.saveResponse"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
+                                        <label class="form-check-label" for="saveResponse">
+                                            {{ $t("saveResponseForNotifications") }}
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        <i18n-t keypath="saveResponseDescription" tag="div" class="form-text">
+                                            <template #templateVariable>
+                                                <code>heartbeatJSON.response</code>
+                                            </template>
+                                        </i18n-t>
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-if="
+                                        (monitor.type === 'http' ||
+                                            monitor.type === 'keyword' ||
+                                            monitor.type === 'json-query') &&
+                                        (monitor.saveResponse || monitor.saveErrorResponse)
+                                    "
+                                    class="my-3"
+                                >
+                                    <label for="responseMaxLength" class="form-label">
+                                        {{ $t("responseMaxLength") }}
+                                    </label>
+                                    <input
+                                        id="responseMaxLength"
+                                        v-model="monitor.responseMaxLength"
+                                        type="number"
+                                        class="form-control"
+                                        required
+                                        min="0"
+                                        step="1"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("responseMaxLengthDescription") }}
                                     </div>
                                 </div>
 
@@ -2158,6 +2304,7 @@ const monitorDefaults = {
     retryInterval: 60,
     resendInterval: 0,
     maxretries: 0,
+    retryOnlyOnStatusCodeFailure: false,
     notificationIDList: {},
     ignoreTls: false,
     upsideDown: false,
@@ -2165,6 +2312,9 @@ const monitorDefaults = {
     domainExpiryNotification: true,
     maxredirects: 10,
     accepted_statuscodes: ["200-299"],
+    saveResponse: false,
+    saveErrorResponse: true,
+    responseMaxLength: 1024,
     dns_resolve_type: "A",
     dns_resolve_server: "1.1.1.1",
     docker_container: "",
@@ -2188,6 +2338,7 @@ const monitorDefaults = {
     kafkaProducerAllowAutoTopicCreation: false,
     gamedigGivenPortOnly: true,
     remote_browser: null,
+    screenshot_delay: 0,
     rabbitmqNodes: [],
     rabbitmqUsername: "",
     rabbitmqPassword: "",
@@ -2650,7 +2801,7 @@ message HealthCheckResponse {
                 this.monitor.jsonPath = "$";
             }
 
-            // Set default condition for for jsonPathOperator
+            // Set default condition for jsonPathOperator
             if (!this.monitor.jsonPathOperator) {
                 this.monitor.jsonPathOperator = "==";
             }
