@@ -1746,6 +1746,55 @@ class Monitor extends BeanModel {
             }
         }
 
+        // Validate JSON fields to prevent invalid JSON from being stored in database
+        if (this.kafkaProducerBrokers) {
+            try {
+                JSON.parse(this.kafkaProducerBrokers);
+            } catch (e) {
+                throw new Error(`Kafka Producer Brokers must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.kafkaProducerSaslOptions) {
+            try {
+                JSON.parse(this.kafkaProducerSaslOptions);
+            } catch (e) {
+                throw new Error(`Kafka Producer SASL Options must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.rabbitmqNodes) {
+            try {
+                JSON.parse(this.rabbitmqNodes);
+            } catch (e) {
+                throw new Error(`RabbitMQ Nodes must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.conditions) {
+            try {
+                JSON.parse(this.conditions);
+            } catch (e) {
+                throw new Error(`Conditions must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.headers) {
+            try {
+                JSON.parse(this.headers);
+            } catch (e) {
+                throw new Error(`Headers must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.accepted_statuscodes_json) {
+            try {
+                JSON.parse(this.accepted_statuscodes_json);
+            } catch (e) {
+                throw new Error(`Accepted status codes must be valid JSON: ${e.message}`);
+            }
+        }
+
         if (this.type === "ping") {
             // ping parameters validation
             if (this.packetSize && (this.packetSize < PING_PACKET_SIZE_MIN || this.packetSize > PING_PACKET_SIZE_MAX)) {
