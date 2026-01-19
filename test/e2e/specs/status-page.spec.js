@@ -210,6 +210,43 @@ test.describe("Status Page", () => {
         expect(await page.locator("head").innerHTML()).toContain(matomoSiteId);
     });
 
+    test("OG image and meta tags", async ({ page, request }) => {
+        test.setTimeout(60000);
+
+        await page.goto("./dashboard");
+        await login(page);
+
+        // Navigate to default status page
+        await page.goto("./status/default");
+        await page.waitForTimeout(1000);
+
+        // Verify OG meta tags exist
+        const ogTitle = await page.locator("meta[property='og:title']").getAttribute("content");
+        expect(ogTitle).toBeTruthy();
+
+        const ogType = await page.locator("meta[property='og:type']").getAttribute("content");
+        expect(ogType).toBe("website");
+
+        const twitterCard = await page.locator("meta[name='twitter:card']").getAttribute("content");
+        expect(twitterCard).toBe("summary_large_image");
+
+        // Test OG image API endpoint
+        const imageResponse = await request.get("/api/status-page/default/image");
+        expect(imageResponse.status()).toBe(200);
+        expect(imageResponse.headers()["content-type"]).toBe("image/png");
+
+        const buffer = await imageResponse.body();
+        expect(buffer.length).toBeGreaterThan(0);
+
+        // Verify PNG signature
+        const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+        expect(buffer.subarray(0, 8)).toEqual(pngSignature);
+
+        // Test 404 for non-existent page
+        const notFoundResponse = await request.get("/api/status-page/does-not-exist/image");
+        expect(notFoundResponse.status()).toBe(404);
+    });
+
     // @todo Test certificate expiry
     // @todo Test domain names
 
