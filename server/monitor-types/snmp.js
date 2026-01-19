@@ -70,6 +70,18 @@ class SNMPMonitorType extends MonitorType {
             if (status) {
                 heartbeat.status = UP;
                 heartbeat.msg = `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`;
+                // Extract numeric value for aggregation (will be passed to uptime calculator)
+                let numericValue = null;
+                if (typeof response === "number") {
+                    numericValue = response;
+                } else if (typeof response === "string") {
+                    // Try to parse as number
+                    const parsed = parseFloat(response);
+                    if (!isNaN(parsed) && isFinite(parsed)) {
+                        numericValue = parsed;
+                    }
+                }
+                heartbeat.numeric_value = numericValue;
             } else {
                 throw new Error(
                     `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`

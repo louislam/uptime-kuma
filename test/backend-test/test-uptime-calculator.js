@@ -99,6 +99,46 @@ describe("Uptime Calculator", () => {
         assert.strictEqual(c2.lastDailyUptimeData.up, 1);
     });
 
+    test("update() aggregates numeric values correctly", async () => {
+        UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
+
+        // Test numeric value aggregation
+        let c2 = new UptimeCalculator();
+
+        // First update with numeric value
+        await c2.update(UP, 0, 100);
+        const key1 = c2.getMinutelyKey(UptimeCalculator.currentDate);
+        assert.strictEqual(c2.minutelyUptimeDataList[key1].avgNumeric, 100);
+        assert.strictEqual(c2.minutelyUptimeDataList[key1].minNumeric, 100);
+        assert.strictEqual(c2.minutelyUptimeDataList[key1].maxNumeric, 100);
+
+        // Second update with different numeric value (same minute)
+        await c2.update(UP, 0, 200);
+        const minutelyData = c2.minutelyUptimeDataList[key1];
+        assert.strictEqual(minutelyData.avgNumeric, 150); // Average of 100 and 200
+        assert.strictEqual(minutelyData.minNumeric, 100); // Minimum
+        assert.strictEqual(minutelyData.maxNumeric, 200); // Maximum
+
+        // Third update with another numeric value
+        await c2.update(UP, 0, 50);
+        const minutelyData2 = c2.minutelyUptimeDataList[key1];
+        assert.strictEqual(minutelyData2.avgNumeric, 116.66666666666667); // Average of 100, 200, 50
+        assert.strictEqual(minutelyData2.minNumeric, 50); // Minimum
+        assert.strictEqual(minutelyData2.maxNumeric, 200); // Maximum
+
+        // Update without numeric value should not affect numeric aggregation
+        await c2.update(UP, 0, null);
+        const minutelyData3 = c2.minutelyUptimeDataList[key1];
+        assert.strictEqual(minutelyData3.avgNumeric, 116.66666666666667); // Should remain the same
+        assert.strictEqual(minutelyData3.minNumeric, 50);
+        assert.strictEqual(minutelyData3.maxNumeric, 200);
+
+        // Test that DOWN status doesn't update numeric values
+        await c2.update(DOWN, 0, 300);
+        const minutelyData4 = c2.minutelyUptimeDataList[key1];
+        assert.strictEqual(minutelyData4.avgNumeric, 116.66666666666667); // Should remain unchanged
+    });
+
     test("get24Hour() calculates uptime and average ping correctly", async () => {
         UptimeCalculator.currentDate = dayjs.utc("2023-08-12 20:46:59");
 

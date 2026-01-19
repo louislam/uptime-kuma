@@ -714,6 +714,8 @@ class Monitor extends BeanModel {
                         if (status) {
                             bean.status = UP;
                             bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
+                            // Extract numeric value for aggregation (will be passed to uptime calculator)
+                            bean.numeric_value = this.parseToNumberOrNull(response);
                         } else {
                             throw new Error(
                                 `JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
@@ -1095,7 +1097,8 @@ class Monitor extends BeanModel {
 
             // Calculate uptime
             let uptimeCalculator = await UptimeCalculator.getUptimeCalculator(this.id);
-            let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping));
+            const numericValue = bean.numeric_value ?? null;
+            let endTimeDayjs = await uptimeCalculator.update(bean.status, parseFloat(bean.ping), numericValue);
             bean.end_time = R.isoDateTimeMillis(endTimeDayjs);
 
             // Send to frontend
@@ -2108,6 +2111,28 @@ class Monitor extends BeanModel {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
             await this.checkCertExpiryNotifications(tlsInfo);
         }
+    }
+
+    /**
+     * Extract numeric value if the value is numeric
+     * @param {any} value Value to check and potentially extract
+     * @returns {number|null} Numeric value or null
+     */
+    parseToNumberOrNull(value) {
+        // Check if value is numeric (number or string that can be converted to number)
+        let numericValue = null;
+
+        if (typeof value === "number") {
+            numericValue = value;
+        } else if (typeof value === "string") {
+            // Try to parse as number
+            const parsed = parseFloat(value);
+            if (!isNaN(parsed) && isFinite(parsed)) {
+                numericValue = parsed;
+            }
+        }
+
+        return numericValue;
     }
 }
 
