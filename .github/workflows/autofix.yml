@@ -30,6 +30,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Update RDAP DNS data from IANA
+        run: wget -O server/model/rdap-dns.json https://data.iana.org/rdap/dns.json
+        continue-on-error: true
+
       - name: Auto-fix JavaScript/Vue linting issues
         run: npm run lint-fix:js
         continue-on-error: true
