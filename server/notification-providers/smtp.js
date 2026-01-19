@@ -14,10 +14,24 @@ class SMTP extends NotificationProvider {
             host: notification.smtpHost,
             port: notification.smtpPort,
             secure: notification.smtpSecure,
-            tls: {
-                rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
-            },
         };
+
+        // Handle TLS/STARTTLS options
+        if (notification.smtpSecure) {
+            // SMTPS (implicit TLS on port 465)
+            config.tls = {
+                rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
+            };
+        } else if (notification.smtpIgnoreSTARTTLS) {
+            // Disable STARTTLS completely for servers that don't support it
+            // Connection will remain unencrypted
+            config.ignoreTLS = true;
+        } else {
+            // Allow STARTTLS (default behavior for ports 25, 587)
+            config.tls = {
+                rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
+            };
+        }
 
         // Fix #1129
         if (notification.smtpDkimDomain) {

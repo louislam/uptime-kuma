@@ -585,6 +585,8 @@
     "secureOptionNone": "None / STARTTLS (25, 587)",
     "secureOptionTLS": "TLS (465)",
     "Ignore TLS Error": "Ignore TLS Error",
+    "Disable STARTTLS": "Disable STARTTLS",
+    "disableSTARTTLSDescription": "Enable this option for SMTP servers that do not support STARTTLS. This will send emails over an unencrypted connection.",
     "From Email": "From Email",
     "emailCustomisableContent": "Customisable content",
     "smtpLiquidIntroduction": "The following two fields are templatable via the Liquid templating Language. Please refer to the {0} for usage instructions. These are the available variables:",
