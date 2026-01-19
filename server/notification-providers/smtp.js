@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const NotificationProvider = require("./notification-provider");
+const { log } = require("../../src/util");
 
 class SMTP extends NotificationProvider {
     name = "smtp";
@@ -14,10 +15,24 @@ class SMTP extends NotificationProvider {
             host: notification.smtpHost,
             port: notification.smtpPort,
             secure: notification.smtpSecure,
-            tls: {
-                rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
-            },
         };
+
+        // Handle TLS/STARTTLS options
+        if (!notification.smtpSecure && notification.smtpIgnoreSTARTTLS) {
+            // Disable STARTTLS completely for servers that don't support it
+            // Connection will remain unencrypted
+            log.warn(
+                "notification",
+                `SMTP notification using unencrypted connection (STARTTLS disabled) to ${notification.smtpHost}:${notification.smtpPort}`
+            );
+            config.ignoreTLS = true;
+        } else {
+            // SMTPS (implicit TLS on port 465)
+            // or STARTTLS (default behavior for ports 25, 587)
+            config.tls = {
+                rejectUnauthorized: !notification.smtpIgnoreTLSError || false,
+            };
+        }
 
         // Fix #1129
         if (notification.smtpDkimDomain) {
