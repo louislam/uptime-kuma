@@ -7,8 +7,8 @@ const { Notification } = require("../notification");
 const TranslatableError = require("../translatable-error");
 const dayjs = require("dayjs");
 
-// Load static RDAP DNS data from local file
-const rdapDnsData = require("../data/rdap-dns.json");
+// Load static RDAP DNS data from local file (auto-updated by CI)
+const rdapDnsData = require("./rdap-dns.json");
 
 /**
  * Find the RDAP server for a given TLD
