@@ -217,7 +217,7 @@ describe("TCP Monitor", () => {
         const tcpMonitor = new TCPMonitorType();
 
         const monitor = {
-            hostname: "google.com",
+            hostname: "uptimekumavalidation.tchinchow.net",
             port: 443,
             expected_tls_alert: "certificate_required",
             timeout: 10,
