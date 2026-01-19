@@ -844,6 +844,7 @@ let needSetup = false;
                 bean.tlsKey = monitor.tlsKey;
                 bean.interval = monitor.interval;
                 bean.retryInterval = monitor.retryInterval;
+                bean.downRetryInterval = monitor.downRetryInterval;
                 bean.resendInterval = monitor.resendInterval;
                 bean.hostname = monitor.hostname;
                 bean.game = monitor.game;
