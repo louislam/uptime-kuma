@@ -26,7 +26,10 @@ class SMTP extends NotificationProvider {
         } else if (notification.smtpIgnoreSTARTTLS) {
             // Disable STARTTLS completely for servers that don't support it
             // Connection will remain unencrypted
-            log.warn("notification", `SMTP notification using unencrypted connection (STARTTLS disabled) to ${notification.smtpHost}:${notification.smtpPort}`);
+            log.warn(
+                "notification",
+                `SMTP notification using unencrypted connection (STARTTLS disabled) to ${notification.smtpHost}:${notification.smtpPort}`
+            );
             config.ignoreTLS = true;
         } else {
             // Allow STARTTLS (default behavior for ports 25, 587)
