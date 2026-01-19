@@ -50,8 +50,4 @@ jobs:
         run: npm run tsc
         continue-on-error: true
 
-      - name: Update RDAP DNS data from IANA
-        run: wget -O server/model/rdap-dns.json https://data.iana.org/rdap/dns.json
-        continue-on-error: true
-
       - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
