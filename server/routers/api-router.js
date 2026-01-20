@@ -598,6 +598,13 @@ function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, be
         status = flipStatus(status);
     }
 
+    // This ensures that any previous retry count is cleared immediately when the monitor recovers.
+    if (status === UP) {
+        bean.retries = 0;
+        bean.status = status;
+        return;
+    }
+
     if (previousHeartbeat) {
         if (previousHeartbeat.status === UP && status === DOWN) {
             // Going Down
