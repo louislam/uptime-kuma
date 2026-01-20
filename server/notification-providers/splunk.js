@@ -96,7 +96,7 @@ class Splunk extends NotificationProvider {
 
         const baseURL = await setting("primaryBaseURL");
         if (baseURL && monitorInfo) {
-            options.client = "Uptime Kuma";
+            options.client = "PSS Uptime";
             options.client_url = baseURL + getMonitorRelativeURL(monitorInfo.id);
         }
 

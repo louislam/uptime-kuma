@@ -26,7 +26,7 @@ class OneBot extends NotificationProvider {
                 },
             };
             config = this.getAxiosConfigWithProxy(config);
-            let pushText = "UptimeKuma Alert: " + msg;
+            let pushText = "PSS Uptime Alert: " + msg;
             let data = {
                 auto_escape: true,
                 message: pushText,

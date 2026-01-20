@@ -9,10 +9,9 @@
 const NotificationProvider = require("./notification-provider");
 const { DOWN, UP } = require("../../src/util");
 const { default: axios } = require("axios");
+const { setting } = require("../util-server");
 
 // bark is an APN bridge that sends notifications to Apple devices.
-
-const barkNotificationAvatar = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
 const successMessage = "Successes!";
 
 class Bark extends NotificationProvider {
@@ -30,17 +29,17 @@ class Bark extends NotificationProvider {
         }
 
         if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === UP) {
-            let title = "UptimeKuma Monitor Up";
+            let title = "PSS Uptime Monitor Up";
             return await this.postNotification(notification, title, msg, barkEndpoint);
         }
 
         if (msg != null && heartbeatJSON != null && heartbeatJSON["status"] === DOWN) {
-            let title = "UptimeKuma Monitor Down";
+            let title = "PSS Uptime Monitor Down";
             return await this.postNotification(notification, title, msg, barkEndpoint);
         }
 
         if (msg != null) {
-            let title = "UptimeKuma Message";
+            let title = "PSS Uptime Message";
             return await this.postNotification(notification, title, msg, barkEndpoint);
         }
     }
@@ -51,15 +50,17 @@ class Bark extends NotificationProvider {
      * @param {BeanModel} notification Notification to send
      * @returns {string} Additional URL parameters
      */
-    additionalParameters(notification) {
-        // set icon to uptime kuma icon, 11kb should be fine
-        let params = "?icon=" + barkNotificationAvatar;
+    async additionalParameters(notification) {
+        // set icon to PSS Uptime icon, 11kb should be fine
+        const baseURL = await setting("primaryBaseURL");
+        const iconUrl = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+        let params = "?icon=" + iconUrl;
         // grouping all our notifications
         if (notification.barkGroup != null) {
             params += "&group=" + notification.barkGroup;
         } else {
             // default name
-            params += "&group=" + "UptimeKuma";
+            params += "&group=" + "PSS Uptime";
         }
         // picked a sound, this should follow system's mute status when arrival
         if (notification.barkSound != null) {
@@ -101,17 +102,19 @@ class Bark extends NotificationProvider {
             // url encode title and subtitle
             title = encodeURIComponent(title);
             subtitle = encodeURIComponent(subtitle);
-            const params = this.additionalParameters(notification);
+            const params = await this.additionalParameters(notification);
             result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`, config);
         } else {
+            const baseURL = await setting("primaryBaseURL");
+            const iconUrl = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
             result = await axios.post(
                 endpoint,
                 {
                     title,
                     body: subtitle,
-                    icon: barkNotificationAvatar,
+                    icon: iconUrl,
                     sound: notification.barkSound || "telegraph", // default sound is telegraph
-                    group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
+                    group: notification.barkGroup || "PSS Uptime", // default group is PSS Uptime
                 },
                 config
             );

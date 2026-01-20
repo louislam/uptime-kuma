@@ -64,6 +64,20 @@
                     </select>
                 </div>
 
+                <!-- Logo URL Input -->
+                <div class="my-3">
+                    <label for="logo-url" class="form-label">{{ $t("Logo URL") }}</label>
+                    <input
+                        id="logo-url"
+                        v-model="imgDataUrl"
+                        type="text"
+                        class="form-control"
+                        placeholder="/logo.png or data:image/..."
+                        data-testid="logo-url-input"
+                    />
+                    <div class="form-text">{{ $t("Enter a logo URL (e.g., /logo.png) or upload using the logo above") }}</div>
+                </div>
+
                 <div class="my-3 form-check form-switch">
                     <input
                         id="showTags"
@@ -261,7 +275,6 @@
                     :width="128"
                     :height="128"
                     :langType="$i18n.locale"
-                    img-format="png"
                     :noCircle="true"
                     :noSquare="false"
                     @crop-success="cropSuccess"
@@ -569,7 +582,7 @@
                 <p v-if="config.showPoweredBy" data-testid="powered-by">
                     {{ $t("Powered by") }}
                     <a target="_blank" rel="noopener noreferrer" href="https://github.com/louislam/uptime-kuma">
-                        {{ $t("Uptime Kuma") }}
+                        {{ $t("PSS Uptime") }}
                     </a>
                 </p>
 
@@ -685,7 +698,7 @@ export default {
             incident: null,
             previousIncident: null,
             showImageCropUpload: false,
-            imgDataUrl: "/icon.svg",
+            imgDataUrl: "/logo.png",
             loadedTheme: false,
             loadedData: false,
             baseURL: "",
@@ -1200,7 +1213,7 @@ export default {
         },
 
         /**
-         * Reset logo image to default (public/icon.svg)
+         * Reset logo image to default (public/logo.png)
          * @returns {void}
          */
         resetToDefaultImage() {
@@ -1208,7 +1221,7 @@ export default {
                 return;
             }
 
-            this.imgDataUrl = "/icon.svg";
+            this.imgDataUrl = "/logo.png";
             this.config.icon = this.imgDataUrl;
             toast.success(this.$t("imageResetConfirmation"));
         },

@@ -31,7 +31,7 @@ class Pushbullet extends NotificationProvider {
             } else if (heartbeatJSON["status"] === DOWN) {
                 let downData = {
                     type: "note",
-                    title: "UptimeKuma Alert: " + monitorJSON["name"],
+                    title: "PSS Uptime Alert: " + monitorJSON["name"],
                     body:
                         "[🔴 Down] " +
                         heartbeatJSON["msg"] +
@@ -41,7 +41,7 @@ class Pushbullet extends NotificationProvider {
             } else if (heartbeatJSON["status"] === UP) {
                 let upData = {
                     type: "note",
-                    title: "UptimeKuma Alert: " + monitorJSON["name"],
+                    title: "PSS Uptime Alert: " + monitorJSON["name"],
                     body:
                         "[✅ Up] " +
                         heartbeatJSON["msg"] +

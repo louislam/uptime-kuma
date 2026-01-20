@@ -114,7 +114,7 @@ export default {
     },
     mounted() {
         this.$parent.notification.cellsyntOriginatortype ||= "alpha";
-        this.$parent.notification.cellsyntOriginator ||= "uptimekuma";
+        this.$parent.notification.cellsyntOriginator ||= "pss-uptime";
     },
 };
 </script>

@@ -1,9 +1,102 @@
-<svg width="640" height="640" viewBox="0 0 640 640" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
-<g transform="matrix(1 0 0 1 320 320)">
-<linearGradient id="S3" gradientUnits="userSpaceOnUse" gradientTransform="matrix(1 0 0 1 -319.99875 -320.0001577393)"  x1="259.78" y1="261.15" x2="463.85" y2="456.49">
-<stop stop-color="#5CDD8B"/>
-<stop offset="1" stop-color="#86E6A9"/>
-</linearGradient>
-<path style="stroke: rgb(242,242,242); stroke-opacity: 0.51; stroke-width: 200; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: url(#S3); fill-rule: nonzero; opacity: 1;"  transform=" translate(0, 0)" d="M 170.40125 -84.36016 C 224.09125 38.37984 224.09125 115.33984 170.40125 146.49984 C 89.85125000000001 193.23984000000002 -120.03875 207.48984000000002 -180.45875 135.63984 C -220.73875 87.73983999999999 -220.73875 14.399839999999998 -180.45875 -84.36016000000001 C -139.49875 -151.82016 -81.28875000000001 -185.55016 -5.828750000000014 -185.55016 C 69.64124999999999 -185.55016 128.38125 -151.82016000000002 170.40124999999998 -84.36016000000001 z" stroke-linecap="round" />
-</g>
+<svg width="640" height="640" viewBox="0 0 640 640" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4682B4;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E90FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#003366;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer dark blue border -->
+  <circle cx="320" cy="320" r="310" fill="#003366" stroke="#ffffff" stroke-width="8"/>
+  
+  <!-- Inner white circle border -->
+  <circle cx="320" cy="320" r="300" fill="none" stroke="#ffffff" stroke-width="3"/>
+  
+  <!-- Central illustration area -->
+  <g transform="translate(320, 320)">
+    <!-- Sky -->
+    <rect x="-200" y="-200" width="400" height="150" fill="url(#skyGrad)"/>
+    
+    <!-- Sun -->
+    <circle cx="-80" cy="-120" r="20" fill="#FFD700"/>
+    <path d="M -80,-120 L -80,-95 M -80,-120 L -65,-110 M -80,-120 L -95,-110 M -80,-120 L -80,-145 M -80,-120 L -65,-130 M -80,-120 L -95,-130" 
+          stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Ocean -->
+    <rect x="-200" y="-50" width="400" height="100" fill="url(#oceanGrad)"/>
+    
+    <!-- Land -->
+    <rect x="-200" y="50" width="400" height="150" fill="#228B22"/>
+    
+    <!-- Outrigger canoe (left side) -->
+    <g transform="translate(-140, -15)">
+      <!-- Sail -->
+      <path d="M -15,0 L -15,-35 L 8,-35 L 8,0 Z" fill="#D2B48C" stroke="#8B7355" stroke-width="1.5"/>
+      <!-- Hull -->
+      <ellipse cx="0" cy="5" rx="25" ry="7" fill="#654321"/>
+      <!-- Outrigger -->
+      <ellipse cx="-22" cy="8" rx="7" ry="4" fill="#654321"/>
+      <line x1="-18" y1="5" x2="-22" y2="8" stroke="#654321" stroke-width="1.5"/>
+      <!-- Navigator -->
+      <circle cx="-3" cy="-3" r="5" fill="#8B4513"/>
+      <rect x="-6" y="3" width="5" height="7" fill="#F5DEB3"/>
+    </g>
+    
+    <!-- Stick chart (center) - simplified -->
+    <g transform="translate(0, -5)">
+      <line x1="-25" y1="-15" x2="25" y2="15" stroke="#D2B48C" stroke-width="2.5"/>
+      <line x1="25" y1="-15" x2="-25" y2="15" stroke="#D2B48C" stroke-width="2.5"/>
+      <line x1="0" y1="-25" x2="0" y2="25" stroke="#D2B48C" stroke-width="2.5"/>
+      <line x1="-25" y1="0" x2="25" y2="0" stroke="#D2B48C" stroke-width="2.5"/>
+      <circle cx="0" cy="0" r="6" fill="#D2B48C"/>
+    </g>
+    
+    <!-- Left student (sitting) -->
+    <g transform="translate(-110, 65)">
+      <circle cx="0" cy="0" r="7" fill="#8B4513"/>
+      <rect x="-5" y="8" width="10" height="12" fill="#FFFFFF"/>
+      <rect x="-3" y="0" width="6" height="8" fill="#FF0000"/>
+    </g>
+    
+    <!-- Right student (reading) -->
+    <g transform="translate(110, 75)">
+      <circle cx="0" cy="0" r="7" fill="#8B4513"/>
+      <rect x="-7" y="8" width="14" height="10" fill="#FFFF00"/>
+      <rect x="-5" y="18" width="10" height="7" fill="#003366"/>
+      <!-- Book -->
+      <rect x="-4" y="12" width="8" height="6" fill="#FFFFFF" stroke="#000000" stroke-width="0.8"/>
+    </g>
+    
+    <!-- Palm tree (right side) -->
+    <g transform="translate(140, 55)">
+      <!-- Trunk -->
+      <rect x="-2.5" y="0" width="5" height="35" fill="#8B4513"/>
+      <!-- Fronds -->
+      <path d="M 0,0 Q -12,-8 -16,-16 Q -8,-12 0,0" fill="#228B22"/>
+      <path d="M 0,0 Q 12,-8 16,-16 Q 8,-12 0,0" fill="#228B22"/>
+      <path d="M 0,0 Q -8,-12 -12,-20 Q -4,-16 0,0" fill="#228B22"/>
+      <path d="M 0,0 Q 8,-12 12,-20 Q 4,-16 0,0" fill="#228B22"/>
+    </g>
+  </g>
+  
+  <!-- Top text arc -->
+  <path id="topTextPath" d="M 150,200 A 200,200 0 0,1 490,200" fill="none" stroke="none"/>
+  <text font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#003366">
+    <textPath href="#topTextPath" startOffset="50%" text-anchor="middle">
+      <tspan dy="-5">MARSHALL ISLANDS</tspan>
+      <tspan x="0" dy="18">PUBLIC SCHOOL SYSTEM</tspan>
+    </textPath>
+  </text>
+  
+  <!-- Bottom text arc -->
+  <path id="bottomTextPath" d="M 490,440 A 200,200 0 0,1 150,440" fill="none" stroke="none"/>
+  <text font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#003366">
+    <textPath href="#bottomTextPath" startOffset="50%" text-anchor="middle">
+      <tspan dy="5">"EJ JU EL BWE EN LONJAT"</tspan>
+    </textPath>
+  </text>
 </svg>

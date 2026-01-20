@@ -1,6 +1,7 @@
 const NotificationProvider = require("./notification-provider");
 const axios = require("axios");
 const { DOWN, UP } = require("../../src/util");
+const { setting } = require("../util-server");
 
 class Discord extends NotificationProvider {
     name = "discord";
@@ -41,7 +42,8 @@ class Discord extends NotificationProvider {
                     content: msg,
                 };
                 if (!webhookHasAvatar) {
-                    discordtestdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                    const baseURL = await setting("primaryBaseURL");
+                    discordtestdata.avatar_url = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
                 }
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
@@ -96,7 +98,8 @@ class Discord extends NotificationProvider {
                     ],
                 };
                 if (!webhookHasAvatar) {
-                    discorddowndata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                    const baseURL = await setting("primaryBaseURL");
+                    discorddowndata.avatar_url = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
                 }
                 if (notification.discordChannelType === "createNewForumPost") {
                     discorddowndata.thread_name = notification.postName;
@@ -169,7 +172,8 @@ class Discord extends NotificationProvider {
                     ],
                 };
                 if (!webhookHasAvatar) {
-                    discordupdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                    const baseURL = await setting("primaryBaseURL");
+                    discordupdata.avatar_url = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
                 }
 
                 if (notification.discordChannelType === "createNewForumPost") {

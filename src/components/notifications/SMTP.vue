@@ -86,7 +86,7 @@
                 class="form-control"
                 required
                 autocomplete="false"
-                placeholder='"Uptime Kuma" &lt;example@kuma.pet&gt;'
+                placeholder='"PSS Uptime" &lt;example@kuma.pet&gt;'
             />
             <div class="form-text"></div>
         </div>

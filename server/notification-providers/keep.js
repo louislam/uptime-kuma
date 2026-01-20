@@ -29,7 +29,7 @@ class Keep extends NotificationProvider {
                 url = url.slice(0, -1);
             }
 
-            let webhookURL = url + "/alerts/event/uptimekuma";
+            let webhookURL = url + "/alerts/event/pss-uptime";
 
             config = this.getAxiosConfigWithProxy(config);
 

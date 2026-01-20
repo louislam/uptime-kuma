@@ -1,21 +1,18 @@
 <div align="center" width="100%">
-    <img src="./public/icon.svg" width="128" alt="Uptime Kuma Logo" />
+    <img src="./public/logo.png" width="128" alt="PSS Uptime Logo" />
 </div>
 
-# Uptime Kuma
+# PSS Uptime
 
-Uptime Kuma is an easy-to-use self-hosted monitoring tool.
+PSS Uptime is an easy-to-use self-hosted monitoring tool for the Marshall Islands Public School System.
 
-<a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/stars/louislam/uptime-kuma?style=flat" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/pulls/louislam/uptime-kuma" /></a> <a target="_blank" href="https://hub.docker.com/r/louislam/uptime-kuma"><img src="https://img.shields.io/docker/v/louislam/uptime-kuma/2?label=docker%20image%20ver." /></a> <a target="_blank" href="https://github.com/louislam/uptime-kuma"><img src="https://img.shields.io/github/last-commit/louislam/uptime-kuma" /></a> <a target="_blank" href="https://opencollective.com/uptime-kuma"><img src="https://opencollective.com/uptime-kuma/total/badge.svg?label=Open%20Collective%20Backers&color=brightgreen" /></a>
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/louislam?label=GitHub%20Sponsors)](https://github.com/sponsors/louislam) <a href="https://weblate.kuma.pet/projects/uptime-kuma/uptime-kuma/">
-<img src="https://weblate.kuma.pet/widgets/uptime-kuma/-/svg-badge.svg" alt="Translation status" />
-</a>
+> **Note:** This project is based on [Uptime Kuma](https://github.com/louislam/uptime-kuma), an open-source monitoring tool created by [louislam](https://github.com/louislam). We extend our gratitude to the Uptime Kuma project and its contributors for their excellent work.
 
-<img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="Uptime Kuma Dashboard Screenshot" />
+<img src="https://user-images.githubusercontent.com/1336778/212262296-e6205815-ad62-488c-83ec-a5b0d0689f7c.jpg" width="700" alt="PSS Uptime Dashboard Screenshot" />
 
 ## 🥔 Live Demo
 
-Try it!
+For a live demo of the original Uptime Kuma project, visit:
 
 Demo Server (Location: Frankfurt - Germany): <https://demo.kuma.pet/start-demo>
 
@@ -23,9 +20,11 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 
 ## ⭐ Features
 
+PSS Uptime includes all the powerful features from Uptime Kuma:
+
 - Monitoring uptime for HTTP(s) / TCP / HTTP(s) Keyword / HTTP(s) Json Query / Websocket / Ping / DNS Record / Push / Steam Game Server / Docker Containers
 - Fancy, Reactive, Fast UI/UX
-- Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services, click here for the full list](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
+- Notifications via Telegram, Discord, Gotify, Slack, Pushover, Email (SMTP), and [90+ notification services](https://github.com/louislam/uptime-kuma/tree/master/src/components/notifications)
 - 20-second intervals
 - [Multi Languages](https://github.com/louislam/uptime-kuma/tree/master/src/lang)
 - Multiple status pages
@@ -40,13 +39,12 @@ It is a temporary live demo, all data will be deleted after 10 minutes. Sponsore
 ### 🐳 Docker Compose
 
 ```bash
-mkdir uptime-kuma
-cd uptime-kuma
-curl -o compose.yaml https://raw.githubusercontent.com/louislam/uptime-kuma/master/compose.yaml
-docker compose up -d
+git clone <your-repo-url>
+cd PSS-Uptime
+docker compose up -d --build
 ```
 
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
+PSS Uptime is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
 > [!WARNING]
 > File Systems like **NFS** (Network File System) are **NOT** supported. Please map to a local directory or volume.
@@ -54,10 +52,11 @@ Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001
 ### 🐳 Docker Command
 
 ```bash
-docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:2
+docker build -t pss-uptime -f docker/dockerfile --target release .
+docker run -d --restart=always -p 3001:3001 -v pss-uptime:/app/data --name pss-uptime pss-uptime
 ```
 
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
+PSS Uptime is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
 If you want to limit exposure to localhost only:
 
@@ -76,11 +75,11 @@ Requirements:
   - ❌ Replit / Heroku
 - [Node.js](https://nodejs.org/en/download/) >= 20.4
 - [Git](https://git-scm.com/downloads)
-- [pm2](https://pm2.keymetrics.io/) - For running Uptime Kuma in the background
+- [pm2](https://pm2.keymetrics.io/) - For running PSS Uptime in the background
 
 ```bash
-git clone https://github.com/louislam/uptime-kuma.git
-cd uptime-kuma
+git clone <your-repo-url>
+cd PSS-Uptime
 npm run setup
 
 # Option 1. Try it
@@ -91,10 +90,10 @@ node server/server.js
 npm install pm2 -g && pm2 install pm2-logrotate
 
 # Start Server
-pm2 start server/server.js --name uptime-kuma
+pm2 start server/server.js --name pss-uptime
 ```
 
-Uptime Kuma is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
+PSS Uptime is now running on all network interfaces (e.g. http://localhost:3001 or http://your-ip:3001).
 
 More useful PM2 Commands
 
@@ -108,96 +107,97 @@ pm2 startup && pm2 save
 
 ### Advanced Installation
 
-If you need more options or need to browse via a reverse proxy, please read:
+If you need more options or need to browse via a reverse proxy, please refer to the original Uptime Kuma documentation:
 
 <https://github.com/louislam/uptime-kuma/wiki/%F0%9F%94%A7-How-to-Install>
 
 ## 🆙 How to Update
 
-Please read:
+For update instructions, please refer to the original Uptime Kuma documentation:
 
 <https://github.com/louislam/uptime-kuma/wiki/%F0%9F%86%99-How-to-Update>
 
 ## 🆕 What's Next?
 
-I will assign requests/issues to the next milestone.
+For the latest features and roadmap, please check the original Uptime Kuma project:
 
 <https://github.com/louislam/uptime-kuma/milestones>
 
-## ❤️ Sponsors
+## ❤️ Credits & Acknowledgments
 
-Thank you so much! (GitHub Sponsors will be updated manually. OpenCollective sponsors will be updated automatically, the list will be cached by GitHub though. It may need some time to be updated)
+PSS Uptime is based on [Uptime Kuma](https://github.com/louislam/uptime-kuma), an excellent open-source monitoring tool created by [louislam](https://github.com/louislam) and maintained by a dedicated community of contributors.
 
-<img src="https://uptime.kuma.pet/sponsors?v=6" alt="Uptime Kuma Sponsors" />
+We would like to express our gratitude to:
+- [louislam](https://github.com/louislam) for creating and maintaining Uptime Kuma
+- All contributors to the Uptime Kuma project
+- The open-source community that makes projects like this possible
+
+If you find PSS Uptime useful, please consider supporting the original Uptime Kuma project:
+- [GitHub Sponsors](https://github.com/sponsors/louislam)
+- [Open Collective](https://opencollective.com/uptime-kuma)
 
 ## 🖼 More Screenshots
 
 Light Mode:
 
-<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="Uptime Kuma Light Mode Screenshot of how the Dashboard looks" />
+<img src="https://uptime.kuma.pet/img/light.jpg" width="512" alt="PSS Uptime Light Mode Screenshot of how the Dashboard looks" />
 
 Status Page:
 
-<img src="https://user-images.githubusercontent.com/1336778/134628766-a3fe0981-0926-4285-ab46-891a21c3e4cb.png" width="512" alt="Uptime Kuma Status Page Screenshot" />
+<img src="https://user-images.githubusercontent.com/1336778/134628766-a3fe0981-0926-4285-ab46-891a21c3e4cb.png" width="512" alt="PSS Uptime Status Page Screenshot" />
 
 Settings Page:
 
-<img src="https://louislam.net/uptimekuma/2.jpg" width="400" alt="Uptime Kuma Settings Page Screenshot" />
+<img src="https://louislam.net/uptimekuma/2.jpg" width="400" alt="PSS Uptime Settings Page Screenshot" />
 
 Telegram Notification Sample:
 
-<img src="https://louislam.net/uptimekuma/3.jpg" width="400" alt="Uptime Kuma Telegram Notification Sample Screenshot" />
+<img src="https://louislam.net/uptimekuma/3.jpg" width="400" alt="PSS Uptime Telegram Notification Sample Screenshot" />
 
-## Motivation
+## About PSS Uptime
 
-- I was looking for a self-hosted monitoring tool like "Uptime Robot", but it is hard to find a suitable one. One of the closest ones is statping. Unfortunately, it is not stable and no longer maintained.
-- Wanted to build a fancy UI.
-- Learn Vue 3 and vite.js.
-- Show the power of Bootstrap 5.
-- Try to use WebSocket with SPA instead of a REST API.
-- Deploy my first Docker image to Docker Hub.
+PSS Uptime is a customized version of Uptime Kuma for the Marshall Islands Public School System. This project maintains all the powerful features of the original Uptime Kuma while being tailored for the specific needs of the PSS organization.
 
-If you love this project, please consider giving it a ⭐.
+### Original Uptime Kuma Motivation
+
+The original Uptime Kuma project was created with the following motivations:
+- A need for a self-hosted monitoring tool like "Uptime Robot"
+- Building a fancy, modern UI
+- Learning Vue 3 and vite.js
+- Showcasing Bootstrap 5 capabilities
+- Using WebSocket with SPA instead of REST API
+- Deploying Docker images to Docker Hub
+
+If you love this project, please consider:
+- Giving the original [Uptime Kuma project](https://github.com/louislam/uptime-kuma) a ⭐
+- Supporting the Uptime Kuma project through [GitHub Sponsors](https://github.com/sponsors/louislam) or [Open Collective](https://opencollective.com/uptime-kuma)
 
 ## 🗣️ Discussion / Ask for Help
 
-⚠️ For any general or technical questions, please don't send me an email, as I am unable to provide support in that manner. I will not respond if you ask questions there.
+For questions about PSS Uptime, please use the appropriate channels for this project.
 
-I recommend using Google, GitHub Issues, or Uptime Kuma's subreddit for finding answers to your question. If you cannot find the information you need, feel free to ask:
-
-- [GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
+For questions about the original Uptime Kuma project, please refer to:
+- [Uptime Kuma GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
 - [Subreddit (r/UptimeKuma)](https://www.reddit.com/r/UptimeKuma/)
 
-My Reddit account: [u/louislamlam](https://reddit.com/u/louislamlam)
-You can mention me if you ask a question on the subreddit.
+⚠️ For any general or technical questions about Uptime Kuma, please don't send emails to the original author, as they are unable to provide support in that manner.
 
 ## Contributions
 
-### Create Pull Requests
+### Contributing to PSS Uptime
 
-Pull requests are awesome.
-To keep reviews fast and effective, please make sure you’ve [read our pull request guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma).
+Contributions to PSS Uptime are welcome! Please follow the project's contribution guidelines.
 
-### Test Pull Requests
+### Contributing to Uptime Kuma
 
-There are a lot of pull requests right now, but I don't have time to test them all.
+If you'd like to contribute to the original Uptime Kuma project (which benefits this project as well), please refer to:
 
-If you want to help, you can check this:
-<https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests>
+- [Uptime Kuma Contributing Guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma)
+- [Test Pull Requests](https://github.com/louislam/uptime-kuma/wiki/Test-Pull-Requests)
+- [Latest Beta Releases](https://github.com/louislam/uptime-kuma/releases)
+- [Report Bugs / Feature Requests](https://github.com/louislam/uptime-kuma/issues)
+- [Translations](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md)
 
-### Test Beta Version
+## License
 
-Check out the latest beta release here: <https://github.com/louislam/uptime-kuma/releases>
-
-### Bug Reports / Feature Requests
-
-If you want to report a bug or request a new feature, feel free to open a [new issue](https://github.com/louislam/uptime-kuma/issues).
-
-### Translations
-
-If you want to translate Uptime Kuma into your language, please visit [Weblate Readme](https://github.com/louislam/uptime-kuma/blob/master/src/lang/README.md).
-
-### Spelling & Grammar
-
-Feel free to correct the grammar in the documentation or code.
-My mother language is not English and my grammar is not that great.
+This project is based on Uptime Kuma and follows the same license. Please refer to the [LICENSE](LICENSE) file for details.
