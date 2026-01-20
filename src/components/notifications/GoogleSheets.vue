@@ -1,111 +1,116 @@
 <template>
     <div class="mb-3">
-        <label for="google-sheets-spreadsheet-id" class="form-label">{{ $t("Spreadsheet ID") }}</label>
+        <label for="google-sheets-webhook-url" class="form-label">{{ $t("Google Apps Script Webhook URL") }}</label>
         <input
-            id="google-sheets-spreadsheet-id"
-            v-model="$parent.notification.googleSheetsSpreadsheetId"
+            id="google-sheets-webhook-url"
+            v-model="$parent.notification.googleSheetsWebhookUrl"
             type="text"
             class="form-control"
             required
-            placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+            placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"
         />
         <div class="form-text">
-            {{ $t("The ID from your Google Sheets URL") }}
+            <p>{{ $t("Deploy a Google Apps Script as a web app and paste the URL here") }}</p>
         </div>
+    </div>
+
+    <div class="alert alert-info" style="border-radius: 8px;">
+        <h6 style="margin-bottom: 12px; font-weight: 600;">{{ $t("Quick Setup Guide") }}:</h6>
+        <ol style="margin-bottom: 0; padding-left: 20px; line-height: 1.8;">
+            <li>{{ $t("Open your Google Spreadsheet") }}</li>
+            <li>{{ $t("Go to Extensions → Apps Script") }}</li>
+            <li>{{ $t("Paste the script code (see below)") }}</li>
+            <li>{{ $t("Click Deploy → New deployment → Web app") }}</li>
+            <li>{{ $t("Set 'Execute as: Me' and 'Who has access: Anyone'") }}</li>
+            <li>{{ $t("Copy the web app URL and paste it above") }}</li>
+        </ol>
     </div>
 
     <div class="mb-3">
-        <label for="google-sheets-sheet-name" class="form-label">{{ $t("Sheet Name") }}</label>
-        <input
-            id="google-sheets-sheet-name"
-            v-model="$parent.notification.googleSheetsSheetName"
-            type="text"
-            class="form-control"
-            placeholder="Sheet1"
-        />
-        <div class="form-text">
-            {{ $t("The name of the sheet/tab (default: Sheet1)") }}
-        </div>
+        <button 
+            type="button" 
+            class="btn btn-secondary btn-sm" 
+            @click="showScript = !showScript"
+        >
+            {{ showScript ? $t("Hide Script Code") : $t("Show Script Code") }}
+        </button>
     </div>
 
-    <div class="mb-3">
-        <label for="google-sheets-access-token" class="form-label">{{ $t("Access Token") }}</label>
-        <HiddenInput
-            id="google-sheets-access-token"
-            v-model="$parent.notification.googleSheetsAccessToken"
-            :required="true"
-            autocomplete="new-password"
-            placeholder="ya29.a0AfH6SMBx..."
-        ></HiddenInput>
-        <div class="form-text">
-            <p>{{ $t("Google OAuth2 Access Token or Service Account Token") }}</p>
-            <a href="https://developers.google.com/sheets/api/guides/authorizing" target="_blank" rel="noopener noreferrer">
-                {{ $t("Learn how to get an access token") }}
-            </a>
-        </div>
-    </div>
-
-    <div class="mb-3">
-        <div class="form-check">
-            <input
-                id="google-sheets-custom-format"
-                v-model="$parent.notification.googleSheetsCustomFormat"
-                class="form-check-input"
-                type="checkbox"
-            />
-            <label class="form-check-label" for="google-sheets-custom-format">
-                {{ $t("Custom Column Format") }}
-            </label>
-        </div>
-    </div>
-
-    <div v-if="$parent.notification.googleSheetsCustomFormat" class="mb-3">
-        <label for="google-sheets-columns" class="form-label">{{ $t("Column Names") }}</label>
-        <input
-            id="google-sheets-columns"
-            v-model="$parent.notification.googleSheetsColumns"
-            type="text"
-            class="form-control"
-            placeholder="timestamp,status,monitor,message,responsetime"
-        />
-        <div class="form-text">
-            <p>{{ $t("Comma-separated column names. Available columns:") }}</p>
-            <ul>
-                <li><code>timestamp</code> - {{ $t("Current date and time") }}</li>
-                <li><code>status</code> - {{ $t("UP/DOWN status") }}</li>
-                <li><code>monitor</code> - {{ $t("Monitor name") }}</li>
-                <li><code>url</code> - {{ $t("Monitor URL") }}</li>
-                <li><code>message</code> - {{ $t("Notification message") }}</li>
-                <li><code>responsetime</code> - {{ $t("Response time in ms") }}</li>
-                <li><code>statuscode</code> - {{ $t("HTTP status code") }}</li>
-            </ul>
-        </div>
-    </div>
-
-    <div v-else class="mb-3">
-        <div class="alert alert-info">
-            {{ $t("Default columns: Timestamp, Status, Monitor Name, URL, Message, Response Time, Status Code") }}
-        </div>
+    <div v-if="showScript" class="mb-3">
+        <label class="form-label">{{ $t("Google Apps Script Code") }}:</label>
+        <textarea 
+            readonly 
+            class="form-control" 
+            rows="15" 
+            style="font-family: monospace; font-size: 12px;"
+        >function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  
+  // Add header row if sheet is empty
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['Timestamp', 'Status', 'Monitor Name', 'URL', 'Message', 'Response Time', 'Status Code']);
+  }
+  
+  // Add data row
+  sheet.appendRow([
+    data.timestamp,
+    data.status,
+    data.monitorName,
+    data.monitorUrl,
+    data.message,
+    data.responseTime,
+    data.statusCode
+  ]);
+  
+  return ContentService.createTextOutput(JSON.stringify({result: 'success'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}</textarea>
+        <button 
+            type="button" 
+            class="btn btn-outline-secondary btn-sm mt-2" 
+            @click="copyScript"
+        >
+            {{ $t("Copy to Clipboard") }}
+        </button>
     </div>
 </template>
 
 <script>
-import HiddenInput from "../HiddenInput.vue";
-
 export default {
-    components: {
-        HiddenInput,
+    data() {
+        return {
+            showScript: false
+        };
     },
-    mounted() {
-        if (typeof this.$parent.notification.googleSheetsSheetName === "undefined") {
-            this.$parent.notification.googleSheetsSheetName = "Sheet1";
+    methods: {
+        copyScript() {
+            const scriptCode = `function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  
+  // Add header row if sheet is empty
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['Timestamp', 'Status', 'Monitor Name', 'URL', 'Message', 'Response Time', 'Status Code']);
+  }
+  
+  // Add data row
+  sheet.appendRow([
+    data.timestamp,
+    data.status,
+    data.monitorName,
+    data.monitorUrl,
+    data.message,
+    data.responseTime,
+    data.statusCode
+  ]);
+  
+  return ContentService.createTextOutput(JSON.stringify({result: 'success'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+            navigator.clipboard.writeText(scriptCode);
+            alert(this.$t("Copied to clipboard!"));
         }
-        if (typeof this.$parent.notification.googleSheetsCustomFormat === "undefined") {
-            this.$parent.notification.googleSheetsCustomFormat = false;
-        }
-        if (typeof this.$parent.notification.googleSheetsColumns === "undefined") {
-            this.$parent.notification.googleSheetsColumns = "timestamp,status,monitor,message,responsetime";
-        }
-    },
+    }
 };
 </script>

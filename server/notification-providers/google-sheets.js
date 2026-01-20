@@ -31,82 +31,26 @@ class GoogleSheets extends NotificationProvider {
                 statusCode = heartbeatJSON.status || "N/A";
             }
 
-            // Prepare row data based on user configuration
-            let rowData = [];
-            
-            if (notification.googleSheetsCustomFormat) {
-                // Custom format - user defines their own columns
-                const customColumns = notification.googleSheetsColumns || "timestamp,status,monitor,message";
-                const columns = customColumns.split(",").map(col => col.trim());
-                
-                columns.forEach(column => {
-                    switch (column.toLowerCase()) {
-                        case "timestamp":
-                            rowData.push(timestamp);
-                            break;
-                        case "status":
-                            rowData.push(status);
-                            break;
-                        case "monitor":
-                        case "monitorname":
-                            rowData.push(monitorName);
-                            break;
-                        case "url":
-                        case "monitorurl":
-                            rowData.push(monitorUrl);
-                            break;
-                        case "message":
-                        case "msg":
-                            rowData.push(msg);
-                            break;
-                        case "responsetime":
-                        case "ping":
-                            rowData.push(responseTime);
-                            break;
-                        case "statuscode":
-                            rowData.push(statusCode);
-                            break;
-                        default:
-                            rowData.push("");
-                    }
-                });
-            } else {
-                // Default format
-                rowData = [
-                    timestamp,
-                    status,
-                    monitorName,
-                    monitorUrl,
-                    msg,
-                    responseTime,
-                    statusCode
-                ];
-            }
-
-            // Prepare the request to Google Sheets API
-            const spreadsheetId = notification.googleSheetsSpreadsheetId;
-            const sheetName = notification.googleSheetsSheetName || "Sheet1";
-            const range = `${sheetName}!A:Z`;
-
-            // Use Google Sheets API v4 to append data
-            const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append`;
+            // Send data to Google Apps Script webhook
+            const webhookUrl = notification.googleSheetsWebhookUrl;
             
             const config = this.getAxiosConfigWithProxy({
-                params: {
-                    valueInputOption: "USER_ENTERED",
-                    insertDataOption: "INSERT_ROWS"
-                },
                 headers: {
-                    "Authorization": `Bearer ${notification.googleSheetsAccessToken}`,
                     "Content-Type": "application/json"
                 }
             });
 
             const data = {
-                values: [rowData]
+                timestamp: timestamp,
+                status: status,
+                monitorName: monitorName,
+                monitorUrl: monitorUrl,
+                message: msg,
+                responseTime: responseTime,
+                statusCode: statusCode
             };
 
-            await axios.post(apiUrl, data, config);
+            await axios.post(webhookUrl, data, config);
 
             return okMsg;
         } catch (error) {
