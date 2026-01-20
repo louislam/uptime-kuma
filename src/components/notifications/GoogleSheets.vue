@@ -13,9 +13,9 @@
         </div>
     </div>
 
-    <div class="alert alert-info" style="border-radius: 8px;">
-        <h6 style="margin-bottom: 12px; font-weight: 600;">{{ $t("Quick Setup Guide") }}:</h6>
-        <ol style="margin-bottom: 0; padding-left: 20px; line-height: 1.8;">
+    <div class="alert alert-info" style="border-radius: 8px">
+        <h6 style="margin-bottom: 12px; font-weight: 600">{{ $t("Quick Setup Guide") }}:</h6>
+        <ol style="margin-bottom: 0; padding-left: 20px; line-height: 1.8">
             <li>{{ $t("Open your Google Spreadsheet") }}</li>
             <li>{{ $t("Go to Extensions → Apps Script") }}</li>
             <li>{{ $t("Paste the script code (see below)") }}</li>
@@ -27,18 +27,14 @@
 
     <ToggleSection :heading="$t('Google Apps Script Code')">
         <div class="mb-3">
-            <textarea 
-                readonly 
-                class="form-control" 
-                rows="15" 
-                style="font-family: monospace; font-size: 12px;"
+            <textarea
+                readonly
+                class="form-control"
+                rows="15"
+                style="font-family: monospace; font-size: 12px"
                 :value="scriptCode"
             />
-            <button 
-                type="button" 
-                class="btn btn-outline-secondary btn-sm mt-2" 
-                @click="copyScript"
-            >
+            <button type="button" class="btn btn-outline-secondary btn-sm mt-2" @click="copyScript">
                 {{ $t("Copy to Clipboard") }}
             </button>
         </div>
@@ -82,7 +78,7 @@ export default {
     computed: {
         scriptCode() {
             return GOOGLE_APPS_SCRIPT_CODE;
-        }
+        },
     },
     methods: {
         copyScript() {
@@ -92,7 +88,7 @@ export default {
             } catch (error) {
                 alert(this.$t("Failed to copy to clipboard"));
             }
-        }
-    }
+        },
+    },
 };
 </script>
