@@ -13,6 +13,7 @@ test.describe("Incident History", () => {
         await login(page);
 
         await page.goto("./add-status-page");
+        await expect(page.getByTestId("name-input")).toBeVisible();
         await page.getByTestId("name-input").fill("Empty Test");
         await page.getByTestId("slug-input").fill("empty-test");
         await page.getByTestId("submit-button").click();
@@ -34,6 +35,7 @@ test.describe("Incident History", () => {
         await login(page);
 
         await page.goto("./add-status-page");
+        await expect(page.getByTestId("name-input")).toBeVisible();
         await page.getByTestId("name-input").fill("Dedup Test");
         await page.getByTestId("slug-input").fill("dedup-test");
         await page.getByTestId("submit-button").click();
@@ -63,6 +65,7 @@ test.describe("Incident History", () => {
         await login(page);
 
         await page.goto("./add-status-page");
+        await expect(page.getByTestId("name-input")).toBeVisible();
         await page.getByTestId("name-input").fill("Resolve Test");
         await page.getByTestId("slug-input").fill("resolve-test");
         await page.getByTestId("submit-button").click();
@@ -100,6 +103,7 @@ test.describe("Incident History", () => {
         await login(page);
 
         await page.goto("./add-status-page");
+        await expect(page.getByTestId("name-input")).toBeVisible();
         await page.getByTestId("name-input").fill("Pagination Test");
         await page.getByTestId("slug-input").fill("pagination-test");
         await page.getByTestId("submit-button").click();
