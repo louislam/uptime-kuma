@@ -328,7 +328,7 @@
                     data-testid="incident"
                 >
                     <h4 class="alert-heading" data-testid="incident-title">{{ activeIncident.title }}</h4>
-                    <!-- eslint-disable-next-line vue/no-v-html-->
+                    <!-- eslint-disable-next-line vue/no-v-html -->
                     <div
                         class="content"
                         data-testid="incident-content"
