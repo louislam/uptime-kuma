@@ -3175,7 +3175,7 @@ message HealthCheckResponse {
 
             if (this.draftGroupName && this.monitor.parent === -1) {
                 // Create Monitor with name of draft group
-                const parentActive = this.isClone ? (this.monitor.active !== false) : false;
+                const parentActive = this.isClone ? this.monitor.active !== false : false;
                 parentCreatedAsActive = parentActive;
                 const res = await new Promise((resolve) => {
                     this.$root.add(
