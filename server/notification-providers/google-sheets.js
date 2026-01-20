@@ -33,11 +33,11 @@ class GoogleSheets extends NotificationProvider {
 
             // Send data to Google Apps Script webhook
             const webhookUrl = notification.googleSheetsWebhookUrl;
-            
+
             const config = this.getAxiosConfigWithProxy({
                 headers: {
-                    "Content-Type": "application/json"
-                }
+                    "Content-Type": "application/json",
+                },
             });
 
             const data = {
@@ -47,7 +47,7 @@ class GoogleSheets extends NotificationProvider {
                 monitorUrl: monitorUrl,
                 message: msg,
                 responseTime: responseTime,
-                statusCode: statusCode
+                statusCode: statusCode,
             };
 
             await axios.post(webhookUrl, data, config);

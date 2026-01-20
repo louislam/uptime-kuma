@@ -14,9 +14,9 @@
         </div>
     </div>
 
-    <div class="alert alert-info" style="border-radius: 8px;">
-        <h6 style="margin-bottom: 12px; font-weight: 600;">{{ $t("Quick Setup Guide") }}:</h6>
-        <ol style="margin-bottom: 0; padding-left: 20px; line-height: 1.8;">
+    <div class="alert alert-info" style="border-radius: 8px">
+        <h6 style="margin-bottom: 12px; font-weight: 600">{{ $t("Quick Setup Guide") }}:</h6>
+        <ol style="margin-bottom: 0; padding-left: 20px; line-height: 1.8">
             <li>{{ $t("Open your Google Spreadsheet") }}</li>
             <li>{{ $t("Go to Extensions → Apps Script") }}</li>
             <li>{{ $t("Paste the script code (see below)") }}</li>
@@ -27,23 +27,15 @@
     </div>
 
     <div class="mb-3">
-        <button 
-            type="button" 
-            class="btn btn-secondary btn-sm" 
-            @click="showScript = !showScript"
-        >
+        <button type="button" class="btn btn-secondary btn-sm" @click="showScript = !showScript">
             {{ showScript ? $t("Hide Script Code") : $t("Show Script Code") }}
         </button>
     </div>
 
     <div v-if="showScript" class="mb-3">
         <label class="form-label">{{ $t("Google Apps Script Code") }}:</label>
-        <textarea 
-            readonly 
-            class="form-control" 
-            rows="15" 
-            style="font-family: monospace; font-size: 12px;"
-        >function doPost(e) {
+        <textarea readonly class="form-control" rows="15" style="font-family: monospace; font-size: 12px">
+function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
   
@@ -65,12 +57,9 @@
   
   return ContentService.createTextOutput(JSON.stringify({result: 'success'}))
     .setMimeType(ContentService.MimeType.JSON);
-}</textarea>
-        <button 
-            type="button" 
-            class="btn btn-outline-secondary btn-sm mt-2" 
-            @click="copyScript"
+}</textarea
         >
+        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" @click="copyScript">
             {{ $t("Copy to Clipboard") }}
         </button>
     </div>
@@ -80,7 +69,7 @@
 export default {
     data() {
         return {
-            showScript: false
+            showScript: false,
         };
     },
     methods: {
@@ -110,7 +99,7 @@ export default {
 }`;
             navigator.clipboard.writeText(scriptCode);
             alert(this.$t("Copied to clipboard!"));
-        }
-    }
+        },
+    },
 };
 </script>
