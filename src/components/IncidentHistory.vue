@@ -49,9 +49,9 @@
                     <!-- eslint-disable-next-line vue/no-v-html-->
                     <div class="incident-content mt-1" v-html="getIncidentHTML(incident.content)"></div>
                     <div class="incident-meta text-muted small mt-2">
-                        <div>{{ $t("Created") }}: {{ datetime(incident.createdDate) }}</div>
+                        <div>{{ $t("createdAt", { date: datetime(incident.createdDate) }) }}</div>
                         <div v-if="incident.lastUpdatedDate">
-                            {{ $t("Last Updated") }}: {{ datetime(incident.lastUpdatedDate) }}
+                            {{ $t("lastUpdatedAt", { date: datetime(incident.lastUpdatedDate) }) }}
                         </div>
                     </div>
                 </div>

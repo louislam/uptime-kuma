@@ -328,12 +328,13 @@
                     data-testid="incident"
                 >
                     <h4 class="alert-heading" data-testid="incident-title">{{ activeIncident.title }}</h4>
-                    <!-- eslint-disable-next-line vue/no-v-html -->
+                    <!-- eslint-disable vue/no-v-html -->
                     <div
                         class="content"
                         data-testid="incident-content"
                         v-html="getIncidentHTML(activeIncident.content)"
                     ></div>
+                    <!-- eslint-enable vue/no-v-html -->
 
                     <!-- Incident Date -->
                     <div class="date mt-3">
