@@ -12,11 +12,8 @@ class MongodbMonitorType extends MonitorType {
     async check(monitor, heartbeat, _server) {
         let command = { ping: 1 };
         if (monitor.databaseQuery) {
-            try {
-                command = JSON.parse(monitor.databaseQuery);
-            } catch (error) {
-                throw new Error(`Invalid JSON in database query: ${error.message}`);
-            }
+            // databaseQuery is validated in Monitor.validate(), so we can safely parse it here
+            command = JSON.parse(monitor.databaseQuery);
         }
 
         let result = await this.runMongodbCommand(monitor.databaseConnectionString, command);
