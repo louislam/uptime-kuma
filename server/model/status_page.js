@@ -7,8 +7,8 @@ const analytics = require("../analytics/analytics");
 const { marked } = require("marked");
 const { Feed } = require("feed");
 const config = require("../config");
-const { setting } = require("../util-server");
 
+const { setting } = require("../util-server");
 const {
     STATUS_PAGE_ALL_DOWN,
     STATUS_PAGE_ALL_UP,
@@ -17,6 +17,7 @@ const {
     UP,
     MAINTENANCE,
     DOWN,
+    INCIDENT_PAGE_SIZE,
 } = require("../../src/util");
 
 class StatusPage extends BeanModel {
@@ -307,12 +308,13 @@ class StatusPage extends BeanModel {
     static async getStatusPageData(statusPage) {
         const config = await statusPage.toPublicJSON();
 
-        // Incident
-        let incident = await R.findOne("incident", " pin = 1 AND active = 1 AND status_page_id = ? ", [statusPage.id]);
-
-        if (incident) {
-            incident = incident.toPublicJSON();
-        }
+        // All active incidents
+        let incidents = await R.find(
+            "incident",
+            " pin = 1 AND active = 1 AND status_page_id = ? ORDER BY created_date DESC",
+            [statusPage.id]
+        );
+        incidents = incidents.map((i) => i.toPublicJSON());
 
         let maintenanceList = await StatusPage.getMaintenanceList(statusPage.id);
 
@@ -330,7 +332,7 @@ class StatusPage extends BeanModel {
         // Response
         return {
             config,
-            incident,
+            incidents,
             publicGroupList,
             maintenanceList,
         };
@@ -497,6 +499,54 @@ class StatusPage extends BeanModel {
         } else {
             return this.icon;
         }
+    }
+
+    /**
+     * Get paginated incident history for a status page using cursor-based pagination
+     * @param {number} statusPageId ID of the status page
+     * @param {string|null} cursor ISO date string cursor (created_date of last item from previous page)
+     * @param {boolean} isPublic Whether to return public or admin data
+     * @returns {Promise<object>} Paginated incident data with cursor
+     */
+    static async getIncidentHistory(statusPageId, cursor = null, isPublic = true) {
+        let incidents;
+
+        if (cursor) {
+            incidents = await R.find(
+                "incident",
+                " status_page_id = ? AND created_date < ? ORDER BY created_date DESC LIMIT ? ",
+                [statusPageId, cursor, INCIDENT_PAGE_SIZE]
+            );
+        } else {
+            incidents = await R.find("incident", " status_page_id = ? ORDER BY created_date DESC LIMIT ? ", [
+                statusPageId,
+                INCIDENT_PAGE_SIZE,
+            ]);
+        }
+
+        const total = await R.count("incident", " status_page_id = ? ", [statusPageId]);
+
+        const lastIncident = incidents[incidents.length - 1];
+        let nextCursor = null;
+        let hasMore = false;
+
+        if (lastIncident) {
+            const moreCount = await R.count("incident", " status_page_id = ? AND created_date < ? ", [
+                statusPageId,
+                lastIncident.created_date,
+            ]);
+            hasMore = moreCount > 0;
+            if (hasMore) {
+                nextCursor = lastIncident.created_date;
+            }
+        }
+
+        return {
+            incidents: incidents.map((i) => i.toPublicJSON()),
+            total,
+            nextCursor,
+            hasMore,
+        };
     }
 
     /**
