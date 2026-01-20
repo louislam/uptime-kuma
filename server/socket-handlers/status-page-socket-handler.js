@@ -61,9 +61,9 @@ module.exports.statusPageSocketHandler = (socket) => {
             incidentBean.status_page_id = statusPageID;
 
             if (incident.id) {
-                incidentBean.lastUpdatedDate = R.isoDateTime(dayjs.utc());
+                incidentBean.last_updated_date = R.isoDateTime(dayjs.utc());
             } else {
-                incidentBean.createdDate = R.isoDateTime(dayjs.utc());
+                incidentBean.created_date = R.isoDateTime(dayjs.utc());
             }
 
             await R.store(incidentBean);

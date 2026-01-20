@@ -10,7 +10,7 @@ class Incident extends BeanModel {
     async resolve() {
         this.active = false;
         this.pin = false;
-        this.lastUpdatedDate = R.isoDateTime(dayjs.utc());
+        this.last_updated_date = R.isoDateTime(dayjs.utc());
         await R.store(this);
     }
 
@@ -26,8 +26,8 @@ class Incident extends BeanModel {
             content: this.content,
             pin: !!this.pin,
             active: !!this.active,
-            createdDate: this.createdDate,
-            lastUpdatedDate: this.lastUpdatedDate,
+            createdDate: this.created_date,
+            lastUpdatedDate: this.last_updated_date,
             status_page_id: this.status_page_id,
         };
     }

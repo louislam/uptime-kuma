@@ -533,11 +533,11 @@ class StatusPage extends BeanModel {
         if (lastIncident) {
             const moreCount = await R.count("incident", " status_page_id = ? AND created_date < ? ", [
                 statusPageId,
-                lastIncident.createdDate,
+                lastIncident.created_date,
             ]);
             hasMore = moreCount > 0;
             if (hasMore) {
-                nextCursor = lastIncident.createdDate;
+                nextCursor = lastIncident.created_date;
             }
         }
 
