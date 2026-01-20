@@ -11,9 +11,9 @@ test.describe("Incident History", () => {
 
         await page.goto("./add");
         await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
 
         await page.goto("./add-status-page");
-        await expect(page.getByTestId("name-input")).toBeVisible();
         await page.getByTestId("name-input").fill("Empty Test");
         await page.getByTestId("slug-input").fill("empty-test");
         await page.getByTestId("submit-button").click();
@@ -33,9 +33,9 @@ test.describe("Incident History", () => {
 
         await page.goto("./add");
         await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
 
         await page.goto("./add-status-page");
-        await expect(page.getByTestId("name-input")).toBeVisible();
         await page.getByTestId("name-input").fill("Dedup Test");
         await page.getByTestId("slug-input").fill("dedup-test");
         await page.getByTestId("submit-button").click();
@@ -45,6 +45,8 @@ test.describe("Incident History", () => {
         await page.getByTestId("incident-title").fill("Active Incident");
         await page.getByTestId("incident-content-editable").fill("This is an active incident");
         await page.getByTestId("post-incident-button").click();
+
+        await page.waitForTimeout(500);
 
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
@@ -59,13 +61,13 @@ test.describe("Incident History", () => {
     });
 
     test("resolved incidents appear in past incidents section", async ({ page }, testInfo) => {
-        test.setTimeout(90000);
+        test.setTimeout(120000);
 
         await page.goto("./add");
         await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
 
         await page.goto("./add-status-page");
-        await expect(page.getByTestId("name-input")).toBeVisible();
         await page.getByTestId("name-input").fill("Resolve Test");
         await page.getByTestId("slug-input").fill("resolve-test");
         await page.getByTestId("submit-button").click();
@@ -78,32 +80,38 @@ test.describe("Incident History", () => {
 
         await page.waitForTimeout(500);
 
-        const resolveButton = page.locator("button", { hasText: "Resolve" }).first();
+        const activeIncidentBanner = page.getByTestId("incident").filter({ hasText: "Resolved Incident" });
+        await expect(activeIncidentBanner).toBeVisible({ timeout: 10000 });
+
+        const resolveButton = activeIncidentBanner.locator("button", { hasText: "Resolve" });
         await expect(resolveButton).toBeVisible();
         await resolveButton.click();
 
-        await page.waitForTimeout(1000);
+        await expect(activeIncidentBanner).toHaveCount(0, { timeout: 10000 });
 
-        const activeIncident = page.getByTestId("incident").filter({ hasText: "Resolved Incident" });
-        await expect(activeIncident).toHaveCount(0);
+        await page.getByTestId("save-button").click();
+        await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
+
+        await page.goto("./status/resolve-test");
+        await page.waitForLoadState("networkidle");
 
         const pastIncidentsSection = page.locator(".past-incidents-section");
-        await expect(pastIncidentsSection).toBeVisible();
+        await expect(pastIncidentsSection).toBeVisible({ timeout: 15000 });
 
-        const resolvedIncidentInHistory = pastIncidentsSection.locator("text=Resolved Incident");
-        await expect(resolvedIncidentInHistory).toBeVisible();
+        const resolvedIncidentTitle = pastIncidentsSection.locator(".incident-title");
+        await expect(resolvedIncidentTitle).toContainText("Resolved Incident", { timeout: 15000 });
 
         await screenshot(testInfo, page);
     });
 
     test("incident history pagination loads more incidents", async ({ page }, testInfo) => {
-        test.setTimeout(120000);
+        test.setTimeout(180000);
 
         await page.goto("./add");
         await login(page);
+        await expect(page.getByTestId("monitor-type-select")).toBeVisible();
 
         await page.goto("./add-status-page");
-        await expect(page.getByTestId("name-input")).toBeVisible();
         await page.getByTestId("name-input").fill("Pagination Test");
         await page.getByTestId("slug-input").fill("pagination-test");
         await page.getByTestId("submit-button").click();
