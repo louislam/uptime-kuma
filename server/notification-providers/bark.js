@@ -53,7 +53,9 @@ class Bark extends NotificationProvider {
     async additionalParameters(notification) {
         // set icon to PSS Uptime icon, 11kb should be fine
         const baseURL = await setting("primaryBaseURL");
-        const iconUrl = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+        const iconUrl = baseURL
+            ? baseURL + "/icon.png"
+            : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
         let params = "?icon=" + iconUrl;
         // grouping all our notifications
         if (notification.barkGroup != null) {
@@ -106,7 +108,9 @@ class Bark extends NotificationProvider {
             result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`, config);
         } else {
             const baseURL = await setting("primaryBaseURL");
-            const iconUrl = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+            const iconUrl = baseURL
+                ? baseURL + "/icon.png"
+                : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
             result = await axios.post(
                 endpoint,
                 {

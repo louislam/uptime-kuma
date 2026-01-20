@@ -128,11 +128,13 @@ For the latest features and roadmap, please check the original Uptime Kuma proje
 PSS Uptime is based on [Uptime Kuma](https://github.com/louislam/uptime-kuma), an excellent open-source monitoring tool created by [louislam](https://github.com/louislam) and maintained by a dedicated community of contributors.
 
 We would like to express our gratitude to:
+
 - [louislam](https://github.com/louislam) for creating and maintaining Uptime Kuma
 - All contributors to the Uptime Kuma project
 - The open-source community that makes projects like this possible
 
 If you find PSS Uptime useful, please consider supporting the original Uptime Kuma project:
+
 - [GitHub Sponsors](https://github.com/sponsors/louislam)
 - [Open Collective](https://opencollective.com/uptime-kuma)
 
@@ -161,6 +163,7 @@ PSS Uptime is a customized version of Uptime Kuma for the Marshall Islands Publi
 ### Original Uptime Kuma Motivation
 
 The original Uptime Kuma project was created with the following motivations:
+
 - A need for a self-hosted monitoring tool like "Uptime Robot"
 - Building a fancy, modern UI
 - Learning Vue 3 and vite.js
@@ -169,6 +172,7 @@ The original Uptime Kuma project was created with the following motivations:
 - Deploying Docker images to Docker Hub
 
 If you love this project, please consider:
+
 - Giving the original [Uptime Kuma project](https://github.com/louislam/uptime-kuma) a ⭐
 - Supporting the Uptime Kuma project through [GitHub Sponsors](https://github.com/sponsors/louislam) or [Open Collective](https://opencollective.com/uptime-kuma)
 
@@ -177,6 +181,7 @@ If you love this project, please consider:
 For questions about PSS Uptime, please use the appropriate channels for this project.
 
 For questions about the original Uptime Kuma project, please refer to:
+
 - [Uptime Kuma GitHub Issues](https://github.com/louislam/uptime-kuma/issues)
 - [Subreddit (r/UptimeKuma)](https://www.reddit.com/r/UptimeKuma/)
 

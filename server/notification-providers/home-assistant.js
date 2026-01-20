@@ -32,7 +32,9 @@ class HomeAssistant extends NotificationProvider {
                             name: monitorJSON?.name,
                             status: heartbeatJSON?.status,
                             channel: "PSS Uptime",
-                            icon_url: (await setting("primaryBaseURL")) ? (await setting("primaryBaseURL")) + "/icon.png" : "https://github.com/louislam/uptime-kuma/blob/master/public/icon.png?raw=true",
+                            icon_url: (await setting("primaryBaseURL"))
+                                ? (await setting("primaryBaseURL")) + "/icon.png"
+                                : "https://github.com/louislam/uptime-kuma/blob/master/public/icon.png?raw=true",
                         },
                     }),
                 },

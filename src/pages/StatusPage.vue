@@ -75,7 +75,9 @@
                         placeholder="/logo.png or data:image/..."
                         data-testid="logo-url-input"
                     />
-                    <div class="form-text">{{ $t("Enter a logo URL (e.g., /logo.png) or upload using the logo above") }}</div>
+                    <div class="form-text">
+                        {{ $t("Enter a logo URL (e.g., /logo.png) or upload using the logo above") }}
+                    </div>
                 </div>
 
                 <div class="my-3 form-check form-switch">

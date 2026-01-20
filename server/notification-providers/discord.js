@@ -43,7 +43,9 @@ class Discord extends NotificationProvider {
                 };
                 if (!webhookHasAvatar) {
                     const baseURL = await setting("primaryBaseURL");
-                    discordtestdata.avatar_url = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                    discordtestdata.avatar_url = baseURL
+                        ? baseURL + "/icon.png"
+                        : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
                 }
                 if (notification.discordChannelType === "createNewForumPost") {
                     discordtestdata.thread_name = notification.postName;
@@ -99,7 +101,9 @@ class Discord extends NotificationProvider {
                 };
                 if (!webhookHasAvatar) {
                     const baseURL = await setting("primaryBaseURL");
-                    discorddowndata.avatar_url = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                    discorddowndata.avatar_url = baseURL
+                        ? baseURL + "/icon.png"
+                        : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
                 }
                 if (notification.discordChannelType === "createNewForumPost") {
                     discorddowndata.thread_name = notification.postName;
@@ -173,7 +177,9 @@ class Discord extends NotificationProvider {
                 };
                 if (!webhookHasAvatar) {
                     const baseURL = await setting("primaryBaseURL");
-                    discordupdata.avatar_url = baseURL ? baseURL + "/icon.png" : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                    discordupdata.avatar_url = baseURL
+                        ? baseURL + "/icon.png"
+                        : "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
                 }
 
                 if (notification.discordChannelType === "createNewForumPost") {
