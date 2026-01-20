@@ -28,7 +28,7 @@ class GoogleSheets extends NotificationProvider {
             if (heartbeatJSON) {
                 status = heartbeatJSON.status === DOWN ? "DOWN" : heartbeatJSON.status === UP ? "UP" : "UNKNOWN";
                 responseTime = heartbeatJSON.ping || "N/A";
-                statusCode = heartbeatJSON.status || "N/A";
+                statusCode = heartbeatJSON.statusCode || "N/A";
             }
 
             // Send data to Google Apps Script webhook
@@ -41,13 +41,13 @@ class GoogleSheets extends NotificationProvider {
             });
 
             const data = {
-                timestamp: timestamp,
-                status: status,
-                monitorName: monitorName,
-                monitorUrl: monitorUrl,
+                timestamp,
+                status,
+                monitorName,
+                monitorUrl,
                 message: msg,
-                responseTime: responseTime,
-                statusCode: statusCode
+                responseTime,
+                statusCode
             };
 
             await axios.post(webhookUrl, data, config);

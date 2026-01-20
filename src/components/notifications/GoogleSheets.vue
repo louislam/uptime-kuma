@@ -108,8 +108,12 @@ export default {
   return ContentService.createTextOutput(JSON.stringify({result: 'success'}))
     .setMimeType(ContentService.MimeType.JSON);
 }`;
-            navigator.clipboard.writeText(scriptCode);
-            alert(this.$t("Copied to clipboard!"));
+            try {
+                navigator.clipboard.writeText(scriptCode);
+                alert(this.$t("Copied to clipboard!"));
+            } catch (error) {
+                alert(this.$t("Failed to copy to clipboard"));
+            }
         }
     }
 };
