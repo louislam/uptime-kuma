@@ -35,7 +35,13 @@
                         :aria-label="selectAll ? $t('deselectAllMonitorsAria') : $t('selectAllMonitorsAria')"
                     />
 
-                    <MonitorListFilter :filterState="filterState" @update-filter="updateFilter" />
+                    <MonitorListFilter
+                        :filterState="filterState"
+                        :allCollapsed="allGroupsCollapsed"
+                        :hasGroups="groupMonitors.length >= 2"
+                        @update-filter="updateFilter"
+                        @toggle-collapse-all="toggleCollapseAll"
+                    />
                 </div>
             </div>
 
@@ -100,8 +106,8 @@
             </div>
 
             <MonitorListItem
-                v-for="(item, index) in sortedMonitorList"
-                :key="index"
+                v-for="item in sortedMonitorList"
+                :key="`${item.id}-${collapseKey}`"
                 :monitor="item"
                 :isSelectMode="selectMode"
                 :isSelected="isSelected"
@@ -154,6 +160,7 @@ export default {
                 active: null,
                 tags: null,
             },
+            collapseKey: 0,
         };
     },
     computed: {
@@ -229,6 +236,38 @@ export default {
                 this.searchText !== ""
             );
         },
+
+        /**
+         * Gets all group monitors at root level that have children
+         * @returns {Array} Array of group monitors with children
+         */
+        groupMonitors() {
+            const monitors = Object.values(this.$root.monitorList);
+            return monitors.filter(
+                (m) => m.type === "group" && m.parent === null && monitors.some((child) => child.parent === m.id)
+            );
+        },
+
+        /**
+         * Determines if all groups are collapsed.
+         * Note: collapseKey is included to force re-computation when toggleCollapseAll()
+         * updates localStorage, since Vue cannot detect localStorage changes.
+         * @returns {boolean} True if all groups are collapsed
+         */
+        allGroupsCollapsed() {
+            // collapseKey forces this computed to re-evaluate after localStorage updates
+            if (this.collapseKey < 0 || this.groupMonitors.length === 0) {
+                return true;
+            }
+
+            const storage = window.localStorage.getItem("monitorCollapsed");
+            if (storage === null) {
+                return true; // Default is collapsed
+            }
+
+            const storageObject = JSON.parse(storage);
+            return this.groupMonitors.every((group) => storageObject[`monitor_${group.id}`] !== false);
+        },
     },
     watch: {
         searchText() {
@@ -302,6 +341,26 @@ export default {
          */
         updateFilter(newFilter) {
             this.filterState = newFilter;
+        },
+        /**
+         * Toggle collapse state for all group monitors
+         * @returns {void}
+         */
+        toggleCollapseAll() {
+            const shouldCollapse = !this.allGroupsCollapsed;
+
+            let storageObject = {};
+            const storage = window.localStorage.getItem("monitorCollapsed");
+            if (storage !== null) {
+                storageObject = JSON.parse(storage);
+            }
+
+            this.groupMonitors.forEach((group) => {
+                storageObject[`monitor_${group.id}`] = shouldCollapse;
+            });
+
+            window.localStorage.setItem("monitorCollapsed", JSON.stringify(storageObject));
+            this.collapseKey++;
         },
         /**
          * Deselect a monitor
@@ -731,6 +790,7 @@ export default {
 .search-input {
     width: 100%;
     padding-right: 30px;
+    transition: none !important;
 }
 
 .monitor-item {

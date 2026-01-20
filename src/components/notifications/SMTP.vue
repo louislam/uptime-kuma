@@ -56,6 +56,24 @@
             </div>
         </div>
 
+        <div v-if="!$parent.notification.smtpSecure" class="mb-3">
+            <div class="form-check">
+                <input
+                    id="ignore-starttls"
+                    v-model="$parent.notification.smtpIgnoreSTARTTLS"
+                    class="form-check-input"
+                    type="checkbox"
+                    value=""
+                />
+                <label class="form-check-label" for="ignore-starttls">
+                    {{ $t("Disable STARTTLS") }}
+                </label>
+            </div>
+            <div class="form-text">
+                {{ $t("disableSTARTTLSDescription") }}
+            </div>
+        </div>
+
         <div class="mb-3">
             <label for="username" class="form-label">{{ $t("Username") }}</label>
             <input

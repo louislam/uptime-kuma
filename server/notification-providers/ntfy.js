@@ -57,6 +57,19 @@ class Ntfy extends NotificationProvider {
                     status = "Up";
                 }
             }
+
+            // Include monitor's assigned tags
+            if (monitorJSON && monitorJSON.tags && Array.isArray(monitorJSON.tags)) {
+                const monitorTagNames = monitorJSON.tags.map((tag) => {
+                    // Include value if it exists
+                    if (tag.value) {
+                        return `${tag.name}: ${tag.value}`;
+                    }
+                    return tag.name;
+                });
+                tags = tags.concat(monitorTagNames);
+            }
+
             let data = {
                 topic: notification.ntfytopic,
                 message: heartbeatJSON.msg,

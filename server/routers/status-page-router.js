@@ -142,6 +142,30 @@ router.get("/api/status-page/:slug/manifest.json", cache("1440 minutes"), async 
     }
 });
 
+router.get("/api/status-page/:slug/incident-history", cache("5 minutes"), async (request, response) => {
+    allowDevAllOrigin(response);
+
+    try {
+        let slug = request.params.slug;
+        slug = slug.toLowerCase();
+        let statusPageID = await StatusPage.slugToID(slug);
+
+        if (!statusPageID) {
+            sendHttpError(response, "Status Page Not Found");
+            return;
+        }
+
+        const cursor = request.query.cursor || null;
+        const result = await StatusPage.getIncidentHistory(statusPageID, cursor, true);
+        response.json({
+            ok: true,
+            ...result,
+        });
+    } catch (error) {
+        sendHttpError(response, error.message);
+    }
+});
+
 // overall status-page status badge
 router.get("/api/status-page/:slug/badge", cache("5 minutes"), async (request, response) => {
     allowDevAllOrigin(response);

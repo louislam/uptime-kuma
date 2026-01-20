@@ -1517,24 +1517,46 @@ class Monitor extends BeanModel {
 
             let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
 
+            const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: true });
+            const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
+            const preloadData = await Monitor.preparePreloadData(monitorData);
+            // Prevent if the msg is undefined, notifications such as Discord cannot send out.
+            if (!heartbeatJSON["msg"]) {
+                heartbeatJSON["msg"] = "N/A";
+            }
+
+            // Also provide the time in server timezone
+            heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
+            heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
+            heartbeatJSON["localDateTime"] = dayjs
+                .utc(heartbeatJSON["time"])
+                .tz(heartbeatJSON["timezone"])
+                .format(SQL_DATETIME_FORMAT);
+
+            // Calculate downtime tracking information when service comes back up
+            // This makes downtime information available to all notification providers
+            if (bean.status === UP && monitor.id) {
+                try {
+                    const lastDownHeartbeat = await R.getRow(
+                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1",
+                        [monitor.id, DOWN]
+                    );
+
+                    if (lastDownHeartbeat && lastDownHeartbeat.time) {
+                        heartbeatJSON["lastDownTime"] = lastDownHeartbeat.time;
+                    }
+                } catch (error) {
+                    // If we can't calculate downtime, just continue without it
+                    // Silently fail to avoid disrupting notification sending
+                    log.debug(
+                        "monitor",
+                        `[${monitor.name}] Could not calculate downtime information: ${error.message}`
+                    );
+                }
+            }
+
             for (let notification of notificationList) {
                 try {
-                    const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: true });
-                    const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
-                    const preloadData = await Monitor.preparePreloadData(monitorData);
-                    // Prevent if the msg is undefined, notifications such as Discord cannot send out.
-                    if (!heartbeatJSON["msg"]) {
-                        heartbeatJSON["msg"] = "N/A";
-                    }
-
-                    // Also provide the time in server timezone
-                    heartbeatJSON["timezone"] = await UptimeKumaServer.getInstance().getTimezone();
-                    heartbeatJSON["timezoneOffset"] = UptimeKumaServer.getInstance().getTimezoneOffset();
-                    heartbeatJSON["localDateTime"] = dayjs
-                        .utc(heartbeatJSON["time"])
-                        .tz(heartbeatJSON["timezone"])
-                        .format(SQL_DATETIME_FORMAT);
-
                     await Notification.send(
                         JSON.parse(notification.config),
                         msg,
@@ -1733,6 +1755,55 @@ class Monitor extends BeanModel {
 
             if (this.response_max_length > RESPONSE_BODY_LENGTH_MAX) {
                 throw new Error(`Response max length cannot be more than ${RESPONSE_BODY_LENGTH_MAX} bytes`);
+            }
+        }
+
+        // Validate JSON fields to prevent invalid JSON from being stored in database
+        if (this.kafkaProducerBrokers) {
+            try {
+                JSON.parse(this.kafkaProducerBrokers);
+            } catch (e) {
+                throw new Error(`Kafka Producer Brokers must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.kafkaProducerSaslOptions) {
+            try {
+                JSON.parse(this.kafkaProducerSaslOptions);
+            } catch (e) {
+                throw new Error(`Kafka Producer SASL Options must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.rabbitmqNodes) {
+            try {
+                JSON.parse(this.rabbitmqNodes);
+            } catch (e) {
+                throw new Error(`RabbitMQ Nodes must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.conditions) {
+            try {
+                JSON.parse(this.conditions);
+            } catch (e) {
+                throw new Error(`Conditions must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.headers) {
+            try {
+                JSON.parse(this.headers);
+            } catch (e) {
+                throw new Error(`Headers must be valid JSON: ${e.message}`);
+            }
+        }
+
+        if (this.accepted_statuscodes_json) {
+            try {
+                JSON.parse(this.accepted_statuscodes_json);
+            } catch (e) {
+                throw new Error(`Accepted status codes must be valid JSON: ${e.message}`);
             }
         }
 
