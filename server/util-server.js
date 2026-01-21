@@ -364,7 +364,9 @@ exports.radius = function (
                 throw radiusError;
             } else {
                 // Preserve original error message and stack trace
-                const enhancedError = new Error(`RADIUS authentication failed for ${hostname}:${port}: ${error.message}`);
+                const enhancedError = new Error(
+                    `RADIUS authentication failed for ${hostname}:${port}: ${error.message}`
+                );
                 enhancedError.originalError = error;
                 enhancedError.stack = error.stack || enhancedError.stack;
                 throw enhancedError;
