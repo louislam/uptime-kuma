@@ -4,7 +4,7 @@
 
 import * as childProcess from "child_process";
 
-const ignoreList = ["louislam", "CommanderStorm", "UptimeKumaBot", "weblate", "Copilot", "@autofix-ci[bot]"];
+const ignoreList = ["louislam", "CommanderStorm", "UptimeKumaBot", "weblate", "Copilot", "autofix-ci[bot]", "app/copilot-swe-agent", "app/github-actions", "github-actions[bot]"];
 
 const mergeList = ["Translations Update from Weblate", "Update dependencies"];
 
