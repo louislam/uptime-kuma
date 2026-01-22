@@ -367,16 +367,27 @@ export default {
 
                 if (currentMonitor && currentMonitor.parent !== null) {
                     // Find the root parent by traversing up the hierarchy
+                    // Protection against circular references and data corruption
+                    const visited = new Set();
                     let rootParentId = currentMonitor.parent;
                     let rootParent = this.$root.monitorList[rootParentId];
+                    const MAX_TRAVERSAL_STEPS = 1000;
+                    let safetyCounter = 0;
 
-                    while (rootParent && rootParent.parent !== null) {
+                    while (
+                        rootParent &&
+                        rootParent.parent !== null &&
+                        !visited.has(rootParentId) &&
+                        safetyCounter < MAX_TRAVERSAL_STEPS
+                    ) {
+                        visited.add(rootParentId);
                         rootParentId = rootParent.parent;
                         rootParent = this.$root.monitorList[rootParentId];
+                        safetyCounter++;
                     }
 
                     // Navigate to the root parent, then increment collapseKey to force re-render
-                    this.$router.push(getMonitorRelativeURL(rootParentId)).then(() => {
+                    this.$router.push(getMonitorRelativeURL(rootParentId)).finally(() => {
                         this.collapseKey++;
                     });
                     return;
