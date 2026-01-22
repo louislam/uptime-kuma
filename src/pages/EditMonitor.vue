@@ -2393,7 +2393,6 @@ export default {
                 confirmed: false,
                 editedValue: false,
             },
-            isLoadingMonitor: false,
         };
     },
 
@@ -2916,7 +2915,6 @@ message HealthCheckResponse {
                             }
                         }
 
-                        this.isLoadingMonitor = true;
                         this.monitor = res.monitor;
 
                         if (this.isClone) {
@@ -2960,11 +2958,6 @@ message HealthCheckResponse {
                                 this.monitor.timeout = ~~(this.monitor.interval * 8) / 10;
                             }
                         }
-
-                        // Reset loading flag after all reactive updates
-                        this.$nextTick(() => {
-                            this.isLoadingMonitor = false;
-                        });
                     } else {
                         this.$root.toastError(res.msg);
                     }
@@ -3321,15 +3314,8 @@ message HealthCheckResponse {
                 // Calculate the minimum required interval based on ping configuration
                 const calculatedPingInterval = this.calculatePingInterval();
 
-                // Don't auto-adjust interval when:
-                // 1. Loading monitor data from server (isLoadingMonitor flag)
-                // 2. User explicitly edited the interval value (editedValue flag)
-                // This respects the user's choice of low intervals they've confirmed
-                if (
-                    !this.isLoadingMonitor &&
-                    !this.lowIntervalConfirmation.editedValue &&
-                    this.monitor.interval < calculatedPingInterval
-                ) {
+                // If the configured interval is too small, adjust it to the minimum required value
+                if (this.monitor.interval < calculatedPingInterval) {
                     this.monitor.interval = calculatedPingInterval;
 
                     // Notify the user that the interval has been automatically adjusted
