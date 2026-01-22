@@ -356,10 +356,20 @@ exports.radius = function (
             ],
         })
         .catch((error) => {
+            // Preserve error stack trace and provide better context
             if (error.response?.code) {
-                throw Error(error.response.code);
+                const radiusError = new Error(`RADIUS ${error.response.code} from ${hostname}:${port}`);
+                radiusError.response = error.response;
+                radiusError.originalError = error;
+                throw radiusError;
             } else {
-                throw Error(error.message);
+                // Preserve original error message and stack trace
+                const enhancedError = new Error(
+                    `RADIUS authentication failed for ${hostname}:${port}: ${error.message}`
+                );
+                enhancedError.originalError = error;
+                enhancedError.stack = error.stack || enhancedError.stack;
+                throw enhancedError;
             }
         });
 };
