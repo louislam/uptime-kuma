@@ -305,7 +305,9 @@ export default {
             };
 
             // Other Integrations
-            let other = {};
+            let other = {
+                GoogleSheets: "Google Sheets",
+            };
 
             // Regional - Not supported in most regions or documentation is not in English
             let regional = {
