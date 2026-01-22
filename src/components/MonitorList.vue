@@ -243,9 +243,7 @@ export default {
          */
         groupMonitors() {
             const monitors = Object.values(this.$root.monitorList);
-            return monitors.filter(
-                (m) => m.type === "group" && monitors.some((child) => child.parent === m.id)
-            );
+            return monitors.filter((m) => m.type === "group" && monitors.some((child) => child.parent === m.id));
         },
 
         /**
