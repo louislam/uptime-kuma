@@ -1857,6 +1857,15 @@ class Monitor extends BeanModel {
                 }
             }
         }
+
+        if (this.type === "mongodb" && this.databaseQuery) {
+            // Validate that databaseQuery is valid JSON
+            try {
+                JSON.parse(this.databaseQuery);
+            } catch (error) {
+                throw new Error(`Invalid JSON in database query: ${error.message}`);
+            }
+        }
     }
 
     /**
