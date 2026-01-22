@@ -17,6 +17,7 @@ const Feishu = require("./notification-providers/feishu");
 const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
+const GoogleSheets = require("./notification-providers/google-sheets");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
 const GrafanaOncall = require("./notification-providers/grafana-oncall");
@@ -117,6 +118,7 @@ class Notification {
             new Feishu(),
             new FreeMobile(),
             new GoogleChat(),
+            new GoogleSheets(),
             new Gorush(),
             new Gotify(),
             new GrafanaOncall(),
