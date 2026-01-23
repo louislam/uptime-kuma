@@ -174,14 +174,14 @@ export default {
             // this.$refs.heartbeatBar.resize();
         },
         // Watch for monitor changes and update collapsed state from localStorage
-        'monitor.id': {
+        "monitor.id": {
             handler() {
                 this.loadCollapsedState();
             },
             immediate: false,
         },
         // Watch for monitor active state changes to ensure proper state management
-        'monitor.active': {
+        "monitor.active": {
             handler() {
                 // Refresh collapsed state when active status changes to prevent state confusion
                 this.$nextTick(() => {
