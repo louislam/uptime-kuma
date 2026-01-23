@@ -160,7 +160,7 @@ export default {
         },
         depthMargin() {
             return {
-                marginLeft: `${31 * this.depth}px`,
+                marginLeft: `${20 * this.depth}px`,
             };
         },
     },
@@ -336,7 +336,7 @@ export default {
 
 .tags {
     margin-top: 4px;
-    padding-left: 67px;
+    padding-left: 16px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
