@@ -107,7 +107,7 @@
 
             <MonitorListItem
                 v-for="item in sortedMonitorList"
-                :key="`${item.id}-${collapseKey}`"
+                :key="`monitor-${item.id}-${item.active}-${collapseKey}`"
                 :monitor="item"
                 :isSelectMode="selectMode"
                 :isSelected="isSelected"

@@ -69,7 +69,7 @@
             <div v-if="!isCollapsed" class="childs">
                 <MonitorListItem
                     v-for="(item, index) in sortedChildMonitorList"
-                    :key="index"
+                    :key="`child-monitor-${item.id}-${item.active}`"
                     :monitor="item"
                     :isSelectMode="isSelectMode"
                     :isSelected="isSelected"
@@ -173,28 +173,54 @@ export default {
             // TODO: Resize the heartbeat bar, but too slow
             // this.$refs.heartbeatBar.resize();
         },
+        // Watch for monitor changes and update collapsed state from localStorage
+        'monitor.id': {
+            handler() {
+                this.loadCollapsedState();
+            },
+            immediate: false,
+        },
+        // Watch for monitor active state changes to ensure proper state management
+        'monitor.active': {
+            handler() {
+                // Refresh collapsed state when active status changes to prevent state confusion
+                this.$nextTick(() => {
+                    this.loadCollapsedState();
+                });
+            },
+            immediate: false,
+        },
     },
     beforeMount() {
-        // Always unfold if monitor is accessed directly
-        if (this.monitor.childrenIDs.includes(parseInt(this.$route.params.id))) {
-            this.isCollapsed = false;
-            return;
-        }
-
-        // Set collapsed value based on local storage
-        let storage = window.localStorage.getItem("monitorCollapsed");
-        if (storage === null) {
-            return;
-        }
-
-        let storageObject = JSON.parse(storage);
-        if (storageObject[`monitor_${this.monitor.id}`] == null) {
-            return;
-        }
-
-        this.isCollapsed = storageObject[`monitor_${this.monitor.id}`];
+        this.loadCollapsedState();
     },
     methods: {
+        /**
+         * Load collapsed state from localStorage
+         * @returns {void}
+         */
+        loadCollapsedState() {
+            // Always unfold if monitor is accessed directly
+            if (this.monitor.childrenIDs && this.monitor.childrenIDs.includes(parseInt(this.$route.params.id))) {
+                this.isCollapsed = false;
+                return;
+            }
+
+            // Set collapsed value based on local storage
+            let storage = window.localStorage.getItem("monitorCollapsed");
+            if (storage === null) {
+                this.isCollapsed = true; // Default to collapsed
+                return;
+            }
+
+            let storageObject = JSON.parse(storage);
+            if (storageObject[`monitor_${this.monitor.id}`] == null) {
+                this.isCollapsed = true; // Default to collapsed
+                return;
+            }
+
+            this.isCollapsed = storageObject[`monitor_${this.monitor.id}`];
+        },
         /**
          * Changes the collapsed value of the current monitor and saves
          * it to local storage
