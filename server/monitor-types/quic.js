@@ -5,6 +5,12 @@ const crypto = require('crypto');
 const dns = require("dns").promises;
 const net = require('net');
 
+const appendVarint16bit = (buffer, offset, num) => {
+    buffer[offset++] = 0x40 | ((num >> 8) & 0x3f);
+    buffer[offset++] = num & 0xff;
+    return offset;
+};
+
 /**
  * create a quic connect packet
  * this packet will fail to decrypt, the server sends a retry packet
@@ -17,7 +23,7 @@ function createInitialPacket() {
     let offset = 0;
 
     // header
-    buffer[offset++] = 0xc0; // 11000000 (long header, fixed bit)
+    buffer[offset++] = 0xc0; // 11000000 (long header, fixed bit, 1 byte packet number)
     buffer.writeUInt32BE(0x00000001, offset); // version
     offset += 4;
 
@@ -36,10 +42,9 @@ function createInitialPacket() {
     // token length
     buffer[offset++] = 0x00;
 
-    // length
+    // payload length
     const remainingLength = 1200 - offset - 2;
-    buffer[offset++] = 0x40 | ((remainingLength >> 8) & 0x3f);
-    buffer[offset++] = remainingLength & 0xff;
+    offset = appendVarint16bit(buffer, offset, remainingLength);
 
     // packet number
     buffer[offset++] = 0x00;
