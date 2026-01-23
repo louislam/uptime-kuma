@@ -22,6 +22,7 @@
                                         </option>
                                         <option value="http">HTTP(s)</option>
                                         <option value="port">TCP Port</option>
+                                        <option value="quic">QUIC Port</option>
                                         <option value="ping">Ping</option>
                                         <option value="smtp">SMTP</option>
                                         <option value="snmp">SNMP</option>
@@ -420,7 +421,8 @@
                                     monitor.type === 'tailscale-ping' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'sip-options'
+                                    monitor.type === 'sip-options' ||
+                                    monitor.type === 'quic'
                                 "
                                 class="my-3"
                             >
@@ -443,7 +445,7 @@
                             </div>
 
                             <!-- Port -->
-                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options -->
+                            <!-- For TCP Port / Steam / MQTT / Radius Type / SNMP / SIP Options / QUIC Port -->
                             <div
                                 v-if="
                                     monitor.type === 'port' ||
@@ -453,7 +455,8 @@
                                     monitor.type === 'radius' ||
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
-                                    monitor.type === 'sip-options'
+                                    monitor.type === 'sip-options' ||
+                                    monitor.type === 'quic'
                                 "
                                 class="my-3"
                             >
@@ -3040,6 +3043,7 @@ message HealthCheckResponse {
                     "tailscale-ping",
                     "smtp",
                     "snmp",
+                    "quic",
                 ].includes(this.monitor.type) &&
                 this.monitor.hostname
             ) {
