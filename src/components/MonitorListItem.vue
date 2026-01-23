@@ -24,13 +24,15 @@
             <router-link :to="monitorURL(monitor.id)" class="item" :class="{ disabled: !monitor.active }">
                 <div class="row">
                     <div
-                        class="col-9 col-xl-6 small-padding d-flex align-items-center"
+                        class="col-9 col-xl-6 small-padding d-flex gap-2 align-items-center"
                         :class="{
                             'monitor-item': $root.userHeartbeatBar == 'bottom' || $root.userHeartbeatBar == 'none',
                         }"
                     >
-                        <div class="info d-flex align-items-center gap-2">
+                        <div class="me-1">
                             <Uptime :monitor="monitor" type="24" :pill="true" />
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-fill" style="min-width: 0">
                             <span v-if="hasChildren" class="collapse-padding" @click.prevent="changeCollapsed">
                                 <font-awesome-icon
                                     icon="chevron-down"
@@ -38,10 +40,12 @@
                                     :class="{ collapsed: isCollapsed }"
                                 />
                             </span>
-                            {{ monitor.name }}
-                        </div>
-                        <div v-if="monitor.tags.length > 0" class="tags gap-1">
-                            <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
+                            <div class="flex-fill text-truncate" style="min-width: 0">
+                                <div class="text-truncate">{{ monitor.name }}</div>
+                                <div v-if="monitor.tags.length > 0" class="tags gap-1">
+                                    <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div
@@ -160,7 +164,7 @@ export default {
         },
         depthMargin() {
             return {
-                marginLeft: `${31 * this.depth}px`,
+                marginLeft: `${20 * this.depth}px`,
             };
         },
     },
@@ -325,18 +329,13 @@ export default {
     padding-right: 5px !important;
 }
 
-.collapse-padding {
-    padding-left: 8px !important;
-    padding-right: 2px !important;
-}
-
 // .monitor-item {
 //     width: 100%;
 // }
 
 .tags {
     margin-top: 4px;
-    padding-left: 67px;
+    padding-left: 4px;
     display: flex;
     flex-wrap: wrap;
     gap: 0;
