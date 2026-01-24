@@ -6,13 +6,13 @@
                     <h5 class="modal-title">
                         {{ $t("New Group") }}
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                 </div>
                 <div class="modal-body">
                     <form @submit.prevent="confirm">
                         <div>
                             <label for="draftGroupName" class="form-label">{{ $t("Group Name") }}</label>
-                            <input id="draftGroupName" v-model="groupName" type="text" class="form-control">
+                            <input id="draftGroupName" v-model="groupName" type="text" class="form-control" />
                         </div>
                     </form>
                 </div>
@@ -20,7 +20,13 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         {{ $t("Cancel") }}
                     </button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" :disabled="groupName == '' || groupName == null" @click="confirm">
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        data-bs-dismiss="modal"
+                        :disabled="groupName == '' || groupName == null"
+                        @click="confirm"
+                    >
                         {{ $t("Confirm") }}
                     </button>
                 </div>
@@ -34,7 +40,7 @@ import { Modal } from "bootstrap";
 
 export default {
     props: {},
-    emits: [ "added" ],
+    emits: ["added"],
     data: () => ({
         modal: null,
         groupName: null,
@@ -73,7 +79,7 @@ export default {
                     console.warn("Modal hide failed:", e);
                 }
             }
-        }
+        },
     },
 };
 </script>

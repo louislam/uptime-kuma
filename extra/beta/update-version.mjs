@@ -1,3 +1,6 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
 const pkg = require("../../package.json");
 const fs = require("fs");
 const childProcess = require("child_process");
@@ -16,16 +19,26 @@ if (!version || !version.includes("-beta.")) {
 
 const exists = tagExists(version);
 
-if (! exists) {
+if (!exists) {
     // Process package.json
     pkg.version = version;
     fs.writeFileSync("package.json", JSON.stringify(pkg, null, 4) + "\n");
 
     // Also update package-lock.json
     const npm = /^win/.test(process.platform) ? "npm.cmd" : "npm";
-    childProcess.spawnSync(npm, [ "install" ]);
+    const resultVersion = childProcess.spawnSync(npm, ["--no-git-tag-version", "version", version], { shell: true });
+    if (resultVersion.error) {
+        console.error(resultVersion.error);
+        console.error("error npm version!");
+        process.exit(1);
+    }
+    const resultInstall = childProcess.spawnSync(npm, ["install"], { shell: true });
+    if (resultInstall.error) {
+        console.error(resultInstall.error);
+        console.error("error update package-lock!");
+        process.exit(1);
+    }
     commit(version);
-
 } else {
     console.log("version tag exists, please delete the tag or use another tag");
     process.exit(1);
@@ -40,7 +53,7 @@ if (! exists) {
 function commit(version) {
     let msg = "Update to " + version;
 
-    let res = childProcess.spawnSync("git", [ "commit", "-m", msg, "-a" ]);
+    let res = childProcess.spawnSync("git", ["commit", "-m", msg, "-a"]);
     let stdout = res.stdout.toString().trim();
     console.log(stdout);
 
@@ -48,8 +61,13 @@ function commit(version) {
         throw new Error("commit error");
     }
 
-    res = childProcess.spawnSync("git", [ "push", "origin", "master" ]);
-    console.log(res.stdout.toString().trim());
+    // Get the current branch name
+    res = childProcess.spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    let branchName = res.stdout.toString().trim();
+    console.log("Current branch:", branchName);
+
+    // Git push the branch
+    childProcess.spawnSync("git", ["push", "origin", branchName, "--force"], { stdio: "inherit" });
 }
 
 /**
@@ -59,11 +77,11 @@ function commit(version) {
  * @throws Version is not valid
  */
 function tagExists(version) {
-    if (! version) {
+    if (!version) {
         throw new Error("invalid version");
     }
 
-    let res = childProcess.spawnSync("git", [ "tag", "-l", version ]);
+    let res = childProcess.spawnSync("git", ["tag", "-l", version]);
 
     return res.stdout.toString().trim() === version;
 }

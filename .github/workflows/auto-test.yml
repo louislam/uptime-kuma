@@ -1,71 +1,109 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
 name: Auto Test
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-server
+  cancel-in-progress: true
 
 on:
   push:
-    branches: [ master, 1.23.X, 3.0.X ]
-    paths-ignore:
-      - '*.md'
+    branches: [master, 1.23.X, 3.0.X]
   pull_request:
-    branches: [ master, 1.23.X, 3.0.X ]
-    paths-ignore:
-      - '*.md'
+permissions: {}
 
 jobs:
   auto-test:
-    needs: [ check-linters ]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    permissions:
+      contents: read
 
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-22.04, windows-latest, ARM64]
+        os: [macos-latest, ubuntu-22.04, windows-latest, ubuntu-22.04-arm]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
         node: [ 24, 25 ]
 
     steps:
-    - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+      - run: git config --global core.autocrlf false # Mainly for Windows
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with: { persist-credentials: false }
 
-    - name: Use Node.js ${{ matrix.node }}
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ matrix.node }}
-    - run: npm install
-    - run: npm run build
-    - run: npm run test-backend
-      env:
-        HEADLESS_TEST: 1
-        JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
+      - name: Cache/Restore node_modules
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        id: node-modules-cache
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm clean-install --no-fund
+
+      - name: Rebuild native modules for ARM64
+        if: matrix.os == 'ubuntu-22.04-arm'
+        run: npm rebuild @louislam/sqlite3
+
+      - run: npm run build
+      - run: npm run test-backend
+        env:
+          HEADLESS_TEST: 1
+          JUST_FOR_TEST: ${{ secrets.JUST_FOR_TEST }}
 
   check-linters:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
-    - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+      - run: git config --global core.autocrlf false # Mainly for Windows
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with: { persist-credentials: false }
 
-    - name: Use Node.js 24
-      uses: actions/setup-node@v6
-      with:
-        node-version: 24
-    - run: npm install
-    - run: npm run lint:prod
+      - name: Cache/Restore node_modules
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        id: node-modules-cache
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 24
+      - run: npm clean-install --no-fund
+      - run: npm run lint:prod
 
   e2e-test:
-    needs: [ ]
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-22.04-arm
+    permissions:
+      contents: read
+    env:
+      PLAYWRIGHT_VERSION: ~1.56.0
     steps:
-    - run: git config --global core.autocrlf false  # Mainly for Windows
-    - uses: actions/checkout@v4
+      - run: git config --global core.autocrlf false # Mainly for Windows
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with: { persist-credentials: false }
 
-    - name: Use Node.js 24
-      uses: actions/setup-node@v6
-      with:
-        node-version: 24
-    - run: npm install
-    - run: npx playwright install
-    - run: npm run build
-    - run: npm run test-e2e
+      - name: Cache/Restore node_modules
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        id: node-modules-cache
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: 24
+      - run: npm clean-install --no-fund
+
+      - name: Rebuild native modules for ARM64
+        run: npm rebuild @louislam/sqlite3
+
+      - name: Install Playwright ${{ env.PLAYWRIGHT_VERSION }}
+        run: npx playwright@${{ env.PLAYWRIGHT_VERSION }} install
+
+      - run: npm run build
+      - run: npm run test-e2e

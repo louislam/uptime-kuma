@@ -1,5 +1,5 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const { parseTimeObject, parseTimeFromTimeObject, log } = require("../../src/util");
+const { parseTimeObject, parseTimeFromTimeObject, log, SQL_DATETIME_FORMAT } = require("../../src/util");
 const { R } = require("redbean-node");
 const dayjs = require("dayjs");
 const Cron = require("croner");
@@ -7,14 +7,12 @@ const { UptimeKumaServer } = require("../uptime-kuma-server");
 const apicache = require("../modules/apicache");
 
 class Maintenance extends BeanModel {
-
     /**
      * Return an object that ready to parse to JSON for public
      * Only show necessary data to public
      * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON() {
-
         let dateRange = [];
         if (this.start_date) {
             dateRange.push(this.start_date);
@@ -41,14 +39,14 @@ class Maintenance extends BeanModel {
             active: !!this.active,
             dateRange: dateRange,
             timeRange: timeRange,
-            weekdays: (this.weekdays) ? JSON.parse(this.weekdays) : [],
-            daysOfMonth: (this.days_of_month) ? JSON.parse(this.days_of_month) : [],
+            weekdays: this.weekdays ? JSON.parse(this.weekdays) : [],
+            daysOfMonth: this.days_of_month ? JSON.parse(this.days_of_month) : [],
             timeslotList: [],
             cron: this.cron,
             duration: this.duration,
             durationMinutes: parseInt(this.duration / 60),
-            timezone: await this.getTimezone(),         // Only valid timezone
-            timezoneOption: this.timezone,               // Mainly for dropdown menu, because there is a option "SAME_AS_SERVER"
+            timezone: await this.getTimezone(), // Only valid timezone
+            timezoneOption: this.timezone, // Mainly for dropdown menu, because there is a option "SAME_AS_SERVER"
             timezoneOffset: await this.getTimezoneOffset(),
             status: await this.getStatus(),
         };
@@ -202,7 +200,7 @@ class Maintenance extends BeanModel {
      * @returns {void}
      */
     static validateCron(cron) {
-        let job = new Cron(cron, () => { });
+        let job = new Cron(cron, () => {});
         job.stop();
     }
 
@@ -262,7 +260,7 @@ class Maintenance extends BeanModel {
                     }, duration);
 
                     // Set last start date to current time
-                    this.last_start_date = current.toISOString();
+                    this.last_start_date = current.utc().format(SQL_DATETIME_FORMAT);
                     await R.store(this);
                 };
 
@@ -270,7 +268,7 @@ class Maintenance extends BeanModel {
                 if (this.strategy === "recurring-interval") {
                     // For recurring-interval, Croner needs to have interval and startAt
                     const startDate = dayjs(this.startDate);
-                    const [ hour, minute ] = this.startTime.split(":");
+                    const [hour, minute] = this.startTime.split(":");
                     const startDateTime = startDate.hour(hour).minute(minute);
 
                     // Fix #6118, since the startDateTime is optional, it will throw error if the date is null when using toISOString()
@@ -279,31 +277,44 @@ class Maintenance extends BeanModel {
                         startAt = startDateTime.toISOString();
                     } catch (_) {}
 
-                    this.beanMeta.job = new Cron(this.cron, {
-                        timezone: await this.getTimezone(),
-                        startAt,
-                    }, () => {
-                        if (!this.lastStartDate || this.interval_day === 1) {
+                    this.beanMeta.job = new Cron(
+                        this.cron,
+                        {
+                            timezone: await this.getTimezone(),
+                            startAt,
+                        },
+                        () => {
+                            if (!this.lastStartDate || this.interval_day === 1) {
+                                return startEvent();
+                            }
+
+                            // If last start date is set, it means the maintenance has been started before
+                            let lastStartDate = dayjs(this.lastStartDate).subtract(1.1, "hour"); // Subtract 1.1 hour to avoid issues with timezone differences
+
+                            // Check if the interval is enough
+                            if (current.diff(lastStartDate, "day") < this.interval_day) {
+                                log.debug(
+                                    "maintenance",
+                                    "Maintenance id: " + this.id + " is still in the window, skipping start event"
+                                );
+                                return;
+                            }
+
+                            log.debug(
+                                "maintenance",
+                                "Maintenance id: " + this.id + " is not in the window, starting event"
+                            );
                             return startEvent();
                         }
-
-                        // If last start date is set, it means the maintenance has been started before
-                        let lastStartDate = dayjs(this.lastStartDate)
-                            .subtract(1.1, "hour"); // Subtract 1.1 hour to avoid issues with timezone differences
-
-                        // Check if the interval is enough
-                        if (current.diff(lastStartDate, "day") < this.interval_day) {
-                            log.debug("maintenance", "Maintenance id: " + this.id + " is still in the window, skipping start event");
-                            return;
-                        }
-
-                        log.debug("maintenance", "Maintenance id: " + this.id + " is not in the window, starting event");
-                        return startEvent();
-                    });
+                    );
                 } else {
-                    this.beanMeta.job = new Cron(this.cron, {
-                        timezone: await this.getTimezone(),
-                    }, startEvent);
+                    this.beanMeta.job = new Cron(
+                        this.cron,
+                        {
+                            timezone: await this.getTimezone(),
+                        },
+                        startEvent
+                    );
                 }
 
                 // Continue if the maintenance is still in the window
@@ -314,7 +325,6 @@ class Maintenance extends BeanModel {
                     log.debug("maintenance", "Maintenance id: " + this.id + " Remaining duration: " + duration + "ms");
                     startEvent(duration);
                 }
-
             } catch (e) {
                 log.error("maintenance", "Error in maintenance id: " + this.id);
                 log.error("maintenance", "Cron: " + this.cron);
@@ -324,7 +334,6 @@ class Maintenance extends BeanModel {
                     throw e;
                 }
             }
-
         } else {
             log.error("maintenance", "Maintenance id: " + this.id + " has no cron");
         }
@@ -486,12 +495,11 @@ class Maintenance extends BeanModel {
             }
 
             // Remove duplicate
-            dayList = [ ...new Set(dayList) ];
+            dayList = [...new Set(dayList)];
 
             this.cron = minute + " " + hour + " " + dayList.join(",") + " * *";
             this.duration = this.calcDuration();
         }
-
     }
 }
 

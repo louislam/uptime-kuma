@@ -104,13 +104,17 @@ class Bark extends NotificationProvider {
             const params = this.additionalParameters(notification);
             result = await axios.get(`${endpoint}/${title}/${subtitle}${params}`, config);
         } else {
-            result = await axios.post(`${endpoint}/push`, {
-                title,
-                body: subtitle,
-                icon: barkNotificationAvatar,
-                sound: notification.barkSound || "telegraph", // default sound is telegraph
-                group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
-            }, config);
+            result = await axios.post(
+                endpoint,
+                {
+                    title,
+                    body: subtitle,
+                    icon: barkNotificationAvatar,
+                    sound: notification.barkSound || "telegraph", // default sound is telegraph
+                    group: notification.barkGroup || "UptimeKuma", // default group is UptimeKuma
+                },
+                config
+            );
         }
         this.checkResult(result);
         if (result.statusText != null) {

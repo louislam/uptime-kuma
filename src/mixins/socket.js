@@ -6,26 +6,30 @@ import dayjs from "dayjs";
 import mitt from "mitt";
 
 import { DOWN, MAINTENANCE, PENDING, UP } from "../util.ts";
-import { getDevContainerServerHostname, isDevContainer, getToastSuccessTimeout, getToastErrorTimeout } from "../util-frontend.js";
+import {
+    getDevContainerServerHostname,
+    isDevContainer,
+    getToastSuccessTimeout,
+    getToastErrorTimeout,
+} from "../util-frontend.js";
 const toast = useToast();
 
 let socket;
 
 const noSocketIOPages = [
-    /^\/status-page$/,  //  /status-page
-    /^\/status/,    // /status**
-    /^\/$/      //  /
+    /^\/status-page$/, //  /status-page
+    /^\/status/, // /status**
+    /^\/$/, //  /
 ];
 
 const favicon = new Favico({
-    animation: "none"
+    animation: "none",
 });
 
 export default {
-
     data() {
         return {
-            info: { },
+            info: {},
             socket: {
                 token: null,
                 firstConnect: true,
@@ -34,17 +38,18 @@ export default {
                 initedSocketIO: false,
             },
             username: null,
-            remember: (localStorage.remember !== "0"),
-            allowLoginDialog: false,        // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
+            remember: localStorage.remember !== "0",
+            allowLoginDialog: false, // Allowed to show login dialog, but "loggedIn" have to be true too. This exists because prevent the login dialog show 0.1s in first before the socket server auth-ed.
             loggedIn: false,
-            monitorList: { },
+            monitorList: {},
             monitorTypeList: {},
             maintenanceList: {},
             apiKeyList: {},
-            heartbeatList: { },
-            avgPingList: { },
-            uptimeList: { },
+            heartbeatList: {},
+            avgPingList: {},
+            uptimeList: {},
             tlsInfoList: {},
+            domainInfoList: {},
             notificationList: [],
             dockerHostList: [],
             remoteBrowserList: [],
@@ -71,7 +76,6 @@ export default {
     },
 
     methods: {
-
         /**
          * Initialize connection to socket server
          * @param {boolean} bypass Should the check for if we
@@ -85,7 +89,7 @@ export default {
             }
 
             // No need to connect to the socket.io for status page
-            if (! bypass && location.pathname) {
+            if (!bypass && location.pathname) {
                 for (let page of noSocketIOPages) {
                     if (location.pathname.match(page)) {
                         return;
@@ -147,7 +151,7 @@ export default {
 
             socket.on("updateMonitorIntoList", (data) => {
                 this.assignMonitorUrlParser(data);
-                Object.entries(data).forEach(([ monitorID, updatedMonitor ]) => {
+                Object.entries(data).forEach(([monitorID, updatedMonitor]) => {
                     this.monitorList[monitorID] = updatedMonitor;
                 });
             });
@@ -180,7 +184,7 @@ export default {
             });
 
             socket.on("proxyList", (data) => {
-                this.proxyList = data.map(item => {
+                this.proxyList = data.map((item) => {
                     item.auth = !!item.auth;
                     item.active = !!item.active;
                     item.default = !!item.default;
@@ -198,7 +202,7 @@ export default {
             });
 
             socket.on("heartbeat", (data) => {
-                if (! (data.monitorID in this.heartbeatList)) {
+                if (!(data.monitorID in this.heartbeatList)) {
                     this.heartbeatList[data.monitorID] = [];
                 }
 
@@ -211,7 +215,6 @@ export default {
                 // Add to important list if it is important
                 // Also toast
                 if (data.important) {
-
                     if (this.monitorList[data.monitorID] !== undefined) {
                         if (data.status === 0) {
                             toast.error(`[${this.monitorList[data.monitorID].name}] [DOWN] ${data.msg}`, {
@@ -231,7 +234,7 @@ export default {
             });
 
             socket.on("heartbeatList", (monitorID, data, overwrite = false) => {
-                if (! (monitorID in this.heartbeatList) || overwrite) {
+                if (!(monitorID in this.heartbeatList) || overwrite) {
                     this.heartbeatList[monitorID] = data;
                 } else {
                     this.heartbeatList[monitorID] = data.concat(this.heartbeatList[monitorID]);
@@ -248,6 +251,10 @@ export default {
 
             socket.on("certInfo", (monitorID, data) => {
                 this.tlsInfoList[monitorID] = JSON.parse(data);
+            });
+
+            socket.on("domainInfo", (monitorID, daysRemaining, expiresOn) => {
+                this.domainInfoList[monitorID] = { daysRemaining: daysRemaining, expiresOn: expiresOn };
             });
 
             socket.on("connect_error", (err) => {
@@ -279,11 +286,11 @@ export default {
             });
 
             // cloudflared
-            socket.on("cloudflared_installed", (res) => this.cloudflared.installed = res);
-            socket.on("cloudflared_running", (res) => this.cloudflared.running = res);
-            socket.on("cloudflared_message", (res) => this.cloudflared.message = res);
-            socket.on("cloudflared_errorMessage", (res) => this.cloudflared.errorMessage = res);
-            socket.on("cloudflared_token", (res) => this.cloudflared.cloudflareTunnelToken = res);
+            socket.on("cloudflared_installed", (res) => (this.cloudflared.installed = res));
+            socket.on("cloudflared_running", (res) => (this.cloudflared.running = res));
+            socket.on("cloudflared_message", (res) => (this.cloudflared.message = res));
+            socket.on("cloudflared_errorMessage", (res) => (this.cloudflared.errorMessage = res));
+            socket.on("cloudflared_token", (res) => (this.cloudflared.cloudflareTunnelToken = res));
 
             socket.on("initServerTimezone", () => {
                 socket.emit("initServerTimezone", dayjs.tz.guess());
@@ -299,7 +306,7 @@ export default {
          * @returns {object} list
          */
         assignMonitorUrlParser(data) {
-            Object.entries(data).forEach(([ monitorID, monitor ]) => {
+            Object.entries(data).forEach(([monitorID, monitor]) => {
                 monitor.getUrl = () => {
                     try {
                         return new URL(monitor.url);
@@ -316,7 +323,7 @@ export default {
          * @returns {Storage} Current storage
          */
         storage() {
-            return (this.remember) ? localStorage : sessionStorage;
+            return this.remember ? localStorage : sessionStorage;
         },
 
         /**
@@ -341,24 +348,32 @@ export default {
         },
 
         /**
+         * Apply translation to a message if possible
+         * @param {string | {key: string, values: object}} msg Message to translate
+         * @returns {string} Translated message
+         */
+        applyTranslation(msg) {
+            if (msg != null && typeof msg === "object") {
+                return this.$t(msg.key, msg.values);
+            } else {
+                return this.$t(msg);
+            }
+        },
+
+        /**
          * Show success or error toast dependent on response status code
-         * @param {object} res Response object
+         * @param {{ok:boolean, msg: string, msgi18n: false} | {ok:boolean, msg: string|{key: string, values: object}, msgi18n: true}} res Response object
          * @returns {void}
          */
         toastRes(res) {
-            let msg = res.msg;
             if (res.msgi18n) {
-                if (msg != null && typeof msg === "object") {
-                    msg = this.$t(msg.key, msg.values);
-                } else {
-                    msg = this.$t(msg);
-                }
+                res.msg = this.applyTranslation(res.msg);
             }
 
             if (res.ok) {
-                toast.success(msg);
+                toast.success(res.msg);
             } else {
-                toast.error(msg);
+                toast.error(res.msg);
             }
         },
 
@@ -395,27 +410,31 @@ export default {
          * @returns {void}
          */
         login(username, password, token, callback) {
-            socket.emit("login", {
-                username,
-                password,
-                token,
-            }, (res) => {
-                if (res.tokenRequired) {
+            socket.emit(
+                "login",
+                {
+                    username,
+                    password,
+                    token,
+                },
+                (res) => {
+                    if (res.tokenRequired) {
+                        callback(res);
+                    }
+
+                    if (res.ok) {
+                        this.storage().token = res.token;
+                        this.socket.token = res.token;
+                        this.loggedIn = true;
+                        this.username = this.getJWTPayload()?.username;
+
+                        // Trigger Chrome Save Password
+                        history.pushState({}, "");
+                    }
+
                     callback(res);
                 }
-
-                if (res.ok) {
-                    this.storage().token = res.token;
-                    this.socket.token = res.token;
-                    this.loggedIn = true;
-                    this.username = this.getJWTPayload()?.username;
-
-                    // Trigger Chrome Save Password
-                    history.pushState({}, "");
-                }
-
-                callback(res);
-            });
+            );
         },
 
         /**
@@ -427,7 +446,7 @@ export default {
             socket.emit("loginByToken", token, (res) => {
                 this.allowLoginDialog = true;
 
-                if (! res.ok) {
+                if (!res.ok) {
                     this.logout();
                 } else {
                     this.loggedIn = true;
@@ -441,7 +460,7 @@ export default {
          * @returns {void}
          */
         logout() {
-            socket.emit("logout", () => { });
+            socket.emit("logout", () => {});
             this.storage().removeItem("token");
             this.socket.token = null;
             this.loggedIn = false;
@@ -507,8 +526,8 @@ export default {
          * @returns {void}
          */
         getMonitorList(callback) {
-            if (! callback) {
-                callback = () => { };
+            if (!callback) {
+                callback = () => {};
             }
             socket.emit("getMonitorList", callback);
         },
@@ -519,8 +538,8 @@ export default {
          * @returns {void}
          */
         getMaintenanceList(callback) {
-            if (! callback) {
-                callback = () => { };
+            if (!callback) {
+                callback = () => {};
             }
             socket.emit("getMaintenanceList", callback);
         },
@@ -532,7 +551,7 @@ export default {
          */
         getAPIKeyList(callback) {
             if (!callback) {
-                callback = () => { };
+                callback = () => {};
             }
             socket.emit("getAPIKeyList", callback);
         },
@@ -602,11 +621,12 @@ export default {
         /**
          * Delete monitor by ID
          * @param {number} monitorID ID of monitor to delete
+         * @param {boolean} deleteChildren Whether to delete child monitors (for groups)
          * @param {socketCB} callback Callback for socket response
          * @returns {void}
          */
-        deleteMonitor(monitorID, callback) {
-            socket.emit("deleteMonitor", monitorID, callback);
+        deleteMonitor(monitorID, deleteChildren, callback) {
+            socket.emit("deleteMonitor", monitorID, deleteChildren, callback);
         },
 
         /**
@@ -709,11 +729,10 @@ export default {
          */
         getMonitorChartData(monitorID, period, callback) {
             socket.emit("getMonitorChartData", monitorID, period, callback);
-        }
+        },
     },
 
     computed: {
-
         usernameFirstChar() {
             if (typeof this.username == "string" && this.username.length >= 1) {
                 return this.username.charAt(0).toUpperCase();
@@ -744,7 +763,7 @@ export default {
             for (let monitorID in this.lastHeartbeatList) {
                 let lastHeartBeat = this.lastHeartbeatList[monitorID];
 
-                if (! lastHeartBeat) {
+                if (!lastHeartBeat) {
                     result[monitorID] = unknown;
                 } else if (lastHeartBeat.status === UP) {
                     result[monitorID] = {
@@ -789,7 +808,7 @@ export default {
                 let beat = this.$root.lastHeartbeatList[monitorID];
                 let monitor = this.$root.monitorList[monitorID];
 
-                if (monitor && ! monitor.active) {
+                if (monitor && !monitor.active) {
                     result.pause++;
                 } else if (beat) {
                     result.active++;
@@ -832,11 +851,10 @@ export default {
                 return true;
             }
             return this.info.version === this.frontendVersion;
-        }
+        },
     },
 
     watch: {
-
         // Update Badge
         "stats.down"(to, from) {
             if (to !== from) {
@@ -857,12 +875,11 @@ export default {
         },
 
         remember() {
-            localStorage.remember = (this.remember) ? "1" : "0";
+            localStorage.remember = this.remember ? "1" : "0";
         },
 
         // Reconnect the socket io, if status-page to dashboard
         "$route.fullPath"(newValue, oldValue) {
-
             if (newValue) {
                 for (let page of noSocketIOPages) {
                     if (newValue.match(page)) {
@@ -873,7 +890,5 @@ export default {
 
             this.initSocketIO();
         },
-
     },
-
 };
