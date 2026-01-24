@@ -1,18 +1,17 @@
 <template>
-    <span v-if="isNum" ref="output">{{ outputFixed }}</span> <span v-if="isNum">{{ unit }}</span>
+    <span v-if="isNum" ref="output">{{ outputFixed }}</span>
+    <span v-if="isNum">{{ unit }}</span>
     <span v-else>{{ value }}</span>
 </template>
 
 <script lang="ts">
-
 import { sleep } from "../util.ts";
 
 export default {
-
     props: {
         /** Value to count */
         value: {
-            type: [ String, Number ],
+            type: [String, Number],
             default: 0,
         },
         time: {
@@ -49,7 +48,7 @@ export default {
             } else {
                 return this.output;
             }
-        }
+        },
     },
 
     watch: {
@@ -58,7 +57,7 @@ export default {
             let frames = 12;
             let step = Math.floor(diff / frames);
 
-            if (! (isNaN(step) || ! this.isNum || (diff > 0 && step < 1) || (diff < 0 && step > 1) || diff === 0)) {
+            if (!(isNaN(step) || !this.isNum || (diff > 0 && step < 1) || (diff < 0 && step > 1) || diff === 0)) {
                 for (let i = 1; i < frames; i++) {
                     this.output += step;
                     await sleep(15);
@@ -74,6 +73,5 @@ export default {
     },
 
     methods: {},
-
 };
 </script>

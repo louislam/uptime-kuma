@@ -21,7 +21,7 @@ function shouldSkip() {
     // -> Check if PID 1 is systemd (or init which maps to systemd)
     try {
         const pid1Comm = execSync("ps -p 1 -o comm=", { encoding: "utf-8" }).trim();
-        return ![ "systemd", "init" ].includes(pid1Comm);
+        return !["systemd", "init"].includes(pid1Comm);
     } catch (e) {
         return true;
     }

@@ -5,9 +5,10 @@
                 {{ $t("Not available, please setup.") }}
             </p>
 
-            <ul class="list-group mb-3" style="border-radius: 1rem;">
+            <ul class="list-group mb-3" style="border-radius: 1rem">
                 <li v-for="(dockerHost, index) in $root.dockerHostList" :key="index" class="list-group-item">
-                    {{ dockerHost.name }}<br>
+                    {{ dockerHost.name }}
+                    <br />
                     <a href="#" @click="$refs.dockerHostDialog.show(dockerHost.id)">{{ $t("Edit") }}</a>
                 </li>
             </ul>
@@ -43,6 +44,6 @@ export default {
         settingsLoaded() {
             return this.$parent.$parent.$parent.settingsLoaded;
         },
-    }
+    },
 };
 </script>

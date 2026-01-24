@@ -34,7 +34,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 msgi18n: true,
                 maintenanceID,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -65,7 +64,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 msgi18n: true,
                 maintenanceID: bean.id,
             });
-
         } catch (e) {
             console.error(e);
             callback({
@@ -80,16 +78,14 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            await R.exec("DELETE FROM monitor_maintenance WHERE maintenance_id = ?", [
-                maintenanceID
-            ]);
+            await R.exec("DELETE FROM monitor_maintenance WHERE maintenance_id = ?", [maintenanceID]);
 
             for await (const monitor of monitors) {
                 let bean = R.dispense("monitor_maintenance");
 
                 bean.import({
                     monitor_id: monitor.id,
-                    maintenance_id: maintenanceID
+                    maintenance_id: maintenanceID,
                 });
                 await R.store(bean);
             }
@@ -101,7 +97,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 msg: "successAdded",
                 msgi18n: true,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -115,16 +110,14 @@ module.exports.maintenanceSocketHandler = (socket) => {
         try {
             checkLogin(socket);
 
-            await R.exec("DELETE FROM maintenance_status_page WHERE maintenance_id = ?", [
-                maintenanceID
-            ]);
+            await R.exec("DELETE FROM maintenance_status_page WHERE maintenance_id = ?", [maintenanceID]);
 
             for await (const statusPage of statusPages) {
                 let bean = R.dispense("maintenance_status_page");
 
                 bean.import({
                     status_page_id: statusPage.id,
-                    maintenance_id: maintenanceID
+                    maintenance_id: maintenanceID,
                 });
                 await R.store(bean);
             }
@@ -136,7 +129,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 msg: "successAdded",
                 msgi18n: true,
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -151,16 +143,12 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [
-                maintenanceID,
-                socket.userID,
-            ]);
+            let bean = await R.findOne("maintenance", " id = ? AND user_id = ? ", [maintenanceID, socket.userID]);
 
             callback({
                 ok: true,
                 maintenance: await bean.toJSON(),
             });
-
         } catch (e) {
             callback({
                 ok: false,
@@ -191,15 +179,15 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Monitors for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let monitors = await R.getAll("SELECT monitor.id FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ", [
-                maintenanceID,
-            ]);
+            let monitors = await R.getAll(
+                "SELECT monitor.id FROM monitor_maintenance mm JOIN monitor ON mm.monitor_id = monitor.id WHERE mm.maintenance_id = ? ",
+                [maintenanceID]
+            );
 
             callback({
                 ok: true,
                 monitors,
             });
-
         } catch (e) {
             console.error(e);
             callback({
@@ -215,15 +203,15 @@ module.exports.maintenanceSocketHandler = (socket) => {
 
             log.debug("maintenance", `Get Status Pages for Maintenance: ${maintenanceID} User ID: ${socket.userID}`);
 
-            let statusPages = await R.getAll("SELECT status_page.id, status_page.title FROM maintenance_status_page msp JOIN status_page ON msp.status_page_id = status_page.id WHERE msp.maintenance_id = ? ", [
-                maintenanceID,
-            ]);
+            let statusPages = await R.getAll(
+                "SELECT status_page.id, status_page.title FROM maintenance_status_page msp JOIN status_page ON msp.status_page_id = status_page.id WHERE msp.maintenance_id = ? ",
+                [maintenanceID]
+            );
 
             callback({
                 ok: true,
                 statusPages,
             });
-
         } catch (e) {
             console.error(e);
             callback({
@@ -244,10 +232,7 @@ module.exports.maintenanceSocketHandler = (socket) => {
                 delete server.maintenanceList[maintenanceID];
             }
 
-            await R.exec("DELETE FROM maintenance WHERE id = ? AND user_id = ? ", [
-                maintenanceID,
-                socket.userID,
-            ]);
+            await R.exec("DELETE FROM maintenance WHERE id = ? AND user_id = ? ", [maintenanceID, socket.userID]);
 
             apicache.clear();
 
@@ -258,7 +243,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
             });
 
             await server.sendMaintenanceList(socket);
-
         } catch (e) {
             callback({
                 ok: false,
@@ -292,7 +276,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
             });
 
             await server.sendMaintenanceList(socket);
-
         } catch (e) {
             callback({
                 ok: false,
@@ -326,7 +309,6 @@ module.exports.maintenanceSocketHandler = (socket) => {
             });
 
             await server.sendMaintenanceList(socket);
-
         } catch (e) {
             callback({
                 ok: false,

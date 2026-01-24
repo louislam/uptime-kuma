@@ -29,11 +29,7 @@ class Resend extends NotificationProvider {
                 text: msg,
             };
 
-            let result = await axios.post(
-                "https://api.resend.com/emails",
-                data,
-                config
-            );
+            let result = await axios.post("https://api.resend.com/emails", data, config);
             if (result.status === 200) {
                 return okMsg;
             } else {

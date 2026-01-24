@@ -76,7 +76,6 @@ class SetupDatabase {
             dbConfig = Database.readDBConfig();
             log.debug("setup-database", "db-config.json is found and is valid");
             this.needSetup = false;
-
         } catch (e) {
             log.info("setup-database", "db-config.json is not found or invalid: " + e.message);
 
@@ -103,9 +102,11 @@ class SetupDatabase {
             dbConfig.dbName = process.env.UPTIME_KUMA_DB_NAME;
             dbConfig.username = getEnvOrFile("UPTIME_KUMA_DB_USERNAME");
             dbConfig.password = getEnvOrFile("UPTIME_KUMA_DB_PASSWORD");
+            dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET?.trim();
+            dbConfig.ssl = getEnvOrFile("UPTIME_KUMA_DB_SSL")?.toLowerCase() === "true";
+            dbConfig.ca = getEnvOrFile("UPTIME_KUMA_DB_CA");
             Database.writeDBConfig(dbConfig);
         }
-
     }
 
     /**
@@ -160,6 +161,7 @@ class SetupDatabase {
                     runningSetup: this.runningSetup,
                     needSetup: this.needSetup,
                     isEnabledEmbeddedMariaDB: this.isEnabledEmbeddedMariaDB(),
+                    isEnabledMariaDBSocket: process.env.UPTIME_KUMA_DB_SOCKET?.trim().length > 0,
                 });
             });
 
@@ -175,7 +177,7 @@ class SetupDatabase {
 
                 let dbConfig = request.body.dbConfig;
 
-                let supportedDBTypes = [ "mariadb", "sqlite" ];
+                let supportedDBTypes = ["mariadb", "sqlite"];
 
                 if (this.isEnabledEmbeddedMariaDB()) {
                     supportedDBTypes.push("embedded-mariadb");
@@ -202,16 +204,22 @@ class SetupDatabase {
 
                 // External MariaDB
                 if (dbConfig.type === "mariadb") {
-                    if (!dbConfig.hostname) {
-                        response.status(400).json("Hostname is required");
-                        this.runningSetup = false;
-                        return;
-                    }
+                    // If socketPath is provided and not empty, validate it
+                    if (process.env.UPTIME_KUMA_DB_SOCKET?.trim().length > 0) {
+                        dbConfig.socketPath = process.env.UPTIME_KUMA_DB_SOCKET.trim();
+                    } else {
+                        // socketPath not provided, hostname and port are required
+                        if (!dbConfig.hostname) {
+                            response.status(400).json("Hostname is required");
+                            this.runningSetup = false;
+                            return;
+                        }
 
-                    if (!dbConfig.port) {
-                        response.status(400).json("Port is required");
-                        this.runningSetup = false;
-                        return;
+                        if (!dbConfig.port) {
+                            response.status(400).json("Port is required");
+                            this.runningSetup = false;
+                            return;
+                        }
                     }
 
                     if (!dbConfig.dbName) {
@@ -241,6 +249,15 @@ class SetupDatabase {
                             user: dbConfig.username,
                             password: dbConfig.password,
                             database: dbConfig.dbName,
+                            socketPath: dbConfig.socketPath,
+                            ...(dbConfig.ssl
+                                ? {
+                                      ssl: {
+                                          rejectUnauthorized: true,
+                                          ...(dbConfig.ca && dbConfig.ca.trim() !== "" ? { ca: [dbConfig.ca] } : {}),
+                                      },
+                                  }
+                                : {}),
                         });
                         await connection.execute("SELECT 1");
                         connection.end();
@@ -259,7 +276,10 @@ class SetupDatabase {
                 });
 
                 // Shutdown down this express and start the main server
-                log.info("setup-database", "Database is configured, close the setup-database server and start the main server now.");
+                log.info(
+                    "setup-database",
+                    "Database is configured, close the setup-database server and start the main server now."
+                );
                 if (tempServer) {
                     tempServer.close(() => {
                         log.info("setup-database", "The setup-database server is closed");
@@ -268,12 +288,14 @@ class SetupDatabase {
                 } else {
                     resolve();
                 }
-
             });
 
-            app.use("/", expressStaticGzip("dist", {
-                enableBrotli: true,
-            }));
+            app.use(
+                "/",
+                expressStaticGzip("dist", {
+                    enableBrotli: true,
+                })
+            );
 
             app.get("*", async (_request, response) => {
                 response.send(this.server.indexHTML);
@@ -286,7 +308,7 @@ class SetupDatabase {
 
             tempServer = app.listen(port, hostname, () => {
                 log.info("setup-database", `Starting Setup Database on ${port}`);
-                let domain = (hostname) ? hostname : "localhost";
+                let domain = hostname ? hostname : "localhost";
                 log.info("setup-database", `Open http://${domain}:${port} in your browser`);
                 log.info("setup-database", "Waiting for user action...");
             });

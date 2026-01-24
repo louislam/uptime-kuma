@@ -1,0 +1,40 @@
+name: New contributor message
+
+on:
+  # Safety
+  # This workflow uses pull_request_target so it can run with write permissions on first-time contributor PRs.
+  # It is safe because it does not check out or execute any code from the pull request and
+  # only uses the pinned, trusted plbstl/first-contribution action
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [opened, closed]
+    branches:
+      - master
+
+permissions:
+  pull-requests: write
+
+jobs:
+  build:
+    if: github.repository == 'louislam/uptime-kuma'
+    name: Hello new contributor
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: plbstl/first-contribution@4b2b042fffa26792504a18e49aa9543a87bec077 # v4.1.0
+        with:
+          pr-reactions: rocket
+          pr-opened-msg: >
+            Hello and thanks for lending a paw to Uptime Kuma! 🐻👋
+
+            As this is your first contribution, please be sure to check out our [Pull Request guidelines](https://github.com/louislam/uptime-kuma/blob/master/CONTRIBUTING.md#can-i-create-a-pull-request-for-uptime-kuma).
+
+            In particular:
+            - Mark your PR as Draft while you’re still making changes
+            - Mark it as Ready for review once it’s fully ready
+
+            If you have any design or process questions, feel free to ask them right here in this pull request - unclear documentation is a bug too.
+          pr-merged-msg: >
+            @{fc-author} congrats on your first contribution to Uptime Kuma! 🐻
+
+            We hope you enjoy contributing to our project and look forward to seeing more of your work in the future!
+            If you want to see your contribution in action, please see our [nightly builds here](https://hub.docker.com/layers/louislam/uptime-kuma/nightly2).

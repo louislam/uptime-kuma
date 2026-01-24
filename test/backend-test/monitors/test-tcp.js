@@ -25,7 +25,7 @@ describe("TCP Monitor", () => {
                 heartbeat.status = PENDING;
                 // Wait a bit before retrying with exponential backoff
                 if (attempt < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 500 * 2 ** (attempt - 1)));
+                    await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** (attempt - 1)));
                 }
             }
         }
@@ -45,7 +45,7 @@ describe("TCP Monitor", () => {
                 resolve(server);
             });
 
-            server.on("error", err => {
+            server.on("error", (err) => {
                 reject(err);
             });
         });
@@ -91,10 +91,7 @@ describe("TCP Monitor", () => {
             status: PENDING,
         };
 
-        await assert.rejects(
-            tcpMonitor.check(monitor, heartbeat, {}),
-            new Error("Connection failed")
-        );
+        await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), new Error("Connection failed"));
     });
 
     test("check() rejects when TLS certificate is expired or invalid", async () => {
@@ -105,7 +102,7 @@ describe("TCP Monitor", () => {
             port: 443,
             smtpSecurity: "secure",
             isEnabledExpiryNotification: () => true,
-            handleTlsInfo: async tlsInfo => {
+            handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
             },
         };
@@ -118,10 +115,7 @@ describe("TCP Monitor", () => {
         // Regex: contains with "TLS Connection failed:" or "Certificate is invalid"
         const regex = /TLS Connection failed:|Certificate is invalid/;
 
-        await assert.rejects(
-            tcpMonitor.check(monitor, heartbeat, {}),
-            regex
-        );
+        await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), regex);
     });
 
     test("check() sets status to UP when TLS certificate is valid (SSL)", async () => {
@@ -132,7 +126,7 @@ describe("TCP Monitor", () => {
             port: 465,
             smtpSecurity: "secure",
             isEnabledExpiryNotification: () => true,
-            handleTlsInfo: async tlsInfo => {
+            handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
             },
         };
@@ -156,7 +150,7 @@ describe("TCP Monitor", () => {
             port: 587,
             smtpSecurity: "starttls",
             isEnabledExpiryNotification: () => true,
-            handleTlsInfo: async tlsInfo => {
+            handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
             },
         };
@@ -180,7 +174,7 @@ describe("TCP Monitor", () => {
             port: 587,
             smtpSecurity: "starttls",
             isEnabledExpiryNotification: () => true,
-            handleTlsInfo: async tlsInfo => {
+            handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
             },
         };
@@ -192,10 +186,7 @@ describe("TCP Monitor", () => {
 
         const regex = /does not match certificate/;
 
-        await assert.rejects(
-            tcpMonitor.check(monitor, heartbeat, {}),
-            regex
-        );
+        await assert.rejects(tcpMonitor.check(monitor, heartbeat, {}), regex);
     });
     test("check() sets status to UP for XMPP server with valid certificate (STARTTLS)", async () => {
         const tcpMonitor = new TCPMonitorType();
@@ -205,7 +196,7 @@ describe("TCP Monitor", () => {
             port: 5222,
             smtpSecurity: "starttls",
             isEnabledExpiryNotification: () => true,
-            handleTlsInfo: async tlsInfo => {
+            handleTlsInfo: async (tlsInfo) => {
                 return tlsInfo;
             },
         };

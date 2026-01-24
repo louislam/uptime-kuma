@@ -9,7 +9,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('Close')" />
                 </div>
                 <div class="modal-body"></div>
-                <img :src="imageURL" :alt="$t('screenshot of the website')">
+                <img :src="imageURL" :alt="$t('screenshot of the website')" />
             </div>
         </div>
     </div>
@@ -45,7 +45,8 @@ export default {
 @import "../assets/vars.scss";
 
 .dark {
-    .modal-dialog .form-text, .modal-dialog p {
+    .modal-dialog .form-text,
+    .modal-dialog p {
         color: $dark-font-color;
     }
 }

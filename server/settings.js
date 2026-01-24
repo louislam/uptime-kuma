@@ -2,7 +2,6 @@ const { R } = require("redbean-node");
 const { log } = require("../src/util");
 
 class Settings {
-
     /**
      *  Example:
      *      {
@@ -17,9 +16,7 @@ class Settings {
      *     }
      * @type {{}}
      */
-    static cacheList = {
-
-    };
+    static cacheList = {};
 
     static cacheCleaner = null;
 
@@ -29,7 +26,6 @@ class Settings {
      * @returns {Promise<any>} Value
      */
     static async get(key) {
-
         // Start cache clear if not started yet
         if (!Settings.cacheCleaner) {
             Settings.cacheCleaner = setInterval(() => {
@@ -40,7 +36,6 @@ class Settings {
                         delete Settings.cacheList[key];
                     }
                 }
-
             }, 60 * 1000);
         }
 
@@ -51,9 +46,7 @@ class Settings {
             return v;
         }
 
-        let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [
-            key,
-        ]);
+        let value = await R.getCell("SELECT `value` FROM setting WHERE `key` = ? ", [key]);
 
         try {
             const v = JSON.parse(value);
@@ -61,7 +54,7 @@ class Settings {
 
             Settings.cacheList[key] = {
                 value: v,
-                timestamp: Date.now()
+                timestamp: Date.now(),
             };
 
             return v;
@@ -78,10 +71,7 @@ class Settings {
      * @returns {Promise<void>}
      */
     static async set(key, value, type = null) {
-
-        let bean = await R.findOne("setting", " `key` = ? ", [
-            key,
-        ]);
+        let bean = await R.findOne("setting", " `key` = ? ", [key]);
         if (!bean) {
             bean = R.dispense("setting");
             bean.key = key;
@@ -90,7 +80,7 @@ class Settings {
         bean.value = JSON.stringify(value);
         await R.store(bean);
 
-        Settings.deleteCache([ key ]);
+        Settings.deleteCache([key]);
     }
 
     /**
@@ -99,9 +89,7 @@ class Settings {
      * @returns {Promise<Bean>} Settings
      */
     static async getSettings(type) {
-        let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [
-            type,
-        ]);
+        let list = await R.getAll("SELECT `key`, `value` FROM setting WHERE `type` = ? ", [type]);
 
         let result = {};
 
@@ -128,9 +116,7 @@ class Settings {
         let promiseList = [];
 
         for (let key of keyList) {
-            let bean = await R.findOne("setting", " `key` = ? ", [
-                key
-            ]);
+            let bean = await R.findOne("setting", " `key` = ? ", [key]);
 
             if (bean == null) {
                 bean = R.dispense("setting");
