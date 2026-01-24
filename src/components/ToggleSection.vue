@@ -1,7 +1,7 @@
 <template>
-    <div class="my-3 py-3">
+    <div class="my-3 pb-0">
         <h5 @click="isOpen = !isOpen">
-            <div class="w-50 d-flex justify-content-between align-items-center pe-2">
+            <div class="d-flex justify-content-between align-items-center pe-2" style="max-width: 600px;">
                 <span class="pb-2">{{ heading }}</span>
                 <font-awesome-icon icon="chevron-down" class="animated" :class="{ open: isOpen }" />
             </div>
@@ -32,6 +32,15 @@ export default {
         return {
             isOpen: this.defaultOpen,
         };
+    },
+    watch: {
+        defaultOpen(newValue) {
+            // Update isOpen when defaultOpen changes (e.g., when data loads async)
+            // Only open it if defaultOpen becomes true and it's currently closed
+            if (newValue && !this.isOpen) {
+                this.isOpen = true;
+            }
+        },
     },
 };
 </script>

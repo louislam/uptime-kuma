@@ -1889,9 +1889,64 @@
                                 <div class="form-text">{{ $t("descriptionHelpText") }}</div>
                             </div>
 
-                            <div class="my-3">
-                                <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
-                            </div>
+                            <!-- Ntfy Custom Templates (Per-Monitor Override) -->
+                            <ToggleSection
+                                :heading="$t('ntfyCustomTemplatesOptional')"
+                                :default-open="hasNtfyMonitorTemplates"
+                            >
+                                <div class="form-text mb-3">
+                                    <div class="mb-2">
+                                        <i18n-t tag="span" keypath="liquidIntroduction">
+                                            <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
+                                        </i18n-t>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>{{ $t("templateAvailableVariables") }}:</strong>
+                                        <code v-pre>{{ status }}</code>, 
+                                        <code v-pre>{{ name }}</code>, 
+                                        <code v-pre>{{ hostnameOrURL }}</code>, 
+                                        <code v-pre>{{ msg }}</code>, 
+                                        <code v-pre>{{ monitorJSON }}</code>, 
+                                        <code v-pre>{{ heartbeatJSON }}</code>
+                                    </div>
+                                    <div class="mt-3 p-2" style="background-color: rgba(100, 100, 100, 0.1); border-radius: 4px;">
+                                        <div class="mb-1"><strong>{{ $t("example") }}:</strong></div>
+                                        <div class="mb-2">
+                                            <code style="font-size: 0.85em; word-break: break-all;" v-pre>{% for tag in monitorJSON.tags %}{{ tag.name }}{% unless tag.value == blank %}: {{ tag.value }}{% endunless %}{% unless forloop.last %}, {% endunless %}{% endfor %}</code>
+                                        </div>
+                                        <div style="font-size: 0.9em;">
+                                            <strong>{{ $t("Result") }}:</strong> <span style="opacity: 0.9;">nightly, phone: fbal</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="ntfy-custom-title-monitor" class="form-label">{{ $t("ntfyCustomTitle") }}</label>
+                                    <input
+                                        id="ntfy-custom-title-monitor"
+                                        v-model="monitor.ntfyCustomTitle"
+                                        type="text"
+                                        class="form-control"
+                                        autocomplete="off"
+                                    />
+                                    <div class="form-text">{{ $t("ntfyMonitorTemplateFallback") }}</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="ntfy-custom-message-monitor" class="form-label">{{ $t("ntfyCustomMessage") }}</label>
+                                    <textarea
+                                        ref="ntfyMessageMonitor"
+                                        id="ntfy-custom-message-monitor"
+                                        v-model="monitor.ntfyCustomMessage"
+                                        class="form-control auto-expand-textarea"
+                                        autocomplete="off"
+                                        @input="autoResizeTextarea"
+                                    ></textarea>
+                                    <div class="form-text">{{ $t("ntfyMonitorTemplateFallback") }}</div>
+                                </div>
+                            </ToggleSection>
+
+                            <tags-manager ref="tagsManager" :pre-selected-tags="monitor.tags"></tags-manager>
                         </div>
 
                         <div class="col-md-6">
@@ -2736,6 +2791,7 @@ import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
+import ToggleSection from "../components/ToggleSection.vue";
 
 const toast = useToast();
 
@@ -2808,6 +2864,7 @@ export default {
         Confirm,
         NotificationDialog,
         DockerHostDialog,
+        ToggleSection,
         RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
@@ -2895,6 +2952,10 @@ export default {
 
         showDomainExpiryNotification() {
             return this.monitor.type in TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD;
+        },
+
+        hasNtfyMonitorTemplates() {
+            return !!(this.monitor.ntfyCustomTitle || this.monitor.ntfyCustomMessage);
         },
 
         pageName() {
@@ -3470,10 +3531,27 @@ message HealthCheckResponse {
                     } else {
                         this.$root.toastError(res.msg);
                     }
+
+                    // Auto-resize textareas after data loads
+                    this.autoResizeTextarea();
                 });
             }
 
             this.draftGroupName = null;
+        },
+
+        /**
+         * Auto-resize textarea based on content
+         * @returns {void}
+         */
+        autoResizeTextarea() {
+            this.$nextTick(() => {
+                const textareas = this.$el.querySelectorAll('.auto-expand-textarea');
+                textareas.forEach(textarea => {
+                    textarea.style.height = 'auto';
+                    textarea.style.height = Math.max(100, textarea.scrollHeight) + 'px';
+                });
+            });
         },
 
         addKafkaProducerBroker(newBroker) {
@@ -3847,5 +3925,12 @@ message HealthCheckResponse {
 
 textarea {
     min-height: 200px;
+}
+
+.auto-expand-textarea {
+    min-height: 100px;
+    max-height: 500px;
+    overflow-y: auto;
+    resize: vertical;
 }
 </style>
