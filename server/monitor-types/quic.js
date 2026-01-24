@@ -6,7 +6,7 @@ const dns = require("dns").promises;
 const net = require('net');
 
 // https://www.rfc-editor.org/rfc/rfc9000.html#name-variable-length-integer-enc
-const encodeVarint = (buffer, offset, value) => {
+const writeVarint = (buffer, offset, value) => {
     if (value <= 63) {
         buffer[offset] = value;
         return offset + 1;
@@ -20,8 +20,18 @@ const encodeVarint = (buffer, offset, value) => {
         buffer[offset + 2] = (value >> 8) & 0xFF;
         buffer[offset + 3] = value & 0xFF;
         return offset + 4;
+    } else {
+        const bigValue = BigInt(value);
+        buffer[offset] = 0xC0 | Number((bigValue >> 56n) & 0x3Fn);
+        buffer[offset + 1] = Number((bigValue >> 48n) & 0xFFn);
+        buffer[offset + 2] = Number((bigValue >> 40n) & 0xFFn);
+        buffer[offset + 3] = Number((bigValue >> 32n) & 0xFFn);
+        buffer[offset + 4] = Number((bigValue >> 24n) & 0xFFn);
+        buffer[offset + 5] = Number((bigValue >> 16n) & 0xFFn);
+        buffer[offset + 6] = Number((bigValue >> 8n) & 0xFFn);
+        buffer[offset + 7] = Number(bigValue & 0xFFn);
+        return offset + 8;
     }
-    throw new Error('too large');
 }
 
 const getVarintSize = (value) => {
@@ -34,7 +44,7 @@ const getVarintSize = (value) => {
     if (value <= 1073741823) {
         return 4;
     }
-    throw new Error('too large');
+    return 8;
 };
 
 // https://www.rfc-editor.org/rfc/rfc9001#name-header-protection-applicati
@@ -111,7 +121,7 @@ const encryptPayload = (payload, key, iv, packetNumber, header) => {
  * @param {string} alpn the alpn
  * @returns {Buffer} the client hello packet
  */
-function createClientHello(hostname, alpn = undefined) {
+function createClientHello(hostname, alpn = "h3") {
     const buffer = Buffer.alloc(0x100);
     let offset = 0;
     buffer[offset++] = 0x01; // client hello
@@ -123,9 +133,10 @@ function createClientHello(hostname, alpn = undefined) {
     offset += 0x20;
     buffer[offset++] = 0x00; // session id length
 
-    offset = buffer.writeUInt16BE(0x4, offset);     // cipher suites length
+    offset = buffer.writeUInt16BE(0x6, offset);     // cipher suites length
     offset = buffer.writeUInt16BE(0x1301, offset);  // TLS_AES_128_GCM_SHA256
-    offset = buffer.writeUInt16BE(0x00ff, offset);  // TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+    offset = buffer.writeUInt16BE(0x1302, offset);  // TLS_AES_256_GCM_SHA384
+    offset = buffer.writeUInt16BE(0x1303, offset);  // TLS_CHACHA20_POLY1305_SHA256
     offset = buffer.writeUInt16BE(0x0100, offset);  // compression methods: none
     
     const extensionsLengthOffset = offset;
@@ -144,6 +155,57 @@ function createClientHello(hostname, alpn = undefined) {
     offset = buffer.writeUInt16BE(0x0003, offset);                  // extension length
     buffer[offset++] = 0x02;                                        // supported versions length
     offset = buffer.writeUInt16BE(0x0304, offset);                  // tls 1.3
+
+    // quic transport parameters
+    offset = buffer.writeUInt16BE(0x0039, offset);                  // extension type
+    const transportParametersLengthOffset = offset;
+    offset += 2;
+    const transportParam = (type, value) => {
+        let length = value === null ? 0 : getVarintSize(value);
+        offset = writeVarint(buffer, offset, type);
+        buffer[offset++] = length;
+        if(length) {
+            offset = writeVarint(buffer, offset, value);
+        }
+    }
+    transportParam(0x01, 30000);    // max_idle_timeout
+    transportParam(0x03, 1472);     // max_udp_payload_size
+    transportParam(0x04, 524288);   // initial_max_data
+    transportParam(0x05, 131072);   // initial_max_stream_data_bidi_local
+    transportParam(0x06, 131072);   // initial_max_stream_data_bidi_remote
+    transportParam(0x07, 131072);   // initial_max_stream_data_uni
+    transportParam(0x08, 4);        // initial_max_streams_bidi
+    transportParam(0x09, 4);        // initial_max_streams_uni
+    transportParam(0x0a, 8);        // ack_delay_exponent
+    transportParam(0x0b, 41);       // max_ack_delay
+    transportParam(0x0e, 4);        // active_connection_id_limit
+    transportParam(0x0f, null);     // initial_source_connection_id
+    transportParam(0xff04de1b, 16000); // min_ack_delay
+    buffer.writeUInt16BE(offset - transportParametersLengthOffset - 2, transportParametersLengthOffset);
+
+    // signature_algorithms
+    offset = buffer.writeUInt16BE(0x000d, offset);  // extension type
+    offset = buffer.writeUInt16BE(0x0008, offset);  // extension length
+    offset = buffer.writeUInt16BE(0x0006, offset);  // signature hash algorithms length
+    offset = buffer.writeUInt16BE(0x0403, offset);  // ecdsa_secp256r1_sha256
+    offset = buffer.writeUInt16BE(0x0807, offset);  // ed25519
+    offset = buffer.writeUInt16BE(0x0809, offset);  // rsa_pss_pss_sha256
+
+    // supported_groups
+    offset = buffer.writeUInt16BE(0x000a, offset);  // extension type
+    offset = buffer.writeUInt16BE(0x0006, offset);  // extension length
+    offset = buffer.writeUInt16BE(0x0004, offset);  // supported groups list length
+    offset = buffer.writeUInt16BE(0x001d, offset);  // x25519
+    offset = buffer.writeUInt16BE(0x0017, offset);  // secp256r1
+
+    // key_share
+    offset = buffer.writeUInt16BE(0x0033, offset);  // extension type
+    offset = buffer.writeUInt16BE(0x0026, offset);  // extension length
+    offset = buffer.writeUInt16BE(0x0024, offset);  // client key share length
+    offset = buffer.writeUInt16BE(0x001d, offset);  // x25519
+    offset = buffer.writeUInt16BE(0x0020, offset);  // key exchange length
+    crypto.randomFillSync(buffer.subarray(offset, offset+0x20));
+    offset += 0x20;
 
     // application layer protocol negotiation
     if(alpn) {
@@ -180,9 +242,9 @@ function createInitialPacket(packetNumber, hostname) {
     const payload = Buffer.alloc(0x100);
     let payloadOffset = 0;
     payload[payloadOffset++] = 0x06; // frame type CRYPTO
-    payloadOffset = encodeVarint(payload, payloadOffset, 0); // offset = 0
+    payloadOffset = writeVarint(payload, payloadOffset, 0); // offset = 0
     const clientHello = createClientHello(hostname);
-    payloadOffset = encodeVarint(payload, payloadOffset, clientHello.length); // length
+    payloadOffset = writeVarint(payload, payloadOffset, clientHello.length); // length
     clientHello.copy(payload, payloadOffset);
     payloadOffset += clientHello.length;
 
@@ -207,7 +269,7 @@ function createInitialPacket(packetNumber, hostname) {
 
     header[headerOffset++] = 0x00; // src conn id
     header[headerOffset++] = 0x00; // token length
-    headerOffset = encodeVarint(header, headerOffset, totalLength); // payload length
+    headerOffset = writeVarint(header, headerOffset, totalLength); // payload length
 
     // packet number
     const packetNumberOffset = headerOffset;
