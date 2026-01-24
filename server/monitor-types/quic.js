@@ -1,9 +1,9 @@
 const { MonitorType } = require("./monitor-type");
 const { UP, PING_GLOBAL_TIMEOUT_DEFAULT: TIMEOUT } = require("../../src/util");
-const dgram = require('dgram');
-const crypto = require('crypto');
+const dgram = require("dgram");
+const crypto = require("crypto");
 const dns = require("dns").promises;
-const net = require('net');
+const net = require("net");
 
 // https://www.rfc-editor.org/rfc/rfc9000.html#name-variable-length-integer-enc
 const writeVarint = (buffer, offset, value) => {
@@ -11,28 +11,28 @@ const writeVarint = (buffer, offset, value) => {
         buffer[offset] = value;
         return offset + 1;
     } else if (value <= 16383) {
-        buffer[offset] = 0x40 | ((value >> 8) & 0x3F);
-        buffer[offset + 1] = value & 0xFF;
+        buffer[offset] = 0x40 | ((value >> 8) & 0x3f);
+        buffer[offset + 1] = value & 0xff;
         return offset + 2;
     } else if (value <= 1073741823) {
-        buffer[offset] = 0x80 | ((value >> 24) & 0x3F);
-        buffer[offset + 1] = (value >> 16) & 0xFF;
-        buffer[offset + 2] = (value >> 8) & 0xFF;
-        buffer[offset + 3] = value & 0xFF;
+        buffer[offset] = 0x80 | ((value >> 24) & 0x3f);
+        buffer[offset + 1] = (value >> 16) & 0xff;
+        buffer[offset + 2] = (value >> 8) & 0xff;
+        buffer[offset + 3] = value & 0xff;
         return offset + 4;
     } else {
         const bigValue = BigInt(value);
-        buffer[offset] = 0xC0 | Number((bigValue >> 56n) & 0x3Fn);
-        buffer[offset + 1] = Number((bigValue >> 48n) & 0xFFn);
-        buffer[offset + 2] = Number((bigValue >> 40n) & 0xFFn);
-        buffer[offset + 3] = Number((bigValue >> 32n) & 0xFFn);
-        buffer[offset + 4] = Number((bigValue >> 24n) & 0xFFn);
-        buffer[offset + 5] = Number((bigValue >> 16n) & 0xFFn);
-        buffer[offset + 6] = Number((bigValue >> 8n) & 0xFFn);
-        buffer[offset + 7] = Number(bigValue & 0xFFn);
+        buffer[offset] = 0xc0 | Number((bigValue >> 56n) & 0x3fn);
+        buffer[offset + 1] = Number((bigValue >> 48n) & 0xffn);
+        buffer[offset + 2] = Number((bigValue >> 40n) & 0xffn);
+        buffer[offset + 3] = Number((bigValue >> 32n) & 0xffn);
+        buffer[offset + 4] = Number((bigValue >> 24n) & 0xffn);
+        buffer[offset + 5] = Number((bigValue >> 16n) & 0xffn);
+        buffer[offset + 6] = Number((bigValue >> 8n) & 0xffn);
+        buffer[offset + 7] = Number(bigValue & 0xffn);
         return offset + 8;
     }
-}
+};
 
 const getVarintSize = (value) => {
     if (value <= 63) {
@@ -52,53 +52,49 @@ const applyHeaderProtection = (packet, pnOffset, hp) => {
     const pnLength = (packet[0] & 0x03) + 1;
     const sampleOffset = pnOffset + 4;
     const sample = packet.slice(sampleOffset, sampleOffset + 16);
-    const cipher = crypto.createCipheriv('aes-128-ecb', hp, null);
+    const cipher = crypto.createCipheriv("aes-128-ecb", hp, null);
     cipher.setAutoPadding(false);
     const mask = cipher.update(sample);
-    packet[0] ^= mask[0] & 0x0F;
+    packet[0] ^= mask[0] & 0x0f;
     for (let i = 0; i < pnLength; i++) {
         packet[pnOffset + i] ^= mask[1 + i];
     }
     return packet;
-}
+};
 
 // https://www.rfc-editor.org/rfc/rfc5869#section-2.2
 const hdkfExtract = (salt, ikm) => {
     return crypto.createHmac("sha256", salt).update(ikm).digest();
-}
+};
 
 // https://www.rfc-editor.org/rfc/rfc8446.html#section-7.1
 const hkdfExpandLabel = (secret, label, context, length) => {
-    const fullLabel = Buffer.concat([
-        Buffer.from('tls13 ', 'utf8'),
-        Buffer.from(label, 'utf8')
-    ]);
+    const fullLabel = Buffer.concat([Buffer.from("tls13 ", "utf8"), Buffer.from(label, "utf8")]);
     const hkdfLabel = Buffer.concat([
-        Buffer.from([length >> 8, length & 0xFF]),  // length
-        Buffer.from([fullLabel.length]),            // label length
-        fullLabel,                                  // label
-        Buffer.from([context.length]),              // context length
-        context                                     // context
+        Buffer.from([length >> 8, length & 0xff]), // length
+        Buffer.from([fullLabel.length]), // label length
+        fullLabel, // label
+        Buffer.from([context.length]), // context length
+        context, // context
     ]);
-    const hmac = crypto.createHmac('sha256', secret);
+    const hmac = crypto.createHmac("sha256", secret);
     hmac.update(hkdfLabel);
     hmac.update(Buffer.from([0x01]));
     const output = hmac.digest();
     return output.subarray(0, length);
-}
+};
 
-
-const INITIAL_SALT = Buffer.from('38762cf7f55934b34d179ae6a4c80cadccbb7f0a', 'hex');
+const INITIAL_SALT = Buffer.from("38762cf7f55934b34d179ae6a4c80cadccbb7f0a", "hex");
 
 // https://www.rfc-editor.org/rfc/rfc9001#name-initial-secrets
 const deriveInitialSecrets = (dcid) => {
     const initialSecret = hdkfExtract(INITIAL_SALT, dcid);
-    const clientSecret = hkdfExpandLabel( initialSecret, 'client in', Buffer.alloc(0), 32);
-    const key = hkdfExpandLabel(clientSecret, 'quic key', Buffer.alloc(0), 16);
-    const iv = hkdfExpandLabel(clientSecret, 'quic iv', Buffer.alloc(0), 12);
-    const hp = hkdfExpandLabel(clientSecret, 'quic hp', Buffer.alloc(0), 16);
+    const clientSecret = hkdfExpandLabel(initialSecret, "client in", Buffer.alloc(0), 32);
+    const key = hkdfExpandLabel(clientSecret, "quic key", Buffer.alloc(0), 16);
+    const iv = hkdfExpandLabel(clientSecret, "quic iv", Buffer.alloc(0), 12);
+    const hp = hkdfExpandLabel(clientSecret, "quic hp", Buffer.alloc(0), 16);
     return { key, iv, hp };
-}
+};
 
 // https://www.rfc-editor.org/rfc/rfc9001#name-aead-usage
 const encryptPayload = (payload, key, iv, packetNumber, header) => {
@@ -108,12 +104,12 @@ const encryptPayload = (payload, key, iv, packetNumber, header) => {
     for (let i = 0; i < 12; i++) {
         nonce[i] ^= pnBuf[i];
     }
-    const cipher = crypto.createCipheriv('aes-128-gcm', key, nonce);
+    const cipher = crypto.createCipheriv("aes-128-gcm", key, nonce);
     cipher.setAAD(header);
     const cipherText = Buffer.concat([cipher.update(payload), cipher.final()]);
     const authTag = cipher.getAuthTag();
     return Buffer.concat([cipherText, authTag]);
-}
+};
 
 /**
  * creates a tls1.3 client hello packet
@@ -129,91 +125,91 @@ function createClientHello(hostname, alpn = "h3") {
     offset += 3;
 
     offset = buffer.writeUInt16BE(0x0303, offset); // tls 1.2
-    crypto.randomFillSync(buffer.subarray(offset, offset+0x20)); // random
+    crypto.randomFillSync(buffer.subarray(offset, offset + 0x20)); // random
     offset += 0x20;
     buffer[offset++] = 0x00; // session id length
 
-    offset = buffer.writeUInt16BE(0x6, offset);     // cipher suites length
-    offset = buffer.writeUInt16BE(0x1301, offset);  // TLS_AES_128_GCM_SHA256
-    offset = buffer.writeUInt16BE(0x1302, offset);  // TLS_AES_256_GCM_SHA384
-    offset = buffer.writeUInt16BE(0x1303, offset);  // TLS_CHACHA20_POLY1305_SHA256
-    offset = buffer.writeUInt16BE(0x0100, offset);  // compression methods: none
-    
+    offset = buffer.writeUInt16BE(0x6, offset); // cipher suites length
+    offset = buffer.writeUInt16BE(0x1301, offset); // TLS_AES_128_GCM_SHA256
+    offset = buffer.writeUInt16BE(0x1302, offset); // TLS_AES_256_GCM_SHA384
+    offset = buffer.writeUInt16BE(0x1303, offset); // TLS_CHACHA20_POLY1305_SHA256
+    offset = buffer.writeUInt16BE(0x0100, offset); // compression methods: none
+
     const extensionsLengthOffset = offset;
     offset += 2;
 
     // server name
-    offset = buffer.writeUInt16BE(0x0000, offset);                  // extension type
-    offset = buffer.writeUInt16BE(5 + hostname.length, offset);     // extension length
-    offset = buffer.writeUInt16BE(3 + hostname.length, offset);     // server name list length
-    buffer[offset++] = 0;                                           // server name type: host name
-    offset = buffer.writeUInt16BE(hostname.length, offset);         // server name length
-    offset += Buffer.from(hostname, 'utf8').copy(buffer, offset);   // server name
+    offset = buffer.writeUInt16BE(0x0000, offset); // extension type
+    offset = buffer.writeUInt16BE(5 + hostname.length, offset); // extension length
+    offset = buffer.writeUInt16BE(3 + hostname.length, offset); // server name list length
+    buffer[offset++] = 0; // server name type: host name
+    offset = buffer.writeUInt16BE(hostname.length, offset); // server name length
+    offset += Buffer.from(hostname, "utf8").copy(buffer, offset); // server name
 
     // supported_versions
-    offset = buffer.writeUInt16BE(0x002b, offset);                  // extension type
-    offset = buffer.writeUInt16BE(0x0003, offset);                  // extension length
-    buffer[offset++] = 0x02;                                        // supported versions length
-    offset = buffer.writeUInt16BE(0x0304, offset);                  // tls 1.3
+    offset = buffer.writeUInt16BE(0x002b, offset); // extension type
+    offset = buffer.writeUInt16BE(0x0003, offset); // extension length
+    buffer[offset++] = 0x02; // supported versions length
+    offset = buffer.writeUInt16BE(0x0304, offset); // tls 1.3
 
     // quic transport parameters
-    offset = buffer.writeUInt16BE(0x0039, offset);                  // extension type
+    offset = buffer.writeUInt16BE(0x0039, offset); // extension type
     const transportParametersLengthOffset = offset;
     offset += 2;
     const transportParam = (type, value) => {
         let length = value === null ? 0 : getVarintSize(value);
         offset = writeVarint(buffer, offset, type);
         buffer[offset++] = length;
-        if(length) {
+        if (length) {
             offset = writeVarint(buffer, offset, value);
         }
-    }
-    transportParam(0x01, 30000);    // max_idle_timeout
-    transportParam(0x03, 1472);     // max_udp_payload_size
-    transportParam(0x04, 524288);   // initial_max_data
-    transportParam(0x05, 131072);   // initial_max_stream_data_bidi_local
-    transportParam(0x06, 131072);   // initial_max_stream_data_bidi_remote
-    transportParam(0x07, 131072);   // initial_max_stream_data_uni
-    transportParam(0x08, 4);        // initial_max_streams_bidi
-    transportParam(0x09, 4);        // initial_max_streams_uni
-    transportParam(0x0a, 8);        // ack_delay_exponent
-    transportParam(0x0b, 41);       // max_ack_delay
-    transportParam(0x0e, 4);        // active_connection_id_limit
-    transportParam(0x0f, null);     // initial_source_connection_id
+    };
+    transportParam(0x01, 30000); // max_idle_timeout
+    transportParam(0x03, 1472); // max_udp_payload_size
+    transportParam(0x04, 524288); // initial_max_data
+    transportParam(0x05, 131072); // initial_max_stream_data_bidi_local
+    transportParam(0x06, 131072); // initial_max_stream_data_bidi_remote
+    transportParam(0x07, 131072); // initial_max_stream_data_uni
+    transportParam(0x08, 4); // initial_max_streams_bidi
+    transportParam(0x09, 4); // initial_max_streams_uni
+    transportParam(0x0a, 8); // ack_delay_exponent
+    transportParam(0x0b, 41); // max_ack_delay
+    transportParam(0x0e, 4); // active_connection_id_limit
+    transportParam(0x0f, null); // initial_source_connection_id
     transportParam(0xff04de1b, 16000); // min_ack_delay
     buffer.writeUInt16BE(offset - transportParametersLengthOffset - 2, transportParametersLengthOffset);
 
     // signature_algorithms
-    offset = buffer.writeUInt16BE(0x000d, offset);  // extension type
-    offset = buffer.writeUInt16BE(0x0008, offset);  // extension length
-    offset = buffer.writeUInt16BE(0x0006, offset);  // signature hash algorithms length
-    offset = buffer.writeUInt16BE(0x0403, offset);  // ecdsa_secp256r1_sha256
-    offset = buffer.writeUInt16BE(0x0807, offset);  // ed25519
-    offset = buffer.writeUInt16BE(0x0809, offset);  // rsa_pss_pss_sha256
+    offset = buffer.writeUInt16BE(0x000d, offset); // extension type
+    offset = buffer.writeUInt16BE(0x0008, offset); // extension length
+    offset = buffer.writeUInt16BE(0x0006, offset); // signature hash algorithms length
+    offset = buffer.writeUInt16BE(0x0403, offset); // ecdsa_secp256r1_sha256
+    offset = buffer.writeUInt16BE(0x0807, offset); // ed25519
+    offset = buffer.writeUInt16BE(0x0809, offset); // rsa_pss_pss_sha256
 
     // supported_groups
-    offset = buffer.writeUInt16BE(0x000a, offset);  // extension type
-    offset = buffer.writeUInt16BE(0x0006, offset);  // extension length
-    offset = buffer.writeUInt16BE(0x0004, offset);  // supported groups list length
-    offset = buffer.writeUInt16BE(0x001d, offset);  // x25519
-    offset = buffer.writeUInt16BE(0x0017, offset);  // secp256r1
+    offset = buffer.writeUInt16BE(0x000a, offset); // extension type
+    offset = buffer.writeUInt16BE(0x0006, offset); // extension length
+    offset = buffer.writeUInt16BE(0x0004, offset); // supported groups list length
+    offset = buffer.writeUInt16BE(0x001d, offset); // x25519
+    offset = buffer.writeUInt16BE(0x0017, offset); // secp256r1
 
     // key_share
-    offset = buffer.writeUInt16BE(0x0033, offset);  // extension type
-    offset = buffer.writeUInt16BE(0x0026, offset);  // extension length
-    offset = buffer.writeUInt16BE(0x0024, offset);  // client key share length
-    offset = buffer.writeUInt16BE(0x001d, offset);  // x25519
-    offset = buffer.writeUInt16BE(0x0020, offset);  // key exchange length
-    crypto.randomFillSync(buffer.subarray(offset, offset+0x20));
+    offset = buffer.writeUInt16BE(0x0033, offset); // extension type
+    offset = buffer.writeUInt16BE(0x0026, offset); // extension length
+    offset = buffer.writeUInt16BE(0x0024, offset); // client key share length
+    offset = buffer.writeUInt16BE(0x001d, offset); // x25519
+    offset = buffer.writeUInt16BE(0x0020, offset); // key exchange length
+    crypto.randomFillSync(buffer.subarray(offset, offset + 0x20));
     offset += 0x20;
 
     // application layer protocol negotiation
-    if(alpn) {
-        offset = buffer.writeUInt16BE(0x10, offset);                // extension type
-        offset = buffer.writeUInt16BE(3 + alpn.length, offset);     // extension length
-        offset = buffer.writeUInt16BE(1 + alpn.length, offset);     // alpn extension length
-        buffer[offset++] = alpn.length;                             // alpn string length
-        offset += Buffer.from(alpn, 'utf8').copy(buffer, offset);   // alpn next protocol
+    if (alpn) {
+        offset = buffer.writeUInt16BE(0x10, offset); // extension type
+        offset = buffer.writeUInt16BE(3 + alpn.length, offset); // extension length
+        offset = buffer.writeUInt16BE(1 + alpn.length, offset); // alpn extension length
+        buffer[offset++] = alpn.length; // alpn string length
+        offset += Buffer.from(alpn, "utf8").copy(buffer, offset); // alpn next protocol
     }
 
     const extensionsLength = offset - extensionsLengthOffset - 2;
@@ -257,10 +253,10 @@ function createInitialPacket(packetNumber, hostname) {
 
     const header = Buffer.alloc(0x100);
     let headerOffset = 0;
-    
+
     // header byte (long header, fixed bit, packet type initial, reserved, packet number length)
     header[headerOffset++] = 0b11000000 | ((packetNumberLength - 1) & 0x03);
-    
+
     headerOffset = header.writeUInt32BE(0x00000001, headerOffset); // version
 
     // dest conn id
@@ -277,10 +273,7 @@ function createInitialPacket(packetNumber, hostname) {
 
     const actualHeader = header.subarray(0, headerOffset);
     const encryptedPayload = encryptPayload(actualPayload, key, iv, packetNumber, actualHeader);
-    const packet = Buffer.concat([
-        actualHeader,
-        encryptedPayload
-    ]);
+    const packet = Buffer.concat([actualHeader, encryptedPayload]);
     applyHeaderProtection(packet, packetNumberOffset, hp);
     return packet;
 }
@@ -303,38 +296,38 @@ function isQuicResponse(buffer) {
 const quicping = (hostname, type, address, port, timeout) => {
     return new Promise((resolve, reject) => {
         const socket = dgram.createSocket(type);
-        
+
         let startTime = 0;
         let responded = false;
         let packetNumber = 0;
 
         const timer = setTimeout(() => {
             if (!responded) {
-            socket.close();
-            reject(new Error(`Timeout after ${timeout}ms`));
+                socket.close();
+                reject(new Error(`Timeout after ${timeout}ms`));
             }
         }, timeout);
 
-        socket.on('error', (err) => {
+        socket.on("error", (err) => {
             clearTimeout(timer);
             responded = true;
             socket.close();
             reject(err);
         });
 
-        socket.on('message', (msg, rinfo) => {
+        socket.on("message", (msg, rinfo) => {
             if (responded) {
                 return;
             }
-            
+
             const latency = performance.now() - startTime;
             clearTimeout(timer);
             responded = true;
             const isQuic = isQuicResponse(msg);
-            if(!isQuic) {
-                reject(new Error("not a quic message"))
+            if (!isQuic) {
+                reject(new Error("not a quic message"));
             }
-            
+
             socket.close();
             resolve(latency);
         });
@@ -373,9 +366,9 @@ class QuicMonitorType extends MonitorType {
      */
     async resolveHost(host) {
         let family = "udp4";
-        if(net.isIPv4(host)) {
+        if (net.isIPv4(host)) {
             family = "udp4";
-        } else if(net.isIPv6(host)) {
+        } else if (net.isIPv6(host)) {
             family = "udp6";
         } else {
             try {
@@ -386,7 +379,7 @@ class QuicMonitorType extends MonitorType {
                 throw new Error(`DNS resolution failed for ${host}: ${err.message}`);
             }
         }
-        return {host, family};
+        return { host, family };
     }
 }
 
