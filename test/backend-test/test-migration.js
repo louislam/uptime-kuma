@@ -27,7 +27,7 @@ describe("Database Migration", () => {
         const db = knex({
             client: Dialect,
             connection: {
-                filename: testDbPath
+                filename: testDbPath,
             },
             useNullAsDefault: true,
         });
@@ -43,11 +43,10 @@ describe("Database Migration", () => {
 
             // Run all migrations like production code does
             await R.knex.migrate.latest({
-                directory: path.join(__dirname, "../../db/knex_migrations")
+                directory: path.join(__dirname, "../../db/knex_migrations"),
             });
 
             // Test passes if migrations complete successfully without errors
-
         } finally {
             // Clean up
             await R.knex.destroy();
@@ -60,18 +59,16 @@ describe("Database Migration", () => {
     test(
         "MariaDB migrations run successfully from fresh database",
         {
-            skip:
-                !!process.env.CI &&
-                (process.platform !== "linux" || process.arch !== "x64"),
+            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
             // Start MariaDB container (using MariaDB 12 to match current production)
             const mariadbContainer = await new GenericContainer("mariadb:12")
                 .withEnvironment({
-                    "MYSQL_ROOT_PASSWORD": "root",
-                    "MYSQL_DATABASE": "kuma_test",
-                    "MYSQL_USER": "kuma",
-                    "MYSQL_PASSWORD": "kuma"
+                    MYSQL_ROOT_PASSWORD: "root",
+                    MYSQL_DATABASE: "kuma_test",
+                    MYSQL_USER: "kuma",
+                    MYSQL_PASSWORD: "kuma",
                 })
                 .withExposedPorts(3306)
                 .withWaitStrategy(Wait.forLogMessage("ready for connections", 2))
@@ -79,7 +76,7 @@ describe("Database Migration", () => {
                 .start();
 
             // Wait a bit more to ensure MariaDB is fully ready
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
 
             const knex = require("knex");
             const knexInstance = knex({
@@ -111,11 +108,10 @@ describe("Database Migration", () => {
 
                 // Run all migrations like production code does
                 await R.knex.migrate.latest({
-                    directory: path.join(__dirname, "../../db/knex_migrations")
+                    directory: path.join(__dirname, "../../db/knex_migrations"),
                 });
 
                 // Test passes if migrations complete successfully without errors
-
             } finally {
                 // Clean up
                 try {
@@ -135,15 +131,11 @@ describe("Database Migration", () => {
     test(
         "MySQL migrations run successfully from fresh database",
         {
-            skip:
-                !!process.env.CI &&
-                (process.platform !== "linux" || process.arch !== "x64"),
+            skip: !!process.env.CI && (process.platform !== "linux" || process.arch !== "x64"),
         },
         async () => {
             // Start MySQL 8.0 container (the version mentioned in the issue)
-            const mysqlContainer = await new MySqlContainer("mysql:8.0")
-                .withStartupTimeout(120000)
-                .start();
+            const mysqlContainer = await new MySqlContainer("mysql:8.0").withStartupTimeout(120000).start();
 
             const knex = require("knex");
             const knexInstance = knex({
@@ -175,11 +167,10 @@ describe("Database Migration", () => {
 
                 // Run all migrations like production code does
                 await R.knex.migrate.latest({
-                    directory: path.join(__dirname, "../../db/knex_migrations")
+                    directory: path.join(__dirname, "../../db/knex_migrations"),
                 });
 
                 // Test passes if migrations complete successfully without errors
-
             } finally {
                 // Clean up
                 try {

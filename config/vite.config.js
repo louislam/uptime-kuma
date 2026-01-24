@@ -15,13 +15,13 @@ export default defineConfig({
         port: 3000,
     },
     define: {
-        "FRONTEND_VERSION": JSON.stringify(process.env.npm_package_version),
+        FRONTEND_VERSION: JSON.stringify(process.env.npm_package_version),
         "process.env": {},
     },
     plugins: [
         vue(),
         visualizer({
-            filename: "tmp/dist-stats.html"
+            filename: "tmp/dist-stats.html",
         }),
         viteCompression({
             algorithm: "gzip",
@@ -36,25 +36,26 @@ export default defineConfig({
             srcDir: "src",
             filename: "serviceWorker.ts",
             strategies: "injectManifest",
+            injectManifest: {
+                maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
+            },
         }),
     ],
     css: {
         postcss: {
-            "parser": postCssScss,
-            "map": false,
-            "plugins": [ postcssRTLCSS ]
-        }
+            parser: postCssScss,
+            map: false,
+            plugins: [postcssRTLCSS],
+        },
     },
     build: {
         commonjsOptions: {
-            include: [ /.js$/ ],
+            include: [/.js$/],
         },
         rollupOptions: {
             output: {
-                manualChunks(id, { getModuleInfo, getModuleIds }) {
-
-                }
-            }
+                manualChunks(id, { getModuleInfo, getModuleIds }) {},
+            },
         },
-    }
+    },
 });

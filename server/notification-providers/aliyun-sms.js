@@ -19,7 +19,9 @@ class AliyunSMS extends NotificationProvider {
                     name: monitorJSON["name"],
                     time: heartbeatJSON["localDateTime"],
                     status: this.statusToString(heartbeatJSON["status"]),
-                    msg: this.removeIpAndDomain(heartbeatJSON["msg"]),
+                    ...(notification.optionalParameters && {
+                        msg: this.removeIpAndDomain(heartbeatJSON["msg"]),
+                    }),
                 });
                 if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
@@ -29,7 +31,9 @@ class AliyunSMS extends NotificationProvider {
                     name: "",
                     time: "",
                     status: "",
-                    msg: this.removeIpAndDomain(msg),
+                    ...(notification.optionalParameters && {
+                        msg: this.removeIpAndDomain(msg),
+                    }),
                 });
                 if (await this.sendSms(notification, msgBody)) {
                     return okMsg;
@@ -109,7 +113,7 @@ class AliyunSMS extends NotificationProvider {
                 "*": "%2A",
                 "'": "%27",
                 "(": "%28",
-                ")": "%29"
+                ")": "%29",
             }[m];
         };
 
@@ -119,10 +123,7 @@ class AliyunSMS extends NotificationProvider {
         }
 
         let StringToSign = `POST&${encodeURIComponent("/")}&${encodeURIComponent(data.join("&"))}`;
-        return Crypto
-            .createHmac("sha1", `${AccessKeySecret}&`)
-            .update(Buffer.from(StringToSign))
-            .digest("base64");
+        return Crypto.createHmac("sha1", `${AccessKeySecret}&`).update(Buffer.from(StringToSign)).digest("base64");
     }
 
     /**
@@ -162,7 +163,10 @@ class AliyunSMS extends NotificationProvider {
 
         // 4. Remove domain names (including subdomains and ports)
         // Matches example.com, www.example.com, sub.example.com:8080, etc.
-        message = message.replace(/\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d+)?\b/g, "[Domain]");
+        message = message.replace(
+            /\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?::\d+)?\b/g,
+            "[Domain]"
+        );
 
         // 5. Remove CIDR notation (e.g., 192.168.0.0/24)
         message = message.replace(/\b(?:\d{1,3}\.){3}\d{1,3}\/\d{1,2}\b/g, "[CIDR]");

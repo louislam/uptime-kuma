@@ -4,18 +4,14 @@ const dayjs = require("dayjs");
 const mssql = require("mssql");
 const { ConditionVariable } = require("../monitor-conditions/variables");
 const { defaultStringOperators } = require("../monitor-conditions/operators");
-const {
-    ConditionExpressionGroup,
-} = require("../monitor-conditions/expression");
+const { ConditionExpressionGroup } = require("../monitor-conditions/expression");
 const { evaluateExpressionGroup } = require("../monitor-conditions/evaluator");
 
 class MssqlMonitorType extends MonitorType {
     name = "sqlserver";
 
     supportsConditions = true;
-    conditionVariables = [
-        new ConditionVariable("result", defaultStringOperators),
-    ];
+    conditionVariables = [new ConditionVariable("result", defaultStringOperators)];
 
     /**
      * @inheritdoc
@@ -34,10 +30,7 @@ class MssqlMonitorType extends MonitorType {
         try {
             if (hasConditions) {
                 // When conditions are enabled, expect a single value result
-                const result = await this.mssqlQuerySingleValue(
-                    monitor.databaseConnectionString,
-                    query
-                );
+                const result = await this.mssqlQuerySingleValue(monitor.databaseConnectionString, query);
                 heartbeat.ping = dayjs().valueOf() - startTime;
 
                 const conditionsResult = evaluateExpressionGroup(conditions, { result: String(result) });
@@ -50,10 +43,7 @@ class MssqlMonitorType extends MonitorType {
                 heartbeat.msg = "Query did meet specified conditions";
             } else {
                 // Backwards compatible: just check connection and return row count
-                const result = await this.mssqlQuery(
-                    monitor.databaseConnectionString,
-                    query
-                );
+                const result = await this.mssqlQuery(monitor.databaseConnectionString, query);
                 heartbeat.ping = dayjs().valueOf() - startTime;
                 heartbeat.status = UP;
                 heartbeat.msg = result;
@@ -87,11 +77,7 @@ class MssqlMonitorType extends MonitorType {
                 return "No Error, but the result is not an array. Type: " + typeof result.recordset;
             }
         } catch (err) {
-            log.debug(
-                "sqlserver",
-                "Error caught in the query execution.",
-                err.message
-            );
+            log.debug("sqlserver", "Error caught in the query execution.", err.message);
             throw err;
         } finally {
             if (pool) {
@@ -120,9 +106,7 @@ class MssqlMonitorType extends MonitorType {
 
             // Check if we have multiple rows
             if (result.recordset.length > 1) {
-                throw new Error(
-                    "Multiple values were found, expected only one value"
-                );
+                throw new Error("Multiple values were found, expected only one value");
             }
 
             const firstRow = result.recordset[0];
@@ -130,19 +114,13 @@ class MssqlMonitorType extends MonitorType {
 
             // Check if we have multiple columns
             if (columnNames.length > 1) {
-                throw new Error(
-                    "Multiple columns were found, expected only one value"
-                );
+                throw new Error("Multiple columns were found, expected only one value");
             }
 
             // Return the single value from the first (and only) column
             return firstRow[columnNames[0]];
         } catch (err) {
-            log.debug(
-                "sqlserver",
-                "Error caught in the query execution.",
-                err.message
-            );
+            log.debug("sqlserver", "Error caught in the query execution.", err.message);
             throw err;
         } finally {
             if (pool) {

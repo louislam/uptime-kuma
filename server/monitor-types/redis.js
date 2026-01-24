@@ -24,8 +24,8 @@ class RedisMonitorType extends MonitorType {
             const client = redis.createClient({
                 url: dsn,
                 socket: {
-                    rejectUnauthorized
-                }
+                    rejectUnauthorized,
+                },
             });
             client.on("error", (err) => {
                 if (client.isOpen) {
@@ -37,16 +37,19 @@ class RedisMonitorType extends MonitorType {
                 if (!client.isOpen) {
                     client.emit("error", new Error("connection isn't open"));
                 }
-                client.ping().then((res, err) => {
-                    if (client.isOpen) {
-                        client.disconnect();
-                    }
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res);
-                    }
-                }).catch(error => reject(error));
+                client
+                    .ping()
+                    .then((res, err) => {
+                        if (client.isOpen) {
+                            client.disconnect();
+                        }
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+                    .catch((error) => reject(error));
             });
         });
     }
