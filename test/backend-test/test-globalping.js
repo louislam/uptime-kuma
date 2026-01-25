@@ -4,9 +4,7 @@ const { encodeBase64 } = require("../../server/util-server");
 const { UP, DOWN, PENDING } = require("../../src/util");
 
 describe("GlobalpingMonitorType", () => {
-    const {
-        GlobalpingMonitorType,
-    } = require("../../server/monitor-types/globalping");
+    const { GlobalpingMonitorType } = require("../../server/monitor-types/globalping");
 
     describe("ping", () => {
         test("should handle successful ping", async () => {
@@ -18,12 +16,8 @@ describe("GlobalpingMonitorType", () => {
             const measurement = createPingMeasurement();
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 hostname: "example.com",
@@ -41,25 +35,19 @@ describe("GlobalpingMonitorType", () => {
 
             await monitorType.ping(mockClient, monitor, heartbeat, true);
 
-            assert.strictEqual(
-                mockClient.createMeasurement.mock.calls.length,
-                1,
-            );
-            assert.deepStrictEqual(
-                mockClient.createMeasurement.mock.calls[0].arguments[0],
-                {
-                    type: "ping",
-                    target: "example.com",
-                    inProgressUpdates: false,
-                    limit: 1,
-                    locations: [{ magic: "North America" }],
-                    measurementOptions: {
-                        packets: 3,
-                        protocol: "ICMP",
-                        ipVersion: 4,
-                    },
+            assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 1);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[0].arguments[0], {
+                type: "ping",
+                target: "example.com",
+                inProgressUpdates: false,
+                limit: 1,
+                locations: [{ magic: "North America" }],
+                measurementOptions: {
+                    packets: 3,
+                    protocol: "ICMP",
+                    ipVersion: 4,
                 },
-            );
+            });
 
             assert.deepStrictEqual(heartbeat, {
                 status: UP,
@@ -79,12 +67,8 @@ describe("GlobalpingMonitorType", () => {
             measurement.results[0].result.rawOutput = "Host unreachable";
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 hostname: "unreachable.example.com",
@@ -119,9 +103,7 @@ describe("GlobalpingMonitorType", () => {
             createResponse.ok = false;
             createResponse.response.status = 400;
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
 
             const monitor = {
                 hostname: "example.com",
@@ -135,18 +117,13 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(
-                monitorType.ping(mockClient, monitor, heartbeat, true),
-                (error) => {
-                    assert.deepStrictEqual(
-                        error,
-                        new Error(
-                            "Failed to create measurement: validation_error Invalid target.\ntarget: example.com",
-                        ),
-                    );
-                    return true;
-                },
-            );
+            await assert.rejects(monitorType.ping(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("Failed to create measurement: validation_error Invalid target.\ntarget: example.com")
+                );
+                return true;
+            });
         });
 
         test("should handle API error on await measurement", async () => {
@@ -164,12 +141,8 @@ describe("GlobalpingMonitorType", () => {
             awaitResponse.ok = false;
             awaitResponse.response.status = 400;
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 hostname: "example.com",
@@ -183,18 +156,13 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(
-                monitorType.ping(mockClient, monitor, heartbeat, true),
-                (error) => {
-                    assert.deepStrictEqual(
-                        error,
-                        new Error(
-                            "Failed to fetch measurement (2g8T7V3OwXG3JV6Y10011zF2v): internal_error Server error.",
-                        ),
-                    );
-                    return true;
-                },
-            );
+            await assert.rejects(monitorType.ping(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("Failed to fetch measurement (2g8T7V3OwXG3JV6Y10011zF2v): internal_error Server error.")
+                );
+                return true;
+            });
         });
     });
 
@@ -208,22 +176,15 @@ describe("GlobalpingMonitorType", () => {
             const measurement = createHttpMeasurement();
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://example.com:444/api/test?test=1",
                 location: "North America",
                 method: "GET",
-                accepted_statuscodes_json: JSON.stringify([
-                    "200-299",
-                    "300-399",
-                ]),
-                headers: "{\"Test-Header\": \"Test-Value\"}",
+                accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
+                headers: '{"Test-Header": "Test-Value"}',
                 ipFamily: "ipv4",
                 dns_resolve_server: "8.8.8.8",
                 auth_method: "basic",
@@ -239,40 +200,31 @@ describe("GlobalpingMonitorType", () => {
 
             await monitorType.http(mockClient, monitor, heartbeat, true);
 
-            assert.strictEqual(
-                mockClient.createMeasurement.mock.calls.length,
-                1,
-            );
-            const expectedToken = encodeBase64(
-                monitor.basic_auth_user,
-                monitor.basic_auth_pass,
-            );
-            assert.deepStrictEqual(
-                mockClient.createMeasurement.mock.calls[0].arguments[0],
-                {
-                    type: "http",
-                    target: "example.com",
-                    inProgressUpdates: false,
-                    limit: 1,
-                    locations: [{ magic: "North America" }],
-                    measurementOptions: {
-                        request: {
-                            host: "example.com",
-                            path: "/api/test",
-                            query: "test=1",
-                            method: "GET",
-                            headers: {
-                                "Test-Header": "Test-Value",
-                                Authorization: `Basic ${expectedToken}`,
-                            },
+            assert.strictEqual(mockClient.createMeasurement.mock.calls.length, 1);
+            const expectedToken = encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass);
+            assert.deepStrictEqual(mockClient.createMeasurement.mock.calls[0].arguments[0], {
+                type: "http",
+                target: "example.com",
+                inProgressUpdates: false,
+                limit: 1,
+                locations: [{ magic: "North America" }],
+                measurementOptions: {
+                    request: {
+                        host: "example.com",
+                        path: "/api/test",
+                        query: "test=1",
+                        method: "GET",
+                        headers: {
+                            "Test-Header": "Test-Value",
+                            Authorization: `Basic ${expectedToken}`,
                         },
-                        port: 444,
-                        protocol: "HTTPS",
-                        ipVersion: 4,
-                        resolver: "8.8.8.8",
                     },
+                    port: 444,
+                    protocol: "HTTPS",
+                    ipVersion: 4,
+                    resolver: "8.8.8.8",
                 },
-            );
+            });
 
             assert.deepStrictEqual(heartbeat, {
                 status: UP,
@@ -292,21 +244,14 @@ describe("GlobalpingMonitorType", () => {
             measurement.results[0].result.rawOutput = "Host unreachable";
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://example.com",
                 location: "North America",
                 method: "GET",
-                accepted_statuscodes_json: JSON.stringify([
-                    "200-299",
-                    "300-399",
-                ]),
+                accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
                 headers: null,
             };
 
@@ -336,18 +281,13 @@ describe("GlobalpingMonitorType", () => {
             createResponse.ok = false;
             createResponse.response.status = 400;
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
 
             const monitor = {
                 url: "https://example.com",
                 location: "North America",
                 method: "GET",
-                accepted_statuscodes_json: JSON.stringify([
-                    "200-299",
-                    "300-399",
-                ]),
+                accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
                 headers: null,
             };
 
@@ -356,18 +296,13 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(
-                monitorType.http(mockClient, monitor, heartbeat, true),
-                (error) => {
-                    assert.deepStrictEqual(
-                        error,
-                        new Error(
-                            "Failed to create measurement: validation_error Invalid target.\ntarget: example.com",
-                        ),
-                    );
-                    return true;
-                },
-            );
+            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("Failed to create measurement: validation_error Invalid target.\ntarget: example.com")
+                );
+                return true;
+            });
         });
 
         test("should handle API error on await measurement", async () => {
@@ -385,21 +320,14 @@ describe("GlobalpingMonitorType", () => {
             awaitResponse.ok = false;
             awaitResponse.response.status = 400;
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://example.com",
                 location: "North America",
                 method: "GET",
-                accepted_statuscodes_json: JSON.stringify([
-                    "200-299",
-                    "300-399",
-                ]),
+                accepted_statuscodes_json: JSON.stringify(["200-299", "300-399"]),
                 headers: null,
             };
 
@@ -408,18 +336,13 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(
-                monitorType.http(mockClient, monitor, heartbeat, true),
-                (error) => {
-                    assert.deepStrictEqual(
-                        error,
-                        new Error(
-                            "Failed to fetch measurement (2g8T7V3OwXG3JV6Y10011zF2v): internal_error Server error.",
-                        ),
-                    );
-                    return true;
-                },
-            );
+            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error("Failed to fetch measurement (2g8T7V3OwXG3JV6Y10011zF2v): internal_error Server error.")
+                );
+                return true;
+            });
         });
 
         test("should handle invalid status code", async () => {
@@ -432,18 +355,14 @@ describe("GlobalpingMonitorType", () => {
             measurement.results[0].result.rawOutput = "RAW OUTPUT";
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://example.com/api/test",
                 location: "North America",
                 method: "GET",
-                accepted_statuscodes_json: JSON.stringify([ "200-299" ]),
+                accepted_statuscodes_json: JSON.stringify(["200-299"]),
                 headers: null,
             };
 
@@ -469,22 +388,17 @@ describe("GlobalpingMonitorType", () => {
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
             const measurement = createHttpMeasurement();
-            measurement.results[0].result.rawOutput =
-                "Response body with KEYWORD word";
+            measurement.results[0].result.rawOutput = "Response body with KEYWORD word";
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://example.com",
                 location: "North America",
                 protocol: "HTTPS",
-                accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
+                accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "KEYWORD",
                 invertKeyword: false,
             };
@@ -510,22 +424,17 @@ describe("GlobalpingMonitorType", () => {
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
             const measurement = createHttpMeasurement();
-            measurement.results[0].result.rawOutput =
-                "Response body with KEYWORD word";
+            measurement.results[0].result.rawOutput = "Response body with KEYWORD word";
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://example.com",
                 location: "North America",
                 protocol: "HTTPS",
-                accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
+                accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "MISSING_KEYWORD",
                 invertKeyword: false,
             };
@@ -535,18 +444,15 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(
-                monitorType.http(mockClient, monitor, heartbeat, true),
-                (error) => {
-                    assert.deepStrictEqual(
-                        error,
-                        new Error(
-                            "New York (NY), US, NA, MASSIVEGRID (AS49683) : 301 - Moved Permanently, but keyword is not in [Response body with KEYWORD word]",
-                        ),
-                    );
-                    return true;
-                },
-            );
+            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error(
+                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : 301 - Moved Permanently, but keyword is not in [Response body with KEYWORD word]"
+                    )
+                );
+                return true;
+            });
         });
 
         test("should handle inverted keyword check", async () => {
@@ -556,22 +462,17 @@ describe("GlobalpingMonitorType", () => {
                 id: "2g8T7V3OwXG3JV6Y10011zF2v",
             });
             const measurement = createHttpMeasurement();
-            measurement.results[0].result.rawOutput =
-                "Response body with KEYWORD word";
+            measurement.results[0].result.rawOutput = "Response body with KEYWORD word";
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://example.com",
                 location: "North America",
                 protocol: "HTTPS",
-                accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
+                accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 keyword: "ERROR",
                 invertKeyword: true,
             };
@@ -603,18 +504,14 @@ describe("GlobalpingMonitorType", () => {
             });
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://api.example.com/status",
                 location: "North America",
                 protocol: "HTTPS",
-                accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
+                accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 jsonPath: "$.status",
                 jsonPathOperator: "==",
                 expectedValue: "success",
@@ -647,18 +544,14 @@ describe("GlobalpingMonitorType", () => {
             });
             const awaitResponse = createMockResponse(measurement);
 
-            mockClient.createMeasurement.mock.mockImplementation(
-                () => createResponse,
-            );
-            mockClient.awaitMeasurement.mock.mockImplementation(
-                () => awaitResponse,
-            );
+            mockClient.createMeasurement.mock.mockImplementation(() => createResponse);
+            mockClient.awaitMeasurement.mock.mockImplementation(() => awaitResponse);
 
             const monitor = {
                 url: "https://api.example.com/status",
                 location: "North America",
                 protocol: "HTTPS",
-                accepted_statuscodes_json: JSON.stringify([ "300-399" ]),
+                accepted_statuscodes_json: JSON.stringify(["300-399"]),
                 jsonPath: "$.status",
                 jsonPathOperator: "==",
                 expectedValue: "success",
@@ -669,18 +562,15 @@ describe("GlobalpingMonitorType", () => {
                 msg: "",
             };
 
-            await assert.rejects(
-                monitorType.http(mockClient, monitor, heartbeat, true),
-                (error) => {
-                    assert.deepStrictEqual(
-                        error,
-                        new Error(
-                            "New York (NY), US, NA, MASSIVEGRID (AS49683) : JSON query does not pass (comparing failed == success)",
-                        ),
-                    );
-                    return true;
-                },
-            );
+            await assert.rejects(monitorType.http(mockClient, monitor, heartbeat, true), (error) => {
+                assert.deepStrictEqual(
+                    error,
+                    new Error(
+                        "New York (NY), US, NA, MASSIVEGRID (AS49683) : JSON query does not pass (comparing failed == success)"
+                    )
+                );
+                return true;
+            });
         });
     });
 
@@ -695,15 +585,12 @@ describe("GlobalpingMonitorType", () => {
                 continent: "NA",
                 network: "Amazon.com",
                 asn: 14618,
-                tags: [ "aws-us-east-1", "datacenter" ],
+                tags: ["aws-us-east-1", "datacenter"],
             };
 
             const result = monitorType.formatProbeLocation(probe);
 
-            assert.strictEqual(
-                result,
-                "New York (NY), US, NA, Amazon.com (AS14618), (aws-us-east-1)",
-            );
+            assert.strictEqual(result, "New York (NY), US, NA, Amazon.com (AS14618), (aws-us-east-1)");
         });
 
         test("formatProbeLocation should handle missing state", () => {
@@ -721,10 +608,7 @@ describe("GlobalpingMonitorType", () => {
 
             const result = monitorType.formatProbeLocation(probe);
 
-            assert.strictEqual(
-                result,
-                "London, GB, EU, Example Network (AS12345)",
-            );
+            assert.strictEqual(result, "London, GB, EU, Example Network (AS12345)");
         });
 
         test("formatResponse should combine location and text", () => {
@@ -742,10 +626,7 @@ describe("GlobalpingMonitorType", () => {
 
             const result = monitorType.formatResponse(probe, "Test message");
 
-            assert.strictEqual(
-                result,
-                "Tokyo, JP, AS, Example ISP (AS54321) : Test message",
-            );
+            assert.strictEqual(result, "Tokyo, JP, AS, Example ISP (AS54321) : Test message");
         });
 
         test("formatApiError should format error with params", () => {
@@ -762,10 +643,7 @@ describe("GlobalpingMonitorType", () => {
 
             const result = monitorType.formatApiError(error);
 
-            assert.strictEqual(
-                result,
-                "validation_error Invalid request.\nfield: target\nvalue: invalid",
-            );
+            assert.strictEqual(result, "validation_error Invalid request.\nfield: target\nvalue: invalid");
         });
 
         test("formatApiError should format error without params", () => {
@@ -788,7 +666,7 @@ describe("GlobalpingMonitorType", () => {
 
             assert.strictEqual(
                 result,
-                "You have run out of credits. Get higher limits by sponsoring us or hosting probes. Learn more at https://dash.globalping.io?view=add-credits.",
+                "You have run out of credits. Get higher limits by sponsoring us or hosting probes. Learn more at https://dash.globalping.io?view=add-credits."
             );
         });
 
@@ -799,7 +677,7 @@ describe("GlobalpingMonitorType", () => {
 
             assert.strictEqual(
                 result,
-                "You have run out of credits. Get higher limits by creating an account. Sign up at https://dash.globalping.io?view=add-credits.",
+                "You have run out of credits. Get higher limits by creating an account. Sign up at https://dash.globalping.io?view=add-credits."
             );
         });
 
@@ -826,10 +704,7 @@ describe("GlobalpingMonitorType", () => {
 
             const result = monitorType.getBasicAuthHeader(monitor);
 
-            const expectedToken = encodeBase64(
-                monitor.basic_auth_user,
-                monitor.basic_auth_pass,
-            );
+            const expectedToken = encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass);
 
             assert.strictEqual(result.Authorization, `Basic ${expectedToken}`);
         });
@@ -895,7 +770,7 @@ function createPingMeasurement() {
                         "u-cloudlookingglass:aws-us-east-1-use1-az6",
                         "u-cloudlookingglass:aws-us-east-1-use1-az6-net",
                     ],
-                    resolvers: [ "private" ],
+                    resolvers: ["private"],
                 },
                 result: {
                     status: "finished",
@@ -904,12 +779,9 @@ function createPingMeasurement() {
                     resolvedAddress: "142.251.16.100",
                     resolvedHostname: "bl-in-f100.1e100.net",
                     timings: [
-                        { ttl: 106,
-                            rtt: 2.07 },
-                        { ttl: 106,
-                            rtt: 2.08 },
-                        { ttl: 106,
-                            rtt: 2.35 },
+                        { ttl: 106, rtt: 2.07 },
+                        { ttl: 106, rtt: 2.08 },
+                        { ttl: 106, rtt: 2.35 },
                     ],
                     stats: {
                         min: 2.073,
@@ -952,8 +824,8 @@ function createHttpMeasurement() {
                     longitude: -74.01,
                     latitude: 40.71,
                     network: "MASSIVEGRID",
-                    tags: [ "datacenter-network", "u-gbzret4d" ],
-                    resolvers: [ "private" ],
+                    tags: ["datacenter-network", "u-gbzret4d"],
+                    resolvers: ["private"],
                 },
                 result: {
                     status: "finished",
@@ -970,8 +842,7 @@ function createHttpMeasurement() {
                         "content-length": "220",
                         "x-xss-protection": "0",
                         "x-frame-options": "SAMEORIGIN",
-                        "alt-svc":
-                            "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+                        "alt-svc": 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
                         connection: "close",
                     },
                     rawHeaders:

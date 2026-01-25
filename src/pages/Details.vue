@@ -36,15 +36,12 @@
                 <span v-if="monitor.type === 'port'">TCP Port {{ monitor.hostname }}:{{ monitor.port }}</span>
                 <span v-if="monitor.type === 'ping'">Ping: {{ monitor.hostname }}</span>
                 <span v-if="monitor.type === 'globalping'">
-                    <a
-                        v-if="monitor.subtype === 'http'"
-                        :href="monitor.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >{{ filterPassword(monitor.url) }}</a>
+                    <a v-if="monitor.subtype === 'http'" :href="monitor.url" target="_blank" rel="noopener noreferrer">
+                        {{ filterPassword(monitor.url) }}
+                    </a>
                     <span v-if="monitor.hostname">{{ monitor.hostname }}</span>
                     <br />
-                    <span>{{ $t("Location") }}: </span>
+                    <span>{{ $t("Location") }}:</span>
                     <span class="keyword">{{ monitor.location }}</span>
                     <br />
                 </span>

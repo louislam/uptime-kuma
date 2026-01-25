@@ -146,9 +146,7 @@
                     autocomplete="new-password"
                 />
                 <i18n-t keypath="globalpingApiTokenDescription" tag="div" class="form-text">
-                    <a href="https://dash.globalping.io" target="_blank">
-                        https://dash.globalping.io
-                    </a>
+                    <a href="https://dash.globalping.io" target="_blank">https://dash.globalping.io</a>
                 </i18n-t>
             </div>
 

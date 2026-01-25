@@ -2,7 +2,13 @@ const { MonitorType } = require("./monitor-type");
 const { Globalping, IpVersion } = require("globalping");
 const { Settings } = require("../settings");
 const { log, UP, DOWN, evaluateJsonQuery } = require("../../src/util");
-const { checkStatusCode, getOidcTokenClientCredentials, encodeBase64, getDaysRemaining, checkCertExpiryNotifications } = require("../util-server");
+const {
+    checkStatusCode,
+    getOidcTokenClientCredentials,
+    encodeBase64,
+    getDaysRemaining,
+    checkCertExpiryNotifications,
+} = require("../util-server");
 const { R } = require("redbean-node");
 
 /**
@@ -37,7 +43,7 @@ class GlobalpingMonitorType extends MonitorType {
         });
 
         const hasAPIToken = !!apiKey;
-        switch (monitor.subtype ) {
+        switch (monitor.subtype) {
             case "ping":
                 await this.ping(client, monitor, heartbeat, hasAPIToken);
                 break;
@@ -85,9 +91,7 @@ class GlobalpingMonitorType extends MonitorType {
             if (Globalping.isHttpStatus(429, res)) {
                 throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
             }
-            throw new Error(
-                `Failed to create measurement: ${this.formatApiError(res.data.error)}`
-            );
+            throw new Error(`Failed to create measurement: ${this.formatApiError(res.data.error)}`);
         }
 
         log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
@@ -138,9 +142,9 @@ class GlobalpingMonitorType extends MonitorType {
         const basicAuthHeader = this.getBasicAuthHeader(monitor);
         const oauth2AuthHeader = await this.getOauth2AuthHeader(monitor);
         const headers = {
-            ...(basicAuthHeader),
-            ...(oauth2AuthHeader),
-            ...(monitor.headers ? JSON.parse(monitor.headers) : {})
+            ...basicAuthHeader,
+            ...oauth2AuthHeader,
+            ...(monitor.headers ? JSON.parse(monitor.headers) : {}),
         };
 
         if (monitor.cacheBust) {
@@ -161,7 +165,7 @@ class GlobalpingMonitorType extends MonitorType {
                     path: url.pathname,
                     query: url.search ? url.search.slice(1) : undefined,
                     method: monitor.method,
-                    headers
+                    headers,
                 },
                 protocol: protocol,
             },
@@ -188,9 +192,7 @@ class GlobalpingMonitorType extends MonitorType {
             if (Globalping.isHttpStatus(429, res)) {
                 throw new Error(`Failed to create measurement: ${this.formatTooManyRequestsError(hasAPIToken)}`);
             }
-            throw new Error(
-                `Failed to create measurement: ${this.formatApiError(res.data.error)}`
-            );
+            throw new Error(`Failed to create measurement: ${this.formatApiError(res.data.error)}`);
         }
 
         log.debug("monitor", `Globalping fetch measurement: ${res.data.id}`);
@@ -214,7 +216,10 @@ class GlobalpingMonitorType extends MonitorType {
         heartbeat.ping = result.timings.total || 0;
 
         if (!checkStatusCode(result.statusCode, JSON.parse(monitor.accepted_statuscodes_json))) {
-            heartbeat.msg = this.formatResponse(probe, `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`);
+            heartbeat.msg = this.formatResponse(
+                probe,
+                `Status code ${result.statusCode} not accepted. Output: ${result.rawOutput}`
+            );
             heartbeat.status = DOWN;
             return;
         }
@@ -256,9 +261,9 @@ class GlobalpingMonitorType extends MonitorType {
             if (data.length > 50) {
                 data = data.substring(0, 47) + "...";
             }
-            throw new Error(heartbeat.msg + ", but keyword is " +
-                (keywordFound ? "present" : "not") + " in [" + data + "]");
-
+            throw new Error(
+                heartbeat.msg + ", but keyword is " + (keywordFound ? "present" : "not") + " in [" + data + "]"
+            );
         }
 
         heartbeat.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
@@ -274,13 +279,26 @@ class GlobalpingMonitorType extends MonitorType {
      * @returns {Promise<void>} A promise that resolves when the JSON query is handled.
      */
     async handleJSONQueryForHTTP(monitor, heartbeat, result, probe) {
-        const { status, response } = await evaluateJsonQuery(result.rawOutput, monitor.jsonPath, monitor.jsonPathOperator, monitor.expectedValue);
+        const { status, response } = await evaluateJsonQuery(
+            result.rawOutput,
+            monitor.jsonPath,
+            monitor.jsonPathOperator,
+            monitor.expectedValue
+        );
 
         if (!status) {
-            throw new Error(this.formatResponse(probe, `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`));
+            throw new Error(
+                this.formatResponse(
+                    probe,
+                    `JSON query does not pass (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`
+                )
+            );
         }
 
-        heartbeat.msg = this.formatResponse(probe, `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`);
+        heartbeat.msg = this.formatResponse(
+            probe,
+            `JSON query passes (comparing ${response} ${monitor.jsonPathOperator} ${monitor.expectedValue})`
+        );
         heartbeat.status = UP;
     }
 
@@ -301,9 +319,7 @@ class GlobalpingMonitorType extends MonitorType {
             throw new Error(this.formatResponse(probe, `TLS certificate is not authorized: ${tlsInfo.error}`));
         }
 
-        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [
-            monitor.id,
-        ]);
+        let tlsInfoBean = await R.findOne("monitor_tls_info", "monitor_id = ?", [monitor.id]);
 
         if (tlsInfoBean == null) {
             tlsInfoBean = R.dispense("monitor_tls_info");
@@ -312,11 +328,16 @@ class GlobalpingMonitorType extends MonitorType {
             try {
                 let oldCertInfo = JSON.parse(tlsInfoBean.info_json);
 
-                if (oldCertInfo && oldCertInfo.certInfo && oldCertInfo.certInfo.fingerprint256 !== tlsInfo.fingerprint256) {
+                if (
+                    oldCertInfo &&
+                    oldCertInfo.certInfo &&
+                    oldCertInfo.certInfo.fingerprint256 !== tlsInfo.fingerprint256
+                ) {
                     log.debug("monitor", "Resetting sent_history");
-                    await R.exec("DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?", [
-                        monitor.id
-                    ]);
+                    await R.exec(
+                        "DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?",
+                        [monitor.id]
+                    );
                 }
             } catch (e) {}
         }
@@ -332,7 +353,7 @@ class GlobalpingMonitorType extends MonitorType {
                 fingerprint: tlsInfo.fingerprint256,
                 fingerprint256: tlsInfo.fingerprint256,
                 certType: "",
-            }
+            },
         };
 
         tlsInfoBean.info_json = JSON.stringify(certResult);
@@ -359,13 +380,23 @@ class GlobalpingMonitorType extends MonitorType {
 
         try {
             if (new Date((monitor.oauthAccessToken?.expires_at || 0) * 1000) <= new Date()) {
-                const oAuthAccessToken = await getOidcTokenClientCredentials(monitor.oauth_token_url, monitor.oauth_client_id, monitor.oauth_client_secret, monitor.oauth_scopes, monitor.oauth_audience, monitor.oauth_auth_method);
-                log.debug("monitor", `[${monitor.name}] Obtained oauth access-token. Expires at ${new Date(oAuthAccessToken.expires_at * 1000)}`);
+                const oAuthAccessToken = await getOidcTokenClientCredentials(
+                    monitor.oauth_token_url,
+                    monitor.oauth_client_id,
+                    monitor.oauth_client_secret,
+                    monitor.oauth_scopes,
+                    monitor.oauth_audience,
+                    monitor.oauth_auth_method
+                );
+                log.debug(
+                    "monitor",
+                    `[${monitor.name}] Obtained oauth access-token. Expires at ${new Date(oAuthAccessToken.expires_at * 1000)}`
+                );
 
                 monitor.oauthAccessToken = oAuthAccessToken;
             }
             return {
-                "Authorization": monitor.oauthAccessToken.token_type + " " + monitor.oauthAccessToken.access_token,
+                Authorization: monitor.oauthAccessToken.token_type + " " + monitor.oauthAccessToken.access_token,
             };
         } catch (e) {
             throw new Error("The oauth config is invalid. " + e.message);
@@ -383,7 +414,7 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         return {
-            "Authorization": "Basic " + encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass),
+            Authorization: "Basic " + encodeBase64(monitor.basic_auth_user, monitor.basic_auth_pass),
         };
     }
 
@@ -430,9 +461,9 @@ class GlobalpingMonitorType extends MonitorType {
                 break;
             }
         }
-        return `${probe.city}${probe.state ? ` (${probe.state})` : ""
-             }, ${probe.country}, ${probe.continent}, ${probe.network
-             } (AS${probe.asn})${tag ? `, (${tag})` : ""}`;
+        return `${probe.city}${probe.state ? ` (${probe.state})` : ""}, ${probe.country}, ${probe.continent}, ${
+            probe.network
+        } (AS${probe.asn})${tag ? `, (${tag})` : ""}`;
     }
 
     /**
@@ -444,7 +475,6 @@ class GlobalpingMonitorType extends MonitorType {
     formatResponse(probe, text) {
         return `${this.formatProbeLocation(probe)} : ${text}`;
     }
-
 }
 
 module.exports = {
