@@ -760,7 +760,12 @@ class Monitor extends BeanModel {
                             } else {
                                 timeout += bufferTime;
                             }
-                            // No need to insert successful heartbeat for push type, so end here
+                            // Reset retries when heartbeat is received successfully
+                            // Update the previous heartbeat's retries to 0 to persist the reset
+                            if (previousBeat.retries > 0) {
+                                previousBeat.retries = 0;
+                                await R.store(previousBeat);
+                            }
                             retries = 0;
                             log.debug("monitor", `[${this.name}] timeout = ${timeout}`);
                             this.heartbeatInterval = setTimeout(safeBeat, timeout);
