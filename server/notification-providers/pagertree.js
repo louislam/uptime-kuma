@@ -18,7 +18,13 @@ class PagerTree extends NotificationProvider {
             }
 
             if (heartbeatJSON.status === UP && notification.pagertreeAutoResolve === "resolve") {
-                return this.postNotification(notification, null, monitorJSON, heartbeatJSON, notification.pagertreeAutoResolve);
+                return this.postNotification(
+                    notification,
+                    null,
+                    monitorJSON,
+                    heartbeatJSON,
+                    notification.pagertreeAutoResolve
+                );
             }
 
             if (heartbeatJSON.status === DOWN) {
@@ -55,7 +61,6 @@ class PagerTree extends NotificationProvider {
      * @returns {Promise<string>} Success state
      */
     async postNotification(notification, title, monitorJSON, heartbeatJSON, eventAction = "create") {
-
         if (eventAction == null) {
             return "No action required";
         }
@@ -70,8 +75,8 @@ class PagerTree extends NotificationProvider {
                 title: title,
                 urgency: notification.pagertreeUrgency,
                 heartbeat: heartbeatJSON,
-                monitor: monitorJSON
-            }
+                monitor: monitorJSON,
+            },
         };
 
         const baseURL = await setting("primaryBaseURL");

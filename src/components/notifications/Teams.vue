@@ -12,7 +12,9 @@
             <a
                 href="https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook"
                 target="_blank"
-            >{{ $t("here") }}</a>
+            >
+                {{ $t("here") }}
+            </a>
         </i18n-t>
     </div>
 </template>

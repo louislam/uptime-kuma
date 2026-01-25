@@ -9,7 +9,6 @@ exports.up = function (knex) {
         .alterTable("stat_hourly", function (table) {
             table.text("extras").defaultTo(null).comment("Extra statistics during this time period");
         });
-
 };
 
 exports.down = function (knex) {
