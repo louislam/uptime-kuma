@@ -117,7 +117,9 @@ export default {
                 url = undefined;
             }
 
-            socket = io(url);
+            socket = io(url, {
+                withCredentials: true,
+            });
 
             socket.on("info", (info) => {
                 this.info = info;
