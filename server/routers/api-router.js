@@ -174,6 +174,9 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
 
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
+        if (Number.isNaN(requestedMonitorId)) {
+            throw new Error("Invalid monitor ID");
+        }
         const overrideValue = value !== undefined ? parseInt(value) : undefined;
 
         let publicMonitor = await R.getRow(
@@ -252,6 +255,9 @@ router.get("/api/badge/:id/uptime/:duration?", cache("5 minutes"), async (reques
 
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
+        if (Number.isNaN(requestedMonitorId)) {
+            throw new Error("Invalid monitor ID");
+        }
         // if no duration is given, set value to 24 (h)
         let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
         const overrideValue = value && parseFloat(value);
@@ -322,6 +328,9 @@ router.get("/api/badge/:id/ping/:duration?", cache("5 minutes"), async (request,
 
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
+        if (Number.isNaN(requestedMonitorId)) {
+            throw new Error("Invalid monitor ID");
+        }
 
         // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
         let requestedDuration = request.params.duration !== undefined ? request.params.duration : "24h";
@@ -384,6 +393,9 @@ router.get("/api/badge/:id/avg-response/:duration?", cache("5 minutes"), async (
 
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
+        if (Number.isNaN(requestedMonitorId)) {
+            throw new Error("Invalid monitor ID");
+        }
 
         // Default duration is 24 (h) if not defined in queryParam, limited to 720h (30d)
         const requestedDuration = Math.min(request.params.duration ? parseInt(request.params.duration, 10) : 24, 720);
@@ -460,6 +472,9 @@ router.get("/api/badge/:id/cert-exp", cache("5 minutes"), async (request, respon
 
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
+        if (Number.isNaN(requestedMonitorId)) {
+            throw new Error("Invalid monitor ID");
+        }
 
         const overrideValue = value && parseFloat(value);
 
@@ -544,6 +559,9 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
 
     try {
         const requestedMonitorId = parseInt(request.params.id, 10);
+        if (Number.isNaN(requestedMonitorId)) {
+            throw new Error("Invalid monitor ID");
+        }
 
         const overrideValue = value && parseFloat(value);
 
