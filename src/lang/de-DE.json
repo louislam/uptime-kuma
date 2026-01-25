@@ -1465,7 +1465,7 @@
     "Sort by uptime": "Nach Verfügbarkeit sortieren",
     "Show this Maintenance Message on which Status Pages": "Diese Wartungsmeldung auf welchen Statusseiten anzeigen",
     "passwordTooWeak": "Passwort ist zu schwach. Es sollte aus Buchstaben und Zahlen bestehen. Es muss mindestens 6 Zeichen lang sein.",
-    "halopsa_setup_step4": "Wählen die Basisauthentifizierung und erstelle einen Benutzernamen und ein Passwort. Gib diesen Benutzernamen und dieses Passwort in die obenstehenden Testfelder ein",
+    "halopsa_setup_step4": "Wähle die Basisauthentifizierung und erstelle einen Benutzernamen und ein Passwort. Gib diesen Benutzernamen und dieses Passwort in die obenstehenden Testfelder ein",
     "No incidents recorded": "Es wurden keine Vorfälle verzeichnet",
     "Load More": "Mehr laden",
     "Loading...": "Wird geladen...",
@@ -1480,5 +1480,8 @@
     "serwersmsGroupIdHelptext": "ID oder Gruppen-IDs im Kundenbereich. Diese Identifikatoren können mithilfe von Aktionsgruppen/Index heruntergeladen oder aus der Bearbeitungsgruppe im Kundenbereich kopiert werden.",
     "notificationIncidentManagement": "Vorfallmanagement",
     "Incident title": "Titel des Vorfalls",
-    "Edit Incident": "Vorfall bearbeiten"
+    "Edit Incident": "Vorfall bearbeiten",
+    "Pinned incidents are shown prominently on the status page": "Angepinnte Vorfälle werden auf der Statusseite deutlich sichtbar angezeigt",
+    "Resolve": "Beheben",
+    "Resolved": "Behoben"
 }
