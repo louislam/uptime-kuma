@@ -1471,5 +1471,14 @@
     "Loading...": "Wird geladen...",
     "Pin this incident": "Diesen Vorfall anpinnen",
     "Incident description": "Vorfallbeschreibung",
-    "Past Incidents": "Vergangene Vorfälle"
+    "Past Incidents": "Vergangene Vorfälle",
+    "snmpV3Username": "SNMPv3 Benutzername",
+    "WeCom Mentioned Mobile List": "WeCom erwähnte mobile Liste",
+    "WeCom Mentioned Mobile List Description": "Gib die zu erwähnenden Telefonnummern ein. Trenne mehrere Zahlen durch Kommas. Verwende {'@'}all, um alle zu erwähnen.",
+    "Halo PSA": "HaloPSA",
+    "Halo PSA Webhook URL": "HaloPSA Webhook-URL",
+    "serwersmsGroupIdHelptext": "ID oder Gruppen-IDs im Kundenbereich. Diese Identifikatoren können mithilfe von Aktionsgruppen/Index heruntergeladen oder aus der Bearbeitungsgruppe im Kundenbereich kopiert werden.",
+    "notificationIncidentManagement": "Vorfallmanagement",
+    "Incident title": "Titel des Vorfalls",
+    "Edit Incident": "Vorfall bearbeiten"
 }
