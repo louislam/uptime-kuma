@@ -31,22 +31,6 @@ class User extends BeanModel {
 
         this.password = hashedPassword;
     }
-
-    /**
-     * Create a new JWT for a user
-     * @param {User} user The User to create a JsonWebToken for
-     * @param {string} jwtSecret The key used to sign the JsonWebToken
-     * @returns {string} the JsonWebToken as a string
-     */
-    static createJWT(user, jwtSecret) {
-        return jwt.sign(
-            {
-                username: user.username,
-                h: shake256(user.password, SHAKE256_LENGTH),
-            },
-            jwtSecret
-        );
-    }
 }
 
 module.exports = User;

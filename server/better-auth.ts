@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+// @ts-ignore
 import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
 import { R } from "redbean-node";
@@ -64,7 +65,20 @@ export function getAuthSecret() {
 }
 
 /**
- *
+ * Get session from cookie
+ * @param cookie Cookie string
+ * @returns Session Object
+ */
+export function getSession(cookie: string) {
+    const context = {
+        headers: new Headers(),
+    };
+    context.headers.set("cookie", cookie || "");
+    return auth.api.getSession();
+}
+
+/**
+ * TODO
  */
 export async function createUser() {
     await auth.api.signUpEmail({
@@ -76,9 +90,10 @@ export async function createUser() {
     });
 }
 
+// TODO
 createUser();
 
 /**
- *
+ * TODO
  */
 export async function migrateUser() {}

@@ -4,7 +4,7 @@ const fs = require("fs");
 const http = require("http");
 const { Server } = require("socket.io");
 const { R } = require("redbean-node");
-const { log, isDev } = require("../src/util");
+const { log, isDev, devOriginList } = require("../src/util");
 const Database = require("./database");
 const util = require("util");
 const { Settings } = require("./settings");
@@ -53,12 +53,6 @@ class UptimeKumaServer {
      * @type {{}}
      */
     static monitorTypeList = {};
-
-    /**
-     * Use for decode the auth object
-     * @type {null}
-     */
-    jwtSecret = null;
 
     /**
      * Get the current instance of the server if it exists, otherwise
@@ -135,12 +129,15 @@ class UptimeKumaServer {
         let cors = undefined;
         if (isDev) {
             cors = {
-                origin: "*",
+                origin: devOriginList,
+                credentials: true,
+                methods: ["GET", "POST"],
             };
         }
 
         this.io = new Server(this.httpServer, {
             cors,
+            cookie: true,
             allowRequest: async (req, callback) => {
                 let transport;
                 // It should be always true, but just in case, because this property is not documented
