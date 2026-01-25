@@ -1,38 +1,47 @@
 import { betterAuth } from "better-auth";
-import { DatabaseSync } from "node:sqlite";
 import * as Database from "./database.js";
 import { genSecret, log } from "../src/util";
-import { createPool } from "mysql2/promise";
+import { R } from "redbean-node";
+import { KyselyKnexDialect, MySQL2ColdDialect, SQLite3ColdDialect } from "kysely-knex";
 
 // Check if Database.initDataDir() has been called before using this function
 if (!Database.dataDir) {
-    throw new Error("Database data directory is not initialized. Please call Database.initDataDir() before using auth.");
+    throw new Error(
+        "Database data directory is not initialized. Please call Database.initDataDir() before using auth."
+    );
 }
 
-let database: DatabaseSync;
+const knex = R.knex;
 
-// Better Auth is not supported with knex, so we need to create a separate connection here
-if (Database.dbConfig.type == "sqlite") {
-    log.debug("better-auth", "Initializing better-auth with SQLite database at", Database.sqlitePath);
-    database = new DatabaseSync(Database.sqlitePath);
+const kyselySubDialect = Database.dbConfig.type.includes("mariadb")
+    ? new MySQL2ColdDialect()
+    : new SQLite3ColdDialect();
 
-} else if (Database.dbConfig.type == "mariadb") {
-
-    // TODO
-
-} else if (Database.dbConfig.type == "embedded-mariadb") {
-    log.debug("better-auth", "Initializing better-auth with MariaDB database");
-
-    // TODO
-
-}
+const database = new KyselyKnexDialect({
+    kyselySubDialect,
+    knex,
+});
 
 export const auth = betterAuth({
     database,
     secret: getAuthSecret(),
-    trustedOrigins: [ "*" ],
+    trustedOrigins: ["*"],
     emailAndPassword: {
         enabled: true,
+        // disableSignUp: true,
+    },
+
+    user: {
+        modelName: "better_auth_user",
+    },
+    account: {
+        modelName: "better_auth_account",
+    },
+    session: {
+        modelName: "better_auth_session",
+    },
+    verification: {
+        modelName: "better_auth_verification",
     },
 });
 
@@ -58,5 +67,18 @@ export function getAuthSecret() {
  *
  */
 export async function createUser() {
-
+    await auth.api.signUpEmail({
+        body: {
+            email: "john@doe.com",
+            password: "password",
+            name: "John Doe",
+        },
+    });
 }
+
+createUser();
+
+/**
+ *
+ */
+export async function migrateUser() {}

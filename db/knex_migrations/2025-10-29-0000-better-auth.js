@@ -14,7 +14,7 @@ exports.up = function (knex) {
         })
         .createTable("better_auth_session", (t) => {
             t.string("id").primary();
-            t.string("userId").notNullable().references("id").inTable("user");
+            t.string("userId").notNullable().references("id").inTable("better_auth_user");
             t.string("token").notNullable();
             t.timestamp("expiresAt").notNullable();
             t.string("ipAddress");
@@ -24,7 +24,7 @@ exports.up = function (knex) {
         })
         .createTable("better_auth_account", (t) => {
             t.string("id").primary();
-            t.string("userId").notNullable().references("id").inTable("user");
+            t.string("userId").notNullable().references("id").inTable("better_auth_user");
             t.string("accountId").notNullable();
             t.string("providerId").notNullable();
             t.string("accessToken");
