@@ -33,7 +33,6 @@ const {
     checkStatusCode,
     getTotalClientInRoom,
     setting,
-    setSetting,
     httpNtlm,
     radius,
     kafkaProducerAsync,
