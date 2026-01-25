@@ -8,7 +8,12 @@
                         <div class="col-md-6">
                             <h2 class="mb-2">{{ $t("General") }}</h2>
 
-                            <i18n-t v-if="monitor.type === 'globalping'" keypath="GlobalpingDescription" tag="p" class="form-text">
+                            <i18n-t
+                                v-if="monitor.type === 'globalping'"
+                                keypath="GlobalpingDescription"
+                                tag="p"
+                                class="form-text"
+                            >
                                 <template #accountSettings>
                                     <router-link to="/settings/general">{{ $t("account settings") }}</router-link>
                                 </template>
@@ -61,7 +66,9 @@
                                     </optgroup>
 
                                     <optgroup :label="$t('Specific Monitor Type')">
-                                        <option value="globalping">Globalping - Access global monitoring probes</option>
+                                        <option value="globalping">
+                                            {{ $t("Globalping - Access global monitoring probes") }}
+                                        </option>
                                         <option value="steam">
                                             {{ $t("Steam Game Server") }}
                                         </option>
@@ -107,14 +114,17 @@
 
                             <div v-if="monitor.type === 'globalping'" class="my-3">
                                 <label for="subtype" class="form-label">{{ $t("Monitor Subtype") }}</label>
-                                <select id="subtype" v-model="monitor.subtype" class="form-select" data-testid="monitor-subtype-select">
-                                    <option value="ping">
-                                        Ping
-                                    </option>
-                                    <option value="http">
-                                        HTTP(s)
-                                    </option>
+                                <select
+                                    id="subtype"
+                                    v-model="monitor.subtype"
+                                    class="form-select"
+                                    data-testid="monitor-subtype-select"
+                                >
+                                    <option value="ping">Ping</option>
+                                    <option value="http">HTTP(s)</option>
                                 </select>
+                            </div>
+
                             <div v-if="monitor.type === 'sip-options'" class="alert alert-warning" role="alert">
                                 {{ $t("sipsakPingWarning") }}
                             </div>
@@ -472,7 +482,7 @@
                                         :pattern="ipOrHostnameRegexPattern"
                                         required
                                         data-testid="hostname-input"
-                                    >
+                                    />
                                     <div class="form-text">
                                         {{ $t("GlobalpingHostname") }}
                                     </div>
@@ -480,7 +490,15 @@
 
                                 <div v-if="monitor.subtype === 'http'" class="my-3">
                                     <label for="url" class="form-label">{{ $t("URL") }}</label>
-                                    <input id="url" v-model="monitor.url" type="url" class="form-control" pattern="https?://.+" required data-testid="url-input">
+                                    <input
+                                        id="url"
+                                        v-model="monitor.url"
+                                        type="url"
+                                        class="form-control"
+                                        pattern="https?://.+"
+                                        required
+                                        data-testid="url-input"
+                                    />
                                     <div class="form-text">
                                         {{ $t("GlobalpingHostname") }}
                                     </div>
@@ -489,7 +507,13 @@
                                 <!-- Location -->
                                 <div class="my-3">
                                     <label for="location" class="form-label">{{ $t("Location") }}</label>
-                                    <input id="location" v-model="monitor.location" type="text" class="form-control" required>
+                                    <input
+                                        id="location"
+                                        v-model="monitor.location"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
                                     <i18n-t keypath="GlobalpingLocation" tag="div" class="form-text">
                                         <template #plus>
                                             <code>+</code>
@@ -501,7 +525,12 @@
                                             <code>comcast+california</code>
                                         </template>
                                         <template #fullDocs>
-                                            <a href="https://github.com/jsdelivr/globalping?tab=readme-ov-file#basic-location-targeting-" target="_blank">{{ $t("GlobalpingLocationDocs") }}</a>
+                                            <a
+                                                href="https://github.com/jsdelivr/globalping?tab=readme-ov-file#basic-location-targeting-"
+                                                target="_blank"
+                                            >
+                                                {{ $t("GlobalpingLocationDocs") }}
+                                            </a>
                                         </template>
                                     </i18n-t>
                                 </div>
@@ -520,8 +549,15 @@
                                 </div>
 
                                 <div v-if="monitor.subtype === 'http'" class="my-3">
-                                    <label for="dns_resolve_server" class="form-label">{{ $t("Resolver Server") }}</label>
-                                    <input id="dns_resolve_server" v-model="monitor.dns_resolve_server" type="text" class="form-control">
+                                    <label for="dns_resolve_server" class="form-label">
+                                        {{ $t("Resolver Server") }}
+                                    </label>
+                                    <input
+                                        id="dns_resolve_server"
+                                        v-model="monitor.dns_resolve_server"
+                                        type="text"
+                                        class="form-control"
+                                    />
                                     <div class="form-text">
                                         {{ $t("GlobalpingResolverInfo") }}
                                     </div>
@@ -555,7 +591,9 @@
                                     monitor.type === 'smtp' ||
                                     monitor.type === 'snmp' ||
                                     monitor.type === 'sip-options' ||
-                                    (monitor.type === 'globalping' && monitor.subtype === 'ping' && monitor.protocol === 'TCP')
+                                    (monitor.type === 'globalping' &&
+                                        monitor.subtype === 'ping' &&
+                                        monitor.protocol === 'TCP')
                                 "
                                 class="my-3"
                             >
@@ -1362,7 +1400,8 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    (monitor.type === 'port' && ['starttls', 'secure'].includes(monitor.smtpSecurity)) ||
+                                    (monitor.type === 'port' &&
+                                        ['starttls', 'secure'].includes(monitor.smtpSecurity)) ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
                                 class="my-3 form-check"
@@ -1532,7 +1571,13 @@
                             </div>
 
                             <!-- Max Packets / Count -->
-                            <div v-if="monitor.type === 'ping' || (monitor.type === 'globalping' && monitor.subtype === 'ping')" class="my-3">
+                            <div
+                                v-if="
+                                    monitor.type === 'ping' ||
+                                    (monitor.type === 'globalping' && monitor.subtype === 'ping')
+                                "
+                                class="my-3"
+                            >
                                 <label for="ping-count" class="form-label">{{ $t("pingCountLabel") }}</label>
                                 <input
                                     id="ping-count"
@@ -1795,7 +1840,9 @@
 
                             <!-- Globalping Accepted Status Codes -->
                             <div v-if="monitor.type === 'globalping' && monitor.subtype === 'http'" class="my-3">
-                                <label for="acceptedStatusCodes" class="form-label">{{ $t("Accepted Status Codes") }}</label>
+                                <label for="acceptedStatusCodes" class="form-label">
+                                    {{ $t("Accepted Status Codes") }}
+                                </label>
 
                                 <VueMultiselect
                                     id="acceptedStatusCodes"
@@ -2292,22 +2339,21 @@
                                 <div class="my-3">
                                     <label for="method" class="form-label">{{ $t("Method") }}</label>
                                     <select id="method" v-model="monitor.method" class="form-select">
-                                        <option value="HEAD">
-                                            HEAD
-                                        </option>
-                                        <option value="GET">
-                                            GET
-                                        </option>
-                                        <option value="OPTIONS">
-                                            OPTIONS
-                                        </option>
+                                        <option value="HEAD">HEAD</option>
+                                        <option value="GET">GET</option>
+                                        <option value="OPTIONS">OPTIONS</option>
                                     </select>
                                 </div>
 
                                 <!-- Headers -->
                                 <div class="my-3">
                                     <label for="headers" class="form-label">{{ $t("Headers") }}</label>
-                                    <textarea id="headers" v-model="monitor.headers" class="form-control" :placeholder="headersPlaceholder"></textarea>
+                                    <textarea
+                                        id="headers"
+                                        v-model="monitor.headers"
+                                        class="form-control"
+                                        :placeholder="headersPlaceholder"
+                                    ></textarea>
                                 </div>
 
                                 <!-- HTTP Auth -->
@@ -2332,18 +2378,37 @@
                                 <template v-if="monitor.authMethod === 'basic'">
                                     <div class="my-3">
                                         <label for="basicauth-user" class="form-label">{{ $t("Username") }}</label>
-                                        <input id="basicauth-user" v-model="monitor.basic_auth_user" type="text" class="form-control" :placeholder="$t('Username')">
+                                        <input
+                                            id="basicauth-user"
+                                            v-model="monitor.basic_auth_user"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('Username')"
+                                        />
                                     </div>
 
                                     <div class="my-3">
                                         <label for="basicauth-pass" class="form-label">{{ $t("Password") }}</label>
-                                        <input id="basicauth-pass" v-model="monitor.basic_auth_pass" type="password" autocomplete="new-password" class="form-control" :placeholder="$t('Password')">
+                                        <input
+                                            id="basicauth-pass"
+                                            v-model="monitor.basic_auth_pass"
+                                            type="password"
+                                            autocomplete="new-password"
+                                            class="form-control"
+                                            :placeholder="$t('Password')"
+                                        />
                                     </div>
                                 </template>
-                                <template v-else-if="monitor.authMethod === 'oauth2-cc' ">
+                                <template v-else-if="monitor.authMethod === 'oauth2-cc'">
                                     <div class="my-3">
-                                        <label for="oauth_auth_method" class="form-label">{{ $t("Authentication Method") }}</label>
-                                        <select id="oauth_auth_method" v-model="monitor.oauth_auth_method" class="form-select">
+                                        <label for="oauth_auth_method" class="form-label">
+                                            {{ $t("Authentication Method") }}
+                                        </label>
+                                        <select
+                                            id="oauth_auth_method"
+                                            v-model="monitor.oauth_auth_method"
+                                            class="form-select"
+                                        >
                                             <option value="client_secret_basic">
                                                 {{ $t("Authorization Header") }}
                                             </option>
@@ -2353,25 +2418,69 @@
                                         </select>
                                     </div>
                                     <div class="my-3">
-                                        <label for="oauth_token_url" class="form-label">{{ $t("OAuth Token URL") }}</label>
-                                        <input id="oauth_token_url" v-model="monitor.oauth_token_url" type="text" class="form-control" :placeholder="$t('OAuth Token URL')" required>
+                                        <label for="oauth_token_url" class="form-label">
+                                            {{ $t("OAuth Token URL") }}
+                                        </label>
+                                        <input
+                                            id="oauth_token_url"
+                                            v-model="monitor.oauth_token_url"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('OAuth Token URL')"
+                                            required
+                                        />
                                     </div>
                                     <div class="my-3">
                                         <label for="oauth_client_id" class="form-label">{{ $t("Client ID") }}</label>
-                                        <input id="oauth_client_id" v-model="monitor.oauth_client_id" type="text" class="form-control" :placeholder="$t('Client ID')" required>
+                                        <input
+                                            id="oauth_client_id"
+                                            v-model="monitor.oauth_client_id"
+                                            type="text"
+                                            class="form-control"
+                                            :placeholder="$t('Client ID')"
+                                            required
+                                        />
                                     </div>
-                                    <template v-if="monitor.oauth_auth_method === 'client_secret_post' || monitor.oauth_auth_method === 'client_secret_basic'">
+                                    <template
+                                        v-if="
+                                            monitor.oauth_auth_method === 'client_secret_post' ||
+                                            monitor.oauth_auth_method === 'client_secret_basic'
+                                        "
+                                    >
                                         <div class="my-3">
-                                            <label for="oauth_client_secret" class="form-label">{{ $t("Client Secret") }}</label>
-                                            <input id="oauth_client_secret" v-model="monitor.oauth_client_secret" type="password" class="form-control" :placeholder="$t('Client Secret')" required>
+                                            <label for="oauth_client_secret" class="form-label">
+                                                {{ $t("Client Secret") }}
+                                            </label>
+                                            <input
+                                                id="oauth_client_secret"
+                                                v-model="monitor.oauth_client_secret"
+                                                type="password"
+                                                class="form-control"
+                                                :placeholder="$t('Client Secret')"
+                                                required
+                                            />
                                         </div>
                                         <div class="my-3">
                                             <label for="oauth_scopes" class="form-label">{{ $t("OAuth Scope") }}</label>
-                                            <input id="oauth_scopes" v-model="monitor.oauth_scopes" type="text" class="form-control" :placeholder="$t('Optional: Space separated list of scopes')">
+                                            <input
+                                                id="oauth_scopes"
+                                                v-model="monitor.oauth_scopes"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="$t('Optional: Space separated list of scopes')"
+                                            />
                                         </div>
                                         <div class="my-3">
-                                            <label for="oauth_audience" class="form-label">{{ $t("OAuth Audience") }}</label>
-                                            <input id="oauth_audience" v-model="monitor.oauth_audience" type="text" class="form-control" :placeholder="$t('Optional: The audience to request the JWT for')">
+                                            <label for="oauth_audience" class="form-label">
+                                                {{ $t("OAuth Audience") }}
+                                            </label>
+                                            <input
+                                                id="oauth_audience"
+                                                v-model="monitor.oauth_audience"
+                                                type="text"
+                                                class="form-control"
+                                                :placeholder="$t('Optional: The audience to request the JWT for')"
+                                            />
                                         </div>
                                     </template>
                                 </template>
@@ -2397,7 +2506,12 @@
                                 <template v-if="monitor.responsecheck === 'keyword'">
                                     <div class="my-3">
                                         <label for="keyword" class="form-label">{{ $t("Keyword") }}</label>
-                                        <input id="keyword" v-model="monitor.keyword" type="text" class="form-control">
+                                        <input
+                                            id="keyword"
+                                            v-model="monitor.keyword"
+                                            type="text"
+                                            class="form-control"
+                                        />
                                         <div class="form-text">
                                             {{ $t("keywordDescription") }}
                                         </div>
@@ -2405,7 +2519,12 @@
 
                                     <!-- Invert keyword -->
                                     <div class="my-3 form-check">
-                                        <input id="invert-keyword" v-model="monitor.invertKeyword" class="form-check-input" type="checkbox">
+                                        <input
+                                            id="invert-keyword"
+                                            v-model="monitor.invertKeyword"
+                                            class="form-check-input"
+                                            type="checkbox"
+                                        />
                                         <label class="form-check-label" for="invert-keyword">
                                             {{ $t("Invert Keyword") }}
                                         </label>
@@ -2419,18 +2538,34 @@
                                 <template v-if="monitor.responsecheck === 'json-query'">
                                     <div class="my-3">
                                         <div class="my-2">
-                                            <label for="jsonPath" class="form-label mb-0">{{ $t("Json Query Expression") }}</label>
+                                            <label for="jsonPath" class="form-label mb-0">
+                                                {{ $t("Json Query Expression") }}
+                                            </label>
                                             <i18n-t tag="div" class="form-text mb-2" keypath="jsonQueryDescription">
                                                 <a href="https://jsonata.org/">jsonata.org</a>
-                                                <a href="https://try.jsonata.org/">{{ $t('playground') }}</a>
+                                                <a href="https://try.jsonata.org/">{{ $t("playground") }}</a>
                                             </i18n-t>
-                                            <input id="jsonPath" v-model="monitor.jsonPath" type="text" class="form-control" placeholder="$" required>
+                                            <input
+                                                id="jsonPath"
+                                                v-model="monitor.jsonPath"
+                                                type="text"
+                                                class="form-control"
+                                                placeholder="$"
+                                                required
+                                            />
                                         </div>
 
                                         <div class="d-flex align-items-start">
                                             <div class="me-2">
-                                                <label for="json_path_operator" class="form-label">{{ $t("Condition") }}</label>
-                                                <select id="json_path_operator" v-model="monitor.jsonPathOperator" class="form-select me-3" required>
+                                                <label for="json_path_operator" class="form-label">
+                                                    {{ $t("Condition") }}
+                                                </label>
+                                                <select
+                                                    id="json_path_operator"
+                                                    v-model="monitor.jsonPathOperator"
+                                                    class="form-select me-3"
+                                                    required
+                                                >
                                                     <option value=">">&gt;</option>
                                                     <option value=">=">&gt;=</option>
                                                     <option value="<">&lt;</option>
@@ -2441,9 +2576,30 @@
                                                 </select>
                                             </div>
                                             <div class="flex-grow-1">
-                                                <label for="expectedValue" class="form-label">{{ $t("Expected Value") }}</label>
-                                                <input v-if="monitor.jsonPathOperator !== 'contains' && monitor.jsonPathOperator !== '==' && monitor.jsonPathOperator !== '!='" id="expectedValue" v-model="monitor.expectedValue" type="number" class="form-control" required step=".01">
-                                                <input v-else id="expectedValue" v-model="monitor.expectedValue" type="text" class="form-control" required>
+                                                <label for="expectedValue" class="form-label">
+                                                    {{ $t("Expected Value") }}
+                                                </label>
+                                                <input
+                                                    v-if="
+                                                        monitor.jsonPathOperator !== 'contains' &&
+                                                        monitor.jsonPathOperator !== '==' &&
+                                                        monitor.jsonPathOperator !== '!='
+                                                    "
+                                                    id="expectedValue"
+                                                    v-model="monitor.expectedValue"
+                                                    type="number"
+                                                    class="form-control"
+                                                    required
+                                                    step=".01"
+                                                />
+                                                <input
+                                                    v-else
+                                                    id="expectedValue"
+                                                    v-model="monitor.expectedValue"
+                                                    type="text"
+                                                    class="form-control"
+                                                    required
+                                                />
                                             </div>
                                         </div>
                                     </div>

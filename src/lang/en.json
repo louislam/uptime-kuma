@@ -1319,6 +1319,7 @@
     "Send UP silently": "Send UP silently",
     "Send DOWN silently": "Send DOWN silently",
     "Installing a Nextcloud Talk bot requires administrative access to the server.": "Installing a Nextcloud Talk bot requires administrative access to the server.",
+    "Globalping - Access global monitoring probes": "Globalping - Access global monitoring probes",
     "GlobalpingDescription": "Globalping provides access to thousands of community hosted probes to run network tests and measurements. A limit of 250 tests per hour is set for all anonymous users. To double the limit to 500 per hour please save your token in {accountSettings}.",
     "Globalping API Token": "Globalping API Token",
     "globalpingApiTokenDescription": "Get your Globalping API Token at {0}.",

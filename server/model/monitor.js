@@ -41,6 +41,8 @@ const {
     rootCertificatesFingerprints,
     axiosAbortSignal,
     checkCertificateHostname,
+    encodeBase64,
+    checkCertExpiryNotifications,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
