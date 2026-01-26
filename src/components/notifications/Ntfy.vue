@@ -121,48 +121,25 @@
     </div>
 
     <div v-show="$parent.notification.ntfyUseTemplate">
-        <div class="form-text mb-3">
-            <div class="mb-2">
-                <i18n-t tag="span" keypath="liquidIntroduction">
-                    <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
-                </i18n-t>
-            </div>
-            <div class="mb-2">
-                <strong>{{ $t("templateAvailableVariables") }}:</strong>
-                <code v-pre>{{ status }}</code>
-                ,
-                <code v-pre>{{ name }}</code>
-                ,
-                <code v-pre>{{ hostnameOrURL }}</code>
-                ,
-                <code v-pre>{{ msg }}</code>
-                ,
-                <code v-pre>{{ monitorJSON }}</code>
-                ,
-                <code v-pre>{{ heartbeatJSON }}</code>
-            </div>
-        </div>
-
         <div class="mb-3">
             <label for="ntfy-title" class="form-label">{{ $t("ntfyCustomTitle") }}</label>
-            <input
+            <TemplatedInput
                 id="ntfy-title"
                 v-model="$parent.notification.ntfyCustomTitle"
-                type="text"
-                class="form-control"
-                autocomplete="off"
-            />
+                :required="false"
+                placeholder=""
+            ></TemplatedInput>
             <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
         </div>
 
         <div class="mb-3">
             <label for="ntfy-message" class="form-label">{{ $t("ntfyCustomMessage") }}</label>
-            <textarea
+            <TemplatedTextarea
                 id="ntfy-message"
                 v-model="$parent.notification.ntfyCustomMessage"
-                class="form-control"
-                autocomplete="off"
-            ></textarea>
+                :required="false"
+                placeholder=""
+            ></TemplatedTextarea>
             <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
         </div>
     </div>
@@ -170,10 +147,14 @@
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedInput from "../TemplatedInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedInput,
+        TemplatedTextarea,
     },
     computed: {
         authenticationMethods() {

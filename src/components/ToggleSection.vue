@@ -1,7 +1,7 @@
 <template>
-    <div class="my-3 pb-0">
+    <div class="my-3 py-3">
         <h5 @click="isOpen = !isOpen">
-            <div class="d-flex justify-content-between align-items-center pe-2" style="max-width: 600px">
+            <div class="w-50 d-flex justify-content-between align-items-center pe-2">
                 <span class="pb-2">{{ heading }}</span>
                 <font-awesome-icon icon="chevron-down" class="animated" :class="{ open: isOpen }" />
             </div>
