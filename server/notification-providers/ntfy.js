@@ -41,7 +41,7 @@ class Ntfy extends NotificationProvider {
                 if (notification.ntfyUseTemplate) {
                     const customTitle = notification.ntfyCustomTitle?.trim() || "";
                     const customMessage = notification.ntfyCustomMessage?.trim() || "";
-                    
+
                     if (customTitle !== "") {
                         title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
                     }
@@ -95,7 +95,7 @@ class Ntfy extends NotificationProvider {
             if (notification.ntfyUseTemplate) {
                 const customTitle = notification.ntfyCustomTitle?.trim() || "";
                 const customMessage = notification.ntfyCustomMessage?.trim() || "";
-                
+
                 if (customTitle !== "") {
                     title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
                 }

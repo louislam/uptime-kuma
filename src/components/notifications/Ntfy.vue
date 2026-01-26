@@ -129,11 +129,16 @@
             </div>
             <div class="mb-2">
                 <strong>{{ $t("templateAvailableVariables") }}:</strong>
-                <code v-pre>{{ status }}</code>, 
-                <code v-pre>{{ name }}</code>, 
-                <code v-pre>{{ hostnameOrURL }}</code>, 
-                <code v-pre>{{ msg }}</code>, 
-                <code v-pre>{{ monitorJSON }}</code>, 
+                <code v-pre>{{ status }}</code>
+                ,
+                <code v-pre>{{ name }}</code>
+                ,
+                <code v-pre>{{ hostnameOrURL }}</code>
+                ,
+                <code v-pre>{{ msg }}</code>
+                ,
+                <code v-pre>{{ monitorJSON }}</code>
+                ,
                 <code v-pre>{{ heartbeatJSON }}</code>
             </div>
         </div>
@@ -209,5 +214,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
