@@ -207,8 +207,6 @@ class Monitor extends BeanModel {
             conditions: JSON.parse(this.conditions),
             ipFamily: this.ipFamily,
             expectedTlsAlert: this.expected_tls_alert,
-            ntfyCustomTitle: this.ntfy_custom_title,
-            ntfyCustomMessage: this.ntfy_custom_message,
 
             // ping advanced options
             ping_numeric: this.isPingNumeric(),

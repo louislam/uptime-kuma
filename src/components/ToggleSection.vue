@@ -33,15 +33,6 @@ export default {
             isOpen: this.defaultOpen,
         };
     },
-    watch: {
-        defaultOpen(newValue) {
-            // Update isOpen when defaultOpen changes (e.g., when data loads async)
-            // Only open it if defaultOpen becomes true and it's currently closed
-            if (newValue && !this.isOpen) {
-                this.isOpen = true;
-            }
-        },
-    },
 };
 </script>
 

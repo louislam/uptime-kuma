@@ -757,12 +757,6 @@ let needSetup = false;
                 if (monitor.retryOnlyOnStatusCodeFailure !== undefined) {
                     bean.retry_only_on_status_code_failure = monitor.retryOnlyOnStatusCodeFailure;
                 }
-                if (monitor.ntfyCustomTitle !== undefined) {
-                    bean.ntfy_custom_title = monitor.ntfyCustomTitle;
-                }
-                if (monitor.ntfyCustomMessage !== undefined) {
-                    bean.ntfy_custom_message = monitor.ntfyCustomMessage;
-                }
                 bean.user_id = socket.userID;
 
                 bean.validate();
@@ -930,8 +924,6 @@ let needSetup = false;
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
-                bean.ntfy_custom_title = monitor.ntfyCustomTitle;
-                bean.ntfy_custom_message = monitor.ntfyCustomMessage;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;

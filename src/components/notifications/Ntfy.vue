@@ -103,71 +103,58 @@
         </div>
     </div>
 
-    <ToggleSection
-        :heading="$t('ntfyCustomTemplatesOptional')"
-        :default-open="hasNtfyTemplates"
-    >
-        <div class="form-text mb-3">
-            <div class="mb-2">
-                <i18n-t tag="span" keypath="liquidIntroduction">
-                    <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
-                </i18n-t>
-            </div>
-            <div class="mb-2">
-                <strong>{{ $t("templateAvailableVariables") }}:</strong>
-                <code v-pre>{{ status }}</code>, 
-                <code v-pre>{{ name }}</code>, 
-                <code v-pre>{{ hostnameOrURL }}</code>, 
-                <code v-pre>{{ msg }}</code>, 
-                <code v-pre>{{ monitorJSON }}</code>, 
-                <code v-pre>{{ heartbeatJSON }}</code>
-            </div>
-            <div class="mt-3 p-2" style="background-color: rgba(100, 100, 100, 0.1); border-radius: 4px;">
-                <div class="mb-1"><strong>{{ $t("example") }}:</strong></div>
-                <div class="mb-2">
-                    <code style="font-size: 0.85em; word-break: break-all;" v-pre>{% for tag in monitorJSON.tags %}{{ tag.name }}{% unless tag.value == blank %}: {{ tag.value }}{% endunless %}{% unless forloop.last %}, {% endunless %}{% endfor %}</code>
-                </div>
-                <div style="font-size: 0.9em;">
-                    <strong>{{ $t("Result") }}:</strong> <span style="opacity: 0.9;">nightly, phone: fbal</span>
-                </div>
-            </div>
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="ntfy-use-template"
+                v-model="$parent.notification.ntfyUseTemplate"
+                class="form-check-input"
+                type="checkbox"
+            />
+            <label class="form-check-label" for="ntfy-use-template">
+                {{ $t("ntfyUseTemplate") }}
+            </label>
         </div>
+        <div class="form-text">
+            {{ $t("ntfyUseTemplateDescription") }}
+        </div>
+    </div>
 
+    <template v-if="$parent.notification.ntfyUseTemplate">
         <div class="mb-3">
             <label for="ntfy-title" class="form-label">{{ $t("ntfyCustomTitle") }}</label>
-            <input
+            <TemplatedInput
                 id="ntfy-title"
                 v-model="$parent.notification.ntfyCustomTitle"
-                type="text"
-                class="form-control"
-                autocomplete="off"
-            />
+                :required="false"
+                placeholder=""
+            ></TemplatedInput>
             <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
         </div>
 
         <div class="mb-3">
             <label for="ntfy-message" class="form-label">{{ $t("ntfyCustomMessage") }}</label>
-            <textarea
-                ref="ntfyMessage"
+            <TemplatedTextarea
                 id="ntfy-message"
                 v-model="$parent.notification.ntfyCustomMessage"
-                class="form-control auto-expand-textarea"
-                autocomplete="off"
-                @input="autoResizeTextarea"
-            ></textarea>
+                :required="false"
+                placeholder=""
+            ></TemplatedTextarea>
             <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
         </div>
-    </ToggleSection>
+    </template>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
-import ToggleSection from "../ToggleSection.vue";
+import TemplatedInput from "../TemplatedInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
-        ToggleSection,
+        TemplatedInput,
+        TemplatedTextarea,
     },
     computed: {
         authenticationMethods() {
@@ -176,9 +163,6 @@ export default {
                 usernamePassword: this.$t("ntfyUsernameAndPassword"),
                 accessToken: this.$t("Access Token"),
             };
-        },
-        hasNtfyTemplates() {
-            return !!(this.$parent.notification.ntfyCustomTitle || this.$parent.notification.ntfyCustomMessage);
         },
     },
     mounted() {
@@ -200,33 +184,6 @@ export default {
                 this.$parent.notification.ntfyAuthenticationMethod = "usernamePassword";
             }
         }
-
-        // Auto-resize textareas after mount
-        this.autoResizeTextarea();
-    },
-    methods: {
-        /**
-         * Auto-resize textarea based on content
-         * @returns {void}
-         */
-        autoResizeTextarea() {
-            this.$nextTick(() => {
-                const textareas = this.$el.querySelectorAll('.auto-expand-textarea');
-                textareas.forEach(textarea => {
-                    textarea.style.height = 'auto';
-                    textarea.style.height = Math.max(100, textarea.scrollHeight) + 'px';
-                });
-            });
-        },
     },
 };
 </script>
-
-<style lang="scss" scoped>
-.auto-expand-textarea {
-    min-height: 100px;
-    max-height: 500px;
-    overflow-y: auto;
-    resize: vertical;
-}
-</style>

@@ -37,15 +37,17 @@ class Ntfy extends NotificationProvider {
                 let title = (monitorJSON?.name || notification.ntfytopic) + " [Uptime-Kuma]";
                 let message = msg;
 
-                // Apply custom templates with priority: monitor > notification > default
-                const customTitle = monitorJSON?.ntfyCustomTitle?.trim() || notification.ntfyCustomTitle?.trim() || "";
-                const customMessage = monitorJSON?.ntfyCustomMessage?.trim() || notification.ntfyCustomMessage?.trim() || "";
-                
-                if (customTitle !== "") {
-                    title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
-                }
-                if (customMessage !== "") {
-                    message = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                // Apply custom templates from notification settings if enabled
+                if (notification.ntfyUseTemplate) {
+                    const customTitle = notification.ntfyCustomTitle?.trim() || "";
+                    const customMessage = notification.ntfyCustomMessage?.trim() || "";
+                    
+                    if (customTitle !== "") {
+                        title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
+                    }
+                    if (customMessage !== "") {
+                        message = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                    }
                 }
 
                 let ntfyTestData = {
@@ -89,15 +91,17 @@ class Ntfy extends NotificationProvider {
             let title = monitorJSON.name + " " + status + " [Uptime-Kuma]";
             let message = heartbeatJSON.msg;
 
-            // Apply custom templates with priority: monitor > notification > default
-            const customTitle = monitorJSON?.ntfyCustomTitle?.trim() || notification.ntfyCustomTitle?.trim() || "";
-            const customMessage = monitorJSON?.ntfyCustomMessage?.trim() || notification.ntfyCustomMessage?.trim() || "";
-            
-            if (customTitle !== "") {
-                title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
-            }
-            if (customMessage !== "") {
-                message = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+            // Apply custom templates from notification settings if enabled
+            if (notification.ntfyUseTemplate) {
+                const customTitle = notification.ntfyCustomTitle?.trim() || "";
+                const customMessage = notification.ntfyCustomMessage?.trim() || "";
+                
+                if (customTitle !== "") {
+                    title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
+                }
+                if (customMessage !== "") {
+                    message = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                }
             }
 
             let data = {
