@@ -120,41 +120,55 @@
         </div>
     </div>
 
-    <template v-if="$parent.notification.ntfyUseTemplate">
+    <div v-show="$parent.notification.ntfyUseTemplate">
+        <div class="form-text mb-3">
+            <div class="mb-2">
+                <i18n-t tag="span" keypath="liquidIntroduction">
+                    <a href="https://liquidjs.com/" target="_blank">{{ $t("documentation") }}</a>
+                </i18n-t>
+            </div>
+            <div class="mb-2">
+                <strong>{{ $t("templateAvailableVariables") }}:</strong>
+                <code v-pre>{{ status }}</code>, 
+                <code v-pre>{{ name }}</code>, 
+                <code v-pre>{{ hostnameOrURL }}</code>, 
+                <code v-pre>{{ msg }}</code>, 
+                <code v-pre>{{ monitorJSON }}</code>, 
+                <code v-pre>{{ heartbeatJSON }}</code>
+            </div>
+        </div>
+
         <div class="mb-3">
             <label for="ntfy-title" class="form-label">{{ $t("ntfyCustomTitle") }}</label>
-            <TemplatedInput
+            <input
                 id="ntfy-title"
                 v-model="$parent.notification.ntfyCustomTitle"
-                :required="false"
-                placeholder=""
-            ></TemplatedInput>
+                type="text"
+                class="form-control"
+                autocomplete="off"
+            />
             <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
         </div>
 
         <div class="mb-3">
             <label for="ntfy-message" class="form-label">{{ $t("ntfyCustomMessage") }}</label>
-            <TemplatedTextarea
+            <textarea
                 id="ntfy-message"
                 v-model="$parent.notification.ntfyCustomMessage"
-                :required="false"
-                placeholder=""
-            ></TemplatedTextarea>
+                class="form-control"
+                autocomplete="off"
+            ></textarea>
             <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
         </div>
-    </template>
+    </div>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
-import TemplatedInput from "../TemplatedInput.vue";
-import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
-        TemplatedInput,
-        TemplatedTextarea,
     },
     computed: {
         authenticationMethods() {
@@ -184,6 +198,16 @@ export default {
                 this.$parent.notification.ntfyAuthenticationMethod = "usernamePassword";
             }
         }
+
+        // Auto-enable template checkbox if either field has content
+        if (typeof this.$parent.notification.ntfyUseTemplate === "undefined") {
+            const hasTitle = this.$parent.notification.ntfyCustomTitle?.trim();
+            const hasMessage = this.$parent.notification.ntfyCustomMessage?.trim();
+            this.$parent.notification.ntfyUseTemplate = !!(hasTitle || hasMessage);
+        }
     },
 };
 </script>
+
+<style lang="scss" scoped>
+</style>
