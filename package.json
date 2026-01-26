@@ -96,6 +96,7 @@
         "express-static-gzip": "~2.1.7",
         "feed": "^4.2.2",
         "form-data": "~4.0.0",
+        "globalping": "^0.2.0",
         "gamedig": "^5.0.1",
         "html-escaper": "^3.0.3",
         "http-cookie-agent": "~5.0.4",

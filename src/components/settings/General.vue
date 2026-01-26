@@ -135,6 +135,21 @@
                 </i18n-t>
             </div>
 
+            <!-- Globalping API Token -->
+            <div class="mb-4">
+                <label class="form-label" for="globalpingApiToken">
+                    {{ $t("Globalping API Token") }}
+                </label>
+                <HiddenInput
+                    id="globalpingApiToken"
+                    v-model="settings.globalpingApiToken"
+                    autocomplete="new-password"
+                />
+                <i18n-t keypath="globalpingApiTokenDescription" tag="div" class="form-text">
+                    <a href="https://dash.globalping.io" target="_blank">https://dash.globalping.io</a>
+                </i18n-t>
+            </div>
+
             <!-- DNS Cache (nscd) -->
             <div v-if="$root.info.isContainer" class="mb-4">
                 <label class="form-label">

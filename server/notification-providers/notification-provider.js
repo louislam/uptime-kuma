@@ -45,6 +45,15 @@ class NotificationProvider {
                     return monitorJSON["hostname"] + ":" + monitorJSON["port"];
                 }
                 return monitorJSON["hostname"];
+            case "globalping":
+                switch (monitorJSON["subtype"]) {
+                    case "ping":
+                        return monitorJSON["hostname"];
+                    case "http":
+                        return monitorJSON["url"];
+                    default:
+                        return "";
+                }
             default:
                 if (!["https://", "http://", ""].includes(monitorJSON["url"])) {
                     return monitorJSON["url"];
