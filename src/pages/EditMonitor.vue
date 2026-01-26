@@ -2736,7 +2736,6 @@ import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
-import ToggleSection from "../components/ToggleSection.vue";
 
 const toast = useToast();
 
@@ -2809,7 +2808,6 @@ export default {
         Confirm,
         NotificationDialog,
         DockerHostDialog,
-        ToggleSection,
         RemoteBrowserDialog,
         TagsManager,
         VueMultiselect,
