@@ -40,11 +40,11 @@ class Ntfy extends NotificationProvider {
                 // Apply custom templates from notification settings if enabled
                 if (notification.ntfyUseTemplate) {
                     const customTitle = notification.ntfyCustomTitle?.trim() || "";
-                    const customMessage = notification.ntfyCustomMessage?.trim() || "";
-
                     if (customTitle !== "") {
                         title = await this.renderTemplate(customTitle, msg, monitorJSON, heartbeatJSON);
                     }
+
+                    const customMessage = notification.ntfyCustomMessage?.trim() || "";
                     if (customMessage !== "") {
                         message = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
                     }

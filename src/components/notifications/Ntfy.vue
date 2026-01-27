@@ -187,9 +187,9 @@ export default {
 
         // Auto-enable template checkbox if either field has content
         if (typeof this.$parent.notification.ntfyUseTemplate === "undefined") {
-            const hasTitle = this.$parent.notification.ntfyCustomTitle?.trim();
-            const hasMessage = this.$parent.notification.ntfyCustomMessage?.trim();
-            this.$parent.notification.ntfyUseTemplate = !!(hasTitle || hasMessage);
+            const hasTitle = !!this.$parent.notification.ntfyCustomTitle?.trim();
+            const hasMessage = !!this.$parent.notification.ntfyCustomMessage?.trim();
+            this.$parent.notification.ntfyUseTemplate = hasTitle || hasMessage;
         }
     },
 };
