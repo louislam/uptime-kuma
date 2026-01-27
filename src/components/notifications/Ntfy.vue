@@ -102,14 +102,59 @@
             {{ $t("ntfyCallHelptext") }}
         </div>
     </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="ntfy-use-template"
+                v-model="$parent.notification.ntfyUseTemplate"
+                class="form-check-input"
+                type="checkbox"
+            />
+            <label class="form-check-label" for="ntfy-use-template">
+                {{ $t("ntfyUseTemplate") }}
+            </label>
+        </div>
+        <div class="form-text">
+            {{ $t("ntfyUseTemplateDescription") }}
+        </div>
+    </div>
+
+    <div v-show="$parent.notification.ntfyUseTemplate">
+        <div class="mb-3">
+            <label for="ntfy-title" class="form-label">{{ $t("ntfyCustomTitle") }}</label>
+            <TemplatedInput
+                id="ntfy-title"
+                v-model="$parent.notification.ntfyCustomTitle"
+                :required="false"
+                placeholder=""
+            ></TemplatedInput>
+            <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="ntfy-message" class="form-label">{{ $t("ntfyCustomMessage") }}</label>
+            <TemplatedTextarea
+                id="ntfy-message"
+                v-model="$parent.notification.ntfyCustomMessage"
+                :required="false"
+                placeholder=""
+            ></TemplatedTextarea>
+            <div class="form-text">{{ $t("ntfyNotificationTemplateFallback") }}</div>
+        </div>
+    </div>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedInput from "../TemplatedInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedInput,
+        TemplatedTextarea,
     },
     computed: {
         authenticationMethods() {
@@ -138,6 +183,13 @@ export default {
             } else {
                 this.$parent.notification.ntfyAuthenticationMethod = "usernamePassword";
             }
+        }
+
+        // Auto-enable template checkbox if either field has content
+        if (typeof this.$parent.notification.ntfyUseTemplate === "undefined") {
+            const hasTitle = !!this.$parent.notification.ntfyCustomTitle?.trim();
+            const hasMessage = !!this.$parent.notification.ntfyCustomMessage?.trim();
+            this.$parent.notification.ntfyUseTemplate = hasTitle || hasMessage;
         }
     },
 };
