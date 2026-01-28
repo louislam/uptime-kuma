@@ -36,6 +36,7 @@ const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
+const JiraServiceManagement = require("./notification-providers/jira-service-management");
 const PagerDuty = require("./notification-providers/pagerduty");
 const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
@@ -138,6 +139,7 @@ class Notification {
             new OneBot(),
             new Onesender(),
             new Opsgenie(),
+            new JiraServiceManagement(),
             new PagerDuty(),
             new FlashDuty(),
             new PagerTree(),
