@@ -145,7 +145,10 @@ class Prometheus {
                 // Only warn once per tag to avoid log spam
                 if (!Prometheus.warnedTagLabels.has(sanitizedTag)) {
                     Prometheus.warnedTagLabels.add(sanitizedTag);
-                    log.warn("prometheus", `Tag "${tag.name}" (sanitized: "${sanitizedTag}") is not in the initial labelset and will be ignored. Restart the server to include new tags in Prometheus metrics.`);
+                    log.warn(
+                        "prometheus",
+                        `Tag "${tag.name}" (sanitized: "${sanitizedTag}") is not in the initial labelset and will be ignored. Restart the server to include new tags in Prometheus metrics.`
+                    );
                 }
                 return;
             }
