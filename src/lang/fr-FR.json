@@ -1513,5 +1513,16 @@
     "deleteIncidentMsg": "Êtes-vous sûr de vouloir supprimer cet incident ?",
     "slug is not found": "Chemin introuvable",
     "Please input content": "Veuillez saisir le contenu",
-    "Please input title": "Veuillez saisir le titre"
+    "Please input title": "Veuillez saisir le titre",
+    "Globalping API Token": "Globalping Token API",
+    "GlobalpingLocationDocs": "Documentation complète sur la saisie de l'emplacement",
+    "GlobalpingIpFamilyInfo": "Version IP à utiliser. Autorisée uniquement si la cible est un nom d'hôte.",
+    "Protocol": "Protocole",
+    "account settings": "paramètres du compte",
+    "Location": "Emplacement",
+    "Monitor Subtype": "Sous-type de moniteur",
+    "GlobalpingDescription": "Globalping donne accès à des milliers de sondes hébergées par la communauté pour effectuer des tests et des mesures réseau. Une limite de 250 tests par heure est fixée pour tous les utilisateurs anonymes. Pour doubler cette limite à 500 tests par heure, veuillez enregistrer votre token dans {accountSettings}.",
+    "Globalping - Access global monitoring probes": "Globalping - Accédez aux sondes de surveillance globales",
+    "GlobalpingLocation": "Le champ « Localisation » accepte les continents, les pays, les régions, les villes, les ASN, les FAI ou les régions cloud. Vous pouvez combiner des filtres avec {plus} (par exemple, {amazonPlusGermany} ou {comcastPlusCalifornia}). Si la latence est un critère important, utilisez des filtres pour restreindre la localisation à une petite région afin d'éviter les pics de latence. {fullDocs}.",
+    "GlobalpingResolverInfo": "Adresse IPv4/IPv6 ou nom de domaine pleinement qualifié (FQDN). Par défaut, le résolveur réseau local de la sonde est utilisé. Vous pouvez modifier le serveur de résolution à tout moment."
 }
