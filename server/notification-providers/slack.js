@@ -78,7 +78,7 @@ class Slack extends NotificationProvider {
      * @param {boolean} includeGroupName Whether to include group name in the message
      * @returns {Array<object>} The rich content blocks for the Slack message
      */
-    buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg, includeGroupName = false) {
+    buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg, includeGroupName) {
         //create an array to dynamically add blocks
         const blocks = [];
 
@@ -179,7 +179,9 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const includeGroupName = notification.slackIncludeGroupName || false;
+            const includeGroupName = notification.slackIncludeGroupName === true
+                || notification.slackIncludeGroupName === "true";
+
             const groupPath =
                 includeGroupName && monitorJSON?.path?.length > 1 ? monitorJSON.path.slice(0, -1).join(" / ") : "";
 
@@ -195,7 +197,7 @@ class Slack extends NotificationProvider {
             if (notification.slackrichmessage) {
                 data.attachments.push({
                     color: heartbeatJSON["status"] === UP ? "#2eb886" : "#e01e5a",
-                    blocks: this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg),
+                    blocks: this.buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg, includeGroupName),
                 });
             } else {
                 // Include group name in plain text messages if enabled
