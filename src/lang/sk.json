@@ -1494,5 +1494,11 @@
     "ntfyUseTemplateDescription": "Aktivujte túto funkciu, aby ste mohli prispôsobiť názvy a správy oznámení pomocou šablón LiquidJS",
     "ntfyCustomMessage": "Šablóna vlastnej správy",
     "ntfyCustomTitle": "Šablóna vlastného názvu",
-    "ntfyNotificationTemplateFallback": "Nechajte prázdne, ak chcete použiť predvolený formát Uptime Kuma"
+    "ntfyNotificationTemplateFallback": "Nechajte prázdne, ak chcete použiť predvolený formát Uptime Kuma",
+    "Cloud ID": "Cloud ID",
+    "API Token": "API Token",
+    "See Jira Cloud Docs": "Pozrite si dokumentáciu Jira Cloud",
+    "see Jira Cloud Docs": "pozrite si dokumentáciu Jira Cloud",
+    "Jira Service Management": "Správa služieb Jira",
+    "aboutJiraCloudId": "Viac informácií o Jira Cloud ID: {0}"
 }
