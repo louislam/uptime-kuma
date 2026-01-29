@@ -123,5 +123,10 @@ Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
             ]);
         },
     },
+    mounted() {
+        if (typeof this.$parent.notification.slackIncludeGroupName === "undefined") {
+            this.$parent.notification.slackIncludeGroupName = true;
+        }
+    },
 };
 </script>

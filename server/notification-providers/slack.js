@@ -179,8 +179,7 @@ class Slack extends NotificationProvider {
                 return okMsg;
             }
 
-            const includeGroupName =
-                notification.slackIncludeGroupName === true || notification.slackIncludeGroupName === "true";
+            const includeGroupName = notification.slackIncludeGroupName ?? true;
 
             const groupPath =
                 includeGroupName && monitorJSON?.path?.length > 1 ? monitorJSON.path.slice(0, -1).join(" / ") : "";
