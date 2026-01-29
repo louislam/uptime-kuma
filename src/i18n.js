@@ -9,7 +9,7 @@ const languageList = {
     be: "Беларуская",
     "de-DE": "Deutsch (Deutschland)",
     "de-CH": "Deutsch (Schweiz)",
-    "bar": "Deutsch (Bayern)",
+    bar: "Deutsch (Bayern)",
     "nl-NL": "Nederlands",
     "nb-NO": "Norsk",
     "es-ES": "Español",
