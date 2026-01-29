@@ -13,6 +13,9 @@ class OktaAuthService {
     config = null;
     initialized = false;
 
+    /**
+     *
+     */
     static getInstance() {
         if (!OktaAuthService.instance) {
             OktaAuthService.instance = new OktaAuthService();
@@ -164,9 +167,8 @@ class OktaAuthService {
             }
 
             // Create new user
-            const displayName = oktaUser.firstName && oktaUser.lastName
-                ? `${oktaUser.firstName} ${oktaUser.lastName}`
-                : oktaUser.email;
+            const displayName =
+                oktaUser.firstName && oktaUser.lastName ? `${oktaUser.firstName} ${oktaUser.lastName}` : oktaUser.email;
 
             // Generate a random password (user won't use it with Okta SSO)
             const randomPassword = await passwordHash.generate(Math.random().toString(36));

@@ -56,7 +56,10 @@
                     </div>
                 </div>
 
-                <div v-if="!oktaEnabled || (!tokenRequired && (username || password))" class="form-check mb-3 mt-3 d-flex justify-content-center pe-4">
+                <div
+                    v-if="!oktaEnabled || (!tokenRequired && (username || password))"
+                    class="form-check mb-3 mt-3 d-flex justify-content-center pe-4"
+                >
                     <div class="form-check">
                         <input
                             id="remember"
@@ -71,7 +74,12 @@
                         </label>
                     </div>
                 </div>
-                <button v-if="!oktaEnabled || (!tokenRequired && (username || password))" class="w-100 btn btn-primary" type="submit" :disabled="processing">
+                <button
+                    v-if="!oktaEnabled || (!tokenRequired && (username || password))"
+                    class="w-100 btn btn-primary"
+                    type="submit"
+                    :disabled="processing"
+                >
                     {{ $t("Login") }}
                 </button>
 

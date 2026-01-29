@@ -5,6 +5,7 @@ This guide explains how to configure Okta SAML SSO authentication for Uptime Kum
 ## Overview
 
 With Okta SSO enabled:
+
 - Users authenticate via Okta instead of local username/password
 - Users are automatically created in Uptime Kuma when they first log in (if `OKTA_AUTO_CREATE_USERS=true`)
 - Each user has their own isolated monitoring configurations (monitors, notifications, etc.)
@@ -102,6 +103,7 @@ node server/server.js
 ### Multi-User Support
 
 Uptime Kuma already supports multi-user architecture:
+
 - Each monitor has a `user_id` field
 - Users can only see and manage their own monitors
 - Notifications, proxies, API keys, and other resources are also user-scoped
@@ -152,6 +154,7 @@ To disable Okta and return to local authentication only:
 ## Support
 
 For issues or questions:
+
 1. Check server logs for detailed error messages
 2. Verify all environment variables are set correctly
 3. Test Okta SAML configuration independently if needed
