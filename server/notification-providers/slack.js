@@ -180,9 +180,8 @@ class Slack extends NotificationProvider {
             }
 
             const includeGroupName = notification.slackIncludeGroupName || false;
-            const groupPath = includeGroupName && monitorJSON?.path?.length > 1 
-                ? monitorJSON.path.slice(0, -1).join(" / ") 
-                : "";
+            const groupPath =
+                includeGroupName && monitorJSON?.path?.length > 1 ? monitorJSON.path.slice(0, -1).join(" / ") : "";
 
             const title = monitorJSON?.name || "Uptime Kuma Alert";
             let data = {
