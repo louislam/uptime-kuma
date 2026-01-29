@@ -566,7 +566,7 @@
     "HeadersInvalidFormat": "Request headernene er ikke gyldig JSON: ",
     "successKeywordExplanation": "MQTT-nøkkelord som vil anses som gyldig",
     "Pick Affected Monitors...": "Velg berørte overvåkere…",
-    "Search monitored sites": "Søk etter overvåkede nettsteder",
+    "Search monitored sites": "Søk på overvåkede nettsteder",
     "templateHeartbeatJSON": "objekt som beskriver hjerteslaget",
     "templateMonitorJSON": "objekt som beskriver monitoren",
     "webhookAdditionalHeadersTitle": "Ekstra headere",
