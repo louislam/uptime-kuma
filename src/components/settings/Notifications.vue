@@ -85,6 +85,37 @@
                     :action-aria-label="$t('Add a new expiry notification day')"
                 />
             </div>
+
+            <p class="mt-4">{{ $t("certificationExpiryPercentDescription") }}</p>
+            <h6 class="my-3 settings-subheading">{{ $t("settingsCertificateExpiryPercent") }}</h6>
+            <div class="mt-1 mb-3 ps-2 cert-exp-days col-12 col-xl-6">
+                <div
+                    v-for="percent in settings.tlsExpiryNotifyPercent"
+                    :key="'percent-' + percent"
+                    class="d-flex align-items-center justify-content-between cert-exp-day-row py-2"
+                >
+                    <span>{{ $t("certLifeRemaining", { percent: percent }) }}</span>
+                    <button
+                        type="button"
+                        class="btn-rm-expiry btn btn-outline-danger ms-2 py-1"
+                        :aria-label="$t('Remove the expiry notification')"
+                        @click="removeTlsExpiryNotifPercent(percent)"
+                    >
+                        <font-awesome-icon icon="times" />
+                    </button>
+                </div>
+            </div>
+            <div class="col-12 col-xl-6">
+                <ActionInput
+                    v-model="tlsExpiryNotifPercentInput"
+                    :type="'number'"
+                    :placeholder="$t('percentPlaceholder')"
+                    :icon="'plus'"
+                    :action="() => addTlsExpiryNotifPercent(tlsExpiryNotifPercentInput)"
+                    :action-aria-label="$t('Add a new expiry notification percentage')"
+                />
+            </div>
+
             <div>
                 <button class="btn btn-primary" type="button" @click="saveSettings()">
                     {{ $t("Save") }}
@@ -152,6 +183,10 @@ export default {
              * Variable to store the input for new certificate expiry day.
              */
             tlsExpiryNotifInput: null,
+            /**
+             * Variable to store the input for new certificate expiry percentage.
+             */
+            tlsExpiryNotifPercentInput: null,
             domainExpiryNotifInput: null,
         };
     },
@@ -215,6 +250,36 @@ export default {
                         this.settings.tlsExpiryNotifyDays.push(parseInt(day));
                         this.settings.tlsExpiryNotifyDays.sort((a, b) => a - b);
                         this.tlsExpiryNotifInput = null;
+                    }
+                }
+            }
+        },
+        /**
+         * Remove a percentage from tls expiry notification percentages.
+         * @param {number} percent The percentage to remove.
+         * @returns {void}
+         */
+        removeTlsExpiryNotifPercent(percent) {
+            this.settings.tlsExpiryNotifyPercent = this.settings.tlsExpiryNotifyPercent.filter((p) => p !== percent);
+        },
+        /**
+         * Add a new tls expiry notification percentage.
+         * Will verify:
+         * - percent is not null or empty string.
+         * - percent is a number.
+         * - percent is > 0 and <= 100.
+         * - The percent is not already in the list.
+         * @param {number} percent The percentage to add.
+         * @returns {void}
+         */
+        addTlsExpiryNotifPercent(percent) {
+            if (percent != null && percent !== "") {
+                const parsedPercent = parseInt(percent);
+                if (parsedPercent != null && !isNaN(parsedPercent) && parsedPercent > 0 && parsedPercent <= 100) {
+                    if (!this.settings.tlsExpiryNotifyPercent.includes(parsedPercent)) {
+                        this.settings.tlsExpiryNotifyPercent.push(parsedPercent);
+                        this.settings.tlsExpiryNotifyPercent.sort((a, b) => b - a);
+                        this.tlsExpiryNotifPercentInput = null;
                     }
                 }
             }

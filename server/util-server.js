@@ -458,9 +458,12 @@ const parseCertificateInfo = function (info) {
         if (!link.valid_from || !link.valid_to) {
             break;
         }
+        link.validFrom = new Date(link.valid_from);
         link.validTo = new Date(link.valid_to);
         link.validFor = link.subjectaltname?.replace(/DNS:|IP Address:/g, "").split(", ");
         link.daysRemaining = dayjs.utc(link.validTo).diff(dayjs.utc(), "day");
+        link.totalDays = dayjs.utc(link.validTo).diff(dayjs.utc(link.validFrom), "day");
+        link.percentRemaining = link.totalDays > 0 ? Math.round((link.daysRemaining / link.totalDays) * 100) : 0;
 
         existingList[link.fingerprint] = true;
 
@@ -936,6 +939,11 @@ async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
         notifyDays = [7, 14, 21];
     }
 
+    let notifyPercent = await Settings.get("tlsExpiryNotifyPercent");
+    if (notifyPercent == null || !Array.isArray(notifyPercent)) {
+        notifyPercent = [];
+    }
+
     for (const targetDays of notifyDays) {
         let certInfo = tlsInfoObject.certInfo;
         while (certInfo) {
@@ -961,6 +969,39 @@ async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
                     certInfo.certType,
                     certInfo.daysRemaining,
                     targetDays,
+                    notificationList
+                );
+            }
+            certInfo = certInfo.issuerCertificate;
+        }
+    }
+
+    for (const targetPercent of notifyPercent) {
+        let certInfo = tlsInfoObject.certInfo;
+        while (certInfo) {
+            let subjectCN = certInfo.subject["CN"];
+            if (monitor.rootCertificates.has(certInfo.fingerprint256)) {
+                log.debug(
+                    "monitor",
+                    `Known root cert: ${certInfo.certType} certificate "${subjectCN}" (${certInfo.percentRemaining}% life remaining) on ${targetPercent}% threshold.`
+                );
+                break;
+            } else if (certInfo.percentRemaining === undefined || certInfo.percentRemaining > targetPercent) {
+                log.debug(
+                    "monitor",
+                    `No need to send cert notification for ${certInfo.certType} certificate "${subjectCN}" (${certInfo.percentRemaining}% life remaining) on ${targetPercent}% threshold.`
+                );
+            } else {
+                log.debug(
+                    "monitor",
+                    `call sendCertNotificationByTargetPercent for ${targetPercent}% threshold on certificate ${subjectCN}.`
+                );
+                await monitor.sendCertNotificationByTargetPercent(
+                    subjectCN,
+                    certInfo.certType,
+                    certInfo.daysRemaining,
+                    certInfo.percentRemaining,
+                    targetPercent,
                     notificationList
                 );
             }

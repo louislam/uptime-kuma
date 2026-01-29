@@ -103,8 +103,9 @@ class Monitor extends BeanModel {
             (this.type === "http" || this.type === "keyword" || this.type === "json-query") &&
             this.getURLProtocol() === "https:"
         ) {
-            const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
+            const { certExpiryDaysRemaining, certExpiryPercentRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
+            obj.certExpiryPercentRemaining = certExpiryPercentRemaining;
             obj.validCert = validCert;
         }
 
@@ -283,12 +284,14 @@ class Monitor extends BeanModel {
             if (tlsInfo?.valid && tlsInfo?.certInfo?.daysRemaining) {
                 return {
                     certExpiryDaysRemaining: tlsInfo.certInfo.daysRemaining,
+                    certExpiryPercentRemaining: tlsInfo.certInfo.percentRemaining,
                     validCert: true,
                 };
             }
         }
         return {
             certExpiryDaysRemaining: "",
+            certExpiryPercentRemaining: null,
             validCert: false,
         };
     }
@@ -1311,7 +1314,7 @@ class Monitor extends BeanModel {
                     if (oldCertInfo.certInfo.fingerprint256 !== checkCertificateResult.certInfo.fingerprint256) {
                         log.debug("monitor", "Resetting sent_history");
                         await R.exec(
-                            "DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?",
+                            "DELETE FROM notification_sent_history WHERE type IN ('certificate', 'certificate_percent') AND monitor_id = ?",
                             [this.id]
                         );
                     } else {
@@ -1611,6 +1614,55 @@ class Monitor extends BeanModel {
                 "certificate",
                 this.id,
                 targetDays,
+            ]);
+        }
+    }
+
+    /**
+     * Send a certificate notification when certificate lifetime remaining
+     * is less than target percentage
+     * @param {string} certCN  Common Name attribute from the certificate subject
+     * @param {string} certType  certificate type
+     * @param {number} daysRemaining Number of days remaining on certificate
+     * @param {number} percentRemaining Percentage of certificate lifetime remaining
+     * @param {number} targetPercent Percentage threshold to alert at
+     * @param {LooseObject<any>[]} notificationList List of notification providers
+     * @returns {Promise<void>}
+     */
+    async sendCertNotificationByTargetPercent(certCN, certType, daysRemaining, percentRemaining, targetPercent, notificationList) {
+        let row = await R.getRow(
+            "SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?",
+            ["certificate_percent", this.id, targetPercent]
+        );
+
+        // Sent already, no need to send again
+        if (row) {
+            log.debug("monitor", "Sent already, no need to send again");
+            return;
+        }
+
+        let sent = false;
+        log.debug("monitor", "Send certificate notification");
+
+        for (let notification of notificationList) {
+            try {
+                log.debug("monitor", "Sending to " + notification.name);
+                await Notification.send(
+                    JSON.parse(notification.config),
+                    `[${this.name}][${this.url}] ${certType} certificate ${certCN} has ${percentRemaining}% of lifetime remaining (${daysRemaining} days)`
+                );
+                sent = true;
+            } catch (e) {
+                log.error("monitor", "Cannot send cert notification to " + notification.name);
+                log.error("monitor", e);
+            }
+        }
+
+        if (sent) {
+            await R.exec("INSERT INTO notification_sent_history (type, monitor_id, days) VALUES(?, ?, ?)", [
+                "certificate_percent",
+                this.id,
+                targetPercent,
             ]);
         }
     }

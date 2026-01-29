@@ -251,15 +251,18 @@ export default {
         },
 
         /**
-         * Returns certificate expiry color based on days remaining
+         * Returns certificate expiry color based on days or percentage remaining
          * @param {object} monitor Monitor to show expiry for
          * @returns {string} Color for certificate expiry
          */
         certExpiryColor(monitor) {
-            if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
-                return "#059669";
+            if (!monitor?.element?.validCert) {
+                return "#DC2626";
             }
-            return "#DC2626";
+            if (monitor.element.certExpiryPercentRemaining != null) {
+                return monitor.element.certExpiryPercentRemaining > 25 ? "#059669" : "#DC2626";
+            }
+            return monitor.element.certExpiryDaysRemaining > 7 ? "#059669" : "#DC2626";
         },
 
         /**
