@@ -134,7 +134,12 @@ export default {
                 this.allowLoginDialog = false;
             });
 
-            socket.on("loginRequired", () => {
+            socket.on("loginRequired", async () => {
+                // First check for Okta session
+                if (await this.checkOktaSession()) {
+                    return;
+                }
+
                 let token = this.storage().token;
                 if (token && token !== "autoLogin") {
                     this.loginByToken(token);
@@ -435,6 +440,27 @@ export default {
                     callback(res);
                 }
             );
+        },
+
+        /**
+         * Check for Okta session and authenticate if available
+         * @returns {Promise<boolean>} True if Okta session was found and authenticated
+         */
+        async checkOktaSession() {
+            return new Promise((resolve) => {
+                socket.emit("checkOktaSession", (res) => {
+                    if (res.ok) {
+                        this.storage().token = res.token;
+                        this.socket.token = res.token;
+                        this.loggedIn = true;
+                        this.username = this.getJWTPayload()?.username;
+                        this.allowLoginDialog = true;
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                });
+            });
         },
 
         /**

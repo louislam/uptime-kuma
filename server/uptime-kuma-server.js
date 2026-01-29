@@ -142,6 +142,12 @@ class UptimeKumaServer {
 
         this.io = new Server(this.httpServer, {
             cors,
+            // Share session middleware with socket.io
+            cookie: {
+                name: "io",
+                httpOnly: true,
+                sameSite: "lax",
+            },
             allowRequest: async (req, callback) => {
                 let transport;
                 // It should be always true, but just in case, because this property is not documented

@@ -1,6 +1,15 @@
 <template>
     <div class="form-container">
         <div class="form">
+            <div v-if="oktaEnabled && !tokenRequired" class="mb-3">
+                <a :href="oktaLoginUrl" class="w-100 btn btn-primary">
+                    {{ $t("Login with Okta") }}
+                </a>
+                <div class="text-center mt-3 mb-3">
+                    <span class="text-muted">{{ $t("or") }}</span>
+                </div>
+            </div>
+
             <form @submit.prevent="submit">
                 <h1 class="h3 mb-3 fw-normal" />
 
@@ -12,7 +21,7 @@
                         class="form-control"
                         placeholder="Username"
                         autocomplete="username"
-                        required
+                        :required="!oktaEnabled"
                     />
                     <label for="floatingInput">{{ $t("Username") }}</label>
                 </div>
@@ -25,7 +34,7 @@
                         class="form-control"
                         placeholder="Password"
                         autocomplete="current-password"
-                        required
+                        :required="!oktaEnabled"
                     />
                     <label for="floatingPassword">{{ $t("Password") }}</label>
                 </div>
@@ -47,7 +56,7 @@
                     </div>
                 </div>
 
-                <div class="form-check mb-3 mt-3 d-flex justify-content-center pe-4">
+                <div v-if="!oktaEnabled || (!tokenRequired && (username || password))" class="form-check mb-3 mt-3 d-flex justify-content-center pe-4">
                     <div class="form-check">
                         <input
                             id="remember"
@@ -62,7 +71,7 @@
                         </label>
                     </div>
                 </div>
-                <button class="w-100 btn btn-primary" type="submit" :disabled="processing">
+                <button v-if="!oktaEnabled || (!tokenRequired && (username || password))" class="w-100 btn btn-primary" type="submit" :disabled="processing">
                     {{ $t("Login") }}
                 </button>
 
@@ -75,6 +84,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
     data() {
         return {
@@ -84,6 +95,8 @@ export default {
             token: "",
             res: null,
             tokenRequired: false,
+            oktaEnabled: false,
+            oktaLoginUrl: "/auth/okta",
         };
     },
 
@@ -97,8 +110,20 @@ export default {
         },
     },
 
-    mounted() {
+    async mounted() {
         document.title += " - Login";
+
+        // Check if Okta is enabled
+        try {
+            const response = await axios.get("/api/okta-enabled");
+            if (response.data.enabled) {
+                this.oktaEnabled = true;
+                this.oktaLoginUrl = response.data.loginUrl || "/auth/okta";
+            }
+        } catch (error) {
+            // Okta not enabled or error checking
+            this.oktaEnabled = false;
+        }
     },
 
     unmounted() {

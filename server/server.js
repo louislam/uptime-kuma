@@ -75,6 +75,8 @@ log.info("server", "Loading modules");
 log.debug("server", "Importing express");
 const express = require("express");
 const expressStaticGzip = require("express-static-gzip");
+const session = require("express-session");
+const passport = require("passport");
 log.debug("server", "Importing redbean-node");
 const { R } = require("redbean-node");
 log.debug("server", "Importing jsonwebtoken");
@@ -188,8 +190,27 @@ const { resetChrome } = require("./monitor-types/real-browser-monitor-type");
 const { EmbeddedMariaDB } = require("./embedded-mariadb");
 const { SetupDatabase } = require("./setup-database");
 const { chartSocketHandler } = require("./socket-handlers/chart-socket-handler");
+const oktaAuth = require("./okta-auth");
 
 app.use(express.json());
+
+// Session middleware (required for Okta SSO)
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || "uptime-kuma-session-secret-change-in-production",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: isSSL,
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        },
+    })
+);
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Global Middleware
 app.use(function (req, res, next) {
@@ -232,6 +253,17 @@ let needSetup = false;
 
     log.debug("server", "Initializing Prometheus");
     await Prometheus.init();
+
+    // Initialize Okta authentication if configured
+    if (process.env.AUTH_PROVIDER === "okta") {
+        const oktaConfig = oktaAuth.constructor.createConfigFromEnv();
+        if (oktaConfig) {
+            oktaAuth.initialize(oktaConfig);
+            log.info("server", "Okta SSO authentication enabled");
+        } else {
+            log.warn("server", "AUTH_PROVIDER=okta but Okta configuration is incomplete");
+        }
+    }
 
     log.debug("server", "Adding route");
 
@@ -355,6 +387,47 @@ let needSetup = false;
     const statusPageRouter = require("./routers/status-page-router");
     app.use(statusPageRouter);
 
+    // Okta SSO Routes
+    if (oktaAuth.isEnabled()) {
+        // API endpoint to check if Okta is enabled
+        app.get("/api/okta-enabled", (req, res) => {
+            res.json({ enabled: true, loginUrl: "/auth/okta" });
+        });
+
+        // Initiate Okta login
+        app.get("/auth/okta", passport.authenticate("okta-saml"), (req, res) => {
+            // This should not be reached as passport redirects to Okta
+            res.redirect("/");
+        });
+
+        // Okta callback
+        app.post(
+            "/auth/okta/callback",
+            passport.authenticate("okta-saml", { failureRedirect: "/?error=okta_auth_failed" }),
+            async (req, res) => {
+                // User is authenticated, redirect to dashboard
+                // The session will be used by socket.io to authenticate
+                log.info("okta-auth", "Okta authentication successful", { username: req.user?.username });
+                res.redirect("/dashboard");
+            }
+        );
+
+        // Logout
+        app.get("/auth/logout", (req, res) => {
+            req.logout((err) => {
+                if (err) {
+                    log.error("okta-auth", "Logout error", { error: err.message });
+                }
+                res.redirect("/");
+            });
+        });
+    } else {
+        // API endpoint to check if Okta is enabled
+        app.get("/api/okta-enabled", (req, res) => {
+            res.json({ enabled: false });
+        });
+    }
+
     // Universal Route Handler, must be at the end of all express routes.
     app.get("*", async (_request, response) => {
         if (_request.originalUrl.startsWith("/upload/")) {
@@ -365,6 +438,20 @@ let needSetup = false;
     });
 
     log.debug("server", "Adding socket handler");
+
+    // Share session middleware with socket.io
+    io.use((socket, next) => {
+        const req = socket.request;
+        const res = socket.request.res || {};
+        // Use the same session middleware
+        if (req.session) {
+            next();
+        } else {
+            // If no session middleware, still allow connection (for non-Okta auth)
+            next();
+        }
+    });
+
     io.on("connection", async (socket) => {
         await sendInfo(socket, true);
 
@@ -376,6 +463,31 @@ let needSetup = false;
         // ***************************
         // Public Socket API
         // ***************************
+
+        // Check for Okta session on connection
+        socket.on("checkOktaSession", async (callback) => {
+            if (oktaAuth.isEnabled() && socket.request.session) {
+                // Check passport session
+                const passportUser = socket.request.session.passport?.user;
+                if (passportUser) {
+                    try {
+                        const user = await R.findOne("user", " username = ? AND active = 1 ", [passportUser]);
+                        if (user) {
+                            await afterLogin(socket, user);
+                            log.info("auth", `Okta session authenticated: ${passportUser}`);
+                            callback({
+                                ok: true,
+                                token: User.createJWT(user, server.jwtSecret),
+                            });
+                            return;
+                        }
+                    } catch (error) {
+                        log.error("auth", "Error checking Okta session", { error: error.message });
+                    }
+                }
+            }
+            callback({ ok: false });
+        });
 
         socket.on("loginByToken", async (token, callback) => {
             const clientIP = await server.getClientIP(socket);
