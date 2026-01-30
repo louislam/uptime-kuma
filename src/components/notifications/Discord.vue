@@ -39,6 +39,35 @@
     </div>
 
     <div class="mb-3">
+        <div class="form-check form-switch">
+            <input
+                id="discord-use-message-template"
+                v-model="$parent.notification.discordUseMessageTemplate"
+                class="form-check-input"
+                type="checkbox"
+            />
+            <label class="form-check-label" for="discord-use-message-template">
+                {{ $t("discordUseMessageTemplate") }}
+            </label>
+        </div>
+        <div class="form-text">
+            {{ $t("discordUseMessageTemplateDescription") }}
+        </div>
+    </div>
+
+    <div v-show="$parent.notification.discordUseMessageTemplate">
+        <div class="mb-3">
+            <label for="discord-message-template" class="form-label">{{ $t("discordMessageTemplate") }}</label>
+            <TemplatedTextarea
+                id="discord-message-template"
+                v-model="$parent.notification.discordMessageTemplate"
+                :required="false"
+                placeholder=""
+            ></TemplatedTextarea>
+        </div>
+    </div>
+
+    <div class="mb-3">
         <label for="discord-message-type" class="form-label">{{ $t("Select message type") }}</label>
         <select id="discord-message-type" v-model="$parent.notification.discordChannelType" class="form-select">
             <option value="channel">{{ $t("Send to channel") }}</option>
@@ -122,7 +151,12 @@
     </div>
 </template>
 <script>
+import TemplatedTextarea from "../TemplatedTextarea.vue";
+
 export default {
+    components: {
+        TemplatedTextarea,
+    },
     mounted() {
         if (!this.$parent.notification.discordChannelType) {
             this.$parent.notification.discordChannelType = "channel";
@@ -132,6 +166,10 @@ export default {
         }
         if (this.$parent.notification.discordSuppressNotifications === undefined) {
             this.$parent.notification.discordSuppressNotifications = false;
+        }
+        // Auto-enable message template checkbox if template has content
+        if (typeof this.$parent.notification.discordUseMessageTemplate === "undefined") {
+            this.$parent.notification.discordUseMessageTemplate = !!this.$parent.notification.discordMessageTemplate?.trim();
         }
     },
 };

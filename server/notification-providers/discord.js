@@ -36,9 +36,16 @@ class Discord extends NotificationProvider {
 
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
+                let content = msg;
+                if (notification.discordUseMessageTemplate) {
+                    const customMessage = notification.discordMessageTemplate?.trim() || "";
+                    if (customMessage !== "") {
+                        content = await this.renderTemplate(customMessage, msg, monitorJSON, heartbeatJSON);
+                    }
+                }
                 let discordtestdata = {
                     username: discordDisplayName,
-                    content: msg,
+                    content: content,
                 };
                 if (!webhookHasAvatar) {
                     discordtestdata.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
@@ -55,6 +62,34 @@ class Discord extends NotificationProvider {
 
             // If heartbeatJSON is not null, we go into the normal alerting loop.
             let addess = this.extractAddress(monitorJSON);
+
+            // Custom message template: send only content (no embeds), like Telegram
+            const useMessageTemplate =
+                notification.discordUseMessageTemplate && (notification.discordMessageTemplate?.trim() || "") !== "";
+            if (useMessageTemplate) {
+                const content = await this.renderTemplate(
+                    notification.discordMessageTemplate.trim(),
+                    msg,
+                    monitorJSON,
+                    heartbeatJSON
+                );
+                let payload = {
+                    username: discordDisplayName,
+                    content: content,
+                };
+                if (!webhookHasAvatar) {
+                    payload.avatar_url = "https://github.com/louislam/uptime-kuma/raw/master/public/icon.png";
+                }
+                if (notification.discordChannelType === "createNewForumPost") {
+                    payload.thread_name = notification.postName;
+                }
+                if (notification.discordSuppressNotifications) {
+                    payload.flags = SUPPRESS_NOTIFICATIONS_FLAG;
+                }
+                await axios.post(webhookUrl.toString(), payload, config);
+                return okMsg;
+            }
+
             if (heartbeatJSON["status"] === DOWN) {
                 const wentOfflineTimestamp = Math.floor(new Date(heartbeatJSON["time"]).getTime() / 1000);
 
