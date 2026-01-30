@@ -103,7 +103,9 @@ class Monitor extends BeanModel {
             (this.type === "http" || this.type === "keyword" || this.type === "json-query") &&
             this.getURLProtocol() === "https:"
         ) {
-            const { certExpiryDaysRemaining, certExpiryPercentRemaining, validCert } = await this.getCertExpiry(this.id);
+            const { certExpiryDaysRemaining, certExpiryPercentRemaining, validCert } = await this.getCertExpiry(
+                this.id
+            );
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.certExpiryPercentRemaining = certExpiryPercentRemaining;
             obj.validCert = validCert;
@@ -1629,7 +1631,14 @@ class Monitor extends BeanModel {
      * @param {LooseObject<any>[]} notificationList List of notification providers
      * @returns {Promise<void>}
      */
-    async sendCertNotificationByTargetPercent(certCN, certType, daysRemaining, percentRemaining, targetPercent, notificationList) {
+    async sendCertNotificationByTargetPercent(
+        certCN,
+        certType,
+        daysRemaining,
+        percentRemaining,
+        targetPercent,
+        notificationList
+    ) {
         let row = await R.getRow(
             "SELECT * FROM notification_sent_history WHERE type = ? AND monitor_id = ? AND days <= ?",
             ["certificate_percent", this.id, targetPercent]

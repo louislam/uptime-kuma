@@ -1,9 +1,10 @@
 {
     "description": "RDAP bootstrap file for Domain Name System registrations",
-    "publication": "2025-12-11T00:00:01Z",
+    "publication": "2026-01-30T00:00:01Z",
     "services": [
         [["kg"], ["http://rdap.cctld.kg/"]],
         [["mg"], ["http://rdap.nic.mg/"]],
+        [["ng"], ["http://rdap.nic.net.ng/"]],
         [["xn--kpry57d"], ["https://ccrdap.twnic.tw/taiwan/"]],
         [["tw"], ["https://ccrdap.twnic.tw/tw/"]],
         [["na"], ["https://keetmans.omadhina.co.na/"]],
