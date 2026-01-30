@@ -36,6 +36,7 @@ import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
+import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
 import PagerTree from "./PagerTree.vue";
@@ -126,6 +127,7 @@ const NotificationFormList = {
     OneBot: OneBot,
     Onesender: Onesender,
     Opsgenie: Opsgenie,
+    JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
     FlashDuty: FlashDuty,
     PagerTree: PagerTree,
