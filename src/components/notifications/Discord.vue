@@ -40,11 +40,7 @@
 
     <div class="mb-3">
         <label for="discord-message-format" class="form-label">{{ $t("discordMessageFormat") }}</label>
-        <select
-            id="discord-message-format"
-            v-model="$parent.notification.discordMessageFormat"
-            class="form-select"
-        >
+        <select id="discord-message-format" v-model="$parent.notification.discordMessageFormat" class="form-select">
             <option value="normal">{{ $t("discordMessageFormatNormal") }}</option>
             <option value="minimalist">{{ $t("discordMessageFormatMinimalist") }}</option>
             <option value="custom">{{ $t("discordMessageFormatCustom") }}</option>
@@ -166,7 +162,8 @@ export default {
         }
         // Message format: default "normal"; migrate from old checkbox
         if (typeof this.$parent.notification.discordMessageFormat === "undefined") {
-            const hadCustom = this.$parent.notification.discordUseMessageTemplate === true ||
+            const hadCustom =
+                this.$parent.notification.discordUseMessageTemplate === true ||
                 !!this.$parent.notification.discordMessageTemplate?.trim();
             this.$parent.notification.discordMessageFormat = hadCustom ? "custom" : "normal";
         }

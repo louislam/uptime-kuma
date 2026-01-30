@@ -35,8 +35,7 @@ class Discord extends NotificationProvider {
             }
 
             const messageFormat =
-                notification.discordMessageFormat ||
-                (notification.discordUseMessageTemplate ? "custom" : "normal");
+                notification.discordMessageFormat || (notification.discordUseMessageTemplate ? "custom" : "normal");
 
             // If heartbeatJSON is null, assume we're testing.
             if (heartbeatJSON == null) {
