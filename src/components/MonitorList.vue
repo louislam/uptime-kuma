@@ -211,7 +211,8 @@ export default {
         monitorListStyle() {
             let listHeaderHeight = 107;
 
-            if (this.selectMode) {
+            // Only add extra height when selection row is visible
+            if (this.selectMode && this.selectedMonitorCount > 0) {
                 listHeaderHeight += 42;
             }
 
@@ -287,6 +288,9 @@ export default {
                     this.sortedMonitorList.forEach((item) => {
                         this.selectedMonitors[item.id] = true;
                     });
+                } else {
+                    // Exit select mode when unchecking "select all"
+                    this.selectMode = false;
                 }
             } else {
                 this.disableSelectAllWatcher = false;
