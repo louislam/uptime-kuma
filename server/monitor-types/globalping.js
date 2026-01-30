@@ -335,7 +335,7 @@ class GlobalpingMonitorType extends MonitorType {
                 ) {
                     log.debug("monitor", "Resetting sent_history");
                     await R.exec(
-                        "DELETE FROM notification_sent_history WHERE type = 'certificate' AND monitor_id = ?",
+                        "DELETE FROM notification_sent_history WHERE type IN ('certificate', 'certificate_percent') AND monitor_id = ?",
                         [monitor.id]
                     );
                 }
@@ -343,13 +343,14 @@ class GlobalpingMonitorType extends MonitorType {
         }
 
         const validTo = new Date(tlsInfo.expiresAt);
+        const daysRemaining = getDaysRemaining(new Date(), validTo);
         const certResult = {
             valid: tlsInfo.authorized,
             certInfo: {
                 subject: tlsInfo.subject,
                 issuer: tlsInfo.issuer,
                 validTo: validTo,
-                daysRemaining: getDaysRemaining(new Date(), validTo),
+                daysRemaining: daysRemaining,
                 fingerprint: tlsInfo.fingerprint256,
                 fingerprint256: tlsInfo.fingerprint256,
                 certType: "",
