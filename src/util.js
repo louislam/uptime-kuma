@@ -456,22 +456,11 @@ async function evaluateXmlQuery(data, xpathExpression, xpathOperator, expectedVa
         const htmlString = typeof data === "string" ? data : data.toString();
         const dom = new JSDOM(htmlString);
         const document = dom.window.document;
-        
-        // Use XPath to find elements
-        const result = document.evaluate(
-            xpathExpression,
-            document,
-            null,
-            dom.window.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
-            null
-        );
-        
-        // Collect matching nodes
+        const result = document.evaluate(xpathExpression, document, null, dom.window.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         const nodes = [];
         for (let i = 0; i < result.snapshotLength; i++) {
             nodes.push(result.snapshotItem(i));
         }
-        
         if (xpathOperator === "isset") {
             const exists = nodes.length > 0;
             return {
@@ -489,7 +478,6 @@ async function evaluateXmlQuery(data, xpathExpression, xpathOperator, expectedVa
         if (nodes.length === 0) {
             throw new Error("XPath expression did not match any nodes");
         }
-        // Get the value of the first matching node (text content or attribute value)
         const firstNode = nodes[0];
         const nodeValue = firstNode.nodeType === 2 ? firstNode.nodeValue : (firstNode.textContent || "").trim();
         response = nodeValue;

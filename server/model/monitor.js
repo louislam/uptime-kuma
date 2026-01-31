@@ -472,7 +472,12 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query" || this.type === "xml-query") {
+                } else if (
+                    this.type === "http" ||
+                    this.type === "keyword" ||
+                    this.type === "json-query" ||
+                    this.type === "xml-query"
+                ) {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 

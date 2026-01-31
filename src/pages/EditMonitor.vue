@@ -810,7 +810,11 @@
                                         {{ $t("XPath Expression") }}
                                     </label>
                                     <i18n-t tag="div" class="form-text mb-2" keypath="xpathQueryDescription">
-                                        <a href="https://www.w3schools.com/xml/xpath_intro.asp" target="_blank" rel="noopener noreferrer">
+                                        <a
+                                            href="https://www.w3schools.com/xml/xpath_intro.asp"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
                                             W3Schools XPath
                                         </a>
                                     </i18n-t>

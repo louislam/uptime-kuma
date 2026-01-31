@@ -842,7 +842,8 @@ export async function evaluateXmlQuery(
             response,
         };
     } catch (err: any) {
-        const truncatedResponse = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response;
+        const truncatedResponse =
+            response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response;
         throw new Error(`Error evaluating XPath query: ${err.message}. Response from server was: ${truncatedResponse}`);
     }
 }

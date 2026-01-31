@@ -145,10 +145,7 @@ describe("evaluateXmlQuery", () => {
         });
 
         test("throws error for invalid operator", async () => {
-            await assert.rejects(
-                evaluateXmlQuery(sampleHtml, "//h1", "invalid_op", "test"),
-                /Invalid XPath operator/
-            );
+            await assert.rejects(evaluateXmlQuery(sampleHtml, "//h1", "invalid_op", "test"), /Invalid XPath operator/);
         });
     });
 });
