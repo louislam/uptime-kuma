@@ -747,11 +747,112 @@ export async function evaluateJsonQuery(
     }
 }
 
+/**
+ * Evaluate an XPath expression against XML data.
+ * @param data The XML data to evaluate the XPath expression against.
+ * @param xpathExpression The XPath expression to evaluate.
+ * @param xpathOperator The operator to use for comparison: '==', '!=', 'isset', 'not_isset', 'contains', 'not_contains'.
+ * @param expectedValue The expected value to compare against (null for isset/not_isset operators).
+ * @returns An object containing the status and the evaluation result.
+ * @throws Error if the XML parsing fails or XPath evaluation fails.
+ */
+export async function evaluateXmlQuery(
+    data: any,
+    xpathExpression: string,
+    xpathOperator: string,
+    expectedValue: any
+): Promise<{ status: boolean; response: any }> {
+    // Dynamic imports for Node.js environment only
+    const { JSDOM } = require("jsdom");
+
+    let response: any = null;
+
+    try {
+        // Ensure data is a string
+        const htmlString = typeof data === "string" ? data : data.toString();
+
+        // Parse HTML with jsdom (supports XPath)
+        const dom = new JSDOM(htmlString);
+        const document = dom.window.document;
+
+        // Use XPath to find elements
+        const result = document.evaluate(
+            xpathExpression,
+            document,
+            null,
+            dom.window.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+            null
+        );
+
+        // Collect matching nodes
+        const nodes: any[] = [];
+        for (let i = 0; i < result.snapshotLength; i++) {
+            nodes.push(result.snapshotItem(i));
+        }
+
+        // Handle isset/not_isset operators
+        if (xpathOperator === "isset") {
+            const exists = nodes.length > 0;
+            return {
+                status: exists,
+                response: exists ? "node exists" : "node does not exist",
+            };
+        }
+
+        if (xpathOperator === "not_isset") {
+            const notExists = nodes.length === 0;
+            return {
+                status: notExists,
+                response: notExists ? "node does not exist" : "node exists",
+            };
+        }
+
+        // For other operators, we need a value
+        if (nodes.length === 0) {
+            throw new Error("XPath expression did not match any nodes");
+        }
+
+        // Get the value of the first matching node (text content or attribute value)
+        const firstNode = nodes[0];
+        const nodeValue = firstNode.nodeType === 2 ? firstNode.nodeValue : (firstNode.textContent || "").trim();
+
+        response = nodeValue;
+
+        // Perform comparison based on operator
+        let status: boolean;
+        switch (xpathOperator) {
+            case "==":
+                status = nodeValue === expectedValue;
+                break;
+            case "!=":
+                status = nodeValue !== expectedValue;
+                break;
+            case "contains":
+                status = nodeValue.includes(expectedValue);
+                break;
+            case "not_contains":
+                status = !nodeValue.includes(expectedValue);
+                break;
+            default:
+                throw new Error(`Invalid XPath operator: ${xpathOperator}`);
+        }
+
+        return {
+            status,
+            response,
+        };
+    } catch (err: any) {
+        const truncatedResponse = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response;
+        throw new Error(`Error evaluating XPath query: ${err.message}. Response from server was: ${truncatedResponse}`);
+    }
+}
+
 // these types will have domain expiry support via the specified field
 export const TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
     http: "url",
     keyword: "url",
     "json-query": "url",
+    "xml-query": "url",
     "real-browser": "url",
     "websocket-upgrade": "url",
     port: "hostname",

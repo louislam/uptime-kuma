@@ -24,6 +24,7 @@
                         monitor.type === 'http' ||
                         monitor.type === 'keyword' ||
                         monitor.type === 'json-query' ||
+                        monitor.type === 'xml-query' ||
                         monitor.type === 'real-browser' ||
                         monitor.type === 'websocket-upgrade'
                     "
@@ -58,6 +59,19 @@
                     <br />
                     <span>{{ $t("Expected Value") }}:</span>
                     <span class="keyword">{{ monitor.expectedValue }}</span>
+                </span>
+                <span v-if="monitor.type === 'xml-query'">
+                    <br />
+                    <span>{{ $t("XPath Expression") }}:</span>
+                    <span class="keyword">{{ monitor.xpathExpression }}</span>
+                    <br />
+                    <span>{{ $t("Condition") }}:</span>
+                    <span class="keyword">{{ monitor.xpathOperator }}</span>
+                    <template v-if="!['isset', 'not_isset'].includes(monitor.xpathOperator)">
+                        <br />
+                        <span>{{ $t("Expected Value") }}:</span>
+                        <span class="keyword">{{ monitor.expectedValue }}</span>
+                    </template>
                 </span>
                 <span v-if="monitor.type === 'dns'">
                     [{{ monitor.dns_resolve_type }}] {{ monitor.hostname }}

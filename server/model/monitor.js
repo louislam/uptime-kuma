@@ -12,6 +12,7 @@ const {
     MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT,
     evaluateJsonQuery,
+    evaluateXmlQuery,
     PING_PACKET_SIZE_MIN,
     PING_PACKET_SIZE_MAX,
     PING_PACKET_SIZE_DEFAULT,
@@ -201,6 +202,8 @@ class Monitor extends BeanModel {
             remote_browser: this.remote_browser,
             snmpOid: this.snmpOid,
             jsonPathOperator: this.jsonPathOperator,
+            xpathExpression: this.xpath_expression,
+            xpathOperator: this.xpath_operator,
             snmpVersion: this.snmpVersion,
             smtpSecurity: this.smtpSecurity,
             rabbitmqNodes: JSON.parse(this.rabbitmqNodes),
@@ -469,7 +472,7 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
+                } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query" || this.type === "xml-query") {
                     // Do not do any queries/high loading things before the "bean.ping"
                     let startTime = dayjs().valueOf();
 
@@ -713,6 +716,32 @@ class Monitor extends BeanModel {
                             throw new Error(
                                 `JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
                             );
+                        }
+                    } else if (this.type === "xml-query") {
+                        let data = res.data;
+
+                        const { status, response } = await evaluateXmlQuery(
+                            data,
+                            this.xpath_expression,
+                            this.xpath_operator,
+                            this.expectedValue
+                        );
+
+                        if (status) {
+                            bean.status = UP;
+                            if (this.xpath_operator === "isset" || this.xpath_operator === "not_isset") {
+                                bean.msg = `XPath query passes (${this.xpath_operator}: ${response})`;
+                            } else {
+                                bean.msg = `XPath query passes (comparing ${response} ${this.xpath_operator} ${this.expectedValue})`;
+                            }
+                        } else {
+                            if (this.xpath_operator === "isset" || this.xpath_operator === "not_isset") {
+                                throw new Error(`XPath query does not pass (${this.xpath_operator}: ${response})`);
+                            } else {
+                                throw new Error(
+                                    `XPath query does not pass (comparing ${response} ${this.xpath_operator} ${this.expectedValue})`
+                                );
+                            }
                         }
                     }
                 } else if (this.type === "ping") {

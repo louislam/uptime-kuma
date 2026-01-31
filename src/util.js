@@ -11,7 +11,7 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONSOLE_STYLE_FgLightBlue = exports.CONSOLE_STYLE_FgLightGreen = exports.CONSOLE_STYLE_FgOrange = exports.CONSOLE_STYLE_FgGray = exports.CONSOLE_STYLE_FgWhite = exports.CONSOLE_STYLE_FgCyan = exports.CONSOLE_STYLE_FgMagenta = exports.CONSOLE_STYLE_FgBlue = exports.CONSOLE_STYLE_FgYellow = exports.CONSOLE_STYLE_FgGreen = exports.CONSOLE_STYLE_FgRed = exports.CONSOLE_STYLE_FgBlack = exports.CONSOLE_STYLE_Hidden = exports.CONSOLE_STYLE_Reverse = exports.CONSOLE_STYLE_Blink = exports.CONSOLE_STYLE_Underscore = exports.CONSOLE_STYLE_Dim = exports.CONSOLE_STYLE_Bright = exports.CONSOLE_STYLE_Reset = exports.RESPONSE_BODY_LENGTH_MAX = exports.RESPONSE_BODY_LENGTH_DEFAULT = exports.PING_PER_REQUEST_TIMEOUT_DEFAULT = exports.PING_PER_REQUEST_TIMEOUT_MAX = exports.PING_PER_REQUEST_TIMEOUT_MIN = exports.PING_COUNT_DEFAULT = exports.PING_COUNT_MAX = exports.PING_COUNT_MIN = exports.PING_GLOBAL_TIMEOUT_DEFAULT = exports.PING_GLOBAL_TIMEOUT_MAX = exports.PING_GLOBAL_TIMEOUT_MIN = exports.PING_PACKET_SIZE_DEFAULT = exports.PING_PACKET_SIZE_MAX = exports.PING_PACKET_SIZE_MIN = exports.INCIDENT_PAGE_SIZE = exports.MIN_INTERVAL_SECOND = exports.MAX_INTERVAL_SECOND = exports.SQL_DATETIME_FORMAT_WITHOUT_SECOND = exports.SQL_DATETIME_FORMAT = exports.SQL_DATE_FORMAT = exports.STATUS_PAGE_MAINTENANCE = exports.STATUS_PAGE_PARTIAL_DOWN = exports.STATUS_PAGE_ALL_UP = exports.STATUS_PAGE_ALL_DOWN = exports.MAINTENANCE = exports.PENDING = exports.UP = exports.DOWN = exports.appName = exports.isNode = exports.isDev = void 0;
-exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = exports.evaluateJsonQuery = exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = void 0;
+exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = exports.evaluateXmlQuery = exports.evaluateJsonQuery = exports.intHash = exports.localToUTC = exports.utcToLocal = exports.utcToISODateTime = exports.isoToUTCDateTime = exports.parseTimeFromTimeObject = exports.parseTimeObject = exports.getMonitorRelativeURL = exports.genSecret = exports.getCryptoRandomInt = exports.getRandomInt = exports.getRandomArbitrary = exports.TimeLogger = exports.polyfill = exports.log = exports.debug = exports.ucfirst = exports.sleep = exports.flipStatus = exports.badgeConstants = exports.CONSOLE_STYLE_BgGray = exports.CONSOLE_STYLE_BgWhite = exports.CONSOLE_STYLE_BgCyan = exports.CONSOLE_STYLE_BgMagenta = exports.CONSOLE_STYLE_BgBlue = exports.CONSOLE_STYLE_BgYellow = exports.CONSOLE_STYLE_BgGreen = exports.CONSOLE_STYLE_BgRed = exports.CONSOLE_STYLE_BgBlack = exports.CONSOLE_STYLE_FgPink = exports.CONSOLE_STYLE_FgBrown = exports.CONSOLE_STYLE_FgViolet = void 0;
 const dayjs_1 = require("dayjs");
 const jsonata = require("jsonata");
 exports.isDev = process.env.NODE_ENV === "development";
@@ -449,10 +449,83 @@ async function evaluateJsonQuery(data, jsonPath, jsonPathOperator, expectedValue
     }
 }
 exports.evaluateJsonQuery = evaluateJsonQuery;
+async function evaluateXmlQuery(data, xpathExpression, xpathOperator, expectedValue) {
+    const { JSDOM } = require("jsdom");
+    let response = null;
+    try {
+        const htmlString = typeof data === "string" ? data : data.toString();
+        const dom = new JSDOM(htmlString);
+        const document = dom.window.document;
+        
+        // Use XPath to find elements
+        const result = document.evaluate(
+            xpathExpression,
+            document,
+            null,
+            dom.window.XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+            null
+        );
+        
+        // Collect matching nodes
+        const nodes = [];
+        for (let i = 0; i < result.snapshotLength; i++) {
+            nodes.push(result.snapshotItem(i));
+        }
+        
+        if (xpathOperator === "isset") {
+            const exists = nodes.length > 0;
+            return {
+                status: exists,
+                response: exists ? "node exists" : "node does not exist",
+            };
+        }
+        if (xpathOperator === "not_isset") {
+            const notExists = nodes.length === 0;
+            return {
+                status: notExists,
+                response: notExists ? "node does not exist" : "node exists",
+            };
+        }
+        if (nodes.length === 0) {
+            throw new Error("XPath expression did not match any nodes");
+        }
+        // Get the value of the first matching node (text content or attribute value)
+        const firstNode = nodes[0];
+        const nodeValue = firstNode.nodeType === 2 ? firstNode.nodeValue : (firstNode.textContent || "").trim();
+        response = nodeValue;
+        let status;
+        switch (xpathOperator) {
+            case "==":
+                status = nodeValue === expectedValue;
+                break;
+            case "!=":
+                status = nodeValue !== expectedValue;
+                break;
+            case "contains":
+                status = nodeValue.includes(expectedValue);
+                break;
+            case "not_contains":
+                status = !nodeValue.includes(expectedValue);
+                break;
+            default:
+                throw new Error(`Invalid XPath operator: ${xpathOperator}`);
+        }
+        return {
+            status,
+            response,
+        };
+    }
+    catch (err) {
+        const truncatedResponse = response && response.length > 50 ? `${response.substring(0, 100)}… (truncated)` : response;
+        throw new Error(`Error evaluating XPath query: ${err.message}. Response from server was: ${truncatedResponse}`);
+    }
+}
+exports.evaluateXmlQuery = evaluateXmlQuery;
 exports.TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD = {
     http: "url",
     keyword: "url",
     "json-query": "url",
+    "xml-query": "url",
     "real-browser": "url",
     "websocket-upgrade": "url",
     port: "hostname",
