@@ -377,36 +377,53 @@
 
             <!-- Overall Status -->
             <div class="shadow-box list p-4 overall-status mb-4">
-                <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData">
-                    <font-awesome-icon icon="question-circle" class="ok" />
-                    {{ $t("No Services") }}
+                <div class="overall-status-content">
+                    <div v-if="Object.keys($root.publicMonitorList).length === 0 && loadedData" class="status-text">
+                        <font-awesome-icon icon="question-circle" class="ok" />
+                        {{ $t("No Services") }}
+                    </div>
+
+                    <template v-else>
+                        <div v-if="allUp" class="status-text">
+                            <font-awesome-icon icon="check-circle" class="ok" />
+                            {{ $t("All Systems Operational") }}
+                        </div>
+
+                        <div v-else-if="partialDown" class="status-text">
+                            <font-awesome-icon icon="exclamation-circle" class="warning" />
+                            {{ $t("Partially Degraded Service") }}
+                        </div>
+
+                        <div v-else-if="allDown" class="status-text">
+                            <font-awesome-icon icon="times-circle" class="danger" />
+                            {{ $t("Degraded Service") }}
+                        </div>
+
+                        <div v-else-if="isMaintenance" class="status-text">
+                            <font-awesome-icon icon="wrench" class="status-maintenance" />
+                            {{ $t("maintenanceStatus-under-maintenance") }}
+                        </div>
+
+                        <div v-else class="status-text">
+                            <font-awesome-icon icon="question-circle" style="color: #efefef" />
+                        </div>
+                    </template>
+
+                    <!-- Search Box (only show in public view when there are many monitors) -->
+                    <div v-if="!enableEditMode && publicMonitorCount >= 30" class="search-section">
+                        <div class="search-divider"></div>
+                        <div class="search-wrapper">
+                            <font-awesome-icon v-if="!searchText" icon="search" class="search-icon-left" />
+                            <font-awesome-icon v-else icon="times" class="clear-icon" @click="clearSearchText" />
+                            <input
+                                v-model="searchText"
+                                type="text"
+                                class="form-control search-input"
+                                :placeholder="$t('Search...')"
+                            />
+                        </div>
+                    </div>
                 </div>
-
-                <template v-else>
-                    <div v-if="allUp">
-                        <font-awesome-icon icon="check-circle" class="ok" />
-                        {{ $t("All Systems Operational") }}
-                    </div>
-
-                    <div v-else-if="partialDown">
-                        <font-awesome-icon icon="exclamation-circle" class="warning" />
-                        {{ $t("Partially Degraded Service") }}
-                    </div>
-
-                    <div v-else-if="allDown">
-                        <font-awesome-icon icon="times-circle" class="danger" />
-                        {{ $t("Degraded Service") }}
-                    </div>
-
-                    <div v-else-if="isMaintenance">
-                        <font-awesome-icon icon="wrench" class="status-maintenance" />
-                        {{ $t("maintenanceStatus-under-maintenance") }}
-                    </div>
-
-                    <div v-else>
-                        <font-awesome-icon icon="question-circle" style="color: #efefef" />
-                    </div>
-                </template>
             </div>
 
             <!-- Maintenance -->
@@ -493,6 +510,7 @@
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
+                    :search-text="searchText"
                 />
             </div>
 
@@ -703,6 +721,7 @@ export default {
             updateCountdown: null,
             updateCountdownText: null,
             loading: true,
+            searchText: "",
             incidentHistory: [],
             incidentHistoryLoading: false,
             incidentHistoryNextCursor: null,
@@ -710,6 +729,14 @@ export default {
         };
     },
     computed: {
+        /**
+         * Count the total number of public monitors
+         * @returns {number} Total count of public monitors
+         */
+        publicMonitorCount() {
+            return Object.keys(this.$root.publicMonitorList).length;
+        },
+
         logoURL() {
             if (this.imgDataUrl.startsWith("data:")) {
                 return this.imgDataUrl;
@@ -1389,6 +1416,14 @@ export default {
         },
 
         /**
+         * Clear the search text
+         * @returns {void}
+         */
+        clearSearchText() {
+            this.searchText = "";
+        },
+
+        /**
          * Load incident history for the status page
          * @returns {void}
          */
@@ -1507,6 +1542,62 @@ export default {
 
     .danger {
         color: $danger;
+    }
+
+    .overall-status-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .status-text {
+        flex-shrink: 0;
+    }
+
+    .search-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .search-divider {
+        width: 1px;
+        height: 30px;
+        background: linear-gradient(to bottom, transparent 0%, #d0d0d0 20%, #d0d0d0 80%, transparent 100%);
+
+        .dark & {
+            background: linear-gradient(to bottom, transparent 0%, #3a4450 20%, #3a4450 80%, transparent 100%);
+        }
+    }
+
+    .search-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-icon-left {
+        font-size: 16px;
+        color: #c0c0c0;
+    }
+
+    .clear-icon {
+        font-size: 16px;
+        color: #c0c0c0;
+        cursor: pointer;
+        transition: all ease-in-out 0.1s;
+
+        &:hover {
+            opacity: 0.5;
+        }
+    }
+
+    .search-input {
+        max-width: 15em;
+        font-size: 16px;
+        font-weight: normal;
     }
 }
 
