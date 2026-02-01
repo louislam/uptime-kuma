@@ -414,18 +414,13 @@
                         <div class="search-divider"></div>
                         <div class="search-wrapper">
                             <font-awesome-icon v-if="!searchText" icon="search" class="search-icon-left" />
-                            <font-awesome-icon
-                                v-else
-                                icon="times"
-                                class="clear-icon"
-                                @click="clearSearchText"
-                            />
+                            <font-awesome-icon v-else icon="times" class="clear-icon" @click="clearSearchText" />
                             <input
                                 v-model="searchText"
                                 type="text"
                                 class="form-control search-input"
                                 :placeholder="$t('Search...')"
-                            >
+                            />
                         </div>
                     </div>
                 </div>
