@@ -355,12 +355,19 @@ class GlobalpingMonitorType extends MonitorType {
             case "SVCB":
             case "TXT":
                 return values.some((record) => regex.test(record));
-                break;
         }
 
         return false;
     }
 
+    /**
+     * Handles keyword search for HTTP monitors.
+     * @param {Monitor} monitor - The monitor object.
+     * @param {Heartbeat} heartbeat - The heartbeat object.
+     * @param {Result} result - The result object.
+     * @param {Probe} probe - The probe object.
+     * @returns {Promise<void>}
+     */
     async handleKeywordForHTTP(monitor, heartbeat, result, probe) {
         let data = result.rawOutput;
         let keywordFound = data.includes(monitor.keyword);
