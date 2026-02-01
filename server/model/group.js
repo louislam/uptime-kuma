@@ -31,18 +31,19 @@ class Group extends BeanModel {
      * @returns {Promise<Bean[]>} List of monitors
      */
     async getMonitorList() {
-        return R.convertToBeans(
-            "monitor",
-            await R.getAll(
-                `
-            SELECT monitor.*, monitor_group.send_url, monitor_group.custom_url FROM monitor, monitor_group
-            WHERE monitor.id = monitor_group.monitor_id
-            AND group_id = ?
-            ORDER BY monitor_group.weight
-        `,
-                [this.id]
-            )
-        );
+        return R.convertToBeans("monitor", await R.getAll(`
+            SELECT 
+                monitor.*,
+                monitor_group.send_url,
+                monitor_group.custom_url
+            FROM monitor
+            LEFT JOIN monitor_group 
+                ON monitor.id = monitor_group.monitor_id
+            WHERE monitor_group.group_id = ?
+            ORDER BY monitor_group.weight;
+        `, [
+            this.id,
+        ]));
     }
 }
 
