@@ -23,4 +23,16 @@
             </a>
         </i18n-t>
     </div>
+
+    <div class="mb-3">
+        <label for="wecom-mentioned-mobile-list" class="form-label">{{ $t("WeCom Mentioned Mobile List") }}</label>
+        <input
+            id="wecom-mentioned-mobile-list"
+            v-model="$parent.notification.weComMentionedMobileList"
+            type="text"
+            class="form-control"
+            placeholder="13800001111,13900002222,@all"
+        />
+        <p class="form-text">{{ $t("WeCom Mentioned Mobile List Description") }}</p>
+    </div>
 </template>

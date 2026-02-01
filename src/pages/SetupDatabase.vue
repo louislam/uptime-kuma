@@ -79,7 +79,7 @@
                 </div>
 
                 <template v-if="dbConfig.type === 'mariadb'">
-                    <div class="form-floating mt-3 short">
+                    <div v-if="!isProvidedMariaDBSocket" class="form-floating mt-3 short">
                         <input
                             id="floatingInput"
                             v-model="dbConfig.hostname"
@@ -90,10 +90,18 @@
                         <label for="floatingInput">{{ $t("Hostname") }}</label>
                     </div>
 
-                    <div class="form-floating mt-3 short">
+                    <div v-if="!isProvidedMariaDBSocket" class="form-floating mt-3 short">
                         <input id="floatingInput" v-model="dbConfig.port" type="text" class="form-control" required />
                         <label for="floatingInput">{{ $t("Port") }}</label>
                     </div>
+
+                    <div v-if="isProvidedMariaDBSocket" class="mt-1 short text-start">
+                        <i18n-t keypath="mariadbSocketPathDetectedHelptext" tag="div" class="form-text">
+                            <code>UPTIME_KUMA_DB_SOCKET</code>
+                        </i18n-t>
+                    </div>
+
+                    <hr v-if="isProvidedMariaDBSocket" class="mt-3 mb-2 short" />
 
                     <div class="form-floating mt-3 short">
                         <input
@@ -120,6 +128,42 @@
                     <div class="form-floating mt-3 short">
                         <input id="floatingInput" v-model="dbConfig.dbName" type="text" class="form-control" required />
                         <label for="floatingInput">{{ $t("dbName") }}</label>
+                    </div>
+
+                    <div class="mt-3 short text-start">
+                        <div class="form-check form-switch ps-0" style="height: auto; display: block; padding: 0">
+                            <div class="d-flex align-items-center">
+                                <input
+                                    id="sslCheck"
+                                    v-model="dbConfig.ssl"
+                                    type="checkbox"
+                                    role="switch"
+                                    class="form-check-input ms-0 me-2"
+                                    style="float: none"
+                                />
+                                <label class="form-check-label fw-bold" for="sslCheck">
+                                    {{ $t("enableSSL") }}
+                                    <span class="fw-normal text-muted" style="font-size: 0.9em">
+                                        ({{ $t("Optional") }})
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="form-text mt-1">
+                                {{ $t("mariadbUseSSLHelptext") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="dbConfig.ssl" class="form-floating mt-3 short">
+                        <textarea
+                            id="caInput"
+                            v-model="dbConfig.ca"
+                            class="form-control"
+                            placeholder="-----BEGIN CERTIFICATE-----"
+                            style="height: 120px"
+                        ></textarea>
+                        <label for="caInput">{{ $t("mariadbCaCertificateLabel") }}</label>
+                        <div class="form-text">{{ $t("mariadbCaCertificateHelptext") }}</div>
                     </div>
                 </template>
 
@@ -148,6 +192,8 @@ export default {
                 username: "",
                 password: "",
                 dbName: "kuma",
+                ssl: false,
+                ca: "",
             },
             info: {
                 needSetup: false,
@@ -159,6 +205,9 @@ export default {
     computed: {
         disabledButton() {
             return this.dbConfig.type === undefined || this.info.runningSetup;
+        },
+        isProvidedMariaDBSocket() {
+            return this.info.isEnabledMariaDBSocket;
         },
     },
     async mounted() {
@@ -251,6 +300,14 @@ export default {
     > .form-control {
         padding-left: 1.3rem;
     }
+}
+
+.form-check {
+    height: calc(3.5rem + 2px);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 }
 
 .short {

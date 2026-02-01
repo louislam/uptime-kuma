@@ -4,36 +4,25 @@ const { log, TYPES_WITH_DOMAIN_EXPIRY_SUPPORT_VIA_FIELD } = require("../../src/u
 const { parse: parseTld } = require("tldts");
 const { setting, setSetting } = require("../util-server");
 const { Notification } = require("../notification");
-const { default: NodeFetchCache, MemoryCache } = require("node-fetch-cache");
 const TranslatableError = require("../translatable-error");
 const dayjs = require("dayjs");
 
-const cachedFetch = process.env.NODE_ENV
-    ? NodeFetchCache.create({
-          // cache for 8h
-          cache: new MemoryCache({ ttl: 1000 * 60 * 60 * 8 }),
-      })
-    : fetch;
+// Load static RDAP DNS data from local file (auto-updated by CI)
+const rdapDnsData = require("./rdap-dns.json");
 
 /**
  * Find the RDAP server for a given TLD
  * @param {string} tld TLD
- * @returns {Promise<string>} First RDAP server found
+ * @returns {string|null} First RDAP server found
  */
-async function getRdapServer(tld) {
-    let rdapList;
-    try {
-        const res = await cachedFetch("https://data.iana.org/rdap/dns.json");
-        rdapList = await res.json();
-    } catch (error) {
-        log.debug("rdap", error);
-        return null;
-    }
-
-    for (const service of rdapList["services"]) {
-        const [tlds, urls] = service;
-        if (tlds.includes(tld)) {
-            return urls[0];
+function getRdapServer(tld) {
+    const services = rdapDnsData["services"] ?? [];
+    const rootTld = tld?.split(".").pop();
+    if (rootTld) {
+        for (const [tlds, urls] of services) {
+            if (tlds.includes(rootTld)) {
+                return urls[0];
+            }
         }
     }
     log.debug("rdap", `No RDAP server found for TLD ${tld}`);
@@ -47,7 +36,7 @@ async function getRdapServer(tld) {
  */
 async function getRdapDomainExpiryDate(domain) {
     const tld = DomainExpiry.parseTld(domain).publicSuffix;
-    const rdapServer = await getRdapServer(tld);
+    const rdapServer = getRdapServer(tld);
     if (rdapServer === null) {
         log.warn("rdap", `No RDAP server found, TLD ${tld} not supported.`);
         return null;
@@ -159,39 +148,32 @@ class DomainExpiry extends BeanModel {
         const tld = parseTld(target);
 
         // Avoid logging for incomplete/invalid input while editing monitors.
-        if (!tld.domain) {
-            throw new TranslatableError("domain_expiry_unsupported_invalid_domain", { hostname: tld.hostname });
-        }
-        if (!tld.publicSuffix) {
-            throw new TranslatableError("domain_expiry_unsupported_public_suffix", { publicSuffix: tld.publicSuffix });
-        }
         if (tld.isIp) {
             throw new TranslatableError("domain_expiry_unsupported_is_ip", { hostname: tld.hostname });
         }
-
         // No one-letter public suffix exists; treat this as an incomplete/invalid input while typing.
         if (tld.publicSuffix.length < 2) {
             throw new TranslatableError("domain_expiry_public_suffix_too_short", { publicSuffix: tld.publicSuffix });
         }
-
-        const rdap = await getRdapServer(tld.publicSuffix);
-        if (!rdap) {
-            // Only warn when the monitor actually has domain expiry notifications enabled.
-            // The edit monitor page calls this method frequently while the user is typing.
-            if (Boolean(monitor.domainExpiryNotification)) {
-                log.warn(
-                    "domain_expiry",
-                    `Domain expiry unsupported for '.${tld.publicSuffix}' because its RDAP endpoint is not listed in the IANA database.`
-                );
-            }
-            throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
+        if (!tld.isIcann) {
+            throw new TranslatableError("domain_expiry_unsupported_is_icann", {
+                domain: tld.domain,
                 publicSuffix: tld.publicSuffix,
+            });
+        }
+
+        const publicSuffix = tld.publicSuffix;
+        const rootTld = publicSuffix.split(".").pop();
+        const rdap = getRdapServer(publicSuffix);
+        if (!rdap) {
+            throw new TranslatableError("domain_expiry_unsupported_unsupported_tld_no_rdap_endpoint", {
+                publicSuffix,
             });
         }
 
         return {
             domain: tld.domain,
-            tld: tld.publicSuffix,
+            tld: rootTld,
         };
     }
 

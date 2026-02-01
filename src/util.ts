@@ -46,6 +46,8 @@ export const SQL_DATETIME_FORMAT_WITHOUT_SECOND = "YYYY-MM-DD HH:mm";
 export const MAX_INTERVAL_SECOND = 2073600; // 24 days
 export const MIN_INTERVAL_SECOND = 1; // 1 second
 
+export const INCIDENT_PAGE_SIZE = 10;
+
 // Packet Size limits
 export const PING_PACKET_SIZE_MIN = 1;
 export const PING_PACKET_SIZE_MAX = 65500;
@@ -65,6 +67,17 @@ export const PING_COUNT_DEFAULT = 1;
 export const PING_PER_REQUEST_TIMEOUT_MIN = 1;
 export const PING_PER_REQUEST_TIMEOUT_MAX = 60;
 export const PING_PER_REQUEST_TIMEOUT_DEFAULT = 2;
+
+/**
+ * Response body length cutoff used by default (10kb)
+ * (measured in bytes)
+ */
+export const RESPONSE_BODY_LENGTH_DEFAULT = 1024;
+/**
+ * Maximum allowed response body length to store (1mb)
+ * (measured in bytes)
+ */
+export const RESPONSE_BODY_LENGTH_MAX = 1024 * 1024;
 
 // Console colors
 // https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color

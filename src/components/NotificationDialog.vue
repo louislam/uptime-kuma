@@ -292,6 +292,7 @@ export default {
                 HeiiOnCall: "Heii On-Call",
                 Keep: "Keep",
                 Opsgenie: "Opsgenie",
+                JiraServiceManagement: this.$t("Jira Service Management"),
                 PagerDuty: "PagerDuty",
                 PagerTree: "PagerTree",
                 SIGNL4: "SIGNL4",
@@ -305,7 +306,9 @@ export default {
             };
 
             // Other Integrations
-            let other = {};
+            let other = {
+                GoogleSheets: "Google Sheets",
+            };
 
             // Regional - Not supported in most regions or documentation is not in English
             let regional = {

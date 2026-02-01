@@ -17,6 +17,7 @@ const Feishu = require("./notification-providers/feishu");
 const Notifery = require("./notification-providers/notifery");
 const FreeMobile = require("./notification-providers/freemobile");
 const GoogleChat = require("./notification-providers/google-chat");
+const GoogleSheets = require("./notification-providers/google-sheets");
 const Gorush = require("./notification-providers/gorush");
 const Gotify = require("./notification-providers/gotify");
 const GrafanaOncall = require("./notification-providers/grafana-oncall");
@@ -35,6 +36,7 @@ const Octopush = require("./notification-providers/octopush");
 const OneChat = require("./notification-providers/onechat");
 const OneBot = require("./notification-providers/onebot");
 const Opsgenie = require("./notification-providers/opsgenie");
+const JiraServiceManagement = require("./notification-providers/jira-service-management");
 const PagerDuty = require("./notification-providers/pagerduty");
 const Pumble = require("./notification-providers/pumble");
 const FlashDuty = require("./notification-providers/flashduty");
@@ -117,6 +119,7 @@ class Notification {
             new Feishu(),
             new FreeMobile(),
             new GoogleChat(),
+            new GoogleSheets(),
             new Gorush(),
             new Gotify(),
             new GrafanaOncall(),
@@ -136,6 +139,7 @@ class Notification {
             new OneBot(),
             new Onesender(),
             new Opsgenie(),
+            new JiraServiceManagement(),
             new PagerDuty(),
             new FlashDuty(),
             new PagerTree(),

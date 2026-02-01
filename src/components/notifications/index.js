@@ -15,6 +15,7 @@ import Elks from "./46elks.vue";
 import Feishu from "./Feishu.vue";
 import FreeMobile from "./FreeMobile.vue";
 import GoogleChat from "./GoogleChat.vue";
+import GoogleSheets from "./GoogleSheets.vue";
 import Gorush from "./Gorush.vue";
 import Gotify from "./Gotify.vue";
 import GrafanaOncall from "./GrafanaOncall.vue";
@@ -35,6 +36,7 @@ import OneChat from "./OneChat.vue";
 import OneBot from "./OneBot.vue";
 import Onesender from "./Onesender.vue";
 import Opsgenie from "./Opsgenie.vue";
+import JiraServiceManagement from "./JiraServiceManagement.vue";
 import PagerDuty from "./PagerDuty.vue";
 import FlashDuty from "./FlashDuty.vue";
 import PagerTree from "./PagerTree.vue";
@@ -105,6 +107,7 @@ const NotificationFormList = {
     Feishu: Feishu,
     FreeMobile: FreeMobile,
     GoogleChat: GoogleChat,
+    GoogleSheets: GoogleSheets,
     gorush: Gorush,
     gotify: Gotify,
     GrafanaOncall: GrafanaOncall,
@@ -124,6 +127,7 @@ const NotificationFormList = {
     OneBot: OneBot,
     Onesender: Onesender,
     Opsgenie: Opsgenie,
+    JiraServiceManagement: JiraServiceManagement,
     PagerDuty: PagerDuty,
     FlashDuty: FlashDuty,
     PagerTree: PagerTree,

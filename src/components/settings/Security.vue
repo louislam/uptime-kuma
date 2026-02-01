@@ -4,15 +4,13 @@
             <!-- Change Password -->
             <template v-if="!settings.disableAuth">
                 <p>
-                    {{ $t("Current User") }}:
-                    <strong>{{ $root.username }}</strong>
                     <button
                         v-if="!settings.disableAuth"
                         id="logout-btn"
                         class="btn btn-danger ms-4 me-2 mb-2"
                         @click="$root.logout"
                     >
-                        {{ $t("Logout") }}
+                        {{ $t("logoutCurrentUser", { username: $root.username }) }}
                     </button>
                 </p>
 
