@@ -42,7 +42,6 @@ class HaloPSA extends NotificationProvider {
                 status: status,
                 monitor: monitorJSON?.name || "No Monitor",
                 monitor_id: monitorJSON?.id || null,
-                heartbeat_id: heartbeatJSON?.id || null,
                 message: msg,
                 timestamp: new Date().toISOString(),
                 uptime_kuma_version: process.env.npm_package_version || "unknown",

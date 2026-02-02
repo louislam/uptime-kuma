@@ -72,10 +72,6 @@
                     : {{ $t("halopsa_field_monitor_id") }}
                 </li>
                 <li>
-                    <b>heartbeat_id</b>
-                    : {{ $t("halopsa_field_heartbeat_id") }}
-                </li>
-                <li>
                     <b>message</b>
                     : {{ $t("halopsa_field_message") }}
                 </li>

@@ -1449,7 +1449,6 @@
     "halopsa_field_status": "Monitor status: UP, DOWN, NOTIFICATION, or UNKNOWN",
     "halopsa_field_monitor": "Name of the monitor",
     "halopsa_field_monitor_id": "Unique monitor identifier (null for test notifications) - Use this to match alerts to tickets",
-    "halopsa_field_heartbeat_id": "Unique event identifier (null for test notifications) - Use this to track individual events",
     "halopsa_field_message": "Full alert message with status and details",
     "halopsa_field_timestamp": "Event timestamp in ISO 8601 format",
     "halopsa_field_uptime_kuma_version": "Uptime Kuma version number",
