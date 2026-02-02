@@ -84,6 +84,7 @@ import SMSIR from "./SMSIR.vue";
 import Webpush from "./Webpush.vue";
 import HaloPSA from "./HaloPSA.vue";
 import Resend from "./Resend.vue";
+import SmsmTarget from "./Smsmtarget.vue";
 
 /**
  * Manage all notification form.
@@ -175,6 +176,7 @@ const NotificationFormList = {
     YZJ: YZJ,
     SMSPlanet: SMSPlanet,
     Webpush: Webpush,
+    Smsmtarget: SmsmTarget,
     HaloPSA: HaloPSA,
 };
 
