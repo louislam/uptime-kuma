@@ -1,11 +1,7 @@
 <template>
     <div class="mb-3">
         <label for="m-target-key" class="form-label">Clé API (X-API-KEY)</label>
-        <HiddenInput
-            id="m-target-key"
-            v-model="$parent.notification.mTargetApiKey"
-            :required="true"
-        ></HiddenInput>
+        <HiddenInput id="m-target-key" v-model="$parent.notification.mTargetApiKey" :required="true"></HiddenInput>
     </div>
     <div class="mb-3">
         <label for="m-target-number" class="form-label">Numéro de téléphone (msisdn)</label>
@@ -16,7 +12,7 @@
             class="form-control"
             placeholder="+33612345678"
             required
-        >
+        />
     </div>
     <div class="mb-3">
         <label for="m-target-sender" class="form-label">Expéditeur (Sender ID)</label>
