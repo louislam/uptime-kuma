@@ -5,10 +5,7 @@ class SmsmTarget extends NotificationProvider {
     name = "Smsmtarget";
 
     /**
-     * @param notification
-     * @param msg
-     * @param monitorJSON
-     * @param heartbeatJSON
+     * @inheritdoc
      */
     async send(notification, msg, monitorJSON = null, heartbeatJSON = null) {
         try {
