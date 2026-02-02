@@ -30,7 +30,7 @@ class SmsmTarget extends NotificationProvider {
                 {
                     msg: msg,
                     msisdn: phone,
-                    sender: notification.mTargetSender || "dematis",
+                    sender: notification.mTargetSender,
                     allowunicode: 1,
                 },
                 {
