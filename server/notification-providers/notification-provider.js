@@ -8,20 +8,32 @@ const { HttpsProxyAgent } = require("https-proxy-agent");
  * Caches parsed result to avoid repeated work. See https://liquidjs.com/tutorials/drops.html
  */
 class ResponseDrop extends Drop {
+    /**
+     * @param decodedString
+     */
     constructor(decodedString) {
         super();
         this._decoded = decodedString ?? "";
         this._parsed = undefined;
     }
 
+    /**
+     *
+     */
     valueOf() {
         return this._decoded;
     }
 
+    /**
+     *
+     */
     request() {
         return this._decoded;
     }
 
+    /**
+     *
+     */
     requestJSON() {
         if (this._parsed === undefined) {
             try {
@@ -125,11 +137,7 @@ class NotificationProvider {
 
         // Expose response as Drop: string (request/valueOf) + parsed JSON (requestJSON), cached
         let contextHeartbeatJSON = heartbeatJSON;
-        if (
-            heartbeatJSON !== null &&
-            heartbeatJSON.response != null &&
-            typeof heartbeatJSON.response === "string"
-        ) {
+        if (heartbeatJSON !== null && heartbeatJSON.response != null && typeof heartbeatJSON.response === "string") {
             contextHeartbeatJSON = {
                 ...heartbeatJSON,
                 response: new ResponseDrop(heartbeatJSON.response),
