@@ -1500,7 +1500,7 @@ class Monitor extends BeanModel {
 
             let msg = `[${monitor.name}] [${text}] ${bean.msg}`;
 
-            const heartbeatJSON = await bean.toJSONAsync({ decodeResponse: false });
+            const heartbeatJSON = bean.toJSON();
             const monitorData = [{ id: monitor.id, active: monitor.active, name: monitor.name }];
             const preloadData = await Monitor.preparePreloadData(monitorData);
             // Prevent if the msg is undefined, notifications such as Discord cannot send out.
