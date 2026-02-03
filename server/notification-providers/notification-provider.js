@@ -1,7 +1,38 @@
-const { Liquid } = require("liquidjs");
+const { Liquid, Drop } = require("liquidjs");
 const { DOWN } = require("../../src/util");
 const { HttpProxyAgent } = require("http-proxy-agent");
 const { HttpsProxyAgent } = require("https-proxy-agent");
+
+/**
+ * LiquidJS Drop for heartbeat response: exposes decoded string (request/valueOf) and parsed JSON (requestJSON).
+ * Caches parsed result to avoid repeated work. See https://liquidjs.com/tutorials/drops.html
+ */
+class ResponseDrop extends Drop {
+    constructor(decodedString) {
+        super();
+        this._decoded = decodedString ?? "";
+        this._parsed = undefined;
+    }
+
+    valueOf() {
+        return this._decoded;
+    }
+
+    request() {
+        return this._decoded;
+    }
+
+    requestJSON() {
+        if (this._parsed === undefined) {
+            try {
+                this._parsed = this._decoded ? JSON.parse(this._decoded) : null;
+            } catch (e) {
+                this._parsed = null;
+            }
+        }
+        return this._parsed;
+    }
+}
 
 class NotificationProvider {
     /**
@@ -92,6 +123,19 @@ class NotificationProvider {
             serviceStatus = heartbeatJSON["status"] === DOWN ? "🔴 Down" : "✅ Up";
         }
 
+        // Expose response as Drop: string (request/valueOf) + parsed JSON (requestJSON), cached
+        let contextHeartbeatJSON = heartbeatJSON;
+        if (
+            heartbeatJSON !== null &&
+            heartbeatJSON.response != null &&
+            typeof heartbeatJSON.response === "string"
+        ) {
+            contextHeartbeatJSON = {
+                ...heartbeatJSON,
+                response: new ResponseDrop(heartbeatJSON.response),
+            };
+        }
+
         const context = {
             // for v1 compatibility, to be removed in v3
             STATUS: serviceStatus,
@@ -103,7 +147,7 @@ class NotificationProvider {
             name: monitorName,
             hostnameOrURL: monitorHostnameOrURL,
             monitorJSON,
-            heartbeatJSON,
+            heartbeatJSON: contextHeartbeatJSON,
             msg,
         };
 
