@@ -2,14 +2,16 @@ const { Liquid, Drop } = require("liquidjs");
 const { DOWN } = require("../../src/util");
 const { HttpProxyAgent } = require("http-proxy-agent");
 const { HttpsProxyAgent } = require("https-proxy-agent");
+const Heartbeat = require("../model/heartbeat");
 
 /**
- * LiquidJS Drop for heartbeat response: exposes decoded string (request/valueOf) and parsed JSON (requestJSON).
- * Caches parsed result to avoid repeated work. See https://liquidjs.com/tutorials/drops.html
+ * LiquidJS Drop for heartbeat response. request/valueOf = decompressed string; requestJSON = parsed JSON from that string.
+ * Both cached. Compression decoding (Brotli+base64) is done in renderTemplate before creating this Drop.
+ * See https://liquidjs.com/tutorials/drops.html
  */
 class ResponseDrop extends Drop {
     /**
-     * @param {string} decodedString Raw response body string from the monitor (e.g. JSON text). May be null/undefined.
+     * @param {string} decodedString Decompressed response body string (e.g. JSON text). May be null/undefined.
      */
     constructor(decodedString) {
         super();
@@ -135,12 +137,13 @@ class NotificationProvider {
             serviceStatus = heartbeatJSON["status"] === DOWN ? "🔴 Down" : "✅ Up";
         }
 
-        // Expose response as Drop: string (request/valueOf) + parsed JSON (requestJSON), cached
+        // Decode compressed response (Brotli+base64) here and expose as Drop: request = decoded string, requestJSON = parsed. Both cached.
         let contextHeartbeatJSON = heartbeatJSON;
         if (heartbeatJSON !== null && heartbeatJSON.response != null && typeof heartbeatJSON.response === "string") {
+            const decodedString = await Heartbeat.decodeResponseValue(heartbeatJSON.response);
             contextHeartbeatJSON = {
                 ...heartbeatJSON,
-                response: new ResponseDrop(heartbeatJSON.response),
+                response: new ResponseDrop(decodedString),
             };
         }
 
