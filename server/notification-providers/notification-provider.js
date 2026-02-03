@@ -9,7 +9,7 @@ const { HttpsProxyAgent } = require("https-proxy-agent");
  */
 class ResponseDrop extends Drop {
     /**
-     * @param decodedString
+     * @param {string} decodedString Raw response body string from the monitor (e.g. JSON text). May be null/undefined.
      */
     constructor(decodedString) {
         super();
@@ -18,21 +18,21 @@ class ResponseDrop extends Drop {
     }
 
     /**
-     *
+     * @returns {string} The raw response string (for Liquid valueOf / string output).
      */
     valueOf() {
         return this._decoded;
     }
 
     /**
-     *
+     * @returns {string} The raw response string (alias for templates).
      */
     request() {
         return this._decoded;
     }
 
     /**
-     *
+     * @returns {object|null} Parsed JSON from the response, or null if invalid/empty. Cached after first parse.
      */
     requestJSON() {
         if (this._parsed === undefined) {
