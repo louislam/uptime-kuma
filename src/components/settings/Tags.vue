@@ -19,7 +19,7 @@
                     <Tag :item="tag" />
                 </div>
                 <div class="col-5 px-1 d-none d-sm-block">
-                    <div>{{ monitorsByTag(tag.id).length }} {{ $tc("Monitor", monitorsByTag(tag.id).length) }}</div>
+                    <div>{{ $t("Monitors", monitorsByTag(tag.id).length) }}</div>
                 </div>
                 <div class="col-2 pe-2 pe-lg-3 d-flex justify-content-end">
                     <button
