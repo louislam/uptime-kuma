@@ -1442,5 +1442,16 @@
     "TLS Alert Spec": "RFC 8446",
     "mariadbSocketPathDetectedHelptext": "Connecting to the database as specified via the {0} environment variable.",
     "Expand All Groups": "Expand All Groups",
-    "Collapse All Groups": "Collapse All Groups"
+    "Collapse All Groups": "Collapse All Groups",
+    "Webhook Payload Fields": "Webhook Payload Fields",
+    "halopsa_payload_desc": "The following fields are sent to your Halo PSA webhook:",
+    "halopsa_field_title": "Alert title (always 'Uptime Kuma Alert')",
+    "halopsa_field_status": "Monitor status: UP, DOWN, NOTIFICATION, or UNKNOWN",
+    "halopsa_field_monitor": "Name of the monitor",
+    "halopsa_field_monitor_id": "Unique monitor identifier (null for test notifications) - Use this to match alerts to tickets",
+    "halopsa_field_message": "Full alert message with status and details",
+    "halopsa_field_timestamp": "Event timestamp in ISO 8601 format",
+    "halopsa_field_uptime_kuma_version": "Uptime Kuma version number",
+    "halopsa_id_usage_hint": "💡 Tip: Use monitor_id to reliably match alerts to tickets, and heartbeat_id to track event history",
+    "halopsa_setup_step5": "Configure runbook to use monitor_id for matching alerts to existing tickets"
 }
