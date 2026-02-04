@@ -5,46 +5,81 @@ const { HttpsProxyAgent } = require("https-proxy-agent");
 const Heartbeat = require("../model/heartbeat");
 
 /**
- * LiquidJS Drop for heartbeat response. request/valueOf = decompressed string; requestJSON = parsed JSON from that string.
- * Both cached. Compression decoding (Brotli+base64) is done in renderTemplate before creating this Drop.
+ * LiquidJS Drop for heartbeats.
+ *
+ * Exposes the stored HTTP response (which is compressed in the DB) to templates
+ * as both a string (`request`) and parsed JSON (`requestJSON`), cached so templates
+ * don't need to deal with compression or repeated JSON.parse.
+ *
+ * Also forwards existing heartbeat fields (status, msg, time, etc.) so
+ * `heartbeatJSON` behaves like the original object with a few extra helpers.
+ *
  * See https://liquidjs.com/tutorials/drops.html
  */
-class ResponseDrop extends Drop {
+class HeartbeatDrop extends Drop {
     /**
-     * @param {string} decodedString Decompressed response body string (e.g. JSON text). May be null/undefined.
+     * @param {object} heartbeat Original heartbeat JSON (including `response` as stored in DB).
      */
-    constructor(decodedString) {
+    constructor(heartbeat) {
         super();
-        this._decoded = decodedString ?? "";
+        this._heartbeat = heartbeat || {};
+        this._decoded = undefined;
         this._parsed = undefined;
+
+        // Make existing heartbeat fields (status, msg, time, etc.) directly accessible.
+        Object.assign(this, this._heartbeat);
     }
 
     /**
-     * @returns {string} The raw response string (for Liquid valueOf / string output).
+     * Internal helper to ensure we have a decoded response string cached.
+     * Uses the existing Heartbeat.decodeResponseValue helper.
+     * @returns {Promise<void>} Resolves once the decoded string is cached.
+     */
+    async _ensureDecoded() {
+        if (this._decoded !== undefined) {
+            return;
+        }
+        this._decoded = await Heartbeat.decodeResponseValue(this._heartbeat.response);
+    }
+
+    /**
+     * Decoded HTTP response body as a string.
+     * @returns {Promise<string>} Decoded response body.
+     */
+    get request() {
+        return (async () => {
+            await this._ensureDecoded();
+            return this._decoded ?? "";
+        })();
+    }
+
+    /**
+     * Parsed HTTP response body as JSON, or null if it cannot be parsed.
+     * @returns {Promise<object|null>} Parsed JSON object or null on failure.
+     */
+    get requestJSON() {
+        return (async () => {
+            await this._ensureDecoded();
+
+            if (this._parsed === undefined) {
+                try {
+                    this._parsed = this._decoded ? JSON.parse(this._decoded) : null;
+                } catch (e) {
+                    this._parsed = null;
+                }
+            }
+
+            return this._parsed;
+        })();
+    }
+
+    /**
+     * When coerced to a primitive value (e.g. via the json filter),
+     * treat this Drop like the underlying heartbeat object.
+     * @returns {object} Original heartbeat fields without helpers.
      */
     valueOf() {
-        return this._decoded;
-    }
-
-    /**
-     * @returns {string} The raw response string (alias for templates).
-     */
-    request() {
-        return this._decoded;
-    }
-
-    /**
-     * @returns {object|null} Parsed JSON from the response, or null if invalid/empty. Cached after first parse.
-     */
-    requestJSON() {
-        if (this._parsed === undefined) {
-            try {
-                this._parsed = this._decoded ? JSON.parse(this._decoded) : null;
-            } catch (e) {
-                this._parsed = null;
-            }
-        }
-        return this._parsed;
+        return this._heartbeat;
     }
 }
 
@@ -137,14 +172,13 @@ class NotificationProvider {
             serviceStatus = heartbeatJSON["status"] === DOWN ? "🔴 Down" : "✅ Up";
         }
 
-        // Decode compressed response (Brotli+base64) here and expose as Drop: request = decoded string, requestJSON = parsed. Both cached.
+        // Wrap heartbeat in a Drop so templates get:
+        // - existing heartbeat fields (status, msg, time, etc.)
+        // - decoded response as `request`
+        // - parsed response JSON as `requestJSON`
         let contextHeartbeatJSON = heartbeatJSON;
-        if (heartbeatJSON !== null && heartbeatJSON.response != null && typeof heartbeatJSON.response === "string") {
-            const decodedString = await Heartbeat.decodeResponseValue(heartbeatJSON.response);
-            contextHeartbeatJSON = {
-                ...heartbeatJSON,
-                response: new ResponseDrop(decodedString),
-            };
+        if (heartbeatJSON !== null) {
+            contextHeartbeatJSON = new HeartbeatDrop(heartbeatJSON);
         }
 
         const context = {
