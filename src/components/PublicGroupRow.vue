@@ -3,30 +3,42 @@
         <div class="col-9 col-xl-6 small-padding">
             <div class="info">
                 <font-awesome-icon
-                    v-if="editMode"
+                    v-if="monitor.showChildMonitors && monitor.childrenList.length"
+                    :icon="isExpanded ? 'chevron-down' : 'chevron-right'"
+                    class="group-toggle-icon me-2"
+                    @click.stop="toggleGroupExpand"
+                />
+
+                <font-awesome-icon
+                    v-if="editMode && !isChild"
                     icon="arrows-alt-v"
                     class="action drag me-3"
                 />
+
                 <font-awesome-icon
-                    v-if="editMode"
+                    v-if="editMode && !isChild"
                     icon="times"
                     class="action remove me-3"
                     @click.stop="onRemoveClick"
                 />
 
                 <font-awesome-icon
-                    v-if="editMode"
+                    v-if="editMode && !isChild"
                     icon="cog"
                     class="action me-3 ms-0"
                     :class="{ 'link-active': true, 'btn-link': true }"
                     data-testid="monitor-settings"
                     @click.stop="onSettingsClick"
                 />
+
+                <span v-if="displayIndicator" class="nested-indicator">{{ displayIndicator }}</span>
+
                 <Status
                     v-if="showOnlyLastHeartbeat"
                     :status="statusOfLastHeartbeat(monitor.id)"
                 />
                 <Uptime v-else :monitor="monitor" type="24" :pill="true" />
+
                 <a
                     v-if="showLink(monitor)"
                     :href="monitor.url"
@@ -37,6 +49,7 @@
                 >
                     {{ monitor.name }}
                 </a>
+
                 <p v-else class="item-name" data-testid="monitor-name">
                     {{ monitor.name }}
                 </p>
@@ -65,10 +78,27 @@
                 </div>
             </div>
         </div>
-        <div :key="heartbeatKey" class="col-3 col-xl-6">
+        
+        <div :key="heartbeatKey" class="col-6">
             <HeartbeatBar size="mid" :monitor-id="monitor.id" />
         </div>
     </div>
+
+    <transition name="slide-fade-up">
+        <div v-if="monitor.showChildMonitors && monitor.childrenList.length && isExpanded" class="nested-monitors">
+            <div v-for="child in monitor.childrenList" :key="child.id" class="item nested-item" data-testid="nested-monitor">
+                <PublicGroupRow
+                    :monitor="child"
+                    :show-tags="showTags"
+                    :show-certificate-expiry="showCertificateExpiry"
+                    :edit-mode="editMode"
+                    :heartbeat-key="$root.userHeartbeatBar"
+                    name-test-id="nested-monitor-name"
+                    :is-child="true"
+                />
+            </div>
+        </div>
+    </transition>
 </template>
 
 <script>
@@ -105,6 +135,12 @@ export default {
             default: null,
         },
 
+        /** Is this a child monitor of monitor with group type */
+        isChild: {
+            type: Boolean,
+            default: false,
+        },
+
         /** Should tags be shown? */
         showTags: {
             type: Boolean,
@@ -129,13 +165,34 @@ export default {
             default: null,
         },
 
+        /** Indicator to show before the item name */
+        indicator: {
+            type: String,
+            default: "",
+        },
+
         /** Should only the last heartbeat be shown? */
         showOnlyLastHeartbeat: {
             type: Boolean,
         },
     },
     data() {
-        return {};
+        return {
+            isExpanded: false,
+        };
+    },
+    computed: {
+        displayIndicator() {
+            if (this.indicator) {
+                return this.indicator;
+            }
+
+            if (this.isChild) {
+                return "└─";
+            }
+
+            return "";
+        }
     },
     beforeMount() {
         try {
@@ -151,6 +208,25 @@ export default {
         }
     },
     methods: {
+        /**
+         * Toggle expand/collapse state for a group row
+         * @returns {void}
+         */
+        toggleGroupExpand() {
+            this.isExpanded = !this.isExpanded;
+
+            try {
+                let storage = window.localStorage.getItem("publicGroupRowExpanded");
+                let storageObject = {};
+                if (storage !== null) {
+                    storageObject = JSON.parse(storage);
+                }
+                storageObject[`monitor_${this.monitor.id}`] = this.isExpanded;
+                window.localStorage.setItem("publicGroupRowExpanded", JSON.stringify(storageObject));
+            } catch (e) {
+                // ignore
+            }
+        },
         /**
          * Handle remove click
          * @param {Event} e Click event
@@ -240,6 +316,31 @@ export default {
 <style lang="scss" scoped>
 @import "../assets/vars";
 
+.nested-indicator {
+    color: #999;
+    margin-right: 5px;
+    font-family: monospace;
+}
+
+.group-toggle-icon {
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s ease;
+    font-size: 0.9em;
+}
+
+.group-toggle-icon:hover {
+    color: $primary;
+}
+
+.dark .group-toggle-icon {
+    color: #aaa;
+}
+
+.dark .group-toggle-icon:hover {
+    color: $primary;
+}
+
 .item-name {
     padding-left: 5px;
     padding-right: 5px;
@@ -247,13 +348,33 @@ export default {
     display: inline-block;
 }
 
-.btn-link {
-    color: #bbbbbb;
-    margin-left: 5px;
+.nested-item {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-left: 3px solid rgba(0, 0, 0, 0.1);
 }
 
-.link-active {
-    color: $primary;
+.dark .nested-item {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+.nested-monitors {
+    margin-left: 0;
+    margin-top: 0;
+    animation: slide-down 0.3s ease-out;
+    overflow: hidden;
+}
+
+@keyframes slide-down {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        max-height: 2000px;
+    }
 }
 
 </style>

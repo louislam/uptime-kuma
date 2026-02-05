@@ -88,6 +88,7 @@ class Monitor extends BeanModel {
             name: this.name,
             sendUrl: this.sendUrl,
             type: this.type,
+            showChildMonitors: this.showChildMonitors
         };
 
         if (this.sendUrl) {
@@ -106,6 +107,18 @@ class Monitor extends BeanModel {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
+        }
+
+        // If this is a group monitor, include its children recursively
+        if (this.type === "group") {
+            const children = await Monitor.getChildren(this.id);
+
+            obj.childrenList = [];
+
+            for (const childData of children) {
+                const childMonitor = await R.load("monitor", childData.id);
+                obj.childrenList.push(await childMonitor.toPublicJSON(showTags, certExpiry));
+            }
         }
 
         return obj;

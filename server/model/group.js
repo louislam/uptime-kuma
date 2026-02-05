@@ -35,7 +35,8 @@ class Group extends BeanModel {
             SELECT 
                 monitor.*,
                 monitor_group.send_url,
-                monitor_group.custom_url
+                monitor_group.custom_url,
+                monitor_group.show_child_monitors
             FROM monitor
             LEFT JOIN monitor_group 
                 ON monitor.id = monitor_group.monitor_id

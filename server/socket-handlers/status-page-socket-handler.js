@@ -371,7 +371,7 @@ module.exports.statusPageSocketHandler = (socket) => {
 
                 let monitorOrder = 1;
 
-                for (let monitor of group.monitorList) {
+                for (let monitor of group.monitorList) {                    
                     let relationBean = R.dispense("monitor_group");
                     relationBean.weight = monitorOrder++;
                     relationBean.group_id = groupBean.id;
@@ -383,6 +383,10 @@ module.exports.statusPageSocketHandler = (socket) => {
 
                     if (monitor.url !== undefined) {
                         relationBean.custom_url = monitor.url;
+                    }
+
+                    if (monitor.showChildMonitors !== undefined) {
+                        relationBean.show_child_monitors = monitor.showChildMonitors;
                     }
 
                     await R.store(relationBean);

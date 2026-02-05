@@ -43,6 +43,28 @@
                         </div>
                     </template>
 
+
+                    <template v-if="monitor.type === 'group'">
+                        <div class="my-3 form-check">
+                            <input
+                                id="show-monitors-tree"
+                                v-model="monitor.showChildMonitors"
+                                class="form-check-input"
+                                type="checkbox"
+                                data-testid="show-monitors-tree"
+                                @click="toggleShowChildMonitors(monitor.group_index, monitor.monitor_index)"
+                            />
+                            <label class="form-check-label" for="show-monitors-tree">
+                                <!-- {{ $t("Show Sub Monitors Tree") }} -->
+                                Display Sub-Monitors in Tree Structure
+                            </label>
+                            <div class="form-text">
+                                <!-- {{ $t("Show Sub Monitors Tree Description") }} -->
+                                Enable this option to display sub-monitors in a hierarchical tree structure under the main monitor.
+                            </div>
+                        </div>
+                    </template>
+
                     <button
                         class="btn btn-primary btn-add-group me-2"
                         @click="$refs.badgeLinkGeneratorDialog.show(monitor.id, monitor.name)"
@@ -108,6 +130,8 @@ export default {
                 group_index: group.index,
                 isClickAble: this.showLink(monitor),
                 url: monitor.element.url,
+                type: monitor.element.type,
+                showChildMonitors: !!monitor.element.showChildMonitors,
             };
 
             this.MonitorSettingDialog.show();
@@ -157,6 +181,19 @@ export default {
          */
         changeUrl(groupIndex, index, value) {
             this.$root.publicGroupList[groupIndex].monitorList[index].url = value;
+        },
+
+        /**
+         * Toggle the value of showMonitorsTree
+         * @param {number} groupIndex Index of group monitor is member of
+         * @param {number} index Index of monitor within group
+         * @returns {void}
+         */
+        toggleShowChildMonitors(groupIndex, index) {
+            // this.$root.publicGroupList[groupIndex].monitorList[index].showMonitorsTree =
+            //     !this.$root.publicGroupList[groupIndex].monitorList[index].showMonitorsTree;
+            this.$root.publicGroupList[groupIndex].monitorList[index].showChildMonitors =
+                !this.$root.publicGroupList[groupIndex].monitorList[index].showChildMonitors;
         },
     },
 };
