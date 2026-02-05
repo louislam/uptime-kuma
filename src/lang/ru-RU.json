@@ -1546,5 +1546,7 @@
     "See Jira Cloud Docs": "См. документацию Jira Cloud",
     "aboutJiraCloudId": "Подробнее о Jira Cloud ID: {0}",
     "see Jira Cloud Docs": "см. документацию Jira Cloud",
-    "Jira Service Management": "Jira Service Management"
+    "Jira Service Management": "Jira Service Management",
+    "Show Child Monitors": "Показать дочерние мониторы",
+    "Show Child Monitors Description": "Если включено, страница статуса также будет отображать дочерние мониторы этого монитора."
 }

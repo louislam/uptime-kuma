@@ -1200,5 +1200,7 @@
     "wsCodeDescription": "Для отримання додаткової інформації про коди стану, будь ласка, зверніться до {rfc6455}",
     "Subprotocol(s)": "Підпротокол(и)",
     "ignoreSecWebsocketAcceptHeaderDescription": "Позволяє серверу не відповідати заголовком Sec-WebSocket-Accept, якщо оновлення веб-сокета пройшло успішно.",
-    "Ignore Sec-WebSocket-Accept header": "Ігнорувати {0} заголовок"
+    "Ignore Sec-WebSocket-Accept header": "Ігнорувати {0} заголовок",
+    "Show Child Monitors": "Показати дочірні монітори",
+    "Show Child Monitors Description": "Якщо включено, сторінка стану також відображатиме дочірні монітори цього монітора."
 }

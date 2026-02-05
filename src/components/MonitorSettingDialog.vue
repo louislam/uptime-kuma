@@ -55,12 +55,10 @@
                                 @click="toggleShowChildMonitors(monitor.group_index, monitor.monitor_index)"
                             />
                             <label class="form-check-label" for="show-monitors-tree">
-                                <!-- {{ $t("Show Sub Monitors Tree") }} -->
-                                Display Sub-Monitors in Tree Structure
+                                {{ $t("Show Child Monitors") }}
                             </label>
                             <div class="form-text">
-                                <!-- {{ $t("Show Sub Monitors Tree Description") }} -->
-                                Enable this option to display sub-monitors in a hierarchical tree structure under the main monitor.
+                                {{ $t("Show Child Monitors Description") }}
                             </div>
                         </div>
                     </template>
