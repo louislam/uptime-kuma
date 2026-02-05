@@ -9,11 +9,7 @@
                     @click.stop="toggleGroupExpand"
                 />
 
-                <font-awesome-icon
-                    v-if="editMode && !isChild"
-                    icon="arrows-alt-v"
-                    class="action drag me-3"
-                />
+                <font-awesome-icon v-if="editMode && !isChild" icon="arrows-alt-v" class="action drag me-3" />
 
                 <font-awesome-icon
                     v-if="editMode && !isChild"
@@ -33,10 +29,7 @@
 
                 <span v-if="displayIndicator" class="nested-indicator">{{ displayIndicator }}</span>
 
-                <Status
-                    v-if="showOnlyLastHeartbeat"
-                    :status="statusOfLastHeartbeat(monitor.id)"
-                />
+                <Status v-if="showOnlyLastHeartbeat" :status="statusOfLastHeartbeat(monitor.id)" />
                 <Uptime v-else :monitor="monitor" type="24" :pill="true" />
 
                 <a
@@ -55,9 +48,7 @@
                 </p>
             </div>
             <div class="extra-info">
-                <div
-                    v-if="showCertificateExpiry && monitor.certExpiryDaysRemaining"
-                >
+                <div v-if="showCertificateExpiry && monitor.certExpiryDaysRemaining">
                     <Tag
                         :item="{
                             name: $t('Cert Exp.'),
@@ -68,17 +59,11 @@
                     />
                 </div>
                 <div v-if="showTags">
-                    <Tag
-                        v-for="tag in monitor.tags"
-                        :key="tag"
-                        :item="tag"
-                        :size="'sm'"
-                        data-testid="monitor-tag"
-                    />
+                    <Tag v-for="tag in monitor.tags" :key="tag" :item="tag" :size="'sm'" data-testid="monitor-tag" />
                 </div>
             </div>
         </div>
-        
+
         <div :key="heartbeatKey" class="col-6">
             <HeartbeatBar size="mid" :monitor-id="monitor.id" />
         </div>
@@ -86,7 +71,12 @@
 
     <transition name="slide-fade-up">
         <div v-if="monitor.showChildMonitors && monitor.childrenList.length && isExpanded" class="nested-monitors">
-            <div v-for="child in monitor.childrenList" :key="child.id" class="item nested-item" data-testid="nested-monitor">
+            <div
+                v-for="child in monitor.childrenList"
+                :key="child.id"
+                class="item nested-item"
+                data-testid="nested-monitor"
+            >
                 <PublicGroupRow
                     :monitor="child"
                     :show-tags="showTags"
@@ -107,7 +97,6 @@ import Status from "./Status.vue";
 import Uptime from "./Uptime.vue";
 import Tag from "./Tag.vue";
 
-
 export default {
     name: "PublicGroupRow",
     components: {
@@ -120,7 +109,7 @@ export default {
         /** Monitor or group element to display */
         monitor: {
             type: Object,
-            required: true
+            required: true,
         },
 
         /** Callback for remove click */
@@ -129,7 +118,7 @@ export default {
             default: null,
         },
 
-            /** Callback for settings click */
+        /** Callback for settings click */
         onSettings: {
             type: Function,
             default: null,
@@ -161,7 +150,7 @@ export default {
 
         /** Key to force re-rendering of HeartbeatBar */
         heartbeatKey: {
-            type: [ String, Number ],
+            type: [String, Number],
             default: null,
         },
 
@@ -192,7 +181,7 @@ export default {
             }
 
             return "";
-        }
+        },
     },
     beforeMount() {
         try {
@@ -308,8 +297,7 @@ export default {
             let lastHeartbeat = heartbeats[heartbeats.length - 1];
             return lastHeartbeat?.status;
         },
-
-    }
+    },
 };
 </script>
 
@@ -376,5 +364,4 @@ export default {
         max-height: 2000px;
     }
 }
-
 </style>

@@ -145,7 +145,7 @@ export default {
         updateGroup(groupIndex, updates) {
             Object.assign(this.$root.publicGroupList[groupIndex], updates);
         },
-    }
+    },
 };
 </script>
 

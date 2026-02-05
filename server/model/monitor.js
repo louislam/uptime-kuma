@@ -88,7 +88,7 @@ class Monitor extends BeanModel {
             name: this.name,
             sendUrl: this.sendUrl,
             type: this.type,
-            showChildMonitors: this.showChildMonitors
+            showChildMonitors: this.showChildMonitors,
         };
 
         if (this.sendUrl) {

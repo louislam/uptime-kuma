@@ -84,7 +84,7 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         );
 
         // Expand monitor list to include children of group monitors
-        let allMonitorIDs = [ ...monitorIDList ];
+        let allMonitorIDs = [...monitorIDList];
 
         for (let monitorID of monitorIDList) {
             // Check if this monitor is a group type
@@ -99,10 +99,11 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
         }
 
         // Remove duplicates
-        allMonitorIDs = [ ...new Set(allMonitorIDs) ];
+        allMonitorIDs = [...new Set(allMonitorIDs)];
 
         for (let monitorID of allMonitorIDs) {
-            let list = await R.getAll(`
+            let list = await R.getAll(
+                `
                     SELECT * FROM heartbeat
                     WHERE monitor_id = ?
                     ORDER BY time DESC

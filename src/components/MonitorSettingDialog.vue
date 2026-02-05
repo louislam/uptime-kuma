@@ -43,7 +43,6 @@
                         </div>
                     </template>
 
-
                     <template v-if="monitor.type === 'group'">
                         <div class="my-3 form-check">
                             <input
