@@ -935,7 +935,7 @@ async function checkCertExpiryNotifications(monitor, tlsInfoObject) {
     let notifyDays = await Settings.get("tlsExpiryNotifyDays");
     if (notifyDays == null || !Array.isArray(notifyDays)) {
         // Reset Default
-        await Settings.setSetting("tlsExpiryNotifyDays", [7, 14, 21], "general");
+        await Settings.set("tlsExpiryNotifyDays", [7, 14, 21], "general");
         notifyDays = [7, 14, 21];
     }
 
