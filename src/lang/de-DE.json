@@ -1538,5 +1538,16 @@
     "ntfyNotificationTemplateFallback": "Leer lassen, um das Standard-Uptime-Kuma-Format zu verwenden",
     "Protocol": "Protokoll",
     "Location": "Standort",
-    "Monitor Subtype": "Monitor-Untertyp"
+    "Monitor Subtype": "Monitor-Untertyp",
+    "discordMessageFormat": "Nachrichtenformat",
+    "discordMessageFormatNormal": "Normal (Rich Embeds)",
+    "discordUseMessageTemplate": "Benutzerdefinierte Nachrichtenvorlage verwenden",
+    "discordMessageTemplate": "Nachrichtenvorlage",
+    "slackIncludeGroupName": "Monitorgruppenname einbeziehen",
+    "slackUseTemplate": "Benutzerdefinierte Nachrichtenvorlage verwenden",
+    "slackIncludeGroupNameDescription": "Wenn aktiviert, wird der Monitorgruppenpfad in Benachrichtigungen eingefügt, um Monitore mit gleichem Namen in verschiedenen Gruppen zu unterscheiden.",
+    "slackUseTemplateDescription": "Wenn aktiviert, wird die Nachricht mit einer benutzerdefinierten Vorlage gesendet. Du kannst Liquid-Templating verwenden, um Monitorgruppen-Informationen über monitorJSON.path oder monitorJSON.pathName einzubinden.",
+    "discordMessageFormatMinimalist": "Minimalistisch (Kurzstatus)",
+    "discordMessageFormatCustom": "Benutzerdefinierte Vorlage",
+    "discordUseMessageTemplateDescription": "Wenn aktiviert, wird die Nachricht mit einer benutzerdefinierten Vorlage (LiquidJS) gesendet. Leer lassen, um das Standard-Format von Uptime Kuma zu verwenden."
 }
