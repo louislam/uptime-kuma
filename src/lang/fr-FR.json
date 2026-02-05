@@ -1541,5 +1541,16 @@
     "globalpingApiTokenDescription": "Obtenez votre jeton d'API Globalping à {0}.",
     "GlobalpingHostname": "Une cible de mesure accessible publiquement. Généralement un nom d'hôte ou une adresse IPv4/IPv6, selon le type de mesure.",
     "Check for": "Vérifiez",
-    "Jira Service Management": "Gestion des services Jira"
+    "Jira Service Management": "Gestion des services Jira",
+    "discordMessageFormatNormal": "Normal (embeds enrichis)",
+    "discordMessageFormatMinimalist": "Minimaliste (statut court)",
+    "discordMessageFormatCustom": "Modèle personnalisé",
+    "discordMessageTemplate": "Modèle de message",
+    "slackIncludeGroupName": "Inclure le nom du groupe de sondes",
+    "slackIncludeGroupNameDescription": "Si activé, le chemin du groupe de sondes sera inclus dans les notifications afin d’aider à distinguer les sondes portant le même nom dans des groupes différents.",
+    "slackUseTemplate": "Utiliser un modèle de message personnalisé",
+    "slackUseTemplateDescription": "Si activé, le message sera envoyé à l’aide d’un modèle personnalisé. Vous pouvez utiliser le templating Liquid pour inclure les informations du groupe de sondes via monitorJSON.path ou monitorJSON.pathName.",
+    "discordMessageFormat": "Format du message",
+    "discordUseMessageTemplate": "Utiliser un modèle de message personnalisé",
+    "discordUseMessageTemplateDescription": "Si cette option est activée, le message sera envoyé à l'aide d'un modèle personnalisé (LiquidJS). Laissez ce champ vide pour utiliser le format Uptime Kuma par défaut."
 }
