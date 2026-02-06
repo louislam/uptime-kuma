@@ -209,7 +209,9 @@ export default {
         },
 
         monitorListStyle() {
-            let listHeaderHeight = 107;
+            // The header height has to be changed in case it is modified in the future.
+            // +10px is the margin-bottom of the header
+            let listHeaderHeight = 58 + 10;
 
             // Only add extra height when selection row is visible
             if (this.selectMode && this.selectedMonitorCount > 0) {
