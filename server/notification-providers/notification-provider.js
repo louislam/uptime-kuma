@@ -57,11 +57,14 @@ class HeartbeatDrop extends Drop {
     }
 
     /**
-     * For filters like json: return the plain heartbeat (no request/requestJSON).
-     * @returns {object} Original heartbeat fields without helpers.
+     * When the Drop is used as a value, return heartbeat fields plus request and requestJSON so they can be accessed.
+     * @returns {object} Heartbeat fields plus request and requestJSON.
      */
     valueOf() {
-        return this._heartbeat;
+        return Object.assign({}, this._heartbeat, {
+            request: this.request.bind(this),
+            requestJSON: this.requestJSON.bind(this),
+        });
     }
 }
 
