@@ -57,6 +57,15 @@ class HeartbeatDrop extends Drop {
     }
 
     /**
+     * LiquidJS calls this for property names the Drop doesn't have; we return the value from the heartbeat.
+     * @param {string} key Property name (e.g. status, msg, time).
+     * @returns {*} Value from the heartbeat, or undefined.
+     */
+    liquidMethodMissing(key) {
+        return this._heartbeat[key];
+    }
+
+    /**
      * When the Drop is used as a value, return heartbeat fields plus request and requestJSON so they can be accessed.
      * @returns {object} Heartbeat fields plus request and requestJSON.
      */
@@ -157,18 +166,10 @@ class NotificationProvider {
             serviceStatus = heartbeatJSON["status"] === DOWN ? "🔴 Down" : "✅ Up";
         }
 
-        // Templates get heartbeat fields (status, msg, time, etc.) plus request() and requestJSON(). Heartbeat data stays in one place; we don't duplicate it.
+        // Drop exposes request(), requestJSON(), and heartbeat fields via liquidMethodMissing.
         let contextHeartbeatJSON = heartbeatJSON;
         if (heartbeatJSON !== null) {
-            const drop = new HeartbeatDrop(heartbeatJSON);
-            contextHeartbeatJSON = new Proxy(drop, {
-                get(target, prop) {
-                    if (Object.prototype.hasOwnProperty.call(target, prop)) {
-                        return target[prop];
-                    }
-                    return target._heartbeat[prop];
-                },
-            });
+            contextHeartbeatJSON = new HeartbeatDrop(heartbeatJSON);
         }
 
         const context = {
