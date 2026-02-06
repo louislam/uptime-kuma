@@ -25,57 +25,39 @@ class HeartbeatDrop extends Drop {
         this._heartbeat = heartbeat || {};
         this._decoded = undefined;
         this._parsed = undefined;
-
-        // Make existing heartbeat fields (status, msg, time, etc.) directly accessible.
-        Object.assign(this, this._heartbeat);
     }
 
     /**
-     * Internal helper to ensure we have a decoded response string cached.
-     * Uses the existing Heartbeat.decodeResponseValue helper.
-     * @returns {Promise<void>} Resolves once the decoded string is cached.
-     */
-    async _ensureDecoded() {
-        if (this._decoded !== undefined) {
-            return;
-        }
-        this._decoded = await Heartbeat.decodeResponseValue(this._heartbeat.response);
-    }
-
-    /**
-     * Decoded HTTP response body as a string.
+     * Decoded response body. Cached after first call.
      * @returns {Promise<string>} Decoded response body.
      */
-    get request() {
-        return (async () => {
-            await this._ensureDecoded();
-            return this._decoded ?? "";
-        })();
+    async request() {
+        if (this._decoded !== undefined) {
+            return this._decoded;
+        }
+        this._decoded = await Heartbeat.decodeResponseValue(this._heartbeat.response);
+        return this._decoded ?? "";
     }
 
     /**
-     * Parsed HTTP response body as JSON, or null if it cannot be parsed.
+     * Response body as JSON. Uses request() and caches the result.
      * @returns {Promise<object|null>} Parsed JSON object or null on failure.
      */
-    get requestJSON() {
-        return (async () => {
-            await this._ensureDecoded();
-
-            if (this._parsed === undefined) {
-                try {
-                    this._parsed = this._decoded ? JSON.parse(this._decoded) : null;
-                } catch (e) {
-                    this._parsed = null;
-                }
-            }
-
+    async requestJSON() {
+        if (this._parsed !== undefined) {
             return this._parsed;
-        })();
+        }
+        const decoded = await this.request();
+        try {
+            this._parsed = decoded ? JSON.parse(decoded) : null;
+        } catch (e) {
+            this._parsed = null;
+        }
+        return this._parsed;
     }
 
     /**
-     * When coerced to a primitive value (e.g. via the json filter),
-     * treat this Drop like the underlying heartbeat object.
+     * For filters like json: return the plain heartbeat (no request/requestJSON).
      * @returns {object} Original heartbeat fields without helpers.
      */
     valueOf() {
@@ -172,13 +154,18 @@ class NotificationProvider {
             serviceStatus = heartbeatJSON["status"] === DOWN ? "🔴 Down" : "✅ Up";
         }
 
-        // Wrap heartbeat in a Drop so templates get:
-        // - existing heartbeat fields (status, msg, time, etc.)
-        // - decoded response as `request`
-        // - parsed response JSON as `requestJSON`
+        // Templates get heartbeat fields (status, msg, time, etc.) plus request() and requestJSON(). Heartbeat data stays in one place; we don't duplicate it.
         let contextHeartbeatJSON = heartbeatJSON;
         if (heartbeatJSON !== null) {
-            contextHeartbeatJSON = new HeartbeatDrop(heartbeatJSON);
+            const drop = new HeartbeatDrop(heartbeatJSON);
+            contextHeartbeatJSON = new Proxy(drop, {
+                get(target, prop) {
+                    if (Object.prototype.hasOwnProperty.call(target, prop)) {
+                        return target[prop];
+                    }
+                    return target._heartbeat[prop];
+                },
+            });
         }
 
         const context = {
