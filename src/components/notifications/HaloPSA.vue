@@ -50,6 +50,45 @@
             {{ $t("halopsa_password_desc") }}
         </div>
     </div>
+    <div class="mb-3">
+        <div class="form-text">
+            <b>{{ $t("Webhook Payload Fields") }}:</b>
+            <p class="mb-2 mt-2">{{ $t("halopsa_payload_desc") }}</p>
+            <ul class="mb-2">
+                <li>
+                    <b>title</b>
+                    : {{ $t("halopsa_field_title") }}
+                </li>
+                <li>
+                    <b>status</b>
+                    : {{ $t("halopsa_field_status") }}
+                </li>
+                <li>
+                    <b>monitor</b>
+                    : {{ $t("halopsa_field_monitor") }}
+                </li>
+                <li>
+                    <b>monitor_id</b>
+                    : {{ $t("halopsa_field_monitor_id") }}
+                </li>
+                <li>
+                    <b>message</b>
+                    : {{ $t("halopsa_field_message") }}
+                </li>
+                <li>
+                    <b>timestamp</b>
+                    : {{ $t("halopsa_field_timestamp") }}
+                </li>
+                <li>
+                    <b>uptime_kuma_version</b>
+                    : {{ $t("halopsa_field_uptime_kuma_version") }}
+                </li>
+            </ul>
+            <p class="mb-0 text-muted">
+                <small>{{ $t("halopsa_id_usage_hint") }}</small>
+            </p>
+        </div>
+    </div>
 
     <div class="mb-3">
         <div class="form-text">
@@ -59,6 +98,7 @@
                 <li>{{ $t("halopsa_setup_step2") }}</li>
                 <li>{{ $t("halopsa_setup_step3") }}</li>
                 <li>{{ $t("halopsa_setup_step4") }}</li>
+                <li>{{ $t("halopsa_setup_step5") }}</li>
             </ol>
         </div>
     </div>
