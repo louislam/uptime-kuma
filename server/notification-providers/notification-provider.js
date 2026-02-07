@@ -31,6 +31,22 @@ class HeartbeatDrop extends Drop {
     }
 
     /**
+     * Decode compressed response payload (base64 + brotli). Used by request() and by tests.
+     * @param {string|null} response Encoded response payload.
+     * @returns {Promise<string|null>} Decoded response payload.
+     */
+    static async decodeResponseValue(response) {
+        if (!response) {
+            return response;
+        }
+        try {
+            return (await brotliDecompress(Buffer.from(response, "base64"))).toString("utf8");
+        } catch (error) {
+            return response;
+        }
+    }
+
+    /**
      * Decoded response body. Cached after first call.
      * @returns {Promise<string>} Decoded response body.
      */
@@ -38,17 +54,8 @@ class HeartbeatDrop extends Drop {
         if (this._decoded !== undefined) {
             return this._decoded;
         }
-        const raw = this._heartbeat.response;
-        if (!raw) {
-            this._decoded = "";
-            return this._decoded;
-        }
-        try {
-            this._decoded = (await brotliDecompress(Buffer.from(raw, "base64"))).toString("utf8") ?? "";
-        } catch (error) {
-            this._decoded = raw;
-        }
-        return this._decoded;
+        this._decoded = await HeartbeatDrop.decodeResponseValue(this._heartbeat.response);
+        return this._decoded ?? "";
     }
 
     /**
@@ -283,3 +290,4 @@ class NotificationProvider {
 }
 
 module.exports = NotificationProvider;
+module.exports.HeartbeatDrop = HeartbeatDrop;

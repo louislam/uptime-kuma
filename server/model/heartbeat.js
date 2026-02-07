@@ -1,7 +1,4 @@
 const { BeanModel } = require("redbean-node/dist/bean-model");
-const zlib = require("node:zlib");
-const { promisify } = require("node:util");
-const brotliDecompress = promisify(zlib.brotliDecompress);
 
 /**
  * status:
@@ -41,24 +38,6 @@ class Heartbeat extends BeanModel {
             retries: this._retries,
             response: this._response,
         };
-    }
-
-    /**
-     * Decode compressed response payload stored in database.
-     * @param {string|null} response Encoded response payload.
-     * @returns {string|null} Decoded response payload.
-     */
-    static async decodeResponseValue(response) {
-        if (!response) {
-            return response;
-        }
-
-        try {
-            // Offload brotli decode from main event loop to libuv thread pool
-            return (await brotliDecompress(Buffer.from(response, "base64"))).toString("utf8");
-        } catch (error) {
-            return response;
-        }
     }
 }
 
