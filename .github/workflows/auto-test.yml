@@ -21,7 +21,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-22.04, windows-latest, ubuntu-22.04-arm]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-        node: [ 24, 25 ]
+        node: [24, 25]
 
     steps:
       - run: git config --global core.autocrlf false # Mainly for Windows
