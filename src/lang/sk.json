@@ -1500,5 +1500,16 @@
     "See Jira Cloud Docs": "Pozrite si dokumentáciu Jira Cloud",
     "see Jira Cloud Docs": "pozrite si dokumentáciu Jira Cloud",
     "Jira Service Management": "Správa služieb Jira",
-    "aboutJiraCloudId": "Viac informácií o Jira Cloud ID: {0}"
+    "aboutJiraCloudId": "Viac informácií o Jira Cloud ID: {0}",
+    "slackIncludeGroupName": "Zahrnúť názov skupiny monitorov",
+    "slackIncludeGroupNameDescription": "Ak je táto funkcia povolená, cesta skupiny monitorov bude zahrnutá do oznámení, aby sa ľahšie rozlišovali monitory s rovnakým názvom v rôznych skupinách.",
+    "slackUseTemplate": "Použiť vlastnú šablónu správy",
+    "slackUseTemplateDescription": "Ak je táto funkcia povolená, správa bude odoslaná pomocou vlastnej šablóny. Pomocou šablóny Liquid môžete zahrnúť informácie o skupine monitorov prostredníctvom monitorJSON.path alebo monitorJSON.pathName.",
+    "discordMessageFormat": "Formát správy",
+    "discordMessageFormatMinimalist": "Minimalistický (krátky status)",
+    "discordMessageFormatCustom": "Vlastná šablóna",
+    "discordUseMessageTemplate": "Použiť vlastnú šablónu správy",
+    "discordMessageTemplate": "Šablóna správy",
+    "discordMessageFormatNormal": "Normálny (rozšírené vloženie)",
+    "discordUseMessageTemplateDescription": "Ak je táto možnosť povolená, správa bude odoslaná pomocou vlastnej šablóny (LiquidJS). Nechajte pole prázdne, ak chcete použiť predvolený formát Uptime Kuma."
 }
