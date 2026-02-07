@@ -1,6 +1,6 @@
 const express = require("express");
 const { log } = require("../src/util");
-const { ROUTES } = require("../src/routes");
+const { ROUTES } = require("../src/routes.js");
 const expressStaticGzip = require("express-static-gzip");
 const fs = require("fs");
 const path = require("path");

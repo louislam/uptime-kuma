@@ -47,7 +47,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 
 const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
-const { ROUTES, getStatusPageURL } = require("../src/routes");
+const { ROUTES, getStatusPageURL } = require("../src/routes.js");
 const config = require("./config");
 
 log.debug("server", "Arguments");
