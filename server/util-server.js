@@ -34,31 +34,6 @@ const { Kafka, SASLOptions } = require("kafkajs");
 const crypto = require("crypto");
 
 const isWindows = process.platform === /^win/.test(process.platform);
-/**
- * Init or reset JWT secret
- * @returns {Promise<Bean>} JWT secret
- */
-exports.initJWTSecret = async () => {
-    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", ["jwtSecret"]);
-
-    if (!jwtSecretBean) {
-        jwtSecretBean = R.dispense("setting");
-        jwtSecretBean.key = "jwtSecret";
-    }
-
-    jwtSecretBean.value = await passwordHash.generate(genSecret());
-    await R.store(jwtSecretBean);
-    return jwtSecretBean;
-};
-
-/**
- * Decodes a jwt and returns the payload portion without verifying the jwt.
- * @param {string} jwt The input jwt as a string
- * @returns {object} Decoded jwt payload object
- */
-exports.decodeJwt = (jwt) => {
-    return JSON.parse(Buffer.from(jwt.split(".")[1], "base64").toString());
-};
 
 /**
  * Gets an Access Token from an oidc/oauth2 provider

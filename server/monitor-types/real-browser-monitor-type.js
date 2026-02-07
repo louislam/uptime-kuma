@@ -274,6 +274,7 @@ class RealBrowserMonitorType extends MonitorType {
             await page.waitForTimeout(monitor.screenshot_delay);
         }
 
+        // TODO fix without jwtSecret
         let filename = jwt.sign(monitor.id, server.jwtSecret) + ".png";
 
         await page.screenshot({

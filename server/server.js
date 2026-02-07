@@ -105,7 +105,6 @@ const {
     getSettings,
     setSettings,
     setting,
-    initJWTSecret,
     checkLogin,
     doubleCheckPassword,
     shake256,
@@ -225,6 +224,9 @@ let needSetup = false;
         log.error("server", "Failed to prepare your database: " + e.message);
         process.exit(1);
     }
+
+    // Init Better Auth
+    const { auth, getSession } = await import("./better-auth");
 
     // Database should be ready now
     await server.initAfterDatabaseReady();
@@ -374,59 +376,14 @@ let needSetup = false;
             socket.emit("setup");
         }
 
+        // Auth Session
+        const session = await getSession(socket.request.headers.cookie);
+
         // ***************************
         // Public Socket API
         // ***************************
 
-        socket.on("loginByToken", async (token, callback) => {
-            const clientIP = await server.getClientIP(socket);
-
-            log.info("auth", `Login by token. IP=${clientIP}`);
-
-            try {
-                let decoded = jwt.verify(token, server.jwtSecret);
-
-                log.info("auth", "Username from JWT: " + decoded.username);
-
-                let user = await R.findOne("user", " username = ? AND active = 1 ", [decoded.username]);
-
-                if (user) {
-                    // Check if the password changed
-                    if (decoded.h !== shake256(user.password, SHAKE256_LENGTH)) {
-                        throw new Error("The token is invalid due to password change or old token");
-                    }
-
-                    log.debug("auth", "afterLogin");
-                    await afterLogin(socket, user);
-                    log.debug("auth", "afterLogin ok");
-
-                    log.info("auth", `Successfully logged in user ${decoded.username}. IP=${clientIP}`);
-
-                    callback({
-                        ok: true,
-                    });
-                } else {
-                    log.info("auth", `Inactive or deleted user ${decoded.username}. IP=${clientIP}`);
-
-                    callback({
-                        ok: false,
-                        msg: "authUserInactiveOrDeleted",
-                        msgi18n: true,
-                    });
-                }
-            } catch (error) {
-                log.error("auth", `Invalid token. IP=${clientIP}`);
-                if (error.message) {
-                    log.error("auth", error.message, `IP=${clientIP}`);
-                }
-                callback({
-                    ok: false,
-                    msg: "authInvalidToken",
-                    msgi18n: true,
-                });
-            }
-        });
-
+        // TODO: better-auth
         socket.on("login", async (data, callback) => {
             const clientIP = await server.getClientIP(socket);
 
@@ -1409,6 +1366,7 @@ let needSetup = false;
             }
         });
 
+        // TODO: better-auth
         socket.on("changePassword", async (password, callback) => {
             try {
                 checkLogin(socket);
@@ -1835,24 +1793,6 @@ async function initDatabase(testMode = false) {
 
     // Patch the database
     await Database.patch(port, hostname);
-
-    let jwtSecretBean = await R.findOne("setting", " `key` = ? ", ["jwtSecret"]);
-
-    if (!jwtSecretBean) {
-        log.info("server", "JWT secret is not found, generate one.");
-        jwtSecretBean = await initJWTSecret();
-        log.info("server", "Stored JWT secret into database");
-    } else {
-        log.debug("server", "Load JWT secret from database.");
-    }
-
-    // If there is no record in user table, it is a new Uptime Kuma instance, need to setup
-    if ((await R.knex("user").count("id as count").first()).count === 0) {
-        log.info("server", "No user, need setup");
-        needSetup = true;
-    }
-
-    server.jwtSecret = jwtSecretBean.value;
 }
 
 /**

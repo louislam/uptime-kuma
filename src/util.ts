@@ -28,6 +28,13 @@ export const isNode = typeof process !== "undefined" && process?.versions?.node;
  */
 const dayjs = isNode ? require("dayjs") : dayjsFrontend;
 
+export const devOriginList = [
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://localhost:3000",
+    "http://localhost:3001",
+];
+
 export const appName = "Uptime Kuma";
 export const DOWN = 0;
 export const UP = 1;
@@ -254,7 +261,7 @@ class Logger {
      * @param msg Message to write
      * @returns {void}
      */
-    log(module: string, level: string, ...msg: unknown[]) {
+    private log(module: string, level: string, ...msg: unknown[]) {
         if (level === "DEBUG" && !isDev) {
             return;
         }
