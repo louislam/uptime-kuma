@@ -71,7 +71,7 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         await expect(page.getByTestId("monitor-status")).toHaveText("up", { ignoreCase: true });
 
@@ -99,7 +99,7 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         await expect(page.getByTestId("monitor-status")).toHaveText("down", { ignoreCase: true });
 
@@ -124,10 +124,10 @@ test.describe("Monitor Form", () => {
 
         await screenshot(testInfo, page);
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         await page.getByRole("link", { name: "Edit" }).click();
-        await page.waitForURL("/edit/*");
+        await page.waitForURL("/admin/monitors/edit/*");
 
         await expect(page.getByLabel("Save HTTP Success Response for Notifications")).toBeHidden();
         await expect(page.getByLabel("Save HTTP Error Response for Notifications")).not.toBeChecked();

@@ -63,7 +63,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("add-tags-final-button").click();
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*"); // wait for the monitor to be created
+        await page.waitForURL("/admin/dashboard/*"); // wait for the monitor to be created
 
         // Create a new status page
         await page.goto("./add-status-page");
@@ -230,7 +230,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("friendly-name-input").fill(maliciousMonitorName1);
         await page.getByTestId("url-input").fill("https://malicious1.example.com");
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         // Create second monitor with title breakout payload
         await page.goto("./add");
@@ -238,7 +238,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("friendly-name-input").fill(maliciousMonitorName2);
         await page.getByTestId("url-input").fill("https://malicious2.example.com");
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         // Create third monitor with normal name
         await page.goto("./add");
@@ -246,7 +246,7 @@ test.describe("Status Page", () => {
         await page.getByTestId("friendly-name-input").fill(normalMonitorName);
         await page.getByTestId("url-input").fill("https://normal.example.com");
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         // Create a status page
         await page.goto("./add-status-page");

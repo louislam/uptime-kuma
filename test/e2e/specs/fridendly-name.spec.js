@@ -17,7 +17,7 @@ test.describe("Friendly Name Tests", () => {
         await screenshot(testInfo, page);
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         expect(page.getByTestId("monitor-list")).toContainText("example.com");
         await screenshot(testInfo, page);
@@ -34,7 +34,7 @@ test.describe("Friendly Name Tests", () => {
         await screenshot(testInfo, page);
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         expect(page.getByTestId("monitor-list")).toContainText("www.example.com");
         await screenshot(testInfo, page);
@@ -59,7 +59,7 @@ test.describe("Friendly Name Tests", () => {
         await screenshot(testInfo, page);
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         expect(page.getByTestId("monitor-list")).toContainText(customName);
         await screenshot(testInfo, page);
@@ -75,7 +75,7 @@ test.describe("Friendly Name Tests", () => {
         await screenshot(testInfo, page);
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/dashboard/*");
+        await page.waitForURL("/admin/dashboard/*");
 
         expect(page.getByTestId("monitor-list")).toContainText("New Monitor");
         await screenshot(testInfo, page);
