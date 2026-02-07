@@ -1,8 +1,11 @@
 const { Liquid, Drop } = require("liquidjs");
+const zlib = require("node:zlib");
+const { promisify } = require("node:util");
 const { DOWN } = require("../../src/util");
 const { HttpProxyAgent } = require("http-proxy-agent");
 const { HttpsProxyAgent } = require("https-proxy-agent");
-const Heartbeat = require("../model/heartbeat");
+
+const brotliDecompress = promisify(zlib.brotliDecompress);
 
 /**
  * LiquidJS Drop for heartbeats.
@@ -35,8 +38,17 @@ class HeartbeatDrop extends Drop {
         if (this._decoded !== undefined) {
             return this._decoded;
         }
-        this._decoded = await Heartbeat.decodeResponseValue(this._heartbeat.response);
-        return this._decoded ?? "";
+        const raw = this._heartbeat.response;
+        if (!raw) {
+            this._decoded = "";
+            return this._decoded;
+        }
+        try {
+            this._decoded = (await brotliDecompress(Buffer.from(raw, "base64"))).toString("utf8") ?? "";
+        } catch (error) {
+            this._decoded = raw;
+        }
+        return this._decoded;
     }
 
     /**
