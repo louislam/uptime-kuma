@@ -47,6 +47,7 @@ if (!semver.satisfies(nodeVersion, requiredNodeVersions)) {
 
 const args = require("args-parser")(process.argv);
 const { sleep, log, getRandomInt, genSecret, isDev } = require("../src/util");
+const { ROUTES, getStatusPageURL } = require("../src/routes");
 const config = require("./config");
 
 log.debug("server", "Arguments");
@@ -258,9 +259,9 @@ let needSetup = false;
             let slug = StatusPage.domainMappingList[hostname];
             await StatusPage.handleStatusPageResponse(response, server.indexHTML, slug);
         } else if (uptimeKumaEntryPage && uptimeKumaEntryPage.startsWith("statusPage-")) {
-            response.redirect("/status/" + uptimeKumaEntryPage.replace("statusPage-", ""));
+            response.redirect(getStatusPageURL(uptimeKumaEntryPage.replace("statusPage-", "")));
         } else {
-            response.redirect("/dashboard");
+            response.redirect(ROUTES.DASHBOARD);
         }
     });
 

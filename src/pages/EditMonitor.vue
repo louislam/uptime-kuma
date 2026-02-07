@@ -15,7 +15,7 @@
                                 class="form-text"
                             >
                                 <template #accountSettings>
-                                    <router-link to="/settings/general">{{ $t("account settings") }}</router-link>
+                                    <router-link :to="ROUTES.SETTINGS_GENERAL">{{ $t("account settings") }}</router-link>
                                 </template>
                             </i18n-t>
 
@@ -2736,6 +2736,7 @@ import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
+import { ROUTES, getMonitorURL } from "../routes.ts";
 
 const toast = useToast();
 
@@ -2816,6 +2817,7 @@ export default {
 
     data() {
         return {
+            ROUTES,
             minInterval: MIN_INTERVAL_SECOND,
             maxInterval: MAX_INTERVAL_SECOND,
             processing: false,
@@ -2935,15 +2937,15 @@ export default {
         },
 
         isAdd() {
-            return this.$route.path === "/add";
+            return this.$route.path === ROUTES.MONITOR_ADD;
         },
 
         isClone() {
-            return this.$route.path.startsWith("/clone");
+            return this.$route.path.startsWith(ROUTES.MONITOR_CLONE.replace("/:id", ""));
         },
 
         isEdit() {
-            return this.$route.path.startsWith("/edit");
+            return this.$route.path.startsWith(ROUTES.MONITOR_EDIT.replace("/:id", ""));
         },
 
         pushURL() {
@@ -3720,7 +3722,7 @@ message HealthCheckResponse {
                             await this.startParentGroupMonitor();
                         }
                         this.processing = false;
-                        this.$router.push("/dashboard/" + res.monitorID);
+                        this.$router.push(getMonitorURL(res.monitorID));
                     } else {
                         this.processing = false;
                     }

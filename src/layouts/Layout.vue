@@ -15,7 +15,7 @@
         <!-- Desktop header -->
         <header v-if="!$root.isMobile" class="d-flex flex-wrap justify-content-center py-3 mb-3 border-bottom">
             <router-link
-                to="/dashboard"
+                :to="ROUTES.DASHBOARD"
                 class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
             >
                 <object class="bi me-2 ms-4" width="40" height="40" data="/icon.svg" />
@@ -34,13 +34,13 @@
 
             <ul class="nav nav-pills">
                 <li v-if="$root.loggedIn" class="nav-item me-2">
-                    <router-link to="/manage-status-page" class="nav-link">
+                    <router-link :to="ROUTES.STATUS_PAGE_MANAGE" class="nav-link">
                         <font-awesome-icon icon="stream" />
                         {{ $t("Status Pages") }}
                     </router-link>
                 </li>
                 <li v-if="$root.loggedIn" class="nav-item me-2">
-                    <router-link to="/dashboard" class="nav-link">
+                    <router-link :to="ROUTES.DASHBOARD" class="nav-link">
                         <font-awesome-icon icon="tachometer-alt" />
                         {{ $t("Dashboard") }}
                     </router-link>
@@ -74,9 +74,9 @@
                             <!-- Functions -->
                             <li>
                                 <router-link
-                                    to="/maintenance"
+                                    :to="ROUTES.MAINTENANCE"
                                     class="dropdown-item"
-                                    :class="{ active: $route.path.includes('manage-maintenance') }"
+                                    :class="{ active: $route.path.includes('maintenance') }"
                                 >
                                     <font-awesome-icon icon="wrench" />
                                     {{ $t("Maintenance") }}
@@ -85,7 +85,7 @@
 
                             <li>
                                 <router-link
-                                    to="/settings/general"
+                                    :to="ROUTES.SETTINGS_GENERAL"
                                     class="dropdown-item"
                                     :class="{ active: $route.path.includes('settings') }"
                                 >
@@ -119,7 +119,7 @@
 
         <!-- Mobile header -->
         <header v-else class="d-flex flex-wrap justify-content-center pt-2 pb-2 mb-3">
-            <router-link to="/dashboard" class="d-flex align-items-center text-dark text-decoration-none">
+            <router-link :to="ROUTES.DASHBOARD" class="d-flex align-items-center text-dark text-decoration-none">
                 <object class="bi" width="40" height="40" data="/icon.svg" />
                 <span class="fs-4 title ms-2">Uptime Kuma</span>
             </router-link>
@@ -133,22 +133,22 @@
         <!-- Mobile Only -->
         <div v-if="$root.isMobile" style="width: 100%; height: calc(60px + env(safe-area-inset-bottom))" />
         <nav v-if="$root.isMobile && $root.loggedIn" class="bottom-nav">
-            <router-link to="/dashboard" class="nav-link">
+            <router-link :to="ROUTES.DASHBOARD" class="nav-link">
                 <div><font-awesome-icon icon="tachometer-alt" /></div>
                 {{ $t("Home") }}
             </router-link>
 
-            <router-link to="/list" class="nav-link">
+            <router-link :to="ROUTES.MONITOR_LIST" class="nav-link">
                 <div><font-awesome-icon icon="list" /></div>
                 {{ $t("List") }}
             </router-link>
 
-            <router-link to="/add" class="nav-link">
+            <router-link :to="ROUTES.MONITOR_ADD" class="nav-link">
                 <div><font-awesome-icon icon="plus" /></div>
                 {{ $t("Add") }}
             </router-link>
 
-            <router-link to="/settings" class="nav-link">
+            <router-link :to="ROUTES.SETTINGS" class="nav-link">
                 <div><font-awesome-icon icon="cog" /></div>
                 {{ $t("Settings") }}
             </router-link>
@@ -169,6 +169,7 @@
 import Login from "../components/Login.vue";
 import compareVersions from "compare-versions";
 import { useToast } from "vue-toastification";
+import { ROUTES } from "../routes.ts";
 const toast = useToast();
 
 export default {
@@ -178,6 +179,7 @@ export default {
 
     data() {
         return {
+            ROUTES,
             toastContainer: null,
             numActiveToasts: 0,
             toastContainerObserver: null,

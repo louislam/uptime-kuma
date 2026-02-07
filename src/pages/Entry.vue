@@ -7,6 +7,7 @@
 <script>
 import axios from "axios";
 import StatusPage from "./StatusPage.vue";
+import { ROUTES, getStatusPageURL } from "../routes.ts";
 
 export default {
     components: {
@@ -33,15 +34,15 @@ export default {
                 // Dev only. For production, the logic is in the server side
                 const entryPage = res.entryPage;
                 if (entryPage?.startsWith("statusPage-")) {
-                    this.$router.push("/status/" + entryPage.replace("statusPage-", ""));
+                    this.$router.push(getStatusPageURL(entryPage.replace("statusPage-", "")));
                 } else {
                     // should the old setting style still exist here?
-                    this.$router.push("/dashboard");
+                    this.$router.push(ROUTES.DASHBOARD);
                 }
             } else if (res.type === "setup-database") {
-                this.$router.push("/setup-database");
+                this.$router.push(ROUTES.SETUP_DATABASE);
             } else {
-                this.$router.push("/dashboard");
+                this.$router.push(ROUTES.DASHBOARD);
             }
         } catch (e) {
             alert("Cannot connect to the backend server. Did you start the backend server? (npm run start-server-dev)");
