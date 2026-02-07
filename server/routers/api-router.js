@@ -52,6 +52,10 @@ router.all("/api/push/:pushToken", async (request, response) => {
         let statusString = request.query.status || "up";
         const statusFromParam = statusString === "up" ? UP : DOWN;
 
+        // Check if status=down was explicitly provided (not defaulting to "up")
+        // When explicitly pushing down, bypass retry logic and go directly to DOWN
+        const isExplicitDown = request.query.status === "down";
+
         // Validate ping value - max 100 billion ms (~3.17 years)
         // Fits safely in both BIGINT and FLOAT(20,2)
         const MAX_PING_MS = 100000000000;
@@ -85,7 +89,14 @@ router.all("/api/push/:pushToken", async (request, response) => {
             msg = "Monitor under maintenance";
             bean.status = MAINTENANCE;
         } else {
-            determineStatus(statusFromParam, previousHeartbeat, monitor.maxretries, monitor.isUpsideDown(), bean);
+            determineStatus(
+                statusFromParam,
+                previousHeartbeat,
+                monitor.maxretries,
+                monitor.isUpsideDown(),
+                bean,
+                isExplicitDown
+            );
         }
 
         // Calculate uptime
@@ -609,11 +620,19 @@ router.get("/api/badge/:id/response", cache("5 minutes"), async (request, respon
  * @param {number} maxretries - The maximum number of retries allowed.
  * @param {boolean} isUpsideDown - Indicates if the monitor is upside down.
  * @param {object} bean - The new heartbeat object.
+ * @param {boolean} isExplicitDown - If status=down was explicitly pushed, bypass retries.
  * @returns {void}
  */
-function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, bean) {
+function determineStatus(status, previousHeartbeat, maxretries, isUpsideDown, bean, isExplicitDown) {
     if (isUpsideDown) {
         status = flipStatus(status);
+    }
+
+    // If status=down was explicitly pushed, bypass retry logic and go directly to DOWN
+    if (isExplicitDown && status === DOWN) {
+        bean.retries = 0;
+        bean.status = DOWN;
+        return;
     }
 
     if (previousHeartbeat) {
