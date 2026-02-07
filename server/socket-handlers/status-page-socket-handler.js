@@ -385,6 +385,10 @@ module.exports.statusPageSocketHandler = (socket) => {
                         relationBean.custom_url = monitor.url;
                     }
 
+                    if (monitor.showChildMonitors !== undefined) {
+                        relationBean.show_child_monitors = monitor.showChildMonitors;
+                    }
+
                     await R.store(relationBean);
                 }
 

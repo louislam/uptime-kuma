@@ -2,6 +2,7 @@ let express = require("express");
 const apicache = require("../modules/apicache");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const StatusPage = require("../model/status_page");
+const Monitor = require("../model/monitor");
 const { allowDevAllOrigin, sendHttpError } = require("../util-server");
 const { R } = require("redbean-node");
 const { badgeConstants } = require("../../src/util");
@@ -82,7 +83,25 @@ router.get("/api/status-page/heartbeat/:slug", cache("1 minutes"), async (reques
             [statusPageID]
         );
 
+        // Expand monitor list to include children of group monitors
+        let allMonitorIDs = [...monitorIDList];
+
         for (let monitorID of monitorIDList) {
+            // Check if this monitor is a group type
+            const monitor = await R.load("monitor", monitorID);
+
+            if (monitor && monitor.type === "group") {
+                // Get all children IDs recursively
+                const childrenIDs = await Monitor.getAllChildrenIDs(monitorID);
+
+                allMonitorIDs.push(...childrenIDs);
+            }
+        }
+
+        // Remove duplicates
+        allMonitorIDs = [...new Set(allMonitorIDs)];
+
+        for (let monitorID of allMonitorIDs) {
             let list = await R.getAll(
                 `
                     SELECT * FROM heartbeat
