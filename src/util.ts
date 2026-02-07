@@ -18,7 +18,7 @@ import * as timezone from "dayjs/plugin/timezone";
 import * as utc from "dayjs/plugin/utc";
 
 import * as jsonata from "jsonata";
-import { ROUTES } from "./routes.ts";
+import { ROUTES } from "./routes";
 
 export const isDev = process.env.NODE_ENV === "development";
 export const isNode = typeof process !== "undefined" && process?.versions?.node;
