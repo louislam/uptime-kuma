@@ -45,30 +45,66 @@ export const ROUTES = {
 } as const;
 
 // --- URL helpers using ROUTES constants ---
+
+/**
+ * Get the URL for a status page
+ * @param {string} slug - The status page slug
+ * @returns {string} The status page URL
+ */
 export function getStatusPageURL(slug: string): string {
     return ROUTES.STATUS_PAGE.replace(":slug", slug);
 }
 
+/**
+ * Get the URL for a monitor dashboard view
+ * @param {string | number} id - The monitor ID
+ * @returns {string} The monitor dashboard URL
+ */
 export function getMonitorURL(id: string | number): string {
     return ROUTES.DASHBOARD_MONITOR.replace(":id", String(id));
 }
 
+/**
+ * Get the URL for editing a monitor
+ * @param {string | number} id - The monitor ID
+ * @returns {string} The monitor edit URL
+ */
 export function getMonitorEditURL(id: string | number): string {
     return ROUTES.MONITOR_EDIT.replace(":id", String(id));
 }
 
+/**
+ * Get the URL for cloning a monitor
+ * @param {string | number} id - The monitor ID
+ * @returns {string} The monitor clone URL
+ */
 export function getMonitorCloneURL(id: string | number): string {
     return ROUTES.MONITOR_CLONE.replace(":id", String(id));
 }
 
+/**
+ * Get the URL for editing a maintenance
+ * @param {string | number} id - The maintenance ID
+ * @returns {string} The maintenance edit URL
+ */
 export function getMaintenanceEditURL(id: string | number): string {
     return ROUTES.MAINTENANCE_EDIT.replace(":id", String(id));
 }
 
+/**
+ * Get the URL for cloning a maintenance
+ * @param {string | number} id - The maintenance ID
+ * @returns {string} The maintenance clone URL
+ */
 export function getMaintenanceCloneURL(id: string | number): string {
     return ROUTES.MAINTENANCE_CLONE.replace(":id", String(id));
 }
 
+/**
+ * Get the URL for a settings page
+ * @param {string} page - The settings page name
+ * @returns {string} The settings page URL
+ */
 export function getSettingsURL(page: string): string {
     return `${ROUTES.SETTINGS}/${page}`;
 }
