@@ -20,7 +20,14 @@ import ManageMaintenance from "./pages/ManageMaintenance.vue";
 import APIKeys from "./components/settings/APIKeys.vue";
 import SetupDatabase from "./pages/SetupDatabase.vue";
 
-import { ROUTES, getMonitorURL, getMonitorEditURL, getMonitorCloneURL, getMaintenanceEditURL, getMaintenanceCloneURL } from "./routes.ts";
+import {
+    ROUTES,
+    getMonitorURL,
+    getMonitorEditURL,
+    getMonitorCloneURL,
+    getMaintenanceEditURL,
+    getMaintenanceCloneURL,
+} from "./routes.ts";
 
 // Settings - Sub Pages
 import Appearance from "./components/settings/Appearance.vue";
@@ -188,19 +195,19 @@ const routes = [
         component: StatusPage,
     },
     // Backward-compatibility redirects for old routes
-    { path: "/dashboard/:id", redirect: to => getMonitorURL(to.params.id) },
+    { path: "/dashboard/:id", redirect: (to) => getMonitorURL(to.params.id) },
     { path: "/dashboard", redirect: ROUTES.DASHBOARD },
     { path: "/add", redirect: ROUTES.MONITOR_ADD },
-    { path: "/edit/:id", redirect: to => getMonitorEditURL(to.params.id) },
-    { path: "/clone/:id", redirect: to => getMonitorCloneURL(to.params.id) },
+    { path: "/edit/:id", redirect: (to) => getMonitorEditURL(to.params.id) },
+    { path: "/clone/:id", redirect: (to) => getMonitorCloneURL(to.params.id) },
     { path: "/list", redirect: ROUTES.MONITOR_LIST },
     { path: "/manage-status-page", redirect: ROUTES.STATUS_PAGE_MANAGE },
     { path: "/add-status-page", redirect: ROUTES.STATUS_PAGE_ADD },
-    { path: "/maintenance/edit/:id", redirect: to => getMaintenanceEditURL(to.params.id) },
-    { path: "/maintenance/clone/:id", redirect: to => getMaintenanceCloneURL(to.params.id) },
+    { path: "/maintenance/edit/:id", redirect: (to) => getMaintenanceEditURL(to.params.id) },
+    { path: "/maintenance/clone/:id", redirect: (to) => getMaintenanceCloneURL(to.params.id) },
     { path: "/maintenance", redirect: ROUTES.MAINTENANCE },
     { path: "/add-maintenance", redirect: ROUTES.MAINTENANCE_ADD },
-    { path: "/settings/:page(.*)", redirect: to => `${ROUTES.SETTINGS}/${to.params.page}` },
+    { path: "/settings/:page(.*)", redirect: (to) => `${ROUTES.SETTINGS}/${to.params.page}` },
     {
         path: "/:pathMatch(.*)*",
         component: NotFound,

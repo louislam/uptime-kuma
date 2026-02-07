@@ -11,11 +11,11 @@ export const ROUTES = {
     ROOT: "/",
     SETUP: "/setup",
     SETUP_DATABASE: "/setup-database",
-    
+
     // Public status pages (legacy/compatibility)
     STATUS_PAGE_COMPAT: "/status-page",
     STATUS_COMPAT: "/status",
-    
+
     // Status page with slug
     STATUS_PAGE: "/status/:slug",
 

@@ -1,6 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSettingsURL = exports.getMaintenanceCloneURL = exports.getMaintenanceEditURL = exports.getMonitorCloneURL = exports.getMonitorEditURL = exports.getMonitorURL = exports.getStatusPageURL = exports.ROUTES = void 0;
+exports.getSettingsURL =
+    exports.getMaintenanceCloneURL =
+    exports.getMaintenanceEditURL =
+    exports.getMonitorCloneURL =
+    exports.getMonitorEditURL =
+    exports.getMonitorURL =
+    exports.getStatusPageURL =
+    exports.ROUTES =
+        void 0;
 const ADMIN = "/admin";
 exports.ROUTES = {
     ROOT: "/",
@@ -24,30 +32,51 @@ exports.ROUTES = {
     MAINTENANCE_EDIT: `${ADMIN}/maintenance/edit/:id`,
     MAINTENANCE_CLONE: `${ADMIN}/maintenance/clone/:id`,
 };
+/**
+ * @param slug
+ */
 function getStatusPageURL(slug) {
     return exports.ROUTES.STATUS_PAGE.replace(":slug", slug);
 }
 exports.getStatusPageURL = getStatusPageURL;
+/**
+ * @param id
+ */
 function getMonitorURL(id) {
     return exports.ROUTES.DASHBOARD_MONITOR.replace(":id", String(id));
 }
 exports.getMonitorURL = getMonitorURL;
+/**
+ * @param id
+ */
 function getMonitorEditURL(id) {
     return exports.ROUTES.MONITOR_EDIT.replace(":id", String(id));
 }
 exports.getMonitorEditURL = getMonitorEditURL;
+/**
+ * @param id
+ */
 function getMonitorCloneURL(id) {
     return exports.ROUTES.MONITOR_CLONE.replace(":id", String(id));
 }
 exports.getMonitorCloneURL = getMonitorCloneURL;
+/**
+ * @param id
+ */
 function getMaintenanceEditURL(id) {
     return exports.ROUTES.MAINTENANCE_EDIT.replace(":id", String(id));
 }
 exports.getMaintenanceEditURL = getMaintenanceEditURL;
+/**
+ * @param id
+ */
 function getMaintenanceCloneURL(id) {
     return exports.ROUTES.MAINTENANCE_CLONE.replace(":id", String(id));
 }
 exports.getMaintenanceCloneURL = getMaintenanceCloneURL;
+/**
+ * @param page
+ */
 function getSettingsURL(page) {
     return `${exports.ROUTES.SETTINGS}/${page}`;
 }

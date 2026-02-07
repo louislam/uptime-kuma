@@ -15,7 +15,9 @@
                                 class="form-text"
                             >
                                 <template #accountSettings>
-                                    <router-link :to="ROUTES.SETTINGS_GENERAL">{{ $t("account settings") }}</router-link>
+                                    <router-link :to="ROUTES.SETTINGS_GENERAL">
+                                        {{ $t("account settings") }}
+                                    </router-link>
                                 </template>
                             </i18n-t>
 
