@@ -117,22 +117,28 @@
             </span>
         </template>
         <template #dropdown>
-            <li v-for="tag in tagsList" :key="tag.id">
-                <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <span><Tag :item="tag" :size="'sm'" /></span>
-                        <span class="ps-3">
-                            {{ getTaggedMonitorCount(tag) }}
-                            <span v-if="filterState.tags?.includes(tag.id)" class="px-1 filter-active">
-                                <font-awesome-icon icon="check" />
-                            </span>
-                        </span>
-                    </div>
-                </div>
-            </li>
-            <li v-if="tagsList.length === 0">
-                <div class="dropdown-item disabled px-3">
-                    {{ $t("No tags found.") }}
+            <li class="tags-dropdown-scroll-wrapper">
+                <div class="tags-dropdown-scroll">
+                    <ul class="tags-dropdown-list">
+                        <li v-for="tag in tagsList" :key="tag.id">
+                            <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span><Tag :item="tag" :size="'sm'" /></span>
+                                    <span class="ps-3">
+                                        {{ getTaggedMonitorCount(tag) }}
+                                        <span v-if="filterState.tags?.includes(tag.id)" class="px-1 filter-active">
+                                            <font-awesome-icon icon="check" />
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </li>
+                        <li v-if="tagsList.length === 0">
+                            <div class="dropdown-item disabled px-3">
+                                {{ $t("No tags found.") }}
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </li>
         </template>
@@ -342,5 +348,23 @@ export default {
 
 .btn-collapse-all {
     transition: none !important;
+}
+
+/* Scrollable tags dropdown (issue #6885) */
+.tags-dropdown-scroll-wrapper {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tags-dropdown-scroll {
+    max-height: min(50vh, 320px);
+    overflow-y: auto;
+}
+
+.tags-dropdown-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 </style>
