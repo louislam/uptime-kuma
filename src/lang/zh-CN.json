@@ -1537,5 +1537,22 @@
     "ntfyUseTemplate": "自定义通知模板",
     "Location": "地点",
     "GlobalpingIpFamilyInfo": "要使用的 IP 版本。仅在目标为域名时可用。",
-    "GlobalpingHostname": "可公开访问的目标。通常是域名或 IPv4/IPv6 地址，取决于检测类型。"
+    "GlobalpingHostname": "可公开访问的目标。通常是域名或 IPv4/IPv6 地址，取决于检测类型。",
+    "discordMessageTemplate": "消息模板",
+    "discordUseMessageTemplate": "使用自定义消息模板",
+    "discordMessageFormatCustom": "自定义模板",
+    "discordMessageFormatMinimalist": "极简（短状态）",
+    "discordMessageFormatNormal": "正常（富文本嵌入）",
+    "discordMessageFormat": "消息格式",
+    "discordUseMessageTemplateDescription": "启用后消息将会使用基于 LiquidJS 的自定义模板。留空以使用默认格式。",
+    "slackUseTemplateDescription": "启用后消息将会使用自定义模板发送。你可以使用 Liquid 模板语法，通过 monitorJSON.path 或 monitorJSON.pathName 嵌入监控组信息。",
+    "slackUseTemplate": "使用自定义消息模板",
+    "slackIncludeGroupNameDescription": "启用后监控项的分组路径将包含在通知中，以帮助区分不同分组中名称相同的监控项。",
+    "slackIncludeGroupName": "包括监控项的分组名称",
+    "API Token": "API 令牌",
+    "Cloud ID": "Cloud ID",
+    "See Jira Cloud Docs": "参阅 Jira Cloud 文档",
+    "aboutJiraCloudId": "关于 Jira Cloud ID 的更多信息：{0}",
+    "see Jira Cloud Docs": "参阅 Jira Cloud 文档",
+    "Jira Service Management": "Jira 服务管理"
 }
