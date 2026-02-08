@@ -118,7 +118,7 @@
         </template>
         <template #dropdown>
             <li class="list-unstyled m-0 p-0">
-                <div class="tags-dropdown-scroll overflow-y-auto">
+                <div class="tags-dropdown-scroll">
                     <ul class="list-unstyled m-0 p-0">
                         <li v-for="tag in tagsList" :key="tag.id">
                             <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
@@ -352,5 +352,6 @@ export default {
 
 .tags-dropdown-scroll {
     max-height: min(50vh, 320px);
+    overflow-y: auto;
 }
 </style>
