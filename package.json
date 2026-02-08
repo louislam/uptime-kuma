@@ -1,6 +1,6 @@
 {
     "name": "uptime-kuma",
-    "version": "2.1.0-beta.3",
+    "version": "2.1.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -44,7 +44,7 @@
         "build-docker-pr-test": "docker buildx build -f docker/dockerfile --platform linux/amd64,linux/arm64 -t louislam/uptime-kuma:pr-test2 --target pr-test2 . --push",
         "upload-artifacts": "node extra/release/upload-artifacts.mjs",
         "upload-artifacts-beta": "node extra/release/upload-artifacts-beta.mjs",
-        "setup": "git checkout 2.0.2 && npm ci --omit dev --no-audit && npm run download-dist",
+        "setup": "git checkout 2.1.0 && npm ci --omit dev --no-audit && npm run download-dist",
         "download-dist": "node extra/download-dist.js",
         "mark-as-nightly": "node extra/mark-as-nightly.js",
         "reset-password": "node extra/reset-password.js",
@@ -63,7 +63,6 @@
         "start-pr-test": "node extra/checkout-pr.mjs && npm install && npm run dev",
         "build-healthcheck-armv7": "cross-env GOOS=linux GOARCH=arm GOARM=7 go build -x -o ./extra/healthcheck-armv7 ./extra/healthcheck.go",
         "deploy-demo-server": "node extra/deploy-demo-server.js",
-        "sort-contributors": "node extra/sort-contributors.js",
         "quick-run-nightly": "docker run --rm --env NODE_ENV=development -p 3001:3001 louislam/uptime-kuma:nightly2",
         "start-dev-container": "cd docker && docker-compose -f docker-compose-dev.yml up --force-recreate",
         "rebase-pr-to-1.23.X": "node extra/rebase-pr.js 1.23.X",
@@ -91,7 +90,7 @@
         "dayjs": "~1.11.5",
         "dev-null": "^0.1.1",
         "dotenv": "~16.0.3",
-        "express": "~4.21.0",
+        "express": "~4.22.1",
         "express-basic-auth": "~1.2.1",
         "express-static-gzip": "~2.1.7",
         "feed": "^4.2.2",

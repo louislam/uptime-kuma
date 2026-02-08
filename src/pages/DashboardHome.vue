@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <div class="shadow-box table-shadow-box" style="overflow-x: hidden">
+            <div class="shadow-box table-shadow-box table-wrapper">
                 <div class="mb-3 text-end">
                     <button
                         class="btn btn-sm btn-outline-danger"
@@ -49,7 +49,8 @@
                 <table class="table table-borderless table-hover">
                     <thead>
                         <tr>
-                            <th>{{ $t("Name") }}</th>
+                            <th v-if="showGroupColumn">{{ $t("Group Name") }}</th>
+                            <th class="name-column">{{ $t("Name") }}</th>
                             <th>{{ $t("Status") }}</th>
                             <th>{{ $t("DateTime") }}</th>
                             <th>{{ $t("Message") }}</th>
@@ -61,6 +62,15 @@
                             :key="index"
                             :class="{ 'shadow-box': $root.windowWidth <= 550 }"
                         >
+                            <td v-if="showGroupColumn">
+                                <router-link
+                                    v-if="getGroupName(beat.monitorID)"
+                                    :to="`/dashboard/${getGroupId(beat.monitorID)}`"
+                                >
+                                    {{ getGroupName(beat.monitorID) }}
+                                </router-link>
+                                <span v-else class="text-secondary">—</span>
+                            </td>
                             <td class="name-column">
                                 <router-link :to="`/dashboard/${beat.monitorID}`">
                                     {{ $root.monitorList[beat.monitorID]?.name }}
@@ -72,7 +82,7 @@
                         </tr>
 
                         <tr v-if="importantHeartBeatListLength === 0">
-                            <td colspan="4">
+                            <td :colspan="tableColumnCount">
                                 {{ $t("No important events") }}
                             </td>
                         </tr>
@@ -135,6 +145,14 @@ export default {
             clearingAllEvents: false,
         };
     },
+    computed: {
+        showGroupColumn() {
+            return Object.values(this.$root.monitorList).some((m) => m.parent != null);
+        },
+        tableColumnCount() {
+            return this.showGroupColumn ? 5 : 4;
+        },
+    },
     watch: {
         perPage() {
             this.$nextTick(() => {
@@ -165,6 +183,30 @@ export default {
     },
 
     methods: {
+        /**
+         * Returns the group (parent) name for a monitor, or empty string if none.
+         * @param {number} monitorID - The monitor ID.
+         * @returns {string} The group name or empty string.
+         */
+        getGroupName(monitorID) {
+            const monitor = this.$root.monitorList[monitorID];
+            if (!monitor || monitor.parent == null) {
+                return "";
+            }
+            const parent = this.$root.monitorList[monitor.parent];
+            return parent ? parent.name : "";
+        },
+
+        /**
+         * Returns the group (parent) ID for a monitor, or null if none.
+         * @param {number} monitorID - The monitor ID.
+         * @returns {number|null} The group monitor ID or null.
+         */
+        getGroupId(monitorID) {
+            const monitor = this.$root.monitorList[monitorID];
+            return monitor && monitor.parent != null ? monitor.parent : null;
+        },
+
         /**
          * Updates the displayed records when a new important heartbeat arrives.
          * @param {object} heartbeat - The heartbeat object received.
@@ -300,5 +342,9 @@ table {
     .name-column {
         min-width: 200px;
     }
+}
+
+.table-wrapper {
+    overflow-x: auto;
 }
 </style>
