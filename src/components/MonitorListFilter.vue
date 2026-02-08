@@ -117,9 +117,9 @@
             </span>
         </template>
         <template #dropdown>
-            <li class="tags-dropdown-scroll-wrapper">
-                <div class="tags-dropdown-scroll">
-                    <ul class="tags-dropdown-list">
+            <li class="list-unstyled m-0 p-0">
+                <div class="tags-dropdown-scroll overflow-y-auto">
+                    <ul class="list-unstyled m-0 p-0">
                         <li v-for="tag in tagsList" :key="tag.id">
                             <div class="dropdown-item" tabindex="0" @click.stop="toggleTagFilter(tag)">
                                 <div class="d-flex align-items-center justify-content-between">
@@ -350,20 +350,7 @@ export default {
     transition: none !important;
 }
 
-.tags-dropdown-scroll-wrapper {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
 .tags-dropdown-scroll {
     max-height: min(50vh, 320px);
-    overflow-y: auto;
-}
-
-.tags-dropdown-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
 }
 </style>
