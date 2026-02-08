@@ -1521,7 +1521,7 @@ class Monitor extends BeanModel {
             if (bean.status === UP && monitor.id) {
                 try {
                     const lastDownHeartbeat = await R.getRow(
-                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? ORDER BY time DESC LIMIT 1",
+                        "SELECT time FROM heartbeat WHERE monitor_id = ? AND status = ? AND important = 1 ORDER BY time DESC LIMIT 1",
                         [monitor.id, DOWN]
                     );
 
