@@ -219,6 +219,11 @@ class Discord extends NotificationProvider {
                                           },
                                       ]
                                     : []),
+                                // Show server timezone for parity with the DOWN notification embed
+                                {
+                                    name: `Time (${heartbeatJSON["timezone"]})`,
+                                    value: heartbeatJSON["localDateTime"],
+                                },
                                 ...(heartbeatJSON["ping"] != null
                                     ? [
                                           {
