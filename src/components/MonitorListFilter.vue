@@ -350,7 +350,6 @@ export default {
     transition: none !important;
 }
 
-/* Scrollable tags dropdown (issue #6885) */
 .tags-dropdown-scroll-wrapper {
     list-style: none;
     padding: 0;
