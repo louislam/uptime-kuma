@@ -1551,5 +1551,13 @@
     "expectedTlsAlertDescription": "Selecteer de TLS-waarschuwing waarvan u verwacht dat de server deze retourneert. Gebruik {code} om te verifiëren dat mTLS-eindpunten verbindingen weigeren zonder clientcertificaten. Zie {link} voor details.",
     "Protocol": "Protocol",
     "domain_expiry_unsupported_missing_target": "Geen geldige domeinnaam of hostnaam is ingesteld voor deze monitor",
-    "Endpoint": "Endpoint"
+    "Endpoint": "Endpoint",
+    "teltonikaUrl": "De URL van uw Teltonika apparaat",
+    "teltonikaUsername": "API gebruikersnaam",
+    "teltonikaPassword": "API wachtwoord",
+    "teltonikaPasswordHelptext": "U stelt de gebruikersnaam en wachtwoord in op uw Teltonika router, bijv. {0}",
+    "teltonikaModem": "Modem Id",
+    "teltonikaModemHelptext": "De identificatie (id) van het SMS modem, in de vorm {0}. Zie https://developers.teltonika-networks.com/reference/ voor meer hulp.",
+    "teltonikaPhoneNumber": "Ontvanger",
+    "teltonikaPhoneNumberHelptext": "Het telefoonnummer moet worden gegeven in het internationale format {0}, {1}. Er is maar één nummer toegestaan."
 }

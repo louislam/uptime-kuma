@@ -1453,5 +1453,13 @@
     "halopsa_field_timestamp": "Event timestamp in ISO 8601 format",
     "halopsa_field_uptime_kuma_version": "Uptime Kuma version number",
     "halopsa_id_usage_hint": "💡 Tip: Use monitor_id to reliably match alerts to tickets, and heartbeat_id to track event history",
-    "halopsa_setup_step5": "Configure runbook to use monitor_id for matching alerts to existing tickets"
+    "halopsa_setup_step5": "Configure runbook to use monitor_id for matching alerts to existing tickets",
+    "teltonikaUrl": "Your Teltonika device URL",
+    "teltonikaUsername": "API username",
+    "teltonikaPassword": "API password",
+    "teltonikaPasswordHelptext": "You can define the API user's password in your Teltonika router, e.g. {0}",
+    "teltonikaModem": "Modem Id",
+    "teltonikaModemHelptext": "The id of the SMS modem, must be in the format {0}. Refer to https://developers.teltonika-networks.com/reference/ for guidance.",
+    "teltonikaPhoneNumber": "Phone number",
+    "teltonikaPhoneNumberHelptext": "The number must be in the international format {0}, {1}. Only one number is allowed."
 }
