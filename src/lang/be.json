@@ -953,6 +953,8 @@
     "templateStatus": "статус",
     "telegramUseTemplate": "Выкарыстоўваць уласны шаблон паведамлення",
     "telegramUseTemplateDescription": "Калі ўключана, паведамленне будзе адпраўлена з выкарыстаннем уласнага шаблона.",
+    "matrixUseTemplate": "Выкарыстоўваць уласны шаблон паведамлення",
+    "matrixUseTemplateDescription": "Калі ўключана, паведамленне будзе адпраўлена з выкарыстаннем уласнага шаблона.",
     "telegramTemplateFormatDescription": "Telegram дазваляе выкарыстоўваць розныя мовы разметкі для паведамленняў, падрабязнасці глядзіце ў Telegram {0}.",
     "cacheBusterParamDescription": "Выпадкова згенераваны параметр для абыходу кэша.",
     "Send rich messages": "Адправіць пашыраныя паведамленні",

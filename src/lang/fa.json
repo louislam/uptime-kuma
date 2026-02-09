@@ -1068,6 +1068,8 @@
     "templateStatus": "وضعیت",
     "telegramUseTemplate": "استفاده از قالب پیام دلخواه",
     "telegramUseTemplateDescription": "در صورت فعال‌سازی، پیام با قالب دلخواه ارسال خواهد شد.",
+    "matrixUseTemplate": "استفاده از قالب پیام دلخواه",
+    "matrixUseTemplateDescription": "در صورت فعال‌سازی، پیام با قالب دلخواه ارسال خواهد شد.",
     "telegramTemplateFormatDescription": "در تلگرام امکان استفاده از زبان‌های نشانه‌گذاری مختلفی وجود دارد، برای جزئیات بیشتر {0} را ببینید.",
     "defaultFriendlyName": "مانیتور جدید",
     "shrinkDatabaseDescriptionSqlite": "اجرای دستور {vacuum} برای پایگاه داده SQLite. گزینه {auto_vacuum} به‌صورت پیش‌فرض فعال است، اما مانند {vacuum} عمل یکپارچه‌سازی و بازآرایی صفحات پایگاه داده را انجام نمی‌دهد.",

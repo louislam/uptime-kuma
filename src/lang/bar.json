@@ -565,6 +565,8 @@
     "Coming Soon": "Kimmt boid",
     "telegramUseTemplate": "A eigne Nochrichtnvorlog hernehma",
     "telegramUseTemplateDescription": "Wenns eigschoid is, wead d'Nochricht mit ana eignen Vorlog vaschickt.",
+    "matrixUseTemplate": "A eigne Nochrichtnvorlog hernehma",
+    "matrixUseTemplateDescription": "Wenns eigschoid is, wead d'Nochricht mit ana eignen Vorlog vaschickt.",
     "telegramServerUrl": "(Optional) Server-URL",
     "supportTelegramChatID": "Unterstützt Direkt-Chat / Gruppn / Kanal Chat-ID",
     "YOUR BOT TOKEN HERE": "DEIN BOT-TOKEN KIMMT DO NEI",

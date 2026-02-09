@@ -1116,6 +1116,8 @@
     "templateStatus": "tila",
     "telegramUseTemplate": "Käytä mukautettua viesti mallia",
     "telegramUseTemplateDescription": "Jos aktivoitu, viesti lähetetään käyttämällä mukautettua mallia.",
+    "matrixUseTemplate": "Käytä mukautettua viesti mallia",
+    "matrixUseTemplateDescription": "Jos aktivoitu, viesti lähetetään käyttämällä mukautettua mallia.",
     "telegramTemplateFormatDescription": "Telegram sallii erilaisten merkintäkielien käytön viesteissä, katso Telegram {0} tarkempia tietoja.",
     "smsplanetApiToken": "SMSPlanet API:n tunnus",
     "smsplanetApiDocs": "Yksityiskohtaiset tiedot API-tunnusten hankkimisesta löytyvät osoitteesta {the_smsplanet_documentation}.",

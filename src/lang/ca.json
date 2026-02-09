@@ -560,6 +560,8 @@
     "templateStatus": "Estat",
     "telegramUseTemplate": "Fes servir una plantilla de missatge personalitzada",
     "telegramUseTemplateDescription": "Si s'activa, el missatge s'enviarà fent servir una plantilla personalitzada.",
+    "matrixUseTemplate": "Fes servir una plantilla de missatge personalitzada",
+    "matrixUseTemplateDescription": "Si s'activa, el missatge s'enviarà fent servir una plantilla personalitzada.",
     "telegramTemplateFormatDescription": "Telegram permet l'ús de diferents tipus de llenguatges de marcat, llegeix Telegram {0} per més detalls.",
     "wayToGetDiscordThreadId": "Obtenir un identificador de publicació del fil/fòrum és semblant a obtenir un identificador de canal. Més informació sobre com obtenir identificadors {0}",
     "lineDevConsoleTo": "Consola de desenvolupadors de linia - {0}",

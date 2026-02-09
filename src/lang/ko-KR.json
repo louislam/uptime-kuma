@@ -826,6 +826,8 @@
     "tailscalePingWarning": "Tailscale Ping 모니터를 사용하려면 Docker를 사용하지 않고 Uptime Kuma를 설치해야 하며, 서버에 Tailscale 클라이언트도 설치해야 합니다.",
     "telegramUseTemplate": "커스텀 메시지 템플릿 사용",
     "telegramUseTemplateDescription": "활성화하면 메시지를 보낼 때 커스텀 템플릿을 사용해요.",
+    "matrixUseTemplate": "커스텀 메시지 템플릿 사용",
+    "matrixUseTemplateDescription": "활성화하면 메시지를 보낼 때 커스텀 템플릿을 사용해요.",
     "telegramTemplateFormatDescription": "텔레그램은 메시지에 다양한 마크업 언어를 사용할 수 있어요. 자세한 내용은 텔레그램 {0}을 참조하세요.",
     "RabbitMQ Username": "RabbitMQ 사용자명",
     "RabbitMQ Password": "RabbitMQ 비밀번호",

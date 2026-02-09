@@ -1099,6 +1099,8 @@
     "templateHostnameOrURL": "Hostname oder URL",
     "telegramUseTemplate": "Benutzerdefinierte Nachrichtenvorlage verwenden",
     "telegramUseTemplateDescription": "Wenn diese Option aktiviert ist, wird die Nachricht unter Verwendung einer benutzerdefinierten Vorlage gesendet.",
+    "matrixUseTemplate": "Benutzerdefinierte Nachrichtenvorlage verwenden",
+    "matrixUseTemplateDescription": "Wenn diese Option aktiviert ist, wird die Nachricht unter Verwendung einer benutzerdefinierten Vorlage gesendet.",
     "templateServiceName": "Service-Name",
     "YZJ Webhook URL": "YZJ Webhook URL",
     "YZJ Robot Token": "YZJ Robot Token",

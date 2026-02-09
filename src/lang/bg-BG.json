@@ -1108,6 +1108,8 @@
     "templateStatus": "статус",
     "telegramUseTemplate": "Използвай персонализиран шаблон за съобщение",
     "telegramUseTemplateDescription": "Ако е активирано, съобщението ще бъде изпратено чрез персонализиран шаблон.",
+    "matrixUseTemplate": "Използвай персонализиран шаблон за съобщение",
+    "matrixUseTemplateDescription": "Ако е активирано, съобщението ще бъде изпратено чрез персонализиран шаблон.",
     "telegramTemplateFormatDescription": "Telegram позволява използването на различни \"markup\" езици за съобщенията. Вижте Telegram {0} за детайли.",
     "Template Format": "Формат на шаблона",
     "wayToGetWahaApiUrl": "Вашият WAHA URL адрес.",

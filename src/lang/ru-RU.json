@@ -1122,6 +1122,8 @@
     "telegramServerUrl": "(Необязательно) URL Сервера",
     "telegramUseTemplate": "Используйте пользовательский шаблон сообщения",
     "telegramUseTemplateDescription": "Если включено, сообщение будет отправлено с помощью пользовательского шаблона.",
+    "matrixUseTemplate": "Используйте пользовательский шаблон сообщения",
+    "matrixUseTemplateDescription": "Если включено, сообщение будет отправлено с помощью пользовательского шаблона.",
     "telegramTemplateFormatDescription": "Telegram позволяет использовать различные языки разметки в сообщениях. Подробности смотрите в документации Telegram — {0}.",
     "Plain Text": "Простой текст",
     "Message Template": "Шаблон сообщения",

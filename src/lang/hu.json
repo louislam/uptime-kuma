@@ -1099,6 +1099,8 @@
     "templateStatus": "státusz",
     "telegramUseTemplate": "Egyéni üzenetsablon használata",
     "telegramUseTemplateDescription": "Ha engedélyezve van, az üzenet egy egyéni sablon szerint lesz elküldve.",
+    "matrixUseTemplate": "Egyéni üzenetsablon használata",
+    "matrixUseTemplateDescription": "Ha engedélyezve van, az üzenet egy egyéni sablon szerint lesz elküldve.",
     "telegramTemplateFormatDescription": "Telegram különböző jelölőnyelvek használatát engedi, további információkért lásd {0}.",
     "webhookPostMethodDesc": "POST jó modern HTTP szerverek számára.",
     "HTTP Method": "HTTP metódus",

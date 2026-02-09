@@ -1109,6 +1109,8 @@
     "templateHostnameOrURL": "ім'я хосту або URL",
     "telegramUseTemplate": "Використовувати власний шаблон повідомлення",
     "telegramUseTemplateDescription": "Якщо увімкнено, повідомлення буде надіслано з використанням спеціального шаблону.",
+    "matrixUseTemplate": "Використовувати власний шаблон повідомлення",
+    "matrixUseTemplateDescription": "Якщо увімкнено, повідомлення буде надіслано з використанням спеціального шаблону.",
     "telegramTemplateFormatDescription": "Telegram дозволяє використовувати різні мови розмітки для повідомлень, див. Telegram {0} для більш детальної інформації.",
     "Plain Text": "Звичайний текст",
     "templateStatus": "статус",

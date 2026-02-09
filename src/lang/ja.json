@@ -1084,6 +1084,8 @@
     "templateStatus": "ステータス",
     "telegramUseTemplate": "カスタムメッセージテンプレートを使用",
     "telegramUseTemplateDescription": "有効にすると、メッセージはカスタムテンプレートを使って送信されます。",
+    "matrixUseTemplate": "カスタムメッセージテンプレートを使用",
+    "matrixUseTemplateDescription": "有効にすると、メッセージはカスタムテンプレートを使って送信されます。",
     "telegramTemplateFormatDescription": "Telegramではメッセージに異なるマークアップ言語を使用することができます。詳細はTelegram {0} を参照してください。",
     "Font Twemoji by Twitter licensed under": "TwemojiフォントはTwitterライセンス下でライセンスされています",
     "the smsplanet documentation": "smsplanetドキュメント",

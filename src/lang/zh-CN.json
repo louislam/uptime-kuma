@@ -1106,6 +1106,8 @@
     "templateServiceName": "服务名",
     "telegramUseTemplateDescription": "如果启用，该消息将使用自定义模板发送。",
     "telegramUseTemplate": "使用自定义消息模板",
+    "matrixUseTemplate": "使用自定义消息模板",
+    "matrixUseTemplateDescription": "如果启用，该消息将使用自定义模板发送。",
     "wayToGetWahaSession": "在此会话中，WAHA 会向聊天 ID 发送通知。您可以在 WAHA 仪表板中找到它。",
     "wayToGetWahaApiUrl": "你的 WAHA 实例 URL。",
     "wahaChatId": "聊天 ID（电话号码 / 联系人 ID / 群组 ID）",

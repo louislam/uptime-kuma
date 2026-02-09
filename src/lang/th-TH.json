@@ -747,6 +747,8 @@
     "tailscalePingWarning": "เพื่อที่จะใช้ตัวตรวจสอบ Tailscale Ping คุณต้องติดตั้ง Uptime Kuma โดยไม่ใช้ Docker และติดตั้ง Tailscale client บนเซิร์ฟเวอร์ของคุณด้วย",
     "telegramUseTemplate": "ใช้เทมเพลต ข้อความที่กำหนดเอง",
     "telegramUseTemplateDescription": "หากเปิดใช้งาน ข้อความจะถูกส่งโดยใช้เทมเพลตที่กำหนดเอง",
+    "matrixUseTemplate": "ใช้เทมเพลต ข้อความที่กำหนดเอง",
+    "matrixUseTemplateDescription": "หากเปิดใช้งาน ข้อความจะถูกส่งโดยใช้เทมเพลตที่กำหนดเอง",
     "telegramTemplateFormatDescription": "Telegram อนุญาตให้ใช้ภาษามาร์กอัปต่าง ๆ กับข้อความ ดูรายละเอียดเพิ่มเติมได้ที่ Telegram {0}",
     "telegramServerUrl": "(ไม่บังคับ) URL ของเซิร์ฟเวอร์",
     "telegramServerUrlDescription": "เพื่อยกระดับข้อจำกัดของ API ของ Telegram หรือให้เข้าถึงพื้นที่ที่ถูกบล็อก (จีน, อิหร่าน, เป็นต้น) สำหรับข้อมูลเพิ่มเติมคลิก {0}. ค่าเริ่มต้น: {1}",

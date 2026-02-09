@@ -1103,6 +1103,8 @@
     "templateStatus": "durum",
     "telegramUseTemplate": "Özel mesaj şablonu kullan",
     "telegramUseTemplateDescription": "Etkinleştirilirse mesaj özel bir şablon kullanılarak gönderilecektir.",
+    "matrixUseTemplate": "Özel mesaj şablonu kullan",
+    "matrixUseTemplateDescription": "Etkinleştirilirse mesaj özel bir şablon kullanılarak gönderilecektir.",
     "telegramTemplateFormatDescription": "Telegram, mesajlar için farklı işaretleme dillerinin kullanılmasına izin verir, ayrıntılar için Telegram {0} bölümüne bakın.",
     "templateServiceName": "servis adı",
     "telegramServerUrlDescription": "Telegram'ın bot API sınırlamalarını kaldırmak veya engellenen alanlarda (Çin, İran vb.) erişim sağlamak için. Daha fazla bilgi için tıklayın {0}. Varsayılan: {1}",
