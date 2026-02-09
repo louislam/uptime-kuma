@@ -19,7 +19,7 @@ let socket;
 
 const noSocketIOPages = [
     /^\/status-page$/, //  /status-page
-    /^\/status/, // /status**
+    /^\/status(\/|$)/, // /status and /status/:slug (but not /status-page/*)
     /^\/$/, //  /
 ];
 
