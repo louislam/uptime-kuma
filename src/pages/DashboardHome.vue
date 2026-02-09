@@ -184,6 +184,7 @@ export default {
     },
 
     methods: {
+        getMonitorURL,
         /**
          * Returns the group (parent) name for a monitor, or empty string if none.
          * @param {number} monitorID - The monitor ID.
