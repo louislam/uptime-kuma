@@ -22,6 +22,7 @@ import SetupDatabase from "./pages/SetupDatabase.vue";
 
 import {
     ROUTES,
+    getAdminPrefix,
     getMonitorURL,
     getMonitorEditURL,
     getMonitorCloneURL,
@@ -194,20 +195,26 @@ const routes = [
         path: ROUTES.STATUS_PAGE,
         component: StatusPage,
     },
-    // Backward-compatibility redirects for old routes
-    { path: "/dashboard/:id", redirect: (to) => getMonitorURL(to.params.id) },
-    { path: "/dashboard", redirect: ROUTES.DASHBOARD },
+    // Backward-compatibility redirects for restructured routes (always active)
     { path: "/add", redirect: ROUTES.MONITOR_ADD },
     { path: "/edit/:id", redirect: (to) => getMonitorEditURL(to.params.id) },
     { path: "/clone/:id", redirect: (to) => getMonitorCloneURL(to.params.id) },
     { path: "/list", redirect: ROUTES.MONITOR_LIST },
     { path: "/manage-status-page", redirect: ROUTES.STATUS_PAGE_MANAGE },
     { path: "/add-status-page", redirect: ROUTES.STATUS_PAGE_ADD },
-    { path: "/maintenance/edit/:id", redirect: (to) => getMaintenanceEditURL(to.params.id) },
-    { path: "/maintenance/clone/:id", redirect: (to) => getMaintenanceCloneURL(to.params.id) },
-    { path: "/maintenance", redirect: ROUTES.MAINTENANCE },
     { path: "/add-maintenance", redirect: ROUTES.MAINTENANCE_ADD },
-    { path: "/settings/:page(.*)", redirect: (to) => `${ROUTES.SETTINGS}/${to.params.page}` },
+    // Backward-compatibility redirects that only apply when a prefix is set
+    // (without a prefix these would self-redirect)
+    ...(getAdminPrefix()
+        ? [
+            { path: "/dashboard/:id", redirect: (to) => getMonitorURL(to.params.id) },
+            { path: "/dashboard", redirect: ROUTES.DASHBOARD },
+            { path: "/maintenance/edit/:id", redirect: (to) => getMaintenanceEditURL(to.params.id) },
+            { path: "/maintenance/clone/:id", redirect: (to) => getMaintenanceCloneURL(to.params.id) },
+            { path: "/maintenance", redirect: ROUTES.MAINTENANCE },
+            { path: "/settings/:page(.*)", redirect: (to) => `${ROUTES.SETTINGS}/${to.params.page}` },
+        ]
+        : []),
     {
         path: "/:pathMatch(.*)*",
         component: NotFound,

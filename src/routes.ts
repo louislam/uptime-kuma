@@ -1,48 +1,85 @@
-const ADMIN = "/admin" as const;
+/**
+ * Window augmentation for the injected admin prefix.
+ */
+declare global {
+    interface Window {
+        __UPTIME_KUMA_ADMIN_PREFIX__?: string;
+    }
+}
+
+/**
+ * Admin route path segments (without any prefix).
+ */
+const ADMIN_ROUTE_TEMPLATES = {
+    DASHBOARD: "/dashboard",
+    DASHBOARD_MONITOR: "/dashboard/:id",
+    MONITOR_ADD: "/monitors/add",
+    MONITOR_EDIT: "/monitors/edit/:id",
+    MONITOR_CLONE: "/monitors/clone/:id",
+    MONITOR_LIST: "/monitors/list",
+    SETTINGS: "/settings",
+    SETTINGS_GENERAL: "/settings/general",
+    STATUS_PAGE_MANAGE: "/status-page/manage",
+    STATUS_PAGE_ADD: "/status-page/add",
+    MAINTENANCE: "/maintenance",
+    MAINTENANCE_ADD: "/maintenance/add",
+    MAINTENANCE_EDIT: "/maintenance/edit/:id",
+    MAINTENANCE_CLONE: "/maintenance/clone/:id",
+} as const;
+
+/**
+ * Detect the admin route prefix from the environment.
+ * - Node.js: reads process.env.UPTIME_KUMA_ADMIN_PREFIX
+ * - Browser: reads window.__UPTIME_KUMA_ADMIN_PREFIX__
+ * - Default: "" (empty string = original URLs unchanged)
+ */
+export function getAdminPrefix(): string {
+    if (typeof process !== "undefined" && process.env && process.env.UPTIME_KUMA_ADMIN_PREFIX) {
+        return process.env.UPTIME_KUMA_ADMIN_PREFIX;
+    }
+    if (typeof window !== "undefined" && window.__UPTIME_KUMA_ADMIN_PREFIX__) {
+        return window.__UPTIME_KUMA_ADMIN_PREFIX__;
+    }
+    return "";
+}
+
+/**
+ * Build the full ROUTES object by prepending prefix to admin routes.
+ * @param {string} prefix - The admin route prefix (e.g. "/admin" or "")
+ */
+function buildRoutes(prefix: string) {
+    return {
+        // Entry / public (never prefixed)
+        ROOT: "/",
+        SETUP: "/setup",
+        SETUP_DATABASE: "/setup-database",
+        STATUS_PAGE_COMPAT: "/status-page",
+        STATUS_COMPAT: "/status",
+        STATUS_PAGE: "/status/:slug",
+
+        // Admin routes (prefixed)
+        DASHBOARD: `${prefix}${ADMIN_ROUTE_TEMPLATES.DASHBOARD}`,
+        DASHBOARD_MONITOR: `${prefix}${ADMIN_ROUTE_TEMPLATES.DASHBOARD_MONITOR}`,
+        MONITOR_ADD: `${prefix}${ADMIN_ROUTE_TEMPLATES.MONITOR_ADD}`,
+        MONITOR_EDIT: `${prefix}${ADMIN_ROUTE_TEMPLATES.MONITOR_EDIT}`,
+        MONITOR_CLONE: `${prefix}${ADMIN_ROUTE_TEMPLATES.MONITOR_CLONE}`,
+        MONITOR_LIST: `${prefix}${ADMIN_ROUTE_TEMPLATES.MONITOR_LIST}`,
+        SETTINGS: `${prefix}${ADMIN_ROUTE_TEMPLATES.SETTINGS}`,
+        SETTINGS_GENERAL: `${prefix}${ADMIN_ROUTE_TEMPLATES.SETTINGS_GENERAL}`,
+        STATUS_PAGE_MANAGE: `${prefix}${ADMIN_ROUTE_TEMPLATES.STATUS_PAGE_MANAGE}`,
+        STATUS_PAGE_ADD: `${prefix}${ADMIN_ROUTE_TEMPLATES.STATUS_PAGE_ADD}`,
+        MAINTENANCE: `${prefix}${ADMIN_ROUTE_TEMPLATES.MAINTENANCE}`,
+        MAINTENANCE_ADD: `${prefix}${ADMIN_ROUTE_TEMPLATES.MAINTENANCE_ADD}`,
+        MAINTENANCE_EDIT: `${prefix}${ADMIN_ROUTE_TEMPLATES.MAINTENANCE_EDIT}`,
+        MAINTENANCE_CLONE: `${prefix}${ADMIN_ROUTE_TEMPLATES.MAINTENANCE_CLONE}`,
+    } as const;
+}
 
 /**
  * Centralized route path constants for the application.
- * Admin routes live under /admin;
- * public routes (status pages, setup) remain at root.
+ * Admin routes are prefixed with UPTIME_KUMA_ADMIN_PREFIX (default: "" = no prefix).
  */
-
-export const ROUTES = {
-    // Entry / public
-    ROOT: "/",
-    SETUP: "/setup",
-    SETUP_DATABASE: "/setup-database",
-
-    // Public status pages (legacy/compatibility)
-    STATUS_PAGE_COMPAT: "/status-page",
-    STATUS_COMPAT: "/status",
-
-    // Status page with slug
-    STATUS_PAGE: "/status/:slug",
-
-    // Dashboard
-    DASHBOARD: `${ADMIN}/dashboard`,
-    DASHBOARD_MONITOR: `${ADMIN}/dashboard/:id`,
-
-    // Monitors
-    MONITOR_ADD: `${ADMIN}/monitors/add`,
-    MONITOR_EDIT: `${ADMIN}/monitors/edit/:id`,
-    MONITOR_CLONE: `${ADMIN}/monitors/clone/:id`,
-    MONITOR_LIST: `${ADMIN}/monitors/list`,
-
-    // Settings
-    SETTINGS: `${ADMIN}/settings`,
-    SETTINGS_GENERAL: `${ADMIN}/settings/general`,
-
-    // Status page admin
-    STATUS_PAGE_MANAGE: `${ADMIN}/status-page/manage`,
-    STATUS_PAGE_ADD: `${ADMIN}/status-page/add`,
-
-    // Maintenance
-    MAINTENANCE: `${ADMIN}/maintenance`,
-    MAINTENANCE_ADD: `${ADMIN}/maintenance/add`,
-    MAINTENANCE_EDIT: `${ADMIN}/maintenance/edit/:id`,
-    MAINTENANCE_CLONE: `${ADMIN}/maintenance/clone/:id`,
-} as const;
+export const ROUTES = buildRoutes(getAdminPrefix());
 
 // --- URL helpers using ROUTES constants ---
 

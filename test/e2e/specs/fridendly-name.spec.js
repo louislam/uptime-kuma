@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot } from "../util-test";
+import { login, restoreSqliteSnapshot, screenshot, ROUTES } from "../util-test";
 
 test.describe("Friendly Name Tests", () => {
     test.beforeEach(async ({ page }) => {
@@ -8,7 +8,7 @@ test.describe("Friendly Name Tests", () => {
 
     test("hostname", async ({ page }, testInfo) => {
         // Test DNS monitor with hostname
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await screenshot(testInfo, page);
 
@@ -17,7 +17,7 @@ test.describe("Friendly Name Tests", () => {
         await screenshot(testInfo, page);
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/admin/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         expect(page.getByTestId("monitor-list")).toContainText("example.com");
         await screenshot(testInfo, page);
@@ -25,7 +25,7 @@ test.describe("Friendly Name Tests", () => {
 
     test("URL hostname", async ({ page }, testInfo) => {
         // Test HTTP monitor with URL
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await screenshot(testInfo, page);
 
@@ -34,7 +34,7 @@ test.describe("Friendly Name Tests", () => {
         await screenshot(testInfo, page);
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/admin/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         expect(page.getByTestId("monitor-list")).toContainText("www.example.com");
         await screenshot(testInfo, page);
@@ -42,7 +42,7 @@ test.describe("Friendly Name Tests", () => {
 
     test("custom friendly name", async ({ page }, testInfo) => {
         // Test custom friendly name for HTTP monitor
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await screenshot(testInfo, page);
 
@@ -59,7 +59,7 @@ test.describe("Friendly Name Tests", () => {
         await screenshot(testInfo, page);
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/admin/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         expect(page.getByTestId("monitor-list")).toContainText(customName);
         await screenshot(testInfo, page);
@@ -67,7 +67,7 @@ test.describe("Friendly Name Tests", () => {
 
     test("default friendly name", async ({ page }, testInfo) => {
         // Test default friendly name when no custom name is provided
-        await page.goto("./add");
+        await page.goto("." + ROUTES.MONITOR_ADD);
         await login(page);
         await screenshot(testInfo, page);
 
@@ -75,7 +75,7 @@ test.describe("Friendly Name Tests", () => {
         await screenshot(testInfo, page);
 
         await page.getByTestId("save-button").click();
-        await page.waitForURL("/admin/dashboard/*");
+        await page.waitForURL(ROUTES.DASHBOARD + "/*");
 
         expect(page.getByTestId("monitor-list")).toContainText("New Monitor");
         await screenshot(testInfo, page);
