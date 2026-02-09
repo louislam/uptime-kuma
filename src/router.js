@@ -207,13 +207,13 @@ const routes = [
     // (without a prefix these would self-redirect)
     ...(getAdminPrefix()
         ? [
-            { path: "/dashboard/:id", redirect: (to) => getMonitorURL(to.params.id) },
-            { path: "/dashboard", redirect: ROUTES.DASHBOARD },
-            { path: "/maintenance/edit/:id", redirect: (to) => getMaintenanceEditURL(to.params.id) },
-            { path: "/maintenance/clone/:id", redirect: (to) => getMaintenanceCloneURL(to.params.id) },
-            { path: "/maintenance", redirect: ROUTES.MAINTENANCE },
-            { path: "/settings/:page(.*)", redirect: (to) => `${ROUTES.SETTINGS}/${to.params.page}` },
-        ]
+              { path: "/dashboard/:id", redirect: (to) => getMonitorURL(to.params.id) },
+              { path: "/dashboard", redirect: ROUTES.DASHBOARD },
+              { path: "/maintenance/edit/:id", redirect: (to) => getMaintenanceEditURL(to.params.id) },
+              { path: "/maintenance/clone/:id", redirect: (to) => getMaintenanceCloneURL(to.params.id) },
+              { path: "/maintenance", redirect: ROUTES.MAINTENANCE },
+              { path: "/settings/:page(.*)", redirect: (to) => `${ROUTES.SETTINGS}/${to.params.page}` },
+          ]
         : []),
     {
         path: "/:pathMatch(.*)*",

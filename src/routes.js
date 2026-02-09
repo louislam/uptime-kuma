@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSettingsURL = exports.getMaintenanceCloneURL = exports.getMaintenanceEditURL = exports.getMonitorCloneURL = exports.getMonitorEditURL = exports.getMonitorURL = exports.getStatusPageURL = exports.ROUTES = exports.getAdminPrefix = void 0;
-
 /**
  * Admin route path segments (without any prefix).
  */
@@ -21,13 +20,11 @@ const ADMIN_ROUTE_TEMPLATES = {
     MAINTENANCE_EDIT: "/maintenance/edit/:id",
     MAINTENANCE_CLONE: "/maintenance/clone/:id",
 };
-
 /**
  * Detect the admin route prefix from the environment.
  * - Node.js: reads process.env.UPTIME_KUMA_ADMIN_PREFIX
  * - Browser: reads window.__UPTIME_KUMA_ADMIN_PREFIX__
  * - Default: "" (empty string = original URLs unchanged)
- * @returns {string} The admin route prefix
  */
 function getAdminPrefix() {
     if (typeof process !== "undefined" && process.env && process.env.UPTIME_KUMA_ADMIN_PREFIX) {
@@ -39,11 +36,9 @@ function getAdminPrefix() {
     return "";
 }
 exports.getAdminPrefix = getAdminPrefix;
-
 /**
  * Build the full ROUTES object by prepending prefix to admin routes.
  * @param {string} prefix - The admin route prefix (e.g. "/admin" or "")
- * @returns {object} The routes object
  */
 function buildRoutes(prefix) {
     return {
@@ -71,7 +66,6 @@ function buildRoutes(prefix) {
         MAINTENANCE_CLONE: `${prefix}${ADMIN_ROUTE_TEMPLATES.MAINTENANCE_CLONE}`,
     };
 }
-
 /**
  * Centralized route path constants for the application.
  * Admin routes are prefixed with UPTIME_KUMA_ADMIN_PREFIX (default: "" = no prefix).
