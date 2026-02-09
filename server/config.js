@@ -35,7 +35,7 @@ function getLocalWebSocketURL() {
 
 const localWebSocketURL = getLocalWebSocketURL();
 
-const adminPrefix = args["admin-prefix"] || process.env.UPTIME_KUMA_ADMIN_PREFIX || "";
+const adminPrefix = process.env.UPTIME_KUMA_ADMIN_PREFIX || "";
 
 const demoMode = args["demo"] || false;
 
