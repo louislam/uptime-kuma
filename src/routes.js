@@ -25,6 +25,7 @@ const ADMIN_ROUTE_TEMPLATES = {
  * - Node.js: reads process.env.UPTIME_KUMA_ADMIN_PREFIX
  * - Browser: reads window.__UPTIME_KUMA_ADMIN_PREFIX__
  * - Default: "" (empty string = original URLs unchanged)
+ * @returns {string} The admin route prefix
  */
 function getAdminPrefix() {
     if (typeof process !== "undefined" && process.env && process.env.UPTIME_KUMA_ADMIN_PREFIX) {
@@ -39,6 +40,7 @@ exports.getAdminPrefix = getAdminPrefix;
 /**
  * Build the full ROUTES object by prepending prefix to admin routes.
  * @param {string} prefix - The admin route prefix (e.g. "/admin" or "")
+ * @returns {object} The routes object
  */
 function buildRoutes(prefix) {
     return {
