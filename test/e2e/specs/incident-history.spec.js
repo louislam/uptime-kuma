@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, restoreSqliteSnapshot, screenshot, ROUTES } from "../util-test";
+import { login, restoreSqliteSnapshot, screenshot, ROUTES, getStatusPageURL } from "../util-test";
 
 test.describe("Incident History", () => {
     test.beforeEach(async ({ page }) => {
@@ -17,7 +17,7 @@ test.describe("Incident History", () => {
         await page.getByTestId("name-input").fill("Empty Test");
         await page.getByTestId("slug-input").fill("empty-test");
         await page.getByTestId("submit-button").click();
-        await page.waitForURL("/status/empty-test?edit");
+        await page.waitForURL(getStatusPageURL("empty-test") + "?edit");
 
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
@@ -39,7 +39,7 @@ test.describe("Incident History", () => {
         await page.getByTestId("name-input").fill("Dedup Test");
         await page.getByTestId("slug-input").fill("dedup-test");
         await page.getByTestId("submit-button").click();
-        await page.waitForURL("/status/dedup-test?edit");
+        await page.waitForURL(getStatusPageURL("dedup-test") + "?edit");
 
         await page.getByTestId("create-incident-button").click();
         await page.getByTestId("incident-title").fill("Active Incident");
@@ -71,7 +71,7 @@ test.describe("Incident History", () => {
         await page.getByTestId("name-input").fill("Resolve Test");
         await page.getByTestId("slug-input").fill("resolve-test");
         await page.getByTestId("submit-button").click();
-        await page.waitForURL("/status/resolve-test?edit");
+        await page.waitForURL(getStatusPageURL("resolve-test") + "?edit");
 
         await page.getByTestId("create-incident-button").click();
         await page.getByTestId("incident-title").fill("Resolved Incident");
@@ -92,7 +92,7 @@ test.describe("Incident History", () => {
         await page.getByTestId("save-button").click();
         await expect(page.getByTestId("edit-sidebar")).toHaveCount(0);
 
-        await page.goto("./status/resolve-test");
+        await page.goto("." + getStatusPageURL("resolve-test"));
         await page.waitForLoadState("networkidle");
 
         const pastIncidentsSection = page.locator(".past-incidents-section");
@@ -115,7 +115,7 @@ test.describe("Incident History", () => {
         await page.getByTestId("name-input").fill("Pagination Test");
         await page.getByTestId("slug-input").fill("pagination-test");
         await page.getByTestId("submit-button").click();
-        await page.waitForURL("/status/pagination-test?edit");
+        await page.waitForURL(getStatusPageURL("pagination-test") + "?edit");
 
         for (let i = 1; i <= 12; i++) {
             await page.getByTestId("create-incident-button").click();
