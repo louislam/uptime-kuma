@@ -47,14 +47,50 @@
             .
         </i18n-t>
     </div>
+
+    <div class="mb-3">
+        <div class="form-check form-switch">
+            <input v-model="$parent.notification.matrixUseTemplate" class="form-check-input" type="checkbox" />
+            <label class="form-check-label">{{ $t("matrixUseTemplate") }}</label>
+        </div>
+
+        <div class="form-text">
+            {{ $t("matrixUseTemplateDescription") }}
+        </div>
+    </div>
+
+    <template v-if="$parent.notification.matrixUseTemplate">
+        <div class="mb-3">
+            <label class="form-label" for="message_template">{{ $t("Message Template") }}</label>
+            <TemplatedTextarea
+                id="message_template"
+                v-model="$parent.notification.matrixTemplate"
+                :required="true"
+                :placeholder="matrixTemplatedTextareaPlaceholder"
+            ></TemplatedTextarea>
+        </div>
+    </template>
 </template>
 
 <script>
 import HiddenInput from "../HiddenInput.vue";
+import TemplatedTextarea from "../TemplatedTextarea.vue";
 
 export default {
     components: {
         HiddenInput,
+        TemplatedTextarea
+    },
+    computed: {
+        matrixTemplatedTextareaPlaceholder() {
+            return this.$t("Example:", [
+                `
+Uptime Kuma Alert{% if monitorJSON %} - {{ monitorJSON['name'] }}{% endif %}
+
+{{ msg }}
+                `,
+            ]);
+        },
     },
 };
 </script>
