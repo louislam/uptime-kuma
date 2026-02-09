@@ -98,12 +98,11 @@ to review the appropriate one for your contribution.
   - `server/notification-providers/PROVIDER_NAME.js` is where the heart of the
     notification provider lives.
 
-        - Both `monitorJSON` and `heartbeatJSON` can be `null` for some events. If
+  - Both `monitorJSON` and `heartbeatJSON` can be `null` for some events. If
+    both are `null`, this is a general testing message, but if just
+    `heartbeatJSON` is `null` this is a certificate expiry.
 
-  both are `null`, this is a general testing message, but if just
-  `heartbeatJSON` is `null` this is a certificate expiry.
-
-        - Please wrap the axios call into a
+  - Please wrap the axios call into a ...
 
   ```js
   try {
@@ -124,13 +123,15 @@ to review the appropriate one for your contribution.
   - `src/components/notifications/PROVIDER_NAME.vue` is where the frontend of
     each provider lives. Please make sure that you have:
 
-        - used `HiddenInput` for secret credentials
-        - included all the necessary helptexts/placeholder/.. to make sure the
+  - used `HiddenInput` for secret credentials
 
-  notification provider is simple to setup for new users. - include all
-  translations (`{{ $t("Translation key") }}`,
-  [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html))
-  in `src/lang/en.json` to enable our translators to translate this
+  - included all the necessary helptexts/placeholder/.. to make sure the
+    notification provider is simple to setup for new users. 
+
+  - include all translations (`{{ $t("Translation key") }}`,
+    [`i18n-t keypath="Translation key">`](https://vue-i18n.intlify.dev/guide/advanced/component.html))
+    in `src/lang/en.json` to enable our translators to translate this
+
   - `src/components/notifications/index.js` is where the frontend of the
     provider needs to be registered. _If you have an idea how we can skip this
     step, we would love to hear about it ^^_
