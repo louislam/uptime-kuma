@@ -50,6 +50,7 @@ const SerwerSMS = require("./notification-providers/serwersms");
 const Signal = require("./notification-providers/signal");
 const SIGNL4 = require("./notification-providers/signl4");
 const Slack = require("./notification-providers/slack");
+const SlackGroupSummary = require("./notification-providers/slack-group-summary");
 const SMSPartner = require("./notification-providers/smspartner");
 const SMSEagle = require("./notification-providers/smseagle");
 const SMTP = require("./notification-providers/smtp");
@@ -150,6 +151,7 @@ class Notification {
             new SMSManager(),
             new SMSPartner(),
             new Slack(),
+            new SlackGroupSummary(),
             new SMSEagle(),
             new SMTP(),
             new Squadcast(),

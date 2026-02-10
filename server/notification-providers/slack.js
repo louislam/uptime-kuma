@@ -81,32 +81,83 @@ class Slack extends NotificationProvider {
      */
     buildBlocks(baseURL, monitorJSON, heartbeatJSON, title, msg) {
 
-        //create an array to dynamically add blocks
+        const isUp = heartbeatJSON["status"] === UP;
+        const statusEmoji = isUp ? "🟢" : "🔴";
+        const statusText = isUp ? "UP" : "DOWN";
+
         const blocks = [];
 
-        // the header block
+        // the header with status
         blocks.push({
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": title,
+                "text": `${statusEmoji} ${title} — ${monitorJSON.name} is ${statusText}`,
             },
         });
 
         // the body block, containing the details
+
+        const fields = [
+            {
+                "type": "mrkdwn",
+                "text": `*Monitor:*\n${monitorJSON.name}`,
+            },
+            {
+                "type": "mrkdwn",
+                "text": `*Status:*\n${statusEmoji} ${statusText}`,
+            },
+            {
+                "type": "mrkdwn",
+                "text": `*Time (${heartbeatJSON["timezone"]}):*\n${heartbeatJSON["localDateTime"]}`,
+            },
+        ];
+        if (heartbeatJSON["ping"] !== null && heartbeatJSON["ping"] !== undefined) {
+            fields.push({
+                "type": "mrkdwn",
+                "text": `*Response Time:*\n${heartbeatJSON["ping"]} ms`,
+            });
+        }
+        const address = this.extractAddress(monitorJSON);
+        if (address) {
+            fields.push({
+                "type": "mrkdwn",
+                "text": `*URL:*\n${address}`,
+            });
+        }
+
+        if (monitorJSON.type) {
+            fields.push({
+                "type": "mrkdwn",
+                "text": `*Type:*\n${monitorJSON.type.toUpperCase()}`,
+            });
+        }
+
         blocks.push({
             "type": "section",
-            "fields": [
-                {
-                    "type": "mrkdwn",
-                    "text": "*Message*\n" + msg,
-                },
-                {
-                    "type": "mrkdwn",
-                    "text": `*Time (${heartbeatJSON["timezone"]})*\n${heartbeatJSON["localDateTime"]}`,
-                }
-            ],
+            "fields": fields,
         });
+        if (!isUp && heartbeatJSON["msg"]) {
+            blocks.push({
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": `*Error:*\n\`\`\`${heartbeatJSON["msg"]}\`\`\``,
+                },
+            });
+        }
+
+        if (isUp && msg) {
+            blocks.push({
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": msg,
+                    }
+                ],
+            });
+        }
 
         const actions = this.buildActions(baseURL, monitorJSON);
         if (actions.length > 0) {
@@ -145,7 +196,7 @@ class Slack extends NotificationProvider {
 
             const baseURL = await setting("primaryBaseURL");
 
-            const title = "Uptime Kuma Alert";
+            const title = "APEX Office Print Alert";
             let data = {
                 "text": msg,
                 "channel": notification.slackchannel,

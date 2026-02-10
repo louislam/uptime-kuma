@@ -52,6 +52,7 @@ import Signal from "./Signal.vue";
 import SMSManager from "./SMSManager.vue";
 import SMSPartner from "./SMSPartner.vue";
 import Slack from "./Slack.vue";
+import SlackGroupSummary from "./SlackGroupSummary.vue";
 import Squadcast from "./Squadcast.vue";
 import SMSEagle from "./SMSEagle.vue";
 import Stackfield from "./Stackfield.vue";
@@ -137,6 +138,7 @@ const NotificationFormList = {
     "SMSManager": SMSManager,
     "SMSPartner": SMSPartner,
     "slack": Slack,
+    "SlackGroupSummary": SlackGroupSummary,
     "squadcast": Squadcast,
     "SMSEagle": SMSEagle,
     "smtp": STMP,

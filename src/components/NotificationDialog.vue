@@ -151,6 +151,7 @@ export default {
                 "signal": "Signal",
                 "SIGNL4": "SIGNL4",
                 "slack": "Slack",
+                "SlackGroupSummary": "Slack Group Summary",
                 "squadcast": "SquadCast",
                 "SMSEagle": "SMSEagle",
                 "SMSPartner": "SMS Partner",
