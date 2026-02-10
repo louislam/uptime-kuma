@@ -79,7 +79,7 @@ import TemplatedTextarea from "../TemplatedTextarea.vue";
 export default {
     components: {
         HiddenInput,
-        TemplatedTextarea
+        TemplatedTextarea,
     },
     computed: {
         matrixTemplatedTextareaPlaceholder() {
