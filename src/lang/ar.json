@@ -755,8 +755,6 @@
     "templateStatus": "الحالة",
     "telegramUseTemplate": "استخدم قالب رسالة مخصص",
     "telegramUseTemplateDescription": "إذا تم التفعيل، سيتم إرسال الرسالة باستخدام قالب مخصص.",
-    "matrixUseTemplate": "استخدم قالب رسالة مخصص",
-    "matrixUseTemplateDescription": "إذا تم التفعيل، سيتم إرسال الرسالة باستخدام قالب مخصص.",
     "now": "الآن",
     "-year": "-سنة",
     "and": "و",

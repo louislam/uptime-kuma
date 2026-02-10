@@ -531,8 +531,6 @@
     "telegramProtectContentDescription": "Indien ingeschakeld, wordt de botberichten in Telegram beschermd tegen doorsturen en opslaan.",
     "telegramUseTemplate": "Gebruik aangepaste bericht sjabloon",
     "telegramUseTemplateDescription": "Indien ingeschakeld, wordt het bericht verzonden met een aangepaste sjabloon.",
-    "matrixUseTemplate": "Gebruik aangepaste bericht sjabloon",
-    "matrixUseTemplateDescription": "Indien ingeschakeld, wordt het bericht verzonden met een aangepaste sjabloon.",
     "telegramTemplateFormatDescription": "Telegram staat het gebruik van verschillende opmaaktalen voor berichten toe, zie Telegram {0} voor specifieke details.",
     "supportTelegramChatID": "Ondersteuning Directe Chat / Groep / Kanaal Chat ID",
     "wayToGetTelegramChatID": "Ge kunt ge CHAT ID krijgen door een bericht te sturen naar de bot en naar deze URL te gaan om het chat_id te bekijken:",

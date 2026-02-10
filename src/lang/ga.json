@@ -1081,8 +1081,6 @@
     "defaultFriendlyName": "Monatóir Nua",
     "telegramUseTemplate": "Úsáid teimpléad teachtaireachta saincheaptha",
     "telegramUseTemplateDescription": "Má tá sé cumasaithe, seolfar an teachtaireacht ag baint úsáide as teimpléad saincheaptha.",
-    "matrixUseTemplate": "Úsáid teimpléad teachtaireachta saincheaptha",
-    "matrixUseTemplateDescription": "Má tá sé cumasaithe, seolfar an teachtaireacht ag baint úsáide as teimpléad saincheaptha.",
     "telegramServerUrlDescription": "Chun teorainneacha bot api Telegram a ardú nó rochtain a fháil i gceantair atá blocáilte (an tSín, an Iaráin, srl.). Le haghaidh tuilleadh eolais cliceáil {0}. Réamhshocrú: {1}",
     "Use HTML for custom E-mail body": "Úsáid HTML le haghaidh corp saincheaptha ríomhphoist",
     "smseagleGroupV2": "Aitheantóirí grúpa leabhar teileafóin",

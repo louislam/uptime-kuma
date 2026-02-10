@@ -928,8 +928,6 @@
     "telegramProtectContentDescription": "Jei įjungta, Telegram bot'o žinutės bus apsaugotos nuo persiuntimo ir išsaugojimo.",
     "telegramUseTemplate": "Naudoti pasirinktą žinutės šabloną",
     "telegramUseTemplateDescription": "Jei įjungta, žinutė bus išsiųsta naudojant pasirinktą šabloną.",
-    "matrixUseTemplate": "Naudoti pasirinktą žinutės šabloną",
-    "matrixUseTemplateDescription": "Jei įjungta, žinutė bus išsiųsta naudojant pasirinktą šabloną.",
     "telegramTemplateFormatDescription": "Telegram leidžia naudoti skirtingas žymėjimo kalbas žinutėms, žr. Telegram {0} dėl išsamesnės informacijos.",
     "supportTelegramChatID": "Palaikymas tiesioginiam pokalbiui / grupei / kanalui pokalbio ID",
     "wayToGetTelegramChatID": "Galite gauti savo pokalbio ID, išsiųsdami žinutę bot'ui ir apsilankę šioje nuorodoje, kur pamatysite chat_id:",

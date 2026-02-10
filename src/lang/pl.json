@@ -1117,8 +1117,6 @@
     "templateStatus": "status",
     "telegramUseTemplate": "Użyj niestandardowego szablonu wiadomości",
     "telegramUseTemplateDescription": "Jeśli opcja ta jest włączona, wiadomość zostanie wysłana przy użyciu niestandardowego szablonu.",
-    "matrixUseTemplate": "Użyj niestandardowego szablonu wiadomości",
-    "matrixUseTemplateDescription": "Jeśli opcja ta jest włączona, wiadomość zostanie wysłana przy użyciu niestandardowego szablonu.",
     "telegramTemplateFormatDescription": "Telegram pozwala na używanie różnych języków znaczników dla wiadomości, zobacz Telegram {0}, aby uzyskać szczegółowe informacje.",
     "Font Twemoji by Twitter licensed under": "Czcionka Twemoji autorstwa Twitter na licencji",
     "smsplanetApiToken": "Token dla API SMSPlanet",

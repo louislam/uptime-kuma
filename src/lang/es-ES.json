@@ -1091,8 +1091,6 @@
     "defaultFriendlyName": "Nuevo Monitor",
     "telegramUseTemplate": "Usar una plantilla de mensaje personalizado",
     "telegramUseTemplateDescription": "Si esta habilitado, el mensaje sera enviado usando una plantilla personalizada.",
-    "matrixUseTemplate": "Usar una plantilla de mensaje personalizado",
-    "matrixUseTemplateDescription": "Si esta habilitado, el mensaje sera enviado usando una plantilla personalizada.",
     "telegramServerUrlDescription": "Para aumentar las limitaciones de la API de bots de Telegram o ganar acceso en áreas bloqueadas (China, Irán, etc). Para mas información click {0}. Por defecto: {1}",
     "smseagleApiType": "Versión de la API",
     "telegramServerUrl": "(Opcional) URL del servidor",

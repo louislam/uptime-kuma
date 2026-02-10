@@ -711,8 +711,6 @@
     "RadiusCallingStationId": "Oppringende stasjons-ID",
     "telegramUseTemplate": "Bruk egendefinert meldingsmal",
     "telegramUseTemplateDescription": "Hvis aktivert, vil meldingen bli sendt ved bruk av en egendefinert mal.",
-    "matrixUseTemplate": "Bruk egendefinert meldingsmal",
-    "matrixUseTemplateDescription": "Hvis aktivert, vil meldingen bli sendt ved bruk av en egendefinert mal.",
     "backupRecommend": "Vennligst sikkerhetskopier volumet eller datamappen (./data/) direkte i stedet.",
     "lastDay3": "Tredje siste dag i måneden",
     "lastDay4": "Fjerde siste dag i måneden",

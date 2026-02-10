@@ -607,8 +607,6 @@
     "Setup Proxy": "Nastavenie proxy servera",
     "telegramUseTemplate": "Použiť vlastnú šablónu správy",
     "telegramUseTemplateDescription": "Ak je povolená, správa sa odošle pomocou vlastnej šablóny.",
-    "matrixUseTemplate": "Použiť vlastnú šablónu správy",
-    "matrixUseTemplateDescription": "Ak je povolená, správa sa odošle pomocou vlastnej šablóny.",
     "Use HTML for custom E-mail body": "Použitie HTML v tele e-mailu",
     "twoFAVerifyLabel": "Zadajte svoj token na overenie 2FA:",
     "confirmEnableTwoFAMsg": "Naozaj chcete povoliť 2FA?",
