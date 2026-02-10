@@ -33,12 +33,7 @@ class Matrix extends NotificationProvider {
             };
 
             if (notification.matrixUseTemplate) {
-                data.body = await this.renderTemplate(
-                    notification.matrixTemplate,
-                    msg,
-                    monitorJSON,
-                    heartbeatJSON
-                );
+                data.body = await this.renderTemplate(notification.matrixTemplate, msg, monitorJSON, heartbeatJSON);
             }
 
             config = this.getAxiosConfigWithProxy(config);
