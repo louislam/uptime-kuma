@@ -94,6 +94,18 @@ class HeartbeatDrop extends Drop {
             requestJSON: this.requestJSON.bind(this),
         });
     }
+
+    /**
+     * So {{ heartbeatJSON | json }} outputs a flat dict with heartbeat fields + request + requestJSON (no _heartbeat).
+     * JSON.stringify calls this; request/requestJSON use cached values if already accessed.
+     * @returns {object} Plain object for JSON serialization.
+     */
+    toJSON() {
+        return Object.assign({}, this._heartbeat, {
+            request: this._decoded ?? null,
+            requestJSON: this._parsed ?? null,
+        });
+    }
 }
 
 class NotificationProvider {
