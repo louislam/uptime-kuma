@@ -255,17 +255,20 @@ class GlobalpingMonitorType extends MonitorType {
     async handleKeywordForHTTP(monitor, heartbeat, result, probe) {
         let data = result.rawOutput;
         // let keywordFound = data.includes(monitor.keyword);
-           // 新增匹配规则配置，兼容旧逻辑
-        const { keyword, invertKeyword} = monitor;
+        // 新增匹配规则配置，兼容旧逻辑
+        const { keyword, invertKeyword } = monitor;
         let keywords = [];
-        const  keywordSeparator = ','
-            // 处理关键词：兼容数组、分隔符字符串、单个字符串
+        const keywordSeparator = ",";
+        // 处理关键词：兼容数组、分隔符字符串、单个字符串
         if (Array.isArray(keyword)) {
             // 1. 直接传入数组（优先级最高）
             keywords = keyword.filter(Boolean);
-        } else if (typeof keyword === 'string' && keyword) {
+        } else if (typeof keyword === "string" && keyword) {
             // 2. 字符串：按分隔符分割，同时清洗空格（比如 "success, 200" → ["success", "200"]）
-            keywords = keyword.split(keywordSeparator).map(k => k.trim()).filter(Boolean);
+            keywords = keyword
+                .split(keywordSeparator)
+                .map((k) => k.trim())
+                .filter(Boolean);
         }
         // 处理多关键词逻辑：先统一转为数组（兼容单个关键词的旧逻辑）
         // const keywords = Array.isArray(keyword) ? keyword : [keyword].filter(Boolean); // 过滤空值
@@ -276,27 +279,22 @@ class GlobalpingMonitorType extends MonitorType {
             heartbeat.status = UP;
             return;
         }
-        const matchedKeywords = keywords.filter(k => data.includes(k));
+        const matchedKeywords = keywords.filter((k) => data.includes(k));
         const keywordFound = matchedKeywords.length > 0; // 保持原有布尔判断逻辑
         // keywordFound = keywords.some(k => data.includes(k));
-        
-    
+
         if (keywordFound === Boolean(invertKeyword)) {
             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
             if (data.length > 50) {
                 data = data.substring(0, 47) + "...";
             }
             // 调整错误信息，显示所有检查的关键词
-            const matchedKeywordStr = matchedKeywords.length > 0 
-            ? matchedKeywords.join(', ') 
-            : "none";
+            const matchedKeywordStr = matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "none";
             throw new Error(
                 `${heartbeat.msg}, but keywords [${matchedKeywordStr}] are ${keywordFound ? "present" : "not"} in [${data}]`
-        );
+            );
         }
-        const matchedKeywordStr = matchedKeywords.length > 0 
-        ? matchedKeywords.join(', ') 
-        : "none";
+        const matchedKeywordStr = matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "none";
         heartbeat.msg += `, keywords [${matchedKeywordStr}] ${keywordFound ? "are" : "are not"} found`;
         heartbeat.status = UP;
     }

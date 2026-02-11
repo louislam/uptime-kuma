@@ -21,16 +21,19 @@ class GrpcKeywordMonitorType extends MonitorType {
         let response = await this.grpcQuery(service, monitor.grpcMethod, monitor.grpcBody);
         heartbeat.ping = dayjs().valueOf() - startTime;
         log.debug(this.name, "gRPC response:", response);
-        const { keyword} = monitor;
+        const { keyword } = monitor;
         let keywords = [];
-        const keywordSeparator = ','; 
-            // 处理关键词：兼容数组、分隔符字符串、单个字符串
+        const keywordSeparator = ",";
+        // 处理关键词：兼容数组、分隔符字符串、单个字符串
         if (Array.isArray(keyword)) {
             // 1. 直接传入数组（优先级最高）
             keywords = keyword.filter(Boolean);
-        } else if (typeof keyword === 'string' && keyword) {
+        } else if (typeof keyword === "string" && keyword) {
             // 2. 字符串：按分隔符分割，同时清洗空格（比如 "success, 200" → ["success", "200"]）
-            keywords = keyword.split(keywordSeparator).map(k => k.trim()).filter(Boolean);
+            keywords = keyword
+                .split(keywordSeparator)
+                .map((k) => k.trim())
+                .filter(Boolean);
         }
         // const keywords = Array.isArray(keyword) ? keyword : [keyword].filter(Boolean);
         // let keywordFound = false;
@@ -40,23 +43,18 @@ class GrpcKeywordMonitorType extends MonitorType {
             return;
         }
 
-
-        const responseStr = response.toString(); 
-        const matchedKeywords = keywords.filter(k => responseStr.includes(k));
+        const responseStr = response.toString();
+        const matchedKeywords = keywords.filter((k) => responseStr.includes(k));
         const keywordFound = matchedKeywords.length > 0; // 替代原有的some逻辑，结果一致
 
-
-        keywordFound = keywords.some(k => responseStr.includes(k));
+        keywordFound = keywords.some((k) => responseStr.includes(k));
         if (keywordFound !== !monitor.isInvertKeyword()) {
-            const matchedKeywordStr = matchedKeywords.length > 0 
-            ? matchedKeywords.join(', ') 
-            : "none";
+            const matchedKeywordStr = matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "none";
             // const keywordStr = keywords.join(', ');
             log.debug(
                 this.name,
                 `GRPC response [${response}] , but keywords [${matchedKeywordStr}] are ${keywordFound ? "present" : "not"} in [${response}]`
             );
-    
 
             let truncatedResponse = response.length > 50 ? response.toString().substring(0, 47) + "..." : response;
 
@@ -64,13 +62,11 @@ class GrpcKeywordMonitorType extends MonitorType {
                 `keywords [${matchedKeywordStr}] are ${keywordFound ? "present" : "not"} in [${truncatedResponse}]`
             );
         }
-        const matchedKeywordStr = matchedKeywords.length > 0 
-        ? matchedKeywords.join(', ') 
-        : "none";
+        const matchedKeywordStr = matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "none";
         // const keywordStr = keywords.join(', ');
         heartbeat.status = UP;
         heartbeat.msg = `${response}, keywords [${matchedKeywordStr}] ${keywordFound ? "is" : "not"} found `;
-}
+    }
 
     /**
      * Create gRPC client

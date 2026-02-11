@@ -677,27 +677,28 @@ class Monitor extends BeanModel {
                         if (typeof data !== "string") {
                             data = JSON.stringify(data);
                         }
-                        const { keyword} = this;
+                        const { keyword } = this;
                         let keywords = [];
-                        let keywordSeparator = ','
-                            // 处理关键词：兼容数组、分隔符字符串、单个字符串
+                        let keywordSeparator = ",";
+                        // 处理关键词：兼容数组、分隔符字符串、单个字符串
                         if (Array.isArray(keyword)) {
                             // 1. 直接传入数组（优先级最高）
                             keywords = keyword.filter(Boolean);
-                        } else if (typeof keyword === 'string' && keyword) {
+                        } else if (typeof keyword === "string" && keyword) {
                             // 2. 字符串：按分隔符分割，同时清洗空格（比如 "success, 200" → ["success", "200"]）
-                            keywords = keyword.split(keywordSeparator).map(k => k.trim()).filter(Boolean);
+                            keywords = keyword
+                                .split(keywordSeparator)
+                                .map((k) => k.trim())
+                                .filter(Boolean);
                         }
                         // const keywords = Array.isArray(this.keyword) ? keyword : [keyword].filter(Boolean);
                         let keywordFound = false;
 
-                        const matchedKeywords = keywords.filter(k => data.includes(k));
+                        const matchedKeywords = keywords.filter((k) => data.includes(k));
                         keywordFound = matchedKeywords.length > 0;
 
                         if (keywordFound === !this.isInvertKeyword()) {
-                            const matchedKeywordStr = matchedKeywords.length > 0 
-                            ? matchedKeywords.join(', ') 
-                            : "none";
+                            const matchedKeywordStr = matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "none";
                             bean.msg += `, keywords [${matchedKeywordStr}] ${keywordFound ? "are" : "are not"} found `;
                             bean.status = UP;
                         } else {
@@ -705,9 +706,7 @@ class Monitor extends BeanModel {
                             if (data.length > 50) {
                                 data = data.substring(0, 47) + "...";
                             }
-                            const matchedKeywordStr = matchedKeywords.length > 0 
-                            ? matchedKeywords.join(', ') 
-                            : "none";
+                            const matchedKeywordStr = matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "none";
                             throw new Error(
                                 bean.msg +
                                     ", but keywords [" +
