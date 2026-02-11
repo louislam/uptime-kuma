@@ -1552,5 +1552,16 @@
     "slackUseTemplateDescription": "Si activé, le message sera envoyé à l’aide d’un modèle personnalisé. Vous pouvez utiliser le templating Liquid pour inclure les informations du groupe de sondes via monitorJSON.path ou monitorJSON.pathName.",
     "discordMessageFormat": "Format du message",
     "discordUseMessageTemplate": "Utiliser un modèle de message personnalisé",
-    "discordUseMessageTemplateDescription": "Si cette option est activée, le message sera envoyé à l'aide d'un modèle personnalisé (LiquidJS). Laissez ce champ vide pour utiliser le format Uptime Kuma par défaut."
+    "discordUseMessageTemplateDescription": "Si cette option est activée, le message sera envoyé à l'aide d'un modèle personnalisé (LiquidJS). Laissez ce champ vide pour utiliser le format Uptime Kuma par défaut.",
+    "halopsa_field_title": "Titre de l'alerte (toujours « Alerte Uptime Kuma »)",
+    "halopsa_field_monitor": "Nom de la sonde",
+    "halopsa_field_message": "Message d'alerte complet avec statut et détails",
+    "halopsa_field_timestamp": "Horodatage de l'événement au format ISO 8601",
+    "halopsa_field_uptime_kuma_version": "Numéro de version Uptime Kuma",
+    "halopsa_setup_step5": "Configurez le runbook pour utiliser monitor_id afin d'associer les alertes aux tickets existants",
+    "Webhook Payload Fields": "Champs de charge utile du webhook",
+    "halopsa_payload_desc": "Les champs suivants sont envoyés à votre webhook Halo PSA :",
+    "halopsa_field_status": "Statut de la sonde : UP, DOWN, NOTIFICATION ou UNKNOWN",
+    "halopsa_field_monitor_id": "Identifiant unique de la sonde (null pour les notifications de test) – À utiliser pour faire correspondre les alertes aux tickets",
+    "halopsa_id_usage_hint": "💡 Conseil : Utilisez monitor_id pour associer les alertes aux tickets de manière fiable, et heartbeat_id pour suivre l’historique des événements"
 }
