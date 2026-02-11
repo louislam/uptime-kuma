@@ -677,19 +677,36 @@ class Monitor extends BeanModel {
                         if (typeof data !== "string") {
                             data = JSON.stringify(data);
                         }
+                        const { keyword} = this;
+                        let keywords = [];
+                        let  keywordSeparator = ','
+                            // 处理关键词：兼容数组、分隔符字符串、单个字符串
+                        if (Array.isArray(keyword)) {
+                            // 1. 直接传入数组（优先级最高）
+                            keywords = keyword.filter(Boolean);
+                        } else if (typeof keyword === 'string' && keyword) {
+                            // 2. 字符串：按分隔符分割，同时清洗空格（比如 "success, 200" → ["success", "200"]）
+                            keywords = keyword.split(keywordSeparator).map(k => k.trim()).filter(Boolean);
+                        }
+                        // const keywords = Array.isArray(this.keyword) ? keyword : [keyword].filter(Boolean);
+                        let keywordFound = false;
+                        keywordFound = keywords.some(k => data.includes(k));
 
-                        let keywordFound = data.includes(this.keyword);
                         if (keywordFound === !this.isInvertKeyword()) {
-                            bean.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
+                            const keywordStr = keywords.join(', ');
+                            bean.msg += `, keywords [${keywordStr}] ${keywordFound ? "are" : "are not"} found `;
                             bean.status = UP;
                         } else {
                             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
                             if (data.length > 50) {
                                 data = data.substring(0, 47) + "...";
                             }
+                            const keywordStr = keywords.join(', ');
                             throw new Error(
                                 bean.msg +
-                                    ", but keyword is " +
+                                    ", but keywords [" +
+                                    keywordStr +
+                                    "] are " +
                                     (keywordFound ? "present" : "not") +
                                     " in [" +
                                     data +

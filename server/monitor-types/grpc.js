@@ -21,22 +21,44 @@ class GrpcKeywordMonitorType extends MonitorType {
         let response = await this.grpcQuery(service, monitor.grpcMethod, monitor.grpcBody);
         heartbeat.ping = dayjs().valueOf() - startTime;
         log.debug(this.name, "gRPC response:", response);
-        let keywordFound = response.toString().includes(monitor.keyword);
+        const { keyword} = monitor;
+        let keywords = [];
+        let  keywordSeparator = ','
+            // 处理关键词：兼容数组、分隔符字符串、单个字符串
+        if (Array.isArray(keyword)) {
+            // 1. 直接传入数组（优先级最高）
+            keywords = keyword.filter(Boolean);
+        } else if (typeof keyword === 'string' && keyword) {
+            // 2. 字符串：按分隔符分割，同时清洗空格（比如 "success, 200" → ["success", "200"]）
+            keywords = keyword.split(keywordSeparator).map(k => k.trim()).filter(Boolean);
+        }
+        // const keywords = Array.isArray(keyword) ? keyword : [keyword].filter(Boolean);
+        let keywordFound = false;
+        if (keywords.length === 0) {
+            heartbeat.status = UP;
+            heartbeat.msg = `${response}, no keyword to check`;
+            return;
+        }
+        const responseStr = response.toString(); 
+        keywordFound = keywords.some(k => responseStr.includes(k));
         if (keywordFound !== !monitor.isInvertKeyword()) {
+            const keywordStr = keywords.join(', ');
             log.debug(
                 this.name,
-                `GRPC response [${response}] + ", but keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${response} + "]"`
+                `GRPC response [${response}] , but keywords [${keywordStr}] are ${keywordFound ? "present" : "not"} in [${response}]`
             );
+    
 
             let truncatedResponse = response.length > 50 ? response.toString().substring(0, 47) + "..." : response;
 
             throw new Error(
-                `keyword [${monitor.keyword}] is ${keywordFound ? "present" : "not"} in [" + ${truncatedResponse} + "]`
+                `keywords [${keywordStr}] are ${keywordFound ? "present" : "not"} in [${truncatedResponse}]`
             );
         }
+        const keywordStr = keywords.join(', ');
         heartbeat.status = UP;
-        heartbeat.msg = `${response}, keyword [${monitor.keyword}] ${keywordFound ? "is" : "not"} found`;
-    }
+        heartbeat.msg = `${response}, keywords [${keywordStr}] ${keywordFound ? "is" : "not"} found `;
+}
 
     /**
      * Create gRPC client
