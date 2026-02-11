@@ -1499,7 +1499,7 @@
     "Copy to Clipboard": "In Zwischenablage kopieren",
     "mariadbSocketPathDetectedHelptext": "Verbindung zur Datenbank wie in der Umgebungsvariable {0} angegeben.",
     "Copied to clipboard!": "In die Zwischenablage kopiert!",
-    "halopsa_webhook_url_desc": "Gib die Webhook-URL aus deinem Halo-PSA-Integrations-Runbook ein (Konfiguration > Integrationen > Benutzerdefinierte Integrationen > Integrations-Runbooks). Wähle beim Erstellen des Webhooks \"Kann nur von Halo und einem öffentlichen Endpunkt gestartet werden\".",
+    "halopsa_webhook_url_desc": "Gib die Webhook-URL aus deinem Halo PSA-Integrations-Runbook ein (Konfiguration > Integrationen > Benutzerdefinierte Integrationen > Integrations-Runbooks). Wähle beim Erstellen des Webhooks die Option \"Kann nur von Halo und von einem öffentlichen Endpunkt aus gestartet werden\".",
     "disableSTARTTLSDescription": "Aktiviere diese Option für SMTP-Server, die STARTTLS nicht unterstützen. E-Mails werden dann über eine unverschlüsselte Verbindung gesendet.",
     "Disable STARTTLS": "STARTTLS deaktivieren",
     "playground": "Playground",
