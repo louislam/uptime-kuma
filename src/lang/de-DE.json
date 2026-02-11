@@ -1560,5 +1560,7 @@
     "halopsa_field_timestamp": "Ereignis-Zeitstempel im ISO-8601-Format",
     "halopsa_field_uptime_kuma_version": "Uptime-Kuma-Versionsnummer",
     "halopsa_id_usage_hint": "💡 Tipp: Verwende monitor_id, um Alarme zuverlässig Tickets zuzuordnen, und heartbeat_id, um den Ereignisverlauf nachzuverfolgen",
-    "halopsa_setup_step5": "Runbook so konfigurieren, dass monitor_id zur Zuordnung von Alarmen zu bestehenden Tickets verwendet wird"
+    "halopsa_setup_step5": "Runbook so konfigurieren, dass monitor_id zur Zuordnung von Alarmen zu bestehenden Tickets verwendet wird",
+    "matrixUseTemplate": "Benutzerdefinierte Nachrichtenvorlage verwenden",
+    "matrixUseTemplateDescription": "Wenn aktiviert, wird die Nachricht unter Verwendung einer benutzerdefinierten Vorlage gesendet."
 }
