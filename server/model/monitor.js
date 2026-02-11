@@ -679,7 +679,7 @@ class Monitor extends BeanModel {
                         }
                         const { keyword} = this;
                         let keywords = [];
-                        let  keywordSeparator = ','
+                        let keywordSeparator = ','
                             // 处理关键词：兼容数组、分隔符字符串、单个字符串
                         if (Array.isArray(keyword)) {
                             // 1. 直接传入数组（优先级最高）
@@ -690,22 +690,28 @@ class Monitor extends BeanModel {
                         }
                         // const keywords = Array.isArray(this.keyword) ? keyword : [keyword].filter(Boolean);
                         let keywordFound = false;
-                        keywordFound = keywords.some(k => data.includes(k));
+
+                        const matchedKeywords = keywords.filter(k => data.includes(k));
+                        keywordFound = matchedKeywords.length > 0;
 
                         if (keywordFound === !this.isInvertKeyword()) {
-                            const keywordStr = keywords.join(', ');
-                            bean.msg += `, keywords [${keywordStr}] ${keywordFound ? "are" : "are not"} found `;
+                            const matchedKeywordStr = matchedKeywords.length > 0 
+                            ? matchedKeywords.join(', ') 
+                            : "none";
+                            bean.msg += `, keywords [${matchedKeywordStr}] ${keywordFound ? "are" : "are not"} found `;
                             bean.status = UP;
                         } else {
                             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
                             if (data.length > 50) {
                                 data = data.substring(0, 47) + "...";
                             }
-                            const keywordStr = keywords.join(', ');
+                            const matchedKeywordStr = matchedKeywords.length > 0 
+                            ? matchedKeywords.join(', ') 
+                            : "none";
                             throw new Error(
                                 bean.msg +
                                     ", but keywords [" +
-                                    keywordStr +
+                                    matchedKeywordStr +
                                     "] are " +
                                     (keywordFound ? "present" : "not") +
                                     " in [" +

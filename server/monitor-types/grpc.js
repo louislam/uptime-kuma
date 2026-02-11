@@ -23,7 +23,7 @@ class GrpcKeywordMonitorType extends MonitorType {
         log.debug(this.name, "gRPC response:", response);
         const { keyword} = monitor;
         let keywords = [];
-        let  keywordSeparator = ','
+        const keywordSeparator = ','; 
             // 处理关键词：兼容数组、分隔符字符串、单个字符串
         if (Array.isArray(keyword)) {
             // 1. 直接传入数组（优先级最高）
@@ -33,31 +33,43 @@ class GrpcKeywordMonitorType extends MonitorType {
             keywords = keyword.split(keywordSeparator).map(k => k.trim()).filter(Boolean);
         }
         // const keywords = Array.isArray(keyword) ? keyword : [keyword].filter(Boolean);
-        let keywordFound = false;
+        // let keywordFound = false;
         if (keywords.length === 0) {
             heartbeat.status = UP;
             heartbeat.msg = `${response}, no keyword to check`;
             return;
         }
+
+
         const responseStr = response.toString(); 
+        const matchedKeywords = keywords.filter(k => responseStr.includes(k));
+        const keywordFound = matchedKeywords.length > 0; // 替代原有的some逻辑，结果一致
+
+
         keywordFound = keywords.some(k => responseStr.includes(k));
         if (keywordFound !== !monitor.isInvertKeyword()) {
-            const keywordStr = keywords.join(', ');
+            const matchedKeywordStr = matchedKeywords.length > 0 
+            ? matchedKeywords.join(', ') 
+            : "none";
+            // const keywordStr = keywords.join(', ');
             log.debug(
                 this.name,
-                `GRPC response [${response}] , but keywords [${keywordStr}] are ${keywordFound ? "present" : "not"} in [${response}]`
+                `GRPC response [${response}] , but keywords [${matchedKeywordStr}] are ${keywordFound ? "present" : "not"} in [${response}]`
             );
     
 
             let truncatedResponse = response.length > 50 ? response.toString().substring(0, 47) + "..." : response;
 
             throw new Error(
-                `keywords [${keywordStr}] are ${keywordFound ? "present" : "not"} in [${truncatedResponse}]`
+                `keywords [${matchedKeywordStr}] are ${keywordFound ? "present" : "not"} in [${truncatedResponse}]`
             );
         }
-        const keywordStr = keywords.join(', ');
+        const matchedKeywordStr = matchedKeywords.length > 0 
+        ? matchedKeywords.join(', ') 
+        : "none";
+        // const keywordStr = keywords.join(', ');
         heartbeat.status = UP;
-        heartbeat.msg = `${response}, keywords [${keywordStr}] ${keywordFound ? "is" : "not"} found `;
+        heartbeat.msg = `${response}, keywords [${matchedKeywordStr}] ${keywordFound ? "is" : "not"} found `;
 }
 
     /**

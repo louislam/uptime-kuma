@@ -254,11 +254,11 @@ class GlobalpingMonitorType extends MonitorType {
      */
     async handleKeywordForHTTP(monitor, heartbeat, result, probe) {
         let data = result.rawOutput;
-        let keywordFound = data.includes(monitor.keyword);
+        // let keywordFound = data.includes(monitor.keyword);
            // 新增匹配规则配置，兼容旧逻辑
         const { keyword, invertKeyword} = monitor;
         let keywords = [];
-        let  keywordSeparator = ','
+        const  keywordSeparator = ','
             // 处理关键词：兼容数组、分隔符字符串、单个字符串
         if (Array.isArray(keyword)) {
             // 1. 直接传入数组（优先级最高）
@@ -276,7 +276,10 @@ class GlobalpingMonitorType extends MonitorType {
             heartbeat.status = UP;
             return;
         }
-        keywordFound = keywords.some(k => data.includes(k));
+        const matchedKeywords = keywords.filter(k => data.includes(k));
+        const keywordFound = matchedKeywords.length > 0; // 保持原有布尔判断逻辑
+        // keywordFound = keywords.some(k => data.includes(k));
+        
     
         if (keywordFound === Boolean(invertKeyword)) {
             data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
@@ -284,14 +287,17 @@ class GlobalpingMonitorType extends MonitorType {
                 data = data.substring(0, 47) + "...";
             }
             // 调整错误信息，显示所有检查的关键词
-            const keywordStr = keywords.join(', ');
+            const matchedKeywordStr = matchedKeywords.length > 0 
+            ? matchedKeywords.join(', ') 
+            : "none";
             throw new Error(
-                `${heartbeat.msg}, but keywords [${keywordStr}] are ${keywordFound ? "present" : "not"} in [${data}]`
+                `${heartbeat.msg}, but keywords [${matchedKeywordStr}] are ${keywordFound ? "present" : "not"} in [${data}]`
         );
         }
-
-        const keywordStr = keywords.join(', ');
-        heartbeat.msg += `, keywords [${keywordStr}] ${keywordFound ? "are" : "are not"} found`;
+        const matchedKeywordStr = matchedKeywords.length > 0 
+        ? matchedKeywords.join(', ') 
+        : "none";
+        heartbeat.msg += `, keywords [${matchedKeywordStr}] ${keywordFound ? "are" : "are not"} found`;
         heartbeat.status = UP;
     }
 
