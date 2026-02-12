@@ -49,7 +49,7 @@ class LoginMonitorType extends MonitorType {
 
         const commonHeaders = {
             "User-Agent": "Uptime-Kuma",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         };
 
         const timeoutMs = (monitor.timeout || 30) * 1000;

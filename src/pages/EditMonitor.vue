@@ -294,7 +294,9 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="login-success-keyword" class="form-label">{{ $t("Login Success Keyword") }}</label>
+                                    <label for="login-success-keyword" class="form-label">
+                                        {{ $t("Login Success Keyword") }}
+                                    </label>
                                     <input
                                         id="login-success-keyword"
                                         v-model="monitor.login_success_keyword"
@@ -308,7 +310,9 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="login-username-field" class="form-label">{{ $t("Login Username Field Name") }}</label>
+                                    <label for="login-username-field" class="form-label">
+                                        {{ $t("Login Username Field Name") }}
+                                    </label>
                                     <input
                                         id="login-username-field"
                                         v-model="monitor.login_username_field"
@@ -322,7 +326,9 @@
                                 </div>
 
                                 <div class="my-3">
-                                    <label for="login-password-field" class="form-label">{{ $t("Login Password Field Name") }}</label>
+                                    <label for="login-password-field" class="form-label">
+                                        {{ $t("Login Password Field Name") }}
+                                    </label>
                                     <input
                                         id="login-password-field"
                                         v-model="monitor.login_password_field"
