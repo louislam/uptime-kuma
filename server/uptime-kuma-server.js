@@ -132,6 +132,12 @@ class UptimeKumaServer {
         UptimeKumaServer.monitorTypeList["sqlserver"] = new MssqlMonitorType();
         UptimeKumaServer.monitorTypeList["mysql"] = new MysqlMonitorType();
 
+        // HTTP, keyword and json-query share the same monitor type (check uses monitor.type)
+        const httpMonitorType = new HttpMonitorType();
+        UptimeKumaServer.monitorTypeList["http"] = httpMonitorType;
+        UptimeKumaServer.monitorTypeList["keyword"] = httpMonitorType;
+        UptimeKumaServer.monitorTypeList["json-query"] = httpMonitorType;
+
         // Allow all CORS origins (polling) in development
         let cors = undefined;
         if (isDev) {
@@ -582,4 +588,5 @@ const { RedisMonitorType } = require("./monitor-types/redis");
 const { SystemServiceMonitorType } = require("./monitor-types/system-service");
 const { MssqlMonitorType } = require("./monitor-types/mssql");
 const { MysqlMonitorType } = require("./monitor-types/mysql");
+const { HttpMonitorType } = require("./monitor-types/http");
 const Monitor = require("./model/monitor");

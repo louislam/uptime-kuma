@@ -11,7 +11,6 @@ const {
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
     SQL_DATETIME_FORMAT,
-    evaluateJsonQuery,
     PING_PACKET_SIZE_MIN,
     PING_PACKET_SIZE_MAX,
     PING_PACKET_SIZE_DEFAULT,
@@ -29,7 +28,6 @@ const {
 } = require("../../src/util");
 const {
     ping,
-    checkCertificate,
     checkStatusCode,
     getTotalClientInRoom,
     setting,
@@ -38,15 +36,11 @@ const {
     kafkaProducerAsync,
     getOidcTokenClientCredentials,
     rootCertificatesFingerprints,
-    axiosAbortSignal,
-    checkCertificateHostname,
-    encodeBase64,
     checkCertExpiryNotifications,
 } = require("../util-server");
 const { R } = require("redbean-node");
 const { BeanModel } = require("redbean-node/dist/bean-model");
 const { Notification } = require("../notification");
-const { Proxy } = require("../proxy");
 const { demoMode } = require("../config");
 const version = require("../../package.json").version;
 const apicache = require("../modules/apicache");
@@ -55,8 +49,6 @@ const { DockerHost } = require("../docker");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { UptimeCalculator } = require("../uptime-calculator");
-const { CookieJar } = require("tough-cookie");
-const { HttpsCookieAgent } = require("http-cookie-agent/http");
 const https = require("https");
 const http = require("http");
 const zlib = require("node:zlib");
@@ -469,251 +461,19 @@ class Monitor extends BeanModel {
                 if (await Monitor.isUnderMaintenance(this.id)) {
                     bean.msg = "Monitor under maintenance";
                     bean.status = MAINTENANCE;
-                } else if (this.type === "http" || this.type === "keyword" || this.type === "json-query") {
-                    // Do not do any queries/high loading things before the "bean.ping"
+                } else if (this.type in UptimeKumaServer.monitorTypeList) {
                     let startTime = dayjs().valueOf();
+                    const monitorType = UptimeKumaServer.monitorTypeList[this.type];
+                    await monitorType.check(this, bean, UptimeKumaServer.getInstance());
 
-                    // HTTP basic auth
-                    let basicAuthHeader = {};
-                    if (this.auth_method === "basic") {
-                        basicAuthHeader = {
-                            Authorization: "Basic " + encodeBase64(this.basic_auth_user, this.basic_auth_pass),
-                        };
-                    }
-
-                    // OIDC: Basic client credential flow.
-                    // Additional grants might be implemented in the future
-                    let oauth2AuthHeader = {};
-                    if (this.auth_method === "oauth2-cc") {
-                        try {
-                            if (
-                                this.oauthAccessToken === undefined ||
-                                new Date(this.oauthAccessToken.expires_at * 1000) <= new Date()
-                            ) {
-                                this.oauthAccessToken = await this.makeOidcTokenClientCredentialsRequest();
-                            }
-                            oauth2AuthHeader = {
-                                Authorization:
-                                    this.oauthAccessToken.token_type + " " + this.oauthAccessToken.access_token,
-                            };
-                        } catch (e) {
-                            throw new Error("The oauth config is invalid. " + e.message);
-                        }
-                    }
-
-                    let agentFamily = undefined;
-                    if (this.ipFamily === "ipv4") {
-                        agentFamily = 4;
-                    }
-                    if (this.ipFamily === "ipv6") {
-                        agentFamily = 6;
-                    }
-
-                    const httpsAgentOptions = {
-                        maxCachedSessions: 0, // Use Custom agent to disable session reuse (https://github.com/nodejs/node/issues/3940)
-                        rejectUnauthorized: !this.getIgnoreTls(),
-                        secureOptions: crypto.constants.SSL_OP_LEGACY_SERVER_CONNECT,
-                        autoSelectFamily: true,
-                        ...(agentFamily ? { family: agentFamily } : {}),
-                    };
-
-                    const httpAgentOptions = {
-                        maxCachedSessions: 0,
-                        autoSelectFamily: true,
-                        ...(agentFamily ? { family: agentFamily } : {}),
-                    };
-
-                    log.debug("monitor", `[${this.name}] Prepare Options for axios`);
-
-                    let contentType = null;
-                    let bodyValue = null;
-
-                    if (this.body && typeof this.body === "string" && this.body.trim().length > 0) {
-                        if (!this.httpBodyEncoding || this.httpBodyEncoding === "json") {
-                            try {
-                                bodyValue = JSON.parse(this.body);
-                                contentType = "application/json";
-                            } catch (e) {
-                                throw new Error("Your JSON body is invalid. " + e.message);
-                            }
-                        } else if (this.httpBodyEncoding === "form") {
-                            bodyValue = this.body;
-                            contentType = "application/x-www-form-urlencoded";
-                        } else if (this.httpBodyEncoding === "xml") {
-                            bodyValue = this.body;
-                            contentType = "text/xml; charset=utf-8";
-                        }
-                    }
-
-                    // Axios Options
-                    const options = {
-                        url: this.url,
-                        method: (this.method || "get").toLowerCase(),
-                        timeout: this.timeout * 1000,
-                        headers: {
-                            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                            ...(contentType ? { "Content-Type": contentType } : {}),
-                            ...basicAuthHeader,
-                            ...oauth2AuthHeader,
-                            ...(this.headers ? JSON.parse(this.headers) : {}),
-                        },
-                        maxRedirects: this.maxredirects,
-                        validateStatus: (status) => {
-                            return checkStatusCode(status, this.getAcceptedStatuscodes());
-                        },
-                        signal: axiosAbortSignal((this.timeout + 10) * 1000),
-                    };
-
-                    if (bodyValue) {
-                        options.data = bodyValue;
-                    }
-
-                    if (this.cacheBust) {
-                        const randomFloatString = Math.random().toString(36);
-                        const cacheBust = randomFloatString.substring(2);
-                        options.params = {
-                            uptime_kuma_cachebuster: cacheBust,
-                        };
-                    }
-
-                    if (this.proxy_id) {
-                        const proxy = await R.load("proxy", this.proxy_id);
-
-                        if (proxy && proxy.active) {
-                            const { httpAgent, httpsAgent } = Proxy.createAgents(proxy, {
-                                httpsAgentOptions: httpsAgentOptions,
-                                httpAgentOptions: httpAgentOptions,
-                            });
-
-                            options.proxy = false;
-                            options.httpAgent = httpAgent;
-                            options.httpsAgent = httpsAgent;
-                        }
-                    }
-
-                    if (!options.httpAgent) {
-                        options.httpAgent = new http.Agent(httpAgentOptions);
-                    }
-
-                    if (!options.httpsAgent) {
-                        let jar = new CookieJar();
-                        let httpsCookieAgentOptions = {
-                            ...httpsAgentOptions,
-                            cookies: { jar },
-                        };
-                        options.httpsAgent = new HttpsCookieAgent(httpsCookieAgentOptions);
-                    }
-
-                    if (this.auth_method === "mtls") {
-                        if (this.tlsCert !== null && this.tlsCert !== "") {
-                            options.httpsAgent.options.cert = Buffer.from(this.tlsCert);
-                        }
-                        if (this.tlsCa !== null && this.tlsCa !== "") {
-                            options.httpsAgent.options.ca = Buffer.from(this.tlsCa);
-                        }
-                        if (this.tlsKey !== null && this.tlsKey !== "") {
-                            options.httpsAgent.options.key = Buffer.from(this.tlsKey);
-                        }
-                    }
-
-                    let tlsInfo = {};
-                    // Store tlsInfo when secureConnect event is emitted
-                    // The keylog event listener is a workaround to access the tlsSocket
-                    options.httpsAgent.once("keylog", async (line, tlsSocket) => {
-                        tlsSocket.once("secureConnect", async () => {
-                            tlsInfo = checkCertificate(tlsSocket);
-                            tlsInfo.valid = tlsSocket.authorized || false;
-                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(
-                                tlsInfo.certInfo.raw,
-                                this.getUrl()?.hostname
-                            );
-
-                            await this.handleTlsInfo(tlsInfo);
-                        });
-                    });
-
-                    log.debug("monitor", `[${this.name}] Axios Options: ${JSON.stringify(options)}`);
-                    log.debug("monitor", `[${this.name}] Axios Request`);
-
-                    // Make Request
-                    let res = await this.makeAxiosRequest(options);
-
-                    bean.msg = `${res.status} - ${res.statusText}`;
-                    bean.ping = dayjs().valueOf() - startTime;
-
-                    // in the frontend, the save response is only shown if the saveErrorResponse is set
-                    if (this.getSaveResponse() && this.getSaveErrorResponse()) {
-                        await this.saveResponseData(bean, res.data);
-                    }
-
-                    // fallback for if kelog event is not emitted, but we may still have tlsInfo,
-                    // e.g. if the connection is made through a proxy
-                    if (this.getUrl()?.protocol === "https:" && tlsInfo.valid === undefined) {
-                        const tlsSocket = res.request.res.socket;
-
-                        if (tlsSocket) {
-                            tlsInfo = checkCertificate(tlsSocket);
-                            tlsInfo.valid = tlsSocket.authorized || false;
-                            tlsInfo.hostnameMatchMonitorUrl = checkCertificateHostname(
-                                tlsInfo.certInfo.raw,
-                                this.getUrl()?.hostname
-                            );
-
-                            await this.handleTlsInfo(tlsInfo);
-                        }
-                    }
-
-                    // eslint-disable-next-line eqeqeq
-                    if (process.env.UPTIME_KUMA_LOG_RESPONSE_BODY_MONITOR_ID == this.id) {
-                        log.info("monitor", res.data);
-                    }
-
-                    if (this.type === "http") {
-                        bean.status = UP;
-                    } else if (this.type === "keyword") {
-                        let data = res.data;
-
-                        // Convert to string for object/array
-                        if (typeof data !== "string") {
-                            data = JSON.stringify(data);
-                        }
-
-                        let keywordFound = data.includes(this.keyword);
-                        if (keywordFound === !this.isInvertKeyword()) {
-                            bean.msg += ", keyword " + (keywordFound ? "is" : "not") + " found";
-                            bean.status = UP;
-                        } else {
-                            data = data.replace(/<[^>]*>?|[\n\r]|\s+/gm, " ").trim();
-                            if (data.length > 50) {
-                                data = data.substring(0, 47) + "...";
-                            }
-                            throw new Error(
-                                bean.msg +
-                                    ", but keyword is " +
-                                    (keywordFound ? "present" : "not") +
-                                    " in [" +
-                                    data +
-                                    "]"
-                            );
-                        }
-                    } else if (this.type === "json-query") {
-                        let data = res.data;
-
-                        const { status, response } = await evaluateJsonQuery(
-                            data,
-                            this.jsonPath,
-                            this.jsonPathOperator,
-                            this.expectedValue
+                    if (!monitorType.allowCustomStatus && bean.status !== UP) {
+                        throw new Error(
+                            "The monitor implementation is incorrect, non-UP error must throw error inside check()"
                         );
+                    }
 
-                        if (status) {
-                            bean.status = UP;
-                            bean.msg = `JSON query passes (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`;
-                        } else {
-                            throw new Error(
-                                `JSON query does not pass (comparing ${response} ${this.jsonPathOperator} ${this.expectedValue})`
-                            );
-                        }
+                    if (bean.ping === undefined || bean.ping === null) {
+                        bean.ping = dayjs().valueOf() - startTime;
                     }
                 } else if (this.type === "ping") {
                     bean.ping = await ping(
@@ -906,20 +666,6 @@ class Monitor extends BeanModel {
                     bean.msg = resp.code;
                     bean.status = UP;
                     bean.ping = dayjs().valueOf() - startTime;
-                } else if (this.type in UptimeKumaServer.monitorTypeList) {
-                    let startTime = dayjs().valueOf();
-                    const monitorType = UptimeKumaServer.monitorTypeList[this.type];
-                    await monitorType.check(this, bean, UptimeKumaServer.getInstance());
-
-                    if (!monitorType.allowCustomStatus && bean.status !== UP) {
-                        throw new Error(
-                            "The monitor implementation is incorrect, non-UP error must throw error inside check()"
-                        );
-                    }
-
-                    if (bean.ping === undefined || bean.ping === null) {
-                        bean.ping = dayjs().valueOf() - startTime;
-                    }
                 } else if (this.type === "kafka-producer") {
                     let startTime = dayjs().valueOf();
 
