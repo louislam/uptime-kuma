@@ -1455,5 +1455,15 @@
     "halopsa_field_timestamp": "Event timestamp in ISO 8601 format",
     "halopsa_field_uptime_kuma_version": "Uptime Kuma version number",
     "halopsa_id_usage_hint": "💡 Tip: Use monitor_id to reliably match alerts to tickets, and heartbeat_id to track event history",
-    "halopsa_setup_step5": "Configure runbook to use monitor_id for matching alerts to existing tickets"
+    "halopsa_setup_step5": "Configure runbook to use monitor_id for matching alerts to existing tickets",
+    "Login Username": "Login Username",
+    "Login Password": "Login Password",
+    "Login Success Keyword": "Login Success Keyword",
+    "Login Username Field Name": "Username Field Name",
+    "Login Password Field Name": "Password Field Name",
+    "loginUsernameDescription": "The username/email to use for login attempts.",
+    "loginPasswordDescription": "The password to use for login attempts.",
+    "loginSuccessKeywordDescription": "A keyword expected in the response after a successful login (e.g. \"Dashboard\", \"Welcome\", \"Logout\").",
+    "loginUsernameFieldDescription": "The form field name for the username (default: \"username\"). Check your login form's HTML for the correct name attribute.",
+    "loginPasswordFieldDescription": "The form field name for the password (default: \"password\"). Check your login form's HTML for the correct name attribute."
 }

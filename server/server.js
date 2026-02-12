@@ -924,6 +924,11 @@ let needSetup = false;
                 bean.manual_status = monitor.manual_status;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
+                bean.login_username = monitor.login_username;
+                bean.login_password = monitor.login_password;
+                bean.login_success_keyword = monitor.login_success_keyword;
+                bean.login_username_field = monitor.login_username_field;
+                bean.login_password_field = monitor.login_password_field;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;

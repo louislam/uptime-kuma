@@ -56,6 +56,7 @@
                                             HTTP(s) - Browser Engine (Chrome/Chromium) (Beta)
                                         </option>
                                         <option value="websocket-upgrade">Websocket Upgrade</option>
+                                        <option value="login">HTTP(s) - Login</option>
                                     </optgroup>
 
                                     <optgroup :label="$t('Passive Monitor Type')">
@@ -163,7 +164,8 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    monitor.type === 'real-browser'
+                                    monitor.type === 'real-browser' ||
+                                    monitor.type === 'login'
                                 "
                                 class="my-3"
                             >
@@ -261,6 +263,78 @@
                                     {{ $t("invertKeywordDescription") }}
                                 </div>
                             </div>
+
+                            <!-- Login Monitor Fields -->
+                            <template v-if="monitor.type === 'login'">
+                                <div class="my-3">
+                                    <label for="login-username" class="form-label">{{ $t("Login Username") }}</label>
+                                    <input
+                                        id="login-username"
+                                        v-model="monitor.login_username"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("loginUsernameDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="login-password" class="form-label">{{ $t("Login Password") }}</label>
+                                    <HiddenInput
+                                        id="login-password"
+                                        v-model="monitor.login_password"
+                                        :required="true"
+                                        autocomplete="new-password"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("loginPasswordDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="login-success-keyword" class="form-label">{{ $t("Login Success Keyword") }}</label>
+                                    <input
+                                        id="login-success-keyword"
+                                        v-model="monitor.login_success_keyword"
+                                        type="text"
+                                        class="form-control"
+                                        required
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("loginSuccessKeywordDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="login-username-field" class="form-label">{{ $t("Login Username Field Name") }}</label>
+                                    <input
+                                        id="login-username-field"
+                                        v-model="monitor.login_username_field"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="username"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("loginUsernameFieldDescription") }}
+                                    </div>
+                                </div>
+
+                                <div class="my-3">
+                                    <label for="login-password-field" class="form-label">{{ $t("Login Password Field Name") }}</label>
+                                    <input
+                                        id="login-password-field"
+                                        v-model="monitor.login_password_field"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="password"
+                                    />
+                                    <div class="form-text">
+                                        {{ $t("loginPasswordFieldDescription") }}
+                                    </div>
+                                </div>
+                            </template>
 
                             <!-- Remote Browser -->
                             <div v-if="monitor.type === 'real-browser'" class="my-3">
@@ -1346,6 +1420,7 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'json-query' ||
                                     monitor.type === 'keyword' ||
+                                    monitor.type === 'login' ||
                                     monitor.type === 'ping' ||
                                     monitor.type === 'rabbitmq' ||
                                     monitor.type === 'snmp' ||
@@ -1490,6 +1565,7 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
+                                    monitor.type === 'login' ||
                                     monitor.type === 'redis' ||
                                     (monitor.type === 'globalping' && monitor.subtype === 'http')
                                 "
@@ -1690,7 +1766,8 @@
                                     monitor.type === 'http' ||
                                     monitor.type === 'keyword' ||
                                     monitor.type === 'json-query' ||
-                                    monitor.type === 'grpc-keyword'
+                                    monitor.type === 'grpc-keyword' ||
+                                    monitor.type === 'login'
                                 "
                             >
                                 <div class="my-3">
@@ -2796,6 +2873,11 @@ const monitorDefaults = {
     rabbitmqPassword: "",
     conditions: [],
     system_service_name: "",
+    login_username: "",
+    login_password: "",
+    login_success_keyword: "",
+    login_username_field: "",
+    login_password_field: "",
 };
 
 export default {
