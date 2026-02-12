@@ -245,7 +245,7 @@ class Prometheus {
         try {
             monitorCertDaysRemaining.remove(this.monitorLabelValues);
             monitorCertIsValid.remove(this.monitorLabelValues);
-            ["1d", "30d", "365d"].forEach(window => {
+            ["1d", "30d", "365d"].forEach((window) => {
                 monitorUptimeRatio.remove({ ...this.monitorLabelValues, window });
                 monitorAverageResponseTimeSeconds.remove({ ...this.monitorLabelValues, window });
             });
