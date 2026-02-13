@@ -1,6 +1,6 @@
 /* ============================================================
-   1. ESTRUTURA GERAL & FUNDO
-   ============================================================ */
+    1. GENERAL STRUCTURE & BACKGROUND
+    ============================================================ */
 html {
     width: 100vw !important;
     max-width: 100% !important;
@@ -28,7 +28,7 @@ body {
     flex-direction: column !important;
 }
 
-/* RESTRIÇÃO DE LARGURA (EXCETO TOOLTIP) */
+/* WIDTH CONSTRAINT (EXCEPT TOOLTIP) */
 #app,
 .container,
 .main {
@@ -48,8 +48,8 @@ body {
 }
 
 /* ============================================================
-   2. VARIÁVEIS VISUAIS
-   ============================================================ */
+    2. VISUAL VARIABLES
+    ============================================================ */
 :root {
     --bg-card: #161b22;
     --bg-card-hover: #262b33;
@@ -70,8 +70,8 @@ body {
 }
 
 /* ============================================================
-   3. ESTRUTURA DO CARD (FLEXBOX)
-   ============================================================ */
+    3. CARD STRUCTURE (FLEXBOX)
+    ============================================================ */
 .item {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border);
@@ -112,7 +112,7 @@ body {
     margin-top: 0 !important;
 }
 
-/* CABEÇALHO (Título) */
+/* HEADER (Title) */
 .monitor-list .item .col-6:first-child,
 .monitor-list .item .col-9:first-child {
     width: 100% !important;
@@ -120,7 +120,7 @@ body {
     flex: 0 0 auto !important;
 }
 
-/* CORPO (Gráfico) */
+/* BODY (Chart) */
 .monitor-list .item .col-6:last-child,
 .monitor-list .item .col-3:last-child {
     width: 100% !important;
@@ -134,8 +134,8 @@ body {
 }
 
 /* ============================================================
-   4. BARRAS DE STATUS (BEATS)
-   ============================================================ */
+    4. STATUS BARS (BEATS)
+    ============================================================ */
 .wrap {
     flex-grow: 0 !important;
     display: flex !important;
@@ -221,8 +221,8 @@ body {
 }
 
 /* ============================================================
-   5. CORREÇÃO TOOLTIP
-   ============================================================ */
+    5. TOOLTIP FIX
+    ============================================================ */
 .tooltip-wrapper {
     width: auto !important;
     height: auto !important;
@@ -234,8 +234,8 @@ body {
 }
 
 /* ============================================================
-   6. HEADER E TEXTOS
-   ============================================================ */
+    6. HEADER AND TEXT
+    ============================================================ */
 h1,
 .group-title {
     font-size: var(--fs-header) !important;
@@ -319,8 +319,8 @@ footer,
 }
 
 /* ============================================================
-   7. GRUPO + GRID (COLUNAS NO .mt-4)
-   ============================================================ */
+    7. GROUP + GRID (COLUMNS ON .mt-4)
+    ============================================================ */
 #app div:has(> .mb-5) {
     width: 100% !important;
     max-width: 100% !important;
@@ -340,12 +340,12 @@ footer,
     box-sizing: border-box !important;
 }
 
-/* definição de colunas no container mt-4 */
+/* column definition in the mt-4 container */
 #app .mb-5 .monitor-list.mt-4 {
     --group-columns: 2;
 }
 
-/* grid aplicado no container interno, controlado pelo mt-4 */
+/* grid applied to the inner container, controlled by mt-4 */
 #app .mb-5 .monitor-list.mt-4 > .monitor-list {
     display: grid !important;
     grid-template-columns: repeat(var(--group-columns), minmax(0, 1fr)) !important;
@@ -357,7 +357,7 @@ footer,
     padding: 0 !important;
 }
 
-/* responsivo: muda apenas a definição no mt-4 */
+/* responsive: only changes the definition in mt-4 */
 @media (max-width: 1100px) {
     #app .mb-5 .monitor-list.mt-4 {
         --group-columns: 1;
@@ -365,15 +365,15 @@ footer,
 }
 
 /* ============================================================
-   8. HEARTBEAT EM CANVAS (NOVO LAYOUT)
-   ============================================================ */
+    8. CANVAS HEARTBEAT (NEW LAYOUT)
+    ============================================================ */
 #app .heartbeat-canvas {
     width: 100% !important;
     height: 100% !important;
     display: block !important;
 }
 
-/* manter colunas do layout novo */
+/* keep columns from the new layout */
 .monitor-list .item .col-9:first-child,
 .monitor-list .item .col-6:first-child {
     width: 100% !important;
