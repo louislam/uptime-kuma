@@ -136,8 +136,8 @@
                             v-model.number="config.slideshowInterval"
                             type="number"
                             class="form-control"
-                            :min="3"
-                            :max="300"
+                            :min="minSlideshowInterval"
+                            :max="maxSlideshowInterval"
                         />
                         <div class="form-text">{{ $t("Slideshow Interval Description") }}</div>
                     </div>
