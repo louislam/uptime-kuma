@@ -6,7 +6,11 @@ const { UP, PENDING, log } = require("../../../src/util");
 const { default: axios } = require("axios");
 const assert = require("node:assert");
 
-
+/**
+ * Creates an HTTP server that records each request for inspection.
+ * @param {object} opts - Server options (status, responseBody, responseHeaders, delayMs). Optional.
+ * @returns {Promise<{ server: import("http").Server; url: string; getLastRequest: () => object | null }>} Resolves with server, url, and getLastRequest.
+ */
 function createInspectingTestServer(opts = {}) {
     const {
         status = 200,
@@ -36,6 +40,10 @@ function createInspectingTestServer(opts = {}) {
                 }
             });
 
+            /**
+             * Sends the response.
+             * @returns {void}
+             */
             function send() {
                 res.writeHead(status, responseHeaders);
                 res.end(responseBody);
@@ -53,6 +61,11 @@ function createInspectingTestServer(opts = {}) {
     });
 }
 
+/**
+ * Creates a simple HTTP server for tests.
+ * @param {object} opts - Server options (status, body, headers, delayMs). Optional.
+ * @returns {Promise<{ server: import("http").Server; port: number; url: string }>} Resolves with server, port, and url.
+ */
 function createTestServer(opts = {}) {
     const {
         status = 200,
@@ -69,6 +82,10 @@ function createTestServer(opts = {}) {
                 send();
             }
 
+            /**
+             * Sends the response.
+             * @returns {void}
+             */
             function send() {
                 res.writeHead(status, headers);
                 res.end(body);
@@ -85,6 +102,11 @@ function createTestServer(opts = {}) {
     });
 }
 
+/**
+ * Creates a minimal monitor object for HTTP monitor type tests.
+ * @param {object} overrides - Properties to override on the default monitor. Optional.
+ * @returns {object} A monitor-like object with getUrl, getIgnoreTls, etc.
+ */
 function createTestMonitor(overrides = {}) {
     return {
         name: "test-monitor",
@@ -1160,10 +1182,12 @@ describe(
             };
         
             const mockLoad = t.mock.fn(async (table, id) => {
-                if (table === "proxy" && id === 7) return fakeProxy;
+                if (table === "proxy" && id === 7) {
+                    return fakeProxy;
+                }
                 return null;
             });
-        
+
             const spyCreateAgents = t.mock.fn(() => ({
                 httpAgent:  new http.Agent(),
                 httpsAgent: new https.Agent(),
@@ -1172,24 +1196,24 @@ describe(
             const redbeanPath = require.resolve("redbean-node");
             const proxyPath = require.resolve("../../../server/proxy", { paths: [__dirname] });
             const httpPath = require.resolve("../../../server/monitor-types/http", { paths: [__dirname] });
-        
+
             const redbeanExports = require.cache[redbeanPath].exports;
             const originalR = redbeanExports.R;
             const originalProxyExports = require.cache[proxyPath].exports;
-        
+
             redbeanExports.R = { load: mockLoad };
             require.cache[proxyPath].exports = { Proxy: { createAgents: spyCreateAgents } };
             delete require.cache[httpPath];
-        
+
             t.after(() => {
                 redbeanExports.R = originalR;
                 require.cache[proxyPath].exports = originalProxyExports;
                 delete require.cache[httpPath];
             });
-        
+
             const { HttpMonitorType: HttpMonitorForProxy } = require("../../../server/monitor-types/http");
             const httpMonitorForProxy = new HttpMonitorForProxy();
-        
+
             const { server, url } = await createTestServer();
             t.after(() => server.close());
         
@@ -1214,7 +1238,9 @@ describe(
             };
         
             const mockLoad = t.mock.fn(async (table, id) => {
-                if (table === "proxy" && id === 7) return fakeProxy;
+                if (table === "proxy" && id === 7) {
+                    return fakeProxy;
+                }
                 return null;
             });
         
@@ -1277,7 +1303,9 @@ describe(
             };
         
             const mockLoad = t.mock.fn(async (table, id) => {
-                if (table === "proxy" && id === 7) return fakeProxy;
+                if (table === "proxy" && id === 7) {
+                    return fakeProxy;
+                }
                 return null;
             });
         
