@@ -573,7 +573,11 @@
                     >
                         « {{ $t("Previous Slide") }}
                     </button>
-                    <button class="btn btn-outline-primary btn-sm" @click="toggleSlideshowPause">
+                    <button
+                        class="btn btn-outline-primary btn-sm"
+                        :disabled="!config.slideshowAutoPlay"
+                        @click="toggleSlideshowPause"
+                    >
                         {{ isSlideshowPaused ? $t("Play") : $t("Pause") }}
                     </button>
                     <button class="btn btn-outline-secondary btn-sm" :title="$t('Next Slide')" @click="nextSlide">
