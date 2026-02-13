@@ -90,7 +90,7 @@ function createTestMonitor(overrides = {}) {
         name: "test-monitor",
         id: 9999,
         type: "http",
-        url: "", // filled per test
+        url: "",
         auth_method: null,
         ipFamily: null,
         body: null,
@@ -457,7 +457,6 @@ describe(
             await httpMonitor.check(monitor, heartbeat, {});
 
             const req = getLastRequest();
-            // Implementation does not set bodyValue when body trims to empty, so no request body
             assert.ok(req.body === "" || req.body === null || req.body === undefined, "request body should be empty");
             assert.strictEqual(heartbeat.status, UP);
         });
@@ -484,7 +483,6 @@ describe(
             assert.strictEqual(req.headers["x-custom-header"], "test-value-123");
             assert.strictEqual(req.headers["x-app-version"], "4.2.1");
             assert.strictEqual(req.headers["accept-language"], "en-US,en;q=0.9");
-            // Should still have default Accept header
             assert.ok(req.headers["accept"].includes("text/html"));
         });
 
@@ -494,7 +492,7 @@ describe(
 
             const monitor = createTestMonitor({
                 url,
-                headers: '{ "X-Foo": "bar", }', // trailing comma = invalid JSON
+                headers: '{ "X-Foo": "bar", }',
             });
             const heartbeat = { msg: "", status: PENDING };
 
@@ -629,7 +627,7 @@ describe(
                 oauthAccessToken: {
                     access_token: "expired-token",
                     token_type: "Bearer",
-                    expires_at: Math.floor(Date.now() / 1000) - 1, // 1 second ago
+                    expires_at: Math.floor(Date.now() / 1000) - 1,
                 },
                 makeOidcTokenClientCredentialsRequest: t.mock.fn(async () => newToken),
             });
@@ -679,14 +677,14 @@ describe(
         });
 
         test("check() times out and throws when server is too slow", async (t) => {
-            const { server, url } = await createInspectingTestServer({
-                delayMs: 2500, // longer than timeout=1s
+            const { server, url } = await createInspectingTestServer({//
+                delayMs: 2500,
             });
             t.after(() => server.close());
 
             const monitor = createTestMonitor({
                 url,
-                timeout: 1, // 1 second
+                timeout: 1,
             });
             const heartbeat = { msg: "", status: PENDING };
 
@@ -822,7 +820,7 @@ describe(
         
             const monitor = createTestMonitor({
                 url: `${url}/start`,
-                maxredirects: 3, // allow only 3 → should fail on 4th
+                maxredirects: 3,
             });
             const heartbeat = { msg: "", status: PENDING };
         
@@ -943,7 +941,7 @@ describe(
                 type: "json-query",
                 jsonPath: "$.metrics.latency_ms",
                 jsonPathOperator: "<",
-                expectedValue: "200", // string comparison? → depends on impl, but usually coerced
+                expectedValue: "200",
             });
             const heartbeat = { msg: "", status: PENDING };
         
@@ -974,7 +972,6 @@ describe(
             await assert.rejects(
                 httpMonitor.check(monitor, heartbeat, {}),
                 (err) => {
-                    // Depending on evaluateJsonQuery impl – usually response = undefined or null
                     assert.ok(err.message.includes("Error evaluating JSON query: Empty or undefined response."));
                     assert.ok(err.message.includes("undefined") || err.message.includes("null"));
                     return true;
@@ -1098,7 +1095,7 @@ describe(
             t.after(() => server.close());
         
             const monitor = createTestMonitor({
-                url: url.replace("http://", "https://"), // fake https
+                url: url.replace("http://", "https://"),
                 auth_method: "mtls",
                 tlsCert: "-----BEGIN CERTIFICATE-----\nfake cert\n-----END CERTIFICATE-----",
                 tlsKey: "-----BEGIN PRIVATE KEY-----\nfake key\n-----END PRIVATE KEY-----",
@@ -1107,7 +1104,6 @@ describe(
         
             const heartbeat = { msg: "", status: PENDING };
         
-            // Will throw because no real https server, but we check options were set
             await assert.rejects(
                 httpMonitor.check(monitor, heartbeat, {}),
                 /self-signed|ECONN|asn1|encoding|header too long|certificate|invalid/i
@@ -1263,7 +1259,6 @@ describe(
         
             await httpMonitorForProxy.check(monitor, heartbeat, {});
         
-            // Assertions
             assert.strictEqual(spyCreateAgents.mock.callCount(), 0, "Proxy.createAgents should not be called when proxy is missing");
         
             const req = getLastRequest();
@@ -1442,7 +1437,7 @@ describe(
                 data: "Proxied success",
                 request: {
                     res: {
-                        socket: fakeTlsSocket, // simulate proxy-passthrough socket
+                        socket: fakeTlsSocket,
                     },
                 },
             }));
