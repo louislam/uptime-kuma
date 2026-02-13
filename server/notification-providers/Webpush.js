@@ -1,5 +1,4 @@
 const NotificationProvider = require("./notification-provider");
-const { UP } = require("../../src/util");
 const webpush = require("web-push");
 const { setting } = require("../util-server");
 
