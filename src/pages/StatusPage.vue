@@ -1393,9 +1393,11 @@ export default {
          * @returns {boolean} True if marked block is present
          */
         hasAdvancedStatusPageLayoutCSS() {
-            return typeof this.config.customCSS === "string" &&
+            return (
+                typeof this.config.customCSS === "string" &&
                 this.config.customCSS.includes(advancedStatusPageLayoutCSSStart) &&
-                this.config.customCSS.includes(advancedStatusPageLayoutCSSEnd);
+                this.config.customCSS.includes(advancedStatusPageLayoutCSSEnd)
+            );
         },
 
         /**
@@ -1409,7 +1411,10 @@ export default {
             }
 
             let result = css;
-            while (result.includes(advancedStatusPageLayoutCSSStart) && result.includes(advancedStatusPageLayoutCSSEnd)) {
+            while (
+                result.includes(advancedStatusPageLayoutCSSStart) &&
+                result.includes(advancedStatusPageLayoutCSSEnd)
+            ) {
                 const startIndex = result.indexOf(advancedStatusPageLayoutCSSStart);
                 const endIndex = result.indexOf(advancedStatusPageLayoutCSSEnd, startIndex);
 
@@ -1421,9 +1426,7 @@ export default {
                 result = `${result.slice(0, startIndex)}${result.slice(endMarkerEndIndex)}`;
             }
 
-            return result
-                .replace(/\n{3,}/g, "\n\n")
-                .trim();
+            return result.replace(/\n{3,}/g, "\n\n").trim();
         },
 
         /**
