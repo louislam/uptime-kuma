@@ -356,8 +356,14 @@ export default {
                         valueB = b.validCert && b.certExpiryDaysRemaining ? b.certExpiryDaysRemaining : -1;
                     } else if (sortKey === "domain") {
                         // Sort by domain expiry time
-                        valueA = a.domainExpiryDaysRemaining !== undefined && a.domainExpiryDaysRemaining !== "" ? a.domainExpiryDaysRemaining : -1;
-                        valueB = b.domainExpiryDaysRemaining !== undefined && b.domainExpiryDaysRemaining !== "" ? b.domainExpiryDaysRemaining : -1;
+                        valueA =
+                            a.domainExpiryDaysRemaining !== undefined && a.domainExpiryDaysRemaining !== ""
+                                ? a.domainExpiryDaysRemaining
+                                : -1;
+                        valueB =
+                            b.domainExpiryDaysRemaining !== undefined && b.domainExpiryDaysRemaining !== ""
+                                ? b.domainExpiryDaysRemaining
+                                : -1;
                     }
 
                     if (valueA < valueB) {

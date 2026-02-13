@@ -260,7 +260,10 @@ export default {
          * @returns {string} Domain expiry message
          */
         formattedDomainExpiryMessage(monitor) {
-            if (monitor?.element?.domainExpiryDaysRemaining !== undefined && monitor?.element?.domainExpiryDaysRemaining !== "") {
+            if (
+                monitor?.element?.domainExpiryDaysRemaining !== undefined &&
+                monitor?.element?.domainExpiryDaysRemaining !== ""
+            ) {
                 return this.$t("days", monitor.element.domainExpiryDaysRemaining);
             } else {
                 return this.$t("unknownDays");
