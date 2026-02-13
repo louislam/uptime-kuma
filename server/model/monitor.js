@@ -82,7 +82,7 @@ class Monitor extends BeanModel {
      * JSON
      * @returns {Promise<object>} Object ready to parse
      */
-    async toPublicJSON(showTags = false, certExpiry = false) {
+    async toPublicJSON(showTags = false, certExpiry = false, domainExpiry = false) {
         let obj = {
             id: this.id,
             name: this.name,
@@ -106,6 +106,20 @@ class Monitor extends BeanModel {
             const { certExpiryDaysRemaining, validCert } = await this.getCertExpiry(this.id);
             obj.certExpiryDaysRemaining = certExpiryDaysRemaining;
             obj.validCert = validCert;
+        }
+
+        if (domainExpiry) {
+            try {
+                const supportInfo = await DomainExpiry.checkSupport(this);
+                const domainBean = await DomainExpiry.findByDomainNameOrCreate(supportInfo.domain);
+                if (domainBean && domainBean.expiry) {
+                    obj.domainExpiryDaysRemaining = dayjs.utc(domainBean.expiry).diff(dayjs.utc(), "day");
+                } else {
+                    obj.domainExpiryDaysRemaining = "";
+                }
+            } catch (e) {
+                obj.domainExpiryDaysRemaining = "";
+            }
         }
 
         return obj;

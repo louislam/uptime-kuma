@@ -10,12 +10,12 @@ class Group extends BeanModel {
      * certificate expiry?
      * @returns {Promise<object>} Object ready to parse
      */
-    async toPublicJSON(showTags = false, certExpiry = false) {
+    async toPublicJSON(showTags = false, certExpiry = false, domainExpiry = false) {
         let monitorBeanList = await this.getMonitorList();
         let monitorList = [];
 
         for (let bean of monitorBeanList) {
-            monitorList.push(await bean.toPublicJSON(showTags, certExpiry));
+            monitorList.push(await bean.toPublicJSON(showTags, certExpiry, domainExpiry));
         }
 
         return {

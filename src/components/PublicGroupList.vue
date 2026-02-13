@@ -29,6 +29,7 @@
                         :group="group.element"
                         :group-index="group.index"
                         :show-certificate-expiry="showCertificateExpiry"
+                        :show-domain-expiry="showDomainExpiry"
                         @update-group="updateGroup"
                     />
                 </h2>
@@ -114,6 +115,16 @@
                                                     data-testid="monitor-tag"
                                                 />
                                             </div>
+                                            <div v-if="showDomainExpiry && monitor.element.domainExpiryDaysRemaining">
+                                                <Tag
+                                                    :item="{
+                                                        name: $t('Domain Exp.'),
+                                                        value: formattedDomainExpiryMessage(monitor),
+                                                        color: domainExpiryColor(monitor),
+                                                    }"
+                                                    :size="'sm'"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                     <div :key="$root.userHeartbeatBar" class="col-3 col-xl-6">
@@ -161,6 +172,10 @@ export default {
         },
         /** Should expiry be shown? */
         showCertificateExpiry: {
+            type: Boolean,
+        },
+        /** Should domain expiry be shown? */
+        showDomainExpiry: {
             type: Boolean,
         },
         /** Should only the last heartbeat be shown? */
@@ -240,6 +255,19 @@ export default {
         },
 
         /**
+         * Returns formatted domain expiry message
+         * @param {object} monitor Monitor to show expiry for
+         * @returns {string} Domain expiry message
+         */
+        formattedDomainExpiryMessage(monitor) {
+            if (monitor?.element?.domainExpiryDaysRemaining !== undefined && monitor?.element?.domainExpiryDaysRemaining !== "") {
+                return this.$t("days", monitor.element.domainExpiryDaysRemaining);
+            } else {
+                return this.$t("unknownDays");
+            }
+        },
+
+        /**
          * Returns the status of the last heartbeat
          * @param {number} monitorId Id of the monitor to get status for
          * @returns {number} Status of the last heartbeat
@@ -257,6 +285,13 @@ export default {
          */
         certExpiryColor(monitor) {
             if (monitor?.element?.validCert && monitor.element.certExpiryDaysRemaining > 7) {
+                return "#059669";
+            }
+            return "#DC2626";
+        },
+
+        domainExpiryColor(monitor) {
+            if (monitor?.element?.domainExpiryDaysRemaining > 7) {
                 return "#059669";
             }
             return "#DC2626";
