@@ -1417,6 +1417,7 @@
     "Sort by name": "Sort by name",
     "Sort by uptime": "Sort by uptime",
     "Sort by certificate expiry": "Sort by certificate expiry",
+    "Sort by domain expiry": "Sort by domain expiry",
     "Splunk Rest URL": "Splunk Rest URL",
     "Severity": "Severity",
     "Message Format": "Message Format",
