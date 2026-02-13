@@ -587,8 +587,6 @@
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
-                    :enable-slideshow="slideshowEnabled"
-                    :active-group-index="activeSlideIndex"
                 />
             </div>
 
