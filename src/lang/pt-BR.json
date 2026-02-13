@@ -1530,5 +1530,7 @@
     "Webhook Payload Fields": "Campos do payload do webhook",
     "halopsa_payload_desc": "Os seguintes campos são enviados para o seu webhook Halo PSA:",
     "halopsa_field_monitor_id": "Identificador único do monitor (nulo para notificações de teste) - Use-o para associar alertas a tickets",
-    "halopsa_id_usage_hint": "💡 Dica: Use o `monitor_id` para associar alertas a tickets de forma confiável e o `heartbeat_id` para acompanhar o histórico de eventos"
+    "halopsa_id_usage_hint": "💡 Dica: Use o `monitor_id` para associar alertas a tickets de forma confiável e o `heartbeat_id` para acompanhar o histórico de eventos",
+    "matrixUseTemplateDescription": "Se ativada, a mensagem será enviada usando um modelo personalizado.",
+    "matrixUseTemplate": "Use um modelo de mensagem personalizado"
 }

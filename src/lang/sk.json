@@ -1511,5 +1511,18 @@
     "discordUseMessageTemplate": "Použiť vlastnú šablónu správy",
     "discordMessageTemplate": "Šablóna správy",
     "discordMessageFormatNormal": "Normálny (rozšírené vloženie)",
-    "discordUseMessageTemplateDescription": "Ak je táto možnosť povolená, správa bude odoslaná pomocou vlastnej šablóny (LiquidJS). Nechajte pole prázdne, ak chcete použiť predvolený formát Uptime Kuma."
+    "discordUseMessageTemplateDescription": "Ak je táto možnosť povolená, správa bude odoslaná pomocou vlastnej šablóny (LiquidJS). Nechajte pole prázdne, ak chcete použiť predvolený formát Uptime Kuma.",
+    "halopsa_field_title": "Názov upozornenia (vždy „Uptime Kuma Alert“)",
+    "halopsa_field_monitor": "Názov monitora",
+    "halopsa_field_monitor_id": "Jedinečný identifikátor monitora (nula pre testovacie oznámenia) – Použite toto na priradenie upozornení k tiketom",
+    "halopsa_field_message": "Úplná správa s upozornením so stavom a podrobnosťami",
+    "halopsa_field_uptime_kuma_version": "Číslo verzie Uptime Kuma",
+    "halopsa_setup_step5": "Nakonfigurujte runbook tak, aby používal monitor_id na spárovanie upozornenia s existujúcimi ticketmi",
+    "halopsa_payload_desc": "Nasledujúce polia sa odosielajú do vášho Halo PSA webhooku:",
+    "halopsa_field_status": "Stav monitora: UP, DOWN, NOTIFICATION alebo UNKNOWN",
+    "halopsa_field_timestamp": "Časová pečiatka udalosti vo formáte ISO 8601",
+    "halopsa_id_usage_hint": "💡 Tip: Použite monitor_id na spoľahlivé priradenie upozornení k tiketom a heartbeat_id na sledovanie histórie udalostí",
+    "Webhook Payload Fields": "Polia Webhook Payload",
+    "matrixUseTemplate": "Použiť šablónu vlastnej správy",
+    "matrixUseTemplateDescription": "Ak je táto funkcia povolená, správa bude odoslaná pomocou vlastnej šablóny."
 }
