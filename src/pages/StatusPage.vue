@@ -114,6 +114,71 @@
                     </label>
                 </div>
 
+                <hr />
+
+                <div class="my-3 form-check form-switch">
+                    <input
+                        id="enable-slideshow"
+                        v-model="config.enableSlideshow"
+                        class="form-check-input"
+                        type="checkbox"
+                    />
+                    <label class="form-check-label" for="enable-slideshow">
+                        {{ $t("Status Page Slideshow") }}
+                    </label>
+                </div>
+
+                <template v-if="config.enableSlideshow">
+                    <div class="my-3">
+                        <label for="slideshow-interval" class="form-label">{{ $t("Slideshow Interval") }}</label>
+                        <input
+                            id="slideshow-interval"
+                            v-model.number="config.slideshowInterval"
+                            type="number"
+                            class="form-control"
+                            :min="3"
+                            :max="300"
+                        />
+                        <div class="form-text">{{ $t("Slideshow Interval Description") }}</div>
+                    </div>
+
+                    <div class="my-3 form-check form-switch">
+                        <input
+                            id="slideshow-autoplay"
+                            v-model="config.slideshowAutoPlay"
+                            class="form-check-input"
+                            type="checkbox"
+                        />
+                        <label class="form-check-label" for="slideshow-autoplay">
+                            {{ $t("Slideshow Auto Play") }}
+                        </label>
+                    </div>
+
+                    <div class="my-3 form-check form-switch">
+                        <input
+                            id="slideshow-loop"
+                            v-model="config.slideshowLoop"
+                            class="form-check-input"
+                            type="checkbox"
+                        />
+                        <label class="form-check-label" for="slideshow-loop">
+                            {{ $t("Slideshow Loop") }}
+                        </label>
+                    </div>
+
+                    <div class="my-3 form-check form-switch">
+                        <input
+                            id="slideshow-show-controls"
+                            v-model="config.slideshowShowControls"
+                            class="form-check-input"
+                            type="checkbox"
+                        />
+                        <label class="form-check-label" for="slideshow-show-controls">
+                            {{ $t("Show Slideshow Controls") }}
+                        </label>
+                    </div>
+                </template>
+
                 <!-- Domain Name List -->
                 <div class="my-3">
                     <label class="form-label">
@@ -204,6 +269,18 @@
                 <!-- Custom CSS -->
                 <div class="my-3">
                     <div class="mb-1">{{ $t("Custom CSS") }}</div>
+                    <div class="form-check form-switch mb-2">
+                        <input
+                            id="advanced-layout-css-switch"
+                            v-model="advancedLayoutCSSEnabled"
+                            class="form-check-input"
+                            type="checkbox"
+                            data-testid="advanced-layout-css-switch"
+                        />
+                        <label class="form-check-label" for="advanced-layout-css-switch">
+                            {{ $t("Enable Advanced Layout CSS") }}
+                        </label>
+                    </div>
                     <prism-editor
                         v-model="config.customCSS"
                         class="css-editor"
@@ -488,11 +565,30 @@
                     👀 {{ $t("statusPageNothing") }}
                 </div>
 
+                <div v-if="showSlideshowControls" class="d-flex justify-content-center align-items-center mb-3 gap-2">
+                    <button
+                        class="btn btn-outline-secondary btn-sm"
+                        :title="$t('Previous Slide')"
+                        @click="previousSlide"
+                    >
+                        « {{ $t("Previous Slide") }}
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" @click="toggleSlideshowPause">
+                        {{ isSlideshowPaused ? $t("Play") : $t("Pause") }}
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" :title="$t('Next Slide')" @click="nextSlide">
+                        {{ $t("Next") }} »
+                    </button>
+                    <span class="small text-secondary ms-2">{{ slideshowPositionText }}</span>
+                </div>
+
                 <PublicGroupList
                     :edit-mode="enableEditMode"
                     :show-tags="config.showTags"
                     :show-certificate-expiry="config.showCertificateExpiry"
                     :show-only-last-heartbeat="config.showOnlyLastHeartbeat"
+                    :enable-slideshow="slideshowEnabled"
+                    :active-group-index="activeSlideIndex"
                 />
             </div>
 
@@ -616,6 +712,7 @@ import "vue-prism-editor/dist/prismeditor.min.css"; // import the styles somewhe
 import { useToast } from "vue-toastification";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import advancedStatusPageLayoutCSS from "../assets/status-page-advanced-layout.css?raw";
 import Confirm from "../components/Confirm.vue";
 import PublicGroupList from "../components/PublicGroupList.vue";
 import MaintenanceTime from "../components/MaintenanceTime.vue";
@@ -638,6 +735,11 @@ const toast = useToast();
 dayjs.extend(duration);
 
 const leavePageMsg = "Do you really want to leave? you have unsaved changes!";
+const defaultSlideshowInterval = 8;
+const minSlideshowInterval = 3;
+const maxSlideshowInterval = 300;
+const advancedStatusPageLayoutCSSStart = "/* UPTIME_KUMA_ADVANCED_LAYOUT_START */";
+const advancedStatusPageLayoutCSSEnd = "/* UPTIME_KUMA_ADVANCED_LAYOUT_END */";
 
 // eslint-disable-next-line no-unused-vars
 let feedInterval;
@@ -707,6 +809,9 @@ export default {
             incidentHistoryLoading: false,
             incidentHistoryNextCursor: null,
             incidentHistoryHasMore: false,
+            activeSlideIndex: 0,
+            slideshowTimer: null,
+            isSlideshowPaused: false,
         };
     },
     computed: {
@@ -892,6 +997,57 @@ export default {
             }
             return groups;
         },
+
+        /**
+         * Whether slideshow feature should run in current context
+         * @returns {boolean} True if slideshow should be active
+         */
+        slideshowEnabled() {
+            return this.config.enableSlideshow && !this.editMode && this.$root.publicGroupList.length > 1;
+        },
+
+        /**
+         * Whether slideshow controls should be visible
+         * @returns {boolean} True if controls should be shown
+         */
+        showSlideshowControls() {
+            return this.slideshowEnabled && this.config.slideshowShowControls;
+        },
+
+        /**
+         * Interval in milliseconds for slide rotation
+         * @returns {number} Interval in ms
+         */
+        slideshowIntervalMs() {
+            const seconds = Number(this.config.slideshowInterval || defaultSlideshowInterval);
+            const normalized = Math.max(minSlideshowInterval, Math.min(maxSlideshowInterval, seconds));
+            return normalized * 1000;
+        },
+
+        /**
+         * Human-readable slideshow position label
+         * @returns {string} Slide position text
+         */
+        slideshowPositionText() {
+            const total = this.$root.publicGroupList.length;
+            if (!this.slideshowEnabled || total <= 0) {
+                return "";
+            }
+            return `${this.activeSlideIndex + 1}/${total}`;
+        },
+
+        /**
+         * Whether advanced status page layout CSS is currently enabled
+         * @returns {boolean} True when the advanced CSS block exists in custom CSS
+         */
+        advancedLayoutCSSEnabled: {
+            get() {
+                return this.hasAdvancedStatusPageLayoutCSS();
+            },
+            set(enabled) {
+                this.setAdvancedStatusPageLayoutCSS(enabled);
+            },
+        },
     },
     watch: {
         /**
@@ -904,6 +1060,7 @@ export default {
                 this.$root.getSocket().emit("getStatusPage", this.slug, (res) => {
                     if (res.ok) {
                         this.config = res.config;
+                        this.normalizeSlideshowConfig();
 
                         if (!this.config.customCSS) {
                             this.config.customCSS = "body {\n" + "  \n" + "}\n";
@@ -957,6 +1114,31 @@ export default {
                 }
             }
         },
+
+        "$root.publicGroupList.length"() {
+            this.normalizeActiveSlideIndex();
+            this.syncSlideshow();
+        },
+
+        "config.enableSlideshow"() {
+            this.syncSlideshow();
+        },
+
+        "config.slideshowAutoPlay"() {
+            this.syncSlideshow();
+        },
+
+        "config.slideshowInterval"() {
+            this.syncSlideshow();
+        },
+
+        editMode() {
+            this.syncSlideshow();
+        },
+
+        isSlideshowPaused() {
+            this.syncSlideshow();
+        },
     },
     async created() {
         this.hasToken = "token" in this.$root.storage();
@@ -990,6 +1172,8 @@ export default {
                     this.config.domainNameList = [];
                 }
 
+                this.normalizeSlideshowConfig();
+
                 if (this.config.icon) {
                     this.imgDataUrl = this.config.icon;
                 }
@@ -1021,6 +1205,7 @@ export default {
                 );
 
                 this.updateUpdateTimer();
+                this.syncSlideshow();
             })
             .catch(function (error) {
                 if (error.response.status === 404) {
@@ -1038,7 +1223,135 @@ export default {
             this.edit();
         }
     },
+
+    beforeUnmount() {
+        this.stopSlideshowTimer();
+    },
+
     methods: {
+        /**
+         * Ensure slideshow-related config fields are initialized
+         * @returns {void}
+         */
+        normalizeSlideshowConfig() {
+            this.config.enableSlideshow = Boolean(this.config.enableSlideshow);
+            this.config.slideshowAutoPlay = this.config.slideshowAutoPlay !== false;
+            this.config.slideshowShowControls = this.config.slideshowShowControls !== false;
+            this.config.slideshowLoop = this.config.slideshowLoop !== false;
+
+            const rawInterval = Number(this.config.slideshowInterval || defaultSlideshowInterval);
+            this.config.slideshowInterval = Math.max(
+                minSlideshowInterval,
+                Math.min(maxSlideshowInterval, Number.isNaN(rawInterval) ? defaultSlideshowInterval : rawInterval)
+            );
+        },
+
+        /**
+         * Keep active slide index within valid range
+         * @returns {void}
+         */
+        normalizeActiveSlideIndex() {
+            const total = this.$root.publicGroupList.length;
+            if (total <= 0) {
+                this.activeSlideIndex = 0;
+                return;
+            }
+
+            if (this.activeSlideIndex >= total) {
+                this.activeSlideIndex = total - 1;
+            }
+
+            if (this.activeSlideIndex < 0) {
+                this.activeSlideIndex = 0;
+            }
+        },
+
+        /**
+         * Start slideshow interval timer
+         * @returns {void}
+         */
+        startSlideshowTimer() {
+            this.stopSlideshowTimer();
+            this.slideshowTimer = setInterval(() => {
+                this.nextSlide();
+            }, this.slideshowIntervalMs);
+        },
+
+        /**
+         * Stop slideshow interval timer
+         * @returns {void}
+         */
+        stopSlideshowTimer() {
+            if (this.slideshowTimer) {
+                clearInterval(this.slideshowTimer);
+                this.slideshowTimer = null;
+            }
+        },
+
+        /**
+         * Sync slideshow runtime according to current config/state
+         * @returns {void}
+         */
+        syncSlideshow() {
+            this.normalizeActiveSlideIndex();
+            if (!this.slideshowEnabled || !this.config.slideshowAutoPlay || this.isSlideshowPaused) {
+                this.stopSlideshowTimer();
+                return;
+            }
+
+            this.startSlideshowTimer();
+        },
+
+        /**
+         * Toggle slideshow pause state
+         * @returns {void}
+         */
+        toggleSlideshowPause() {
+            if (!this.slideshowEnabled) {
+                return;
+            }
+            this.isSlideshowPaused = !this.isSlideshowPaused;
+        },
+
+        /**
+         * Go to previous slide
+         * @returns {void}
+         */
+        previousSlide() {
+            const total = this.$root.publicGroupList.length;
+            if (total <= 1) {
+                return;
+            }
+
+            if (this.activeSlideIndex === 0) {
+                this.activeSlideIndex = this.config.slideshowLoop ? total - 1 : 0;
+            } else {
+                this.activeSlideIndex -= 1;
+            }
+        },
+
+        /**
+         * Go to next slide
+         * @returns {void}
+         */
+        nextSlide() {
+            const total = this.$root.publicGroupList.length;
+            if (total <= 1) {
+                return;
+            }
+
+            if (this.activeSlideIndex >= total - 1) {
+                if (this.config.slideshowLoop) {
+                    this.activeSlideIndex = 0;
+                } else {
+                    this.activeSlideIndex = total - 1;
+                    this.isSlideshowPaused = true;
+                }
+            } else {
+                this.activeSlideIndex += 1;
+            }
+        },
+
         /**
          * Get status page data
          * It should be preloaded in window.preloadData
@@ -1063,6 +1376,69 @@ export default {
          */
         highlighter(code) {
             return highlight(code, languages.css);
+        },
+
+        /**
+         * Build marked CSS block for advanced status page layout
+         * @returns {string} Full CSS block with start and end markers
+         */
+        getAdvancedStatusPageLayoutBlock() {
+            return `${advancedStatusPageLayoutCSSStart}\n${advancedStatusPageLayoutCSS.trim()}\n${advancedStatusPageLayoutCSSEnd}`;
+        },
+
+        /**
+         * Check whether advanced status page layout CSS exists in custom CSS
+         * @returns {boolean} True if marked block is present
+         */
+        hasAdvancedStatusPageLayoutCSS() {
+            return typeof this.config.customCSS === "string" &&
+                this.config.customCSS.includes(advancedStatusPageLayoutCSSStart) &&
+                this.config.customCSS.includes(advancedStatusPageLayoutCSSEnd);
+        },
+
+        /**
+         * Remove the marked advanced status page layout CSS block from custom CSS
+         * @param {string} css Existing custom CSS
+         * @returns {string} Custom CSS without the advanced block
+         */
+        removeAdvancedStatusPageLayoutCSS(css) {
+            if (typeof css !== "string" || css.length === 0) {
+                return "";
+            }
+
+            let result = css;
+            while (result.includes(advancedStatusPageLayoutCSSStart) && result.includes(advancedStatusPageLayoutCSSEnd)) {
+                const startIndex = result.indexOf(advancedStatusPageLayoutCSSStart);
+                const endIndex = result.indexOf(advancedStatusPageLayoutCSSEnd, startIndex);
+
+                if (startIndex === -1 || endIndex === -1) {
+                    break;
+                }
+
+                const endMarkerEndIndex = endIndex + advancedStatusPageLayoutCSSEnd.length;
+                result = `${result.slice(0, startIndex)}${result.slice(endMarkerEndIndex)}`;
+            }
+
+            return result
+                .replace(/\n{3,}/g, "\n\n")
+                .trim();
+        },
+
+        /**
+         * Enable or disable advanced status page layout CSS in custom CSS
+         * @param {boolean} enabled Enable state
+         * @returns {void}
+         */
+        setAdvancedStatusPageLayoutCSS(enabled) {
+            const existingCSS = typeof this.config.customCSS === "string" ? this.config.customCSS : "";
+            const cleanedCSS = this.removeAdvancedStatusPageLayoutCSS(existingCSS);
+
+            if (enabled) {
+                const block = this.getAdvancedStatusPageLayoutBlock();
+                this.config.customCSS = cleanedCSS ? `${cleanedCSS}\n\n${block}` : block;
+            } else {
+                this.config.customCSS = cleanedCSS;
+            }
         },
 
         /**
