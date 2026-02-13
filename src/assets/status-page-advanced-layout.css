@@ -1,0 +1,485 @@
+/* ============================================================
+   1. ESTRUTURA GERAL & FUNDO
+   ============================================================ */
+html {
+    width: 100vw !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #0d1117 !important;
+    color: #ffffff !important;
+    font-family: "Inter", "Segoe UI", "Roboto", Helvetica, Arial, sans-serif;
+    overflow-x: hidden !important;
+    height: auto !important;
+}
+
+body {
+    width: 100vw !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #0d1117 !important;
+    color: #ffffff !important;
+    font-family: "Inter", "Segoe UI", "Roboto", Helvetica, Arial, sans-serif;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* RESTRIÇÃO DE LARGURA (EXCETO TOOLTIP) */
+#app,
+.container,
+.main {
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    display: flex;
+    flex-direction: column;
+    padding: 1vmin 1.5vmin !important;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+/* ============================================================
+   2. VARIÁVEIS VISUAIS
+   ============================================================ */
+:root {
+    --bg-card: #161b22;
+    --bg-card-hover: #262b33;
+    --border: rgba(255, 255, 255, 0.1);
+    --green: #2ea043;
+    --red: #da3633;
+    --yellow: #d29922;
+    --blue-tag: #1f6feb;
+
+    --fs-title: clamp(30px, 2.5vmin, 100px);
+    --fs-badge: clamp(10px, 1.2vmin, 24px);
+    --fs-header: clamp(24px, 4vmin, 80px);
+    --gap-grid: 1.5vmin;
+    --pad-card: 1.5vmin;
+    --radius: 1vmin;
+
+    --beat-w: clamp(15px, 1vh, 40px);
+}
+
+/* ============================================================
+   3. ESTRUTURA DO CARD (FLEXBOX)
+   ============================================================ */
+.item {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--pad-card);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: #ffffff !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+    transition: all 0.3s ease;
+}
+
+.item:hover {
+    background-color: var(--bg-card-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.monitor-list .item {
+    padding: 8px !important;
+}
+
+.monitor-list .item .row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+}
+
+.monitor-list .item:first-child {
+    margin-top: 0 !important;
+}
+
+/* CABEÇALHO (Título) */
+.monitor-list .item .col-6:first-child,
+.monitor-list .item .col-9:first-child {
+    width: 100% !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+}
+
+/* CORPO (Gráfico) */
+.monitor-list .item .col-6:last-child,
+.monitor-list .item .col-3:last-child {
+    width: 100% !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+/* ============================================================
+   4. BARRAS DE STATUS (BEATS)
+   ============================================================ */
+.wrap {
+    flex-grow: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    height: clamp(30px, 4vmin, 80px) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.hp-bar-big {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    transform: none !important;
+}
+
+.hp-bar-big > :last-child {
+    margin-right: 0 !important;
+}
+
+.beat-hover-area {
+    flex: 1 !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    min-width: 0 !important;
+}
+
+.beat {
+    width: var(--beat-w) !important;
+    height: 100% !important;
+    min-height: 10px !important;
+    max-height: none !important;
+    border-radius: 4px !important;
+    background-color: var(--green);
+    opacity: 0.95 !important;
+    transition: all 0.2s ease;
+}
+
+.beat:hover {
+    transform: scaleY(1.1);
+    opacity: 1 !important;
+}
+
+.beat.down {
+    background-color: var(--red) !important;
+    opacity: 1;
+}
+
+.beat.pending {
+    background-color: var(--yellow) !important;
+}
+
+.beat.empty {
+    background-color: #5cdd8b !important;
+    opacity: 0.95 !important;
+}
+
+.d-flex.justify-content-between.align-items-center.word {
+    flex: 0 0 auto !important;
+    margin-top: 5px !important;
+    font-size: 0.9em !important;
+    color: #ffffff !important;
+    opacity: 0.8;
+    font-weight: 600;
+    width: 100%;
+    height: 0 !important;
+    z-index: 2;
+    display: none !important;
+}
+
+.extra-info {
+    display: none !important;
+}
+
+/* ============================================================
+   5. CORREÇÃO TOOLTIP
+   ============================================================ */
+.tooltip-wrapper {
+    width: auto !important;
+    height: auto !important;
+    min-width: 120px !important;
+    max-width: 350px !important;
+    position: fixed !important;
+    z-index: 99999 !important;
+    flex: none !important;
+}
+
+/* ============================================================
+   6. HEADER E TEXTOS
+   ============================================================ */
+h1,
+.group-title {
+    font-size: var(--fs-header) !important;
+    font-weight: 700;
+    color: #ffffff !important;
+    margin: 0 0 0 0 !important;
+    grid-column: 1 / -1 !important;
+}
+
+#app .info {
+    flex-wrap: wrap !important;
+    display: flex !important;
+    align-items: center !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+#app .item-name {
+    order: 2 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    font-size: var(--fs-title) !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    text-transform: uppercase;
+    margin-right: auto !important;
+    height: auto !important;
+    align-self: flex-start;
+}
+
+#app .info .badge {
+    order: 1 !important;
+    font-size: var(--fs-badge) !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+}
+
+#app .info span[title="Setting"],
+#app .info > span:last-child {
+    order: 3 !important;
+    flex-shrink: 0;
+}
+
+.alert-heading,
+.alert {
+    display: block !important;
+}
+
+footer,
+.custom-footer-text {
+    display: none !important;
+}
+
+.bg-primary {
+    background-color: var(--green) !important;
+}
+
+.btn {
+    font-size: var(--fs-badge) !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.mt-3,
+.mt-4,
+.mb-4 {
+    margin: 0 !important;
+}
+
+/* ============================================================
+   7. GRUPO + GRID (COLUNAS NO .mt-4)
+   ============================================================ */
+#app div:has(> .mb-5) {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#app .mb-5 {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 2.5vmin !important;
+    background-color: #0d1117 !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+}
+
+/* definição de colunas no container mt-4 */
+#app .mb-5 .monitor-list.mt-4 {
+    --group-columns: 2;
+}
+
+/* grid aplicado no container interno, controlado pelo mt-4 */
+#app .mb-5 .monitor-list.mt-4 > .monitor-list {
+    display: grid !important;
+    grid-template-columns: repeat(var(--group-columns), minmax(0, 1fr)) !important;
+    grid-auto-rows: max-content !important;
+    gap: 1vmin !important;
+    align-content: start !important;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* responsivo: muda apenas a definição no mt-4 */
+@media (max-width: 1100px) {
+    #app .mb-5 .monitor-list.mt-4 {
+        --group-columns: 1;
+    }
+}
+
+/* ============================================================
+   8. HEARTBEAT EM CANVAS (NOVO LAYOUT)
+   ============================================================ */
+#app .heartbeat-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
+/* manter colunas do layout novo */
+.monitor-list .item .col-9:first-child,
+.monitor-list .item .col-6:first-child {
+    width: 100% !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+}
+
+.monitor-list .item .col-3:last-child,
+.monitor-list .item .col-6:last-child {
+    width: 100% !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+}
+
+.monitor-list .item .info {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.monitor-list .item .info .item-name {
+    margin-bottom: 0 !important;
+}
+
+.monitor-list .item .info + .extra-info,
+.monitor-list .item .col-9:first-child .extra-info,
+.monitor-list .item .col-6:first-child .extra-info {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.monitor-list .item .wrap,
+.monitor-list .item .wrap[style] {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.monitor-list .item .hp-bar-big,
+.monitor-list .item .hp-bar-big[style] {
+    width: 100% !important;
+    transform: none !important;
+}
+
+/* Overall Status */
+.overall-status {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 0.1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.overall-status svg {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.overall-status div {
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    font-size: var(--fs-header) !important;
+}
+
+/* Title Flex */
+.title-flex {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    margin-bottom: 0.5vmin !important;
+    flex-wrap: wrap !important;
+    gap: 1vmin !important;
+}
+
+.logo-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+}
+
+.logo {
+    height: clamp(48px, 6vmin, 120px) !important;
+    border-radius: 8px !important;
+    background-color: var(--border) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--yellow) !important;
+}
+
+.badge.bg-danger {
+    background-color: var(--red) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .title-flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    h1 {
+        font-size: clamp(24px, 4vmin, 48px) !important;
+    }
+}
