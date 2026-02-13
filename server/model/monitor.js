@@ -80,8 +80,8 @@ class Monitor extends BeanModel {
      * @param {boolean} showTags Include tags in JSON
      * @param {boolean} certExpiry Include certificate expiry info in
      * JSON
-     * @param domainExpiry
-     * @returns {Promise<object>} Object ready to parse
+        * @param {boolean} domainExpiry Include domain expiry info in JSON
+        * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false, domainExpiry = false) {
         let obj = {

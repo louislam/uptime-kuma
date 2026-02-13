@@ -8,7 +8,7 @@ class Group extends BeanModel {
      * @param {boolean} showTags Should the JSON include monitor tags
      * @param {boolean} certExpiry Should JSON include info about
      * certificate expiry?
-     * @param domainExpiry
+     * @param {boolean} domainExpiry Should JSON include domain expiry info
      * @returns {Promise<object>} Object ready to parse
      */
     async toPublicJSON(showTags = false, certExpiry = false, domainExpiry = false) {
