@@ -96,14 +96,8 @@ async function clearOldPWACache() {
 if ("serviceWorker" in navigator) {
     // Clear old PWA cache first, then register new service worker
     clearOldPWACache()
-        .then(() => {
-            navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((error) => {
-                console.error("Service worker registration failed:", error);
-            });
-        })
-        .catch((error) => {
-            console.error("Cache clearing failed:", error);
-            // Still try to register the service worker even if cache clearing fails
+        .finally(() => {
+            // Register service worker regardless of cache clearing outcome
             navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((error) => {
                 console.error("Service worker registration failed:", error);
             });
