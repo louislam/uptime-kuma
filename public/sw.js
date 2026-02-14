@@ -1,3 +1,7 @@
+// Service Worker for Uptime Kuma
+// Version marker for one-time cache cleanup
+const CLEANUP_VERSION = "pwa-cleanup-2.1.1";
+
 // Install event - called when service worker is first installed
 self.addEventListener("install", function (event) {
     console.log("Service worker installing...");
@@ -14,7 +18,7 @@ self.addEventListener("activate", function (event) {
         (async function () {
             // Check if we've already cleared vite-plugin-pwa caches
             const cleanupCache = await caches.open("uptime-kuma-cleanup");
-            const cleanupDone = await cleanupCache.match("pwa-cleanup-2.1.1");
+            const cleanupDone = await cleanupCache.match(CLEANUP_VERSION);
             
             if (!cleanupDone) {
                 // First activation after upgrade - clear vite-plugin-pwa caches
@@ -35,7 +39,7 @@ self.addEventListener("activate", function (event) {
                 );
                 
                 // Mark cleanup as done
-                await cleanupCache.put("pwa-cleanup-2.1.1", new Response("done"));
+                await cleanupCache.put(CLEANUP_VERSION, new Response("done"));
                 console.log("Old PWA caches cleared");
             }
             
