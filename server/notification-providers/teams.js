@@ -37,6 +37,11 @@ class Teams extends NotificationProvider {
         return "emphasis";
     };
 
+    /**
+     * Format the tag for display. If the tag has a value, display as "name: value", otherwise just "name".
+     * @param {object} tag
+     * @returns {string} Formatted tag for display
+     */
     _tagDisplayText = (tag) => {
         if (tag.value === "" || tag.value === undefined || tag.value === null) {
             return tag.name;
