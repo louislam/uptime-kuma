@@ -49,7 +49,7 @@ class ConnectivityChecker {
     static async recheckMonitor(monitorId) {
         const cacheKey = `validation:${monitorId}`;
         const cached = ConnectivityChecker.cache.get(cacheKey);
-        if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
+        if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
             return cached.result;
         }
 
@@ -75,7 +75,7 @@ class ConnectivityChecker {
                 const tempBean = R.dispense("heartbeat");
                 tempBean.status = DOWN;
                 await monitorType.check(monitorData, tempBean, UptimeKumaServer.getInstance());
-                isUp = (tempBean.status === UP);
+                isUp = tempBean.status === UP;
             } else {
                 // Fallback: last heartbeat
                 const Monitor = require("./model/monitor");

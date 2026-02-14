@@ -1008,7 +1008,10 @@ class Monitor extends BeanModel {
                         // Grace period — network still stabilizing (DNS, routing)
                         bean.status = CONN_ISSUE;
                         bean.msg = bean.msg + " (Network stabilizing after connectivity recovery)";
-                        log.debug("connectivity", `[${this.name}] Grace period ${recoveryCount}/${CONN_ISSUE_GRACE_BEATS}`);
+                        log.debug(
+                            "connectivity",
+                            `[${this.name}] Grace period ${recoveryCount}/${CONN_ISSUE_GRACE_BEATS}`
+                        );
                     } else {
                         // Grace period expired — fresh start
                         retries = 0;
@@ -1137,7 +1140,10 @@ class Monitor extends BeanModel {
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
             } else if (bean.status === CONN_ISSUE) {
-                log.warn("monitor", `Monitor #${this.id} '${this.name}': Connectivity Issue: ${bean.msg} | Type: ${this.type}`);
+                log.warn(
+                    "monitor",
+                    `Monitor #${this.id} '${this.name}': Connectivity Issue: ${bean.msg} | Type: ${this.type}`
+                );
             } else {
                 log.warn(
                     "monitor",

@@ -745,7 +745,11 @@ let needSetup = false;
                  * List of frontend-only properties that should not be saved to the database.
                  * Should clean up before saving to the database.
                  */
-                const frontendOnlyProperties = ["humanReadableInterval", "responsecheck", "connectivityCheckMonitorObjects"];
+                const frontendOnlyProperties = [
+                    "humanReadableInterval",
+                    "responsecheck",
+                    "connectivityCheckMonitorObjects",
+                ];
                 for (const prop of frontendOnlyProperties) {
                     if (prop in monitor) {
                         delete monitor[prop];
@@ -933,7 +937,8 @@ let needSetup = false;
 
                 // connectivity check monitors (validation)
                 bean.connectivity_check_monitors = monitor.connectivityCheckMonitors
-                    ? JSON.stringify(monitor.connectivityCheckMonitors) : null;
+                    ? JSON.stringify(monitor.connectivityCheckMonitors)
+                    : null;
 
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
@@ -944,7 +949,8 @@ let needSetup = false;
 
                 if (monitor.connectivityCheckMonitors?.length > 0) {
                     const hasCycle = await Monitor.wouldCreateValidationCycle(
-                        bean.id, monitor.connectivityCheckMonitors
+                        bean.id,
+                        monitor.connectivityCheckMonitors
                     );
                     if (hasCycle) {
                         throw new Error("Circular dependency detected in validation monitors");

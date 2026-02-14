@@ -2866,7 +2866,7 @@ export default {
     computed: {
         availableValidationMonitors() {
             return Object.values(this.$root.monitorList)
-                .filter(m => m.id !== this.monitor.id && m.active !== false)
+                .filter((m) => m.id !== this.monitor.id && m.active !== false)
                 .sort((a, b) => a.name.localeCompare(b.name));
         },
 
@@ -3446,7 +3446,8 @@ message HealthCheckResponse {
                             try {
                                 const ids = JSON.parse(this.monitor.connectivity_check_monitors);
                                 this.monitor.connectivityCheckMonitorObjects = ids
-                                    .map(id => this.$root.monitorList[id]).filter(m => m);
+                                    .map((id) => this.$root.monitorList[id])
+                                    .filter((m) => m);
                             } catch {
                                 this.monitor.connectivityCheckMonitorObjects = [];
                             }
@@ -3719,7 +3720,8 @@ message HealthCheckResponse {
 
             // Serialize validation monitors
             this.monitor.connectivityCheckMonitors = this.monitor.connectivityCheckMonitorObjects?.length
-                ? this.monitor.connectivityCheckMonitorObjects.map(m => m.id) : null;
+                ? this.monitor.connectivityCheckMonitorObjects.map((m) => m.id)
+                : null;
 
             let createdNewParent = false;
 
