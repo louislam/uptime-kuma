@@ -5,29 +5,12 @@ self.addEventListener("install", function (event) {
 
 // Clear old caches from vite-plugin-pwa
 self.addEventListener("activate", function (event) {
-    console.log("Service worker activating...");
-
     event.waitUntil(
         (async function () {
-            // Check if we've already cleared
-            const cleanupCache = await caches.open("uptime-kuma-clean-pwa");
-            const cleanupDone = await cleanupCache.match("2.1.0");
-
-            if (!cleanupDone) {
-                const cacheNames = await caches.keys();
-                for (const cacheName of cacheNames) {
-                    // Skip our cleanup tracking cache
-                    if (cacheName === "uptime-kuma-cleanup") {
-                        continue;
-                    }
-                    await caches.delete(cacheName);
-                }
-
-                // Mark cleanup as done
-                await cleanupCache.put("2.1.0", new Response("done"));
-                console.log("Old PWA caches cleared");
+            const cacheNames = await caches.keys();
+            for (const cacheName of cacheNames) {
+                await caches.delete(cacheName);
             }
-
             await self.clients.claim();
         })()
     );
