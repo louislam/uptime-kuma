@@ -44,9 +44,50 @@ app.component("FontAwesomeIcon", FontAwesomeIcon);
 
 app.mount("#app");
 
+/**
+ * Clear old PWA cache from vite-plugin-pwa (removed in 2.1.1)
+ * This ensures users get the latest version instead of cached assets
+ * @returns {Promise<void>} Promise that resolves when cache is cleared
+ */
+async function clearOldPWACache() {
+    const cacheCleared = localStorage.getItem("pwa-cache-cleared");
+    
+    if (cacheCleared) {
+        return;
+    }
+
+    try {
+        // Unregister all existing service workers
+        if ("serviceWorker" in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
+                console.log("Unregistered old service worker");
+            }
+        }
+
+        // Clear all caches (including workbox precache from vite-plugin-pwa)
+        if ("caches" in window) {
+            const cacheNames = await caches.keys();
+            for (const cacheName of cacheNames) {
+                await caches.delete(cacheName);
+                console.log("Deleted cache:", cacheName);
+            }
+        }
+
+        localStorage.setItem("pwa-cache-cleared", "true");
+        console.log("Old PWA cache cleared successfully");
+    } catch (error) {
+        console.error("Failed to clear old PWA cache:", error);
+    }
+}
+
 if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((error) => {
-        console.error("Service worker registration failed:", error);
+    // Clear old PWA cache first, then register new service worker
+    clearOldPWACache().then(() => {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((error) => {
+            console.error("Service worker registration failed:", error);
+        });
     });
 }
 
