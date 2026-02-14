@@ -47,20 +47,6 @@ app.mount("#app");
 // Service Worker
 // Mainly for Webpush notification
 if ("serviceWorker" in navigator) {
-    // Clear 2.1.0 PWA cache caused by vite-plugin-pwa (See #6933)
-    try {
-        const cacheCleared = localStorage.getItem("pwa-cache-cleared");
-        if (cacheCleared) {
-            return;
-        }
-        const cacheNames = await caches.keys();
-        for (const cacheName of cacheNames) {
-            await caches.delete(cacheName);
-        }
-        localStorage.setItem("pwa-cache-cleared", "true");
-        console.log("Old 2.1.0 PWA cache cleared successfully");
-    } catch (_) {}
-
     navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((error) => {
         console.error("Service worker registration failed:", error);
     });
