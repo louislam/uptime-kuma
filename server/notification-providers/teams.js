@@ -37,16 +37,25 @@ class Teams extends NotificationProvider {
         return "emphasis";
     };
 
+    _tagDisplayText = (tag) => {
+        if (tag.value === "" || tag.value === undefined || tag.value === null) {
+            return tag.name;
+        } else {
+            return `${tag.name}: ${tag.value}`;
+        }
+    }
+
     /**
      * Generate payload for notification
      * @param {object} args Method arguments
      * @param {object} args.heartbeatJSON Heartbeat details
-     * @param {string} args.monitorName Name of the monitor affected
-     * @param {string} args.monitorUrl URL of the monitor affected
+     * @param {object} args.monitorJSON Monitor details
      * @param {string} args.dashboardUrl URL of the dashboard affected
      * @returns {object} Notification payload
      */
-    _notificationPayloadFactory = ({ heartbeatJSON, monitorName, monitorUrl, dashboardUrl }) => {
+    _notificationPayloadFactory = ({ heartbeatJSON, monitorJSON, dashboardUrl }) => {
+        const monitorUrl = this.extractAddress(monitorJSON);
+        const monitorName = monitorJSON?.name;
         const status = heartbeatJSON?.status;
         const facts = [];
         const actions = [];
@@ -90,6 +99,13 @@ class Teams extends NotificationProvider {
             facts.push({
                 title: "Time",
                 value: heartbeatJSON.localDateTime + (heartbeatJSON.timezone ? ` (${heartbeatJSON.timezone})` : ""),
+            });
+        }
+
+        if (monitorJSON?.tags && monitorJSON.tags.length > 0) {
+            facts.push({
+                title: "Tags",
+                value: monitorJSON.tags.map(this._tagDisplayText).join(", "),
             });
         }
 
@@ -220,8 +236,7 @@ class Teams extends NotificationProvider {
 
             const payload = this._notificationPayloadFactory({
                 heartbeatJSON: heartbeatJSON,
-                monitorName: monitorJSON.name,
-                monitorUrl: this.extractAddress(monitorJSON),
+                monitorJSON: monitorJSON,
                 dashboardUrl: dashboardUrl,
             });
 
