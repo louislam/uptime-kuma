@@ -33,6 +33,7 @@ export const DOWN = 0;
 export const UP = 1;
 export const PENDING = 2;
 export const MAINTENANCE = 3;
+export const CONN_ISSUE = 4;
 
 export const STATUS_PAGE_ALL_DOWN = 0;
 export const STATUS_PAGE_ALL_UP = 1;
@@ -147,6 +148,7 @@ export const badgeConstants = {
     defaultDownColor: "#c2290a",
     defaultPendingColor: "#f8a306",
     defaultMaintenanceColor: "#1747f5",
+    defaultConnIssueColor: "#9B59B6",
     defaultPingColor: "blue", // as defined by badge-maker / shields.io
     defaultStyle: "flat",
     defaultPingValueSuffix: "ms",

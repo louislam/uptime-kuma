@@ -745,11 +745,17 @@ let needSetup = false;
                  * List of frontend-only properties that should not be saved to the database.
                  * Should clean up before saving to the database.
                  */
-                const frontendOnlyProperties = ["humanReadableInterval", "responsecheck"];
+                const frontendOnlyProperties = ["humanReadableInterval", "responsecheck", "connectivityCheckMonitorObjects"];
                 for (const prop of frontendOnlyProperties) {
                     if (prop in monitor) {
                         delete monitor[prop];
                     }
+                }
+
+                // Serialize validation monitors before import
+                if (monitor.connectivityCheckMonitors) {
+                    monitor.connectivity_check_monitors = JSON.stringify(monitor.connectivityCheckMonitors);
+                    delete monitor.connectivityCheckMonitors;
                 }
 
                 bean.import(monitor);
@@ -925,12 +931,25 @@ let needSetup = false;
                 bean.system_service_name = monitor.system_service_name;
                 bean.expected_tls_alert = monitor.expectedTlsAlert;
 
+                // connectivity check monitors (validation)
+                bean.connectivity_check_monitors = monitor.connectivityCheckMonitors
+                    ? JSON.stringify(monitor.connectivityCheckMonitors) : null;
+
                 // ping advanced options
                 bean.ping_numeric = monitor.ping_numeric;
                 bean.ping_count = monitor.ping_count;
                 bean.ping_per_request_timeout = monitor.ping_per_request_timeout;
 
                 bean.validate();
+
+                if (monitor.connectivityCheckMonitors?.length > 0) {
+                    const hasCycle = await Monitor.wouldCreateValidationCycle(
+                        bean.id, monitor.connectivityCheckMonitors
+                    );
+                    if (hasCycle) {
+                        throw new Error("Circular dependency detected in validation monitors");
+                    }
+                }
 
                 await R.store(bean);
 

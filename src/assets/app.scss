@@ -47,6 +47,15 @@ textarea.form-control {
     color: $maintenance !important;
 }
 
+.bg-conn-issue {
+    color: white !important;
+    background-color: $conn-issue !important;
+}
+
+.text-conn-issue {
+    color: $conn-issue !important;
+}
+
 .incident a,
 .bg-maintenance a {
     color: inherit;

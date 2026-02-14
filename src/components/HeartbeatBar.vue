@@ -40,7 +40,7 @@
 
 <script>
 import dayjs from "dayjs";
-import { DOWN, UP, PENDING, MAINTENANCE } from "../util.ts";
+import { DOWN, UP, PENDING, MAINTENANCE, CONN_ISSUE } from "../util.ts";
 import Tooltip from "./Tooltip.vue";
 
 export default {
@@ -427,6 +427,7 @@ export default {
                 down: status === DOWN,
                 pending: status === PENDING,
                 maintenance: status === MAINTENANCE,
+                "conn-issue": status === CONN_ISSUE,
             };
         },
 
@@ -445,6 +446,8 @@ export default {
                     return `Pending at ${this.$root.datetime(beat.time)}`;
                 case MAINTENANCE:
                     return `Maintenance at ${this.$root.datetime(beat.time)}`;
+                case CONN_ISSUE:
+                    return `Connectivity Issue at ${this.$root.datetime(beat.time)}`;
                 default:
                     return "No data";
             }
@@ -565,6 +568,7 @@ export default {
                 pending: rootStyles.getPropertyValue("--bs-warning") || "#ffc107",
                 maintenance: rootStyles.getPropertyValue("--maintenance") || "#1d4ed8",
                 up: rootStyles.getPropertyValue("--bs-primary") || "#5cdd8b",
+                connIssue: rootStyles.getPropertyValue("--conn-issue") || "#9B59B6",
             };
 
             // Draw each beat
@@ -650,6 +654,8 @@ export default {
                 return colors.pending;
             } else if (status === MAINTENANCE) {
                 return colors.maintenance;
+            } else if (status === CONN_ISSUE) {
+                return colors.connIssue;
             } else {
                 return colors.up;
             }

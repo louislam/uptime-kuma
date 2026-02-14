@@ -7,6 +7,7 @@ const {
     DOWN,
     PENDING,
     MAINTENANCE,
+    CONN_ISSUE,
     flipStatus,
     MAX_INTERVAL_SECOND,
     MIN_INTERVAL_SECOND,
@@ -63,6 +64,7 @@ const zlib = require("node:zlib");
 const { promisify } = require("node:util");
 const brotliCompress = promisify(zlib.brotliCompress);
 const DomainExpiry = require("./domain_expiry");
+const { ConnectivityChecker } = require("../connectivity-checker");
 
 const rootCertificates = rootCertificatesFingerprints();
 
@@ -73,6 +75,9 @@ const rootCertificates = rootCertificatesFingerprints();
  *      2 = PENDING
  *      3 = MAINTENANCE
  */
+/** @type {Map<number, number>} Track grace period recovery count per monitor (outside bean to avoid RedBean underscore restriction) */
+const connIssueRecoveryCountMap = new Map();
+
 class Monitor extends BeanModel {
     /**
      * Return an object that ready to parse to JSON for public Only show
@@ -212,6 +217,9 @@ class Monitor extends BeanModel {
             ping_numeric: this.isPingNumeric(),
             ping_count: this.ping_count,
             ping_per_request_timeout: this.ping_per_request_timeout,
+
+            // connectivity check (validation monitors)
+            connectivity_check_monitors: this.connectivity_check_monitors,
 
             // response saving options
             saveResponse: this.getSaveResponse(),
@@ -961,10 +969,56 @@ class Monitor extends BeanModel {
                     await this.saveResponseData(bean, error.response.data);
                 }
 
-                // If UP come in here, it must be upside down mode
-                // Just reset the retries
-                if (this.isUpsideDown() && bean.status === UP) {
+                // 1. CHECK CONNECTIVITY FIRST — before any retry logic
+                let internetIsDown = false;
+                if (bean.status === DOWN) {
+                    try {
+                        const internetAvailable = await ConnectivityChecker.isInternetAvailable(this);
+                        if (!internetAvailable) {
+                            internetIsDown = true;
+                        }
+                    } catch (connError) {
+                        log.debug("connectivity", "Connectivity check error: " + connError.message);
+                    }
+                }
+
+                // Grace period: after internet recovers, ICMP pings pass immediately
+                // but HTTP/DNS may still fail for a few beats. Stay in CONN_ISSUE
+                // during grace period to avoid false PENDING/DOWN.
+                const CONN_ISSUE_GRACE_BEATS = 3;
+
+                if (internetIsDown) {
+                    // 2. INTERNET IS DOWN — freeze state, no retries
+                    bean.status = CONN_ISSUE;
+                    bean.msg = bean.msg + " (Internet connectivity issue detected)";
+                    // Do NOT touch retries — frozen at pre-outage value
+                    connIssueRecoveryCountMap.set(this.id, 0);
+                    log.debug("connectivity", `[${this.name}] Internet down, freezing retries at ${retries}`);
+                } else if (this.isUpsideDown() && bean.status === UP) {
+                    // If UP come in here, it must be upside down mode
+                    // Just reset the retries
                     retries = 0;
+                    connIssueRecoveryCountMap.set(this.id, 0);
+                } else if (previousBeat && previousBeat.status === CONN_ISSUE) {
+                    // 3. COMING BACK FROM CONN_ISSUE
+                    const recoveryCount = (connIssueRecoveryCountMap.get(this.id) || 0) + 1;
+                    connIssueRecoveryCountMap.set(this.id, recoveryCount);
+
+                    if (recoveryCount <= CONN_ISSUE_GRACE_BEATS) {
+                        // Grace period — network still stabilizing (DNS, routing)
+                        bean.status = CONN_ISSUE;
+                        bean.msg = bean.msg + " (Network stabilizing after connectivity recovery)";
+                        log.debug("connectivity", `[${this.name}] Grace period ${recoveryCount}/${CONN_ISSUE_GRACE_BEATS}`);
+                    } else {
+                        // Grace period expired — fresh start
+                        retries = 0;
+                        connIssueRecoveryCountMap.set(this.id, 0);
+                        log.debug("connectivity", `[${this.name}] Grace period expired, fresh start`);
+                        if (bean.status === DOWN && this.maxretries > 0) {
+                            retries++;
+                            bean.status = PENDING;
+                        }
+                    }
                 } else if (this.type === "json-query" && this.retry_only_on_status_code_failure) {
                     // For json-query monitors with retry_only_on_status_code_failure enabled,
                     // only retry if the error is NOT from JSON query evaluation
@@ -983,6 +1037,7 @@ class Monitor extends BeanModel {
                         retries++;
                     }
                 } else {
+                    connIssueRecoveryCountMap.set(this.id, 0);
                     // General retry logic for all other monitor types
                     if (this.maxretries > 0 && retries < this.maxretries) {
                         retries++;
@@ -1081,6 +1136,8 @@ class Monitor extends BeanModel {
                 );
             } else if (bean.status === MAINTENANCE) {
                 log.warn("monitor", `Monitor #${this.id} '${this.name}': Under Maintenance | Type: ${this.type}`);
+            } else if (bean.status === CONN_ISSUE) {
+                log.warn("monitor", `Monitor #${this.id} '${this.name}': Connectivity Issue: ${bean.msg} | Type: ${this.type}`);
             } else {
                 log.warn(
                     "monitor",
@@ -1436,6 +1493,12 @@ class Monitor extends BeanModel {
         // * MAINTENANCE -> DOWN = important
         // * DOWN -> MAINTENANCE = important
         // * UP -> MAINTENANCE = important
+        // * DOWN -> CONN_ISSUE = important
+        // * UP -> CONN_ISSUE = important
+        // * CONN_ISSUE -> DOWN = important
+        // * CONN_ISSUE -> UP = important
+        // * PENDING -> CONN_ISSUE = important
+        // CONN_ISSUE -> CONN_ISSUE = not important
         return (
             isFirstBeat ||
             (previousBeatStatus === DOWN && currentBeatStatus === MAINTENANCE) ||
@@ -1444,7 +1507,12 @@ class Monitor extends BeanModel {
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === UP) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === DOWN && currentBeatStatus === CONN_ISSUE) ||
+            (previousBeatStatus === UP && currentBeatStatus === CONN_ISSUE) ||
+            (previousBeatStatus === CONN_ISSUE && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === CONN_ISSUE && currentBeatStatus === UP) ||
+            (previousBeatStatus === PENDING && currentBeatStatus === CONN_ISSUE)
         );
     }
 
@@ -1471,12 +1539,18 @@ class Monitor extends BeanModel {
         // * MAINTENANCE -> DOWN = important
         // DOWN -> MAINTENANCE = not important
         // UP -> MAINTENANCE = not important
+        // * CONN_ISSUE -> DOWN = important (internet back, service still down)
+        // CONN_ISSUE -> UP = not important (silenced)
+        // DOWN -> CONN_ISSUE = not important (silenced)
+        // UP -> CONN_ISSUE = not important (silenced)
+        // CONN_ISSUE -> CONN_ISSUE = not important
         return (
             isFirstBeat ||
             (previousBeatStatus === MAINTENANCE && currentBeatStatus === DOWN) ||
             (previousBeatStatus === UP && currentBeatStatus === DOWN) ||
             (previousBeatStatus === DOWN && currentBeatStatus === UP) ||
-            (previousBeatStatus === PENDING && currentBeatStatus === DOWN)
+            (previousBeatStatus === PENDING && currentBeatStatus === DOWN) ||
+            (previousBeatStatus === CONN_ISSUE && currentBeatStatus === DOWN)
         );
     }
 
@@ -2105,6 +2179,54 @@ class Monitor extends BeanModel {
             log.debug("monitor", `[${this.name}] call checkCertExpiryNotifications`);
             await checkCertExpiryNotifications(this, tlsInfo);
         }
+    }
+
+    /**
+     * Check if adding the given validation monitor IDs would create a circular dependency.
+     * @param {number} monitorId The monitor being edited
+     * @param {number[]} validationMonitorIds The proposed validation monitor IDs
+     * @returns {Promise<boolean>} true if a cycle would be created
+     */
+    static async wouldCreateValidationCycle(monitorId, validationMonitorIds) {
+        for (const valId of validationMonitorIds) {
+            if (await Monitor.dependsOnMonitor(valId, monitorId, new Set())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if monitorId transitively depends on targetId via validation monitors.
+     * @param {number} monitorId The monitor to check
+     * @param {number} targetId The target monitor ID to look for
+     * @param {Set<number>} visited Set of already-visited monitor IDs (cycle protection)
+     * @returns {Promise<boolean>} true if monitorId depends on targetId
+     */
+    static async dependsOnMonitor(monitorId, targetId, visited) {
+        if (monitorId === targetId) {
+            return true;
+        }
+        if (visited.has(monitorId)) {
+            return false;
+        }
+        visited.add(monitorId);
+        const mon = await R.findOne("monitor", " id = ?", [monitorId]);
+        if (!mon?.connectivity_check_monitors) {
+            return false;
+        }
+        let deps;
+        try {
+            deps = JSON.parse(mon.connectivity_check_monitors);
+        } catch {
+            return false;
+        }
+        for (const depId of deps) {
+            if (await Monitor.dependsOnMonitor(depId, targetId, visited)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

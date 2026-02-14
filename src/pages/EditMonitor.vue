@@ -1450,6 +1450,22 @@
                                 </div>
                             </div>
 
+                            <!-- Validation Monitors -->
+                            <div class="my-3">
+                                <label class="form-label">{{ $t("Validation Monitors") }}</label>
+                                <VueMultiselect
+                                    v-model="monitor.connectivityCheckMonitorObjects"
+                                    :options="availableValidationMonitors"
+                                    :multiple="true"
+                                    :close-on-select="false"
+                                    :searchable="true"
+                                    label="name"
+                                    track-by="id"
+                                    :placeholder="$t('validationMonitorsPlaceholder')"
+                                />
+                                <div class="form-text">{{ $t("validationMonitorsHelp") }}</div>
+                            </div>
+
                             <div v-if="showDomainExpiryNotification" class="my-3 form-check">
                                 <input
                                     id="domain-expiry-notification"
@@ -2736,7 +2752,6 @@ import isFQDN from "validator/lib/isFQDN";
 import isIP from "validator/lib/isIP";
 import HiddenInput from "../components/HiddenInput.vue";
 import EditMonitorConditions from "../components/EditMonitorConditions.vue";
-
 const toast = useToast();
 
 const pushTokenLength = 32;
@@ -2849,6 +2864,12 @@ export default {
     },
 
     computed: {
+        availableValidationMonitors() {
+            return Object.values(this.$root.monitorList)
+                .filter(m => m.id !== this.monitor.id && m.active !== false)
+                .sort((a, b) => a.name.localeCompare(b.name));
+        },
+
         timeoutStep() {
             return this.monitor.type === "ping" ? 1 : 0.1;
         },
@@ -3420,6 +3441,19 @@ message HealthCheckResponse {
 
                         this.monitor = res.monitor;
 
+                        // Parse validation monitors
+                        if (this.monitor.connectivity_check_monitors) {
+                            try {
+                                const ids = JSON.parse(this.monitor.connectivity_check_monitors);
+                                this.monitor.connectivityCheckMonitorObjects = ids
+                                    .map(id => this.$root.monitorList[id]).filter(m => m);
+                            } catch {
+                                this.monitor.connectivityCheckMonitorObjects = [];
+                            }
+                        } else {
+                            this.monitor.connectivityCheckMonitorObjects = [];
+                        }
+
                         if (this.isClone) {
                             /*
                              * Cloning a monitor will include properties that can not be posted to backend
@@ -3682,6 +3716,10 @@ message HealthCheckResponse {
             if (this.monitor.url) {
                 this.monitor.url = this.monitor.url.trim();
             }
+
+            // Serialize validation monitors
+            this.monitor.connectivityCheckMonitors = this.monitor.connectivityCheckMonitorObjects?.length
+                ? this.monitor.connectivityCheckMonitorObjects.map(m => m.id) : null;
 
             let createdNewParent = false;
 

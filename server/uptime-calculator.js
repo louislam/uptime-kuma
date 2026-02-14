@@ -1,5 +1,5 @@
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING } = require("../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, CONN_ISSUE } = require("../src/util");
 const { LimitQueue } = require("./utils/limit-queue");
 const { log } = require("../src/util");
 const { R } = require("redbean-node");
@@ -232,6 +232,10 @@ class UptimeCalculator {
             minutelyData.maintenance = minutelyData.maintenance ? minutelyData.maintenance + 1 : 1;
             hourlyData.maintenance = hourlyData.maintenance ? hourlyData.maintenance + 1 : 1;
             dailyData.maintenance = dailyData.maintenance ? dailyData.maintenance + 1 : 1;
+        } else if (status === CONN_ISSUE) {
+            minutelyData.connIssue = minutelyData.connIssue ? minutelyData.connIssue + 1 : 1;
+            hourlyData.connIssue = hourlyData.connIssue ? hourlyData.connIssue + 1 : 1;
+            dailyData.connIssue = dailyData.connIssue ? dailyData.connIssue + 1 : 1;
         } else if (flatStatus === UP) {
             minutelyData.up += 1;
             hourlyData.up += 1;
@@ -543,6 +547,7 @@ class UptimeCalculator {
         switch (status) {
             case UP:
             case MAINTENANCE:
+            case CONN_ISSUE:
                 return UP;
             case DOWN:
             case PENDING:

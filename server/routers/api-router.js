@@ -11,7 +11,7 @@ const { R } = require("redbean-node");
 const apicache = require("../modules/apicache");
 const Monitor = require("../model/monitor");
 const dayjs = require("dayjs");
-const { UP, MAINTENANCE, DOWN, PENDING, flipStatus, log, badgeConstants } = require("../../src/util");
+const { UP, MAINTENANCE, DOWN, PENDING, CONN_ISSUE, flipStatus, log, badgeConstants } = require("../../src/util");
 const StatusPage = require("../model/status_page");
 const { UptimeKumaServer } = require("../uptime-kuma-server");
 const { makeBadge } = require("badge-maker");
@@ -154,10 +154,12 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
         downLabel = "Down",
         pendingLabel = "Pending",
         maintenanceLabel = "Maintenance",
+        connIssueLabel = "Conn Issue",
         upColor = badgeConstants.defaultUpColor,
         downColor = badgeConstants.defaultDownColor,
         pendingColor = badgeConstants.defaultPendingColor,
         maintenanceColor = badgeConstants.defaultMaintenanceColor,
+        connIssueColor = badgeConstants.defaultConnIssueColor,
         style = badgeConstants.defaultStyle,
         value, // for demo purpose only
     } = request.query;
@@ -211,6 +213,10 @@ router.get("/api/badge/:id/status", cache("5 minutes"), async (request, response
                 case MAINTENANCE:
                     badgeValues.color = maintenanceColor;
                     badgeValues.message = maintenanceLabel;
+                    break;
+                case CONN_ISSUE:
+                    badgeValues.color = connIssueColor;
+                    badgeValues.message = connIssueLabel;
                     break;
                 default:
                     badgeValues.color = badgeConstants.naColor;
