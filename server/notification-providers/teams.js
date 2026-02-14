@@ -39,7 +39,7 @@ class Teams extends NotificationProvider {
 
     /**
      * Format the tag for display. If the tag has a value, display as "name: value", otherwise just "name".
-     * @param {object} tag
+     * @param {object} tag The tag object to format
      * @returns {string} Formatted tag for display
      */
     _tagDisplayText = (tag) => {
