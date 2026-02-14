@@ -80,14 +80,14 @@ async function clearOldPWACache() {
             }
         }
 
+        console.log("Old PWA cache cleared successfully");
+
         // Mark cache as cleared (best effort, may fail in private browsing)
         try {
             localStorage.setItem("pwa-cache-cleared", "true");
         } catch (error) {
             console.warn("Could not set localStorage flag:", error);
         }
-        
-        console.log("Old PWA cache cleared successfully");
     } catch (error) {
         console.error("Failed to clear old PWA cache:", error);
     }
