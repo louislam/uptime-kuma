@@ -44,64 +44,26 @@ app.component("FontAwesomeIcon", FontAwesomeIcon);
 
 app.mount("#app");
 
-/**
- * Clear old PWA cache from vite-plugin-pwa (removed in 2.1.1)
- * This ensures users get the latest version instead of cached assets
- * @returns {Promise<void>} Promise that resolves when cache is cleared
- */
-async function clearOldPWACache() {
-    // Check if cache has already been cleared
+// Service Worker
+// Mainly for Webpush notification
+if ("serviceWorker" in navigator) {
+    // Clear 2.1.0 PWA cache caused by vite-plugin-pwa (See #6933)
     try {
         const cacheCleared = localStorage.getItem("pwa-cache-cleared");
         if (cacheCleared) {
             return;
         }
-    } catch (error) {
-        // localStorage may be unavailable in private browsing mode
-        console.warn("localStorage unavailable:", error);
-    }
-
-    try {
-        // Unregister all existing service workers
-        if ("serviceWorker" in navigator) {
-            const registrations = await navigator.serviceWorker.getRegistrations();
-            for (const registration of registrations) {
-                await registration.unregister();
-                console.log("Unregistered old service worker:", registration.scope);
-            }
+        const cacheNames = await caches.keys();
+        for (const cacheName of cacheNames) {
+            await caches.delete(cacheName);
         }
+        localStorage.setItem("pwa-cache-cleared", "true");
+        console.log("Old 2.1.0 PWA cache cleared successfully");
+    } catch (_) {}
 
-        // Clear all caches (including workbox precache from vite-plugin-pwa)
-        if ("caches" in window) {
-            const cacheNames = await caches.keys();
-            for (const cacheName of cacheNames) {
-                await caches.delete(cacheName);
-                console.log("Deleted cache:", cacheName);
-            }
-        }
-
-        console.log("Old PWA cache cleared successfully");
-
-        // Mark cache as cleared (best effort, may fail in private browsing)
-        try {
-            localStorage.setItem("pwa-cache-cleared", "true");
-        } catch (error) {
-            console.warn("Could not set localStorage flag:", error);
-        }
-    } catch (error) {
-        console.error("Failed to clear old PWA cache:", error);
-    }
-}
-
-if ("serviceWorker" in navigator) {
-    // Clear old PWA cache first, then register new service worker
-    clearOldPWACache()
-        .finally(() => {
-            // Register service worker regardless of cache clearing outcome
-            navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((error) => {
-                console.error("Service worker registration failed:", error);
-            });
-        });
+    navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch((error) => {
+        console.error("Service worker registration failed:", error);
+    });
 }
 
 // Expose the vue instance for development
