@@ -1,8 +1,3 @@
-// Needed per Vite PWA docs
-import { precacheAndRoute } from "workbox-precaching";
-declare let self: ServiceWorkerGlobalScope;
-precacheAndRoute(self.__WB_MANIFEST);
-
 // Receive push notifications
 self.addEventListener("push", function (event) {
     if (self.Notification?.permission !== "granted") {
