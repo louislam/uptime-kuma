@@ -67,7 +67,7 @@ async function clearOldPWACache() {
             const registrations = await navigator.serviceWorker.getRegistrations();
             for (const registration of registrations) {
                 await registration.unregister();
-                console.log("Unregistered old service worker");
+                console.log("Unregistered old service worker:", registration.scope);
             }
         }
 
