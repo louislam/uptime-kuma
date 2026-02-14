@@ -6,25 +6,43 @@ self.addEventListener("install", function (event) {
 });
 
 // Activate event - called when service worker activates
-// This is where we clean up old caches from vite-plugin-pwa
+// Clear old caches from vite-plugin-pwa (one-time cleanup for 2.1.0 -> 2.1.1 upgrade)
 self.addEventListener("activate", function (event) {
     console.log("Service worker activating...");
     
     event.waitUntil(
         (async function () {
-            // Clear all caches (including old workbox precache from vite-plugin-pwa)
-            const cacheNames = await caches.keys();
-            await Promise.all(
-                cacheNames.map(function (cacheName) {
-                    console.log("Deleting cache:", cacheName);
-                    return caches.delete(cacheName);
-                })
-            );
+            // Check if we've already cleared vite-plugin-pwa caches
+            const cleanupCache = await caches.open("uptime-kuma-cleanup");
+            const cleanupDone = await cleanupCache.match("pwa-cleanup-2.1.1");
+            
+            if (!cleanupDone) {
+                // First activation after upgrade - clear vite-plugin-pwa caches
+                console.log("Clearing old vite-plugin-pwa caches...");
+                const cacheNames = await caches.keys();
+                
+                // Delete caches that match vite-plugin-pwa patterns (workbox-*)
+                // or delete all caches for a clean start (since we don't use caching currently)
+                await Promise.all(
+                    cacheNames.map(function (cacheName) {
+                        // Skip our cleanup tracking cache
+                        if (cacheName === "uptime-kuma-cleanup") {
+                            return Promise.resolve();
+                        }
+                        console.log("Deleting cache:", cacheName);
+                        return caches.delete(cacheName);
+                    })
+                );
+                
+                // Mark cleanup as done
+                await cleanupCache.put("pwa-cleanup-2.1.1", new Response("done"));
+                console.log("Old PWA caches cleared");
+            }
             
             // Take control of all clients immediately
             await self.clients.claim();
             
-            console.log("Service worker activated and old caches cleared");
+            console.log("Service worker activated");
         })()
     );
 });
