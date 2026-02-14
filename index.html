@@ -28,6 +28,50 @@
 </div>
 </noscript>
 <div id="app"></div>
+<!-- Clear old PWA caches from vite-plugin-pwa (removed in 2.1.1) -->
+<!-- This runs before any cached JS loads, ensuring users get fresh content -->
+<script>
+(function() {
+    // Check if we've already cleared the cache to avoid infinite reload loop
+    var cacheCleared = localStorage.getItem('pwa-cache-cleared-2.1.1');
+    if (cacheCleared) {
+        return;
+    }
+    
+    // Check if caches API is available
+    if (!('caches' in window)) {
+        return;
+    }
+    
+    // Clear all caches and reload once
+    caches.keys().then(function(cacheNames) {
+        if (cacheNames.length === 0) {
+            // No caches to clear
+            return;
+        }
+        
+        console.log('Clearing old PWA caches from vite-plugin-pwa...');
+        return Promise.all(
+            cacheNames.map(function(cacheName) {
+                console.log('Deleting cache:', cacheName);
+                return caches.delete(cacheName);
+            })
+        ).then(function() {
+            // Mark as cleared before reload to prevent infinite loop
+            try {
+                localStorage.setItem('pwa-cache-cleared-2.1.1', 'true');
+            } catch (e) {
+                // Ignore localStorage errors
+            }
+            console.log('PWA caches cleared, reloading page...');
+            // Hard reload to ensure fresh content
+            window.location.reload(true);
+        });
+    }).catch(function(error) {
+        console.error('Failed to clear caches:', error);
+    });
+})();
+</script>
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>
