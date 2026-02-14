@@ -48,7 +48,7 @@ class Teams extends NotificationProvider {
         } else {
             return `${tag.name}: ${tag.value}`;
         }
-    }
+    };
 
     /**
      * Generate payload for notification
