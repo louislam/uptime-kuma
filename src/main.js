@@ -50,10 +50,15 @@ app.mount("#app");
  * @returns {Promise<void>} Promise that resolves when cache is cleared
  */
 async function clearOldPWACache() {
-    const cacheCleared = localStorage.getItem("pwa-cache-cleared");
-    
-    if (cacheCleared) {
-        return;
+    // Check if cache has already been cleared
+    try {
+        const cacheCleared = localStorage.getItem("pwa-cache-cleared");
+        if (cacheCleared) {
+            return;
+        }
+    } catch (error) {
+        // localStorage may be unavailable in private browsing mode
+        console.warn("localStorage unavailable:", error);
     }
 
     try {
@@ -75,7 +80,13 @@ async function clearOldPWACache() {
             }
         }
 
-        localStorage.setItem("pwa-cache-cleared", "true");
+        // Mark cache as cleared (best effort, may fail in private browsing)
+        try {
+            localStorage.setItem("pwa-cache-cleared", "true");
+        } catch (error) {
+            console.warn("Could not set localStorage flag:", error);
+        }
+        
         console.log("Old PWA cache cleared successfully");
     } catch (error) {
         console.error("Failed to clear old PWA cache:", error);
