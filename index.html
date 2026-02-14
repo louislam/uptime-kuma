@@ -64,8 +64,8 @@
                 // Ignore localStorage errors
             }
             console.log('PWA caches cleared, reloading page...');
-            // Hard reload to ensure fresh content
-            window.location.reload(true);
+            // Reload to fetch fresh content
+            window.location.reload();
         });
     }).catch(function(error) {
         console.error('Failed to clear caches:', error);
